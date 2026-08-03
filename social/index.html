@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="robots" content="noindex,nofollow"/>
+<title>Zoi Social Tool — Greek Business Social Media Manager | zoi.city/social</title>
+<meta name="description" content="Schedule posts, manage Greek namedays, and track analytics for your Greek business — all in one place."/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;600&family=Hanken+Grotesk:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0B1F2E;--ink2:#0a1a28;--paper:#F7F3EC;--muted:#8ea3b3;--muted2:#5f7585;
+--gold:#B8893B;--gold-soft:#D9B873;--aegean:#0A4D8C;--sea:#1F9EC9;--green:#2e8b57;
+--line:rgba(255,255,255,.12);--glass:rgba(255,255,255,.06);--glass2:rgba(255,255,255,.09);
+--r:18px;--spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.22,.61,.36,1);}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;font-family:'Hanken Grotesk',system-ui,sans-serif;
+  color:var(--paper);background:var(--ink2);line-height:1.5;-webkit-font-smoothing:antialiased}
+.world{position:fixed;inset:0;z-index:-2;background:
+  radial-gradient(900px 600px at 10% -5%,rgba(31,158,201,.18),transparent 58%),
+  radial-gradient(800px 600px at 110% 5%,rgba(184,137,59,.18),transparent 54%),
+  linear-gradient(160deg,#0c2236,#0a1a28 60%)}
+.shell{display:flex;height:100vh;overflow:hidden}
+.side{width:220px;flex:none;height:100vh;padding:14px 10px;display:flex;flex-direction:column;gap:2px;
+  border-right:1px solid rgba(255,255,255,.07);overflow-y:auto}
+.brandrow{display:flex;align-items:center;gap:9px;padding:5px 7px 16px}
+.seal{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fffdf8;
+  background:radial-gradient(circle at 32% 28%,var(--gold-soft),var(--gold));
+  font-family:'Fraunces';font-weight:600;font-size:19px;box-shadow:0 6px 14px -4px rgba(184,137,59,.8)}
+.brandtxt b{font-family:'Fraunces';font-weight:600;font-size:16px;display:block;line-height:1}
+.brandtxt span{font-size:10.5px;color:var(--muted);letter-spacing:.04em}
+.navlbl{font-size:9.5px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--muted2);padding:10px 9px 4px}
+.nav{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:10px;color:var(--muted);
+  font-weight:600;font-size:12.5px;cursor:pointer;border:1px solid transparent;
+  transition:.25s var(--ease);position:relative}
+.nav svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+.nav:hover{color:var(--paper);background:var(--glass)}
+.nav.on{color:var(--paper);background:var(--glass2);border-color:var(--line)}
+.nav.on::before{content:"";position:absolute;left:-10px;top:50%;transform:translateY(-50%);
+  width:3px;height:14px;border-radius:3px;background:linear-gradient(var(--gold-soft),var(--gold))}
+.sidefoot{margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,.07)}
+.sidefoot a{font-size:11px;color:var(--muted);text-decoration:none;padding:6px 9px;display:block}
+.sidefoot a:hover{color:var(--paper)}
+.main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.topbar{flex:none;display:flex;align-items:center;gap:10px;padding:11px 22px;
+  background:rgba(10,26,40,.65);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.07);z-index:40}
+.topbar .h1{font-family:'Fraunces';font-weight:500;font-size:20px}
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--glass2);color:var(--paper);
+  border:1px solid var(--line);border-radius:28px;padding:8px 14px;font:700 12.5px 'Hanken Grotesk';
+  cursor:pointer;transition:transform .3s var(--spring),border-color .25s;white-space:nowrap}
+.btn:hover{transform:scale(1.04);border-color:var(--gold-soft)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold-soft));color:#2a1d06;border:none;
+  box-shadow:0 6px 16px -6px rgba(184,137,59,.7)}
+.content{flex:1;overflow-y:auto;padding:22px 24px 40px}
+.view{display:none}
+.view.active{display:block}
+.cal-nav{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.mo-lbl{font-family:'Fraunces';font-size:26px;font-weight:500}
+.arrbtn{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--glass);
+  color:var(--paper);cursor:pointer;display:grid;place-items:center;transition:.2s}
+.arrbtn:hover{background:var(--glass2);border-color:rgba(184,137,59,.3)}
+.dow-row{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:3px}
+.dow-cell{text-align:center;font-size:10px;font-weight:700;letter-spacing:.06em;color:var(--muted2);
+  padding:3px 0 5px;text-transform:uppercase}
+.calgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.calday{background:var(--glass);border:1px solid rgba(255,255,255,.07);border-radius:12px;
+  padding:7px;min-height:90px;cursor:pointer;transition:.2s;position:relative}
+.calday:hover{background:var(--glass2);border-color:rgba(184,137,59,.2)}
+.calday.out{opacity:.25;pointer-events:none}
+.calday.today{border-color:var(--gold-soft)}
+.dnum{font-size:11px;font-weight:800;margin-bottom:4px}
+.calday.today .dnum{color:var(--gold-soft)}
+.feast{font-size:9px;color:var(--gold-soft);font-weight:700;margin-bottom:3px;line-height:1.2}
+.pchip{border-radius:6px;padding:2px 5px;margin-bottom:2px;font-size:9.5px;font-weight:700;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pchip.scheduled{background:rgba(31,158,201,.25);border:1px solid rgba(31,158,201,.4)}
+.pchip.published{background:rgba(46,139,87,.25);border:1px solid rgba(46,139,87,.4)}
+.pchip.draft{background:rgba(95,117,133,.2);border:1px solid rgba(95,117,133,.3)}
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(8,16,28,.7);backdrop-filter:blur(8px);
+  display:none}
+.overlay.open{display:block}
+.cpanel{position:fixed;right:0;top:0;bottom:0;width:420px;z-index:101;
+  background:linear-gradient(160deg,#0f2236,#0c1c2e);border-left:1px solid var(--line);
+  display:flex;flex-direction:column;transform:translateX(100%);transition:.4s var(--ease)}
+.cpanel.open{transform:none}
+.cphead{display:flex;align-items:center;justify-content:space-between;padding:18px 20px;
+  border-bottom:1px solid rgba(255,255,255,.08)}
+.cphead h2{font-family:'Fraunces';font-size:20px;font-weight:500}
+.xbtn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--glass);
+  color:var(--paper);cursor:pointer;display:grid;place-items:center;transition:.2s}
+.cpbody{flex:1;overflow-y:auto;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.cplbl{font-size:11px;font-weight:700;letter-spacing:.06em;color:var(--muted);
+  text-transform:uppercase;margin-bottom:5px}
+.chans{display:flex;gap:8px;flex-wrap:wrap}
+.cpill{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;
+  background:var(--glass);border:1.5px solid rgba(255,255,255,.12);cursor:pointer;
+  font:600 12px 'Hanken Grotesk';transition:.2s;color:var(--muted)}
+.cpill.on{color:var(--paper);border-color:var(--gold-soft);background:rgba(184,137,59,.12)}
+.ch-dot{width:8px;height:8px;border-radius:50%}
+.ch-dot.fb{background:#1877F2}.ch-dot.ig{background:#E1306C}.ch-dot.li{background:#0A66C2}
+.cptextarea{width:100%;background:rgba(255,255,255,.06);border:1.5px solid rgba(255,255,255,.1);
+  border-radius:12px;padding:11px 13px;color:var(--paper);font:14px 'Hanken Grotesk';
+  resize:vertical;min-height:120px;outline:none;transition:.2s;line-height:1.6}
+.cptextarea:focus{border-color:var(--gold-soft)}
+.cptextarea::placeholder{color:var(--muted2)}
+.charcount{font-size:11px;color:var(--muted);text-align:right}
+.idea-row{display:flex;flex-direction:column;gap:7px}
+.idea-pill{padding:8px 12px;border-radius:10px;background:rgba(184,137,59,.1);
+  border:1px solid rgba(184,137,59,.25);font-size:12px;cursor:pointer;transition:.2s;
+  color:var(--paper)}
+.idea-pill:hover{background:rgba(184,137,59,.18)}
+.cpfoot{padding:14px 20px;border-top:1px solid rgba(255,255,255,.08);display:flex;gap:8px}
+.cpfoot .btn{flex:1;justify-content:center}
+.statsbar{display:flex;gap:10px;margin-bottom:20px}
+.stat-card{flex:1;background:var(--glass);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.stat-num{font-family:'Fraunces';font-size:24px;font-weight:500}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(135deg,var(--gold),var(--gold-soft));color:#1a0f00;
+  padding:10px 20px;border-radius:28px;font:700 13px 'Hanken Grotesk';z-index:200;
+  opacity:0;transition:.3s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.ea-card{max-width:480px;margin:40px auto;background:var(--glass);border:1px solid var(--line);
+  border-radius:22px;padding:32px}
+.ea-card h2{font-family:'Fraunces';font-size:28px;font-weight:500;margin-bottom:10px}
+.ea-card p{color:var(--muted);margin-bottom:20px;line-height:1.6}
+.ea-input{width:100%;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);
+  border-radius:12px;padding:11px 14px;color:var(--paper);font:14px 'Hanken Grotesk';
+  outline:none;margin-bottom:10px;transition:.2s}
+.ea-input:focus{border-color:var(--gold-soft)}
+.ea-input::placeholder{color:var(--muted2)}
+.feature-list{display:flex;flex-direction:column;gap:8px;margin-top:18px}
+.feature-item{display:flex;align-items:center;gap:10px;font-size:13px;padding:9px 12px;
+  background:rgba(255,255,255,.04);border-radius:10px}
+</style>
+</head>
+<body>
+<div class="world"></div>
+<div class="shell">
+  <div class="side">
+    <div class="brandrow">
+      <div class="seal">Z</div>
+      <div class="brandtxt"><b>Zoi Social</b><span>Greek Business Tool</span></div>
+    </div>
+    <div class="navlbl">Schedule</div>
+    <div class="nav on" id="nav-cal" onclick="showView('cal')">
+      <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Calendar
+    </div>
+    <div class="navlbl">Grow</div>
+    <div class="nav" id="nav-ea" onclick="showView('ea')">
+      <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      Request Early Access
+    </div>
+    <div class="sidefoot">
+      <a href="/">← zoi.city</a>
+    </div>
+  </div>
+  <div class="main">
+    <div id="view-cal" class="view active">
+      <div class="topbar">
+        <span class="h1" id="cal-title">Loading…</span>
+        <div class="topbar-right">
+          <button class="btn gold" onclick="openComposer(null)">
+            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            New Post
+          </button>
+        </div>
+      </div>
+      <div class="content">
+        <div class="statsbar" id="stats-bar"></div>
+        <div class="cal-nav">
+          <button class="arrbtn" onclick="changeMonth(-1)">‹</button>
+          <button class="arrbtn" onclick="changeMonth(1)">›</button>
+          <button class="btn" onclick="goToday()">Today</button>
+        </div>
+        <div class="dow-row">
+          <div class="dow-cell">Sun</div><div class="dow-cell">Mon</div><div class="dow-cell">Tue</div>
+          <div class="dow-cell">Wed</div><div class="dow-cell">Thu</div><div class="dow-cell">Fri</div>
+          <div class="dow-cell">Sat</div>
+        </div>
+        <div class="calgrid" id="cal-grid"></div>
+      </div>
+    </div>
+    <div id="view-ea" class="view">
+      <div class="topbar">
+        <span class="h1">Get Early Access</span>
+      </div>
+      <div class="content">
+        <div class="ea-card">
+          <h2>The Social Tool for Greek Business</h2>
+          <p>Schedule posts with Greek nameday awareness, manage multiple platforms, and grow your community — built for Greek restaurants, bakeries, and businesses worldwide.</p>
+          <div class="cplbl">Your business name</div>
+          <input class="ea-input" id="ea-name" placeholder="e.g. Stavros Bakery"/>
+          <div class="cplbl" style="margin-top:8px">Your email</div>
+          <input class="ea-input" id="ea-email" placeholder="you@yourbusiness.com" type="email"/>
+          <div class="cplbl" style="margin-top:8px">City</div>
+          <input class="ea-input" id="ea-city" placeholder="e.g. Toronto, ON"/>
+          <button class="btn gold" style="width:100%;justify-content:center;padding:13px" onclick="submitEarlyAccess()">
+            Request Early Access →
+          </button>
+          <div class="feature-list">
+            <div class="feature-item">🗃️ Greek nameday calendar — auto-suggest posts for every nameday</div>
+            <div class="feature-item">📅 Drag-and-drop scheduling — plan a whole month in minutes</div>
+            <div class="feature-item">✨ AI post writer — writes Greek business posts for you</div>
+            <div class="feature-item">📊 Analytics — see which posts reached the most people</div>
+            <div class="feature-item">🔗 Connect Facebook, Instagram, LinkedIn — post everywhere at once</div>
+            <div class="feature-item">💼 Manage multiple businesses — perfect for agencies</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="overlay" onclick="closeComposer()"></div>
+<div class="cpanel" id="cpanel">
+  <div class="cphead">
+    <h2 id="cp-title">New Post</h2>
+    <div class="xbtn" onclick="closeComposer()">
+      <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>
+  </div>
+  <div class="cpbody">
+    <div>
+      <div class="cplbl">Post to</div>
+      <div class="chans">
+        <div class="cpill on" onclick="this.classList.toggle('on')"><div class="ch-dot fb"></div>Facebook</div>
+        <div class="cpill" onclick="this.classList.toggle('on')"><div class="ch-dot ig"></div>Instagram</div>
+        <div class="cpill" onclick="this.classList.toggle('on')"><div class="ch-dot li"></div>LinkedIn</div>
+      </div>
+    </div>
+    <div>
+      <div class="cplbl">Your post</div>
+      <textarea class="cptextarea" id="post-text" placeholder="What's happening at your shop today? Tell your Greek community…" oninput="updateCC()"></textarea>
+      <div class="charcount"><span id="cc">0 / 2,200</span></div>
+    </div>
+    <div id="idea-section" style="display:none">
+      <div class="cplbl">✨ Greek nameday ideas for <span id="idea-date"></span></div>
+      <div class="idea-row" id="idea-row"></div>
+    </div>
+  </div>
+  <div class="cpfoot">
+    <button class="btn" onclick="saveDraft()">Save Draft</button>
+    <button class="btn gold" onclick="schedulePost()">Schedule →</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+var SUPA_URL='https://csebihpaychdkanjjsmz.supabase.co';
+var SUPA_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzZWJpaHBheWNoZGthbmpqc216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNzEzODgsImV4cCI6MjA5Njk0NzM4OH0.dJb-DWFBcmkN3IFHZxdmc-9pvQzXx5T4J2eaipb5HyY';
+async function supaPost(path,body){var r=await fetch(SUPA_URL+path,{method:'POST',headers:{apikey:SUPA_ANON,Authorization:'Bearer '+SUPA_ANON,'Content-Type':'application/json'},body:JSON.stringify(body)});return r.json();}
+var currentYear,currentMonth;
+var posts=JSON.parse(localStorage.getItem('zoi_social_posts')||'[]');
+var composerDate=null;
+var NAMEDAYS={'07-20':'Ηλίας','07-22':'Μαρία Μαγδαληνή','07-25':'Άννα','07-27':'Παντελεήμων','07-29':'Μάρθα','08-06':'Χριστός Μεταμόρφωση','08-10':'Λαυρέντιος','08-15':'Παναγία','08-16':'Γεράσιμος','08-24':'Κοσμάς','08-29':'Ιωάννης Βαπτιστής','09-01':'Στέφανος','09-08':'Παναγία Γέννηση','09-14':'Σταυρός','09-17':'Σοφία','10-01':'Ρωμανός','10-18':'Λουκάς','10-23':'Ιάκωβος','10-26':'Δημήτριος','10-28':'Ochi Day 🇬🇷','11-08':'Αρχάγγελοι','11-25':'Αικατερίνη','11-30':'Ανδρέας','12-06':'Νικόλαος','12-12':'Σπυρίδων','12-25':'Χριστούγεννα 🎄','01-01':'Βασίλειος','01-06':'Θεοφάνεια','01-17':'Αντώνιος','03-25':'Ευαγγελισμός 🇬🇷','04-23':'Γεώργιος','05-21':'Κωνσταντίνος & Ελένη','06-29':'Πέτρος & Παύλος','07-17':'Μαρίνα'};
+function getNameday(y,m,d){return NAMEDAYS[String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0')]||null;}
+function init(){var now=new Date();currentYear=now.getFullYear();currentMonth=now.getMonth();renderCalendar();renderStats();}
+function renderCalendar(){var year=currentYear,month=currentMonth;
+document.getElementById('cal-title').textContent=new Date(year,month,1).toLocaleDateString('en-CA',{month:'long',year:'numeric'});
+var grid=document.getElementById('cal-grid');var first=new Date(year,month,1).getDay();var days=new Date(year,month+1,0).getDate();var today=new Date();var html='';
+for(var i=0;i<first;i++)html+='<div class="calday out"></div>';
+for(var d=1;d<=days;d++){var isToday=(today.getFullYear()===year&&today.getMonth()===month&&today.getDate()===d);var nd=getNameday(year,month,d);var dayPosts=posts.filter(function(p){return p.year===year&&p.month===month&&p.day===d;});html+='<div class="calday'+(isToday?' today':'')+'" onclick="openComposer({y:'+year+',m:'+month+',d:'+d+'})">';
+html+='<div class="dnum">'+d+'</div>';
+if(nd)html+='<div class="feast">'+nd+'</div>';
+dayPosts.forEach(function(p){html+='<div class="pchip '+(p.status||'draft')+'">'+(p.text||'Post').substring(0,24)+'</div>';});
+html+='</div>';}
+grid.innerHTML=html;}
+function renderStats(){var scheduled=posts.filter(function(p){return p.status==='scheduled';}).length;var published=posts.filter(function(p){return p.status==='published';}).length;var drafts=posts.filter(function(p){return p.status==='draft';}).length;document.getElementById('stats-bar').innerHTML=statCard(scheduled,'Scheduled','🕐')+statCard(published,'Published','✅')+statCard(drafts,'Drafts','📝')+statCard(posts.length,'Total Posts','📊');}
+function statCard(n,lbl,icon){return '<div class="stat-card"><div class="stat-num">'+icon+' '+n+'</div><div class="stat-lbl">'+lbl+'</div></div>';}
+function changeMonth(dir){currentMonth+=dir;if(currentMonth<0){currentMonth=11;currentYear--;}else if(currentMonth>11){currentMonth=0;currentYear++;}renderCalendar();}
+function goToday(){var now=new Date();currentYear=now.getFullYear();currentMonth=now.getMonth();renderCalendar();}
+function openComposer(date){composerDate=date;var title=date?(new Date(date.y,date.m,date.d).toLocaleDateString('en-CA',{month:'long',day:'numeric',year:'numeric'})):'New Post';document.getElementById('cp-title').textContent=title;document.getElementById('post-text').value='';document.getElementById('cc').textContent='0 / 2,200';
+var nd=date?getNameday(date.y,date.m,date.d):null;var ideaSection=document.getElementById('idea-section');
+if(nd){document.getElementById('idea-date').textContent=nd+' nameday';var ideas=['🕯️ Wishing everyone celebrating '+nd+' today — Χρόνια Πολλά from our family to yours! 🇬🇷','🎂 It\'s '+nd+' nameday! Come in today and we\'ll have something special waiting for you.','💙 Χρόνια Πολλά to all '+nd+' celebrating today! Tag a friend who shares this nameday.'];
+document.getElementById('idea-row').innerHTML=ideas.map(function(idea){return '<div class="idea-pill" onclick="useIdea(this.textContent)">'+idea+'</div>';}).join('');ideaSection.style.display='block';}else{ideaSection.style.display='none';}
+document.getElementById('overlay').classList.add('open');document.getElementById('cpanel').classList.add('open');setTimeout(function(){document.getElementById('post-text').focus();},300);}
+function closeComposer(){document.getElementById('overlay').classList.remove('open');document.getElementById('cpanel').classList.remove('open');}
+function useIdea(text){document.getElementById('post-text').value=text.trim();updateCC();}
+function updateCC(){var v=document.getElementById('post-text').value.length;document.getElementById('cc').textContent=v+' / 2,200';}
+function saveDraft(){var text=document.getElementById('post-text').value.trim();if(!text){toast('Write something first!');return;}var p={id:Date.now(),text:text,status:'draft',created:new Date().toISOString()};if(composerDate){p.year=composerDate.y;p.month=composerDate.m;p.day=composerDate.d;}posts.push(p);localStorage.setItem('zoi_social_posts',JSON.stringify(posts));closeComposer();renderCalendar();renderStats();toast('Draft saved ✓');}
+function schedulePost(){var text=document.getElementById('post-text').value.trim();if(!text){toast('Write something first!');return;}var p={id:Date.now(),text:text,status:'scheduled',created:new Date().toISOString()};if(composerDate){p.year=composerDate.y;p.month=composerDate.m;p.day=composerDate.d;}posts.push(p);localStorage.setItem('zoi_social_posts',JSON.stringify(posts));closeComposer();renderCalendar();renderStats();toast('Post scheduled! 🎉');}
+function showView(id){document.querySelectorAll('.view').forEach(function(v){v.classList.remove('active');});document.querySelectorAll('.nav').forEach(function(n){n.classList.remove('on');});document.getElementById('view-'+id).classList.add('active');document.getElementById('nav-'+id).classList.add('on');}
+async function submitEarlyAccess(){var name=document.getElementById('ea-name').value.trim();var email=document.getElementById('ea-email').value.trim();var city=document.getElementById('ea-city').value.trim();if(!name||!email){toast('Please add your business name and email');return;}toast('Submitting…');try{await supaPost('/rest/v1/rpc/zoi_request_promo',{p_slug:'social-tool-early-access',p_email:email,p_plan:'social-tool',p_kind:'early_access'});}catch(e){}document.getElementById('ea-name').value='';document.getElementById('ea-email').value='';document.getElementById('ea-city').value='';toast('You\'re on the list! We\'ll be in touch. 🎉');}
+function toast(msg){var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show');},2600);}
+init();
+</script>
+</body>
+</html>
