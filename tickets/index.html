@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Zoi Tickets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0B1F2E;--ink2:#0a1a28;--paper:#F7F3EC;--paper2:#e9e2d4;
+  --muted:#8ea2b3;--muted2:#5c7689;--gold:#B8893B;--gold-s:#D9B873;
+  --aegean:#0A4D8C;--sea:#1F9EC9;--pigment:#B5325F;--green:#2e8b57;
+  --line:rgba(255,255,255,.12);--glass:rgba(255,255,255,.055);
+  --glass2:rgba(255,255,255,.09);--gl:rgba(255,255,255,.13);
+  --r:22px;--rs:14px;--ease:cubic-bezier(.22,.61,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{min-height:100%;scroll-behavior:smooth}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);background:var(--ink2);line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+.world{position:fixed;inset:0;z-index:-2;background:radial-gradient(1200px 800px at 5% -10%,rgba(31,158,201,.18),transparent 55%),radial-gradient(900px 700px at 105% 5%,rgba(184,137,59,.16),transparent 52%),radial-gradient(1000px 900px at 55% 115%,rgba(10,77,140,.22),transparent 60%),radial-gradient(600px 500px at 85% 95%,rgba(181,50,95,.10),transparent 60%),linear-gradient(160deg,#0c2236,#0a1a28 60%,#081420)}
+.grain{position:fixed;inset:0;z-index:-1;opacity:.38;pointer-events:none;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='170' height='170'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.82' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.62'/></svg>")}
+/* nav */
+.topnav{position:sticky;top:0;z-index:100;display:flex;align-items:center;gap:16px;padding:0 clamp(16px,4vw,60px);height:60px;background:rgba(10,26,40,.82);backdrop-filter:blur(22px) saturate(1.4);border-bottom:1px solid var(--line)}
+.seal{width:34px;height:34px;border-radius:10px;flex:none;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,var(--gold-s),var(--gold));color:#22160a;font-family:'Fraunces';font-weight:600;font-size:19px;box-shadow:0 6px 18px -8px rgba(184,137,59,.8)}
+.brand{font-family:'Fraunces';font-weight:600;font-size:18px;background:linear-gradient(120deg,var(--paper),var(--gold-s));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.ws-pill{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:30px;background:var(--glass2);border:1px solid var(--line);font:600 13px 'Hanken Grotesk';color:var(--paper);max-width:220px}
+.ws-pill .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex:none}
+.ws-pill b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-link{padding:7px 13px;border-radius:30px;font:600 13px 'Hanken Grotesk';color:var(--muted);cursor:pointer;transition:.25s var(--ease);border:1px solid transparent;background:transparent}
+.nav-link:hover{color:var(--paper);background:var(--glass)}
+.proto-banner{background:rgba(184,137,59,.12);border-bottom:1px solid rgba(184,137,59,.25);padding:8px clamp(16px,4vw,60px);font-size:12px;color:var(--gold-s);display:flex;align-items:center;gap:8px}
+.proto-banner b{font-weight:700}
+/* generic */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 20px;border-radius:30px;font:600 14px 'Hanken Grotesk';cursor:pointer;border:1px solid var(--gl);transition:transform .35s var(--spring),background .25s,box-shadow .25s;text-decoration:none;color:var(--paper);background:transparent}
+.btn:hover{transform:translateY(-2px)}.btn:active{transform:scale(.97)}
+.btn.gold{background:linear-gradient(135deg,var(--gold),var(--gold-s));color:#22160a;border-color:transparent;box-shadow:0 10px 28px -12px rgba(184,137,59,.8)}
+.btn.outline{background:var(--glass);color:var(--paper);backdrop-filter:blur(12px)}
+.btn.sea{background:linear-gradient(135deg,#1a6a9a,#1F9EC9);color:#fff;border-color:transparent;box-shadow:0 10px 28px -12px rgba(31,158,201,.7)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9}
+.hero{position:relative;overflow:hidden;padding:56px clamp(16px,6vw,80px) 40px;border-bottom:1px solid var(--line)}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 13px;border-radius:30px;background:rgba(181,50,95,.18);border:1px solid rgba(181,50,95,.35);font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--pigment);margin-bottom:18px}
+.hero-badge .dot{width:6px;height:6px;border-radius:50%;background:var(--pigment);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(181,50,95,.5)}70%{box-shadow:0 0 0 8px rgba(181,50,95,0)}100%{box-shadow:0 0 0 0 rgba(181,50,95,0)}}
+.hero-title{font-family:'Fraunces';font-weight:500;font-size:clamp(28px,5vw,50px);line-height:1.05;font-variation-settings:'opsz' 144,'wght' 430;margin-bottom:12px}
+.hero-sub{color:var(--gold-s);font-style:italic}
+.hero-meta{display:flex;flex-wrap:wrap;gap:14px 20px;color:var(--muted);font-size:14px;font-weight:500;margin-top:14px}
+.hero-meta-item{display:flex;align-items:center;gap:7px}
+.hero-meta-item svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;flex:none}
+.hero-meta-item b{color:var(--paper);font-weight:600}
+.layout{display:grid;grid-template-columns:1fr 380px;gap:28px;max-width:1240px;margin:0 auto;padding:36px clamp(16px,4vw,60px) 80px;align-items:start}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+.sec-label{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
+/* ticket cards */
+.ticket-grid{display:flex;flex-direction:column;gap:14px}
+.ticket-card{background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--gl);border-radius:var(--r);padding:20px 22px;display:flex;align-items:center;gap:18px;transition:transform .3s var(--spring),background .25s,border-color .25s;cursor:pointer}
+.ticket-card:hover{background:var(--glass2);transform:translateY(-1px);border-color:rgba(255,255,255,.2)}
+.ticket-card.selected{border-color:rgba(184,137,59,.55);background:rgba(184,137,59,.09);box-shadow:0 0 0 1px rgba(184,137,59,.3)}
+.ticket-card.sold-out{opacity:.6;cursor:not-allowed}
+.ticket-icon{width:44px;height:44px;border-radius:14px;flex:none;display:grid;place-items:center;font-size:20px;background:rgba(31,158,201,.18);border:1px solid rgba(31,158,201,.25)}
+.ticket-info{flex:1;min-width:0}
+.ticket-name{font-weight:700;font-size:16px;color:var(--paper)}
+.ticket-desc{font-size:13px;color:var(--muted);margin-top:3px;line-height:1.4}
+.ticket-tag{display:inline-block;margin-top:6px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
+.ticket-tag.sold{background:rgba(142,162,179,.1);color:var(--muted);border:1px solid rgba(142,162,179,.2)}
+.ticket-tag.free{background:rgba(46,139,87,.15);color:#5ec882;border:1px solid rgba(46,139,87,.3)}
+.avail-bar{width:100%;height:4px;border-radius:4px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden;max-width:220px}
+.avail-fill{height:100%;border-radius:4px;transition:width .6s var(--ease)}
+.avail-fill.high{background:var(--green)}.avail-fill.med{background:var(--gold)}.avail-fill.low{background:var(--pigment)}
+.avail-text{font-size:11px;color:var(--muted);margin-top:5px}
+.ticket-price{text-align:right;flex:none;display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.price{font-family:'Fraunces';font-size:26px;font-weight:500;color:var(--paper);line-height:1}
+.price-sub{font-size:11px;color:var(--muted)}
+/* order / reserve panel */
+.order-box{background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--gl);border-radius:var(--r);position:sticky;top:76px;overflow:hidden}
+.order-header{padding:18px 22px;border-bottom:1px solid var(--line);font-weight:700;font-size:15px;color:var(--paper)}
+.order-body{padding:18px 22px;min-height:90px}
+.empty-cart{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 0;text-align:center;color:var(--muted);font-size:14px}
+.empty-cart svg{width:38px;height:38px;stroke:var(--muted2);fill:none;stroke-width:1.3;opacity:.6}
+.sel-ticket{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:12px;background:var(--glass2);border:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.sel-ticket .ci-name{font-size:14px;font-weight:700;color:var(--paper)}
+.sel-ticket .ci-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.sel-ticket .ci-price{font-family:'Fraunces';font-size:18px;color:var(--paper);white-space:nowrap}
+.qty-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.qty-row .lbl{font-size:12px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em}
+.qty-ctrl{display:flex;align-items:center;border:1px solid var(--gl);border-radius:30px;overflow:hidden;background:var(--glass)}
+.qty-btn{width:34px;height:34px;display:grid;place-items:center;cursor:pointer;font-size:18px;font-weight:700;color:var(--paper);background:transparent;border:none;transition:background .2s}
+.qty-btn:hover{background:var(--glass2)}
+.qty-num{min-width:34px;text-align:center;font:700 15px 'Hanken Grotesk';color:var(--paper)}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:11px;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em}
+.field input,.field select,.field textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 14px;color:var(--paper);font:600 14px 'Hanken Grotesk';outline:none;transition:border-color .25s,background .25s;width:100%}
+.field input::placeholder,.field textarea::placeholder{color:var(--muted2);font-weight:500}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(184,137,59,.5);background:rgba(255,255,255,.1)}
+.field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%238ea2b3' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+.field select option{background:#0d2336;color:var(--paper)}
+.field-hint{font-size:11px;color:var(--muted);margin-top:2px}
+.order-divider{height:1px;background:var(--line);margin:14px 0}
+.order-row{display:flex;justify-content:space-between;font-size:13px}
+.order-row.total{font-weight:700;font-size:17px;color:var(--paper);margin-top:6px}
+.order-row .label{color:var(--muted)}
+.reserve-note{display:flex;gap:8px;background:rgba(181,50,95,.1);border:1px solid rgba(181,50,95,.22);border-radius:12px;padding:11px 13px;font-size:12px;color:#e792ac;margin:14px 0;line-height:1.45}
+.reserve-note svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex:none;margin-top:1px}
+.reserve-btn{width:100%;padding:14px;border-radius:14px;font:700 15px 'Hanken Grotesk';cursor:pointer;background:linear-gradient(135deg,var(--gold),var(--gold-s));color:#22160a;border:none;box-shadow:0 12px 30px -12px rgba(184,137,59,.8);transition:all .35s var(--spring)}
+.reserve-btn:hover{transform:translateY(-2px);box-shadow:0 16px 36px -12px rgba(184,137,59,.9)}
+.reserve-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.info-card{background:var(--glass);backdrop-filter:blur(18px) saturate(1.4);border:1px solid var(--gl);border-radius:var(--r);padding:20px 22px;margin-top:24px}
+.info-card h3{font-family:'Fraunces';font-size:16px;font-weight:500;margin-bottom:8px;color:var(--paper)}
+.info-card p{font-size:13px;color:var(--muted);line-height:1.6}
+/* dashboard */
+.dash{max-width:1240px;margin:0 auto;padding:34px clamp(16px,4vw,60px) 90px}
+.dash-head{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--muted2);margin-bottom:10px}
+.dash-title{font-family:'Fraunces';font-size:clamp(24px,3.5vw,38px);font-weight:500;color:var(--paper)}
+.dash-sub{font-size:14px;color:var(--muted);margin-top:6px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+@media(max-width:700px){.stats-row{grid-template-columns:1fr}}
+.stat-card{background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--gl);border-radius:var(--r);padding:20px 22px}
+.stat-label{font-size:11px;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:.14em;margin-bottom:8px}
+.stat-val{font-family:'Fraunces';font-size:34px;font-weight:500;color:var(--paper);line-height:1}
+.stat-val.gold{color:var(--gold-s)}
+.stat-sub{font-size:12px;color:var(--muted);margin-top:6px}
+.events-list{display:flex;flex-direction:column;gap:16px}
+.ev-card{background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--gl);border-radius:var(--r);overflow:hidden}
+.ev-body{padding:22px 24px}
+.ev-top{display:flex;align-items:flex-start;gap:14px;margin-bottom:16px}
+.ev-icon{width:48px;height:48px;border-radius:14px;flex:none;display:grid;place-items:center;font-size:22px;background:var(--glass2);border:1px solid var(--gl)}
+.ev-meta{flex:1;min-width:0}
+.ev-name{font-family:'Fraunces';font-size:20px;font-weight:500;color:var(--paper);line-height:1.2;margin-bottom:5px}
+.ev-details{display:flex;flex-wrap:wrap;gap:8px 16px;color:var(--muted);font-size:12px;font-weight:500}
+.ev-details span{display:flex;align-items:center;gap:5px}
+.ev-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+@media(max-width:560px){.ev-stats{grid-template-columns:1fr}}
+.ev-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px}
+.ev-stat .l{font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.ev-stat .v{font-family:'Fraunces';font-size:20px;font-weight:500;color:var(--paper);line-height:1}
+.ev-stat .s{font-size:11px;color:var(--muted);margin-top:2px}
+.share-row{display:flex;gap:8px;align-items:center;background:rgba(31,158,201,.07);border:1px solid rgba(31,158,201,.18);border-radius:12px;padding:9px 9px 9px 14px;margin-bottom:14px}
+.share-url{flex:1;min-width:0;font:600 12px 'Hanken Grotesk';color:var(--sea);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mini-btn{padding:7px 12px;border-radius:10px;font:700 12px 'Hanken Grotesk';cursor:pointer;border:1px solid var(--gl);background:var(--glass);color:var(--paper);transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.mini-btn:hover{background:var(--glass2);border-color:rgba(255,255,255,.22)}
+.mini-btn.gold{background:linear-gradient(135deg,rgba(184,137,59,.28),rgba(184,137,59,.14));border-color:rgba(184,137,59,.35);color:var(--gold-s)}
+.ev-actions{display:flex;gap:8px;flex-wrap:wrap}
+.empty-state{padding:56px 30px;text-align:center;color:var(--muted);background:var(--glass);border:1px dashed var(--gl);border-radius:var(--r)}
+.empty-icon{font-size:44px;margin-bottom:14px;opacity:.65}
+.empty-title{font-size:16px;font-weight:700;color:var(--paper);margin-bottom:8px}
+.empty-sub{font-size:13px;margin-bottom:18px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.5}
+/* auth */
+.center-wrap{min-height:calc(100vh - 108px);display:grid;place-items:center;padding:40px 20px}
+.auth-card{background:var(--glass);backdrop-filter:blur(22px) saturate(1.5);border:1px solid var(--gl);border-radius:var(--r);max-width:440px;width:100%;padding:34px 32px;box-shadow:0 40px 80px rgba(0,0,0,.4)}
+.auth-seal{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,var(--gold-s),var(--gold));color:#22160a;font-family:'Fraunces';font-weight:600;font-size:26px;margin-bottom:18px;box-shadow:0 10px 26px -10px rgba(184,137,59,.7)}
+.auth-title{font-family:'Fraunces';font-size:24px;font-weight:500;margin-bottom:6px}
+.auth-sub{font-size:13px;color:var(--muted);margin-bottom:22px;line-height:1.55}
+.ws-choice{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.ws-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:14px;background:var(--glass2);border:1px solid var(--gl);cursor:pointer;transition:all .25s var(--spring);text-align:left;color:var(--paper);width:100%}
+.ws-item:hover{border-color:rgba(184,137,59,.4);transform:translateX(2px);background:rgba(184,137,59,.08)}
+.ws-item .av{width:40px;height:40px;border-radius:12px;flex:none;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,var(--gold-s),var(--gold));color:#22160a;font-family:'Fraunces';font-weight:600;font-size:17px}
+.ws-item .nm{font:700 15px 'Hanken Grotesk';color:var(--paper)}
+.ws-item .rl{font-size:12px;color:var(--muted);margin-top:1px;text-transform:capitalize}
+.ws-item .arr{margin-left:auto;color:var(--muted)}
+/* modal */
+.modal{position:fixed;inset:0;z-index:500;background:rgba(10,26,40,.88);backdrop-filter:blur(16px);display:none;align-items:flex-start;justify-content:center;padding:30px 20px;overflow-y:auto}
+.modal.open{display:flex}
+.modal-box{background:linear-gradient(160deg,#0d2336,#091827);border:1px solid var(--gl);border-radius:var(--r);max-width:520px;width:100%;margin:auto;box-shadow:0 40px 80px rgba(0,0,0,.6);overflow:hidden}
+.modal-head{padding:22px 26px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.modal-title{font-family:'Fraunces';font-size:21px;font-weight:500;color:var(--paper)}
+.modal-desc{font-size:13px;color:var(--muted);margin-top:4px}
+.modal-x{background:var(--glass);border:1px solid var(--gl);color:var(--muted);width:32px;height:32px;border-radius:10px;cursor:pointer;font-size:18px;line-height:1;flex:none}
+.modal-x:hover{color:var(--paper);background:var(--glass2)}
+.modal-body{padding:20px 26px 26px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.field-row{grid-template-columns:1fr}}
+.tt-list{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.tt-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--glass2);border:1px solid rgba(255,255,255,.08)}
+.tt-item .nm{font:700 14px 'Hanken Grotesk';color:var(--paper)}
+.tt-item .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.tt-item .pr{margin-left:auto;font-family:'Fraunces';font-size:16px;color:var(--paper);white-space:nowrap}
+.divider-lbl{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);margin:6px 0 14px;display:flex;align-items:center;gap:10px}
+.divider-lbl::after{content:"";flex:1;height:1px;background:var(--line)}
+/* confirm */
+.confirm-box{background:linear-gradient(160deg,#0d2536,#091827);border:1px solid rgba(46,139,87,.25);border-radius:var(--r);max-width:480px;width:100%;margin:auto;box-shadow:0 40px 80px rgba(0,0,0,.7);overflow:hidden}
+.confirm-header{background:linear-gradient(135deg,rgba(46,139,87,.15),rgba(31,158,201,.1));border-bottom:1px solid rgba(46,139,87,.2);padding:30px 32px;text-align:center}
+.confirm-icon{font-size:50px;margin-bottom:10px}
+.confirm-title{font-family:'Fraunces';font-size:23px;font-weight:500;color:var(--paper);margin-bottom:6px}
+.confirm-subtitle{font-size:13px;color:var(--muted);line-height:1.5}
+.confirm-ref{display:inline-block;margin-top:14px;padding:8px 18px;border-radius:12px;font:700 20px monospace;color:var(--gold-s);background:rgba(184,137,59,.12);border:1px solid rgba(184,137,59,.3);letter-spacing:.14em}
+.confirm-body{padding:24px 32px 28px}
+.confirm-meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--line)}
+.confirm-meta:last-of-type{border-bottom:none}
+.confirm-meta b{color:var(--paper);font-weight:600}
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(90px);background:rgba(46,139,87,.2);backdrop-filter:blur(16px);border:1px solid rgba(46,139,87,.4);color:var(--paper);border-radius:30px;padding:11px 22px;font:600 14px 'Hanken Grotesk';display:flex;align-items:center;gap:9px;z-index:999;pointer-events:none;transition:transform .5s var(--spring),opacity .4s;white-space:nowrap;max-width:90vw}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.err{background:rgba(181,50,95,.22);border-color:rgba(181,50,95,.45)}
+.toast svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;flex:none}
+.loading{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
+.spinner{width:26px;height:26px;border:2.5px solid rgba(255,255,255,.15);border-top-color:var(--gold-s);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.inline-err{color:#e792ac;font-size:12px;margin-top:4px;min-height:14px}
+</style>
+</head>
+<body>
+<div class="world"></div>
+<div class="grain"></div>
+
+<div class="topnav">
+  <div class="seal">Z</div>
+  <div class="brand">Zoi Tickets</div>
+  <div class="nav-right" id="navRight"></div>
+</div>
+<div class="proto-banner" id="protoBanner">
+  <span>🎟️</span><span><b>Reservations live.</b> Seats are held instantly. Paid checkout is the next phase — priced tickets are reserved, not charged yet.</span>
+</div>
+
+<div id="app"></div>
+
+<!-- Confirm reservation modal -->
+<div class="modal" id="confirmModal">
+  <div class="confirm-box">
+    <div class="confirm-header">
+      <div class="confirm-icon">🎉</div>
+      <div class="confirm-title">Reservation confirmed</div>
+      <div class="confirm-subtitle" id="confirmSub">Your seats are held. Keep this confirmation code.</div>
+      <div class="confirm-ref" id="confirmCode">—</div>
+    </div>
+    <div class="confirm-body">
+      <div class="confirm-meta"><span>Quantity</span><b id="cfQty">—</b></div>
+      <div class="confirm-meta"><span>Status</span><b id="cfStatus">Reserved</b></div>
+      <div class="confirm-meta"><span>Amount</span><b id="cfAmount">—</b></div>
+      <div class="reserve-note" style="margin-top:16px" id="cfNote">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span>This is a reservation (a held spot). If the ticket is priced, payment will be collected in a later phase — you have not been charged.</span>
+      </div>
+      <button class="btn gold" style="width:100%" onclick="closeConfirm()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Generic modal (create event / manage tickets) -->
+<div class="modal" id="genModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="genTitle">Title</div>
+        <div class="modal-desc" id="genDesc"></div>
+      </div>
+      <button class="modal-x" onclick="closeGen()">✕</button>
+    </div>
+    <div class="modal-body" id="genBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
+
+<script>
+/* ============ CONFIG ============ */
+const BASE = 'https://csebihpaychdkanjjsmz.supabase.co';
+const PUBKEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+const PUBLIC_BASE = 'https://www.zoi.city/tickets';
+
+/* ============ HELPERS ============ */
+const $ = s => document.querySelector(s);
+const app = $('#app');
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function qs(k){ return new URLSearchParams(location.search).get(k); }
+function fmtMoney(cents, cur){ cents=Number(cents||0); if(cents===0) return 'Free'; try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:cur||'USD'}).format(cents/100); }catch(e){ return (cur||'USD')+' '+(cents/100).toFixed(2); } }
+function fmtWhen(iso){ if(!iso) return null; const d=new Date(iso); if(isNaN(d)) return null; return d.toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }
+function toast(msg, isErr){ const t=$('#toast'); $('#toastMsg').textContent=msg; t.classList.toggle('err',!!isErr); t.querySelector('svg').innerHTML = isErr?'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>':'<path d="M20 6L9 17l-5-5"/>'; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),3200); }
+
+/* ---- auth store ---- */
+function getAuth(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at&&(Number(a.expires_at)*1000 > Date.now()+5000)) return a; }catch(e){} return null; }
+function clearAuth(){ localStorage.removeItem('zoi_auth'); }
+function bearer(){ const a=getAuth(); return a?a.access_token:PUBKEY; }
+
+/* ---- RPC ---- */
+async function rpc(fn, params, token){
+  const res = await fetch(BASE+'/rest/v1/rpc/'+fn, {
+    method:'POST',
+    headers:{ apikey:PUBKEY, Authorization:'Bearer '+(token||bearer()), 'Content-Type':'application/json' },
+    body: JSON.stringify(params||{})
+  });
+  const txt = await res.text();
+  let data=null; try{ data = txt?JSON.parse(txt):null; }catch(e){ data=txt; }
+  if(!res.ok){ throw new Error((data&&(data.message||data.error_description||data.error||data.hint))||('Request failed ('+res.status+')')); }
+  return data;
+}
+
+/* ---- OTP auth ---- */
+async function sendOtp(email){
+  const r = await fetch(BASE+'/auth/v1/otp',{method:'POST',headers:{apikey:PUBKEY,'Content-Type':'application/json'},body:JSON.stringify({email:email,create_user:true})});
+  if(!r.ok){ const e=await r.json().catch(()=>({})); throw new Error(e.msg||e.error_description||e.error||'Could not send code'); }
+  return true;
+}
+async function verifyOtp(email, tokenCode){
+  const r = await fetch(BASE+'/auth/v1/verify',{method:'POST',headers:{apikey:PUBKEY,'Content-Type':'application/json'},body:JSON.stringify({type:'email',email:email,token:tokenCode})});
+  const d = await r.json().catch(()=>({}));
+  if(!r.ok || !d.access_token){ throw new Error(d.msg||d.error_description||d.error||'Invalid or expired code'); }
+  localStorage.setItem('zoi_auth', JSON.stringify({access_token:d.access_token, expires_at:d.expires_at}));
+  return d;
+}
+
+/* ============ ROUTER ============ */
+function route(){
+  const e = qs('e');
+  if(e){ $('#protoBanner').style.display='flex'; renderPublic(e); }
+  else { renderDashboard(); }
+}
+
+/* ============ PUBLIC EVENT PAGE ============ */
+let PUB = { eventId:null, types:[], selected:null, qty:1 };
+
+async function renderPublic(eventId){
+  PUB.eventId = eventId;
+  app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading tickets…</div>';
+  let types;
+  try{ types = await rpc('tickets_types_list', {p_event:eventId}, PUBKEY); }
+  catch(err){
+    app.innerHTML = errBlock('Could not load this event', err.message + ' — the link may be invalid or the event is not published.');
+    return;
+  }
+  PUB.types = Array.isArray(types)?types:[];
+  paintPublic();
+}
+
+function paintPublic(){
+  const anyLeft = PUB.types.some(t=>!t.sold_out);
+  const hero = `
+    <div class="hero">
+      <div class="hero-badge"><span class="dot"></span>Ticket Reservations</div>
+      <h1 class="hero-title">Reserve your spot</h1>
+      <div class="hero-meta">
+        <span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Instant confirmation code</span>
+        <span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> No account needed</span>
+      </div>
+    </div>`;
+
+  let cards;
+  if(PUB.types.length===0){
+    cards = `<div class="empty-state"><div class="empty-icon">🎟️</div><div class="empty-title">No tickets available yet</div><div class="empty-sub">The organizer hasn't published any ticket types for this event. Check back soon.</div></div>`;
+  } else {
+    cards = '<div class="ticket-grid">' + PUB.types.map(t=>{
+      const left = (t.capacity!=null) ? Math.max(0, t.capacity - (t.reserved||0)) : null;
+      const pct = (t.capacity!=null && t.capacity>0) ? Math.min(100, Math.round(((t.reserved||0)/t.capacity)*100)) : null;
+      const lvl = pct==null?'':(pct>=90?'low':pct>=60?'med':'high');
+      const isSel = PUB.selected===t.id;
+      const free = Number(t.price_cents)===0;
+      return `<div class="ticket-card ${t.sold_out?'sold-out':''} ${isSel?'selected':''}" ${t.sold_out?'':`onclick="selectType(${t.id})"`}>
+        <div class="ticket-icon">🎫</div>
+        <div class="ticket-info">
+          <div class="ticket-name">${esc(t.name)}</div>
+          ${t.description?`<div class="ticket-desc">${esc(t.description)}</div>`:''}
+          ${t.sold_out?`<span class="ticket-tag sold">Sold out</span>`: (free?`<span class="ticket-tag free">Free RSVP</span>`:'')}
+          ${(left!=null && !t.sold_out)?`<div class="avail-bar"><div class="avail-fill ${lvl}" style="width:${pct}%"></div></div><div class="avail-text">${left} of ${t.capacity} left</div>`:''}
+        </div>
+        <div class="ticket-price">
+          <div class="price">${free?'Free':fmtMoney(t.price_cents,t.currency)}</div>
+          ${free?'':`<div class="price-sub">per ticket</div>`}
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  const panel = renderReservePanel(anyLeft);
+
+  app.innerHTML = hero + `<div class="layout">
+    <div>
+      <div class="sec-label">Choose a ticket</div>
+      ${cards}
+      <div class="info-card">
+        <h3>How reservations work</h3>
+        <p>Select a ticket type, enter your name and email, and reserve. You'll get a confirmation code instantly and your spot is held. For priced tickets, payment is collected in a later phase — you are not charged now.</p>
+      </div>
+    </div>
+    <div>${panel}</div>
+  </div>`;
+  bindReserve();
+}
+
+function renderReservePanel(anyLeft){
+  const t = PUB.types.find(x=>x.id===PUB.selected);
+  if(!t){
+    return `<div class="order-box"><div class="order-header">Your reservation</div>
+      <div class="order-body"><div class="empty-cart">
+        <svg viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 4.6A1 1 0 0 0 5.6 19H17"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
+        ${anyLeft?'Select a ticket type to reserve your spot.':'No tickets are currently available.'}
+      </div></div></div>`;
+  }
+  const free = Number(t.price_cents)===0;
+  const total = Number(t.price_cents)*PUB.qty;
+  const capLeft = (t.capacity!=null)?Math.max(0,t.capacity-(t.reserved||0)):null;
+  return `<div class="order-box">
+    <div class="order-header">Your reservation</div>
+    <div class="order-body">
+      <div class="sel-ticket">
+        <div><div class="ci-name">${esc(t.name)}</div><div class="ci-sub">${free?'Free RSVP':fmtMoney(t.price_cents,t.currency)+' each'}</div></div>
+        <div class="ci-price">${free?'Free':fmtMoney(total,t.currency)}</div>
+      </div>
+      <div class="qty-row">
+        <span class="lbl">Quantity</span>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="chQty(-1)">−</button>
+          <span class="qty-num" id="qtyNum">${PUB.qty}</span>
+          <button class="qty-btn" onclick="chQty(1)">+</button>
+        </div>
+      </div>
+      ${capLeft!=null?`<div class="field-hint" style="margin:-8px 0 14px">${capLeft} ticket${capLeft===1?'':'s'} left</div>`:''}
+      <div class="field"><label>Full name</label><input id="rName" placeholder="Your name" autocomplete="name"/></div>
+      <div class="field"><label>Email</label><input id="rEmail" type="email" placeholder="you@email.com" autocomplete="email"/></div>
+      <div class="inline-err" id="rErr"></div>
+      <div class="order-divider"></div>
+      <div class="order-row total"><span class="label">Total</span><span>${free?'Free':fmtMoney(total,t.currency)}</span></div>
+      <div class="reserve-note">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        <span>${free?'This is a free RSVP — your spot is held instantly.':'This holds your spot as a <b>reservation</b>. Payment/checkout is coming in a later phase — you will not be charged now.'}</span>
+      </div>
+      <button class="reserve-btn" id="reserveBtn" onclick="doReserve()">${free?'Confirm RSVP':'Reserve '+PUB.qty+' ticket'+(PUB.qty>1?'s':'')}</button>
+    </div>
+  </div>`;
+}
+
+function selectType(id){ PUB.selected=id; PUB.qty=1; paintPublic(); const p=$('#rName'); if(p) p.focus(); }
+function chQty(d){
+  const t=PUB.types.find(x=>x.id===PUB.selected); if(!t) return;
+  let max = (t.capacity!=null)?Math.max(1,t.capacity-(t.reserved||0)):20;
+  PUB.qty = Math.min(max, Math.max(1, PUB.qty+d));
+  // re-render only panel
+  const wrap = document.querySelectorAll('.layout > div')[1];
+  const nameV=$('#rName')?.value||'', emailV=$('#rEmail')?.value||'';
+  if(wrap){ wrap.innerHTML = renderReservePanel(true); bindReserve(); if($('#rName')) $('#rName').value=nameV; if($('#rEmail')) $('#rEmail').value=emailV; }
+}
+function bindReserve(){ /* placeholder for future field bindings */ }
+
+async function doReserve(){
+  const t=PUB.types.find(x=>x.id===PUB.selected); if(!t) return;
+  const name=($('#rName').value||'').trim(), email=($('#rEmail').value||'').trim();
+  const errEl=$('#rErr'); errEl.textContent='';
+  if(!name){ errEl.textContent='Please enter your name.'; return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ errEl.textContent='Please enter a valid email.'; return; }
+  const btn=$('#reserveBtn'); btn.disabled=true; const orig=btn.textContent; btn.textContent='Reserving…';
+  try{
+    const res = await rpc('tickets_reserve', {p_event:PUB.eventId, p_type:t.id, p_name:name, p_email:email, p_qty:PUB.qty}, PUBKEY);
+    showConfirm(res, t);
+    // refresh counts
+    try{ PUB.types = await rpc('tickets_types_list', {p_event:PUB.eventId}, PUBKEY); }catch(e){}
+    PUB.selected=null; PUB.qty=1; paintPublic();
+  }catch(err){
+    btn.disabled=false; btn.textContent=orig;
+    errEl.textContent = err.message || 'Could not reserve. Please try again.';
+  }
+}
+
+function showConfirm(res, t){
+  $('#confirmCode').textContent = res.code || '—';
+  $('#cfQty').textContent = res.qty || PUB.qty;
+  const free = Number(res.amount_cents||0)===0;
+  $('#cfStatus').textContent = res.paid ? 'Paid' : (free?'RSVP held':'Reserved (unpaid)');
+  $('#cfAmount').textContent = free ? 'Free' : fmtMoney(res.amount_cents, res.currency);
+  $('#cfNote').style.display = free ? 'none' : 'flex';
+  $('#confirmSub').textContent = free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code — payment comes later.';
+  $('#confirmModal').classList.add('open');
+}
+function closeConfirm(){ $('#confirmModal').classList.remove('open'); }
+
+function errBlock(title, sub){
+  return `<div class="layout" style="grid-template-columns:1fr"><div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">${esc(title)}</div><div class="empty-sub">${esc(sub)}</div></div></div>`;
+}
+
+/* ============ DASHBOARD ============ */
+let DASH = { me:null, ws:null };
+
+async function renderDashboard(){
+  updateNav();
+  const auth = getAuth();
+  if(!auth){ renderSignIn(); return; }
+  app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading your account…</div>';
+  let me;
+  try{ me = await rpc('zoi_me', {}); }
+  catch(err){ clearAuth(); renderSignIn('Your session expired. Please sign in again.'); return; }
+  if(!me || me.authenticated===false){ clearAuth(); renderSignIn(); return; }
+  DASH.me = me;
+  const workspaces = me.workspaces||[];
+  let ws = localStorage.getItem('zoi_ws');
+  if(ws && !workspaces.some(w=>w.id===ws)){ ws=null; localStorage.removeItem('zoi_ws'); }
+  if(!ws && workspaces.length===1){ ws = workspaces[0].id; localStorage.setItem('zoi_ws', ws); }
+  DASH.ws = ws;
+  updateNav();
+  if(workspaces.length===0){ renderNoWorkspace(); return; }
+  if(!ws){ renderWorkspacePicker(workspaces); return; }
+  loadDashboard();
+}
+
+function updateNav(){
+  const nr = $('#navRight'); if(!nr) return;
+  if(qs('e')){ nr.innerHTML = ''; return; }
+  const auth=getAuth();
+  if(auth && DASH.me){
+    const ws = (DASH.me.workspaces||[]).find(w=>w.id===DASH.ws);
+    nr.innerHTML = (ws?`<div class="ws-pill"><span class="dot"></span><b>${esc(ws.name)}</b></div>`:'')
+      + ((DASH.me.workspaces||[]).length>1?`<button class="nav-link" onclick="switchWs()">Switch</button>`:'')
+      + `<button class="nav-link" onclick="signOut()">Sign out</button>`;
+  } else { nr.innerHTML=''; }
+}
+function switchWs(){ localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
+function signOut(){ clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null}; updateNav(); renderSignIn('Signed out.'); }
+
+/* ---- sign in ---- */
+function renderSignIn(note){
+  app.innerHTML = `<div class="center-wrap"><div class="auth-card">
+    <div class="auth-seal">Z</div>
+    <div class="auth-title">Organizer sign-in</div>
+    <div class="auth-sub">${note?esc(note)+' ':''}Enter your email and we'll send a 6-digit code. No password needed.</div>
+    <div id="authStep">
+      <div class="field"><label>Email</label><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email"/></div>
+      <div class="inline-err" id="siErr"></div>
+      <button class="btn gold" style="width:100%" id="siBtn" onclick="doSendCode()">Send code</button>
+    </div>
+  </div></div>`;
+  const inp=$('#siEmail'); if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter')doSendCode();});
+}
+async function doSendCode(){
+  const email=($('#siEmail').value||'').trim(); const err=$('#siErr'); err.textContent='';
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Enter a valid email.'; return; }
+  const btn=$('#siBtn'); btn.disabled=true; btn.textContent='Sending…';
+  try{
+    await sendOtp(email);
+    renderCodeStep(email);
+  }catch(e){ btn.disabled=false; btn.textContent='Send code'; err.textContent=e.message; }
+}
+function renderCodeStep(email){
+  $('#authStep').innerHTML = `
+    <div class="auth-sub" style="margin-bottom:16px">Code sent to <b style="color:var(--paper)">${esc(email)}</b></div>
+    <div class="field"><label>6-digit code</label><input id="siCode" inputmode="numeric" maxlength="6" placeholder="000000" style="font:700 20px monospace;letter-spacing:.3em;text-align:center"/></div>
+    <div class="inline-err" id="siErr"></div>
+    <button class="btn gold" style="width:100%" id="siVerify" onclick="doVerify('${esc(email)}')">Verify & continue</button>
+    <button class="nav-link" style="width:100%;margin-top:10px" onclick="renderSignIn()">Use a different email</button>`;
+  const c=$('#siCode'); c.focus(); c.addEventListener('keydown',e=>{if(e.key==='Enter')doVerify(email);});
+}
+async function doVerify(email){
+  const code=($('#siCode').value||'').trim(); const err=$('#siErr'); err.textContent='';
+  if(!/^\d{6}$/.test(code)){ err.textContent='Enter the 6-digit code.'; return; }
+  const btn=$('#siVerify'); btn.disabled=true; btn.textContent='Verifying…';
+  try{
+    await verifyOtp(email, code);
+    renderDashboard();
+  }catch(e){ btn.disabled=false; btn.textContent='Verify & continue'; err.textContent=e.message; }
+}
+
+/* ---- workspace picker ---- */
+function renderWorkspacePicker(workspaces){
+  app.innerHTML = `<div class="center-wrap"><div class="auth-card">
+    <div class="auth-seal">Z</div>
+    <div class="auth-title">Choose a workspace</div>
+    <div class="auth-sub">Select which workspace to manage events for.</div>
+    <div class="ws-choice">
+      ${workspaces.map(w=>`<button class="ws-item" onclick="pickWs('${w.id}')">
+        <div class="av">${esc((w.name||'?').trim().charAt(0).toUpperCase())}</div>
+        <div><div class="nm">${esc(w.name)}</div><div class="rl">${esc(w.role||'member')}${w.kind?' · '+esc(w.kind):''}</div></div>
+        <div class="arr">→</div>
+      </button>`).join('')}
+    </div>
+  </div></div>`;
+}
+function pickWs(id){ localStorage.setItem('zoi_ws', id); DASH.ws=id; updateNav(); loadDashboard(); }
+
+function renderNoWorkspace(){
+  app.innerHTML = `<div class="center-wrap"><div class="auth-card">
+    <div class="auth-seal">Z</div>
+    <div class="auth-title">No workspace yet</div>
+    <div class="auth-sub">Your account isn't part of any workspace. A workspace is required to create events and sell tickets. Ask an admin to add you, or set one up in the Zoi console.</div>
+    <button class="nav-link" style="width:100%" onclick="signOut()">Sign out</button>
+  </div></div>`;
+}
+
+/* ---- dashboard data ---- */
+async function loadDashboard(){
+  app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading events…</div>';
+  let data;
+  try{ data = await rpc('tickets_dashboard', {p_workspace:DASH.ws}); }
+  catch(err){ app.innerHTML = errBlock('Could not load dashboard', err.message); return; }
+  const events = (data&&data.events)||[];
+  paintDashboard(events);
+}
+
+function paintDashboard(events){
+  const totalEvents = events.length;
+  const totalReserved = events.reduce((a,e)=>a+Number(e.reserved||0),0);
+  const totalRevenue = events.reduce((a,e)=>a+Number(e.revenue_cents||0),0);
+  const head = `
+    <div class="dash-head">
+      <div>
+        <div class="eyebrow">Organizer dashboard</div>
+        <div class="dash-title">Your events</div>
+        <div class="dash-sub">Create events, publish ticket types, and track real reservations & revenue.</div>
+      </div>
+      <button class="btn gold" onclick="openCreateEvent()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> New event</button>
+    </div>
+    <div class="stats-row">
+      <div class="stat-card"><div class="stat-label">Events</div><div class="stat-val">${totalEvents}</div><div class="stat-sub">in this workspace</div></div>
+      <div class="stat-card"><div class="stat-label">Tickets reserved</div><div class="stat-val">${totalReserved}</div><div class="stat-sub">across all events</div></div>
+      <div class="stat-card"><div class="stat-label">Reserved value</div><div class="stat-val gold">${fmtMoney(totalRevenue,'USD')}</div><div class="stat-sub">held (payment pending)</div></div>
+    </div>`;
+
+  let list;
+  if(events.length===0){
+    list = `<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No events yet</div><div class="empty-sub">Create your first event, then add ticket types. Reservations and revenue will show up here in real time.</div><button class="btn gold" onclick="openCreateEvent()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Create your first event</button></div>`;
+  } else {
+    list = '<div class="events-list">' + events.map(ev=>{
+      const when = fmtWhen(ev.event_at);
+      const cap = ev.capacity!=null?ev.capacity:null;
+      const link = PUBLIC_BASE+'?e='+ev.id;
+      return `<div class="ev-card"><div class="ev-body">
+        <div class="ev-top">
+          <div class="ev-icon">🎪</div>
+          <div class="ev-meta">
+            <div class="ev-name">${esc(ev.name)}</div>
+            <div class="ev-details">
+              ${ev.city?`<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(ev.city)}</span>`:''}
+              ${when?`<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${esc(when)}</span>`:'<span style="color:var(--muted2)">Date TBD</span>'}
+            </div>
+          </div>
+        </div>
+        <div class="ev-stats">
+          <div class="ev-stat"><div class="l">Reserved</div><div class="v">${Number(ev.reserved||0)}</div><div class="s">${cap!=null?'of '+cap+' capacity':'no cap set'}</div></div>
+          <div class="ev-stat"><div class="l">Ticket types</div><div class="v">${Number(ev.ticket_types||0)}</div><div class="s">${Number(ev.ticket_types||0)===0?'add some →':'published'}</div></div>
+          <div class="ev-stat"><div class="l">Reserved value</div><div class="v">${fmtMoney(ev.revenue_cents,'USD')}</div><div class="s">payment pending</div></div>
+        </div>
+        <div class="share-row">
+          <div class="share-url" title="${esc(link)}">${esc(link)}</div>
+          <button class="mini-btn" onclick="copyLink('${esc(link)}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+          <a class="mini-btn" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
+        </div>
+        <div class="ev-actions">
+          <button class="mini-btn gold" onclick="openManageTickets('${ev.id}','${esc((ev.name||'').replace(/'/g,"\\'"))}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6a2 2 0 0 0 0 4v6H4v-6a2 2 0 0 0 0-4z"/></svg> Manage tickets</button>
+        </div>
+      </div></div>`;
+    }).join('') + '</div>';
+  }
+  app.innerHTML = `<div class="dash">${head}${list}</div>`;
+}
+
+function copyLink(url){ navigator.clipboard.writeText(url).then(()=>toast('Link copied')).catch(()=>toast('Copy failed',true)); }
+
+/* ---- create event modal ---- */
+function openGen(title, desc, bodyHtml){
+  $('#genTitle').textContent=title; $('#genDesc').textContent=desc||''; $('#genBody').innerHTML=bodyHtml;
+  $('#genModal').classList.add('open');
+}
+function closeGen(){ $('#genModal').classList.remove('open'); }
+
+function openCreateEvent(){
+  openGen('Create event','Fill in the basics. You can add ticket types next.', `
+    <div class="field"><label>Event name *</label><input id="ceName" placeholder="e.g. Greek Summer Gala"/></div>
+    <div class="field-row">
+      <div class="field"><label>City</label><input id="ceCity" placeholder="Toronto"/></div>
+      <div class="field"><label>Date & time</label><input id="ceWhen" type="datetime-local"/></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="ceDesc" rows="3" placeholder="Optional — a short description for your event"></textarea></div>
+    <div class="inline-err" id="ceErr"></div>
+    <button class="btn gold" style="width:100%" id="ceBtn" onclick="doCreateEvent()">Create event</button>
+  `);
+  setTimeout(()=>$('#ceName')&&$('#ceName').focus(),50);
+}
+async function doCreateEvent(){
+  const name=($('#ceName').value||'').trim();
+  const city=($('#ceCity').value||'').trim();
+  const whenRaw=$('#ceWhen').value;
+  const desc=($('#ceDesc').value||'').trim();
+  const err=$('#ceErr'); err.textContent='';
+  if(!name){ err.textContent='Event name is required.'; return; }
+  const when = whenRaw ? new Date(whenRaw).toISOString() : null;
+  const btn=$('#ceBtn'); btn.disabled=true; btn.textContent='Creating…';
+  try{
+    const id = await rpc('tickets_event_create', {p_workspace:DASH.ws, p_name:name, p_city:city||null, p_when:when, p_description:desc||null});
+    closeGen(); toast('Event created');
+    // go straight to managing tickets for the new event
+    openManageTickets(typeof id==='string'?id:id, name);
+    loadDashboard();
+  }catch(e){ btn.disabled=false; btn.textContent='Create event'; err.textContent=e.message; }
+}
+
+/* ---- manage ticket types modal ---- */
+let MT = { eventId:null, name:'' };
+async function openManageTickets(eventId, name){
+  MT.eventId=eventId; MT.name=name;
+  openGen('Manage tickets', name, '<div class="loading"><div class="spinner"></div>Loading ticket types…</div>');
+  await refreshManageTickets();
+}
+async function refreshManageTickets(){
+  let types=[];
+  try{ types = await rpc('tickets_types_list', {p_event:MT.eventId}); }catch(e){ types=[]; }
+  const list = types.length ? `<div class="tt-list">${types.map(t=>`
+    <div class="tt-item">
+      <div><div class="nm">${esc(t.name)}</div><div class="sub">${Number(t.price_cents)===0?'Free':fmtMoney(t.price_cents,t.currency)} · ${t.reserved||0}${t.capacity!=null?'/'+t.capacity:''} reserved${t.sold_out?' · sold out':''}</div></div>
+      <div class="pr">${Number(t.price_cents)===0?'Free':fmtMoney(t.price_cents,t.currency)}</div>
+    </div>`).join('')}</div>` : `<div class="empty-cart" style="padding:16px 0">No ticket types yet — add your first below.</div>`;
+  $('#genBody').innerHTML = `
+    ${list}
+    <div class="divider-lbl">Add ticket type</div>
+    <div class="field"><label>Name *</label><input id="ttName" placeholder="e.g. General Admission"/></div>
+    <div class="field-row">
+      <div class="field"><label>Price</label><input id="ttPrice" type="number" min="0" step="0.01" placeholder="0.00"/><div class="field-hint">Leave 0 for a free RSVP</div></div>
+      <div class="field"><label>Currency</label>
+        <select id="ttCur"><option value="USD">USD</option><option value="CAD">CAD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option></select>
+      </div>
+    </div>
+    <div class="field"><label>Capacity</label><input id="ttCap" type="number" min="1" step="1" placeholder="Optional — leave blank for unlimited"/></div>
+    <div class="field"><label>Description</label><textarea id="ttDesc" rows="2" placeholder="Optional"></textarea></div>
+    <div class="inline-err" id="ttErr"></div>
+    <button class="btn gold" style="width:100%" id="ttBtn" onclick="doAddType()">Add ticket type</button>
+  `;
+  setTimeout(()=>$('#ttName')&&$('#ttName').focus(),50);
+}
+async function doAddType(){
+  const name=($('#ttName').value||'').trim();
+  const priceD=parseFloat($('#ttPrice').value);
+  const cur=$('#ttCur').value;
+  const capRaw=$('#ttCap').value;
+  const desc=($('#ttDesc').value||'').trim();
+  const err=$('#ttErr'); err.textContent='';
+  if(!name){ err.textContent='Ticket name is required.'; return; }
+  const price_cents = isNaN(priceD)?0:Math.round(priceD*100);
+  if(price_cents<0){ err.textContent='Price cannot be negative.'; return; }
+  const capacity = capRaw==='' ? null : parseInt(capRaw,10);
+  if(capacity!=null && (isNaN(capacity)||capacity<1)){ err.textContent='Capacity must be a positive number or blank.'; return; }
+  const btn=$('#ttBtn'); btn.disabled=true; btn.textContent='Adding…';
+  try{
+    await rpc('tickets_type_save', {p_workspace:DASH.ws, p_event:MT.eventId, p_name:name, p_price_cents:price_cents, p_currency:cur, p_capacity:capacity, p_description:desc||null});
+    toast('Ticket type added');
+    await refreshManageTickets();
+    loadDashboard();
+  }catch(e){ btn.disabled=false; btn.textContent='Add ticket type'; err.textContent=e.message; }
+}
+
+/* close modals on backdrop click */
+document.getElementById('confirmModal').addEventListener('click',e=>{ if(e.target.id==='confirmModal') closeConfirm(); });
+document.getElementById('genModal').addEventListener('click',e=>{ if(e.target.id==='genModal') closeGen(); });
+
+/* ============ BOOT ============ */
+route();
+</script>
+</body>
+</html>
