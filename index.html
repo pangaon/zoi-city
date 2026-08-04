@@ -1597,14 +1597,26 @@ function scrEvents(b){
  run();
 }
 /* DIRECTORY — live counts (dir_counts) + search (dir_search) + browse (dir_browse) */
-var dirState={type:null,q:''};
+var dirState={type:null,q:''};var dirNearPid=null,dirNearLabel='';
 function scrDirectory(b){
  setLiveBadge(null);dirState={type:null,q:''};
+ var near={pid:dirNearPid,label:dirNearLabel};dirNearPid=null;dirNearLabel='';
  var lead=el('div','s-lead');lead.textContent=lang==='en'?'A verified map of the Greek world — churches, tavernas, schools and businesses across the diaspora.':'Ένας επιβεβαιωμένος χάρτης του ελληνικού κόσμου — εκκλησίες, ταβέρνες, σχολεία κι επιχειρήσεις σε όλη τη διασπορά.';b.appendChild(lead);
  b.appendChild(el('div','s-meander'));
  /* search */
  var sw=el('div','searchwrap');sw.innerHTML=svIco('search','#5c7b92',18);
- var inp=document.createElement('input');inp.className='sfield';inp.placeholder=lang==='en'?'Search the Greek world…':'Ψάξε τον ελληνικό κόσμο…';sw.appendChild(inp);b.appendChild(sw);
+ var inp=document.createElement('input');inp.className='sfield';inp.placeholder=lang==='en'?'Search the Greek world — a name, or a place…':'Ψάξε τον ελληνικό κόσμο — όνομα ή τόπο…';sw.appendChild(inp);b.appendChild(sw);
+ /* hyper-local place context banner + live place suggestions */
+ var pbar=el('div');pbar.style.cssText='margin:2px 0 6px';b.appendChild(pbar);
+ var psug=el('div','p-pills');psug.style.cssText='margin:0 0 6px;justify-content:flex-start';b.appendChild(psug);
+ function paintBanner(){pbar.innerHTML='';if(near.pid){var chip=el('div','fchip on');chip.style.cssText='display:inline-flex;gap:8px;align-items:center;cursor:pointer';chip.innerHTML=svIco('pin','currentColor',13)+(lang==='en'?'In ':'Στο ')+esc(near.label||'')+'  ✕';chip.addEventListener('click',function(){near.pid=null;near.label='';psug.innerHTML='';paintBanner();runBrowse();});pbar.appendChild(chip);}}
+ var _psReq=0;
+ function loadPlaceSuggest(q){psug.innerHTML='';if(!q||q.length<2){return;}var myR=++_psReq;
+  sbRPC('search_places',{p_q:q,p_limit:4}).then(function(rows){if(myR!==_psReq)return;if(!rows||!rows.length)return;
+   var lab=el('div');lab.style.cssText='width:100%;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--gold-d);font-weight:800;margin-bottom:2px';lab.textContent=lang==='en'?'Places':'Τόποι';psug.appendChild(lab);
+   rows.forEach(function(r){if(r.place_id==null)return;var pl=el('div','p-pill');pl.style.cssText='cursor:pointer';pl.innerHTML=svIco('pin','#9a6f24',11)+esc(r.name)+(r.region?' · '+esc((''+r.region).split(',')[0]):'');pl.addEventListener('click',function(){near.pid=r.place_id;near.label=r.name;dirState.q='';inp.value='';dirState.type=null;syncChips();psug.innerHTML='';paintBanner();runBrowse();});psug.appendChild(pl);});
+  });
+ }
  /* type filter chips (live counts) */
  var tf=el('div','filterbar');b.appendChild(tf);
  /* results */
@@ -1612,6 +1624,10 @@ function scrDirectory(b){
  var liveWrap=el('div');liveWrap.style.cssText='text-align:center;margin-top:16px';b.appendChild(liveWrap);
  function runBrowse(){
   res.innerHTML='';for(var i=0;i<6;i++)res.appendChild(el('div','skel skcard'));
+  if(near.pid){paintBanner();
+   sbRPC('zoi_near_place',{p_place_id:near.pid,p_type:dirState.type,p_limit:40}).then(function(rows){paintRes(rows||[],!!(rows&&rows.length));});
+   return;
+  }
   if(dirState.q){
    sbRPC('dir_search',{p_q:dirState.q,p_limit:30}).then(function(rows){
     var live=!!(rows&&rows.length);var data=live?rows:SAMPLE_FEATURED.filter(function(x){return (x.name+' '+x.city+' '+x.category).toLowerCase().indexOf(dirState.q.toLowerCase())>-1;});
@@ -1637,8 +1653,8 @@ function scrDirectory(b){
  }
  function syncChips(){[].slice.call(tf.children).forEach(function(ch){var t=ch.dataset.t||null;ch.classList.toggle('on',t===dirState.type||(!t&&!dirState.type));});}
  sbRPC('dir_counts',{}).then(function(rows){buildChips((rows&&rows.length)?rows:SAMPLE_COUNTS);});
- var _deb=null;inp.addEventListener('input',function(){clearTimeout(_deb);_deb=setTimeout(function(){dirState.q=inp.value.trim();if(dirState.q)dirState.type=null;syncChips();runBrowse();},260);});
- runBrowse();
+ var _deb=null;inp.addEventListener('input',function(){clearTimeout(_deb);_deb=setTimeout(function(){dirState.q=inp.value.trim();if(dirState.q){dirState.type=null;near.pid=null;near.label='';paintBanner();}syncChips();loadPlaceSuggest(dirState.q);runBrowse();},260);});
+ paintBanner();runBrowse();
 }
 function scrNames(b){
  setLiveBadge(null);
@@ -1894,6 +1910,20 @@ function scrMyZoi(b){
   b.appendChild(ev);
   return;
  }
+ /* HOMELAND — hyper-local: churches, places & people tied to where you're from (live zoi_near_place) */
+ var homePid=profile.roots_pid||profile.city_pid||null;
+ var homeLabel=((profile.roots||profile.city||'')+'').split(' · ')[0];
+ if(homePid){
+  var hSec=el('div');b.appendChild(hSec);
+  hSec.innerHTML='<div class="s-sec">'+(lang==='en'?'From ':'Από ')+esc(homeLabel)+'</div>';
+  var hGrid=el('div','grid2');for(var _hi=0;_hi<2;_hi++)hGrid.appendChild(el('div','skel skcard'));hSec.appendChild(hGrid);
+  sbRPC('zoi_near_place',{p_place_id:homePid,p_type:null,p_limit:12}).then(function(rows){
+   hGrid.innerHTML='';
+   if(rows&&rows.length){rows.forEach(function(it,i){hGrid.appendChild(listingCard(it,i));});
+    var more=el('button','btn glass wide');more.style.marginTop='4px';more.innerHTML=svIco('pin','#0c2f4e',14)+(lang==='en'?'Explore '+esc(homeLabel):'Δες '+esc(homeLabel));more.addEventListener('click',function(){closeScreen();setTimeout(function(){dirNearPid=homePid;dirNearLabel=homeLabel;openScreen('cat');},140);});hSec.appendChild(more);
+   } else { hSec.innerHTML=''; }
+  });
+ }
  /* live: zoi_my_zoi */
  var phWrap=el('div');b.appendChild(phWrap);
  phWrap.innerHTML='<div class="s-sec">'+(lang==='en'?'Your places':'Τα μέρη σου')+'</div>';
@@ -1957,13 +1987,18 @@ function scrMyZoi(b){
 function openQuestion(qk,orbKey){var q=QUES[qk];openPop(orbKey,function(pop){var els=[];
  var w0=wrap(eyeEl(lang==='en'?'Question':'Ερώτηση'));pop.appendChild(w0);els.push(w0);
  var w1=wrap(nameEl(L(q.q)));pop.appendChild(w1);els.push(w1);
- function answer(val){profile[qk]=val;saveProfile();renderOrbs();updateProg();collapse();ZT((lang==='en'?'Saved · ':'Αποθηκεύτηκε · ')+val);if(qk==='name'){var nm=NAMES.find(function(x){return x.n===val;});if(nm)setTimeout(function(){ZT((lang==='en'?'Your name-day · ':'Ονομαστική · ')+L(nm.d)+' ✦');},950);}if(QORDER.filter(function(k){return profile[k];}).length>=6)setTimeout(showWelcome,800);}
+ function answer(val,pid){profile[qk]=val;if(pid!=null){profile[qk+'_pid']=pid;}else{delete profile[qk+'_pid'];}saveProfile();renderOrbs();updateProg();collapse();ZT((lang==='en'?'Saved · ':'Αποθηκεύτηκε · ')+val);if(qk==='name'){var nm=NAMES.find(function(x){return x.n===val;});if(nm)setTimeout(function(){ZT((lang==='en'?'Your name-day · ':'Ονομαστική · ')+L(nm.d)+' ✦');},950);}if(QORDER.filter(function(k){return profile[k];}).length>=6)setTimeout(showWelcome,800);}
  if(q.type==='search'){var inp=document.createElement('input');inp.className='p-search';inp.placeholder=L(q.ph);var resWrap=document.createElement('div');resWrap.className='p-pills';
-   function paintList(arr){resWrap.innerHTML='';arr.slice(0,12).forEach(function(o){var pl=document.createElement('div');pl.className='p-pill';pl.textContent=o;pl.addEventListener('click',function(){answer(o);});resWrap.appendChild(pl);});}
+   function itemObj(o){return (typeof o==='string')?{label:o,pid:null,add:false}:o;}
+   function paintList(arr){resWrap.innerHTML='';arr.slice(0,12).forEach(function(o){o=itemObj(o);var pl=document.createElement('div');pl.className='p-pill';pl.innerHTML=(o.add?'<span class="pd"></span>':'')+esc(o.label)+(o.add?(lang==='en'?'  ·  add':'  ·  προσθήκη'):'');pl.addEventListener('click',function(){
+     if(o.add){ /* free-add a place not yet in the gazetteer, then use it */
+      sbRPC('places_add',{p_name:o.label,p_parent_id:null,p_type:'village'}).then(function(rr){var rec=rr?(Array.isArray(rr)?rr[0]:rr):null;answer((rec&&rec.path)||o.label,(rec&&rec.id)||null);}).catch(function(){answer(o.label,null);});
+     } else { answer(o.label,o.pid); }
+   });resWrap.appendChild(pl);});}
    /* curated fallback list (existing chip UX) */
    function rend(f){paintList(q.opts.filter(function(o){return !f||o.toLowerCase().indexOf(f.toLowerCase())>-1;}));}
    var _liveReq=0;
-   /* Live Greek-places type-ahead for the roots question; falls back to curated PLACES on any failure/empty. */
+   /* Live hyper-local gazetteer type-ahead (village level); falls back to curated list, then free-add. */
    function rendLive(f){
     if(!f){rend('');return;}
     var myReq=++_liveReq;
@@ -1971,13 +2006,15 @@ function openQuestion(qk,orbKey){var q=QUES[qk];openPop(orbKey,function(pop){var
      if(myReq!==_liveReq)return; /* stale */
      if(rows&&rows.length){
       var seen={},out=[];
-      rows.forEach(function(r){var disp=r.name+(r.region?' · '+r.region:'');if(!seen[disp]){seen[disp]=1;out.push(disp);}});
+      rows.forEach(function(r){var disp=r.name+(r.region?' · '+r.region:'');if(!seen[disp]){seen[disp]=1;out.push({label:disp,pid:(r.place_id!=null?r.place_id:null),add:false});}});
       if(out.length){paintList(out);return;}
      }
-     rend(f); /* empty or failed -> curated fallback */
+     /* no gazetteer match -> curated matches, else offer to add exactly what they typed */
+     var cur=q.opts.filter(function(o){return !f||o.toLowerCase().indexOf(f.toLowerCase())>-1;});
+     if(cur.length){rend(f);} else if(f.trim().length>=2){paintList([{label:f.trim(),pid:null,add:true}]);} else {rend(f);}
     });
    }
-   var _useLive=(qk==='roots');
+   var _useLive=(qk==='roots'||qk==='city');
    rend('');inp.addEventListener('click',function(e){e.stopPropagation();});
    var _deb=null;
    inp.addEventListener('input',function(){
