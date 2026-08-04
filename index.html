@@ -1801,6 +1801,12 @@ function scrBusiness(b){
    +'<div class="tc"><h4>Zoi Social '+bizTag('live')+'</h4>'
    +'<p>'+(lang==='en'?'Schedule posts, manage namedays, and track analytics for your Greek business.':'Προγραμμάτισε δημοσιεύσεις, διαχειρίσου γιορτές και δες στατιστικά για την ελληνική σου επιχείρηση.')+'</p></div>';
   toolWrap.appendChild(social);
+  /* Zoi Tickets — real Event OS at /tickets */
+  var tickets=el('a','card toolcard');tickets.href='/tickets';tickets.style.textDecoration='none';tickets.style.marginTop='11px';
+  tickets.innerHTML='<div class="ti" style="background:linear-gradient(150deg,#c2557e,#9a3d63 135%)">'+svIco('events','#fff',22)+'</div>'
+   +'<div class="tc"><h4>Zoi Tickets '+bizTag('live')+'</h4>'
+   +'<p>'+(lang==='en'?'Create Greek events, sell tickets and manage reservations — festivals, galas, concerts.':'Δημιούργησε εκδηλώσεις, πούλα εισιτήρια και διαχειρίσου κρατήσεις — φεστιβάλ, γκαλά, συναυλίες.')+'</p></div>';
+  toolWrap.appendChild(tickets);
   /* real primary action */
   paintAction();
  }
