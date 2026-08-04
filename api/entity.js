@@ -49,7 +49,7 @@ function jsonld(e,url){
   return JSON.stringify(o);
 }
 function page(e, related){
-  var url = SITE + '/p/' + encodeURIComponent(e.slug);
+  var url = SITE + '/p/' + encodeURIComponent(e.canonical_slug || e.slug);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
   var desc = e.meta_description || e.description || (e.name + (e.city?(' in '+e.city):'') + ' — on Zoi, the Greek world directory.');
   var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
