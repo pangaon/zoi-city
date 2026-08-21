@@ -1405,13 +1405,13 @@ select option{background:#fff!important;color:var(--paper)!important}
     <div class="topbar">
       <span class="h1">Channels</span>
       <div class="topbar-right">
-        <button class="btn gold" onclick="openAddChannel()"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add channel</button>
+        <button class="btn" onclick="refreshData()"><svg viewBox="0 0 24 24"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>Refresh</button>
       </div>
     </div>
     <div class="connect-body" style="max-width:none">
-      <div class="honest-note" style="max-width:620px">
-        <span>🔌</span>
-        <div><b>Live OAuth to Instagram, TikTok &amp; Facebook is a later phase.</b> You can register a channel now so it shows in your composer and calendar. It stays <b>Pending</b> until connections go live — nothing is auto-posted yet.</div>
+      <div class="honest-note" style="max-width:660px">
+        <span>🔗</span>
+        <div><b>Connect an account to publish for real.</b> Connecting signs you in with the network and lets Zoi post on your behalf at your scheduled times. Until an account is connected, posts are saved as <b>drafts only</b> — nothing goes out.</div>
       </div>
       <div class="platform-grid" id="platform-grid" style="max-width:900px"></div>
     </div>
@@ -1482,7 +1482,7 @@ select option{background:#fff!important;color:var(--paper)!important}
     </div>
     <div class="honest-note" style="margin-top:16px">
       <span>🗓️</span>
-      <div>Scheduling saves a <b>real post</b> to your calendar. It will auto-publish to your networks <b>once channels are connected</b> — that live publishing step is the next phase.</div>
+      <div>With a connected account, scheduling <b>publishes automatically</b> at the chosen time. With no account connected, a post is saved as a <b>draft</b> and goes nowhere until you connect one.</div>
     </div>
   </div>
   <div class="cpfooter">
@@ -1494,32 +1494,7 @@ select option{background:#fff!important;color:var(--paper)!important}
   </div>
 </div>
 
-<!-- ADD CHANNEL MODAL -->
-<div class="modal-backdrop" id="chan-backdrop" onclick="if(event.target===this)closeAddChannel()">
-  <div class="pub-modal" style="max-width:440px">
-    <div class="pub-header"><h3>Add a channel</h3>
-      <div class="iconbtn" onclick="closeAddChannel()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>
-    </div>
-    <div class="pub-body">
-      <div class="field" style="width:100%;margin-bottom:14px"><label>Platform</label>
-        <select id="ac-platform" class="gate-input" style="font-size:14px">
-          <option value="facebook">Facebook</option>
-          <option value="instagram">Instagram</option>
-          <option value="linkedin">LinkedIn</option>
-          <option value="tiktok">TikTok</option>
-        </select>
-      </div>
-      <div class="field" style="width:100%;margin-bottom:14px"><label>Handle / username</label>
-        <input id="ac-handle" class="gate-input" style="font-size:14px" placeholder="@yourbusiness"/></div>
-      <div class="field" style="width:100%;margin-bottom:4px"><label>Display name</label>
-        <input id="ac-display" class="gate-input" style="font-size:14px" placeholder="Your Business Name"/></div>
-      <div class="honest-note" style="margin-top:16px"><span>⏳</span><div>This registers the channel as <b>Pending</b>. Connecting the live account (OAuth) comes in a later phase.</div></div>
-    </div>
-    <div class="pub-footer">
-      <button class="pub-now-btn" id="ac-save-btn" onclick="saveChannel()">Add channel</button>
-    </div>
-  </div>
-</div>
+<!-- (manual add-channel modal removed — channels now connect via real OAuth in the Channels screen) -->
 
 <div class="toast" id="toast"><div class="td"></div><span id="toast-msg"></span></div>
 
@@ -1544,13 +1519,60 @@ const PLAT={
   linkedin:{code:'li',label:'LinkedIn',glyph:'in'},
   li:{code:'li',label:'LinkedIn',glyph:'in'},
   tiktok:{code:'tt',label:'TikTok',glyph:'tt'},
-  tt:{code:'tt',label:'TikTok',glyph:'tt'}
+  tt:{code:'tt',label:'TikTok',glyph:'tt'},
+  x:{code:'x',label:'X (Twitter)',glyph:'X'},
+  youtube:{code:'yt',label:'YouTube',glyph:'YT'},
+  yt:{code:'yt',label:'YouTube',glyph:'YT'}
 };
+// Platforms offered on the Channels screen (id must match backend registry)
+const CONNECT_PLATFORMS=[
+  {id:'facebook', note:'Post to a Facebook Page you manage.'},
+  {id:'instagram',note:'Publish to an Instagram Business account (needs an image).'},
+  {id:'linkedin', note:'Share text posts to your LinkedIn profile.'},
+  {id:'tiktok',   note:'Publish videos to TikTok.'},
+  {id:'x',        note:'Post to X (Twitter).'},
+  {id:'youtube',  note:'Upload to YouTube.'}
+];
 function platCode(p){ p=(p||'').toLowerCase(); return (PLAT[p]&&PLAT[p].code)||p; }
 function platLabel(p){ p=(p||'').toLowerCase(); return (PLAT[p]&&PLAT[p].label)||p; }
+function platGlyph(p){ p=(p||'').toLowerCase(); return (PLAT[p]&&PLAT[p].glyph)||'●'; }
 
 /* ─── low-level ─── */
 function token(){ return authValid()? AUTH.access_token : PUB; }
+
+/* ─── edge functions (OAuth connect / publishing pipeline) ─── */
+let PLATFORMS=[]; // [{id,label,available}] from social-config
+async function edgeFn(name, body){
+  const r=await fetch(BASE+'/functions/v1/'+name,{method:'POST',
+    headers:{'apikey':PUB,'Authorization':'Bearer '+token(),'Content-Type':'application/json'},
+    body:JSON.stringify(body||{})});
+  const t=await r.text(); if(!r.ok) throw new Error(name+' ('+r.status+'): '+t); return t?JSON.parse(t):null;
+}
+async function loadPlatforms(){
+  try{ const r=await fetch(BASE+'/functions/v1/social-config',{headers:{'apikey':PUB,'Authorization':'Bearer '+PUB}});
+    const j=await r.json(); PLATFORMS=(j&&j.platforms)||[]; }
+  catch(e){ console.warn('platforms',e); PLATFORMS=[]; }
+}
+function platAvailable(id){ const p=PLATFORMS.find(x=>x.id===id); return !!(p&&p.available); }
+async function connectPlatform(platform){
+  try{
+    const j=await edgeFn('social-connect',{workspace:WS, platform, profile:(ME&&(ME.profile_id||ME.id))||null, return_to:location.origin+'/social'});
+    if(j && j.available && j.url){ location.href=j.url; return; }
+    toast(platLabel(platform)+' isn’t ready to connect yet — its app isn’t set up. See “Not yet available”.','warn');
+  }catch(e){ toast('Could not start connection: '+e.message,'warn'); }
+}
+function handleConnectResult(){
+  const p=new URLSearchParams(location.search);
+  if(p.get('connected')){
+    const c=p.get('count'); toast(platLabel(p.get('connected'))+' connected'+(c&&c!=='1'?(' · '+c+' accounts'):'')+' 🎉','gold');
+    history.replaceState({},'',location.pathname); showSection('connect');
+  } else if(p.get('connect_error')){
+    toast('Connection failed: '+p.get('connect_error'),'warn');
+    history.replaceState({},'',location.pathname); showSection('connect');
+  }
+}
+function connectedChannels(){ return CHANNELS.filter(c=>c.connected); }
+function connectedPlatformCodes(){ return [...new Set(connectedChannels().map(c=>platCode(c.platform)))]; }
 async function rpc(fn, params){
   const r = await fetch(BASE+'/rest/v1/rpc/'+fn,{
     method:'POST',
@@ -1692,8 +1714,9 @@ async function enterApp(){
   showSection('dashboard');
   // fire loads in parallel
   loadNameday();
-  await Promise.allSettled([ loadStats(), loadPosts(), loadChannels() ]);
+  await Promise.allSettled([ loadStats(), loadPosts(), loadChannels(), loadPlatforms() ]);
   renderAll();
+  handleConnectResult();
 }
 function renderAll(){ renderDashboard(); renderCalendar(); renderDrafts(); renderChannels(); renderAnalytics(); renderComposerChannels(); }
 
@@ -1875,45 +1898,47 @@ async function deletePost(id){
 
 /* ═══════════════ CHANNELS ═══════════════ */
 function renderChannels(){
+  const connected=connectedChannels().length;
   const badge=document.getElementById('connect-badge');
-  if(CHANNELS.length){ badge.style.display='grid'; badge.textContent=CHANNELS.length; } else badge.style.display='none';
-  const connected=CHANNELS.filter(c=>c.connected).length;
-  document.getElementById('sidebar-connected-label').textContent = connected+' channel'+(connected===1?'':'s')+' connected';
+  if(badge){ if(connected){ badge.style.display='grid'; badge.textContent=connected; } else badge.style.display='none'; }
+  const lbl=document.getElementById('sidebar-connected-label');
+  if(lbl) lbl.textContent = connected+' channel'+(connected===1?'':'s')+' connected';
   const grid=document.getElementById('platform-grid');
-  if(!CHANNELS.length){
-    grid.innerHTML=`<div class="empty-state" style="grid-column:1/-1"><div class="es-icon">🔌</div><h3>No channels yet</h3>
-      <p>Add your Facebook, Instagram, LinkedIn or TikTok page. It will show as <b>Pending</b> until live connections launch.</p>
-      <button class="btn gold" onclick="openAddChannel()">Add your first channel</button></div>`;
-    return;
-  }
-  grid.innerHTML=CHANNELS.map(c=>{
-    const code=platCode(c.platform); const conn=!!c.connected;
-    return `<div class="platform-card ${conn?'connected':''}">
+  const anyAvail=PLATFORMS.some(p=>p.available);
+  const rowStyle='display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid var(--line)';
+  grid.innerHTML = CONNECT_PLATFORMS.map(pl=>{
+    const avail=platAvailable(pl.id);
+    const accts=CHANNELS.filter(c=>String(c.platform).toLowerCase()===pl.id);
+    const code=platCode(pl.id);
+    const acctHtml = accts.length ? `<div class="pc-body">`+accts.map(c=>`
+      <div style="${rowStyle}">
+        <div style="display:flex;align-items:center;gap:9px;min-width:0">
+          <span class="pchan-dot ${code}">${platGlyph(pl.id)}</span>
+          <span style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(c.display_name||c.handle||platLabel(pl.id))}</span>
+          ${c.needs_reconnect?'<span class="pending-tag"><span class="pdot"></span>Reconnect needed</span>':'<span class="pc-status on"><span class="sdot"></span>Connected</span>'}
+        </div>
+        <div class="iconbtn sm" title="Disconnect" onclick="disconnectChannel(${c.id})"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>
+      </div>`).join('')+`</div>` : '';
+    const action = avail
+      ? `<button class="btn gold" onclick="connectPlatform('${pl.id}')">${accts.some(c=>c.connected)?'Connect another':'Connect'}</button>`
+      : `<span class="pending-tag" title="This platform's developer app hasn't been set up yet"><span class="pdot"></span>Not yet available</span>`;
+    return `<div class="platform-card ${accts.some(c=>c.connected)?'connected':''}">
       <div class="pc-header">
-        <div class="pc-logo ${code}">${esc((PLAT[c.platform]&&PLAT[c.platform].glyph)||'●')}</div>
-        <div style="flex:1;min-width:0"><div class="pc-title">${esc(c.display_name||platLabel(c.platform))}</div>
-          <div class="pc-subtitle">${esc(c.handle||'')} · ${esc(platLabel(c.platform))}</div></div>
-        ${conn?'<div class="pc-status on"><span class="sdot"></span>Connected</div>':'<span class="pending-tag"><span class="pdot"></span>Pending — connect coming soon</span>'}
-      </div>
-      <div class="pc-body"><div class="pc-perms">${conn?'This channel is connected.':'Registered channel. Live posting will be enabled when OAuth connections launch (next phase).'}</div></div>
-    </div>`;
-  }).join('');
+        <div class="pc-logo ${code}">${platGlyph(pl.id)}</div>
+        <div style="flex:1;min-width:0"><div class="pc-title">${platLabel(pl.id)}</div>
+          <div class="pc-subtitle">${esc(pl.note)}</div></div>
+        ${action}
+      </div>${acctHtml}</div>`;
+  }).join('') + (anyAvail?'':`
+    <div class="honest-note" style="grid-column:1/-1;margin-top:4px">
+      <span>🔑</span>
+      <div><b>Nothing is connected yet because the platform apps aren't set up.</b> Each network (Meta, LinkedIn, TikTok…) needs a developer app + review before it can post on your behalf. Once those credentials are added, the <b>Connect</b> buttons here activate and scheduled posts publish automatically — no further changes needed.</div>
+    </div>`);
 }
-function openAddChannel(){ document.getElementById('chan-backdrop').classList.add('open'); }
-function closeAddChannel(){ document.getElementById('chan-backdrop').classList.remove('open'); }
-async function saveChannel(){
-  const platform=document.getElementById('ac-platform').value;
-  const handle=(document.getElementById('ac-handle').value||'').trim();
-  const display=(document.getElementById('ac-display').value||'').trim();
-  if(!handle){ toast('Enter a handle/username','warn'); return; }
-  const btn=document.getElementById('ac-save-btn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Adding…';
-  try{
-    await rpc('social_channel_add',{p_workspace:WS, p_platform:platform, p_handle:handle, p_display:display||handle});
-    document.getElementById('ac-handle').value=''; document.getElementById('ac-display').value='';
-    closeAddChannel(); toast('Channel added (Pending)');
-    await loadChannels(); await loadStats(); renderChannels(); renderDashboard(); renderComposerChannels();
-  }catch(e){ toast('Could not add channel: '+e.message,'warn'); }
-  finally{ btn.disabled=false; btn.textContent='Add channel'; }
+async function disconnectChannel(id){
+  if(!confirm('Disconnect this account? Scheduled posts targeting it will not publish.')) return;
+  try{ await rpc('social_channel_remove',{p_workspace:WS, p_id:id}); toast('Account disconnected'); await refreshData(); }
+  catch(e){ toast('Could not disconnect: '+e.message,'warn'); }
 }
 
 /* ═══════════════ ANALYTICS ═══════════════ */
@@ -1978,20 +2003,33 @@ function useStarter(text){ openComposer(null); document.getElementById('post-tex
 function renderComposerChannels(){
   const el=document.getElementById('composer-channels');
   const note=document.getElementById('composer-chan-note');
-  // options: registered channels' platforms, else default 3
-  let plats=['fb','ig','li'];
-  CHANNELS.forEach(c=>{ const code=platCode(c.platform); if(!plats.includes(code)) plats.push(code); });
-  const glyphs={fb:'f',ig:'IG',li:'in',tt:'tt'};
-  el.innerHTML=plats.map(code=>`
+  const codes=connectedPlatformCodes();
+  if(!codes.length){
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+      <span class="pending-tag"><span class="pdot"></span>No accounts connected</span>
+      <a onclick="closeComposer();showSection('connect')" style="color:var(--gold-soft);cursor:pointer;font-weight:700;font-size:12px">Connect an account →</a></div>`;
+    note.innerHTML='This will be saved as a <b>draft</b> — it won’t be posted anywhere. Connect an account in Channels to schedule posts that actually publish.';
+    return;
+  }
+  const glyphs={fb:'f',ig:'IG',li:'in',tt:'tt',x:'X',yt:'YT'};
+  el.innerHTML=codes.map(code=>`
     <div class="cpill ${composerChannels.has(code)?'on':''}" onclick="toggleComposerChannel('${code}')">
       <div class="chan-icon ${code}">${glyphs[code]||'●'}</div>${platLabel(code)}
       <svg class="ck" viewBox="0 0 24 24" style="display:${composerChannels.has(code)?'inline':'none'}"><polyline points="20 6 9 17 4 12"/></svg>
     </div>`).join('');
-  note.innerHTML = CHANNELS.some(c=>c.connected)
-    ? ''
-    : '<span class="pending-tag"><span class="pdot"></span>Channels pending — posts save now, auto-publish once connected</span>';
+  note.innerHTML = composerChannels.size? 'These accounts will receive the post when it publishes.' : 'Select one or more accounts to publish to.';
 }
 function toggleComposerChannel(code){ if(composerChannels.has(code)) composerChannels.delete(code); else composerChannels.add(code); renderComposerChannels(); }
+// Restricts scheduling when there are no connected accounts
+function gateComposer(){
+  const hasConnected = connectedPlatformCodes().length>0;
+  const sel=document.getElementById('post-status');
+  const schedOpt=sel && sel.querySelector('option[value="scheduled"]');
+  if(schedOpt) schedOpt.disabled=!hasConnected;
+  if(!hasConnected){ sel.value='draft'; }
+  sel.title = hasConnected? '' : 'Connect an account to enable scheduling';
+  syncSaveLabel();
+}
 function renderComposerGreek(){
   const box=document.getElementById('gk-ideas'); if(!box) return;
   const names=namedayNames();
@@ -2023,7 +2061,7 @@ function openComposer(id){
     document.getElementById('sched-time').value='09:00';
     document.getElementById('post-status').value='scheduled';
   }
-  updateCharCount(); renderComposerChannels(); renderComposerGreek(); syncSaveLabel();
+  updateCharCount(); renderComposerChannels(); renderComposerGreek(); gateComposer();
   document.getElementById('post-status').onchange=syncSaveLabel;
 }
 function closeComposer(){ document.getElementById('overlay').classList.remove('open'); document.getElementById('composer-panel').classList.remove('open'); }
@@ -2034,9 +2072,12 @@ function updateCharCount(){
 }
 async function savePost(){
   const body=(document.getElementById('post-text').value||'').trim();
-  const status=document.getElementById('post-status').value;
+  let status=document.getElementById('post-status').value;
   if(!body){ toast('Write something first','warn'); return; }
-  const channels=[...composerChannels];
+  const hasConnected = connectedPlatformCodes().length>0;
+  let channels=[...composerChannels];
+  if(!hasConnected){ status='draft'; channels=[]; }                       // no accounts -> draft only, publishes nowhere
+  else if(status==='scheduled' && !channels.length){ toast('Select at least one connected account to publish to','warn'); return; }
   const date=document.getElementById('sched-date').value, time=document.getElementById('sched-time').value||'09:00';
   let scheduled_at=null;
   if(date){ scheduled_at=new Date(date+'T'+time).toISOString(); }
@@ -2050,7 +2091,7 @@ async function savePost(){
   try{
     await rpc('social_save_post', params);
     closeComposer();
-    toast(status==='draft'?'Draft saved':(composerEditId?'Post updated':'Post scheduled'),'gold');
+    toast(status==='draft'?(hasConnected?'Draft saved':'Saved as draft — connect an account to publish'):(composerEditId?'Post updated':'Scheduled — it will publish automatically'),'gold');
     await refreshData();
   }catch(e){ toast('Could not save: '+e.message,'warn'); }
   finally{ btn.disabled=false; document.getElementById('cp-schedule-label').textContent=lbl; syncSaveLabel(); }
