@@ -202,6 +202,41 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 @keyframes spin{to{transform:rotate(360deg)}}
 .inline-err{color:#e792ac;font-size:12px;margin-top:4px;min-height:14px}
 </style>
+
+
+<style id="zoiLightUnify">
+/* ===== LIGHT THEME UNIFY — matches zoi.city home (paper #f4efe3 / ink / gold / pigment) ===== */
+:root{
+  --paper:#0c2f4e!important; --paper2:#33526b!important;
+  --ink:#f7f3ea!important; --ink2:#f4efe3!important;
+  --muted:#5c7b92!important; --muted2:#48657c!important;
+  --gold:#b8893b!important; --gold-s:#c79a4b!important; --gold-d:#9a6f24!important; --gold-soft:#c79a4b!important;
+  --aegean:#0a4d8c!important; --sea:#1f9ec9!important; --pigment:#b5325f!important; --green:#2e8b57!important;
+  --line:rgba(10,49,85,.14)!important;
+  --glass:#ffffff!important; --glass2:#f6f0e4!important; --gl:rgba(10,49,85,.14)!important;
+}
+body{background:var(--ink2)!important;color:var(--paper)!important}
+.world{background:
+  radial-gradient(1200px 800px at 5% -10%,rgba(31,158,201,.10),transparent 55%),
+  radial-gradient(900px 700px at 105% 5%,rgba(184,137,59,.12),transparent 52%),
+  radial-gradient(1000px 900px at 55% 115%,rgba(10,77,140,.08),transparent 60%),
+  linear-gradient(160deg,#f8f4ec,#f4efe3 60%,#efe7d6)!important}
+.grain{opacity:.04!important}
+.topnav,.topbar{background:rgba(244,239,227,.88)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(18px) saturate(1.3)!important}
+.sidebar,.side,.rail,.nav-side,.leftnav{background:rgba(248,244,236,.92)!important;border-right:1px solid var(--line)!important}
+.sidebar-item.active,.nav-item.active{background:rgba(10,49,85,.06)!important}
+.nav-link:hover{background:rgba(10,49,85,.06)!important}
+.proto-banner{background:rgba(184,137,59,.14)!important;border-bottom:1px solid rgba(184,137,59,.3)!important;color:var(--gold-d)!important}
+.hero-sub{color:var(--gold-d)!important}
+.ticket-card,.card,.panel,.tile,.stat,.stat-card,.metric,.list-card,.pane,.box,.quick,.quick-card,.widget,.tool-card{
+  background:#fff!important;border:1px solid var(--line)!important;box-shadow:0 2px 10px -6px rgba(10,49,85,.18)!important}
+input,textarea,select,.field input,.field select,.field textarea{
+  background:#fff!important;color:var(--paper)!important;border:1px solid var(--line)!important}
+input::placeholder,textarea::placeholder{color:#93a6b6!important}
+select option{background:#fff!important;color:var(--paper)!important}
+.modal-box,.modal-body,.modal-head,.sheet,.drawer,.dialog,.popover,.menu,.dropdown{background:#fff!important}
+.modal-backdrop,.overlay,.modal.open,.modal-backdrop.open,.overlay.open{background:rgba(9,24,39,.34)!important}
+</style>
 </head>
 <body>
 <div class="world"></div>
@@ -311,11 +346,12 @@ function route(){
 }
 
 /* ============ PUBLIC EVENT PAGE ============ */
-let PUB = { eventId:null, types:[], selected:null, qty:1 };
+let PUB = { eventId:null, ev:null, types:[], selected:null, qty:1 };
 
 async function renderPublic(eventId){
   PUB.eventId = eventId;
   app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading tickets…</div>';
+  try{ PUB.ev = await rpc('tickets_event_public', {p_event:eventId}, PUBKEY); }catch(e){ PUB.ev = null; }
   let types;
   try{ types = await rpc('tickets_types_list', {p_event:eventId}, PUBKEY); }
   catch(err){
@@ -328,11 +364,20 @@ async function renderPublic(eventId){
 
 function paintPublic(){
   const anyLeft = PUB.types.some(t=>!t.sold_out);
+  const ev = PUB.ev || {};
+  const esc = v => String(v).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const title = ev.name ? esc(ev.name) : 'Reserve your spot';
+  const place = [ev.city, ev.country].filter(Boolean).map(esc).join(', ');
+  let whenTxt = '';
+  if(ev.event_at){ try{ whenTxt = new Date(ev.event_at).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }catch(e){} }
+  const placeItem = place ? `<span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${place}</span>` : '';
+  const whenItem = whenTxt ? `<span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> ${esc(whenTxt)}</span>` : '';
   const hero = `
     <div class="hero">
       <div class="hero-badge"><span class="dot"></span>Ticket Reservations</div>
-      <h1 class="hero-title">Reserve your spot</h1>
+      <h1 class="hero-title">${title}</h1>
       <div class="hero-meta">
+        ${placeItem}${whenItem}
         <span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Instant confirmation code</span>
         <span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> No account needed</span>
       </div>
@@ -507,6 +552,10 @@ function updateNav(){
 function switchWs(){ localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
 function signOut(){ clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null}; updateNav(); renderSignIn('Signed out.'); }
 
+/* ---- soft-identity bridge (unify with zoi.city onboarding) ---- */
+function zoiKnownEmail(){try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);var m=/^zoi_linked_(.+@.+\..+)$/.exec(k);if(m)return m[1];}var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.email)return p.email;}catch(e){}return null;}
+function zoiKnownName(){try{var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.name){var n=String(p.name).split(' / ');return n[1]||n[0];}}catch(e){}return null;}
+
 /* ---- sign in ---- */
 function renderSignIn(note){
   app.innerHTML = `<div class="center-wrap"><div class="auth-card">
@@ -520,6 +569,11 @@ function renderSignIn(note){
     </div>
   </div></div>`;
   const inp=$('#siEmail'); if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter')doSendCode();});
+  try{ const _ke=zoiKnownEmail(), _kn=zoiKnownName();
+    if(_ke && inp){ inp.value=_ke; }
+    if(_ke){ const _t=app.querySelector('.auth-title'); if(_t) _t.textContent = _kn? ('Welcome back, '+_kn) : 'Welcome back';
+      const _b=$('#siBtn'); if(_b) _b.textContent='Email my code'; }
+  }catch(e){}
 }
 async function doSendCode(){
   const email=($('#siEmail').value||'').trim(); const err=$('#siErr'); err.textContent='';

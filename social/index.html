@@ -1093,6 +1093,41 @@ select.wiz-input option{background:#0c1c2e;color:var(--paper)}
 .iconbtn.sm svg{width:14px;height:14px}
 .loading-line{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;font-weight:600;padding:24px}
 </style>
+
+
+<style id="zoiLightUnify">
+/* ===== LIGHT THEME UNIFY — matches zoi.city home (paper #f4efe3 / ink / gold / pigment) ===== */
+:root{
+  --paper:#0c2f4e!important; --paper2:#33526b!important;
+  --ink:#f7f3ea!important; --ink2:#f4efe3!important;
+  --muted:#5c7b92!important; --muted2:#48657c!important;
+  --gold:#b8893b!important; --gold-s:#c79a4b!important; --gold-d:#9a6f24!important; --gold-soft:#c79a4b!important;
+  --aegean:#0a4d8c!important; --sea:#1f9ec9!important; --pigment:#b5325f!important; --green:#2e8b57!important;
+  --line:rgba(10,49,85,.14)!important;
+  --glass:#ffffff!important; --glass2:#f6f0e4!important; --gl:rgba(10,49,85,.14)!important;
+}
+body{background:var(--ink2)!important;color:var(--paper)!important}
+.world{background:
+  radial-gradient(1200px 800px at 5% -10%,rgba(31,158,201,.10),transparent 55%),
+  radial-gradient(900px 700px at 105% 5%,rgba(184,137,59,.12),transparent 52%),
+  radial-gradient(1000px 900px at 55% 115%,rgba(10,77,140,.08),transparent 60%),
+  linear-gradient(160deg,#f8f4ec,#f4efe3 60%,#efe7d6)!important}
+.grain{opacity:.04!important}
+.topnav,.topbar{background:rgba(244,239,227,.88)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(18px) saturate(1.3)!important}
+.sidebar,.side,.rail,.nav-side,.leftnav{background:rgba(248,244,236,.92)!important;border-right:1px solid var(--line)!important}
+.sidebar-item.active,.nav-item.active{background:rgba(10,49,85,.06)!important}
+.nav-link:hover{background:rgba(10,49,85,.06)!important}
+.proto-banner{background:rgba(184,137,59,.14)!important;border-bottom:1px solid rgba(184,137,59,.3)!important;color:var(--gold-d)!important}
+.hero-sub{color:var(--gold-d)!important}
+.ticket-card,.card,.panel,.tile,.stat,.stat-card,.metric,.list-card,.pane,.box,.quick,.quick-card,.widget,.tool-card{
+  background:#fff!important;border:1px solid var(--line)!important;box-shadow:0 2px 10px -6px rgba(10,49,85,.18)!important}
+input,textarea,select,.field input,.field select,.field textarea{
+  background:#fff!important;color:var(--paper)!important;border:1px solid var(--line)!important}
+input::placeholder,textarea::placeholder{color:#93a6b6!important}
+select option{background:#fff!important;color:var(--paper)!important}
+.modal-box,.modal-body,.modal-head,.sheet,.drawer,.dialog,.popover,.menu,.dropdown{background:#fff!important}
+.modal-backdrop,.overlay,.modal.open,.modal-backdrop.open,.overlay.open{background:rgba(9,24,39,.34)!important}
+</style>
 </head>
 <body>
 <div class="world"></div>
@@ -1542,6 +1577,10 @@ function authValid(){ return AUTH && AUTH.access_token && AUTH.expires_at && (AU
 function signOut(){ try{ localStorage.removeItem('zoi_auth'); localStorage.removeItem('zoi_ws'); }catch(e){} AUTH=null; ME=null; WS=null; location.reload(); }
 
 /* ═══════════════ BOOT ═══════════════ */
+/* ---- soft-identity bridge (unify with zoi.city onboarding) ---- */
+function zoiKnownEmail(){try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);var m=/^zoi_linked_(.+@.+\..+)$/.exec(k);if(m)return m[1];}var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.email)return p.email;}catch(e){}return null;}
+function zoiKnownName(){try{var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.name){var n=String(p.name).split(' / ');return n[1]||n[0];}}catch(e){}return null;}
+function zoiPrefillGate(){try{var ke=zoiKnownEmail();if(!ke)return;var e=document.getElementById('gate-email-input');if(e&&!e.value)e.value=ke;var kn=zoiKnownName();var h=document.querySelector('#gate-email h2');if(h)h.textContent=kn?('Welcome back, '+kn):'Welcome back';var b=document.getElementById('gate-send-btn');if(b)b.textContent='Email my code';}catch(_){}}
 window.addEventListener('DOMContentLoaded', init);
 async function init(){
   loadAuth();
@@ -1549,6 +1588,7 @@ async function init(){
   codeInput.addEventListener('keydown',e=>{ if(e.key==='Enter') verifyCode(); });
   document.getElementById('gate-email-input').addEventListener('keydown',e=>{ if(e.key==='Enter') sendCode(); });
   if(authValid()){ try{ await bootMe(); return; }catch(e){ console.warn(e); } }
+  zoiPrefillGate();
   showGate('email');
 }
 
