@@ -605,7 +605,7 @@ function renderAccountChip(){
   chip.innerHTML='<span class="acctav">'+esc(initial)+'</span><span class="acctnm">'+esc((''+nm).length>14?(''+nm).slice(0,13)+'…':nm)+'</span><svg class="acctcaret" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
   var menu=el('div','acctmenu');
   if(auth&&auth.email)menu.appendChild(el('div','acctmail',esc(auth.email)));
-  var mWs=el('button');mWs.innerHTML=svIco('grid','#10314f',16)+(lang==='en'?'Your workspaces':'Τα workspaces σου');
+  var mWs=el('button');mWs.innerHTML=svIco('grid','#10314f',16)+(lang==='en'?'Your businesses':'Οι επιχειρήσεις σου');
   mWs.addEventListener('click',function(e){e.stopPropagation();menu.classList.remove('on');if(curScreen&&curScreen!=='business')closeScreen();openScreen('business');});
   var mClaims=el('button');mClaims.innerHTML=svIco('saved','#10314f',16)+(lang==='en'?'Your business claims':'Οι διεκδικήσεις σου');
   mClaims.addEventListener('click',function(e){e.stopPropagation();menu.classList.remove('on');if(curScreen&&curScreen!=='claims')closeScreen();openScreen('claims');});
@@ -744,10 +744,10 @@ function renderBizAccount(host){
  function refresh(){loadMe(function(){repaint();});}
  function repaint(){
   box.innerHTML='';
-  box.appendChild(el('div','s-sec',lang==='en'?'Your workspaces':'Τα workspaces σου'));
+  box.appendChild(el('div','s-sec',lang==='en'?'Your businesses':'Οι επιχειρήσεις σου'));
   var ws=(account&&account.workspaces)||[];
   if(!account){var sk=el('div','s-list');for(var i=0;i<2;i++)sk.appendChild(el('div','skel skrow'));box.appendChild(sk);}
-  else if(!ws.length){box.appendChild(emptyState('grid',lang==='en'?'No workspaces yet':'Κανένα workspace ακόμη',lang==='en'?'Create one below to manage a business, creator profile or organization.':'Φτιάξε ένα πιο κάτω για επιχείρηση, δημιουργό ή οργανισμό.'));}
+  else if(!ws.length){box.appendChild(emptyState('grid',lang==='en'?'No businesses yet':'Καμία επιχείρηση ακόμη',lang==='en'?'Create one below to manage a business, creator profile or organization.':'Φτιάξε ένα πιο κάτω για επιχείρηση, δημιουργό ή οργανισμό.'));}
   else{var wl=el('div','s-list');ws.forEach(function(w,i){wl.appendChild(bizWorkspaceCard(w,i));});box.appendChild(wl);}
   box.appendChild(createWorkspaceBlock(refresh));
   box.appendChild(claimBlock(refresh));
@@ -757,27 +757,27 @@ function renderBizAccount(host){
 }
 function createWorkspaceBlock(onDone){
  var wrap=el('div');
- wrap.appendChild(el('div','s-sec',lang==='en'?'Create a workspace':'Φτιάξε workspace'));
+ wrap.appendChild(el('div','s-sec',lang==='en'?'Add your business':'Πρόσθεσε επιχείρηση'));
  var form=el('div','leadform');
- var nm=el('input','field');nm.placeholder=lang==='en'?'Workspace name (e.g. your business)':'Όνομα workspace (π.χ. η επιχείρησή σου)';nm.autocomplete='organization';
+ var nm=el('input','field');nm.placeholder=lang==='en'?'Business name':'Όνομα επιχείρησης';nm.autocomplete='organization';
  form.appendChild(nm);
  var chips=el('div','chips');chips.style.marginTop='2px';
  var chosen=((typeof bizTab!=='undefined'&&bizTab==='creator')?'creator':'business');
  WKIND.forEach(function(k){var c=el('div','chip'+(k.k===chosen?' on':''));c.textContent=L(k.l);c.addEventListener('click',function(){chosen=k.k;[].slice.call(chips.children).forEach(function(x){x.classList.remove('on');});c.classList.add('on');});chips.appendChild(c);});
  form.appendChild(chips);
  var err=el('div','autherr');form.appendChild(err);
- var btn=el('button','btn gold wide');btn.style.marginTop='4px';btn.innerHTML=svIco('grid','#3a2706',15)+(lang==='en'?'Create workspace':'Δημιουργία workspace');
+ var btn=el('button','btn gold wide');btn.style.marginTop='4px';btn.innerHTML=svIco('grid','#3a2706',15)+(lang==='en'?'Add business':'Προσθήκη επιχείρησης');
  var busy=false;
  btn.addEventListener('click',function(){
   if(busy)return;
   var name=nm.value.trim();
-  if(!name){err.textContent=lang==='en'?'Give your workspace a name':'Δώσε ένα όνομα στο workspace';err.classList.add('on');return;}
+  if(!name){err.textContent=lang==='en'?'Name your business':'Δώσε όνομα στην επιχείρησή σου';err.classList.add('on');return;}
   err.classList.remove('on');busy=true;btn.disabled=true;btn.style.opacity='.7';btn.innerHTML=svIco('clock','#3a2706',15)+(lang==='en'?'Creating…':'Δημιουργία…');
   authRPC('zoi_create_workspace',{p_name:name,p_kind:chosen}).then(function(r){
    var d=r?(Array.isArray(r)?r[0]:r):null;
-   if(d&&(d.ok===true||d.workspace_id)){ZT(lang==='en'?'Workspace created ✦':'Το workspace δημιουργήθηκε ✦');if(onDone)onDone();return;}
-   busy=false;btn.disabled=false;btn.style.opacity='';btn.innerHTML=svIco('grid','#3a2706',15)+(lang==='en'?'Create workspace':'Δημιουργία workspace');
-   err.textContent=(d&&d.error)||(lang==='en'?'Could not create the workspace. Try again.':'Αδυναμία δημιουργίας. Δοκίμασε ξανά.');err.classList.add('on');
+   if(d&&(d.ok===true||d.workspace_id)){ZT(lang==='en'?'Business added ✦':'Η επιχείρηση προστέθηκε ✦');if(onDone)onDone();return;}
+   busy=false;btn.disabled=false;btn.style.opacity='';btn.innerHTML=svIco('grid','#3a2706',15)+(lang==='en'?'Add business':'Προσθήκη επιχείρησης');
+   err.textContent=(d&&d.error)||(lang==='en'?'Could not add your business. Try again.':'Αδυναμία δημιουργίας. Δοκίμασε ξανά.');err.classList.add('on');
   });
  });
  form.appendChild(btn);wrap.appendChild(form);
@@ -786,12 +786,12 @@ function createWorkspaceBlock(onDone){
 function claimBlock(onDone){
  var wrap=el('div');
  wrap.appendChild(el('div','s-sec',lang==='en'?'Claim your business':'Διεκδίκησε την επιχείρησή σου'));
- var lead=el('div','s-lead');lead.style.marginBottom='8px';lead.textContent=lang==='en'?'Find your listing in the directory and tie it to a workspace. We create a pending ownership claim to verify.':'Βρες την καταχώρησή σου στον κατάλογο και σύνδεσέ την με ένα workspace. Δημιουργούμε εκκρεμές αίτημα ιδιοκτησίας για επιβεβαίωση.';wrap.appendChild(lead);
+ var lead=el('div','s-lead');lead.style.marginBottom='8px';lead.textContent=lang==='en'?'Find your listing in the directory and claim it for your business. Every ownership claim is verified.':'Βρες την καταχώρησή σου στον κατάλογο και σύνδεσέ την με ένα workspace. Δημιουργούμε εκκρεμές αίτημα ιδιοκτησίας για επιβεβαίωση.';wrap.appendChild(lead);
  var ws=(account&&account.workspaces)||[];
- if(!ws.length){var note=el('div','card');note.style.padding='16px';note.innerHTML='<p style="font-size:13px;color:var(--mut);line-height:1.5">'+(lang==='en'?'Create a workspace first, then claim a listing into it.':'Φτιάξε πρώτα ένα workspace και μετά διεκδίκησε μια καταχώρηση σε αυτό.')+'</p>';wrap.appendChild(note);return wrap;}
+ if(!ws.length){var note=el('div','card');note.style.padding='16px';note.innerHTML='<p style="font-size:13px;color:var(--mut);line-height:1.5">'+(lang==='en'?'Add your business first, then claim its listing.':'Πρόσθεσε πρώτα την επιχείρησή σου και μετά διεκδίκησε την καταχώρησή της.')+'</p>';wrap.appendChild(note);return wrap;}
  var chosenWs=ws[0].id;
  if(ws.length>1){
-  wrap.appendChild(el('div','s-sec s-note',(lang==='en'?'Claim into which workspace?':'Σε ποιο workspace;')));
+  wrap.appendChild(el('div','s-sec s-note',(lang==='en'?'Claim for which business?':'Για ποια επιχείρηση;')));
   var wc=el('div','chips');wc.style.marginBottom='10px';
   ws.forEach(function(w,i){var c=el('div','chip'+(i===0?' on':''));c.textContent=w.name;c.addEventListener('click',function(){chosenWs=w.id;[].slice.call(wc.children).forEach(function(x){x.classList.remove('on');});c.classList.add('on');});wc.appendChild(c);});
   wrap.appendChild(wc);

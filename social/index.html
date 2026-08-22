@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Zoi Social — Greek Business Tool</title>
+<title>Zoi Social — Publishing for Greek business</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1141,7 +1141,7 @@ select option{background:#fff!important;color:var(--paper)!important}
   <div class="gate-card">
     <div class="gate-brand">
       <div class="seal">Z</div>
-      <div><b>Zoi Social</b><span>Greek Business Tool</span></div>
+      <div><b>Zoi Social</b><span>Publishing for Greek business</span></div>
     </div>
 
     <!-- Sign in: email -->
@@ -1186,7 +1186,7 @@ select option{background:#fff!important;color:var(--paper)!important}
 <nav class="side">
   <div class="brandrow">
     <div class="seal">Z</div>
-    <div class="brandtxt"><b>Zoi Social</b><span>Greek Business Tool</span></div>
+    <div class="brandtxt"><b>Zoi Social</b><span>Publishing for Greek business</span></div>
   </div>
 
   <div class="biz-switch-wrap" id="biz-switch-wrap">
@@ -1410,7 +1410,7 @@ select option{background:#fff!important;color:var(--paper)!important}
     </div>
     <div class="connect-body" style="max-width:none">
       <div class="honest-note" style="max-width:660px">
-        <span>🔗</span>
+        
         <div><b>Connect an account to publish for real.</b> Connecting signs you in with the network and lets Zoi post on your behalf at your scheduled times. Until an account is connected, posts are saved as <b>drafts only</b> — nothing goes out.</div>
       </div>
       <div class="platform-grid" id="platform-grid" style="max-width:900px"></div>
@@ -1428,7 +1428,7 @@ select option{background:#fff!important;color:var(--paper)!important}
     <div class="an-body">
       <div class="period-row"><h2>Your content at a glance</h2></div>
       <div class="honest-note" style="max-width:640px">
-        <span>📊</span>
+        
         <div><b>Reach &amp; engagement analytics are not available yet.</b> They'll appear here once you connect a channel and start publishing. The numbers below are your <b>real</b> post counts from this workspace.</div>
       </div>
       <div class="an-stats" id="an-stats"></div>
@@ -1436,7 +1436,7 @@ select option{background:#fff!important;color:var(--paper)!important}
         <div class="an-section-title">Reach &amp; engagement</div>
         <div class="an-section-sub">Performance data from social networks</div>
         <div class="empty-state" style="padding:36px 20px">
-          <div class="es-icon">📈</div>
+          
           <h3>Connect a channel to see reach</h3>
           <p>Once an Instagram, Facebook or TikTok page is connected and posts go live, reach and engagement charts will show up here.</p>
           <button class="btn gold" onclick="showSection('connect')" style="margin-top:16px">Go to Channels</button>
@@ -1465,7 +1465,7 @@ select option{background:#fff!important;color:var(--paper)!important}
     <div class="charrow"><span class="charcount" id="charcount">0 / 2,200</span></div>
 
     <div class="greek-box" id="greek-suggestions">
-      <div class="gk-title">🇬🇷 Today&rsquo;s nameday captions</div>
+      <div class="gk-title">Today&rsquo;s nameday captions</div>
       <div class="gk-sub" id="gk-date-label">Loading nameday…</div>
       <div id="gk-ideas"></div>
     </div>
@@ -1481,7 +1481,7 @@ select option{background:#fff!important;color:var(--paper)!important}
       </div>
     </div>
     <div class="honest-note" style="margin-top:16px">
-      <span>🗓️</span>
+      
       <div>With a connected account, scheduling <b>publishes automatically</b> at the chosen time. With no account connected, a post is saved as a <b>draft</b> and goes nowhere until you connect one.</div>
     </div>
   </div>
@@ -1564,7 +1564,7 @@ async function connectPlatform(platform){
 function handleConnectResult(){
   const p=new URLSearchParams(location.search);
   if(p.get('connected')){
-    const c=p.get('count'); toast(platLabel(p.get('connected'))+' connected'+(c&&c!=='1'?(' · '+c+' accounts'):'')+' 🎉','gold');
+    const c=p.get('count'); toast(platLabel(p.get('connected'))+' connected'+(c&&c!=='1'?(' · '+c+' accounts'):''),'gold');
     history.replaceState({},'',location.pathname); showSection('connect');
   } else if(p.get('connect_error')){
     toast('Connection failed: '+p.get('connect_error'),'warn');
@@ -1771,7 +1771,7 @@ function renderDashboard(){
   ];
   document.getElementById('dash-stats-row').innerHTML = tiles.map(t=>`
     <div class="dstat"><div class="dstat-label"><svg viewBox="0 0 24 24">${t.icon}</svg>${t.label}</div>
-    <div class="dstat-val">${t.val}</div><div class="dstat-delta" style="color:var(--muted)">This workspace</div></div>`).join('');
+    <div class="dstat-val">${t.val}</div><div class="dstat-delta" style="color:var(--muted)">Your account</div></div>`).join('');
   const chanSub=document.getElementById('qact-chan-sub');
   if(chanSub) chanSub.textContent = (s.channels? s.channels+' registered':'Connect pages');
   // today's posts
@@ -1779,7 +1779,7 @@ function renderDashboard(){
   const tp = POSTS.filter(p=>postDate(p)===today).sort((a,b)=>(a.scheduled_at||'').localeCompare(b.scheduled_at||''));
   document.getElementById('today-post-count').textContent = tp.length+(tp.length===1?' post':' posts');
   const tl=document.getElementById('today-posts-list');
-  if(!tp.length){ tl.innerHTML=`<div class="no-today"><div class="no-today-icon">🌿</div>Nothing scheduled for today. <a onclick="openComposer(null)" style="color:var(--gold-soft);cursor:pointer;font-weight:700">Write a post →</a></div>`; }
+  if(!tp.length){ tl.innerHTML=`<div class="no-today">Nothing scheduled for today. <a onclick="openComposer(null)" style="color:var(--gold-soft);cursor:pointer;font-weight:700">Write a post →</a></div>`; }
   else{ tl.innerHTML = tp.map(p=>`
     <div class="today-post">
       <div class="today-post-time">${postTime(p)}</div>
@@ -1846,7 +1846,7 @@ function renderCalendar(){
     const isToday=c.date===todayStr;
     const posts=byDate[c.date]||[];
     let feastHtml='';
-    if(isToday){ const names=namedayNames(); if(names.length) feastHtml=`<div class="feast">🕯️ ${esc(names.slice(0,2).join(', '))}</div>`; }
+    if(isToday){ const names=namedayNames(); if(names.length) feastHtml=`<div class="feast">${esc(names.slice(0,2).join(', '))}</div>`; }
     const chips=posts.slice(0,3).map(p=>`<div class="cchip ${p.status}" onclick="event.stopPropagation();openComposer('${p.id}')"><span class="cd"></span>${esc(snippet(p.body,16))}</div>`).join('');
     const more=posts.length>3?`<div class="more">+${posts.length-3} more</div>`:'';
     return `<div class="calday ${isToday?'today':''}" onclick="composeOnDate('${c.date}')">
@@ -1867,8 +1867,8 @@ function renderDrafts(){
   document.getElementById('drafts-badge').style.display = (STATS&&STATS.drafts)?'grid':'none';
   if(STATS) document.getElementById('drafts-badge').textContent=STATS.drafts||0;
   if(!list.length){
-    el.innerHTML=`<div class="empty-state"><div class="es-icon">📝</div><h3>No ${draftFilter==='all'?'drafts or scheduled posts':draftFilter+' posts'} yet</h3>
-      <p>Everything you save in the composer shows up here. Nothing is fabricated — this list is straight from your workspace.</p>
+    el.innerHTML=`<div class="empty-state"><h3>No ${draftFilter==='all'?'drafts or scheduled posts':draftFilter+' posts'} yet</h3>
+      <p>Everything you write lives here — drafts to refine, scheduled posts queued to go.</p>
       <button class="btn gold" onclick="openComposer(null)">Write your first post</button></div>`;
     return;
   }
@@ -1880,7 +1880,7 @@ function renderDrafts(){
           <span class="chip-status ${p.status}">${esc(p.status)}</span>
           ${chanPips(p.channels)}
           <span>${p.scheduled_at? scheduleLabel(p.scheduled_at) : (p.published_at? 'Published '+relTime(p.published_at) : 'Created '+relTime(p.created_at))}</span>
-          ${p.nameday_ref?`<span class="pending-tag"><span class="pdot"></span>🕯️ ${esc(p.nameday_ref)}</span>`:''}
+          ${p.nameday_ref?`<span class="pending-tag"><span class="pdot"></span>${esc(p.nameday_ref)}</span>`:''}
         </div>
       </div>
       <div class="pr-actions">
@@ -1931,7 +1931,7 @@ function renderChannels(){
       </div>${acctHtml}</div>`;
   }).join('') + (anyAvail?'':`
     <div class="honest-note" style="grid-column:1/-1;margin-top:4px">
-      <span>🔑</span>
+      
       <div><b>Nothing is connected yet because the platform apps aren't set up.</b> Each network (Meta, LinkedIn, TikTok…) needs a developer app + review before it can post on your behalf. Once those credentials are added, the <b>Connect</b> buttons here activate and scheduled posts publish automatically — no further changes needed.</div>
     </div>`);
 }

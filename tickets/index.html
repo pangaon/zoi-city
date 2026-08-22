@@ -248,7 +248,7 @@ select option{background:#fff!important;color:var(--paper)!important}
   <div class="nav-right" id="navRight"></div>
 </div>
 <div class="proto-banner" id="protoBanner">
-  <span>🎟️</span><span><b>Reservations live.</b> Seats are held instantly. Paid checkout is the next phase — priced tickets are reserved, not charged yet.</span>
+  <span><b>Reservations are live.</b> Seats hold instantly. Paid checkout ships next — nothing is charged yet.</span>
 </div>
 
 <div id="app"></div>
@@ -257,7 +257,7 @@ select option{background:#fff!important;color:var(--paper)!important}
 <div class="modal" id="confirmModal">
   <div class="confirm-box">
     <div class="confirm-header">
-      <div class="confirm-icon">🎉</div>
+      <div class="confirm-icon"><svg viewBox="0 0 24 24" style="width:34px;height:34px;stroke:currentColor;fill:none;stroke-width:2"><path d="M20 6L9 17l-5-5"/></svg></div>
       <div class="confirm-title">Reservation confirmed</div>
       <div class="confirm-subtitle" id="confirmSub">Your seats are held. Keep this confirmation code.</div>
       <div class="confirm-ref" id="confirmCode">—</div>
@@ -385,7 +385,7 @@ function paintPublic(){
 
   let cards;
   if(PUB.types.length===0){
-    cards = `<div class="empty-state"><div class="empty-icon">🎟️</div><div class="empty-title">No tickets available yet</div><div class="empty-sub">The organizer hasn't published any ticket types for this event. Check back soon.</div></div>`;
+    cards = `<div class="empty-state"><div class="empty-title">No tickets available yet</div><div class="empty-sub">The organizer hasn't published any ticket types for this event. Check back soon.</div></div>`;
   } else {
     cards = '<div class="ticket-grid">' + PUB.types.map(t=>{
       const left = (t.capacity!=null) ? Math.max(0, t.capacity - (t.reserved||0)) : null;
