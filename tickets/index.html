@@ -357,12 +357,37 @@ async function verifyOtp(email, tokenCode){
 /* ============ ROUTER ============ */
 function route(){
   const e = qs('e');
-  if(e){ $('#protoBanner').style.display='flex'; renderPublic(e); }
+  if(e){ $('#protoBanner').style.display='flex'; loadSvc().then(handlePaidReturn); renderPublic(e); }
   else { renderDashboard(); }
 }
 
 /* ============ PUBLIC EVENT PAGE ============ */
 let PUB = { eventId:null, ev:null, types:[], selected:null, qty:1 };
+
+/* ---- payments (Stripe, credential-gated) ---- */
+let SVCT={stripe:false};
+async function loadSvc(){
+  try{ const r=await fetch(BASE+'/functions/v1/social-config',{headers:{'apikey':PUBKEY,'Authorization':'Bearer '+PUBKEY}}); const j=await r.json(); SVCT=(j&&j.services)||{stripe:false}; }
+  catch(e){ SVCT={stripe:false}; }
+  const b=document.getElementById('protoBanner');
+  if(b&&SVCT.stripe){ b.innerHTML='<span><b>Payments are live.</b> Paid tickets check out securely with Stripe; free tickets reserve instantly.</span>'; }
+}
+async function edgeFnT(name,body){
+  const r=await fetch(BASE+'/functions/v1/'+name,{method:'POST',headers:{'apikey':PUBKEY,'Authorization':'Bearer '+PUBKEY,'Content-Type':'application/json'},body:JSON.stringify(body||{})});
+  const t=await r.text(); if(!r.ok) throw new Error(name+' ('+r.status+'): '+t); return t?JSON.parse(t):null;
+}
+async function handlePaidReturn(){
+  const u=new URL(location.href); const sid=u.searchParams.get('paid_session');
+  if(u.searchParams.get('pay_cancelled')){ u.searchParams.delete('pay_cancelled'); history.replaceState({},'',u.href); return; }
+  if(!sid) return;
+  u.searchParams.delete('paid_session'); history.replaceState({},'',u.href);
+  try{
+    const res=await edgeFnT('tickets-confirm',{session_id:sid});
+    if(res&&res.ok){ showConfirm({code:res.code,qty:res.qty,amount_cents:res.amount_cents,currency:res.currency,paid:true},null); }
+    else if(res&&res.pending){ alert('Payment is still processing. Your confirmation will arrive by email.'); }
+  }catch(e){ console.warn('confirm',e); }
+}
+
 
 async function renderPublic(eventId){
   PUB.eventId = eventId;
@@ -501,7 +526,16 @@ async function doReserve(){
   const errEl=$('#rErr'); errEl.textContent='';
   if(!name){ errEl.textContent='Please enter your name.'; return; }
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ errEl.textContent='Please enter a valid email.'; return; }
-  const btn=$('#reserveBtn'); btn.disabled=true; const orig=btn.textContent; btn.textContent='Reserving…';
+  const btn=$('#reserveBtn'); btn.disabled=true; const orig=btn.textContent;
+  if(Number(t.price_cents||0)>0 && SVCT.stripe){
+    btn.textContent='Opening secure checkout…';
+    try{
+      const co=await edgeFnT('tickets-checkout',{event:PUB.eventId,type:t.id,qty:PUB.qty,name:name,email:email,return_url:location.href});
+      if(co&&co.url){ location.href=co.url; return; }
+      if(co&&co.error){ errEl.textContent=co.error; btn.disabled=false; btn.textContent=orig; return; }
+    }catch(err2){ errEl.textContent='Checkout failed: '+err2.message; btn.disabled=false; btn.textContent=orig; return; }
+  }
+  btn.textContent='Reserving…';
   try{
     const res = await rpc('tickets_reserve', {p_event:PUB.eventId, p_type:t.id, p_name:name, p_email:email, p_qty:PUB.qty}, PUBKEY);
     showConfirm(res, t);
@@ -520,8 +554,8 @@ function showConfirm(res, t){
   const free = Number(res.amount_cents||0)===0;
   $('#cfStatus').textContent = res.paid ? 'Paid' : (free?'RSVP held':'Reserved (unpaid)');
   $('#cfAmount').textContent = free ? 'Free' : fmtMoney(res.amount_cents, res.currency);
-  $('#cfNote').style.display = free ? 'none' : 'flex';
-  $('#confirmSub').textContent = free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code — payment comes later.';
+  $('#cfNote').style.display = (free||res.paid) ? 'none' : 'flex';
+  $('#confirmSub').textContent = res.paid ? 'Payment received — you are all set. Keep this code.' : (free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code — payment comes later.');
   $('#confirmModal').classList.add('open');
 }
 function closeConfirm(){ $('#confirmModal').classList.remove('open'); }
