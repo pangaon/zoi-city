@@ -1,0 +1,36 @@
+# zoi.city CI — Wave 1 deterministic foundation.
+# The site is static HTML + two Vercel serverless functions; there is NO build step
+# and NO npm dependencies, so there is deliberately no `npm install` here.
+# Everything below runs zero-dependency Node scripts committed in /scripts and /tests.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Syntax-check every inline <script> block
+        run: npm run check
+
+      - name: Lint HTML well-formedness
+        run: npm run lint:html
+
+      - name: Syntax-check serverless functions (api/)
+        run: |
+          for f in api/*.js; do
+            [ -e "$f" ] || continue
+            node --check "$f"
+          done
+
+      - name: Unit tests
+        run: node scripts/run-tests.mjs tests
