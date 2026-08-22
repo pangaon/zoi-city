@@ -1993,7 +1993,7 @@ function renderBizDropdown(){
 }
 function toggleBizDropdown(){ document.getElementById('biz-dropdown').classList.toggle('open'); document.getElementById('biz-acct-btn').classList.toggle('open'); }
 function closeBizDropdown(){ document.getElementById('biz-dropdown').classList.remove('open'); document.getElementById('biz-acct-btn').classList.remove('open'); }
-function switchWorkspace(id,name){ if(id===WS) return; selectWorkspace(id,name); }
+function switchWorkspace(id,name){ if(id===WS) return; try{ localStorage.setItem('zoi_ws', id); }catch(e){} location.reload(); }
 document.addEventListener('click',e=>{ const w=document.getElementById('biz-switch-wrap'); if(w && !w.contains(e.target)) closeBizDropdown(); });
 
 /* ═══════════════ ENTER APP / DATA LOAD ═══════════════ */
