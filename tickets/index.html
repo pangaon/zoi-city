@@ -284,8 +284,9 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
       <div class="confirm-meta"><span>Amount</span><b id="cfAmount">—</b></div>
       <div class="reserve-note" style="margin-top:16px" id="cfNote">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-        <span>This is a reservation (a held spot). If the ticket is priced, payment will be collected in a later phase — you have not been charged.</span>
+        <span>Your spot is held and nothing has been charged. Bring this code — the organizer checks you in with it.</span>
       </div>
+      <button class="btn" style="width:100%;margin-bottom:8px;display:none" id="cfIcsBtn" onclick="icsDownload()">Add to calendar</button>
       <button class="btn gold" style="width:100%" onclick="closeConfirm()">Done</button>
     </div>
   </div>
@@ -556,6 +557,7 @@ function showConfirm(res, t){
   $('#cfAmount').textContent = free ? 'Free' : fmtMoney(res.amount_cents, res.currency);
   $('#cfNote').style.display = (free||res.paid) ? 'none' : 'flex';
   $('#confirmSub').textContent = res.paid ? 'Payment received — you are all set. Keep this code.' : (free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code — payment comes later.');
+  const ib=document.getElementById('cfIcsBtn'); if(ib) ib.style.display=(PUB.ev&&PUB.ev.event_at)?'inline-flex':'none';
   $('#confirmModal').classList.add('open');
 }
 function closeConfirm(){ $('#confirmModal').classList.remove('open'); }
@@ -686,6 +688,7 @@ async function loadDashboard(){
   try{ data = await rpc('tickets_dashboard', {p_workspace:DASH.ws}); }
   catch(err){ app.innerHTML = errBlock('Could not load dashboard', err.message); return; }
   const events = (data&&data.events)||[];
+  try{ DASH.tstats = await rpc('tickets_event_stats',{p_workspace:DASH.ws}); }catch(e){ DASH.tstats={}; }
   paintDashboard(events);
 }
 
@@ -705,12 +708,13 @@ function paintDashboard(events){
     <div class="stats-row">
       <div class="stat-card"><div class="stat-label">Events</div><div class="stat-val">${totalEvents}</div><div class="stat-sub">in this workspace</div></div>
       <div class="stat-card"><div class="stat-label">Tickets reserved</div><div class="stat-val">${totalReserved}</div><div class="stat-sub">across all events</div></div>
+      <div class="stat-card"><div class="stat-label">Paid revenue</div><div class="stat-val gold">${fmtMoney(Object.values(DASH.tstats||{}).reduce((a,x)=>a+(x.revenue_cents||0),0),'USD')}</div><div class="stat-sub">${Object.values(DASH.tstats||{}).reduce((a,x)=>a+(x.paid||0),0)} paid tickets</div></div>
       <div class="stat-card"><div class="stat-label">Reserved value</div><div class="stat-val gold">${fmtMoney(totalRevenue,'USD')}</div><div class="stat-sub">held (payment pending)</div></div>
     </div>`;
 
   let list;
   if(events.length===0){
-    list = `<div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">No events yet</div><div class="empty-sub">Create your first event, then add ticket types. Reservations and revenue will show up here in real time.</div><button class="btn gold" onclick="openCreateEvent()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Create your first event</button></div>`;
+    list = `<div class="empty-state"><div class="empty-title">No events yet</div><div class="empty-sub">Create your first event, then add ticket types. Reservations and revenue will show up here in real time.</div><button class="btn gold" onclick="openCreateEvent()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Create your first event</button></div>`;
   } else {
     list = '<div class="events-list">' + events.map(ev=>{
       const when = fmtWhen(ev.event_at);
@@ -718,7 +722,7 @@ function paintDashboard(events){
       const link = PUBLIC_BASE+'?e='+ev.id;
       return `<div class="ev-card"><div class="ev-body">
         <div class="ev-top">
-          <div class="ev-icon">🎪</div>
+          <div class="ev-icon"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4 2 2 0 000-4z"/><path d="M14 6v12"/></svg></div>
           <div class="ev-meta">
             <div class="ev-name">${esc(ev.name)}</div>
             <div class="ev-details">
@@ -735,10 +739,13 @@ function paintDashboard(events){
         <div class="share-row">
           <div class="share-url" title="${esc(link)}">${esc(link)}</div>
           <button class="mini-btn" onclick="copyLink('${esc(link)}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
+          <button class="mini-btn" onclick="showQR('${esc(link)}')">QR</button>
           <a class="mini-btn" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
         </div>
         <div class="ev-actions">
           <button class="mini-btn gold" onclick="openManageTickets('${ev.id}','${esc((ev.name||'').replace(/'/g,"\\'"))}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6a2 2 0 0 0 0 4v6H4v-6a2 2 0 0 0 0-4z"/></svg> Manage tickets</button>
+          <button class="mini-btn" onclick="openAttendees('${ev.id}')">Attendees</button>
+          <button class="mini-btn" onclick="openCheckin('${ev.id}')">Check-in</button>
         </div>
       </div></div>`;
     }).join('') + '</div>';
@@ -747,6 +754,76 @@ function paintDashboard(events){
 }
 
 function copyLink(url){ navigator.clipboard.writeText(url).then(()=>toast('Link copied')).catch(()=>toast('Copy failed',true)); }
+
+
+/* ---- attendees / check-in / QR / calendar ---- */
+let ATT={ev:null,list:[]};
+async function openAttendees(evId){
+  ATT.ev=evId;
+  openGen('Attendees','Everyone with a reservation or paid ticket for this event.','<div class="loading"><div class="spinner"></div>Loading…</div>');
+  try{
+    ATT.list=await rpc('tickets_reservations_list',{p_workspace:DASH.ws,p_event:evId})||[];
+    renderAttendees();
+  }catch(e){ document.getElementById('genBody').innerHTML='<div class="inline-err">'+esc(e.message)+'</div>'; }
+}
+function renderAttendees(){
+  const rows=ATT.list.map(function(r){ return (
+    '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)">'+
+      '<div style="flex:1;min-width:0"><b>'+esc(r.name||'')+'</b>'+
+        '<div style="font-size:11.5px;color:var(--muted)">'+esc(r.email||'')+' \u00b7 '+esc(r.type||'')+' \u00b7 code '+esc(r.code||'')+'</div></div>'+
+      '<span class="ticket-tag '+(r.paid?'free':'sold')+'">'+(r.paid?'Paid':'Reserved')+'</span>'+
+      (r.checked_in?'<span class="ticket-tag free">In</span>':'')+
+      '<b style="font-size:12px">\u00d7'+(r.qty||1)+'</b>'+
+    '</div>'); }).join('');
+  document.getElementById('genBody').innerHTML=
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
+      '<span style="font-size:12.5px;color:var(--muted)">'+ATT.list.length+' entries</span>'+
+      '<button class="mini-btn" onclick="exportAttendees()">Export CSV</button></div>'+
+    (rows||'<div style="color:var(--muted);font-size:13px;padding:14px 0">No reservations yet.</div>');
+}
+function exportAttendees(){
+  const head='name,email,type,code,qty,status,checked_in\n';
+  const body=ATT.list.map(function(r){ return [r.name,r.email,r.type,r.code,r.qty,(r.paid?'paid':'reserved'),(r.checked_in?'yes':'no')].map(function(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  const blob=new Blob([head+body],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='attendees.csv'; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+}
+function openCheckin(evId){
+  openGen('Check-in','Enter a confirmation code to check the guest in.',
+    '<div class="field"><label>Confirmation code</label><input id="ciCode" placeholder="e.g. ZK7-4QX" style="font:700 18px monospace;letter-spacing:.12em"/></div>'+
+    '<div class="inline-err" id="ciErr"></div>'+
+    '<div id="ciResult" style="min-height:22px;font-size:13.5px;margin:6px 0"></div>'+
+    '<button class="btn gold" style="width:100%" onclick="doCheckin()">Check in</button>');
+  setTimeout(function(){ var el=document.getElementById('ciCode'); if(el){ el.focus(); el.addEventListener('keydown',function(e){ if(e.key==='Enter') doCheckin(); }); } },60);
+}
+async function doCheckin(){
+  const code=(document.getElementById('ciCode').value||'').trim();
+  const err=document.getElementById('ciErr'), res=document.getElementById('ciResult');
+  err.textContent=''; res.textContent='';
+  if(!code){ err.textContent='Enter a code.'; return; }
+  try{
+    const r=await rpc('tickets_checkin',{p_workspace:DASH.ws,p_code:code});
+    if(!r.ok){ err.textContent='Code not found for your events.'; return; }
+    if(r.already){ res.innerHTML='<b style="color:var(--gold-d)">Already checked in</b> \u2014 '+esc(r.name||'')+' \u00d7'+(r.qty||1); }
+    else{ res.innerHTML='<b style="color:var(--green)">Welcome, '+esc(r.name||'guest')+'!</b> \u00d7'+(r.qty||1)+' \u00b7 '+esc(r.type||'')+(r.paid?' \u00b7 paid':''); }
+    document.getElementById('ciCode').value='';
+  }catch(e){ err.textContent=e.message; }
+}
+function showQR(link){
+  openGen('Event QR code','Print it, post it, point phones at it \u2014 it opens the ticket page.',
+    '<div style="display:grid;place-items:center;padding:10px 0 4px"><img alt="QR code" style="width:220px;height:220px;border-radius:12px;background:#fff;padding:10px" src="https://api.qrserver.com/v1/create-qr-code/?size=440x440&data='+encodeURIComponent(link)+'"/></div>'+
+    '<div style="text-align:center;font-size:12px;color:var(--muted);word-break:break-all;margin-top:8px">'+esc(link)+'</div>');
+}
+function icsDownload(){
+  const ev=PUB.ev||{}; if(!ev.event_at) return;
+  const dt=new Date(ev.event_at);
+  const fmt=function(d){ return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z/,'Z'); };
+  const end=new Date(dt.getTime()+3*3600*1000);
+  const ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Zoi//Tickets//EN\r\nBEGIN:VEVENT\r\nUID:'+(Date.now())+'@zoi.city\r\nDTSTAMP:'+fmt(new Date())+'\r\nDTSTART:'+fmt(dt)+'\r\nDTEND:'+fmt(end)+'\r\nSUMMARY:'+String(ev.name||'Zoi event').replace(/[,;]/g,' ')+'\r\nLOCATION:'+String([ev.city,ev.country].filter(Boolean).join(' ')).replace(/[,;]/g,' ')+'\r\nEND:VEVENT\r\nEND:VCALENDAR';
+  const blob=new Blob([ics],{type:'text/calendar'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='zoi-event.ics'; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+}
 
 /* ---- create event modal ---- */
 function openGen(title, desc, bodyHtml){
