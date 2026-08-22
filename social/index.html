@@ -1154,7 +1154,7 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
   <div class="gate-card">
     <div class="gate-brand">
       <div class="seal">Z</div>
-      <div><b>Zoi Social</b><span>Publishing for Greek business</span></div>
+      <div><b>Zoi</b><span>Business suite</span></div>
     </div>
 
     <!-- Sign in: email -->
@@ -1264,17 +1264,16 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
   <div class="nav" id="nav-email" onclick="showSection('email')">
     <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
     Email campaigns
-    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Soon</span>
+    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Beta</span>
   </div>
   <div class="nav" id="nav-ai" onclick="showSection('ai')">
     <svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 15l.9 2.4L21.3 18l-2.4.9L18 21.3l-.9-2.4-2.4-.9 2.4-.9z"/></svg>
     AI Studio
-    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Soon</span>
+    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Beta</span>
   </div>
   <div class="nav" id="nav-audience" onclick="showSection('audience')">
     <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
     Audience
-    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Soon</span>
   </div>
   <div class="navlbl">Measure</div>
   <div class="nav" id="nav-analytics" onclick="showSection('analytics')">
@@ -1476,48 +1475,138 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
   </div>
 
 
+  
+  <!-- EMAIL CAMPAIGNS -->
   <div class="connect-view" id="email-view">
-    <div class="topbar"><span class="h1">Email campaigns</span></div>
+    <div class="topbar"><span class="h1">Email campaigns</span>
+      <div class="topbar-right"><button class="btn gold" onclick="openCampaign(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>New campaign</button></div>
+    </div>
     <div class="connect-body" style="max-width:none">
-      <div class="sec-label" style="margin-bottom:6px">Part of the Zoi suite</div>
-      <h2 style="font-family:'Fraunces';font-weight:500;font-size:clamp(24px,3.4vw,36px);max-width:24ch;line-height:1.1;margin-bottom:10px">Your list is the one channel no algorithm owns.</h2>
-      <p style="color:var(--muted);max-width:56ch;font-size:15px;margin-bottom:22px">Newsletters, offers and nameday campaigns — designed, sent and measured from the same desk as your posts. Mailchimp-class, built Greek.</p>
-      <div style="display:flex;gap:10px;max-width:460px;margin-bottom:8px">
-        <input class="gate-input" id="wl-email" placeholder="name@business.com" style="flex:1;font-size:14px"/>
-        <button class="btn gold" onclick="moduleWL('email')">Get early access</button>
+      <div id="email-gate-note"></div>
+      <div id="email-list-wrap">
+        <div class="sec-label">Your campaigns</div>
+        <div id="email-list"></div>
       </div>
-      <div id="wlmsg-email" style="font-size:13px;min-height:18px;margin-bottom:18px"></div>
-      <div class="platform-grid" style="max-width:900px"><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Campaigns</div><div class="pc-subtitle">Design once, send beautifully — Greek and English.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Nameday automations</div><div class="pc-subtitle">Wish every customer on their day, automatically.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Real deliverability</div><div class="pc-subtitle">Verified sending on your own domain.</div></div></div></div></div>
+      <div id="email-edit-wrap" style="display:none;max-width:1100px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start" id="email-edit-grid">
+          <div>
+            <div class="sec-label">Campaign</div>
+            <div class="field" style="margin-bottom:12px"><label>Subject</label><input class="gate-input" id="ec-subject" placeholder="Nameday week at the bakery"/></div>
+            <div class="field" style="margin-bottom:12px"><label>Preview line</label><input class="gate-input" id="ec-preheader" placeholder="The first line people see in their inbox"/></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div class="field"><label>From name</label><input class="gate-input" id="ec-from" placeholder="Your business"/></div>
+              <div class="field"><label>Send to</label><select class="gate-input" id="ec-audience"><option value="">All contacts</option></select></div>
+            </div>
+            <div class="field"><label>Message</label><textarea class="gate-input" id="ec-body" style="min-height:220px;resize:vertical" placeholder="Write like you talk to your best customers. Blank line starts a new paragraph." oninput="emailPreview()"></textarea></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">
+              <button class="btn gold" onclick="emailSave()">Save draft</button>
+              <button class="btn" id="ec-test-btn" onclick="emailSend('test')">Send me a test</button>
+              <button class="btn" id="ec-send-btn" onclick="emailSend('real')">Send campaign</button>
+              <button class="btn" onclick="closeCampaign()">Back</button>
+            </div>
+            <div id="ec-msg" style="font-size:13px;min-height:18px;margin-top:10px"></div>
+          </div>
+          <div>
+            <div class="sec-label">Preview</div>
+            <div style="background:var(--glass2);border:1px solid var(--gl);border-radius:14px;padding:22px">
+              <div style="max-width:460px;margin:0 auto;background:var(--glass);border:1px solid var(--gl);border-radius:12px;padding:26px">
+                <div style="font-size:12px;color:var(--muted)" id="ep-from">Your business</div>
+                <div style="font-family:'Fraunces';font-weight:600;font-size:20px;margin:6px 0 2px" id="ep-subject">Subject</div>
+                <div style="font-size:12.5px;color:var(--muted);margin-bottom:14px" id="ep-pre"></div>
+                <div style="border-top:1px solid var(--gl);padding-top:14px;font-size:14px;line-height:1.6" id="ep-body">Your message appears here.</div>
+                <div style="border-top:1px solid var(--gl);margin-top:18px;padding-top:10px;font-size:11px;color:var(--muted2)">Sent via Zoi · zoi.city</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- AI STUDIO -->
   <div class="connect-view" id="ai-view">
     <div class="topbar"><span class="h1">AI Studio</span></div>
-    <div class="connect-body" style="max-width:none">
-      <div class="sec-label" style="margin-bottom:6px">Part of the Zoi suite</div>
-      <h2 style="font-family:'Fraunces';font-weight:500;font-size:clamp(24px,3.4vw,36px);max-width:24ch;line-height:1.1;margin-bottom:10px">An agency in your corner, awake around the clock.</h2>
-      <p style="color:var(--muted);max-width:56ch;font-size:15px;margin-bottom:22px">Agentic AI that drafts your week of posts, writes captions in your voice, answers reviews and finds what to say next — you approve, it does.</p>
-      <div style="display:flex;gap:10px;max-width:460px;margin-bottom:8px">
-        <input class="gate-input" id="wl-ai_studio" placeholder="name@business.com" style="flex:1;font-size:14px"/>
-        <button class="btn gold" onclick="moduleWL('ai_studio')">Get early access</button>
+    <div class="connect-body" style="max-width:1100px">
+      <div id="ai-gate-note"></div>
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:26px;align-items:start" id="ai-grid">
+        <div>
+          <div class="sec-label">Your voice</div>
+          <div class="platform-card" style="display:block;padding:20px">
+            <div class="field" style="margin-bottom:10px"><label>Business name</label><input class="gate-input" id="ai-biz"/></div>
+            <div class="field" style="margin-bottom:10px"><label>What you do</label><textarea class="gate-input" id="ai-about" style="min-height:64px" placeholder="Family bakery in Toronto since 1987 — tsoureki, koulouria, custom cakes."></textarea></div>
+            <div class="field" style="margin-bottom:10px"><label>Tone</label><input class="gate-input" id="ai-tone" placeholder="Warm, funny, proud — never corporate"/></div>
+            <div class="field" style="margin-bottom:10px"><label>Languages</label><select class="gate-input" id="ai-langs"><option>Greek and English</option><option>Mostly English</option><option>Mostly Greek</option></select></div>
+            <div class="field" style="margin-bottom:14px"><label>A post you loved (optional)</label><textarea class="gate-input" id="ai-sample" style="min-height:56px" placeholder="Paste one of your own posts so it learns your voice"></textarea></div>
+            <button class="btn gold" style="width:100%" onclick="aiSaveProfile()">Save voice</button>
+            <div id="ai-prof-msg" style="font-size:12.5px;min-height:16px;margin-top:8px"></div>
+          </div>
+        </div>
+        <div>
+          <div class="sec-label">Do the work</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+            <button class="btn gold" onclick="aiRun('week')" id="ai-week-btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Draft my week</button>
+            <button class="btn" onclick="aiRun('caption')" id="ai-cap-btn">Polish a caption</button>
+            <button class="btn" onclick="aiRun('reply')" id="ai-rep-btn">Reply to a review</button>
+          </div>
+          <div class="field" id="ai-input-wrap" style="display:none;margin-bottom:14px"><label id="ai-input-label">Paste it here</label><textarea class="gate-input" id="ai-input" style="min-height:80px"></textarea>
+            <button class="btn gold" style="margin-top:10px" onclick="aiRunGo()">Generate</button></div>
+          <div id="ai-status" style="font-size:13px;color:var(--muted);min-height:18px;margin-bottom:10px"></div>
+          <div id="ai-results"></div>
+        </div>
       </div>
-      <div id="wlmsg-ai_studio" style="font-size:13px;min-height:18px;margin-bottom:18px"></div>
-      <div class="platform-grid" style="max-width:900px"><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Auto content calendar</div><div class="pc-subtitle">A month of on-brand posts, drafted for approval.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Your voice, both languages</div><div class="pc-subtitle">Greek and English, tuned to your business.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Agentic actions</div><div class="pc-subtitle">It watches namedays, events and trends — and acts.</div></div></div></div></div>
     </div>
   </div>
+
+  <!-- AUDIENCE -->
   <div class="connect-view" id="aud-view">
-    <div class="topbar"><span class="h1">Audience</span></div>
-    <div class="connect-body" style="max-width:none">
-      <div class="sec-label" style="margin-bottom:6px">Part of the Zoi suite</div>
-      <h2 style="font-family:'Fraunces';font-weight:500;font-size:clamp(24px,3.4vw,36px);max-width:24ch;line-height:1.1;margin-bottom:10px">Know every customer like a regular.</h2>
-      <p style="color:var(--muted);max-width:56ch;font-size:15px;margin-bottom:22px">One customer list across posts, tickets, email and your storefront — who they are, what they love, when their nameday is.</p>
-      <div style="display:flex;gap:10px;max-width:460px;margin-bottom:8px">
-        <input class="gate-input" id="wl-audience" placeholder="name@business.com" style="flex:1;font-size:14px"/>
-        <button class="btn gold" onclick="moduleWL('audience')">Get early access</button>
+    <div class="topbar"><span class="h1">Audience</span>
+      <div class="topbar-right">
+        <button class="btn" onclick="openAudImport()">Import</button>
+        <button class="btn gold" onclick="openAudEdit(null)"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add contact</button>
       </div>
-      <div id="wlmsg-audience" style="font-size:13px;min-height:18px;margin-bottom:18px"></div>
-      <div class="platform-grid" style="max-width:900px"><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Unified profiles</div><div class="pc-subtitle">Every interaction across the suite, one record.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Segments</div><div class="pc-subtitle">Locals, regulars, festival-goers — message each right.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Nameday book</div><div class="pc-subtitle">The dates that matter to your community.</div></div></div></div></div>
+    </div>
+    <div class="connect-body" style="max-width:1000px">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+        <input class="gate-input" id="aud-q" placeholder="Search name, email, phone…" style="flex:1;min-width:220px" oninput="audFilter()"/>
+        <select class="gate-input" id="aud-tag" style="max-width:200px" onchange="audFilter()"><option value="">All tags</option></select>
+      </div>
+      <div id="aud-count" class="sec-label">Contacts</div>
+      <div id="aud-list"></div>
     </div>
   </div>
+
+  <!-- audience modals -->
+  <div class="modal-backdrop" id="aud-edit-back" onclick="if(event.target===this)closeAudEdit()">
+    <div class="pub-modal" style="max-width:460px">
+      <div class="pub-header"><h3 id="aud-edit-title">Add contact</h3><div class="iconbtn" onclick="closeAudEdit()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+      <div class="pub-body">
+        <div class="field" style="margin-bottom:10px"><label>Name</label><input class="gate-input" id="ac2-name"/></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field"><label>Email</label><input class="gate-input" id="ac2-email"/></div>
+          <div class="field"><label>Phone</label><input class="gate-input" id="ac2-phone"/></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field"><label>Nameday</label><input class="gate-input" id="ac2-nameday" placeholder="Dec 6 — Nikolaos"/></div>
+          <div class="field"><label>Tags</label><input class="gate-input" id="ac2-tags" placeholder="regular, festival"/></div>
+        </div>
+        <div class="field"><label>Notes</label><textarea class="gate-input" id="ac2-notes" style="min-height:54px"></textarea></div>
+        <div id="ac2-msg" style="font-size:12.5px;min-height:16px;margin-top:8px"></div>
+      </div>
+      <div class="pub-footer"><button class="pub-now-btn" onclick="audSave()">Save contact</button></div>
+    </div>
+  </div>
+  <div class="modal-backdrop" id="aud-imp-back" onclick="if(event.target===this)closeAudImport()">
+    <div class="pub-modal" style="max-width:520px">
+      <div class="pub-header"><h3>Import contacts</h3><div class="iconbtn" onclick="closeAudImport()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+      <div class="pub-body">
+        <p style="font-size:13px;color:var(--muted);margin-bottom:10px">One contact per line: <b>name, email, phone, nameday, tag</b> — only the name is required.</p>
+        <textarea class="gate-input" id="aud-imp-text" style="min-height:160px;font-family:monospace;font-size:12.5px" placeholder="Maria Papadopoulos, maria@email.com, 416-555-0100, Aug 15, regular&#10;Niko G, niko@email.com"></textarea>
+        <div id="aud-imp-msg" style="font-size:12.5px;min-height:16px;margin-top:8px"></div>
+      </div>
+      <div class="pub-footer"><button class="pub-now-btn" onclick="audImport()">Import</button></div>
+    </div>
+  </div>
+
 </div><!-- /main -->
 </div><!-- /shell -->
 
@@ -1623,7 +1712,7 @@ async function edgeFn(name, body){
 }
 async function loadPlatforms(){
   try{ const r=await fetch(BASE+'/functions/v1/social-config',{headers:{'apikey':PUB,'Authorization':'Bearer '+PUB}});
-    const j=await r.json(); PLATFORMS=(j&&j.platforms)||[]; }
+    const j=await r.json(); PLATFORMS=(j&&j.platforms)||[]; SVC=(j&&j.services)||{email:false,ai:false}; }
   catch(e){ console.warn('platforms',e); PLATFORMS=[]; }
 }
 function platAvailable(id){ const p=PLATFORMS.find(x=>x.id===id); return !!(p&&p.available); }
@@ -1825,6 +1914,9 @@ function showSection(sec){
   const navmap={dashboard:'nav-dashboard',calendar:'nav-calendar',drafts:'nav-drafts',templates:'nav-templates',assets:'nav-assets',connect:'nav-connect',analytics:'nav-analytics',email:'nav-email',ai:'nav-ai',audience:'nav-audience'};
   const nav=document.getElementById(navmap[sec]); if(nav) nav.classList.add('on');
   if(sec==='templates') renderStarters();
+  if(sec==='audience'&&!AUD.loaded) loadAudience();
+  if(sec==='email'){ if(!AUD.loaded) loadAudience(); if(!EMAILS.loaded) loadEmails(); else renderEmailList(); }
+  if(sec==='ai'&&!AIST.loaded) aiLoad();
 }
 
 /* ═══════════════ DASHBOARD ═══════════════ */
@@ -2179,6 +2271,255 @@ async function moduleWL(product){
     msg.textContent='You\u2019re on the list.'; msg.style.color='var(--green)'; inp.value='';
   }catch(e){ msg.textContent='Could not save — try again.'; msg.style.color='var(--pigment)'; }
 }
+
+/* ═══ SUITE MODULES: EMAIL · AI · AUDIENCE ═══ */
+let SVC={email:false,ai:false};
+let AUD={list:[],loaded:false}, EMAILS={list:[],loaded:false,editing:null}, AIST={loaded:false,action:null,results:[]};
+
+function lockNote(kind){
+  return '<div class="honest-note" style="margin-bottom:20px"><div><b>'+(kind==='email'?'Sending is almost live.':'Generation is almost live.')+'</b> '+(kind==='email'?'Campaigns save now; delivery switches on the moment the sending domain is connected.':'Your voice profile saves now; drafting switches on the moment the AI engine is connected.')+' No setup needed on your side.</div></div>';
+}
+
+/* ---- AUDIENCE ---- */
+async function loadAudience(){
+  try{ AUD.list=(await rpc('audience_list',{p_workspace:WS,p_q:null,p_tag:null}))||[]; AUD.loaded=true; }
+  catch(e){ AUD.list=[]; toast('Could not load contacts: '+e.message,'warn'); }
+  renderAudience();
+}
+function audTags(){ const t=new Set(); AUD.list.forEach(c=>(c.tags||[]).forEach(x=>t.add(x))); return [...t].sort(); }
+function renderAudience(){
+  const q=(document.getElementById('aud-q').value||'').toLowerCase();
+  const sel=document.getElementById('aud-tag');
+  const cur=sel.value;
+  sel.innerHTML='<option value="">All tags</option>'+audTags().map(t=>'<option '+(t===cur?'selected':'')+'>'+esc(t)+'</option>').join('');
+  const tag=sel.value;
+  let list=AUD.list.filter(c=>(!q||(c.name||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.phone||'').includes(q))&&(!tag||(c.tags||[]).includes(tag)));
+  document.getElementById('aud-count').textContent=list.length+' contact'+(list.length===1?'':'s');
+  const el=document.getElementById('aud-list');
+  if(!list.length){ el.innerHTML='<div class="empty-state"><h3>'+(AUD.list.length?'No matches':'No contacts yet')+'</h3><p>'+(AUD.list.length?'Try a different search.':'Add your regulars, festival-goers and customers — every other tool in the suite gets smarter with them.')+'</p>'+(AUD.list.length?'':'<button class="btn gold" onclick="openAudEdit(null)">Add your first contact</button>')+'</div>'; return; }
+  el.innerHTML=list.map(c=>
+    '<div class="post-row">'+
+      '<div class="pr-body" style="cursor:pointer" onclick="openAudEdit(\''+c.id+'\')">'+
+        '<div class="pr-text" style="font-weight:700">'+esc(c.name)+'</div>'+
+        '<div class="pr-meta">'+
+          (c.email?'<span>'+esc(c.email)+'</span>':'')+(c.phone?'<span>'+esc(c.phone)+'</span>':'')+
+          (c.nameday?'<span class="pending-tag"><span class="pdot"></span>'+esc(c.nameday)+'</span>':'')+
+          (c.tags||[]).map(t=>'<span class="chip-status draft">'+esc(t)+'</span>').join('')+
+        '</div>'+
+      '</div>'+
+      '<div class="pr-actions">'+
+        '<div class="iconbtn sm" title="Delete" onclick="audDelete(\''+c.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>'+
+      '</div>'+
+    '</div>').join('');
+}
+function audFilter(){ renderAudience(); }
+let audEditId=null;
+function openAudEdit(id){
+  audEditId=id;
+  const c=id?AUD.list.find(x=>x.id===id):null;
+  document.getElementById('aud-edit-title').textContent=c?'Edit contact':'Add contact';
+  document.getElementById('ac2-name').value=c?c.name||'':'';
+  document.getElementById('ac2-email').value=c?c.email||'':'';
+  document.getElementById('ac2-phone').value=c?c.phone||'':'';
+  document.getElementById('ac2-nameday').value=c?c.nameday||'':'';
+  document.getElementById('ac2-tags').value=c?(c.tags||[]).join(', '):'';
+  document.getElementById('ac2-notes').value=c?c.notes||'':'';
+  document.getElementById('ac2-msg').textContent='';
+  document.getElementById('aud-edit-back').classList.add('open');
+}
+function closeAudEdit(){ document.getElementById('aud-edit-back').classList.remove('open'); }
+async function audSave(){
+  const name=(document.getElementById('ac2-name').value||'').trim();
+  const msg=document.getElementById('ac2-msg');
+  if(!name){ msg.textContent='Name is required.'; msg.style.color='var(--pigment)'; return; }
+  const tags=(document.getElementById('ac2-tags').value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  try{
+    await rpc('audience_upsert',{p_workspace:WS,p_name:name,
+      p_email:(document.getElementById('ac2-email').value||'').trim()||null,
+      p_phone:(document.getElementById('ac2-phone').value||'').trim()||null,
+      p_nameday:(document.getElementById('ac2-nameday').value||'').trim()||null,
+      p_tags:tags,p_notes:(document.getElementById('ac2-notes').value||'').trim()||null,
+      p_id:audEditId});
+    closeAudEdit(); toast(audEditId?'Contact updated':'Contact added','gold'); await loadAudience();
+  }catch(e){ msg.textContent='Could not save: '+e.message; msg.style.color='var(--pigment)'; }
+}
+async function audDelete(id){
+  if(!confirm('Delete this contact?')) return;
+  try{ await rpc('audience_delete',{p_workspace:WS,p_id:id}); toast('Contact deleted'); await loadAudience(); }
+  catch(e){ toast('Could not delete: '+e.message,'warn'); }
+}
+function openAudImport(){ document.getElementById('aud-imp-msg').textContent=''; document.getElementById('aud-imp-back').classList.add('open'); }
+function closeAudImport(){ document.getElementById('aud-imp-back').classList.remove('open'); }
+async function audImport(){
+  const raw=(document.getElementById('aud-imp-text').value||'').trim();
+  const msg=document.getElementById('aud-imp-msg');
+  if(!raw){ msg.textContent='Paste at least one line.'; msg.style.color='var(--pigment)'; return; }
+  const rows=raw.split('\n').map(l=>{ const p=l.split(',').map(s=>s.trim()); return {name:p[0]||'',email:p[1]||'',phone:p[2]||'',nameday:p[3]||'',tag:p[4]||''}; }).filter(r=>r.name);
+  try{
+    const res=await rpc('audience_import',{p_workspace:WS,p_rows:rows});
+    msg.textContent=(res.added||0)+' added · '+(res.skipped||0)+' skipped'; msg.style.color='var(--green)';
+    await loadAudience(); setTimeout(closeAudImport,1200);
+  }catch(e){ msg.textContent='Import failed: '+e.message; msg.style.color='var(--pigment)'; }
+}
+
+/* ---- EMAIL ---- */
+async function loadEmails(){
+  try{ EMAILS.list=(await rpc('email_campaign_list',{p_workspace:WS}))||[]; EMAILS.loaded=true; }
+  catch(e){ EMAILS.list=[]; toast('Could not load campaigns: '+e.message,'warn'); }
+  renderEmailList();
+}
+function renderEmailList(){
+  document.getElementById('email-gate-note').innerHTML=SVC.email?'':lockNote('email');
+  const el=document.getElementById('email-list');
+  if(!EMAILS.list.length){ el.innerHTML='<div class="empty-state"><h3>No campaigns yet</h3><p>Your list is the one channel no algorithm owns. Write your first campaign — it saves as a draft until you send.</p><button class="btn gold" onclick="openCampaign(null)">Write your first campaign</button></div>'; return; }
+  el.innerHTML=EMAILS.list.map(c=>
+    '<div class="post-row">'+
+      '<div class="pr-body" style="cursor:pointer" onclick="openCampaign(\''+c.id+'\')">'+
+        '<div class="pr-text" style="font-weight:700">'+esc(c.subject||'(no subject)')+'</div>'+
+        '<div class="pr-meta">'+
+          '<span class="chip-status '+(c.status==='sent'?'published':'draft')+'">'+esc(c.status)+'</span>'+
+          '<span>'+(c.audience_tag?('To: '+esc(c.audience_tag)):'To: all contacts')+'</span>'+
+          (c.recipients?'<span>'+c.recipients+' recipients</span>':'')+
+          '<span>'+relTime(c.updated_at||c.created_at)+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pr-actions">'+(c.status==='draft'?'<div class="iconbtn sm" title="Delete" onclick="event.stopPropagation();emailDelete(\''+c.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>':'')+'</div>'+
+    '</div>').join('');
+}
+function openCampaign(id){
+  EMAILS.editing=id;
+  const c=id?EMAILS.list.find(x=>x.id===id):null;
+  document.getElementById('email-list-wrap').style.display='none';
+  document.getElementById('email-edit-wrap').style.display='block';
+  document.getElementById('ec-subject').value=c?c.subject||'':'';
+  document.getElementById('ec-preheader').value=c?c.preheader||'':'';
+  document.getElementById('ec-from').value=c?(c.from_name||''):(WSNAME||'');
+  document.getElementById('ec-body').value=c?c.body||'':'';
+  const sel=document.getElementById('ec-audience');
+  sel.innerHTML='<option value="">All contacts</option>'+audTags().map(t=>'<option '+(c&&c.audience_tag===t?'selected':'')+'>'+esc(t)+'</option>').join('');
+  document.getElementById('ec-msg').textContent='';
+  const locked=!SVC.email;
+  document.getElementById('ec-test-btn').style.opacity=locked?'0.5':'1';
+  document.getElementById('ec-send-btn').style.opacity=locked?'0.5':'1';
+  emailPreview();
+}
+function closeCampaign(){ document.getElementById('email-edit-wrap').style.display='none'; document.getElementById('email-list-wrap').style.display='block'; renderEmailList(); }
+function emailPreview(){
+  document.getElementById('ep-subject').textContent=document.getElementById('ec-subject').value||'Subject';
+  document.getElementById('ep-pre').textContent=document.getElementById('ec-preheader').value||'';
+  document.getElementById('ep-from').textContent=document.getElementById('ec-from').value||'Your business';
+  const b=(document.getElementById('ec-body').value||'Your message appears here.');
+  document.getElementById('ep-body').innerHTML=b.split(/\n{2,}/).map(p=>'<p style="margin:0 0 12px">'+esc(p).replace(/\n/g,'<br/>')+'</p>').join('');
+}
+document.addEventListener('input',function(e){ if(e.target&&['ec-subject','ec-preheader','ec-from'].includes(e.target.id)) emailPreview(); });
+async function emailSave(){
+  const msg=document.getElementById('ec-msg');
+  try{
+    const id=await rpc('email_campaign_save',{p_workspace:WS,
+      p_subject:document.getElementById('ec-subject').value||'',
+      p_body:document.getElementById('ec-body').value||'',
+      p_preheader:document.getElementById('ec-preheader').value||null,
+      p_from_name:document.getElementById('ec-from').value||null,
+      p_audience_tag:document.getElementById('ec-audience').value||null,
+      p_id:EMAILS.editing});
+    EMAILS.editing=id; msg.textContent='Draft saved.'; msg.style.color='var(--green)';
+    try{ EMAILS.list=(await rpc('email_campaign_list',{p_workspace:WS}))||[]; }catch(e2){}
+  }catch(e){ msg.textContent='Could not save: '+e.message; msg.style.color='var(--pigment)'; }
+}
+async function emailDelete(id){
+  if(!confirm('Delete this draft?')) return;
+  try{ await rpc('email_campaign_delete',{p_workspace:WS,p_id:id}); toast('Draft deleted'); await loadEmails(); }
+  catch(e){ toast('Could not delete: '+e.message,'warn'); }
+}
+async function emailSend(mode){
+  const msg=document.getElementById('ec-msg');
+  if(!EMAILS.editing){ msg.textContent='Save the draft first.'; msg.style.color='var(--pigment)'; return; }
+  if(!SVC.email){ msg.textContent='Sending activates once the sending domain is connected — your draft is safe.'; msg.style.color='var(--gold-d)'; return; }
+  let test_to=null;
+  if(mode==='test'){ test_to=(ME&&ME.email)||prompt('Send test to which email?'); if(!test_to) return; }
+  else if(!confirm('Send this campaign to your selected audience now?')) return;
+  msg.textContent='Sending…'; msg.style.color='var(--muted)';
+  try{
+    const r=await edgeFn('email-send',{workspace:WS,campaign_id:EMAILS.editing,mode:mode==='test'?'test':'real',test_to:test_to});
+    if(r&&r.available===false){ msg.textContent='Sending is not configured yet.'; msg.style.color='var(--gold-d)'; return; }
+    if(r&&r.error){ msg.textContent='Send failed: '+r.error; msg.style.color='var(--pigment)'; return; }
+    msg.textContent=(mode==='test'?'Test sent':'Campaign sent')+' — '+(r.sent||0)+' delivered.'; msg.style.color='var(--green)';
+    if(mode!=='test') await loadEmails();
+  }catch(e){ msg.textContent='Send failed: '+e.message; msg.style.color='var(--pigment)'; }
+}
+
+/* ---- AI STUDIO ---- */
+async function aiLoad(){
+  document.getElementById('ai-gate-note').innerHTML=SVC.ai?'':lockNote('ai');
+  try{
+    const p=await rpc('ai_profile_get',{p_workspace:WS});
+    document.getElementById('ai-biz').value=p.business_name||WSNAME||'';
+    document.getElementById('ai-about').value=p.about||'';
+    document.getElementById('ai-tone').value=p.tone||'';
+    if(p.languages) document.getElementById('ai-langs').value=p.languages;
+    document.getElementById('ai-sample').value=p.sample||'';
+    AIST.loaded=true;
+  }catch(e){ console.warn('ai profile',e); }
+}
+async function aiSaveProfile(){
+  const msg=document.getElementById('ai-prof-msg');
+  try{
+    await rpc('ai_profile_save',{p_workspace:WS,
+      p_business:document.getElementById('ai-biz').value||null,
+      p_about:document.getElementById('ai-about').value||null,
+      p_tone:document.getElementById('ai-tone').value||null,
+      p_languages:document.getElementById('ai-langs').value||null,
+      p_sample:document.getElementById('ai-sample').value||null});
+    msg.textContent='Voice saved.'; msg.style.color='var(--green)';
+  }catch(e){ msg.textContent='Could not save: '+e.message; msg.style.color='var(--pigment)'; }
+}
+function aiRun(action){
+  AIST.action=action;
+  const wrap=document.getElementById('ai-input-wrap');
+  if(action==='week'){ wrap.style.display='none'; aiRunGo(); return; }
+  document.getElementById('ai-input-label').textContent=action==='caption'?'Your rough caption or idea':'The review or comment';
+  document.getElementById('ai-input').value='';
+  wrap.style.display='block'; document.getElementById('ai-input').focus();
+}
+async function aiRunGo(){
+  const st=document.getElementById('ai-status');
+  if(!SVC.ai){ st.innerHTML='<b style="color:var(--gold-d)">Generation activates once the AI engine is connected.</b> Your voice profile is saved and ready — the moment it is on, this button works.'; return; }
+  const input=document.getElementById('ai-input').value||'';
+  if(AIST.action!=='week'&&!input.trim()){ st.textContent='Paste something first.'; return; }
+  st.textContent='Working…';
+  try{
+    const r=await edgeFn('ai-generate',{workspace:WS,action:AIST.action,input:input,count:7});
+    if(r&&r.available===false){ st.textContent='AI engine is not configured yet.'; return; }
+    if(r&&r.error){ st.textContent='Failed: '+r.error; return; }
+    const res=r.result;
+    AIST.results=Array.isArray(res)?res.map(x=>({day:x.day,text:x.text})):[{text:(res&&res.text)||String(res)}];
+    st.textContent='';
+    renderAiResults();
+  }catch(e){ st.textContent='Failed: '+e.message; }
+}
+function renderAiResults(){
+  const el=document.getElementById('ai-results');
+  el.innerHTML=AIST.results.map(function(r,i){ return (
+    '<div class="platform-card" style="display:block;padding:16px 18px;margin-bottom:10px">'+
+      (r.day?'<div class="sec-label" style="margin-bottom:6px">'+esc(r.day)+'</div>':'')+
+      '<div style="font-size:14px;line-height:1.55;white-space:pre-wrap">'+esc(r.text||'')+'</div>'+
+      '<div style="display:flex;gap:8px;margin-top:12px">'+
+        '<button class="btn gold" style="padding:8px 14px;font-size:12.5px" onclick="aiToDraft('+i+')">Save as draft</button>'+
+        '<button class="btn" style="padding:8px 14px;font-size:12.5px" onclick="aiToComposer('+i+')">Open in composer</button>'+
+      '</div>'+
+    '</div>'); }).join('');
+}
+async function aiToDraft(i){
+  const r=AIST.results[i]; if(!r) return;
+  try{ await rpc('social_save_post',{p_workspace:WS,p_body:r.text,p_channels:[],p_scheduled_at:null,p_status:'draft',p_media:[],p_nameday:null,p_meta:{source:'ai'}});
+    toast('Saved to drafts','gold'); await refreshData();
+  }catch(e){ toast('Could not save: '+e.message,'warn'); }
+}
+function aiToComposer(i){
+  const r=AIST.results[i]; if(!r) return;
+  openComposer(null); document.getElementById('post-text').value=r.text; updateCharCount();
+}
+
 async function refreshData(){ await Promise.allSettled([loadStats(), loadPosts(), loadChannels()]); renderAll(); }
 
 /* ═══════════════ HELPERS ═══════════════ */
