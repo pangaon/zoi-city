@@ -536,6 +536,10 @@ async function doReserve(){
       if(co&&co.error){ errEl.textContent=co.error; btn.disabled=false; btn.textContent=orig; return; }
     }catch(err2){ errEl.textContent='Checkout failed: '+err2.message; btn.disabled=false; btn.textContent=orig; return; }
   }
+  if(Number(t.price_cents||0)>0 && !SVCT.stripe){
+    errEl.textContent='Paid tickets are almost ready — online payment is being enabled for this event. Please check back soon.';
+    btn.disabled=false; btn.textContent=orig; return;
+  }
   btn.textContent='Reserving…';
   try{
     const res = await rpc('tickets_reserve', {p_event:PUB.eventId, p_type:t.id, p_name:name, p_email:email, p_qty:PUB.qty}, PUBKEY);
@@ -556,7 +560,7 @@ function showConfirm(res, t){
   $('#cfStatus').textContent = res.paid ? 'Paid' : (free?'RSVP held':'Reserved (unpaid)');
   $('#cfAmount').textContent = free ? 'Free' : fmtMoney(res.amount_cents, res.currency);
   $('#cfNote').style.display = (free||res.paid) ? 'none' : 'flex';
-  $('#confirmSub').textContent = res.paid ? 'Payment received — you are all set. Keep this code.' : (free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code — payment comes later.');
+  $('#confirmSub').textContent = res.paid ? 'Payment received — you are all set. Keep this code.' : (free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code.');
   const ib=document.getElementById('cfIcsBtn'); if(ib) ib.style.display=(PUB.ev&&PUB.ev.event_at)?'inline-flex':'none';
   $('#confirmModal').classList.add('open');
 }
