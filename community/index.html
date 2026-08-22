@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Community — Zoi</title>
+<meta name="description" content="The Greek world, talking. Share news, tag places, celebrate namedays — the community feed of the diaspora."/>
+<link rel="canonical" href="https://www.zoi.city/community"/>
+<meta name="theme-color" content="#080a0e"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0e; --bg2:#0e131a; --bg3:#141a22; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
+  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774; --acc:#6ea8ff; --acc2:#3d7ce0; --gold:#d9b26a; --green:#3f9d76; --red:#e26d6d;
+  --navbg:rgba(8,10,14,.74); --btnp-fg:#070a0e; --ease:cubic-bezier(.22,.61,.36,1);
+}
+[data-theme="light"]{
+  --bg:#f6f4ef; --bg2:#fdfcf9; --bg3:#efece4; --line:rgba(13,27,42,.1); --line2:rgba(13,27,42,.2);
+  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0; --acc:#2f6fd0; --acc2:#2456a8; --gold:#8f6520; --green:#1d7a4f; --red:#b84a4a;
+  --navbg:rgba(246,244,239,.86); --btnp-fg:#ffffff;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-.01em}
+.wrap{max-width:680px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:.25s var(--ease);border:1px solid transparent;white-space:nowrap}
+.btn.p{background:var(--tx);color:var(--btnp-fg)}
+.btn.p:hover{transform:translateY(-1px)}
+.btn.p:disabled{opacity:.5;cursor:default;transform:none}
+.btn.g{background:transparent;border-color:var(--line2);color:var(--tx)}
+.btn.g:hover{background:var(--bg2)}
+nav{position:sticky;top:0;z-index:60;background:var(--navbg);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid var(--line)}
+.nv{display:flex;align-items:center;gap:22px;height:62px;max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,48px)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.seal{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(150deg,var(--bg3),var(--bg2));border:1px solid var(--line2);font-family:'Fraunces';font-weight:400;font-size:17px;color:var(--gold)}
+.nlinks{display:flex;gap:4px;margin-left:8px}
+.nlinks a{padding:8px 13px;border-radius:7px;font-weight:500;font-size:14px;color:var(--mut);transition:.2s}
+.nlinks a:hover{color:var(--tx);background:var(--bg2)}
+.nr{margin-left:auto;display:flex;gap:10px;align-items:center}
+@media(max-width:760px){.nlinks{display:none}}
+
+.hero{padding:clamp(34px,5vw,56px) 0 8px}
+.hero h1{font-size:clamp(30px,4.6vw,44px);letter-spacing:-.03em;font-weight:700;line-height:1.05}
+.hero h1 .serif{color:var(--gold);font-weight:300}
+.hsub{color:var(--mut);font-size:15px;margin-top:10px}
+.nameday{display:none;align-items:center;gap:9px;margin-top:16px;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:13.5px}
+.nameday .dot{width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 10px var(--gold)}
+
+.composer{margin:26px 0 8px;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px}
+.composer textarea{width:100%;border:none;outline:none;background:transparent;resize:vertical;min-height:74px;font:500 15px 'Hanken Grotesk';color:var(--tx);line-height:1.5}
+.composer textarea::placeholder{color:var(--dim)}
+.crow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+.ccount{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--dim);margin-left:auto}
+.tagbox{position:relative}
+.tagbtn{font-size:12.5px;font-weight:600;padding:7px 12px;border-radius:7px;border:1px solid var(--line2);background:transparent;color:var(--mut);cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}
+.tagbtn:hover{color:var(--tx)}
+.tagbtn.set{color:var(--gold);border-color:var(--gold)}
+.tagpop{position:absolute;top:calc(100% + 6px);left:0;width:min(320px,78vw);background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:10px;z-index:40;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);display:none}
+.tagpop input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:500 13.5px 'Hanken Grotesk';color:var(--tx);outline:none}
+.tagpop .opt{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.tagpop .opt:hover{background:var(--bg3)}
+.tagpop .opt span{display:block;font-size:11.5px;color:var(--dim)}
+
+.gate{margin:26px 0;background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:22px;text-align:center}
+.gate h3{font-size:18px;font-weight:700;margin-bottom:6px}
+.gate p{color:var(--mut);font-size:14px;margin-bottom:14px}
+.gate input{width:min(320px,100%);background:var(--bg);border:1px solid var(--line2);border-radius:8px;padding:11px 14px;font:500 14.5px 'Hanken Grotesk';color:var(--tx);outline:none;text-align:center;margin-bottom:10px}
+.gate input:focus{border-color:var(--acc)}
+.gerr{color:var(--red);font-size:13px;min-height:18px;margin-bottom:6px}
+
+.feed{padding:14px 0 70px}
+.post{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:12px;transition:.2s}
+.post:hover{border-color:var(--line2)}
+.phead{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.ava{width:36px;height:36px;border-radius:50%;flex:none;display:grid;place-items:center;font-family:'Fraunces';font-size:16px;color:var(--gold);background:var(--bg3);border:1px solid var(--line2)}
+.pwho b{font-size:14.5px;display:block;line-height:1.2}
+.pwho span{font-size:12px;color:var(--dim)}
+.pdel{margin-left:auto;background:none;border:none;color:var(--dim);cursor:pointer;font-size:12px;padding:4px}
+.pdel:hover{color:var(--red)}
+.pbody{font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.ptag{display:inline-flex;align-items:center;gap:6px;margin-top:10px;font-size:12.5px;font-weight:600;color:var(--gold);border:1px solid var(--line);border-radius:8px;padding:6px 11px;transition:.2s}
+.ptag:hover{border-color:var(--gold)}
+.pfoot{display:flex;gap:6px;margin-top:12px;align-items:center}
+.pact{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:var(--dim);cursor:pointer;font:600 13px 'Hanken Grotesk';padding:5px 10px;border-radius:7px;transition:.2s}
+.pact:hover{color:var(--tx);background:var(--bg3)}
+.pact.on{color:var(--red)}
+.pact svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.pact.on svg{fill:currentColor}
+.cmts{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:none}
+.cmt{display:flex;gap:9px;padding:7px 0}
+.cmt .ava{width:26px;height:26px;font-size:12px}
+.cmt div b{font-size:12.5px;margin-right:6px}
+.cmt div span{font-size:13.5px;color:var(--mut)}
+.cmtrow{display:flex;gap:8px;margin-top:8px}
+.cmtrow input{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:500 13.5px 'Hanken Grotesk';color:var(--tx);outline:none}
+.cmtrow input:focus{border-color:var(--acc)}
+.empty{padding:50px 20px;text-align:center;color:var(--mut)}
+.empty h3{font-size:20px;font-weight:700;color:var(--tx);margin-bottom:6px}
+.skel{height:110px;border-radius:14px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));background-size:200% 100%;animation:sh 1.2s infinite;margin-bottom:12px}
+@keyframes sh{0%{background-position:0 0}100%{background-position:-200% 0}}
+.themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line2);cursor:pointer;color:var(--tx);box-shadow:0 8px 24px -12px rgba(0,0,0,.4)}
+.themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(16px);opacity:0;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 20px;font-weight:600;font-size:13.5px;z-index:400;transition:.3s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+footer{border-top:1px solid var(--line);padding:26px 0 36px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+footer span,footer a{font-size:13px;color:var(--dim)}
+footer a:hover{color:var(--tx)}
+</style>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
+</head>
+<body>
+<nav><div class="nv">
+  <a class="brand" href="/"><span class="seal">Ζ</span>Zoi</a>
+  <div class="nlinks"><a href="/">Home</a><a href="/explore">Explore</a><a href="/social">Business suite</a><a href="/tickets">Tickets</a></div>
+  <div class="nr"><span class="mono" id="who" style="letter-spacing:.06em"></span><a class="btn p" href="/social" id="nav-cta">Start free</a></div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="mono" style="margin-bottom:14px">The agora</div>
+  <h1>The Greek world, <span class="serif">talking.</span></h1>
+  <p class="hsub">Share what's happening. Tag the taverna, the church, the festival. This is our square.</p>
+  <div class="nameday" id="nameday"><span class="dot"></span><span id="nameday-txt"></span></div>
+</div></header>
+
+<div class="wrap">
+  <div class="gate" id="gate" style="display:none">
+    <h3>Join the conversation</h3>
+    <p>Sign in with your email — a 6-digit code, no password.</p>
+    <div id="gate-step1">
+      <input id="g-email" type="email" placeholder="you@example.com" autocomplete="email"/>
+      <div class="gerr" id="g-err1"></div>
+      <button class="btn p" id="g-send" onclick="sendCode()">Send my code</button>
+    </div>
+    <div id="gate-step2" style="display:none">
+      <input id="g-code" inputmode="numeric" placeholder="6-digit code" maxlength="8" style="font-family:'JetBrains Mono';letter-spacing:.3em"/>
+      <div class="gerr" id="g-err2"></div>
+      <button class="btn p" id="g-verify" onclick="verifyCode()">Sign in</button>
+    </div>
+  </div>
+
+  <div class="composer" id="composer" style="display:none">
+    <textarea id="c-body" maxlength="1000" placeholder="What's happening in your Greek world?"></textarea>
+    <div class="crow">
+      <div class="tagbox">
+        <button class="tagbtn" id="tag-btn" onclick="toggleTag()">
+          <svg style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <span id="tag-lab">Tag a place</span>
+        </button>
+        <div class="tagpop" id="tag-pop">
+          <input id="tag-q" placeholder="Search the directory…" autocomplete="off"/>
+          <div id="tag-res" style="margin-top:6px;max-height:220px;overflow:auto"></div>
+        </div>
+      </div>
+      <span class="ccount"><span id="c-n">0</span>/1000</span>
+      <button class="btn p" id="c-post" onclick="postNow()">Post</button>
+    </div>
+  </div>
+
+  <div class="feed" id="feed"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+</div>
+
+<footer><div class="wrap">
+  <span>© 2026 Zoi · zoi.city</span>
+  <span><a href="/explore">Explore</a> · <a href="/social">Business suite</a> · <a href="/tickets">Tickets</a></span>
+</div></footer>
+
+<button class="themeToggle" onclick="flipTheme()" title="Light / dark">
+  <svg id="icoSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <svg id="icoMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+</button>
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE='https://csebihpaychdkanjjsmz.supabase.co';
+const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+let AUTH=null, TAG=null, POSTS=[];
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+function flipTheme(){ const t=(document.documentElement.getAttribute('data-theme')||'dark')==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('zoi_theme',t)}catch(e){}; syncIco(); }
+function syncIco(){ const d=(document.documentElement.getAttribute('data-theme')||'dark')==='dark'; document.getElementById('icoSun').style.display=d?'block':'none'; document.getElementById('icoMoon').style.display=d?'none':'block'; }
+syncIco();
+function relTime(iso){
+  const d=(Date.now()-new Date(iso).getTime())/1000;
+  if(d<60) return 'just now'; if(d<3600) return Math.floor(d/60)+'m'; if(d<86400) return Math.floor(d/3600)+'h';
+  if(d<604800) return Math.floor(d/86400)+'d';
+  return new Date(iso).toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+function loadAuth(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token) return a; }catch(e){} return null; }
+function saveAuth(a){ try{ localStorage.setItem('zoi_auth',JSON.stringify(a)); }catch(e){} }
+async function ensureFresh(){
+  if(!AUTH) return false;
+  if(AUTH.expires_at*1000>Date.now()+30000) return true;
+  if(!AUTH.refresh_token) return false;
+  try{
+    const r=await fetch(BASE+'/auth/v1/token?grant_type=refresh_token',{method:'POST',headers:{apikey:PUB,'Content-Type':'application/json'},body:JSON.stringify({refresh_token:AUTH.refresh_token})});
+    const j=await r.json();
+    if(j.access_token){ AUTH={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),email:(j.user&&j.user.email)||AUTH.email}; saveAuth(AUTH); return true; }
+  }catch(e){}
+  return false;
+}
+async function rpc(fn,params,needAuth){
+  let tk=PUB;
+  if(needAuth){ const ok=await ensureFresh(); if(!ok){ signOutUI(); throw new Error('Please sign in.'); } tk=AUTH.access_token; }
+  else if(AUTH&&AUTH.expires_at*1000>Date.now()+5000){ tk=AUTH.access_token; }
+  const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+tk,'Content-Type':'application/json'},body:JSON.stringify(params||{})});
+  const t=await r.text(); if(!r.ok){ let m=t; try{ m=(JSON.parse(t).message)||t; }catch(e){} throw new Error(m); }
+  return t?JSON.parse(t):null;
+}
+
+/* ---- sign-in gate ---- */
+async function sendCode(){
+  const email=(document.getElementById('g-email').value||'').trim();
+  const err=document.getElementById('g-err1'); err.textContent='';
+  if(!/.+@.+\..+/.test(email)){ err.textContent='Enter a valid email.'; return; }
+  const b=document.getElementById('g-send'); b.disabled=true; b.textContent='Sending…';
+  try{
+    const r=await fetch(BASE+'/auth/v1/otp',{method:'POST',headers:{apikey:PUB,'Content-Type':'application/json'},body:JSON.stringify({email,create_user:true})});
+    if(!r.ok){ const j=await r.json().catch(()=>({})); throw new Error(j.msg||j.message||'Could not send the code.'); }
+    document.getElementById('gate-step1').style.display='none';
+    document.getElementById('gate-step2').style.display='block';
+    localStorage.setItem('zoi_pending_email',email);
+    setTimeout(()=>document.getElementById('g-code').focus(),80);
+  }catch(e){ err.textContent=e.message; }
+  b.disabled=false; b.textContent='Send my code';
+}
+async function verifyCode(){
+  const email=localStorage.getItem('zoi_pending_email')||'';
+  const code=(document.getElementById('g-code').value||'').trim();
+  const err=document.getElementById('g-err2'); err.textContent='';
+  if(!code){ err.textContent='Enter the code from your email.'; return; }
+  const b=document.getElementById('g-verify'); b.disabled=true; b.textContent='Checking…';
+  try{
+    const r=await fetch(BASE+'/auth/v1/verify',{method:'POST',headers:{apikey:PUB,'Content-Type':'application/json'},body:JSON.stringify({type:'email',email,token:code})});
+    const j=await r.json();
+    if(!j.access_token) throw new Error(j.msg||j.message||'Wrong or expired code.');
+    AUTH={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Math.floor(Date.now()/1000)+(j.expires_in||3600),email};
+    saveAuth(AUTH); signedInUI(); refreshFeed(); toast('Welcome to the agora');
+  }catch(e){ err.textContent=e.message; }
+  b.disabled=false; b.textContent='Sign in';
+}
+function signedInUI(){
+  document.getElementById('gate').style.display='none';
+  document.getElementById('composer').style.display='block';
+  document.getElementById('who').textContent=(AUTH&&AUTH.email)?AUTH.email.split('@')[0]:'';
+  document.getElementById('nav-cta').textContent='My suite';
+}
+function signOutUI(){
+  AUTH=null;
+  document.getElementById('gate').style.display='block';
+  document.getElementById('composer').style.display='none';
+}
+
+/* ---- composer ---- */
+document.addEventListener('DOMContentLoaded',()=>{
+  AUTH=loadAuth();
+  if(AUTH){ signedInUI(); } else { document.getElementById('gate').style.display='block'; }
+  const ta=document.getElementById('c-body');
+  ta.addEventListener('input',()=>{ document.getElementById('c-n').textContent=ta.value.length; });
+  document.getElementById('g-email').addEventListener('keydown',e=>{ if(e.key==='Enter') sendCode(); });
+  document.getElementById('g-code').addEventListener('keydown',e=>{ if(e.key==='Enter') verifyCode(); });
+  let tt=null;
+  document.getElementById('tag-q').addEventListener('input',e=>{ clearTimeout(tt); tt=setTimeout(()=>tagSearch(e.target.value.trim()),300); });
+  document.addEventListener('click',e=>{ if(!e.target.closest('.tagbox')) document.getElementById('tag-pop').style.display='none'; });
+  nameday(); refreshFeed();
+});
+function toggleTag(){
+  const p=document.getElementById('tag-pop');
+  if(TAG){ TAG=null; document.getElementById('tag-lab').textContent='Tag a place'; document.getElementById('tag-btn').classList.remove('set'); p.style.display='none'; return; }
+  p.style.display=p.style.display==='block'?'none':'block';
+  if(p.style.display==='block') setTimeout(()=>document.getElementById('tag-q').focus(),60);
+}
+async function tagSearch(q){
+  const box=document.getElementById('tag-res');
+  if(!q){ box.innerHTML=''; return; }
+  try{
+    const rows=await rpc('explore_search',{p_q:q,p_type:null,p_city:null,p_country:null,p_limit:6,p_offset:0});
+    box.innerHTML=(rows||[]).map(r=>'<div class="opt" onclick="pickTag(\''+r.id+'\',\''+esc(r.name).replace(/'/g,'&#39;')+'\')">'+esc(r.name)+'<span>'+esc([r.city,r.country].filter(Boolean).join(', '))+'</span></div>').join('')||'<div style="padding:8px 10px;font-size:13px;color:var(--dim)">Nothing found.</div>';
+  }catch(e){}
+}
+function pickTag(id,name){
+  TAG=id;
+  const el=document.createElement('span'); el.innerHTML=name;
+  document.getElementById('tag-lab').textContent=el.textContent;
+  document.getElementById('tag-btn').classList.add('set');
+  document.getElementById('tag-pop').style.display='none';
+}
+async function postNow(){
+  const body=(document.getElementById('c-body').value||'').trim();
+  if(!body){ toast('Write something first'); return; }
+  const b=document.getElementById('c-post'); b.disabled=true; b.textContent='Posting…';
+  try{
+    await rpc('feed_post',{p_body:body,p_listing:TAG,p_nameday:null},true);
+    document.getElementById('c-body').value=''; document.getElementById('c-n').textContent='0';
+    TAG=null; document.getElementById('tag-lab').textContent='Tag a place'; document.getElementById('tag-btn').classList.remove('set');
+    refreshFeed();
+  }catch(e){ toast(e.message); }
+  b.disabled=false; b.textContent='Post';
+}
+
+/* ---- feed ---- */
+function initial(n){ return (n||'Γ').trim().charAt(0).toUpperCase(); }
+function postCard(p){
+  const loc=p.author_city?(' · '+esc(p.author_city)):'';
+  return '<div class="post" id="post-'+p.id+'">'+
+    '<div class="phead"><div class="ava">'+esc(initial(p.author))+'</div>'+
+      '<div class="pwho"><b>'+esc(p.author)+'</b><span>'+relTime(p.created_at)+loc+'</span></div>'+
+      (p.mine?'<button class="pdel" onclick="delPost(\''+p.id+'\')">Delete</button>':'')+
+    '</div>'+
+    '<div class="pbody">'+esc(p.body)+'</div>'+
+    (p.listing_name?'<a class="ptag" href="/p/'+esc(p.listing_slug||'')+'"><svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>'+esc(p.listing_name)+'</a>':'')+
+    '<div class="pfoot">'+
+      '<button class="pact'+(p.liked?' on':'')+'" onclick="likePost(\''+p.id+'\',this)"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg><span>'+(p.likes||0)+'</span></button>'+
+      '<button class="pact" onclick="toggleCmts(\''+p.id+'\')"><svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg><span>'+(p.comments||0)+'</span></button>'+
+    '</div>'+
+    '<div class="cmts" id="cmts-'+p.id+'"><div id="cl-'+p.id+'"></div>'+
+      '<div class="cmtrow"><input id="ci-'+p.id+'" maxlength="500" placeholder="Add a comment…" onkeydown="if(event.key===\'Enter\')sendCmt(\''+p.id+'\')"/><button class="btn g" onclick="sendCmt(\''+p.id+'\')">Reply</button></div>'+
+    '</div></div>';
+}
+async function refreshFeed(){
+  try{
+    POSTS=await rpc('feed_list',{p_limit:40,p_offset:0})||[];
+    const el=document.getElementById('feed');
+    el.innerHTML=POSTS.map(postCard).join('')||'<div class="empty"><h3>The square is quiet</h3><p>Be the first voice. Say something — the whole diaspora is listening.</p></div>';
+  }catch(e){ document.getElementById('feed').innerHTML='<div class="empty"><h3>Could not load the feed</h3><p>'+esc(e.message)+'</p></div>'; }
+}
+async function likePost(id,btn){
+  if(!AUTH){ toast('Sign in above to like posts'); return; }
+  try{
+    const r=await rpc('feed_like',{p_id:id},true);
+    btn.classList.toggle('on',r.liked);
+    btn.querySelector('span').textContent=r.likes;
+  }catch(e){ toast(e.message); }
+}
+async function delPost(id){
+  if(!confirm('Delete this post?')) return;
+  try{ await rpc('feed_delete',{p_id:id},true); const el=document.getElementById('post-'+id); if(el) el.remove(); }
+  catch(e){ toast(e.message); }
+}
+async function toggleCmts(id){
+  const box=document.getElementById('cmts-'+id);
+  const open=box.style.display==='block';
+  box.style.display=open?'none':'block';
+  if(open) return;
+  const list=document.getElementById('cl-'+id);
+  list.innerHTML='<div style="font-size:12.5px;color:var(--dim);padding:4px 0">Loading…</div>';
+  try{
+    const rows=await rpc('feed_comments_list',{p_post:id})||[];
+    list.innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+esc(initial(c.author))+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('')||'<div style="font-size:12.5px;color:var(--dim);padding:4px 0">No comments yet.</div>';
+  }catch(e){ list.innerHTML='<div style="font-size:12.5px;color:var(--red)">'+esc(e.message)+'</div>'; }
+}
+async function sendCmt(id){
+  if(!AUTH){ toast('Sign in above to reply'); return; }
+  const inp=document.getElementById('ci-'+id);
+  const body=(inp.value||'').trim(); if(!body) return;
+  try{
+    await rpc('feed_comment',{p_post:id,p_body:body},true);
+    inp.value='';
+    const rows=await rpc('feed_comments_list',{p_post:id})||[];
+    document.getElementById('cl-'+id).innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+esc(initial(c.author))+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('');
+  }catch(e){ toast(e.message); }
+}
+async function nameday(){
+  try{
+    const j=await rpc('zoi_namedays_today',{});
+    let names=(j&&(j.names||j.namedays))||[];
+    if(typeof names==='string') names=names.split(/[,·]/).map(s=>s.trim()).filter(Boolean);
+    if(names.length){
+      document.getElementById('nameday-txt').textContent='Χρόνια πολλά today: '+names.slice(0,3).join(', ');
+      document.getElementById('nameday').style.display='inline-flex';
+    }
+  }catch(e){}
+}
+</script>
+</body>
+</html>
