@@ -204,39 +204,55 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 </style>
 
 
-<style id="zoiLightUnify">
-/* ===== LIGHT THEME UNIFY — matches zoi.city home (paper #f4efe3 / ink / gold / pigment) ===== */
-:root{
-  --paper:#0c2f4e!important; --paper2:#33526b!important;
-  --ink:#f7f3ea!important; --ink2:#f4efe3!important;
-  --muted:#5c7b92!important; --muted2:#48657c!important;
-  --gold:#b8893b!important; --gold-s:#c79a4b!important; --gold-d:#9a6f24!important; --gold-soft:#c79a4b!important;
-  --aegean:#0a4d8c!important; --sea:#1f9ec9!important; --pigment:#b5325f!important; --green:#2e8b57!important;
-  --line:rgba(10,49,85,.14)!important;
-  --glass:#ffffff!important; --glass2:#f6f0e4!important; --gl:rgba(10,49,85,.14)!important;
+<style id="zoiTheme">
+/* ═══ ZOI DESIGN SYSTEM — one language, two modes ═══ */
+[data-theme="light"]{
+  --paper:#0d1b2a; --paper2:#3c4a58; --ink:#f6f4ef; --ink2:#f6f4ef;
+  --muted:#5a6774; --muted2:#7b8794;
+  --line:rgba(13,27,42,.1); --glass:#ffffff; --glass2:#efece4; --gl:rgba(13,27,42,.12);
+  --gold:#b8893b; --gold-s:#d0a355; --gold-d:#8f6520; --gold-soft:#b8893b;
+  --aegean:#0a4d8c; --sea:#1f7fb8; --pigment:#b5325f; --green:#1d7a4f;
+  --navbg:rgba(246,244,239,.86); --sidebg:rgba(250,249,245,.92);
+  --cardshadow:0 2px 12px -8px rgba(13,27,42,.2); --backdrop:rgba(10,16,26,.4);
+  --r:16px; --rs:12px;
+}
+[data-theme="dark"]{
+  --paper:#f3f6fa; --paper2:#c2ccd6; --ink:#f3f6fa; --ink2:#080a0e;
+  --muted:#8b95a3; --muted2:#5d6774;
+  --line:rgba(255,255,255,.08); --glass:#0e131a; --glass2:#141a22; --gl:rgba(255,255,255,.11);
+  --gold:#b8893b; --gold-s:#d9b26a; --gold-d:#d9b26a; --gold-soft:#d9b26a;
+  --aegean:#3d7ce0; --sea:#6ea8ff; --pigment:#d4537e; --green:#3f9d76;
+  --navbg:rgba(8,10,14,.74); --sidebg:rgba(10,13,18,.85);
+  --cardshadow:none; --backdrop:rgba(2,4,8,.6);
+  --r:16px; --rs:12px;
 }
 body{background:var(--ink2)!important;color:var(--paper)!important}
-.world{background:
-  radial-gradient(1200px 800px at 5% -10%,rgba(31,158,201,.10),transparent 55%),
-  radial-gradient(900px 700px at 105% 5%,rgba(184,137,59,.12),transparent 52%),
-  radial-gradient(1000px 900px at 55% 115%,rgba(10,77,140,.08),transparent 60%),
-  linear-gradient(160deg,#f8f4ec,#f4efe3 60%,#efe7d6)!important}
-.grain{opacity:.04!important}
-.topnav,.topbar{background:rgba(244,239,227,.88)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(18px) saturate(1.3)!important}
-.sidebar,.side,.rail,.nav-side,.leftnav{background:rgba(248,244,236,.92)!important;border-right:1px solid var(--line)!important}
-.sidebar-item.active,.nav-item.active{background:rgba(10,49,85,.06)!important}
-.nav-link:hover{background:rgba(10,49,85,.06)!important}
-.proto-banner{background:rgba(184,137,59,.14)!important;border-bottom:1px solid rgba(184,137,59,.3)!important;color:var(--gold-d)!important}
+[data-theme="light"] .world{background:linear-gradient(160deg,#f8f6f1,#f4f1ea 60%,#efece4)!important}
+[data-theme="dark"] .world{background:radial-gradient(700px 460px at 85% -8%,rgba(110,168,255,.08),transparent 60%),#080a0e!important}
+.grain{opacity:.03!important}
+.topnav,.topbar{background:var(--navbg)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(18px) saturate(1.3)!important}
+.side,.sidebar{background:var(--sidebg)!important;border-right:1px solid var(--line)!important}
+.nav-link:hover{background:rgba(127,127,127,.08)!important}
+.proto-banner{background:rgba(184,137,59,.12)!important;border-bottom:1px solid rgba(184,137,59,.28)!important;color:var(--gold-d)!important}
 .hero-sub{color:var(--gold-d)!important}
-.ticket-card,.card,.panel,.tile,.stat,.stat-card,.metric,.list-card,.pane,.box,.quick,.quick-card,.widget,.tool-card{
-  background:#fff!important;border:1px solid var(--line)!important;box-shadow:0 2px 10px -6px rgba(10,49,85,.18)!important}
-input,textarea,select,.field input,.field select,.field textarea{
-  background:#fff!important;color:var(--paper)!important;border:1px solid var(--line)!important}
-input::placeholder,textarea::placeholder{color:#93a6b6!important}
-select option{background:#fff!important;color:var(--paper)!important}
-.modal-box,.modal-body,.modal-head,.sheet,.drawer,.dialog,.popover,.menu,.dropdown{background:#fff!important}
-.modal-backdrop,.overlay,.modal.open,.modal-backdrop.open,.overlay.open{background:rgba(9,24,39,.34)!important}
+.btn{border-radius:11px!important}
+.ticket-card,.card,.panel,.tile,.stat,.stat-card,.metric,.list-card,.pane,.box,.quick,.quick-card,.widget,.tool-card,.dstat,.an-card,.platform-card,.tmpl-card,.post-row,.today-post,.comm{
+  background:var(--glass)!important;border:1px solid var(--gl)!important;box-shadow:var(--cardshadow)!important}
+input,textarea,select,.field input,.field select,.field textarea,.gate-input{
+  background:var(--glass)!important;color:var(--paper)!important;border:1px solid var(--gl)!important}
+input::placeholder,textarea::placeholder{color:var(--muted2)!important}
+select option{background:var(--glass)!important;color:var(--paper)!important}
+.modal-box,.modal-body,.modal-head,.sheet,.drawer,.dialog,.popover,.menu,.dropdown,.pub-modal,.biz-dropdown,.composer-panel{background:var(--glass)!important}
+.modal-backdrop,.overlay,.modal.open,.modal-backdrop.open,.overlay.open{background:var(--backdrop)!important}
+.gate{background:var(--ink2)!important}
+.gate-card{background:var(--glass)!important;border:1px solid var(--gl)!important;box-shadow:var(--cardshadow)!important}
+.gate-card h1,.gate-card h2,.gate-title,.gate-card .title{color:var(--paper)!important;-webkit-text-fill-color:var(--paper)!important;background:none!important}
+.themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--gl);cursor:pointer;color:var(--paper);box-shadow:0 8px 24px -12px rgba(0,0,0,.5);transition:transform .2s}
+.themeToggle:hover{transform:translateY(-2px)}
+.themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
 </style>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
+
 </head>
 <body>
 <div class="world"></div>
@@ -795,6 +811,19 @@ document.getElementById('genModal').addEventListener('click',e=>{ if(e.target.id
 
 /* ============ BOOT ============ */
 route();
+</script>
+
+<button class="themeToggle" id="themeBtn" onclick="zoiFlipTheme()" title="Light / dark">
+  <svg id="thIcoSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <svg id="thIcoMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+</button>
+<script>
+function zoiSyncThemeIcon(){var t=document.documentElement.getAttribute('data-theme')||'light';
+ document.getElementById('thIcoSun').style.display=t==='dark'?'block':'none';
+ document.getElementById('thIcoMoon').style.display=t==='dark'?'none':'block';}
+function zoiFlipTheme(){var t=(document.documentElement.getAttribute('data-theme')||'light')==='light'?'dark':'light';
+ document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('zoi_theme',t)}catch(e){};zoiSyncThemeIcon();}
+zoiSyncThemeIcon();
 </script>
 </body>
 </html>

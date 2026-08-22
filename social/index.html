@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Zoi Social — Publishing for Greek business</title>
+<title>Zoi — Business suite</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1095,42 +1095,55 @@ select.wiz-input option{background:#0c1c2e;color:var(--paper)}
 </style>
 
 
-<style id="zoiLightUnify">
-/* ===== LIGHT THEME UNIFY — matches zoi.city home (paper #f4efe3 / ink / gold / pigment) ===== */
-:root{
-  --paper:#0c2f4e!important; --paper2:#33526b!important;
-  --ink:#f7f3ea!important; --ink2:#f4efe3!important;
-  --muted:#5c7b92!important; --muted2:#48657c!important;
-  --gold:#b8893b!important; --gold-s:#c79a4b!important; --gold-d:#9a6f24!important; --gold-soft:#c79a4b!important;
-  --aegean:#0a4d8c!important; --sea:#1f9ec9!important; --pigment:#b5325f!important; --green:#2e8b57!important;
-  --line:rgba(10,49,85,.14)!important;
-  --glass:#ffffff!important; --glass2:#f6f0e4!important; --gl:rgba(10,49,85,.14)!important;
+<style id="zoiTheme">
+/* ═══ ZOI DESIGN SYSTEM — one language, two modes ═══ */
+[data-theme="light"]{
+  --paper:#0d1b2a; --paper2:#3c4a58; --ink:#f6f4ef; --ink2:#f6f4ef;
+  --muted:#5a6774; --muted2:#7b8794;
+  --line:rgba(13,27,42,.1); --glass:#ffffff; --glass2:#efece4; --gl:rgba(13,27,42,.12);
+  --gold:#b8893b; --gold-s:#d0a355; --gold-d:#8f6520; --gold-soft:#b8893b;
+  --aegean:#0a4d8c; --sea:#1f7fb8; --pigment:#b5325f; --green:#1d7a4f;
+  --navbg:rgba(246,244,239,.86); --sidebg:rgba(250,249,245,.92);
+  --cardshadow:0 2px 12px -8px rgba(13,27,42,.2); --backdrop:rgba(10,16,26,.4);
+  --r:16px; --rs:12px;
+}
+[data-theme="dark"]{
+  --paper:#f3f6fa; --paper2:#c2ccd6; --ink:#f3f6fa; --ink2:#080a0e;
+  --muted:#8b95a3; --muted2:#5d6774;
+  --line:rgba(255,255,255,.08); --glass:#0e131a; --glass2:#141a22; --gl:rgba(255,255,255,.11);
+  --gold:#b8893b; --gold-s:#d9b26a; --gold-d:#d9b26a; --gold-soft:#d9b26a;
+  --aegean:#3d7ce0; --sea:#6ea8ff; --pigment:#d4537e; --green:#3f9d76;
+  --navbg:rgba(8,10,14,.74); --sidebg:rgba(10,13,18,.85);
+  --cardshadow:none; --backdrop:rgba(2,4,8,.6);
+  --r:16px; --rs:12px;
 }
 body{background:var(--ink2)!important;color:var(--paper)!important}
-.world{background:
-  radial-gradient(1200px 800px at 5% -10%,rgba(31,158,201,.10),transparent 55%),
-  radial-gradient(900px 700px at 105% 5%,rgba(184,137,59,.12),transparent 52%),
-  radial-gradient(1000px 900px at 55% 115%,rgba(10,77,140,.08),transparent 60%),
-  linear-gradient(160deg,#f8f4ec,#f4efe3 60%,#efe7d6)!important}
-.grain{opacity:.04!important}
-.topnav,.topbar{background:rgba(244,239,227,.88)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(18px) saturate(1.3)!important}
-.sidebar,.side,.rail,.nav-side,.leftnav{background:rgba(248,244,236,.92)!important;border-right:1px solid var(--line)!important}
-.sidebar-item.active,.nav-item.active{background:rgba(10,49,85,.06)!important}
-.nav-link:hover{background:rgba(10,49,85,.06)!important}
-.proto-banner{background:rgba(184,137,59,.14)!important;border-bottom:1px solid rgba(184,137,59,.3)!important;color:var(--gold-d)!important}
+[data-theme="light"] .world{background:linear-gradient(160deg,#f8f6f1,#f4f1ea 60%,#efece4)!important}
+[data-theme="dark"] .world{background:radial-gradient(700px 460px at 85% -8%,rgba(110,168,255,.08),transparent 60%),#080a0e!important}
+.grain{opacity:.03!important}
+.topnav,.topbar{background:var(--navbg)!important;border-bottom:1px solid var(--line)!important;backdrop-filter:blur(18px) saturate(1.3)!important}
+.side,.sidebar{background:var(--sidebg)!important;border-right:1px solid var(--line)!important}
+.nav-link:hover{background:rgba(127,127,127,.08)!important}
+.proto-banner{background:rgba(184,137,59,.12)!important;border-bottom:1px solid rgba(184,137,59,.28)!important;color:var(--gold-d)!important}
 .hero-sub{color:var(--gold-d)!important}
-.ticket-card,.card,.panel,.tile,.stat,.stat-card,.metric,.list-card,.pane,.box,.quick,.quick-card,.widget,.tool-card{
-  background:#fff!important;border:1px solid var(--line)!important;box-shadow:0 2px 10px -6px rgba(10,49,85,.18)!important}
-input,textarea,select,.field input,.field select,.field textarea{
-  background:#fff!important;color:var(--paper)!important;border:1px solid var(--line)!important}
-input::placeholder,textarea::placeholder{color:#93a6b6!important}
-select option{background:#fff!important;color:var(--paper)!important}
-.modal-box,.modal-body,.modal-head,.sheet,.drawer,.dialog,.popover,.menu,.dropdown{background:#fff!important}
-.modal-backdrop,.overlay,.modal.open,.modal-backdrop.open,.overlay.open{background:rgba(9,24,39,.34)!important}
-.gate{background:linear-gradient(160deg,#f8f4ec,#f4efe3 60%,#efe7d6)!important}
-.gate-card{background:#fff!important;border:1px solid rgba(10,49,85,.14)!important;box-shadow:0 10px 34px -14px rgba(10,49,85,.28)!important}
-.gate-card h1,.gate-card h2,.gate-title,.gate-card .title{color:#0c2f4e!important;-webkit-text-fill-color:#0c2f4e!important;background:none!important}
+.btn{border-radius:11px!important}
+.ticket-card,.card,.panel,.tile,.stat,.stat-card,.metric,.list-card,.pane,.box,.quick,.quick-card,.widget,.tool-card,.dstat,.an-card,.platform-card,.tmpl-card,.post-row,.today-post,.comm{
+  background:var(--glass)!important;border:1px solid var(--gl)!important;box-shadow:var(--cardshadow)!important}
+input,textarea,select,.field input,.field select,.field textarea,.gate-input{
+  background:var(--glass)!important;color:var(--paper)!important;border:1px solid var(--gl)!important}
+input::placeholder,textarea::placeholder{color:var(--muted2)!important}
+select option{background:var(--glass)!important;color:var(--paper)!important}
+.modal-box,.modal-body,.modal-head,.sheet,.drawer,.dialog,.popover,.menu,.dropdown,.pub-modal,.biz-dropdown,.composer-panel{background:var(--glass)!important}
+.modal-backdrop,.overlay,.modal.open,.modal-backdrop.open,.overlay.open{background:var(--backdrop)!important}
+.gate{background:var(--ink2)!important}
+.gate-card{background:var(--glass)!important;border:1px solid var(--gl)!important;box-shadow:var(--cardshadow)!important}
+.gate-card h1,.gate-card h2,.gate-title,.gate-card .title{color:var(--paper)!important;-webkit-text-fill-color:var(--paper)!important;background:none!important}
+.themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--gl);cursor:pointer;color:var(--paper);box-shadow:0 8px 24px -12px rgba(0,0,0,.5);transition:transform .2s}
+.themeToggle:hover{transform:translateY(-2px)}
+.themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
 </style>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
+
 </head>
 <body>
 <div class="world"></div>
@@ -1186,20 +1199,20 @@ select option{background:#fff!important;color:var(--paper)!important}
 <nav class="side">
   <div class="brandrow">
     <div class="seal">Z</div>
-    <div class="brandtxt"><b>Zoi Social</b><span>Publishing for Greek business</span></div>
+    <div class="brandtxt"><b>Zoi</b><span>Business suite</span></div>
   </div>
 
   <div class="biz-switch-wrap" id="biz-switch-wrap">
     <div class="acct" id="biz-acct-btn" onclick="toggleBizDropdown()">
       <div class="av" id="sidebar-biz-av">Z</div>
       <div>
-        <div class="nm" id="sidebar-biz-name">Workspace</div>
+        <div class="nm" id="sidebar-biz-name">Your business</div>
         <div class="sub" id="sidebar-connected-label">0 channels connected</div>
       </div>
       <svg class="arr" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
     </div>
     <div class="biz-dropdown" id="biz-dropdown">
-      <div class="biz-drop-head">Your workspaces</div>
+      <div class="biz-drop-head">Your businesses</div>
       <div id="biz-drop-list"></div>
       <div class="biz-drop-foot">
         <div class="biz-drop-foot-btn" onclick="signOut()">
@@ -1246,6 +1259,23 @@ select option{background:#fff!important;color:var(--paper)!important}
     <span class="badge" id="connect-badge" style="background:var(--gold-soft);color:var(--ink);display:none">0</span>
   </div>
 
+
+  <div class="navlbl">Grow</div>
+  <div class="nav" id="nav-email" onclick="showSection('email')">
+    <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+    Email campaigns
+    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Soon</span>
+  </div>
+  <div class="nav" id="nav-ai" onclick="showSection('ai')">
+    <svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 15l.9 2.4L21.3 18l-2.4.9L18 21.3l-.9-2.4-2.4-.9 2.4-.9z"/></svg>
+    AI Studio
+    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Soon</span>
+  </div>
+  <div class="nav" id="nav-audience" onclick="showSection('audience')">
+    <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+    Audience
+    <span class="badge" style="background:var(--gl);color:var(--muted);font-size:9px">Soon</span>
+  </div>
   <div class="navlbl">Measure</div>
   <div class="nav" id="nav-analytics" onclick="showSection('analytics')">
     <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 16l4-4 4 4 4-6"/></svg>
@@ -1445,6 +1475,49 @@ select option{background:#fff!important;color:var(--paper)!important}
     </div>
   </div>
 
+
+  <div class="connect-view" id="email-view">
+    <div class="topbar"><span class="h1">Email campaigns</span></div>
+    <div class="connect-body" style="max-width:none">
+      <div class="sec-label" style="margin-bottom:6px">Part of the Zoi suite</div>
+      <h2 style="font-family:'Fraunces';font-weight:500;font-size:clamp(24px,3.4vw,36px);max-width:24ch;line-height:1.1;margin-bottom:10px">Your list is the one channel no algorithm owns.</h2>
+      <p style="color:var(--muted);max-width:56ch;font-size:15px;margin-bottom:22px">Newsletters, offers and nameday campaigns — designed, sent and measured from the same desk as your posts. Mailchimp-class, built Greek.</p>
+      <div style="display:flex;gap:10px;max-width:460px;margin-bottom:8px">
+        <input class="gate-input" id="wl-email" placeholder="name@business.com" style="flex:1;font-size:14px"/>
+        <button class="btn gold" onclick="moduleWL('email')">Get early access</button>
+      </div>
+      <div id="wlmsg-email" style="font-size:13px;min-height:18px;margin-bottom:18px"></div>
+      <div class="platform-grid" style="max-width:900px"><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Campaigns</div><div class="pc-subtitle">Design once, send beautifully — Greek and English.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Nameday automations</div><div class="pc-subtitle">Wish every customer on their day, automatically.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Real deliverability</div><div class="pc-subtitle">Verified sending on your own domain.</div></div></div></div></div>
+    </div>
+  </div>
+  <div class="connect-view" id="ai-view">
+    <div class="topbar"><span class="h1">AI Studio</span></div>
+    <div class="connect-body" style="max-width:none">
+      <div class="sec-label" style="margin-bottom:6px">Part of the Zoi suite</div>
+      <h2 style="font-family:'Fraunces';font-weight:500;font-size:clamp(24px,3.4vw,36px);max-width:24ch;line-height:1.1;margin-bottom:10px">An agency in your corner, awake around the clock.</h2>
+      <p style="color:var(--muted);max-width:56ch;font-size:15px;margin-bottom:22px">Agentic AI that drafts your week of posts, writes captions in your voice, answers reviews and finds what to say next — you approve, it does.</p>
+      <div style="display:flex;gap:10px;max-width:460px;margin-bottom:8px">
+        <input class="gate-input" id="wl-ai_studio" placeholder="name@business.com" style="flex:1;font-size:14px"/>
+        <button class="btn gold" onclick="moduleWL('ai_studio')">Get early access</button>
+      </div>
+      <div id="wlmsg-ai_studio" style="font-size:13px;min-height:18px;margin-bottom:18px"></div>
+      <div class="platform-grid" style="max-width:900px"><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Auto content calendar</div><div class="pc-subtitle">A month of on-brand posts, drafted for approval.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Your voice, both languages</div><div class="pc-subtitle">Greek and English, tuned to your business.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Agentic actions</div><div class="pc-subtitle">It watches namedays, events and trends — and acts.</div></div></div></div></div>
+    </div>
+  </div>
+  <div class="connect-view" id="aud-view">
+    <div class="topbar"><span class="h1">Audience</span></div>
+    <div class="connect-body" style="max-width:none">
+      <div class="sec-label" style="margin-bottom:6px">Part of the Zoi suite</div>
+      <h2 style="font-family:'Fraunces';font-weight:500;font-size:clamp(24px,3.4vw,36px);max-width:24ch;line-height:1.1;margin-bottom:10px">Know every customer like a regular.</h2>
+      <p style="color:var(--muted);max-width:56ch;font-size:15px;margin-bottom:22px">One customer list across posts, tickets, email and your storefront — who they are, what they love, when their nameday is.</p>
+      <div style="display:flex;gap:10px;max-width:460px;margin-bottom:8px">
+        <input class="gate-input" id="wl-audience" placeholder="name@business.com" style="flex:1;font-size:14px"/>
+        <button class="btn gold" onclick="moduleWL('audience')">Get early access</button>
+      </div>
+      <div id="wlmsg-audience" style="font-size:13px;min-height:18px;margin-bottom:18px"></div>
+      <div class="platform-grid" style="max-width:900px"><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Unified profiles</div><div class="pc-subtitle">Every interaction across the suite, one record.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Segments</div><div class="pc-subtitle">Locals, regulars, festival-goers — message each right.</div></div></div></div><div class="platform-card"><div class="pc-header"><div style="flex:1"><div class="pc-title">Nameday book</div><div class="pc-subtitle">The dates that matter to your community.</div></div></div></div></div>
+    </div>
+  </div>
 </div><!-- /main -->
 </div><!-- /shell -->
 
@@ -1742,14 +1815,14 @@ function namedayNames(){
 }
 
 /* ═══════════════ NAV ═══════════════ */
-const VIEWS={dashboard:'dash-view',calendar:'calendar-view',drafts:'drafts-view',templates:'tmpl-view',assets:'asset-view',connect:'connect-view',analytics:'analytics-view'};
+const VIEWS={dashboard:'dash-view',calendar:'calendar-view',drafts:'drafts-view',templates:'tmpl-view',assets:'asset-view',connect:'connect-view',analytics:'analytics-view',email:'email-view',ai:'ai-view',audience:'aud-view'};
 function showSection(sec){
   Object.values(VIEWS).forEach(id=>{ const el=document.getElementById(id); if(!el) return;
     el.classList.remove('visible'); el.style.display='none'; });
   const target=document.getElementById(VIEWS[sec]);
   if(target){ if(sec==='calendar'){ target.style.display='flex'; } else { target.style.display='flex'; target.classList.add('visible'); } }
   document.querySelectorAll('.side .nav').forEach(n=>n.classList.remove('on'));
-  const navmap={dashboard:'nav-dashboard',calendar:'nav-calendar',drafts:'nav-drafts',templates:'nav-templates',assets:'nav-assets',connect:'nav-connect',analytics:'nav-analytics'};
+  const navmap={dashboard:'nav-dashboard',calendar:'nav-calendar',drafts:'nav-drafts',templates:'nav-templates',assets:'nav-assets',connect:'nav-connect',analytics:'nav-analytics',email:'nav-email',ai:'nav-ai',audience:'nav-audience'};
   const nav=document.getElementById(navmap[sec]); if(nav) nav.classList.add('on');
   if(sec==='templates') renderStarters();
 }
@@ -2097,6 +2170,15 @@ async function savePost(){
   finally{ btn.disabled=false; document.getElementById('cp-schedule-label').textContent=lbl; syncSaveLabel(); }
 }
 
+
+async function moduleWL(product){
+  const inp=document.getElementById('wl-'+product), msg=document.getElementById('wlmsg-'+product);
+  const email=(inp.value||'').trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ msg.textContent='Enter a valid email.'; msg.style.color='var(--pigment)'; return; }
+  try{ await rpc('waitlist_join',{p_email:email,p_product:product,p_source:'suite'});
+    msg.textContent='You\u2019re on the list.'; msg.style.color='var(--green)'; inp.value='';
+  }catch(e){ msg.textContent='Could not save — try again.'; msg.style.color='var(--pigment)'; }
+}
 async function refreshData(){ await Promise.allSettled([loadStats(), loadPosts(), loadChannels()]); renderAll(); }
 
 /* ═══════════════ HELPERS ═══════════════ */
@@ -2117,6 +2199,19 @@ function chanPips(channels){ return (channels||[]).map(c=>{ const code=platCode(
 let toastTimer=null;
 function toast(msg,kind){ const t=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
   t.className='toast show'+(kind==='warn'?' warn':kind==='gold'?' gold':''); clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),3200); }
+</script>
+
+<button class="themeToggle" id="themeBtn" onclick="zoiFlipTheme()" title="Light / dark">
+  <svg id="thIcoSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  <svg id="thIcoMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+</button>
+<script>
+function zoiSyncThemeIcon(){var t=document.documentElement.getAttribute('data-theme')||'light';
+ document.getElementById('thIcoSun').style.display=t==='dark'?'block':'none';
+ document.getElementById('thIcoMoon').style.display=t==='dark'?'none':'block';}
+function zoiFlipTheme(){var t=(document.documentElement.getAttribute('data-theme')||'light')==='light'?'dark':'light';
+ document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('zoi_theme',t)}catch(e){};zoiSyncThemeIcon();}
+zoiSyncThemeIcon();
 </script>
 </body>
 </html>
