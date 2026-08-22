@@ -1141,6 +1141,16 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 .themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--gl);cursor:pointer;color:var(--paper);box-shadow:0 8px 24px -12px rgba(0,0,0,.5);transition:transform .2s}
 .themeToggle:hover{transform:translateY(-2px)}
 .themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
+@media(max-width:920px){
+  .side{width:64px!important;padding:12px 6px!important}
+  .brandtxt,.navlbl,.acct .nm,.acct .sub,.acct .arr,.nav .badge{display:none!important}
+  .side .nav{justify-content:center;font-size:0;gap:0;padding:10px 6px}
+  .side .nav svg{width:20px;height:20px}
+  .acct{justify-content:center;padding:7px}
+  .composer-panel{width:100vw!important}
+  .topbar .h1{font-size:18px!important}
+  .connect-body{padding:18px 14px 50px!important}
+}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
 
@@ -1286,7 +1296,7 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
   </div>
 
   <div class="sidefoot">
-    <div class="nav" onclick="toast('Settings — coming soon','warn')">
+    <div class="nav" id="nav-settings" onclick="showSection('settings')">
       <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
       Settings
     </div>
@@ -1495,6 +1505,12 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:26px;align-items:start" id="email-edit-grid">
           <div>
             <div class="sec-label">Campaign</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+              <button class="btn sm" onclick="emailTpl('nameday')">Nameday template</button>
+              <button class="btn sm" onclick="emailTpl('weekend')">Weekend special</button>
+              <button class="btn sm" onclick="emailTpl('news')">Something new</button>
+              <button class="btn sm" onclick="insertMerge()" title="Inserts the recipient's first name">+ {{name}}</button>
+            </div>
             <div class="field" style="margin-bottom:12px"><label>Subject</label><input class="gate-input" id="ec-subject" placeholder="Nameday week at the bakery"/></div>
             <div class="field" style="margin-bottom:12px"><label>Preview line</label><input class="gate-input" id="ec-preheader" placeholder="The first line people see in their inbox"/></div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
@@ -1509,6 +1525,13 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
               <button class="btn" onclick="closeCampaign()">Back</button>
             </div>
             <div id="ec-msg" style="font-size:13px;min-height:18px;margin-top:10px"></div>
+            <div class="sec-label" style="margin-top:14px">Schedule</div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+              <div class="field"><label>Date</label><input type="date" class="gate-input" id="ec-date"/></div>
+              <div class="field"><label>Time</label><input type="time" class="gate-input" id="ec-time" value="09:00"/></div>
+              <button class="btn" onclick="emailSchedule()">Schedule send</button>
+            </div>
+            <div id="ec-sched-msg" style="font-size:12.5px;min-height:16px;margin-top:8px"></div>
           </div>
           <div>
             <div class="sec-label">Preview</div>
@@ -1551,6 +1574,19 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
             <button class="btn gold" onclick="aiRun('week')" id="ai-week-btn"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Draft my week</button>
             <button class="btn" onclick="aiRun('caption')" id="ai-cap-btn">Polish a caption</button>
             <button class="btn" onclick="aiRun('reply')" id="ai-rep-btn">Reply to a review</button>
+            <button class="btn" onclick="aiRun('promo')">Promote an event</button>
+            <button class="btn" onclick="aiRun('nameday')">Nameday greeting</button>
+            <button class="btn" onclick="aiHistory()">History</button>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+            <span style="font-size:11px;color:var(--muted);align-self:center">Tone:</span>
+            <button class="btn sm" onclick="aiTone('Warm, family, proud')">Warm</button>
+            <button class="btn sm" onclick="aiTone('Playful, cheeky, fun')">Playful</button>
+            <button class="btn sm" onclick="aiTone('Premium, refined, confident')">Premium</button>
+            <span style="font-size:11px;color:var(--muted);align-self:center;margin-left:8px">Language:</span>
+            <button class="btn sm" onclick="aiLang('Greek and English')">GR + EN</button>
+            <button class="btn sm" onclick="aiLang('Mostly English')">EN</button>
+            <button class="btn sm" onclick="aiLang('Mostly Greek')">GR</button>
           </div>
           <div class="field" id="ai-input-wrap" style="display:none;margin-bottom:14px"><label id="ai-input-label">Paste it here</label><textarea class="gate-input" id="ai-input" style="min-height:80px"></textarea>
             <button class="btn gold" style="margin-top:10px" onclick="aiRunGo()">Generate</button></div>
@@ -1573,7 +1609,11 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px">
         <input class="gate-input" id="aud-q" placeholder="Search name, email, phone…" style="flex:1;min-width:220px" oninput="audFilter()"/>
         <select class="gate-input" id="aud-tag" style="max-width:200px" onchange="audFilter()"><option value="">All tags</option></select>
+        <select class="gate-input" id="aud-sort" style="max-width:160px" onchange="audFilter()"><option value="new">Newest</option><option value="name">Name A–Z</option></select>
+        <button class="btn" onclick="audNamedayToggle()" id="aud-nd-btn">Namedays this month</button>
+        <button class="btn" onclick="audExport()">Export CSV</button>
       </div>
+      <div id="aud-stats" style="font-size:12.5px;color:var(--muted);margin-bottom:10px"></div>
       <div id="aud-count" class="sec-label">Contacts</div>
       <div id="aud-list"></div>
     </div>
@@ -1622,6 +1662,8 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
           <div><div class="sec-label" style="margin-bottom:4px">Editing</div>
             <div style="font-family:'Fraunces';font-weight:600;font-size:22px" id="bp-name">Listing</div></div>
           <div style="display:flex;gap:10px">
+            <button class="btn" onclick="bpCopy()">Copy link</button>
+            <button class="btn" onclick="bpQR()">QR</button>
             <a class="btn" id="bp-view-link" target="_blank" rel="noopener">View live page</a>
             <button class="btn" onclick="bpBack()">Back</button>
           </div>
@@ -1642,8 +1684,45 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
           <div class="field"><label>Facebook</label><input class="gate-input" id="bp-fb" placeholder="page URL"/></div>
           <div class="field"><label>TikTok</label><input class="gate-input" id="bp-tt" placeholder="@handle or URL"/></div>
         </div>
+        <div class="sec-label" style="margin-top:6px">Page completeness</div>
+        <div style="height:8px;border-radius:6px;background:var(--gl);overflow:hidden;margin-bottom:6px"><div id="bp-meter" style="height:100%;width:0%;background:linear-gradient(90deg,var(--gold),var(--gold-s));transition:width .4s"></div></div>
+        <div id="bp-meter-txt" style="font-size:12px;color:var(--muted);margin-bottom:16px"></div>
+        <div class="sec-label">How it looks on Google</div>
+        <div class="platform-card" style="display:block;padding:16px 18px;margin-bottom:18px">
+          <div id="bp-snip-title" style="color:#1a0dab;font-size:17px;font-weight:500">—</div>
+          <div style="color:#006621;font-size:12.5px" id="bp-snip-url">zoi.city</div>
+          <div id="bp-snip-desc" style="font-size:13px;color:var(--paper2);line-height:1.45;margin-top:2px">—</div>
+        </div>
         <button class="btn gold" onclick="bpSave()">Publish changes</button>
         <div id="bp-msg" style="font-size:13px;min-height:18px;margin-top:10px"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SETTINGS -->
+  <div class="connect-view" id="settings-view">
+    <div class="topbar"><span class="h1">Settings</span></div>
+    <div class="connect-body" style="max-width:640px">
+      <div class="sec-label">Business</div>
+      <div class="platform-card" style="display:block;padding:20px;margin-bottom:20px">
+        <div class="field" style="margin-bottom:12px"><label>Business name</label><input class="gate-input" id="set-wsname"/></div>
+        <button class="btn gold" onclick="setSaveName()">Save name</button>
+        <div id="set-msg" style="font-size:12.5px;min-height:16px;margin-top:8px"></div>
+      </div>
+      <div class="sec-label">Account</div>
+      <div class="platform-card" style="display:block;padding:20px;margin-bottom:20px">
+        <div style="font-size:13.5px;color:var(--muted);margin-bottom:4px">Signed in as</div>
+        <div style="font-weight:700" id="set-email">—</div>
+        <button class="btn" style="margin-top:14px" onclick="signOut()">Sign out</button>
+      </div>
+      <div class="sec-label">Appearance</div>
+      <div class="platform-card" style="display:block;padding:20px">
+        <div style="display:flex;gap:10px">
+          <button class="btn" onclick="setTheme('light')">Light</button>
+          <button class="btn" onclick="setTheme('dark')">Dark</button>
+        </div>
+        <div style="font-size:12px;color:var(--muted);margin-top:10px">Your choice is remembered on this device.</div>
       </div>
     </div>
   </div>
@@ -1682,6 +1761,11 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
           <option value="draft">Save as Draft</option>
         </select>
       </div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
+      <button class="btn sm" onclick="quickWhen(0,19,0)">Tonight 7pm</button>
+      <button class="btn sm" onclick="quickWhen(1,9,0)">Tomorrow 9am</button>
+      <button class="btn sm" onclick="quickWhen('sat',10,0)">Saturday 10am</button>
     </div>
     <div class="honest-note" style="margin-top:16px">
       
@@ -1917,7 +2001,7 @@ async function enterApp(){
   showSection('dashboard');
   // fire loads in parallel
   loadNameday();
-  await Promise.allSettled([ loadStats(), loadPosts(), loadChannels(), loadPlatforms() ]);
+  await Promise.allSettled([ loadStats(), loadPosts(), loadChannels(), loadPlatforms(), loadTargets() ]);
   renderAll();
   handleConnectResult();
 }
@@ -1945,20 +2029,21 @@ function namedayNames(){
 }
 
 /* ═══════════════ NAV ═══════════════ */
-const VIEWS={dashboard:'dash-view',calendar:'calendar-view',drafts:'drafts-view',templates:'tmpl-view',assets:'asset-view',connect:'connect-view',analytics:'analytics-view',email:'email-view',ai:'ai-view',audience:'aud-view',biz:'biz-view'};
+const VIEWS={dashboard:'dash-view',calendar:'calendar-view',drafts:'drafts-view',templates:'tmpl-view',assets:'asset-view',connect:'connect-view',analytics:'analytics-view',email:'email-view',ai:'ai-view',audience:'aud-view',biz:'biz-view',settings:'settings-view'};
 function showSection(sec){
   Object.values(VIEWS).forEach(id=>{ const el=document.getElementById(id); if(!el) return;
     el.classList.remove('visible'); el.style.display='none'; });
   const target=document.getElementById(VIEWS[sec]);
   if(target){ if(sec==='calendar'){ target.style.display='flex'; } else { target.style.display='flex'; target.classList.add('visible'); } }
   document.querySelectorAll('.side .nav').forEach(n=>n.classList.remove('on'));
-  const navmap={dashboard:'nav-dashboard',calendar:'nav-calendar',drafts:'nav-drafts',templates:'nav-templates',assets:'nav-assets',connect:'nav-connect',analytics:'nav-analytics',email:'nav-email',ai:'nav-ai',audience:'nav-audience',biz:'nav-biz'};
+  const navmap={dashboard:'nav-dashboard',calendar:'nav-calendar',drafts:'nav-drafts',templates:'nav-templates',assets:'nav-assets',connect:'nav-connect',analytics:'nav-analytics',email:'nav-email',ai:'nav-ai',audience:'nav-audience',biz:'nav-biz',settings:'nav-settings'};
   const nav=document.getElementById(navmap[sec]); if(nav) nav.classList.add('on');
   if(sec==='templates') renderStarters();
   if(sec==='audience'&&!AUD.loaded) loadAudience();
   if(sec==='email'){ if(!AUD.loaded) loadAudience(); if(!EMAILS.loaded) loadEmails(); else renderEmailList(); }
   if(sec==='ai'&&!AIST.loaded) aiLoad();
   if(sec==='biz'&&!BIZ.loaded) loadBizPage();
+  if(sec==='settings') fillSettings();
 }
 
 /* ═══════════════ DASHBOARD ═══════════════ */
@@ -2085,12 +2170,13 @@ function renderDrafts(){
         <div class="pr-text">${esc(p.body||'(no text)')}</div>
         <div class="pr-meta">
           <span class="chip-status ${p.status}">${esc(p.status)}</span>
-          ${chanPips(p.channels)}
+          ${chanPips(p.channels)}${tgtChips(p.id)}
           <span>${p.scheduled_at? scheduleLabel(p.scheduled_at) : (p.published_at? 'Published '+relTime(p.published_at) : 'Created '+relTime(p.created_at))}</span>
           ${p.nameday_ref?`<span class="pending-tag"><span class="pdot"></span>${esc(p.nameday_ref)}</span>`:''}
         </div>
       </div>
       <div class="pr-actions">
+        <div class="iconbtn sm" title="Duplicate" onclick="duplicatePost('${p.id}')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div>
         <div class="iconbtn sm" title="Edit" onclick="openComposer('${p.id}')"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></div>
         <div class="iconbtn sm" title="Delete" onclick="deletePost('${p.id}')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg></div>
       </div>
@@ -2226,7 +2312,7 @@ function renderComposerChannels(){
     </div>`).join('');
   note.innerHTML = composerChannels.size? 'These accounts will receive the post when it publishes.' : 'Select one or more accounts to publish to.';
 }
-function toggleComposerChannel(code){ if(composerChannels.has(code)) composerChannels.delete(code); else composerChannels.add(code); renderComposerChannels(); }
+function toggleComposerChannel(code){ if(composerChannels.has(code)) composerChannels.delete(code); else composerChannels.add(code); renderComposerChannels(); updateCharCount(); }
 // Restricts scheduling when there are no connected accounts
 function gateComposer(){
   const hasConnected = connectedPlatformCodes().length>0;
@@ -2276,6 +2362,19 @@ function syncSaveLabel(){ const st=document.getElementById('post-status').value;
 function updateCharCount(){
   const n=(document.getElementById('post-text').value||'').length; const c=document.getElementById('charcount');
   c.textContent=n.toLocaleString()+' / 2,200'; c.classList.toggle('warn',n>2000&&n<=2200); c.classList.toggle('over',n>2200);
+  const LIM={x:280,li:3000,ig:2200,fb:63206,tt:2200,yt:5000};
+  let w=document.getElementById('plat-warn');
+  if(!w){ w=document.createElement('div'); w.id='plat-warn'; w.style.cssText='font-size:11.5px;color:var(--pigment);min-height:14px;margin-top:2px;text-align:right'; c.parentElement.appendChild(w); }
+  const over=[...composerChannels].filter(code=>LIM[code]&&n>LIM[code]).map(code=>platLabel(code)+' max '+LIM[code].toLocaleString());
+  w.textContent=over.length?('Too long for '+over.join(' · ')):'';
+}
+function quickWhen(day,h,m){
+  const d=new Date();
+  if(day==='sat'){ const add=(6-d.getDay()+7)%7||7; d.setDate(d.getDate()+add); }
+  else d.setDate(d.getDate()+day);
+  document.getElementById('sched-date').value=fmtDate(d);
+  document.getElementById('sched-time').value=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  document.getElementById('post-status').value='scheduled'; syncSaveLabel();
 }
 async function savePost(){
   const body=(document.getElementById('post-text').value||'').trim();
@@ -2336,6 +2435,15 @@ function renderAudience(){
   sel.innerHTML='<option value="">All tags</option>'+audTags().map(t=>'<option '+(t===cur?'selected':'')+'>'+esc(t)+'</option>').join('');
   const tag=sel.value;
   let list=AUD.list.filter(c=>(!q||(c.name||'').toLowerCase().includes(q)||(c.email||'').toLowerCase().includes(q)||(c.phone||'').includes(q))&&(!tag||(c.tags||[]).includes(tag)));
+  if(AUD_ND){
+    const mNames=[new Date().toLocaleString('en',{month:'short'}),new Date().toLocaleString('en',{month:'long'})].map(x=>x.toLowerCase());
+    list=list.filter(c=>c.nameday&&mNames.some(m=>String(c.nameday).toLowerCase().includes(m)));
+  }
+  const srt=(document.getElementById('aud-sort')||{}).value||'new';
+  if(srt==='name') list=[...list].sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const st=document.getElementById('aud-stats');
+  if(st){ const wE=AUD.list.filter(c=>c.email).length,wP=AUD.list.filter(c=>c.phone).length,wT=AUD.list.filter(c=>(c.tags||[]).length).length;
+    st.textContent=AUD.list.length+' total · '+wE+' with email · '+wP+' with phone · '+wT+' tagged'; }
   document.getElementById('aud-count').textContent=list.length+' contact'+(list.length===1?'':'s');
   const el=document.getElementById('aud-list');
   if(!list.length){ el.innerHTML='<div class="empty-state"><h3>'+(AUD.list.length?'No matches':'No contacts yet')+'</h3><p>'+(AUD.list.length?'Try a different search.':'Add your regulars, festival-goers and customers — every other tool in the suite gets smarter with them.')+'</p>'+(AUD.list.length?'':'<button class="btn gold" onclick="openAudEdit(null)">Add your first contact</button>')+'</div>'; return; }
@@ -2350,6 +2458,7 @@ function renderAudience(){
         '</div>'+
       '</div>'+
       '<div class="pr-actions">'+
+        (c.email?'<a class="iconbtn sm" title="Email" href="mailto:'+esc(c.email)+'"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></a>':'')+
         '<div class="iconbtn sm" title="Delete" onclick="audDelete(\''+c.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>'+
       '</div>'+
     '</div>').join('');
@@ -2425,7 +2534,11 @@ function renderEmailList(){
           '<span>'+relTime(c.updated_at||c.created_at)+'</span>'+
         '</div>'+
       '</div>'+
-      '<div class="pr-actions">'+(c.status==='draft'?'<div class="iconbtn sm" title="Delete" onclick="event.stopPropagation();emailDelete(\''+c.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>':'')+'</div>'+
+      '<div class="pr-actions">'+
+        '<div class="iconbtn sm" title="Duplicate" onclick="event.stopPropagation();emailDuplicate(\''+c.id+'\')"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg></div>'+
+        (c.status==='scheduled'?'<div class="iconbtn sm" title="Cancel schedule" onclick="event.stopPropagation();emailUnschedule(\''+c.id+'\')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg></div>':'')+
+        (c.status==='draft'?'<div class="iconbtn sm" title="Delete" onclick="event.stopPropagation();emailDelete(\''+c.id+'\')"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg></div>':'')+
+      '</div>'+
     '</div>').join('');
 }
 function openCampaign(id){
@@ -2443,7 +2556,10 @@ function openCampaign(id){
   const locked=!SVC.email;
   document.getElementById('ec-test-btn').style.opacity=locked?'0.5':'1';
   document.getElementById('ec-send-btn').style.opacity=locked?'0.5':'1';
-  emailPreview();
+  emailPreview(); emailRecipCount();
+  document.getElementById('ec-date').value=c&&c.scheduled_at?fmtDate(new Date(c.scheduled_at)):'';
+  document.getElementById('ec-sched-msg').textContent=c&&c.status==='scheduled'?('Scheduled for '+scheduleLabel(c.scheduled_at)):'';
+  document.getElementById('ec-sched-msg').style.color='var(--muted)';
 }
 function closeCampaign(){ document.getElementById('email-edit-wrap').style.display='none'; document.getElementById('email-list-wrap').style.display='block'; renderEmailList(); }
 function emailPreview(){
@@ -2516,6 +2632,15 @@ async function aiSaveProfile(){
   }catch(e){ msg.textContent='Could not save: '+e.message; msg.style.color='var(--pigment)'; }
 }
 function aiRun(action){
+  const PRESET={promo:'Write a promo post for our upcoming event. Details: ',nameday:'Write a warm nameday greeting post for today, inviting people to celebrate with us. Names: '};
+  if(PRESET[action]){
+    AIST.action='caption';
+    const wrap=document.getElementById('ai-input-wrap');
+    document.getElementById('ai-input-label').textContent=action==='promo'?'Event details (what, when, where)':'Who celebrates today?';
+    document.getElementById('ai-input').value=PRESET[action];
+    wrap.style.display='block'; const el=document.getElementById('ai-input'); el.focus(); el.setSelectionRange(el.value.length,el.value.length);
+    return;
+  }
   AIST.action=action;
   const wrap=document.getElementById('ai-input-wrap');
   if(action==='week'){ wrap.style.display='none'; aiRunGo(); return; }
@@ -2536,6 +2661,7 @@ async function aiRunGo(){
     const res=r.result;
     AIST.results=Array.isArray(res)?res.map(x=>({day:x.day,text:x.text})):[{text:(res&&res.text)||String(res)}];
     st.textContent='';
+    aiHistPush(AIST.results);
     renderAiResults();
   }catch(e){ st.textContent='Failed: '+e.message; }
 }
@@ -2548,6 +2674,7 @@ function renderAiResults(){
       '<div style="display:flex;gap:8px;margin-top:12px">'+
         '<button class="btn gold" style="padding:8px 14px;font-size:12.5px" onclick="aiToDraft('+i+')">Save as draft</button>'+
         '<button class="btn" style="padding:8px 14px;font-size:12.5px" onclick="aiToComposer('+i+')">Open in composer</button>'+
+        '<button class="btn" style="padding:8px 14px;font-size:12.5px" onclick="aiToEmail('+i+')">Use in email</button>'+
       '</div>'+
     '</div>'); }).join('');
 }
@@ -2593,6 +2720,9 @@ function renderBizStatus(){
   if(!owned.length&&!claims.length){
     html='<div class="empty-state"><h3>Claim your business</h3><p>Your business already has a page on Zoi — find it in the directory, claim it, and it becomes yours to run: description, hours, links, photos. Verified pages rank first.</p><a class="btn gold" href="/explore" target="_blank" rel="noopener">Find my business in the directory</a></div>';
   }
+  if(owned.length||claims.length){
+    html+='<div style="margin-top:18px"><a class="btn" href="/explore" target="_blank" rel="noopener">Claim another business</a></div>';
+  }
   el.innerHTML=html;
 }
 async function bpEdit(id){
@@ -2615,6 +2745,7 @@ async function bpEdit(id){
     document.getElementById('bp-fb').value=sl.facebook||'';
     document.getElementById('bp-tt').value=sl.tiktok||'';
     document.getElementById('bp-msg').textContent='';
+    bpMeter();
   }catch(e){ toast('Could not open: '+e.message,'warn'); }
 }
 function bpBack(){ document.getElementById('bp-edit').style.display='none'; document.getElementById('bp-status').style.display='block'; }
@@ -2638,7 +2769,135 @@ async function bpSave(){
   }catch(e){ msg.textContent='Could not save: '+e.message; msg.style.color='var(--pigment)'; }
 }
 
-async function refreshData(){ await Promise.allSettled([loadStats(), loadPosts(), loadChannels()]); renderAll(); }
+
+function emailTpl(kind){
+  const T={
+    nameday:{s:'Χρόνια πολλά, {{name}}!',p:'A little something for your nameday',b:'Χρόνια πολλά, {{name}}!\n\nThis week we celebrate — and celebrations are better shared. Come by and let us treat you.\n\nWith love,\nThe team'},
+    weekend:{s:'This weekend only, {{name}}',p:'Something special is waiting',b:'Γειά σου {{name}},\n\nThis weekend we are doing something special — come see us before it is gone.\n\nSee you soon.'},
+    news:{s:'Something new just arrived',p:'Be the first to know',b:'Γειά σου {{name}},\n\nSomething new just landed and we wanted you to hear it first.\n\nCome take a look — and bring the παρέα.'}
+  }[kind]; if(!T) return;
+  document.getElementById('ec-subject').value=T.s;
+  document.getElementById('ec-preheader').value=T.p;
+  document.getElementById('ec-body').value=T.b;
+  emailPreview();
+}
+function insertMerge(){
+  const b=document.getElementById('ec-body');
+  b.value=(b.value||'')+'{{name}}'; b.focus(); emailPreview();
+}
+function emailRecipCount(){
+  const tag=document.getElementById('ec-audience').value;
+  const n=AUD.list.filter(c=>c.email&&(!tag||(c.tags||[]).includes(tag))).length;
+  const sel=document.getElementById('ec-audience');
+  let sp=document.getElementById('ec-count');
+  if(!sp){ sp=document.createElement('div'); sp.id='ec-count'; sp.style.cssText='font-size:11.5px;color:var(--muted);margin-top:4px'; sel.parentElement.appendChild(sp); }
+  sp.textContent='→ '+n+' recipient'+(n===1?'':'s')+' with email';
+}
+document.addEventListener('change',function(e){ if(e.target&&e.target.id==='ec-audience') emailRecipCount(); });
+async function emailSchedule(){
+  const msg=document.getElementById('ec-sched-msg');
+  if(!EMAILS.editing){ msg.textContent='Save the draft first.'; msg.style.color='var(--pigment)'; return; }
+  const d=document.getElementById('ec-date').value, t=document.getElementById('ec-time').value||'09:00';
+  if(!d){ msg.textContent='Pick a date.'; msg.style.color='var(--pigment)'; return; }
+  try{
+    await rpc('email_campaign_schedule',{p_workspace:WS,p_id:EMAILS.editing,p_at:new Date(d+'T'+t).toISOString()});
+    msg.textContent=SVC.email?'Scheduled — it will send automatically.':'Scheduled — it will send automatically once sending activates.';
+    msg.style.color='var(--green)';
+    await loadEmails();
+    document.getElementById('email-list-wrap').style.display='none'; document.getElementById('email-edit-wrap').style.display='block';
+  }catch(e){ msg.textContent=e.message; msg.style.color='var(--pigment)'; }
+}
+async function emailDuplicate(id){
+  try{ await rpc('email_campaign_duplicate',{p_workspace:WS,p_id:id}); toast('Campaign duplicated','gold'); await loadEmails(); }
+  catch(e){ toast('Could not duplicate: '+e.message,'warn'); }
+}
+async function emailUnschedule(id){
+  try{ await rpc('email_campaign_unschedule',{p_workspace:WS,p_id:id}); toast('Back to draft'); await loadEmails(); }
+  catch(e){ toast(e.message,'warn'); }
+}
+
+function aiTone(t){ document.getElementById('ai-tone').value=t; aiSaveProfile(); }
+function aiLang(l){ document.getElementById('ai-langs').value=l; aiSaveProfile(); }
+function aiHistPush(items){
+  try{
+    const h=JSON.parse(localStorage.getItem('zoi_ai_hist')||'[]');
+    items.forEach(x=>h.unshift({t:x.text,at:Date.now()}));
+    localStorage.setItem('zoi_ai_hist',JSON.stringify(h.slice(0,20)));
+  }catch(e){}
+}
+function aiHistory(){
+  let h=[]; try{ h=JSON.parse(localStorage.getItem('zoi_ai_hist')||'[]'); }catch(e){}
+  AIST.results=h.map(x=>({text:x.t}));
+  document.getElementById('ai-status').textContent=h.length?('Your last '+h.length+' generations'):'No history yet — generate something first.';
+  renderAiResults();
+}
+function aiToEmail(i){
+  const r=AIST.results[i]; if(!r) return;
+  showSection('email');
+  setTimeout(function(){ openCampaign(null); document.getElementById('ec-body').value=r.text; emailPreview(); },250);
+}
+
+let AUD_ND=false;
+function audNamedayToggle(){ AUD_ND=!AUD_ND; document.getElementById('aud-nd-btn').classList.toggle('gold',AUD_ND); renderAudience(); }
+function audExport(){
+  const head='name,email,phone,nameday,tags,notes\n';
+  const body=AUD.list.map(function(c){ return [c.name,c.email,c.phone,c.nameday,(c.tags||[]).join('|'),c.notes].map(function(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  const blob=new Blob([head+body],{type:'text/csv'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='audience.csv'; a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+}
+
+function bpCopy(){
+  const url=document.getElementById('bp-view-link').href;
+  navigator.clipboard.writeText(url).then(()=>toast('Page link copied','gold')).catch(()=>toast('Copy failed','warn'));
+}
+function bpQR(){
+  const url=document.getElementById('bp-view-link').href;
+  const w=window.open('','_blank','width=340,height=420');
+  if(w){ w.document.write('<body style="display:grid;place-items:center;font-family:sans-serif"><img style="width:260px;height:260px" src="https://api.qrserver.com/v1/create-qr-code/?size=520x520&data='+encodeURIComponent(url)+'"/><p style="font-size:11px;word-break:break-all;max-width:280px">'+url+'</p></body>'); }
+}
+function bpMeter(){
+  const fields=['bp-desc','bp-phone','bp-email','bp-web','bp-hours','bp-photo','bp-ig','bp-fb'];
+  const done=fields.filter(id=>{ const el=document.getElementById(id); return el&&String(el.value||'').trim(); }).length;
+  const pct=Math.round(done/fields.length*100);
+  const m=document.getElementById('bp-meter'); if(m) m.style.width=pct+'%';
+  const t=document.getElementById('bp-meter-txt');
+  if(t) t.textContent=pct+'% complete'+(pct<100?' — complete pages get found and trusted more':' — perfect');
+  const name=document.getElementById('bp-name').textContent||'';
+  const d=(document.getElementById('bp-desc').value||'').slice(0,155);
+  const st=document.getElementById('bp-snip-title'); if(st) st.textContent=name+' — Zoi';
+  const su=document.getElementById('bp-snip-url'); if(su) su.textContent=(document.getElementById('bp-view-link').href||'zoi.city').replace('https://','');
+  const sd=document.getElementById('bp-snip-desc'); if(sd) sd.textContent=d||'Add a description — this is what searchers read first.';
+}
+document.addEventListener('input',function(e){ if(e.target&&/^bp-/.test(e.target.id||'')) bpMeter(); });
+function fillSettings(){
+  const nm=document.getElementById('set-wsname'); if(nm) nm.value=WSNAME||'';
+  const em=document.getElementById('set-email'); if(em) em.textContent=(ME&&ME.email)||(zoiKnownEmail&&zoiKnownEmail())||'—';
+}
+async function setSaveName(){
+  const msg=document.getElementById('set-msg');
+  const v=(document.getElementById('set-wsname').value||'').trim();
+  if(!v){ msg.textContent='Enter a name.'; msg.style.color='var(--pigment)'; return; }
+  try{
+    await rpc('workspace_rename',{p_workspace:WS,p_name:v});
+    WSNAME=v;
+    const el=document.getElementById('sidebar-biz-name'); if(el) el.textContent=v;
+    msg.textContent='Saved.'; msg.style.color='var(--green)';
+    renderDashboard();
+  }catch(e){ msg.textContent=e.message; msg.style.color='var(--pigment)'; }
+}
+function setTheme(t){ document.documentElement.setAttribute('data-theme',t); try{ localStorage.setItem('zoi_theme',t); }catch(e){}; if(typeof zoiSyncThemeIcon==='function') zoiSyncThemeIcon(); }
+let TGT={};
+async function loadTargets(){ try{ TGT=await rpc('social_post_targets_list',{p_workspace:WS})||{}; }catch(e){ TGT={}; } }
+function tgtChips(pid){
+  const list=TGT[pid]||[];
+  return list.map(function(t){
+    const ok=t.status==='published';
+    return '<span class="chip-status '+(ok?'published':'failed')+'" title="'+esc(t.error||t.url||'')+'" style="'+(ok?'':'background:rgba(181,50,95,.14);color:var(--pigment);')+'">'+esc(platLabel(t.platform))+' '+(ok?'✓':'✕')+'</span>';
+  }).join('');
+}
+
+async function refreshData(){ await Promise.allSettled([loadStats(), loadPosts(), loadChannels(), loadTargets()]); renderAll(); }
 
 /* ═══════════════ HELPERS ═══════════════ */
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
