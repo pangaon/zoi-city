@@ -135,6 +135,18 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 .themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
 </style>
 <script>(function(){document.documentElement.setAttribute("data-theme",localStorage.getItem("zoi_theme")||"dark");})()</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"Organization","name":"Zoi","url":"https://www.zoi.city","logo":"https://www.zoi.city/favicon.ico","description":"The platform of the Greek diaspora: free business tools, a worldwide Greek marketplace, and the definitive map of Greek life.","sameAs":["https://buygreek.shop"]}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"What is Zoi?","acceptedAnswer":{"@type":"Answer","text":"Zoi is one platform for the Greek world: free software for Greek businesses (social publishing, ticketing, email, AI), a worldwide Greek marketplace through BuyGreek.Shop, and the definitive directory of Greek life across the diaspora."}},
+{"@type":"Question","name":"Is Zoi free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Signing up, claiming your business page, and the core tools are free to start. Paid features like ticket sales use standard payment processing."}},
+{"@type":"Question","name":"How do I claim my business?","acceptedAnswer":{"@type":"Answer","text":"Find your business in the Zoi directory, tap claim, and verify ownership. Once approved, the page is yours to run — description, hours, links and photos."}},
+{"@type":"Question","name":"What is BuyGreek.Shop?","acceptedAnswer":{"@type":"Answer","text":"BuyGreek.Shop is the Greek marketplace — a multi-vendor commerce platform where Greek businesses sell products, tickets and services to the diaspora worldwide."}},
+{"@type":"Question","name":"Who is Zoi for?","acceptedAnswer":{"@type":"Answer","text":"Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places."}}
+]}
+</script>
 </head>
 <body>
 <div class="glow"></div>
@@ -146,6 +158,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 
 <header class="hero"><div class="wrap">
   <div class="htag"><span class="d"></span><span>ΖΩΗ — Greece · Cyprus · the diaspora</span></div>
+  <div class="htag" id="nameday-chip" style="margin-left:10px;display:none"><span class="d" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span><span id="nameday-txt"></span></div>
   <h1>The Greek world <span class="serif">runs</span> on Zoi.</h1>
   <p class="hlead">Free software for Greek business. A worldwide Greek marketplace. The definitive map of Greek life. One account — built for the people who keep the culture running.</p>
   <div class="hcta">
@@ -156,8 +169,20 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <div class="m"><b>Publish</b><span>every network, one post</span></div>
     <div class="m"><b>Sell</b><span>tickets, passes, products</span></div>
     <div class="m"><b>Be found</b><span>by the whole diaspora</span></div>
+    <div class="m"><b id="st-listings">—</b><span>Greek places mapped</span></div>
+    <div class="m"><b id="st-cities">—</b><span>cities</span></div>
+    <div class="m"><b id="st-countries">—</b><span>countries</span></div>
   </div>
 </div></header>
+
+<section style="padding:clamp(40px,6vw,70px) 0"><div class="wrap">
+  <div class="mono" style="margin-bottom:26px">How it works</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden">
+    <div style="background:var(--bg);padding:26px 24px"><div class="mono" style="margin-bottom:12px">01</div><h3 style="font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px">Claim your place</h3><p style="font-size:14px;color:var(--mut)">Your business is already on the map. Claim it and it becomes yours to run.</p></div>
+    <div style="background:var(--bg);padding:26px 24px"><div class="mono" style="margin-bottom:12px">02</div><h3 style="font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px">Plug in the tools</h3><p style="font-size:14px;color:var(--mut)">Publishing, tickets, email, AI — one account, one desk, everything connected.</p></div>
+    <div style="background:var(--bg);padding:26px 24px"><div class="mono" style="margin-bottom:12px">03</div><h3 style="font-size:19px;font-weight:700;letter-spacing:-.02em;margin-bottom:6px">Grow with the network</h3><p style="font-size:14px;color:var(--mut)">Every claimed page, sale and story feeds the network — and the network feeds you back.</p></div>
+  </div>
+</div></section>
 
 <section id="tools"><div class="wrap">
   <div class="shead">
@@ -285,6 +310,20 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   </div>
 </div></section>
 
+<section id="faq"><div class="wrap">
+  <div class="shead"><div class="l">
+    <div class="mono">05 — questions</div>
+    <h2>Asked, <span class="serif">answered.</span></h2>
+  </div></div>
+  <div style="max-width:760px">
+    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">What is Zoi?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">One platform for the Greek world: free software for Greek businesses, a worldwide marketplace through BuyGreek.Shop, and the definitive map of Greek life across the diaspora.</p></details>
+    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Is it free?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Yes — signing up, claiming your page, and the core tools are free to start. Paid features like ticket sales use standard payment processing.</p></details>
+    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">How do I claim my business?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Find it in the directory, tap claim, verify ownership. Once approved, the page is yours — description, hours, links, photos.</p></details>
+    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">What is BuyGreek.Shop?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">The Greek marketplace — multi-vendor commerce where Greek businesses sell products, tickets and services to the diaspora worldwide.</p></details>
+    <details style="border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Who is it for?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places.</p></details>
+  </div>
+</div></section>
+
 <section class="cta-final"><div class="wrap">
   <div class="mono" style="margin-bottom:22px">Free · no card · 60 seconds</div>
   <h2>Your business belongs at the center of the <span class="serif">Greek world.</span></h2>
@@ -344,6 +383,27 @@ async function joinWL(){
   finally{ btn.disabled=false; btn.textContent='Request access'; }
 }
 document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='Enter') joinWL(); });
+(async function(){
+  try{
+    const r=await fetch(BASE+'/rest/v1/rpc/home_stats',{method:'POST',headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},body:'{}'});
+    const j=await r.json();
+    if(j&&j.listings){
+      document.getElementById('st-listings').textContent=Number(j.listings).toLocaleString();
+      document.getElementById('st-cities').textContent=Number(j.cities).toLocaleString();
+      document.getElementById('st-countries').textContent=Number(j.countries).toLocaleString();
+    }
+  }catch(e){}
+  try{
+    const r=await fetch(BASE+'/rest/v1/rpc/zoi_namedays_today',{method:'POST',headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},body:'{}'});
+    const j=await r.json();
+    let names=(j&&(j.names||j.namedays))||[];
+    if(typeof names==='string') names=names.split(/[,·]/).map(s=>s.trim()).filter(Boolean);
+    if(names.length){
+      document.getElementById('nameday-txt').textContent='Today: Χρόνια πολλά, '+names.slice(0,2).join(' & ');
+      document.getElementById('nameday-chip').style.display='inline-flex';
+    }
+  }catch(e){}
+})();
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 </script>
 
