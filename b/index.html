@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Zoi · Link in bio</title>
+<meta name="description" content="A Greek creator's links, all in one place — on Zoi."/>
+<meta name="theme-color" content="#080a0e"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080a0e; --bg2:#0e131a; --card:#141a22; --line:rgba(255,255,255,.1); --line2:rgba(255,255,255,.16);
+  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774; --acc:#6ea8ff; --gold:#d9b26a; --btn:#141a22; --btnh:#1b2531; --btnfg:#f3f6fa;
+}
+[data-theme="light"]{
+  --bg:#f6f4ef; --bg2:#fdfcf9; --card:#ffffff; --line:rgba(13,27,42,.12); --line2:rgba(13,27,42,.2);
+  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0; --acc:#2f6fd0; --gold:#8f6520; --btn:#ffffff; --btnh:#f0ede6; --btnfg:#0d1b2a;
+}
+[data-theme="gold"]{
+  --bg:#100c04; --bg2:#1a1408; --card:#221a0b; --line:rgba(217,178,106,.22); --line2:rgba(217,178,106,.4);
+  --tx:#f7efdd; --mut:#c7b29d; --dim:#9a8a6e; --acc:#e6c07a; --gold:#e6c07a; --btn:#221a0b; --btnh:#2c2110; --btnfg:#f7efdd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:
+  radial-gradient(1200px 600px at 50% -10%, var(--bg2), var(--bg) 60%);
+  min-height:100%;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;display:flex;flex-direction:column;align-items:center}
+.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
+.wrap{width:100%;max-width:520px;padding:clamp(28px,7vw,56px) 22px 40px;display:flex;flex-direction:column;align-items:center;flex:1}
+.ava{width:104px;height:104px;border-radius:50%;object-fit:cover;border:2px solid var(--line2);background:var(--card);display:grid;place-items:center;font-family:'Fraunces';font-size:40px;color:var(--gold)}
+h1{font-size:24px;font-weight:700;letter-spacing:-.02em;margin-top:18px;text-align:center}
+.tag{color:var(--mut);font-size:15px;margin-top:6px;text-align:center;max-width:34ch;line-height:1.5}
+.links{width:100%;margin-top:28px;display:flex;flex-direction:column;gap:12px}
+a.link{display:flex;align-items:center;justify-content:center;gap:10px;background:var(--btn);color:var(--btnfg);
+  border:1px solid var(--line);border-radius:14px;padding:16px 20px;font-weight:600;font-size:15.5px;text-decoration:none;
+  transition:.18s cubic-bezier(.22,.61,.36,1);position:relative}
+a.link:hover{transform:translateY(-2px);background:var(--btnh);border-color:var(--line2)}
+a.link:active{transform:translateY(0)}
+.foot{margin-top:auto;padding-top:36px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.foot a{color:var(--dim);font-size:13px;text-decoration:none;display:inline-flex;align-items:center;gap:7px}
+.foot a:hover{color:var(--tx)}
+.seal{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:var(--card);border:1px solid var(--line2);font-family:'Fraunces';font-size:13px;color:var(--gold)}
+.theme{position:fixed;top:16px;right:16px;width:38px;height:38px;border-radius:50%;display:grid;place-items:center;
+  background:var(--card);border:1px solid var(--line2);color:var(--tx);cursor:pointer}
+.theme svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
+.skel{width:100%;display:flex;flex-direction:column;align-items:center;gap:14px}
+.sk{background:var(--card);border-radius:14px;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:.85}}
+.missing{text-align:center;margin-top:20vh}
+.missing h2{font-size:22px;font-weight:700}
+.missing p{color:var(--mut);margin-top:8px}
+.missing a{color:var(--acc);text-decoration:none;font-weight:600}
+.views{font-size:12px;color:var(--dim);margin-top:2px}
+</style>
+<script>(function(){try{document.documentElement.setAttribute('data-theme','dark');}catch(e){}})()</script>
+</head>
+<body>
+<button class="theme" id="themeBtn" title="Theme" style="display:none" onclick="cycleTheme()">
+  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+</button>
+<div class="wrap" id="wrap">
+  <div class="skel" id="skel">
+    <div class="sk" style="width:104px;height:104px;border-radius:50%"></div>
+    <div class="sk" style="width:160px;height:22px;margin-top:14px"></div>
+    <div class="sk" style="width:220px;height:15px;margin-top:8px"></div>
+    <div class="sk" style="width:100%;height:54px;margin-top:24px"></div>
+    <div class="sk" style="width:100%;height:54px"></div>
+    <div class="sk" style="width:100%;height:54px"></div>
+  </div>
+</div>
+
+<script>
+const BASE='https://csebihpaychdkanjjsmz.supabase.co';
+const KEY='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function safeUrl(u){ u=String(u||''); return (u.indexOf('http://')===0||u.indexOf('https://')===0)?u:'#'; }
+function slugFromPath(){
+  try{
+    const q=new URLSearchParams(location.search).get('s'); if(q) return q.trim();
+    const parts=location.pathname.split('/').filter(Boolean);
+    // /b/<slug>  -> last segment (ignore trailing 'index.html')
+    let last=parts[parts.length-1]||'';
+    if(/\.html?$/i.test(last)) last=parts[parts.length-2]||'';
+    if(last==='b') return '';
+    return decodeURIComponent(last||'');
+  }catch(e){ return ''; }
+}
+async function bioGet(slug){
+  const r=await fetch(BASE+'/rest/v1/rpc/bio_get',{method:'POST',
+    headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},
+    body:JSON.stringify({p_slug:slug})});
+  if(!r.ok) throw new Error('load failed');
+  const t=await r.text(); return t?JSON.parse(t):null;
+}
+let THEMES=['dark','gold','light'];
+function cycleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')||'dark';
+  const next=THEMES[(THEMES.indexOf(cur)+1)%THEMES.length];
+  document.documentElement.setAttribute('data-theme',next);
+}
+function render(page){
+  const wrap=document.getElementById('wrap');
+  document.getElementById('themeBtn').style.display='grid';
+  if(!page){
+    wrap.innerHTML='<div class="missing"><h2>This page isn’t here yet</h2>'+
+      '<p>No Zoi bio lives at this link.</p><p style="margin-top:14px"><a href="/social">Create your own →</a></p></div>';
+    document.title='Not found · Zoi';
+    return;
+  }
+  document.documentElement.setAttribute('data-theme', (['dark','light','gold'].indexOf(page.theme)>=0?page.theme:'dark'));
+  const initial=esc((page.title||'Z').trim().charAt(0).toUpperCase());
+  const links=Array.isArray(page.links)?page.links:[];
+  const linksHtml=links.filter(l=>l&&l.label).map(l=>
+    '<a class="link" href="'+esc(safeUrl(l.url))+'" target="_blank" rel="noopener noreferrer">'+esc(l.label)+'</a>').join('');
+  wrap.innerHTML=
+    (page.photo_url?'<img class="ava" src="'+esc(safeUrl(page.photo_url))+'" alt="">':'<div class="ava">'+initial+'</div>')+
+    '<h1>'+esc(page.title||'')+'</h1>'+
+    (page.tagline?'<div class="tag">'+esc(page.tagline)+'</div>':'')+
+    '<div class="links">'+(linksHtml||'')+'</div>'+
+    '<div class="foot">'+
+      (page.views?'<div class="views">'+Number(page.views).toLocaleString()+' views</div>':'')+
+      '<a href="/social"><span class="seal">Ζ</span>Made with Zoi</a>'+
+    '</div>';
+  document.title=(page.title||'Zoi')+' · Zoi';
+  const md=document.querySelector('meta[name="description"]');
+  if(md&&page.tagline) md.setAttribute('content', String(page.tagline).slice(0,160));
+}
+(async function(){
+  const slug=slugFromPath();
+  if(!slug){ render(null); return; }
+  try{ render(await bioGet(slug)); }
+  catch(e){ render(null); }
+})();
+</script>
+</body>
+</html>
