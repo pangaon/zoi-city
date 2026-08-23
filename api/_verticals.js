@@ -71,14 +71,80 @@ export function icon(d, cls) {
  * unverifiable claims (and a Google policy violation). Ratings come from the
  * entity row alone. Stripped before anything is rendered. */
 const BANNED_PROFILE_KEYS = /^(rating|rating_count|ratingvalue|reviewcount|aggregaterating|reviews?|stars|score)$/i;
+/* Reserved namespaces inside `profile`. Neither is display data:
+ *   _enrich  machine-derived from the business's own website (see
+ *            supabase/functions/zoi-enrich). Used as a FALLBACK only.
+ *   _geo     coordinate precision, written by the geocode backfill.
+ * Plus the bookkeeping keys the enrichment writer adds alongside its fields. */
+const RESERVED_PROFILE_KEYS = new Set(['_enrich', '_geo', '_meta']);
+const ENRICH_META_KEYS = new Set(['provenance', 'source_url', 'checked_at',
+                                  'blocked', 'blocked_reason', 'last_error']);
+
+/**
+ * The profile a page should render.
+ *
+ * Owner-supplied keys win outright. Anything the owner has not filled in falls
+ * back to what the business's own website said, and that fallback is *labelled*
+ * — `_from` records which keys are machine-derived and where each came from, so
+ * a page can say "hours from their website, checked 12 June" instead of
+ * implying a human confirmed it. That distinction is the whole reason owner and
+ * machine writes are stored separately.
+ */
 export function safeProfile(e) {
   const raw = (e && e.profile && typeof e.profile === 'object' && !Array.isArray(e.profile)) ? e.profile : {};
+  const enr = (raw._enrich && typeof raw._enrich === 'object' && !Array.isArray(raw._enrich)) ? raw._enrich : {};
   const out = {};
+
+  // Enrichment first, so an owner key written afterwards overwrites it.
+  for (const k of Object.keys(enr)) {
+    if (BANNED_PROFILE_KEYS.test(k) || ENRICH_META_KEYS.has(k) || RESERVED_PROFILE_KEYS.has(k)) continue;
+    out[k] = enr[k];
+  }
   for (const k of Object.keys(raw)) {
-    if (BANNED_PROFILE_KEYS.test(k)) continue;
+    if (BANNED_PROFILE_KEYS.test(k) || RESERVED_PROFILE_KEYS.has(k)) continue;
     out[k] = raw[k];
   }
+
+  // Which of the surviving keys nobody at the business typed.
+  const prov = (enr.provenance && typeof enr.provenance === 'object') ? enr.provenance : {};
+  const from = {};
+  for (const k of Object.keys(enr)) {
+    if (!(k in out)) continue;
+    if (Object.prototype.hasOwnProperty.call(raw, k)) continue;   // owner's own
+    from[k] = prov[k] || 'website';
+  }
+  // Non-enumerable so this metadata can never be mistaken for a profile field,
+  // serialised into JSON-LD, or iterated over by a renderer.
+  Object.defineProperty(out, '_from', { value: from, enumerable: false });
+  Object.defineProperty(out, '_checked', { value: str(enr.checked_at) || null, enumerable: false });
+  Object.defineProperty(out, '_source', { value: str(enr.source_url) || null, enumerable: false });
   return out;
+}
+
+/**
+ * One honest line about machine-derived detail, or nothing at all.
+ * Says where it came from and when, and never claims verification.
+ */
+export function provenanceNote(p) {
+  const keys = Object.keys((p && p._from) || {});
+  if (!keys.length) return '';
+  let host = '';
+  try { host = new URL(p._source).hostname.replace(/^www\./, ''); } catch { host = ''; }
+  const when = p._checked ? niceDay(p._checked) : '';
+  const what = keys.length === 1 ? 'One detail' : keys.length + ' details';
+  return '<p class="prov">' + what + ' on this page ' +
+    (keys.length === 1 ? 'was' : 'were') + ' read from ' +
+    (host ? esc(host) : 'the business\u2019s own website') +
+    (when ? ' on ' + esc(when) : '') +
+    ', not confirmed by them. ' +
+    '<a href="/social">Claim this listing</a> to correct anything.</p>';
+}
+
+function niceDay(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  if (!m) return '';
+  const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return String(Number(m[3])) + ' ' + MON[Number(m[2]) - 1] + ' ' + m[1];
 }
 
 /* Bilingual convention: any display string may carry an `_el` sibling.
@@ -891,6 +957,9 @@ export function verticalFor(e) {
 }
 
 export function profileOf(e) {
-  const p = e && e.profile;
-  return (p && typeof p === 'object' && !Array.isArray(p)) ? p : {};
+  // Route everything through safeProfile so the enrichment fallback, the banned
+  // rating keys and the reserved namespaces are handled in exactly one place.
+  // This used to hand back the raw column, which meant a caller could render
+  // _enrich or _geo as if they were profile fields.
+  return safeProfile(e);
 }

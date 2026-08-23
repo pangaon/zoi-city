@@ -1,4 +1,4 @@
-import { verticalFor, profileOf, icon, IC } from './_verticals.js';
+import { verticalFor, profileOf, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
 const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
@@ -146,14 +146,41 @@ function page(e, related){
   if(e.website) row('Website', '<a href="'+attr(e.website)+'" rel="nofollow noopener" target="_blank">'+esc(e.website.replace(/^https?:\/\//,''))+'</a>');
   if(e.category_slug) row('Category', esc(catLabel));
   if(e.price_range) row('Price', esc(e.price_range));
-  var sl=e.social_links||{}, socLinks=[];
-  [['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok'],['youtube','YouTube'],['twitter','X'],['linkedin','LinkedIn']].forEach(function(pp){
-    var v=sl[pp[0]]; if(v){ var href=/^https?:/.test(v)?v:('https://'+pp[0]+'.com/'+(''+v).replace(/^@/,'')); socLinks.push('<a href="'+attr(href)+'" rel="nofollow noopener" target="_blank">'+pp[1]+'</a>'); }
+  /* social_links is empty on every listing in the directory today, so fall back
+     to whatever the business links to from its own site. Owner-set values still
+     win: the column is merged over the enriched set, not under it. */
+  /* Owner photo first, then whatever the business publishes on its own site.
+     https only — a mixed-content image would be blocked and leave a hole. */
+  var coverImg = '';
+  var candidate = e.photo_url || e.photo || (p && p.photo_url) || '';
+  if (typeof candidate === 'string' && /^https:\/\//.test(candidate)) coverImg = candidate;
+
+  var sl = Object.assign({}, (p && p.social) || {}, e.social_links || {});
+  var socLinks=[];
+  [['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok'],['youtube','YouTube'],
+   ['twitter','X'],['x','X'],['linkedin','LinkedIn'],['spotify','Spotify'],
+   ['soundcloud','SoundCloud'],['telegram','Telegram'],['whatsapp','WhatsApp']].forEach(function(pp){
+    var v=sl[pp[0]]; if(!v) return;
+    if(socLinks.some(function(l){return l.indexOf('>'+pp[1]+'<')>-1;})) return;  // X twice
+    var href=/^https?:/.test(v)?v:('https://'+pp[0]+'.com/'+(''+v).replace(/^@/,''));
+    socLinks.push('<a href="'+attr(href)+'" rel="nofollow noopener" target="_blank">'+pp[1]+'</a>');
   });
   if(socLinks.length) row('Social', socLinks.join(' &middot; '));
+  /* Things the business itself links to. These are the actions a visitor came
+     for, and none of them existed on the page before. */
+  [['booking_url','Book'],['menu_url','Menu'],['order_url','Order'],['give_url','Give']].forEach(function(pp){
+    var v = p && p[pp[0]];
+    if (v && /^https?:/.test(v)) {
+      row(pp[1], '<a href="'+attr(v)+'" rel="nofollow noopener" target="_blank">'+
+        esc(String(v).replace(/^https?:\/\//,'').slice(0,48))+'</a>');
+    }
+  });
 
   /* ---- the vertical's own content, real data only ---- */
   var verticalHtml = V.sections ? V.sections(e, p) : '';
+  /* If anything on this page was read from their website rather than typed by
+     them, say so plainly, once, and offer the fix. */
+  var provHtml = provenanceNote(p);
 
   /* ---- claim panel: names exactly what THIS kind of listing unlocks ---- */
   var unlock = (V.unlock||[]).map(function(u){
@@ -207,7 +234,9 @@ function page(e, related){
    +'<div class="wrap">'
    +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Directory</a> &rsaquo; '
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
-   +'<div class="ep-cover" id="epCover"></div>'
+   +'<div class="ep-cover" id="epCover"'
+     + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
+     + '></div>'
    +'<span class="ep-type">'+esc(eyebrow)+'</span>'
    +'<h1>'+esc(e.name)+'</h1>'
    +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
@@ -215,6 +244,7 @@ function page(e, related){
    +actHtml
    +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
    +verticalHtml
+   +provHtml
    +claim
    +rel
    +'</div>'
@@ -224,9 +254,17 @@ function page(e, related){
    +'</div></footer>'
    +'<script src="/assets/zoi-emblem.js"></script>'
    +'<script src="/assets/zoi-search.js"></script>'
-   +'<script>(function(){var h=document.getElementById("epCover");'
-     +'if(h&&window.ZoiEmblem){h.innerHTML=ZoiEmblem.emblem('
-       +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}})();</script>'
+   +'<script>(function(){var h=document.getElementById("epCover");if(!h)return;'
+     +'var src=h.getAttribute("data-img");'
+     // A remote logo that fails to load must not leave a blank frame: fall
+     // straight through to the generated emblem.
+     +'function emblem(){if(window.ZoiEmblem){h.innerHTML=ZoiEmblem.emblem('
+       +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}}'
+     +'if(src){var im=new Image();im.alt=h.getAttribute("data-alt")||"";'
+       +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
+       +'im.onload=function(){h.innerHTML="";h.appendChild(im);h.className+=" has-img";};'
+       +'im.onerror=emblem;im.src=src;}else{emblem();}'
+     +'})();</script>'
    +'<script src="/assets/zoi-theme.js"></script>'
    +'</body></html>';
 }
@@ -235,6 +273,12 @@ var PAGE_CSS = [
   '.wrap{max-width:920px}',
   '.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--card);margin:24px 0 0}',
   '.ep-cover svg{display:block;width:100%;height:100%}',
+  '.ep-cover img{display:block;width:100%;height:100%;object-fit:cover}',
+  '.ep-cover.has-img{background:var(--card2)}',
+  /* One quiet line where a detail came from a website rather than its owner. */
+  '.prov{font-size:12px;color:var(--dim);line-height:1.55;margin:18px 0 0;'
+    +'padding:9px 12px;border-left:2px solid var(--line2);background:var(--card2);border-radius:0 8px 8px 0}',
+  '.prov a{color:var(--acc)}',
   '.bc{font-size:12.5px;color:var(--dim);margin:22px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}',
   '.bc a{color:var(--mut)}.bc a:hover{color:var(--tx)}',
   '.ep-type{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:20px;display:block}',
