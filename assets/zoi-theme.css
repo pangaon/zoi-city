@@ -122,6 +122,20 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
   color:var(--tx);display:grid;place-items:center;cursor:pointer}
 .theme-btn:hover{border-color:var(--acc)}
 
+/* ---- Preview / sample-data bar ----
+   Any route that shows illustrative data instead of the visitor's real data
+   MUST carry this at the top of <body>, and must link to the live product.
+   Never present sample figures as real. */
+.zoi-preview{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px clamp(16px,4vw,32px);font-size:12.5px;line-height:1.45;
+  color:var(--gold);background:color-mix(in srgb, var(--gold) 12%, transparent);
+  border-bottom:1px solid color-mix(in srgb, var(--gold) 30%, transparent)}
+.zoi-preview svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2}
+.zoi-preview b{color:var(--gold);font-weight:800;letter-spacing:.01em}
+.zoi-preview span{color:var(--tx);opacity:.9}
+.zoi-preview a{color:var(--tx);text-decoration:underline;text-underline-offset:2px;font-weight:700;white-space:nowrap}
+.zoi-preview a:hover{color:var(--acc)}
+
 /* ---- Accessibility ---- */
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
