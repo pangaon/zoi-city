@@ -233,6 +233,10 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 {"@type":"Question","name":"Who is Zoi for?","acceptedAnswer":{"@type":"Answer","text":"Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places."}}
 ]}
 </script>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
 </head>
 <body>
 <div class="glow"></div>
@@ -653,5 +657,6 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
   .catch(function(){ /* leave it hidden — an empty frame is worse than none */ });
 })();
 </script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body>
 </html>

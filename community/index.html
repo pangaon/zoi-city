@@ -137,6 +137,10 @@ footer a:hover{color:var(--tx)}
 .ava svg{display:block;width:100%;height:100%}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
 </head>
 <body>
 <header class="zoi-header"><div class="wrap zoi-bar">
@@ -500,5 +504,6 @@ async function nameday(){
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
 <script src="/assets/zoi-theme.js"></script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body>
 </html>

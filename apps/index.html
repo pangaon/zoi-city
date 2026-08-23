@@ -187,6 +187,10 @@
     a.card:hover{transform:none}
   }
 </style>
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
 </head>
 <body>
   <header class="zoi-header"><div class="wrap zoi-bar">
@@ -405,5 +409,6 @@
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
 <script src="/assets/zoi-theme.js"></script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body>
 </html>

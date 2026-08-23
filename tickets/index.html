@@ -272,6 +272,10 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
 </head>
 <body>
 <div class="world"></div>
@@ -961,5 +965,6 @@ route();
   <span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
   <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a><a href="/apps/">Advanced tools</a></nav>
 </div></footer>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body>
 </html>

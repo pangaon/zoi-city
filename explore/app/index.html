@@ -393,7 +393,11 @@ html,body{height:100%;overflow:hidden;background:#0d406c;font-family:'Hanken Gro
 .authok{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 16px);transform:translateX(-50%) translateY(-18px);z-index:70;opacity:0;pointer-events:none;display:flex;align-items:center;gap:10px;background:linear-gradient(135deg,#3f9d76,#2f7d5c);color:#fff;padding:12px 18px;border-radius:26px;font:800 13px 'Hanken Grotesk';box-shadow:0 20px 44px -18px rgba(47,125,92,.6);transition:.45s var(--spring);max-width:90vw;text-align:center}
 .authok.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .authok svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:3;flex:none}
-</style></head>
+</style><link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
+</head>
 <body>
 <div id="bg"></div>
 <img id="bgimg" alt="" src="https://images.unsplash.com/photo-1533105079780-92b9be482077?w=1600&q=80&auto=format&fit=crop" onerror="this.style.display='none'"/>
@@ -2152,4 +2156,5 @@ if(_onbDone){
 }
 tryLive();
 </script><div style="position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:#0d1b2a;color:#f6f4ef;font:600 13px system-ui;padding:10px 16px;text-align:center;border-top:2px solid #d9b26a">Classic prototype — parts of this page use demo data and simulated actions while we rebuild them into the main app. The live directory is at <a href="/explore" style="color:#d9b26a;text-decoration:underline">zoi.city/explore</a>.</div><script src="/assets/zoi-theme.js"></script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body></html>
