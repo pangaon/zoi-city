@@ -1,6 +1,38 @@
 {
   "rewrites": [
     {
+      "source": "/c/:category/in/:country/:region/:city",
+      "destination": "/api/place?category=:category&country=:country&region=:region&city=:city"
+    },
+    {
+      "source": "/c/:category/in/:country/:region",
+      "destination": "/api/place?category=:category&country=:country&region=:region"
+    },
+    {
+      "source": "/c/:category/in/:country",
+      "destination": "/api/place?category=:category&country=:country"
+    },
+    {
+      "source": "/c/:category",
+      "destination": "/api/place?category=:category"
+    },
+    {
+      "source": "/in/:country/:region/:city",
+      "destination": "/api/place?country=:country&region=:region&city=:city"
+    },
+    {
+      "source": "/in/:country/:region",
+      "destination": "/api/place?country=:country&region=:region"
+    },
+    {
+      "source": "/in/:country",
+      "destination": "/api/place?country=:country"
+    },
+    {
+      "source": "/in",
+      "destination": "/api/place"
+    },
+    {
       "source": "/sitemap.xml",
       "destination": "/api/sitemap"
     },
