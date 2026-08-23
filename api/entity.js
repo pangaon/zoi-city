@@ -1,3 +1,5 @@
+import { verticalFor, profileOf, icon, IC } from './_verticals.js';
+
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
 const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
 const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -51,13 +53,29 @@ function jsonld(e,url){
 function page(e, related){
   var slug = e.canonical_slug || e.slug;
   var url = SITE + '/' + encodeURIComponent(e.entity_type || 'p') + '/' + encodeURIComponent(slug);
+  var picked = verticalFor(e), V = picked.v, sub = picked.sub;
+  var p = profileOf(e);
+  var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
+  var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
   var desc = e.meta_description || e.description || (e.name + (e.city?(' in '+e.city):'') + ' — on Zoi, the directory of the Greek world.');
-  var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var mapHref = (e.latitude!=null&&e.longitude!=null)
       ? ('https://www.google.com/maps/search/?api=1&query='+e.latitude+','+e.longitude)
       : (e.address? ('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(e.address)) : null);
 
+  /* ---- primary actions: the vertical's own, then the universally real ones ---- */
+  var acts = [];
+  (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
+  if(e.phone)   acts.push({ label:'Call', href: 'tel:'+String(e.phone).replace(/[^0-9+]/g,''), icon: IC.phone });
+  if(e.website) acts.push({ label:'Website', href: e.website, icon: IC.globe, external:true });
+  if(mapHref)   acts.push({ label:'Directions', href: mapHref, icon: IC.pin, external:true });
+  var actHtml = acts.length ? '<div class="acts">' + acts.map(function(a,i){
+      var cls = (a.primary || (i===0 && !acts.some(function(x){return x.primary;}))) ? 'btn btn-primary' : 'btn btn-ghost';
+      return '<a class="'+cls+'" href="'+attr(a.href)+'"'+(a.external?' rel="nofollow noopener" target="_blank"':'')+'>'+
+             (a.icon?icon(a.icon):'')+esc(a.label)+'</a>';
+    }).join('') + '</div>' : '';
+
+  /* ---- contact card ---- */
   var rows=[];
   function row(label, value){ rows.push('<div class="row"><span>'+esc(label)+'</span><b>'+value+'</b></div>'); }
   if(e.address) row('Address', esc(e.address));
@@ -73,16 +91,31 @@ function page(e, related){
   });
   if(socLinks.length) row('Social', socLinks.join(' &middot; '));
 
-  /* Related listings link by slug — never by a derived path. */
+  /* ---- the vertical's own content, real data only ---- */
+  var verticalHtml = V.sections ? V.sections(e, p) : '';
+
+  /* ---- claim panel: names exactly what THIS kind of listing unlocks ---- */
+  var unlock = (V.unlock||[]).map(function(u){
+    return '<li><b>'+esc(u[0])+'</b><span>'+esc(u[1])+'</span></li>';
+  }).join('');
+  var claim = '<section class="claim"><div class="claimhead">'+
+      '<div><span class="ctag">Unclaimed</span><h2>Own '+esc(e.name)+'?</h2>'+
+      '<p>Claim it and this page becomes a full '+esc(V.noun||'business')+' page — free.</p></div>'+
+      '<a class="btn btn-primary" href="/explore?q='+encodeURIComponent(e.name||'')+'">Claim this listing</a></div>'+
+      (unlock?'<ul class="unlock">'+unlock+'</ul>':'')+
+      '<p class="claimfoot">Everything above is what a claimed '+esc(V.noun||'listing')+' can publish here. '+
+      'Nothing on this page is invented \u2014 we only show what has actually been provided.</p></section>';
+
+  /* ---- related, linked by slug ---- */
   var rel='';
   if(related && related.length){
-    rel='<h2>More Greek '+esc(catLabel.toLowerCase())+(e.city?(' near '+esc(e.city)):'')+'</h2><div class="relgrid">';
+    rel='<section class="sec"><h2>'+icon(IC.pin,'sech')+'More Greek '+esc(catLabel.toLowerCase())+(e.city?(' near '+esc(e.city)):'')+'</h2><div class="relgrid">';
     related.forEach(function(r){
       if(!r.slug) return;
       var rh = SITE + '/' + encodeURIComponent(r.entity_type||'p') + '/' + encodeURIComponent(r.slug);
       rel+='<a class="relcard" href="'+attr(rh)+'"><b>'+esc(r.name)+'</b>'+(r.city?('<span>'+esc(r.city)+'</span>'):'')+'</a>';
     });
-    rel+='</div>';
+    rel+='</div></section>';
   }
 
   var NAV = [['/explore','Directory'],['/community','Community'],['/social','Business'],['/tickets','Tickets'],['/#marketplace','Marketplace']];
@@ -101,37 +134,12 @@ function page(e, related){
    +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
    +'<link rel="stylesheet" href="/assets/zoi-theme.css">'
    +'<script type="application/ld+json">'+jsonld(e,url).replace(/</g,'\\u003c')+'</script>'
-   +'<style>'
-   +'.wrap{max-width:900px}'
-   +'.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--card);margin:26px 0 0}'
-   +'.ep-cover svg{display:block;width:100%;height:100%}'
-   +'.bc{font-size:12.5px;color:var(--dim);margin:22px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}'
-   +'.bc a{color:var(--mut)}.bc a:hover{color:var(--tx)}'
-   +'.ep-type{font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:var(--gold);margin-top:20px;display:block}'
-   +'h1{font-size:clamp(30px,4.6vw,46px);margin:8px 0 0}'
-   +'.ep-loc{color:var(--mut);font-size:14.5px;margin-top:8px;display:flex;align-items:center;gap:7px}'
-   +'.ep-loc svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2}'
-   +'p.desc{font-size:16.5px;color:var(--mut);line-height:1.65;margin:18px 0 0;max-width:64ch}'
-   +'.card{margin:24px 0 0;padding:6px 20px}'
-   +'.row{display:flex;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid var(--line)}'
-   +'.row:last-child{border-bottom:0}.row span{color:var(--mut);font-size:13.5px;flex:none}'
-   +'.row b{text-align:right;font-weight:600;font-size:14px;min-width:0;overflow-wrap:anywhere}'
-   +'.row b a{color:var(--acc)}'
-   +'.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}'
-   +'h2{font-size:20px;margin:44px 0 14px}'
-   +'.relgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}'
-   +'.relcard{display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px;transition:.25s var(--ease)}'
-   +'.relcard:hover{border-color:var(--acc);transform:translateY(-2px)}'
-   +'.relcard b{font-size:14px;font-weight:600;letter-spacing:-.01em}'
-   +'.relcard span{font-size:12px;color:var(--dim)}'
-   +'.claimbar{margin:34px 0 0;padding:18px 20px;border-radius:var(--r);border:1px solid color-mix(in srgb, var(--gold) 32%, transparent);background:color-mix(in srgb, var(--gold) 9%, transparent);display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}'
-   +'.claimbar p{margin:0;font-size:14px;color:var(--tx)}.claimbar b{color:var(--gold)}'
-   +'</style></head><body>'
+   +'<style>'+PAGE_CSS+'</style></head><body>'
    +'<header class="zoi-header"><div class="wrap zoi-bar">'
      +'<a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>'
      +'<nav class="zoi-nav" aria-label="Zoi">'+nav+'</nav>'
      +'<div class="zoi-actions">'
-       +'<button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">'+MOON+'</button>'
+       +'<button class="theme-btn" id="themeBtn" title="Theme &mdash; dark / light / gold" aria-label="Switch theme">'+MOON+'</button>'
        +'<a class="btn btn-primary" id="zoiCta" href="/social">Start free</a>'
      +'</div>'
    +'</div></header>'
@@ -139,17 +147,14 @@ function page(e, related){
    +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Directory</a> &rsaquo; '
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
    +'<div class="ep-cover" id="epCover"></div>'
-   +'<span class="ep-type">'+esc(catLabel)+'</span>'
+   +'<span class="ep-type">'+esc(eyebrow)+'</span>'
    +'<h1>'+esc(e.name)+'</h1>'
-   +(e.city?('<div class="ep-loc"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>'+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
+   +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
    +(e.description?('<p class="desc">'+esc(e.description)+'</p>'):'')
+   +actHtml
    +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
-   +'<div class="acts">'
-     +(mapHref?('<a class="btn btn-ghost" href="'+attr(mapHref)+'" rel="nofollow noopener" target="_blank">View on map</a>'):'')
-     +'<a class="btn btn-ghost" href="/explore?type='+attr(e.entity_type||'')+(e.city?('&city='+encodeURIComponent(e.city)):'')+'">More like this</a>'
-   +'</div>'
-   +'<div class="claimbar"><p><b>Is this your listing?</b> Claim it to edit the details, add photos and publish from Zoi.</p>'
-     +'<a class="btn btn-primary" href="/explore?q='+encodeURIComponent(e.name||'')+'">Claim this listing</a></div>'
+   +verticalHtml
+   +claim
    +rel
    +'</div>'
    +'<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">'
@@ -163,6 +168,72 @@ function page(e, related){
    +'<script src="/assets/zoi-theme.js"></script>'
    +'</body></html>';
 }
+
+var PAGE_CSS = [
+  '.wrap{max-width:920px}',
+  '.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--card);margin:24px 0 0}',
+  '.ep-cover svg{display:block;width:100%;height:100%}',
+  '.bc{font-size:12.5px;color:var(--dim);margin:22px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}',
+  '.bc a{color:var(--mut)}.bc a:hover{color:var(--tx)}',
+  '.ep-type{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:20px;display:block}',
+  'h1{font-size:clamp(30px,4.6vw,46px);margin:8px 0 0}',
+  '.ep-loc{color:var(--mut);font-size:14.5px;margin-top:8px;display:flex;align-items:center;gap:7px}',
+  '.ic{width:15px;height:15px;flex:none}',
+  'p.desc{font-size:16.5px;color:var(--mut);line-height:1.65;margin:16px 0 0;max-width:64ch}',
+  '.acts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0}',
+  '.btn-xs{padding:6px 12px;min-height:32px;font-size:12.5px}',
+  '.card{margin:22px 0 0;padding:6px 20px}',
+  '.row{display:flex;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid var(--line)}',
+  '.row:last-child{border-bottom:0}.row span{color:var(--mut);font-size:13.5px;flex:none}',
+  '.row b{text-align:right;font-weight:600;font-size:14px;min-width:0;overflow-wrap:anywhere}.row b a{color:var(--acc)}',
+  /* vertical sections */
+  '.sec{margin:40px 0 0}',
+  '.sec h2{font-size:20px;margin:0 0 12px;display:flex;align-items:center;gap:9px}',
+  '.sec h2 .sech{width:18px;height:18px;color:var(--gold);flex:none}',
+  '.secsub{color:var(--mut);font-size:13px;margin:-6px 0 12px}',
+  '.secp{color:var(--mut);font-size:15px;line-height:1.65;margin:0;max-width:64ch}',
+  '.sched{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
+  '.schrow{display:grid;grid-template-columns:120px 1fr auto;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);align-items:baseline}',
+  '.schrow:last-child{border-bottom:0}',
+  '.schday{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}',
+  '.schlabel{font-size:14.5px;font-weight:600}.schlabel em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);font-weight:400;margin-top:2px}',
+  '.schtime{font-size:14px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}',
+  '@media(max-width:560px){.schrow{grid-template-columns:1fr auto}.schday{grid-column:1/-1}}',
+  '.chips{display:flex;flex-wrap:wrap;gap:8px}',
+  '.pill{font-size:13px;font-weight:600;color:var(--tx);background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:7px 14px}',
+  '.ppl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}',
+  '.pcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px}',
+  '.pcard img,.pcard .pav{width:44px;height:44px;border-radius:50%;flex:none;object-fit:cover}',
+  '.pcard .pav{display:grid;place-items:center;background:var(--card2);border:1px solid var(--line2);font-family:Fraunces,Georgia,serif;font-style:italic;font-size:19px;color:var(--gold)}',
+  '.pcard b{display:block;font-size:14.5px}.pcard span{display:block;font-size:12.5px;color:var(--mut)}',
+  '.mgroup{margin:0 0 22px}.mgroup h3{font-size:13px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}',
+  '.mitem{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);align-items:baseline}',
+  '.mitem b{font-weight:600;font-size:15px}.mitem em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);margin-top:2px}',
+  '.mprice{font-variant-numeric:tabular-nums;color:var(--gold);font-weight:700;white-space:nowrap}',
+  '.dates{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
+  '.drow{display:grid;grid-template-columns:140px 1fr auto;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:center}',
+  '.drow:last-child{border-bottom:0}',
+  '.dwhen{font-size:12.5px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}',
+  '.dwhat b{font-size:14.5px;font-weight:600}.dwhat em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);margin-top:2px}',
+  '@media(max-width:560px){.drow{grid-template-columns:1fr}}',
+  '.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}',
+  '.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line)}',
+  /* claim */
+  '.claim{margin:48px 0 0;padding:22px;border-radius:var(--r);border:1px solid color-mix(in srgb, var(--gold) 34%, transparent);background:color-mix(in srgb, var(--gold) 8%, transparent)}',
+  '.claimhead{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}',
+  '.ctag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid color-mix(in srgb, var(--gold) 40%, transparent);border-radius:999px;padding:3px 9px}',
+  '.claimhead h2{font-size:22px;margin:10px 0 4px}',
+  '.claimhead p{margin:0;color:var(--mut);font-size:14.5px}',
+  '.unlock{list-style:none;padding:0;margin:22px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}',
+  '.unlock li{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px}',
+  '.unlock b{display:block;font-size:14px;font-weight:700;margin-bottom:3px}',
+  '.unlock span{font-size:12.5px;color:var(--mut);line-height:1.5}',
+  '.claimfoot{margin:18px 0 0;font-size:12px;color:var(--dim)}',
+  '.relgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}',
+  '.relcard{display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px;transition:.25s var(--ease)}',
+  '.relcard:hover{border-color:var(--acc);transform:translateY(-2px)}',
+  '.relcard b{font-size:14px;font-weight:600;letter-spacing:-.01em}.relcard span{font-size:12px;color:var(--dim)}'
+].join('');
 // ESM: package.json sets "type":"module", so a CommonJS export leaves this
 // function with no handler at all — which is what made every listing page 500.
 export default async function handler(req, res) {

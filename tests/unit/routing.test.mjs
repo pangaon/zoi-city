@@ -21,7 +21,7 @@ test('every api/ handler exposes a default export', async () => {
   // package.json sets "type":"module", so a CommonJS `module.exports` handler
   // loads with an empty namespace and Vercel serves a 500. This is what broke
   // /p/<slug> for every listing.
-  const files = readdirSync(join(ROOT, 'api')).filter((f) => f.endsWith('.js'));
+  const files = readdirSync(join(ROOT, 'api')).filter((f) => f.endsWith('.js') && !f.startsWith('_'));
   assert.ok(files.length > 0, 'expected at least one api handler');
   for (const f of files) {
     const mod = await import(join(ROOT, 'api', f));
@@ -35,7 +35,7 @@ test('every api/ handler exposes a default export', async () => {
 test('package.json module type matches how api handlers export', () => {
   const pkg = readJson('package.json');
   if (pkg.type !== 'module') return; // CommonJS handlers would be fine
-  for (const f of readdirSync(join(ROOT, 'api')).filter((x) => x.endsWith('.js'))) {
+  for (const f of readdirSync(join(ROOT, 'api')).filter((x) => x.endsWith('.js') && !x.startsWith('_'))) {
     const src = readFileSync(join(ROOT, 'api', f), 'utf8');
     assert.ok(
       !/^\s*module\.exports\s*=/m.test(src),

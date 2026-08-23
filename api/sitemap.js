@@ -19,13 +19,28 @@ function iso(d){ try{ return new Date(d).toISOString().slice(0,10); }catch(e){ r
 // function with no handler at all — which is what made every listing page 500.
 export default async function handler(req, res) {
   try {
-    var rows = await rpc('seo_index', { p_limit: 50000, p_offset: 0 });
-    if (!Array.isArray(rows)) rows = [];
+    // seo_index caps at 1000 rows per call regardless of p_limit, so a single
+    // request left ~7,000 of the ~8,900 listings out of the sitemap entirely —
+    // invisible to search. Page through until a short page comes back.
+    var PAGE = 1000, MAX_PAGES = 60, rows = [], off = 0;
+    for (var pageNo = 0; pageNo < MAX_PAGES; pageNo++) {
+      var batch = await rpc('seo_index', { p_limit: PAGE, p_offset: off });
+      if (!Array.isArray(batch) || batch.length === 0) break;
+      rows = rows.concat(batch);
+      if (batch.length < PAGE) break;
+      off += PAGE;
+    }
     var out = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
     out += '<url><loc>' + SITE + '/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>\n';
+    var seen = Object.create(null);
     for (var i = 0; i < rows.length; i++) {
       var r = rows[i]; if (!r || !r.slug) continue;
-      var loc = SITE + '/p/' + encodeURIComponent(r.slug);
+      var key = (r.entity_type || 'p') + '/' + r.slug;
+      if (seen[key]) continue;            // a duplicate <loc> is a crawl error
+      seen[key] = 1;
+      // Must match the canonical the entity page emits (/<type>/<slug>), or the
+      // sitemap and the canonical tag disagree and crawl budget is wasted.
+      var loc = SITE + '/' + encodeURIComponent(r.entity_type || 'p') + '/' + encodeURIComponent(r.slug);
       var lm = iso(r.updated_at);
       out += '<url><loc>' + xesc(loc) + '</loc>' + (lm ? ('<lastmod>' + lm + '</lastmod>') : '') + '<changefreq>weekly</changefreq><priority>0.7</priority></url>\n';
     }
