@@ -1,0 +1,557 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"/>
+<title>The map · Zoi</title>
+<meta name="description" content="Every Greek place on one map — churches, tavernas, schools, associations and businesses across Greece, Cyprus and the diaspora."/>
+<link rel="canonical" href="https://www.zoi.city/explore/map"/>
+<meta property="og:title" content="The map of the Greek world · Zoi"/>
+<meta property="og:description" content="Thousands of Greek places, plotted. Filter by category, jump by country, find what is near you."/>
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/assets/zoi-theme.css">
+<style>
+html,body{height:100%}
+body{overflow:hidden}
+#app{position:fixed;inset:0;display:flex;flex-direction:column}
+.zoi-header{flex:none}
+
+/* ---- stage ---- */
+.stage{position:relative;flex:1;min-height:0;overflow:hidden;
+  background:radial-gradient(120% 90% at 50% -10%, var(--bg2), var(--bg) 70%)}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
+#cv.drag{cursor:grabbing}
+
+/* ---- top control rail ---- */
+.rail{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;gap:10px;align-items:flex-start;
+  padding:14px 16px;pointer-events:none;flex-wrap:wrap}
+.rail > *{pointer-events:auto}
+.pod{background:color-mix(in srgb, var(--bg2) 88%, transparent);border:1px solid var(--line2);
+  border-radius:14px;backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
+  box-shadow:0 18px 40px -26px rgba(0,0,0,.6)}
+.find{display:flex;align-items:center;gap:9px;padding:0 6px 0 13px;min-width:250px;max-width:340px;flex:1}
+.find svg{width:15px;height:15px;stroke:var(--mut);fill:none;stroke-width:2;flex:none}
+.find input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--tx);
+  font:500 14.5px "Hanken Grotesk",system-ui;padding:11px 0}
+.find input::placeholder{color:var(--dim)}
+.find .clr{background:none;border:0;color:var(--dim);cursor:pointer;font-size:17px;line-height:1;padding:4px 8px}
+.find .clr:hover{color:var(--tx)}
+
+.chips{display:flex;gap:6px;padding:6px;flex-wrap:wrap;max-width:min(560px,100%)}
+.chip2{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid transparent;
+  border-radius:999px;padding:6px 11px;cursor:pointer;color:var(--mut);
+  font:700 12px "Hanken Grotesk",system-ui;white-space:nowrap;transition:.16s var(--ease)}
+.chip2:hover{color:var(--tx);border-color:var(--line)}
+.chip2.on{color:var(--tx);background:var(--card);border-color:var(--line2)}
+.chip2 .sw{width:9px;height:9px;border-radius:50%;flex:none}
+.chip2 b{font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
+.chip2.on b{color:var(--mut)}
+
+/* ---- right side buttons ---- */
+.tools{position:absolute;right:16px;bottom:20px;z-index:6;display:flex;flex-direction:column;gap:8px}
+.tool{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;cursor:pointer;
+  background:color-mix(in srgb, var(--bg2) 88%, transparent);border:1px solid var(--line2);color:var(--tx);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.tool:hover{border-color:var(--acc);color:var(--acc)}
+.tool svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+.tool[disabled]{opacity:.45;cursor:not-allowed}
+
+/* ---- bottom status ---- */
+.status{position:absolute;left:16px;bottom:20px;z-index:6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  max-width:calc(100% - 90px)}
+.stat2{font:600 12px "Hanken Grotesk",system-ui;color:var(--mut);padding:8px 13px;border-radius:999px;
+  background:color-mix(in srgb, var(--bg2) 88%, transparent);border:1px solid var(--line);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
+.stat2 b{color:var(--tx);font-variant-numeric:tabular-nums}
+.stat2 a{color:var(--acc)}
+
+/* ---- hover tooltip ---- */
+#tip{position:absolute;z-index:8;pointer-events:none;opacity:0;transform:translate(-50%,-100%);
+  transition:opacity .12s;max-width:260px}
+#tip.on{opacity:1}
+.tipin{background:var(--bg2);border:1px solid var(--line2);border-radius:11px;padding:8px 11px;
+  box-shadow:0 16px 34px -20px rgba(0,0,0,.7)}
+.tipin .t1{font:700 13px "Hanken Grotesk";letter-spacing:-.01em;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;max-width:236px}
+.tipin .t2{font:600 11.5px "Hanken Grotesk";color:var(--dim);margin-top:1px}
+
+/* ---- detail panel ---- */
+#panel{position:absolute;top:0;right:0;bottom:0;width:min(380px,100%);z-index:9;
+  background:var(--bg2);border-left:1px solid var(--line2);transform:translateX(101%);
+  transition:transform .3s var(--ease);display:flex;flex-direction:column;
+  box-shadow:-30px 0 60px -30px rgba(0,0,0,.6)}
+#panel.on{transform:none}
+.phead{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
+.phead h2{font-size:17px;font-weight:700;letter-spacing:-.02em;margin:0;flex:1;min-width:0}
+.phead .x{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:none;
+  color:var(--mut);cursor:pointer;flex:none;font-size:17px;line-height:1}
+.phead .x:hover{color:var(--tx);border-color:var(--acc)}
+.plist{flex:1;overflow-y:auto;padding:8px}
+.prow{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:11px;text-decoration:none;color:inherit}
+.prow:hover{background:var(--card)}
+.prow .av{width:34px;height:34px;border-radius:9px;overflow:hidden;flex:none;background:var(--card2)}
+.prow .av svg{display:block;width:100%;height:100%}
+.prow .bd{flex:1;min-width:0}
+.prow .n1{font-size:14px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prow .n2{font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pfoot{padding:12px 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim)}
+@media(max-width:640px){
+  #panel{width:100%;top:auto;height:58%;border-left:0;border-top:1px solid var(--line2);
+    transform:translateY(101%);border-radius:18px 18px 0 0}
+  #panel.on{transform:none}
+  .rail{padding:10px}
+  .find{min-width:0}
+  .status{bottom:14px;left:10px}
+  .tools{bottom:14px;right:10px}
+}
+/* ---- loading ---- */
+#load{position:absolute;inset:0;z-index:10;display:grid;place-items:center;
+  background:var(--bg);transition:opacity .4s}
+#load.off{opacity:0;pointer-events:none}
+.lspin{width:34px;height:34px;border:3px solid var(--line2);border-top-color:var(--gold);
+  border-radius:50%;animation:lsp .8s linear infinite;margin:0 auto 14px}
+@keyframes lsp{to{transform:rotate(360deg)}}
+#load p{color:var(--mut);font-size:13.5px;text-align:center}
+@media(prefers-reduced-motion:reduce){#panel,#tip,.chip2{transition:none}}
+</style>
+</head>
+<body>
+<div id="app">
+
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
+  <div class="zoi-actions">
+    <button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
+    <a class="btn btn-primary" id="zoiCta" href="/social">Start free</a>
+  </div>
+</div></header>
+
+<div class="stage" id="stage">
+  <canvas id="cv" role="application" aria-label="Map of Greek places. Use arrow keys to pan, plus and minus to zoom."></canvas>
+
+  <div class="rail">
+    <div class="pod find">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <input id="q" type="text" placeholder="Filter by name, city or country…" autocomplete="off" spellcheck="false" aria-label="Filter the map">
+      <button class="clr" id="clr" hidden aria-label="Clear filter">&times;</button>
+    </div>
+    <div class="pod chips" id="chips" role="group" aria-label="Filter by category"></div>
+  </div>
+
+  <div class="status">
+    <span class="stat2" id="cnt">Loading…</span>
+    <span class="stat2" id="cov"></span>
+  </div>
+
+  <div class="tools">
+    <button class="tool" id="zin" aria-label="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+    <button class="tool" id="zout" aria-label="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
+    <button class="tool" id="me" aria-label="Find what is near me"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8.4"/></svg></button>
+    <button class="tool" id="home" aria-label="Reset the view"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg></button>
+  </div>
+
+  <div id="tip"><div class="tipin"><div class="t1"></div><div class="t2"></div></div></div>
+
+  <aside id="panel" aria-live="polite">
+    <div class="phead"><h2 id="ptitle">Places</h2><button class="x" id="pclose" aria-label="Close">&times;</button></div>
+    <div class="plist" id="plist"></div>
+    <div class="pfoot" id="pfoot"></div>
+  </aside>
+
+  <div id="load"><div><div class="lspin"></div><p>Plotting the Greek world…</p></div></div>
+</div>
+
+</div>
+
+<script src="/assets/zoi-land.js"></script>
+<script src="/assets/zoi-map.js"></script>
+<script src="/assets/zoi-emblem.js"></script>
+<script src="/assets/zoi-search.js"></script>
+<script>
+(function(){
+  'use strict';
+  var M = window.ZoiMap, LAND = window.ZOI_LAND || [];
+  var BASE='https://csebihpaychdkanjjsmz.supabase.co';
+  var PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+  var TOTAL_LISTINGS = 8053;   // directory size, for an honest coverage line
+
+  var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+  var stage=document.getElementById('stage');
+  var tip=document.getElementById('tip'), panel=document.getElementById('panel');
+  var qEl=document.getElementById('q'), clrEl=document.getElementById('clr');
+  var cntEl=document.getElementById('cnt'), covEl=document.getElementById('cov');
+  var chipsEl=document.getElementById('chips');
+
+  var ALL=[], pts=[], view={cx:0.5,cy:0.38,z:1.2,w:0,h:0}, tok=M.readTokens();
+  /* longitude bounds per ring, so the wrap test above is a comparison not a scan */
+  var LAND_BB=LAND.map(function(r){
+    var mn=1e9,mx=-1e9;
+    for(var j=0;j<r.length;j+=2){ if(r[j]<mn)mn=r[j]; if(r[j]>mx)mx=r[j]; }
+    return [mn,mx];
+  });
+  var clusters=[], dpr=1, dirty=true, hovered=null, meLoc=null;
+  var active={}, filterText='';
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; }); }
+  function typeLabel(t){ return (window.ZoiEmblem&&window.ZoiEmblem.typeLabel)?window.ZoiEmblem.typeLabel(t):String(t||''); }
+  function hrefFor(r){
+    if(!r||!r.slug) return '/explore';
+    var t=r.entity_type==='travel_place'?'travel-place':(r.entity_type||'p');
+    return '/'+encodeURIComponent(t)+'/'+encodeURIComponent(r.slug);
+  }
+  function mark(r){
+    return (window.ZoiEmblem&&window.ZoiEmblem.mark)
+      ? window.ZoiEmblem.mark({name:r.name,type:r.entity_type,slug:r.slug}) : '';
+  }
+
+  /* ---------- sizing ---------- */
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    var r=stage.getBoundingClientRect();
+    view.w=r.width; view.h=r.height;
+    cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    dirty=true;
+  }
+
+  /* ---------- data ---------- */
+  function rpc(fn,body){
+    return fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',
+      headers:{apikey:PUB,Authorization:'Bearer '+PUB,'Content-Type':'application/json'},
+      body:JSON.stringify(body||{})}).then(function(r){ return r.ok?r.json():[]; });
+  }
+  function load(){
+    var out=[], off=0;
+    function page(){
+      return rpc('explore_geo',{p_limit:1000,p_offset:off}).then(function(b){
+        if(!Array.isArray(b)||!b.length) return out;
+        out=out.concat(b);
+        cntEl.textContent='Plotting '+out.length.toLocaleString()+'…';
+        if(b.length<1000 || off>12000) return out;
+        off+=1000; return page();
+      });
+    }
+    return page();
+  }
+
+  /* ---------- filters ---------- */
+  function buildChips(){
+    var counts={};
+    ALL.forEach(function(p){ counts[p.entity_type]=(counts[p.entity_type]||0)+1; });
+    var types=Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
+    types.forEach(function(t){ if(active[t]===undefined) active[t]=true; });
+    chipsEl.innerHTML=types.map(function(t){
+      var c=M.colourFor(t,tok);
+      return '<button class="chip2'+(active[t]?' on':'')+'" data-t="'+esc(t)+'" aria-pressed="'+(active[t]?'true':'false')+'">'+
+        '<span class="sw" style="background:'+M.rgba(c,1)+'"></span>'+esc(typeLabel(t))+
+        ' <b>'+counts[t].toLocaleString()+'</b></button>';
+    }).join('');
+  }
+  function applyFilters(){
+    var q=filterText.trim().toLowerCase();
+    pts=ALL.filter(function(p){
+      if(!active[p.entity_type]) return false;
+      if(!q) return true;
+      return (p.name&&p.name.toLowerCase().indexOf(q)>=0) ||
+             (p.city&&p.city.toLowerCase().indexOf(q)>=0) ||
+             (p.country&&p.country.toLowerCase().indexOf(q)>=0);
+    });
+    dirty=true; updateStatus();
+  }
+  function updateStatus(){
+    cntEl.innerHTML='<b>'+pts.length.toLocaleString()+'</b> place'+(pts.length===1?'':'s')+' shown';
+    covEl.innerHTML='<b>'+ALL.length.toLocaleString()+'</b> of '+TOTAL_LISTINGS.toLocaleString()+
+      ' listings have coordinates &middot; <a href="/explore">browse all</a>';
+  }
+
+  /* ---------- render ---------- */
+  function draw(){
+    var w=view.w,h=view.h;
+    ctx.clearRect(0,0,w,h);
+
+    /* land. Each ring is drawn at whichever 360-degree offsets overlap the
+       viewport, so panning east or west repeats the world seamlessly instead of
+       running into empty space. */
+    var lo=M.unproject(0,view.h/2,view).lng, hi=M.unproject(w,view.h/2,view).lng;
+    ctx.beginPath();
+    for(var i=0;i<LAND.length;i++){
+      var ring=LAND[i], bb=LAND_BB[i];
+      for(var o=-1;o<=1;o++){
+        var off=o*360;
+        if(bb[1]+off < lo-2 || bb[0]+off > hi+2) continue;
+        for(var j=0;j<ring.length;j+=2){
+          var p=M.project(ring[j]+off,ring[j+1],view);
+          if(j===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
+        }
+        ctx.closePath();
+      }
+    }
+    ctx.fillStyle=M.rgba(M.mix(tok.mut,tok.bg,0.20),1);
+    ctx.fill();
+    ctx.lineWidth=0.8;
+    ctx.strokeStyle=M.rgba(tok.mut,0.34);
+    ctx.stroke();
+
+    /* clusters */
+    clusters=M.cluster(pts,view,46);
+    for(var k=0;k<clusters.length;k++){
+      var c=clusters[k];
+      var domi=null, best=-1;
+      for(var t in c.types){ if(c.types[t]>best){ best=c.types[t]; domi=t; } }
+      var col=M.colourFor(domi,tok);
+      var r=M.radiusFor(c.n);
+      var isHover = hovered && hovered.x===c.x && hovered.y===c.y;
+
+      if(c.n>1){
+        var g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r*1.7);
+        g.addColorStop(0,M.rgba(col,0.26)); g.addColorStop(1,M.rgba(col,0));
+        ctx.beginPath(); ctx.fillStyle=g; ctx.arc(c.x,c.y,r*1.7,0,6.2832); ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.fillStyle=M.rgba(col, c.n>1?0.94:0.98);
+      ctx.arc(c.x,c.y,isHover?r+1.5:r,0,6.2832); ctx.fill();
+      ctx.lineWidth=isHover?2:1.1;
+      ctx.strokeStyle=M.rgba(tok.bg,0.9); ctx.stroke();
+
+      /* Composition ring: one arc per category inside this cluster, sized by
+         share. It turns a dot into a readable summary of what is actually here. */
+      var tl=Object.keys(c.types);
+      if(c.n>1 && tl.length>1 && r>=7){
+        tl.sort(function(a,b){ return c.types[b]-c.types[a]; });
+        var a0=-Math.PI/2;
+        for(var ti=0;ti<tl.length;ti++){
+          var a1=a0+(c.types[tl[ti]]/c.n)*6.2832;
+          ctx.beginPath();
+          ctx.arc(c.x,c.y,r+2.6,a0+0.03,Math.max(a0+0.05,a1-0.03));
+          ctx.strokeStyle=M.rgba(M.colourFor(tl[ti],tok),0.95);
+          ctx.lineWidth=2.4; ctx.lineCap='butt'; ctx.stroke();
+          a0=a1;
+        }
+      }
+
+      if(c.n>1 && r>=11){
+        ctx.fillStyle=M.rgba(tok.bg,0.95);
+        ctx.font='800 '+Math.round(Math.min(13,r*0.86))+'px "Hanken Grotesk",system-ui';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(c.n>999?(Math.round(c.n/100)/10)+'k':String(c.n), c.x, c.y+0.5);
+      }
+    }
+
+    /* "you are here" */
+    if(meLoc){
+      var mp=M.project(meLoc.lng,meLoc.lat,view);
+      ctx.beginPath(); ctx.strokeStyle=M.rgba(tok.tx,0.8); ctx.lineWidth=2;
+      ctx.arc(mp.x,mp.y,7,0,6.2832); ctx.stroke();
+      ctx.beginPath(); ctx.fillStyle=M.rgba(tok.tx,0.9); ctx.arc(mp.x,mp.y,2.5,0,6.2832); ctx.fill();
+    }
+  }
+  function loop(){
+    if(dirty){ dirty=false; draw(); }
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- interaction ---------- */
+  var drag=null;
+  function ptr(e){ var r=cv.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
+
+  cv.addEventListener('pointerdown',function(e){
+    cv.setPointerCapture(e.pointerId);
+    drag={x:e.clientX,y:e.clientY,cx:view.cx,cy:view.cy,moved:0};
+    cv.classList.add('drag'); hideTip();
+  });
+  cv.addEventListener('pointermove',function(e){
+    if(drag){
+      var s=M.TILE*Math.pow(2,view.z);
+      var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
+      drag.moved=Math.max(drag.moved,Math.abs(dx)+Math.abs(dy));
+      view.cx=drag.cx-dx/s;
+      view.cy=Math.max(0,Math.min(1,drag.cy-dy/s));
+      dirty=true; return;
+    }
+    var p=ptr(e), c=M.hit(p.x,p.y,clusters);
+    if(c!==hovered){ hovered=c; dirty=true; }
+    if(c) showTip(c,p); else hideTip();
+  });
+  cv.addEventListener('pointerup',function(e){
+    var wasDrag=drag&&drag.moved>6;
+    drag=null; cv.classList.remove('drag');
+    if(wasDrag) return;
+    var p=ptr(e), c=M.hit(p.x,p.y,clusters);
+    if(c) openCluster(c);
+  });
+  cv.addEventListener('pointercancel',function(){ drag=null; cv.classList.remove('drag'); });
+  cv.addEventListener('pointerleave',hideTip);
+
+  cv.addEventListener('wheel',function(e){
+    e.preventDefault();
+    var p=ptr(e);
+    zoomAt(p.x,p.y, e.deltaY<0 ? 0.42 : -0.42);
+  },{passive:false});
+  cv.addEventListener('dblclick',function(e){ var p=ptr(e); zoomAt(p.x,p.y,1); });
+
+  function zoomAt(px,py,dz){
+    var before=M.unproject(px,py,view);
+    view.z=Math.max(0.6,Math.min(16,view.z+dz));
+    var after=M.unproject(px,py,view);
+    view.cx+=M.lngToNx(before.lng)-M.lngToNx(after.lng);
+    view.cy+=M.latToNy(before.lat)-M.latToNy(after.lat);
+    view.cy=Math.max(0,Math.min(1,view.cy));
+    dirty=true; hideTip(); syncHash();
+  }
+  document.getElementById('zin').onclick=function(){ zoomAt(view.w/2,view.h/2,0.8); };
+  document.getElementById('zout').onclick=function(){ zoomAt(view.w/2,view.h/2,-0.8); };
+  document.getElementById('home').onclick=function(){ view=M.fit(ALL,view.w,view.h,0.06); dirty=true; syncHash(); };
+
+  cv.setAttribute('tabindex','0');
+  cv.addEventListener('keydown',function(e){
+    var s=60/(M.TILE*Math.pow(2,view.z));
+    if(e.key==='ArrowLeft'){ view.cx-=s; dirty=true; e.preventDefault(); }
+    else if(e.key==='ArrowRight'){ view.cx+=s; dirty=true; e.preventDefault(); }
+    else if(e.key==='ArrowUp'){ view.cy=Math.max(0,view.cy-s); dirty=true; e.preventDefault(); }
+    else if(e.key==='ArrowDown'){ view.cy=Math.min(1,view.cy+s); dirty=true; e.preventDefault(); }
+    else if(e.key==='+'||e.key==='='){ zoomAt(view.w/2,view.h/2,0.8); e.preventDefault(); }
+    else if(e.key==='-'){ zoomAt(view.w/2,view.h/2,-0.8); e.preventDefault(); }
+  });
+
+  /* ---------- tooltip ---------- */
+  function showTip(c,p){
+    var t1,t2;
+    if(c.n===1){ t1=c.items[0].name||'Unnamed'; t2=[c.items[0].city,c.items[0].country].filter(Boolean).join(', '); }
+    else { t1=c.n.toLocaleString()+' places'; t2='Click to see them'; }
+    tip.querySelector('.t1').textContent=t1;
+    tip.querySelector('.t2').textContent=t2;
+    tip.style.left=p.x+'px'; tip.style.top=(p.y-14)+'px';
+    tip.classList.add('on');
+  }
+  function hideTip(){ tip.classList.remove('on'); if(hovered){ hovered=null; dirty=true; } }
+
+  /* ---------- panel ---------- */
+  function openCluster(c){
+    // one pin at high zoom: go straight to the listing
+    if(c.n===1 && view.z>=9){ location.href=hrefFor(c.items[0]); return; }
+    if(c.n>1 && view.z<15){
+      // zoom toward it instead of listing a thousand rows
+      var inside=pts.filter(function(p){
+        var q=M.project(p.lng,p.lat,view);
+        return Math.abs(q.x-c.x)<40 && Math.abs(q.y-c.y)<40;
+      });
+      if(inside.length>12){
+        var v=M.fit(inside,view.w,view.h,0.25);
+        view.cx=v.cx; view.cy=v.cy; view.z=Math.min(16,Math.max(view.z+1.4,v.z));
+        dirty=true; hideTip(); syncHash(); return;
+      }
+    }
+    showList(c.items, c.n);
+  }
+  function showList(items,total){
+    document.getElementById('ptitle').textContent =
+      items.length===1 ? (items[0].name||'Place') : (total||items.length)+' places here';
+    document.getElementById('plist').innerHTML = items.map(function(r){
+      return '<a class="prow" href="'+esc(hrefFor(r))+'">'+
+        '<span class="av">'+mark(r)+'</span><span class="bd">'+
+        '<span class="n1">'+esc(r.name||'Unnamed')+'</span>'+
+        '<span class="n2">'+esc([typeLabel(r.entity_type),r.city,r.country].filter(Boolean).join(' · '))+'</span>'+
+        '</span></a>';
+    }).join('');
+    document.getElementById('pfoot').textContent = (total&&total>items.length)
+      ? ('Showing '+items.length+' of '+total+' here — zoom in for the rest.')
+      : 'Every place shown is a real listing.';
+    panel.classList.add('on');
+  }
+  document.getElementById('pclose').onclick=function(){ panel.classList.remove('on'); };
+
+  /* ---------- near me ---------- */
+  document.getElementById('me').onclick=function(){
+    var btn=this;
+    if(!navigator.geolocation){ btn.disabled=true; return; }
+    btn.disabled=true;
+    navigator.geolocation.getCurrentPosition(function(pos){
+      btn.disabled=false;
+      meLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
+      var near=ALL.map(function(p){
+        return {p:p,d:M.haversine(meLoc.lat,meLoc.lng,p.lat,p.lng)};
+      }).sort(function(a,b){ return a.d-b.d; }).slice(0,20);
+      view.cx=M.lngToNx(meLoc.lng); view.cy=M.latToNy(meLoc.lat);
+      view.z=Math.max(view.z,7); dirty=true; syncHash();
+      document.getElementById('ptitle').textContent='Nearest to you';
+      document.getElementById('plist').innerHTML=near.map(function(x){
+        return '<a class="prow" href="'+esc(hrefFor(x.p))+'">'+
+          '<span class="av">'+mark(x.p)+'</span><span class="bd">'+
+          '<span class="n1">'+esc(x.p.name||'Unnamed')+'</span>'+
+          '<span class="n2">'+esc([typeLabel(x.p.entity_type),x.p.city].filter(Boolean).join(' · '))+
+          ' · '+(x.d<1?Math.round(x.d*1000)+' m':x.d.toFixed(x.d<10?1:0)+' km')+'</span></span></a>';
+      }).join('');
+      document.getElementById('pfoot').textContent='Straight-line distance from your device location.';
+      panel.classList.add('on');
+    }, function(){ btn.disabled=false; }, {timeout:9000});
+  };
+
+  /* ---------- url state ---------- */
+  var hashT=null;
+  function syncHash(){
+    if(hashT) clearTimeout(hashT);
+    hashT=setTimeout(function(){
+      var lat=M.nyToLat(view.cy).toFixed(4), lng=M.nxToLng(view.cx).toFixed(4);
+      try{ history.replaceState({},'','#'+lat+','+lng+','+view.z.toFixed(2)); }catch(e){}
+    },260);
+  }
+  function readHash(){
+    var m=/^#(-?[\d.]+),(-?[\d.]+),([\d.]+)$/.exec(location.hash||'');
+    if(!m) return false;
+    view.cx=M.lngToNx(parseFloat(m[2]));
+    view.cy=M.latToNy(parseFloat(m[1]));
+    view.z=Math.max(0.6,Math.min(16,parseFloat(m[3])));
+    return true;
+  }
+
+  /* ---------- filter wiring ---------- */
+  var ft=null;
+  qEl.addEventListener('input',function(){
+    clrEl.hidden=!qEl.value;
+    if(ft) clearTimeout(ft);
+    ft=setTimeout(function(){ filterText=qEl.value; applyFilters(); },140);
+  });
+  clrEl.onclick=function(){ qEl.value=''; clrEl.hidden=true; filterText=''; applyFilters(); qEl.focus(); };
+  chipsEl.addEventListener('click',function(e){
+    var b=e.target.closest('.chip2'); if(!b) return;
+    var t=b.getAttribute('data-t');
+    active[t]=!active[t];
+    b.classList.toggle('on',active[t]);
+    b.setAttribute('aria-pressed',active[t]?'true':'false');
+    applyFilters();
+  });
+
+  /* theme changes re-read the tokens so pins follow the palette */
+  new MutationObserver(function(){
+    tok=M.readTokens(); buildChips(); dirty=true;
+  }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+
+  window.addEventListener('resize',resize);
+
+  /* ---------- go ---------- */
+  resize();
+  loop();
+  load().then(function(rows){
+    ALL=(rows||[]).filter(function(r){
+      return typeof r.lat==='number' && typeof r.lng==='number' &&
+             r.lat>=-90 && r.lat<=90 && r.lng>=-180 && r.lng<=180;
+    });
+    buildChips();
+    if(!readHash()) view=M.fit(ALL,view.w,view.h,0.06);
+    applyFilters();
+    document.getElementById('load').classList.add('off');
+    setTimeout(function(){ var l=document.getElementById('load'); if(l&&l.parentNode) l.parentNode.removeChild(l); },500);
+  }).catch(function(){
+    cntEl.textContent='Could not load the map';
+    document.getElementById('load').classList.add('off');
+  });
+})();
+</script>
+<script src="/assets/zoi-theme.js"></script>
+</body>
+</html>

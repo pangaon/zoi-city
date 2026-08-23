@@ -154,6 +154,13 @@ footer a:hover{color:var(--tx)}
 .skel{height:302px;border-radius:16px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));
   background-size:200% 100%;animation:sk 1.2s infinite;border:1px solid var(--line)}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.mapcta{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;
+  color:var(--gold);background:color-mix(in srgb, var(--gold) 10%, transparent);
+  border:1px solid color-mix(in srgb, var(--gold) 38%, transparent);
+  border-radius:999px;padding:8px 15px;transition:.2s var(--ease)}
+.mapcta:hover{background:color-mix(in srgb, var(--gold) 18%, transparent);transform:translateY(-1px)}
+.mapcta svg{width:15px;height:15px;flex:none}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 </head>
@@ -180,6 +187,10 @@ footer a:hover{color:var(--tx)}
     <select class="city" id="country-sel" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
     <select class="city" id="sort-sel" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
     <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
+    <a class="mapcta" href="/explore/map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      See it on the map
+    </a>
   </div>
 </div></header>
 
