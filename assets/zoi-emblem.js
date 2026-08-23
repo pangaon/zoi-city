@@ -65,9 +65,13 @@
   };
   var FALLBACK = { slot: 0, label: 'Listing' };
 
-  function cfg(type) {
+  /* When a caller has no category — a person in the feed, say — derive a slot
+     from their own name so avatars vary instead of all coming out gold. */
+  function cfg(type, seed) {
     var k = String(type == null ? '' : type).toLowerCase().trim();
-    return TYPES[k] || FALLBACK;
+    if (TYPES[k]) return TYPES[k];
+    if (seed != null) return { slot: seed % 12, label: FALLBACK.label };
+    return FALLBACK;
   }
 
   /* Accent colour for a category, always expressed in shared tokens. */
@@ -196,8 +200,8 @@
   /* ---------- small square mark (avatars, list rows) ---------- */
   function mark(o) {
     o = o || {};
-    var c = cfg(o.type);
     var seed = hash(o.slug || o.name || 'zoi');
+    var c = cfg(o.type, seed);
     var accent = accentOf(c);
     var uid = 'k' + (seed % 100000).toString(36);
     return '' +

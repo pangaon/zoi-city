@@ -132,6 +132,9 @@ footer a:hover{color:var(--tx)}
 .fbtn{background:var(--bg3);border:1px solid var(--line);color:var(--mut);border-radius:999px;padding:7px 14px;font:600 12.5px "Hanken Grotesk",system-ui,sans-serif;cursor:pointer;min-height:34px}
 .fbtn:hover{color:var(--tx);border-color:var(--line2)}
 .fbtn.on{background:var(--acc);border-color:var(--acc);color:#fff}
+
+.ava{overflow:hidden}
+.ava svg{display:block;width:100%;height:100%}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 </head>
@@ -338,10 +341,16 @@ async function postNow(){
 
 /* ---- feed ---- */
 function initial(n){ return (n||'Γ').trim().charAt(0).toUpperCase(); }
+/* Author avatars use the same generated-identity system as the directory, so a
+   person, a business and a listing all look like they come from one place. */
+function avatarFor(name){
+  if(typeof ZoiEmblem==='undefined') return esc(initial(name));
+  return ZoiEmblem.mark({name:name||'Zoi', slug:'person:'+String(name||'')});
+}
 function postCard(p){
   const loc=p.author_city?(' · '+esc(p.author_city)):'';
   return '<div class="post" id="post-'+p.id+'">'+
-    '<div class="phead"><div class="ava">'+esc(initial(p.author))+'</div>'+
+    '<div class="phead"><div class="ava">'+avatarFor(p.author)+'</div>'+
       '<div class="pwho"><b>'+esc(p.author)+'</b><span>'+relTime(p.created_at)+loc+'</span></div>'+
       (p.mine?'<button class="pdel" onclick="delPost(\''+p.id+'\')">Delete</button>':'')+
     '</div>'+
@@ -460,7 +469,7 @@ async function toggleCmts(id){
   list.innerHTML='<div style="font-size:12.5px;color:var(--dim);padding:4px 0">Loading…</div>';
   try{
     const rows=await rpc('feed_comments_list',{p_post:id})||[];
-    list.innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+esc(initial(c.author))+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('')||'<div style="font-size:12.5px;color:var(--dim);padding:4px 0">No comments yet.</div>';
+    list.innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+avatarFor(c.author)+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('')||'<div style="font-size:12.5px;color:var(--dim);padding:4px 0">No comments yet.</div>';
   }catch(e){ list.innerHTML='<div style="font-size:12.5px;color:var(--red)">'+esc(e.message)+'</div>'; }
 }
 async function sendCmt(id){
@@ -471,7 +480,7 @@ async function sendCmt(id){
     await rpc('feed_comment',{p_post:id,p_body:body},true);
     inp.value='';
     const rows=await rpc('feed_comments_list',{p_post:id})||[];
-    document.getElementById('cl-'+id).innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+esc(initial(c.author))+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('');
+    document.getElementById('cl-'+id).innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+avatarFor(c.author)+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('');
   }catch(e){ toast(e.message); }
 }
 async function nameday(){
@@ -488,6 +497,7 @@ async function nameday(){
   }catch(e){}
 }
 </script>
+<script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

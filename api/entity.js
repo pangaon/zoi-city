@@ -105,7 +105,9 @@ function page(e, related){
    +'<footer>Part of <a href="'+SITE+'/">Zoi</a> — a verified directory of the global Greek world: churches, tavernas, schools, creators and businesses across the diaspora and Greece.</footer>'
    +'</div></body></html>';
 }
-module.exports = async (req, res) => {
+// ESM: package.json sets "type":"module", so a CommonJS export leaves this
+// function with no handler at all — which is what made every listing page 500.
+export default async function handler(req, res) {
   var slug = (req.query && req.query.slug ? String(req.query.slug) : '').trim();
   try {
     if (!slug) { res.statusCode=404; res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
@@ -121,4 +123,4 @@ module.exports = async (req, res) => {
     res.statusCode=500; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex');
     res.end('<!doctype html><title>Zoi</title><h1>Temporarily unavailable</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>');
   }
-};
+}

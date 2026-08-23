@@ -15,7 +15,9 @@ async function rpc(fn, body) {
 function xesc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'})[c];});}
 function iso(d){ try{ return new Date(d).toISOString().slice(0,10); }catch(e){ return null; } }
 
-module.exports = async (req, res) => {
+// ESM: package.json sets "type":"module", so a CommonJS export leaves this
+// function with no handler at all — which is what made every listing page 500.
+export default async function handler(req, res) {
   try {
     var rows = await rpc('seo_index', { p_limit: 50000, p_offset: 0 });
     if (!Array.isArray(rows)) rows = [];
@@ -37,4 +39,4 @@ module.exports = async (req, res) => {
     res.setHeader('Content-Type', 'application/xml; charset=utf-8');
     res.end('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>' + SITE + '/</loc></url></urlset>');
   }
-};
+}
