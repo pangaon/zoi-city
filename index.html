@@ -151,11 +151,11 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 </head>
 <body>
 <div class="glow"></div>
-<nav><div class="wrap nv">
-  <a class="brand" href="/"><span class="seal">Ζ</span>Zoi</a>
-  <div class="nlinks"><a href="#tools">Tools</a><a href="#marketplace">Marketplace</a><a href="/explore">Directory</a><a href="/community">Community</a><a href="/apps/">Apps</a></div>
-  <div class="nr"><a class="si" href="/social">Sign in</a><a class="btn p" href="/social">Start free</a></div>
-</div></nav>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
 
 <header class="hero"><div class="wrap">
   <div class="htag"><span class="d"></span><span>ΖΩΗ — Greece · Cyprus · the diaspora</span></div>
@@ -334,8 +334,8 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 <footer><div class="wrap">
   <div class="fg">
     <div class="fb"><b><span style="color:var(--gold);font-family:Fraunces">Ζ</span> Zoi</b><p>The platform of the Greek diaspora — software, marketplace and media in one network.</p></div>
-    <div class="fc"><h4>Tools</h4><a href="/social">Social</a><a href="/tickets">Tickets</a><a onclick="openWL('storefront')" style="cursor:pointer">Storefront</a><a onclick="openWL('business_page')" style="cursor:pointer">Business Page</a></div>
-    <div class="fc"><h4>Directory</h4><a href="/explore">Explore</a><a href="/explore?c=festivals">Events</a><a href="/explore?c=churches">Churches</a><a href="/explore">Claim your business</a></div>
+    <div class="fc"><h4>Business</h4><a href="/social">Publish &amp; schedule</a><a href="/tickets">Tickets</a><a onclick="openWL('storefront')" style="cursor:pointer">Storefront</a><a onclick="openWL('business_page')" style="cursor:pointer">Business Page</a></div>
+    <div class="fc"><h4>Directory</h4><a href="/explore">Browse the directory</a><a href="/explore?c=festivals">Events</a><a href="/explore?c=churches">Churches</a><a href="/explore">Claim your business</a></div>
     <div class="fc"><h4>Ecosystem</h4><a href="/">Zoi</a><a href="https://buygreek.shop">BuyGreek.Shop</a><a href="/explore">Us Greeks Can</a><a href="/social">Sign in</a></div>
   </div>
   <div class="fbot"><span>© 2026 Zoi · zoi.city</span><span class="mono" style="font-size:11px">Zoi · BuyGreek.Shop · Us Greeks Can</span></div>
@@ -408,9 +408,6 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 </script>
 
-<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
-  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
-</button>
 <script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

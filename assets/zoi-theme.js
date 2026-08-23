@@ -27,6 +27,41 @@
     }
     var yr = document.getElementById("yr");
     if (yr) { try { yr.textContent = String(new Date().getFullYear()); } catch (e) {} }
+    markCurrent();
+    reflectSession();
+  }
+
+  /* Highlight the pillar you're on, in the one shared header. */
+  function markCurrent() {
+    var path = location.pathname.replace(/index\.html$/, "");
+    if (path.length > 1) path = path.replace(/\/$/, "");
+    var links = document.querySelectorAll(".zoi-nav a");
+    var best = null, bestLen = -1;
+    for (var i = 0; i < links.length; i++) {
+      var href = (links[i].getAttribute("href") || "").split("#")[0].replace(/\/$/, "");
+      if (!href) continue;
+      if (path === href || (href !== "" && path.indexOf(href + "/") === 0)) {
+        if (href.length > bestLen) { best = links[i]; bestLen = href.length; }
+      }
+    }
+    if (best) best.setAttribute("aria-current", "page");
+  }
+
+  /* One CTA, honest about session state. Reads the same zoi_auth record every
+     page already writes, and only claims a session when the token is unexpired. */
+  function signedIn() {
+    try {
+      var a = JSON.parse(localStorage.getItem("zoi_auth") || "null");
+      return !!(a && a.access_token && (!a.expires_at || a.expires_at * 1000 > Date.now()));
+    } catch (e) { return false; }
+  }
+  function reflectSession() {
+    var cta = document.getElementById("zoiCta");
+    if (!cta) return;
+    if (signedIn()) {
+      cta.textContent = "My suite";
+      cta.setAttribute("href", "/social");
+    }
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
   else bind();

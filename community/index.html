@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Community — Zoi</title>
+<title>Community · Zoi</title>
 <meta name="description" content="The Greek world, talking. Share news, tag places, celebrate namedays — the community feed of the diaspora."/>
 <link rel="canonical" href="https://www.zoi.city/community"/>
 <meta name="theme-color" content="#080a0e"/>
@@ -136,11 +136,11 @@ footer a:hover{color:var(--tx)}
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 </head>
 <body>
-<nav><div class="nv">
-  <a class="brand" href="/"><span class="seal">Ζ</span>Zoi</a>
-  <div class="nlinks"><a href="/">Home</a><a href="/explore">Explore</a><a href="/social">Business suite</a><a href="/tickets">Tickets</a><a href="/apps/">Apps</a></div>
-  <div class="nr"><span class="mono" id="who" style="letter-spacing:.06em"></span><a class="btn p" href="/social" id="nav-cta">Start free</a></div>
-</div></nav>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <div class="zoi-actions"><span class="mono" id="who" style="letter-spacing:.06em;color:var(--mut);font-size:12px"></span><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
 
 <header class="hero"><div class="wrap">
   <div class="mono" style="margin-bottom:14px">The agora</div>
@@ -196,14 +196,11 @@ footer a:hover{color:var(--tx)}
   </div>
 </div>
 
-<footer><div class="wrap">
-  <span>© 2026 Zoi · zoi.city</span>
-  <span><a href="/explore">Explore</a> · <a href="/social">Business suite</a> · <a href="/tickets">Tickets</a></span>
+<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+  <span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
+  <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a><a href="/apps/">Advanced tools</a></nav>
 </div></footer>
 
-<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
-  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
-</button>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -276,7 +273,7 @@ function signedInUI(){
   document.getElementById('gate').style.display='none';
   document.getElementById('composer').style.display='block';
   document.getElementById('who').textContent=(AUTH&&AUTH.email)?AUTH.email.split('@')[0]:'';
-  document.getElementById('nav-cta').textContent='My suite';
+  document.getElementById('zoiCta').textContent='My suite';
 }
 function signOutUI(){
   AUTH=null;

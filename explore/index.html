@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Explore the Greek world — Zoi</title>
+<title>Directory · Zoi</title>
 <meta name="description" content="Search 6,000+ Greek businesses, churches, professionals, festivals and creators across 19 countries. The definitive map of Greek life."/>
 <link rel="canonical" href="https://www.zoi.city/explore"/>
 <meta name="theme-color" content="#080a0e"/>
@@ -111,11 +111,11 @@ footer a:hover{color:var(--tx)}
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 </head>
 <body>
-<nav><div class="wrap nv">
-  <a class="brand" href="/"><span class="seal">Ζ</span>Zoi</a>
-  <div class="nlinks"><a href="/">Home</a><a href="/community">Community</a><a href="/social">Business suite</a><a href="/tickets">Tickets</a><a href="/apps/">Apps</a></div>
-  <div class="nr"><a class="btn g" href="/explore/app">Classic view</a><a class="btn p" href="/social">Start free</a></div>
-</div></nav>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
 
 <header class="hero"><div class="wrap">
   <div class="mono" style="margin-bottom:18px">The map — <span id="hd-count">—</span> Greek places · <span id="hd-cities">—</span> cities · <span id="hd-countries">—</span> countries</div>
@@ -144,6 +144,7 @@ footer a:hover{color:var(--tx)}
     <div class="skel"></div><div class="skel"></div><div class="skel"></div>
     <div class="skel"></div><div class="skel"></div><div class="skel"></div>
   </div>
+  <p class="zb-hint" style="text-align:center;font-size:12.5px;color:var(--dim);margin:6px 0 0">Need deeper filters? <a href="/explore/app" style="color:var(--acc);font-weight:700">Open the classic directory</a></p>
   <div class="loadmore"><button class="btn g" id="more-btn" style="display:none" onclick="loadMore()">Show more</button></div>
 </div></section>
 
@@ -152,14 +153,11 @@ footer a:hover{color:var(--tx)}
   <div class="fresh" id="fresh"></div>
 </div></div>
 
-<footer><div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;width:100%">
-  <span>© 2026 Zoi · zoi.city</span>
-  <span><a href="/community">Community</a> · <a href="/social">Business suite</a> · <a href="/explore/app">Classic directory</a></span>
+<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+  <span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
+  <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a><a href="/apps/">Advanced tools</a></nav>
 </div></footer>
 
-<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
-  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
-</button>
 <div class="qv" id="qv" hidden><div class="qv-box" role="dialog" aria-modal="true" aria-labelledby="qv-name">
   <button class="qv-x" id="qv-x" aria-label="Close">&times;</button>
   <div id="qv-body"></div>

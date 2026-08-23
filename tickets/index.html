@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Zoi Tickets</title>
+<title>Tickets · Zoi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -257,11 +257,6 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 .field{width:auto;background:none;border:0;border-radius:0;padding:0;font:inherit;
   display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .eyebrow{display:block;border:0;border-radius:0;padding:0;align-items:initial;gap:0}
-
-.tk-navlinks{display:flex;gap:18px;margin-left:18px}
-.tk-navlinks a{color:var(--muted);font-size:14px;font-weight:600;text-decoration:none}
-.tk-navlinks a:hover{color:var(--paper)}
-@media(max-width:860px){.tk-navlinks{display:none}}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 
@@ -270,12 +265,11 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 <div class="world"></div>
 <div class="grain"></div>
 
-<div class="topnav">
-  <a class="seal" href="/" aria-label="Zoi home" style="text-decoration:none">Ζ</a>
-  <div class="brand">Zoi Tickets</div>
-  <nav class="tk-navlinks" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business suite</a><a href="/apps/">Apps</a></nav>
-  <div class="nav-right" id="navRight"></div>
-</div>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <div class="zoi-actions"><div class="nav-right" id="navRight"></div><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
 <div class="proto-banner" id="protoBanner">
   <span><b>Reservations are live.</b> Seats hold instantly. Paid checkout ships next — nothing is charged yet.</span>
 </div>
@@ -941,9 +935,10 @@ document.getElementById('genModal').addEventListener('click',e=>{ if(e.target.id
 route();
 </script>
 
-<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
-  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
-</button>
 <script src="/assets/zoi-theme.js"></script>
+<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+  <span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
+  <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a><a href="/apps/">Advanced tools</a></nav>
+</div></footer>
 </body>
 </html>
