@@ -29,6 +29,51 @@
     if (yr) { try { yr.textContent = String(new Date().getFullYear()); } catch (e) {} }
     markCurrent();
     reflectSession();
+    motion();
+  }
+
+  /* Reveal-on-scroll, a scroll-progress hairline, and a header that lifts once
+     you leave the top. Cheap, passive, and skipped entirely for anyone who has
+     asked for reduced motion. */
+  function motion() {
+    var reduce = false;
+    try { reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+    var bar = document.createElement('div');
+    bar.className = 'zoi-prog';
+    document.body.appendChild(bar);
+    var header = document.querySelector('.zoi-header');
+    var raf = 0;
+    function onScroll() {
+      if (raf) return;
+      raf = requestAnimationFrame(function () {
+        raf = 0;
+        var h = document.documentElement;
+        var max = h.scrollHeight - h.clientHeight;
+        bar.style.width = max > 0 ? ((h.scrollTop / max) * 100).toFixed(2) + '%' : '0';
+        if (header) header.classList.toggle('stuck', h.scrollTop > 8);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    if (reduce || !('IntersectionObserver' in window)) return;
+    // Anything the page marks, plus the obvious content blocks.
+    var targets = document.querySelectorAll('[data-reveal], .sec, .lcard, .card, .relcard, .unlock li');
+    if (!targets.length) return;
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en, i) {
+        if (!en.isIntersecting) return;
+        var el = en.target;
+        // stagger within a batch so a grid cascades instead of popping
+        setTimeout(function () { el.classList.add('in'); }, Math.min(i * 45, 320));
+        io.unobserve(el);
+      });
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    Array.prototype.forEach.call(targets, function (el) {
+      el.setAttribute('data-reveal', '');
+      io.observe(el);
+    });
   }
 
   /* Highlight the pillar you're on, in the one shared header. */

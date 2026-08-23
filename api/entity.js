@@ -223,6 +223,7 @@ function page(e, related){
      +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'<a href="/apps/">Advanced tools</a></nav>'
    +'</div></footer>'
    +'<script src="/assets/zoi-emblem.js"></script>'
+   +'<script src="/assets/zoi-search.js"></script>'
    +'<script>(function(){var h=document.getElementById("epCover");'
      +'if(h&&window.ZoiEmblem){h.innerHTML=ZoiEmblem.emblem('
        +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}})();</script>'
