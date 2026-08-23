@@ -376,7 +376,10 @@
       error: null,
       status: null,      // normalized status view
       draft: null,       // editor draft (also drives preview)
-      saving: false
+      saving: false,
+      vform: null,       // the per-vertical profile form, once mounted
+      vkind: '',         // which vertical it resolved to
+      entity: null       // the public record, for entity_type / category / profile
     };
 
     root.innerHTML = '';
@@ -503,6 +506,39 @@
     }
 
     /* ---- editor ---- */
+    /**
+     * Fetch the public record for the claimed listing and mount the per-vertical
+     * form. entity_type, category and the current profile all come from
+     * seo_entity, which is the same source the public page renders from — so the
+     * editor can never offer a field the page will not show.
+     */
+    async function mountVertical(slot) {
+      var UI = global.ZoiVerticalUI, FS = global.ZoiVerticalForms;
+      if (!UI || !FS || !slot) return;                       // degrade to the basics
+      var slug = state.status && state.status.slug;
+      if (!slug) return;
+      slot.innerHTML = '<p class="zp-note">Loading your details\u2026</p>';
+      try {
+        var raw = await rpcRead('seo_entity', { p_slug: slug });
+        var e = Array.isArray(raw) ? raw[0] : raw;
+        if (!e) { slot.innerHTML = ''; return; }
+        state.entity = e;
+        var spec = FS.fieldsFor(e.entity_type, e.category_slug);
+        state.vkind = spec.key === 'generic' ? 'details' : spec.key + ' details';
+        state.vform = UI.render(slot, {
+          entityType: e.entity_type,
+          categorySlug: e.category_slug,
+          profile: e.profile,
+          onDirty: function () { /* the save button is always enabled here */ }
+        });
+      } catch (err) {
+        // Never block the basics on this.
+        slot.innerHTML = '<p class="zp-note">Could not load your detailed fields '
+          + '(' + fallbackEsc((err && err.message) || 'unknown error') + '). '
+          + 'The fields above still save.</p>';
+      }
+    }
+
     function renderEditor() {
       wrap.innerHTML = '';
       var s = state.status;
@@ -653,6 +689,20 @@
         });
       }
       renderSocialRows();
+
+      /* ---- the part of the page only this kind of business has ----
+         A parish needs services and a patronal feast; a taverna needs a menu and
+         reservations; a practice needs its regulator. api/_verticals.js has
+         rendered all of that from listings.profile for a while and nothing could
+         write it, so a claimed listing still showed a name and a city. This is
+         that form. It fills itself in from whatever the enrichment worker read
+         off the owner's own website, and nothing it suggests is saved as the
+         owner's word until they accept it. */
+      var vwrap = el(doc, 'div', 'zp-card');
+      var vslot = el(doc, 'div');
+      vwrap.appendChild(vslot);
+      form.appendChild(vwrap);
+      mountVertical(vslot);
 
       // footer: save
       var foot = el(doc, 'div', 'zp-formfoot');
@@ -821,13 +871,32 @@
         p_social: assembleSocial(d.social)
       };
 
-      rpcWrite('bizpage_save', params).then(function (res) {
-        state.saving = false;
+      rpcWrite('bizpage_save', params).then(async function (res) {
         var ok = res == null ? true : (res.ok !== false);
+
+        /* The vertical profile goes through its own writer, because owner-typed
+           detail and machine-read detail are stored separately on purpose. A
+           failure here must not make the basics look like they failed. */
+        var profileNote = '';
+        if (ok && state.vform && state.status && state.status.listingId) {
+          try {
+            var prof = state.vform.read();
+            if (Object.keys(prof).length) {
+              await rpcWrite('bizpage_save_profile', {
+                p_workspace: ctx.ws, p_listing: state.status.listingId, p_profile: prof });
+              profileNote = ' Your ' + (state.vkind || 'details') + ' were saved too.';
+            }
+          } catch (e) {
+            profileNote = ' The basics saved, but your detailed fields did not — '
+              + ((e && e.message) || 'please try again') + '.';
+          }
+        }
+
+        state.saving = false;
         finishSave(saveBtn, savedNote);
         if (ok) {
-          toast('Business page saved.');
-          savedNote.textContent = 'Saved · your public page is up to date.';
+          toast('Business page saved.' + (profileNote ? profileNote : ''));
+          savedNote.textContent = 'Saved · your public page is up to date.' + profileNote;
         } else {
           toast('Save did not complete.');
           savedNote.textContent = 'Save did not complete — please try again.';
