@@ -1075,7 +1075,7 @@ var SAMPLE_EVENTS=[
  {id:'e3',name:'Antipodes Festival',entity_type:'event',city:'Melbourne',country:'Australia',website:'https://www.antipodesfestival.com.au/'},
  {id:'e4',name:'Valley Greek Festival',entity_type:'event',city:'Northridge',country:'United States',website:'https://valleygreekfestival.com'}
 ];
-/* REAL DB SNAPSHOT (published counts as of 2026-06-29) — honest initial state, refreshed live by tryLive()/dir_counts. */
+/* REAL DB SNAPSHOT (published counts as of 2026-08-23) — honest initial state, refreshed live by tryLive()/dir_counts. */
 var SAMPLE_COUNTS=[{entity_type:'business',n:1299},{entity_type:'church',n:611},{entity_type:'organization',n:335},{entity_type:'creator',n:199},{entity_type:'professional',n:145},{entity_type:'event',n:139},{entity_type:'vendor',n:109},{entity_type:'travel_place',n:98},{entity_type:'school',n:87},{entity_type:'venue',n:22},{entity_type:'sports',n:9},{entity_type:'artist',n:1}];
 var SAMPLE_ARTICLES=[
  {id:'a1',title:'The Name Day: Why Greeks Celebrate Their Saint, Not Just Their Birthday',summary:'In Greek tradition the giorti, or name day, often outshines the birthday, linking each person to the saint whose name they carry.',author:'Us Greeks Can',content_type:'article'},
@@ -1239,8 +1239,8 @@ function closeDetail(){$('#detail').classList.remove('on');}
 /* REAL DB SNAPSHOT (published counts as of 2026-06-29). Honest initial state shown on the orbs immediately,
    even before/without a live fetch; refreshed live by tryLive()/dir_counts when the DB is reachable.
    byType is keyed by entity_type; total is the real published total. No fabricated numbers. */
-var COUNTS_BY_TYPE={business:1299,church:611,organization:335,creator:199,professional:145,event:139,vendor:109,travel_place:98,school:87,venue:22,sports:9,artist:1};
-var COUNTS={churches:611,events:139,businesses:1299,schools:87,organizations:335,total:3054,byType:COUNTS_BY_TYPE,_live:false};
+var COUNTS_BY_TYPE={business:3321,church:1215,professional:1106,organization:680,creator:417,event:359,vendor:252,school:247,travel_place:197,artist:109,venue:78,sports:76};
+var COUNTS={churches:1215,events:359,businesses:3321,schools:247,organizations:680,total:8057,byType:COUNTS_BY_TYPE,_live:false};
 /* map each home orb -> a real count (or null if no honest single number exists) */
 var ORB_COUNT={church:COUNTS.churches,events:COUNTS.events,cat:COUNTS.total,shop:null,stories:null,names:null};
 function sbCount(table,profileSchema){ /* returns Promise<number|null>; never throws */
@@ -1278,9 +1278,15 @@ function tryLive(){ /* attempt once; refresh COUNTS/orbs from the live DB. Falls
    }
   }
  });
- /* Secondary best-effort total via direct count header (kept for resilience). */
- sbCount('listings','zoi').then(function(total){
-  if(total&&total>0&&!COUNTS._live){COUNTS.total=total;COUNTS._live=true;ORB_COUNT.cat=total;if(mode==='home')renderOrbs();refreshLiveScreens();}
+/* Secondary total, for when dir_counts is unavailable. This used to call
+    /rest/v1/listings with Accept-Profile: zoi, which PostgREST refuses outright
+    ("Only the following schemas are exposed: public, graphql_public") — so it
+    returned 406 on every single page load and could never have worked. home_stats
+    is a real RPC on an exposed schema. */
+ sbRPC('home_stats',{}).then(function(rows){
+  var r=Array.isArray(rows)?rows[0]:rows; if(!r)return;
+  var total=+(r.listings||r.total_listings||0);
+  if(total>0&&!COUNTS._live){COUNTS.total=total;COUNTS._live=true;ORB_COUNT.cat=total;if(mode==='home')renderOrbs();refreshLiveScreens();}
  });
 }
 function refreshLiveScreens(){if(curScreen==='cat')openScreen('cat');}

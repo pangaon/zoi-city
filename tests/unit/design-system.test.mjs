@@ -23,7 +23,12 @@ const SHARED = new Set(['zoi-header', 'zoi-bar', 'zoi-brand', 'zoi-seal', 'zoi-n
   'theme-btn', 'muted', 'mono', 'serif', 'card', 'grid', 'hero', 'foot', 'wide', 'static',
   // Shared typography names. The design system's only claim on these is
   // text-wrap, which is exactly the kind of thing that should be global.
-  'hlead', 'hsub']);
+  'hlead', 'hsub',
+  // Container classes the design system deliberately maps onto the motion layer
+  // (see "opting the existing pages in" in zoi-theme.css). The reuse is the
+  // point: one place to change, and it reaches script-rendered content too.
+  'cgrid', 'dcats', 'apps-grid', 'crow', 'lcard', 'relcard', 'ecard',
+  'plans', 'mods', 'lgrid', 'ev-stats', 'flag-row']);
 
 function html(dir, out = []) {
   for (const e of readdirSync(dir)) {

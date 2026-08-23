@@ -539,3 +539,60 @@ p{ text-wrap:pretty; }
    Skip rendering work for sections far off screen. Sizes are contained so this
    cannot cause scrollbar jumping. */
 .zoi-defer{ content-visibility:auto; contain-intrinsic-size:auto 600px; }
+
+/* ── opting the existing pages in ────────────────────────────────────────────
+   The motion layer above is opt-in, and no page was opting in. Rather than
+   hand-tag markup on six pages — which would also miss anything rendered by
+   script — the real container classes are mapped onto the behaviour here. One
+   place to change, and it covers content that does not exist until a fetch
+   returns.
+
+   Grid CHILDREN are targeted, not the grids themselves: the child is the card,
+   and the grid must keep its own layout untouched. --i comes from :nth-child so
+   the cascade works with JavaScript disabled and for nodes inserted later. */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .cgrid > *, .dcats > *, .apps-grid > *, .grid > *, .crow > *,
+    .ev-stats > *, .flag-row > *, .lgrid > *, .plans > *, .mods > *{
+      animation:rise-in linear both;
+      animation-timeline:view();
+      animation-range:cover calc(0% + var(--i,0) * 2%) cover calc(24% + var(--i,0) * 2%);
+    }
+    /* Cap the stagger at eight: past that the last card is still arriving when
+       you have finished reading the first, which reads as lag, not polish. */
+    .cgrid > *:nth-child(1),.dcats > *:nth-child(1),.grid > *:nth-child(1){--i:0}
+    .cgrid > *:nth-child(2),.dcats > *:nth-child(2),.grid > *:nth-child(2){--i:1}
+    .cgrid > *:nth-child(3),.dcats > *:nth-child(3),.grid > *:nth-child(3){--i:2}
+    .cgrid > *:nth-child(4),.dcats > *:nth-child(4),.grid > *:nth-child(4){--i:3}
+    .cgrid > *:nth-child(5),.dcats > *:nth-child(5),.grid > *:nth-child(5){--i:4}
+    .cgrid > *:nth-child(6),.dcats > *:nth-child(6),.grid > *:nth-child(6){--i:5}
+    .cgrid > *:nth-child(7),.dcats > *:nth-child(7),.grid > *:nth-child(7){--i:6}
+    .cgrid > *:nth-child(n+8),.dcats > *:nth-child(n+8),.grid > *:nth-child(n+8){--i:7}
+    /* and the release valve the watchdog uses, extended to these */
+    .cgrid > [data-reveal-off], .dcats > [data-reveal-off], .grid > [data-reveal-off],
+    .crow > [data-reveal-off], .apps-grid > [data-reveal-off]{
+      animation:none !important; opacity:1 !important; translate:none !important;
+    }
+  }
+}
+
+/* The pointer highlight, on the surfaces that are actually cards. ::before is
+   free on all of these — checked against every page stylesheet. */
+.cgrid > *, .dcats > *, .apps-grid > *, .grid > *, .lcard, .relcard, .ecard{
+  position:relative; isolation:isolate;
+}
+@media (hover:hover){
+  .cgrid > *::before, .dcats > *::before, .apps-grid > *::before, .grid > *::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; z-index:0;
+    pointer-events:none; opacity:0; transition:opacity var(--t) var(--ease-out);
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),
+      color-mix(in oklab, var(--tx) 8%, transparent), transparent 60%);
+  }
+  .cgrid > *:hover::before, .dcats > *:hover::before,
+  .apps-grid > *:hover::before, .grid > *:hover::before{ opacity:1 }
+  [data-theme="light"] .cgrid > *::before, [data-theme="light"] .dcats > *::before,
+  [data-theme="light"] .apps-grid > *::before, [data-theme="light"] .grid > *::before{
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),
+      color-mix(in oklab, var(--acc) 9%, transparent), transparent 60%);
+  }
+}

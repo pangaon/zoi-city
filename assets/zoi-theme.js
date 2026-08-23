@@ -99,7 +99,7 @@
         litRaf = requestAnimationFrame(function () {
           litRaf = 0;
           var t = lastEv && lastEv.target;
-          var el = t && t.closest ? t.closest('.zoi-lit, .card, .lcard, .relcard') : null;
+          var el = t && t.closest ? t.closest('.zoi-lit, .card, .lcard, .relcard, .ecard, '+'.cgrid > *, .dcats > *, .apps-grid > *, .grid > *') : null;
           if (!el) return;
           var r = el.getBoundingClientRect();
           el.style.setProperty('--mx', (((lastEv.clientX - r.left) / r.width) * 100).toFixed(1) + '%');
@@ -183,7 +183,7 @@
       var watchdog = function () {
         checks++;
         var vh = window.innerHeight || 800;
-        var list = document.querySelectorAll('[data-reveal], .zoi-rise, .zoi-stagger > *, .zoi-wipe');
+        var list = document.querySelectorAll('[data-reveal], .zoi-rise, .zoi-stagger > *, .zoi-wipe, '+'.cgrid > *, .dcats > *, .apps-grid > *, .grid > *, .crow > *');
         for (var i = 0; i < list.length; i++) {
           var el = list[i];
           if (el.hasAttribute('data-reveal-off')) continue;
