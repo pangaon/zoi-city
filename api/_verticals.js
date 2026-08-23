@@ -19,6 +19,9 @@
  * (Filename is underscore-prefixed so Vercel treats it as a lib, not a route.)
  */
 
+import { orthodoxPascha, iso, feastsOn, seasonsFor, isFastDay, nameDaysOn,
+  upcomingFeasts, resolveFeastDate, shiftForOldCalendar } from './_orthocal.js';
+
 /* ---------------- tiny helpers ---------------- */
 export function esc(s) {
   return (s == null ? '' : String(s)).replace(/[&<>"']/g, (c) =>
@@ -309,6 +312,90 @@ function prose(text, cls) {
   return t ? '<p class="' + (cls || 'secp') + '">' + esc(t) + '</p>' : '';
 }
 
+/* ---------------- the liturgical day ----------------
+ * This is the one section on a parish page that is useful before the parish has
+ * typed a single character: today's commemoration, the name days to greet, the
+ * fast, and what is coming. All computed from the Paschalion, not supplied.
+ */
+function fmtDate(dateISO, todayISO) {
+  // Show the year whenever the date is not in the current year — "Sunday 2 May"
+  // is ambiguous for something eight months out.
+  const sameYear = todayISO && String(dateISO).slice(0, 4) === String(todayISO).slice(0, 4);
+  try {
+    return new Date(dateISO + 'T00:00:00Z').toLocaleDateString('en-GB', Object.assign(
+      { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' },
+      sameYear ? {} : { year: 'numeric' }));
+  } catch (e) { return dateISO; }
+}
+export function liturgicalBlock(e, p) {
+  const style = str(p.calendar_style) === 'old' ? 'old' : 'new';
+  let today;
+  try {
+    today = new Intl.DateTimeFormat('en-CA', {
+      timeZone: str(p.timezone) || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date());
+  } catch (err) { today = new Date().toISOString().slice(0, 10); }
+
+  // A Julian-calendar parish keeps fixed feasts 13 days later, so we look up the
+  // civil date shifted back to find what they are commemorating today.
+  const lookup = style === 'old' ? shiftForOldCalendar(today, 'old') : today;
+  const feasts = feastsOn(lookup).filter((f) => !f.civic);
+  const names = nameDaysOn(lookup);
+  const fast = isFastDay(lookup);
+  const seasons = seasonsFor(lookup);
+
+  const season = seasons.includes('holy_week') ? 'Holy Week'
+    : seasons.includes('great_lent') ? 'Great Lent'
+    : seasons.includes('bright_week') ? 'Bright Week'
+    : seasons.includes('dormition_fast') ? 'the Dormition Fast'
+    : seasons.includes('nativity_fast') ? 'the Nativity Fast'
+    : seasons.includes('apostles_fast') ? 'the Apostles Fast'
+    : seasons.includes('triodion') ? 'the Triodion' : '';
+
+  let rows = '';
+  if (feasts.length) {
+    rows += '<div class="litrow"><span class="litk">Today</span><span class="litv">' +
+      feasts.map((f) => esc(f.name)).join(' &middot; ') + '</span></div>';
+  }
+  if (names.length) {
+    rows += '<div class="litrow"><span class="litk">Name days</span><span class="litv">' +
+      '<b>\u03a7\u03c1\u03cc\u03bd\u03b9\u03b1 \u03c0\u03bf\u03bb\u03bb\u03ac</b> to ' +
+      names.map((n) => esc(n)).join(', ') + '</span></div>';
+  }
+  rows += '<div class="litrow"><span class="litk">Fasting</span><span class="litv">' +
+    (fast ? 'Today is a fast day' : 'No fast today') +
+    (season ? ' &middot; we are in ' + esc(season) : '') + '</span></div>';
+
+  // Pascha is the anchor everything else moves with — worth stating plainly.
+  const y = Number(today.slice(0, 4));
+  const pascha = iso(orthodoxPascha(y));
+  const paschaShown = pascha >= today ? pascha : iso(orthodoxPascha(y + 1));
+  rows += '<div class="litrow"><span class="litk">Pascha</span><span class="litv">' +
+    esc(fmtDate(paschaShown, today)) + '</span></div>';
+
+  // the patronal feast, if the parish named one
+  const pf = p.patronal_feast;
+  if (pf && (str(pf.saint) || str(pf.date))) {
+    const d = resolveFeastDate(pf, y) || resolveFeastDate(pf, y + 1);
+    const when = d && d >= today ? d : resolveFeastDate(pf, y + 1);
+    rows += '<div class="litrow"><span class="litk">Patronal feast</span><span class="litv">' +
+      (str(pf.saint) ? esc(str(pf.saint)) : '') +
+      (str(pf.saint_el) ? ' <span lang="el">' + esc(str(pf.saint_el)) + '</span>' : '') +
+      (when ? ' &middot; ' + esc(fmtDate(when, today)) : '') + '</span></div>';
+  }
+
+  let html = '<div class="lit">' + rows + '</div>';
+
+  // what is coming, from the calendar not from the blob
+  const up = upcomingFeasts(today, 75).filter((f) => !f.civic).slice(0, 6);
+  if (up.length) {
+    html += '<div class="dates" style="margin-top:14px">' + up.map((f) =>
+      '<div class="drow"><span class="dwhen">' + esc(fmtDate(f.date, today).replace(/^\w+,\s*/, '')) +
+      '</span><span class="dwhat"><b>' + esc(f.name) + '</b></span></div>').join('') + '</div>';
+  }
+  return html;
+}
+
 /* ---------------- the verticals ---------------- */
 /* Each: noun (what the owner calls themselves), actions(), sections(), unlock[] */
 
@@ -326,6 +413,8 @@ const CHURCH = {
   },
   sections(e, p) {
     let h = '';
+    h += panel('The liturgical day', IC.cross, liturgicalBlock(e, p),
+      { id: 'today', sub: 'Computed from the Paschalion \u2014 not supplied by the parish.' });
     h += panel('Service times', IC.clock, scheduleBlock(p.schedule), { id: 'services', sub: 'Divine Liturgy, Orthros and Vespers.' });
     h += panel('Clergy', IC.users, peopleBlock(p.clergy));
     h += panel('Sacraments & requests', IC.cross, chipList(p.sacraments),

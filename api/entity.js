@@ -279,6 +279,12 @@ var PAGE_CSS = [
   '@media(max-width:560px){.drow{grid-template-columns:1fr}}',
   '.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}',
   '.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line)}',
+  '.lit{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
+  '.litrow{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:baseline}',
+  '.litrow:last-child{border-bottom:0}',
+  '.litk{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}',
+  '.litv{font-size:14.5px;line-height:1.5}.litv b{color:var(--gold)}',
+  '@media(max-width:560px){.litrow{grid-template-columns:1fr;gap:3px}}',
   /* claim */
   '.claim{margin:48px 0 0;padding:22px;border-radius:var(--r);border:1px solid color-mix(in srgb, var(--gold) 34%, transparent);background:color-mix(in srgb, var(--gold) 8%, transparent)}',
   '.claimhead{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}',
