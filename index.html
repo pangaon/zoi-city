@@ -58,7 +58,7 @@ nav{position:sticky;top:0;z-index:60;background:var(--navbg);backdrop-filter:blu
 .htag span{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--mut)}
 .hero h1{font-size:clamp(44px,7.4vw,92px);line-height:.98;letter-spacing:-.035em;font-weight:700;max-width:15ch}
 .hero h1 .serif{font-weight:300;letter-spacing:-.01em;color:var(--gold)}
-.hlead{font-size:clamp(17px,2.1vw,20px);color:var(--mut);max-width:54ch;margin:28px 0 40px;line-height:1.5;font-weight:400}
+.hlead{font-size:clamp(17px,2.1vw,20px);color:var(--mut);max-width:54ch;margin:22px 0 30px;line-height:1.5;font-weight:400}
 .hcta{display:flex;flex-wrap:wrap;gap:12px}
 .hmeta{margin-top:44px;display:flex;flex-wrap:wrap;gap:26px}
 .hmeta .m{display:flex;flex-direction:column;gap:3px}
@@ -134,6 +134,91 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 .themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line2);cursor:pointer;color:var(--tx);box-shadow:0 8px 24px -12px rgba(0,0,0,.4);transition:transform .2s}
 .themeToggle:hover{transform:translateY(-2px)}
 .themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* ── hero, rebuilt ────────────────────────────────────────────────────────
+   The old hero was a column of text on the left with 45% of the viewport
+   empty on the right, and one flex row that mixed three value propositions
+   with three statistics into six items of different widths. Now: two columns,
+   with the right one filled by the product itself — real listings, streaming. */
+.hero{padding:clamp(56px,8vw,104px) 0 clamp(40px,6vw,72px);position:relative;overflow:hidden}
+.hero-grid{display:grid;gap:clamp(28px,4vw,56px);align-items:center}
+@media (min-width:1060px){
+  .hero-grid{grid-template-columns:1.02fr .98fr}
+  /* Half the width means the old clamp wrapped this to three lines and pushed
+     the statistics and the value props below the fold. */
+  .hero h1{font-size:clamp(40px,4.5vw,64px);max-width:19ch}
+}
+
+/* ΖΩΗ, set enormous and almost invisible. It is the word the whole product is
+   named for, and it costs nothing to say it. */
+.hero-mark{
+  position:absolute;left:-.06em;top:50%;translate:0 -50%;z-index:0;
+  font-family:"Fraunces",Georgia,serif;font-weight:700;font-size:min(46vw,620px);
+  line-height:.7;letter-spacing:-.04em;pointer-events:none;user-select:none;
+  color:color-mix(in oklab, var(--tx) 3.5%, transparent);
+}
+[data-theme="light"] .hero-mark{ color:color-mix(in oklab, var(--tx) 5%, transparent); }
+.hero-copy,.hero-live{position:relative;z-index:1}
+
+/* The headline moves but is never transparent. Animating opacity from 0 on the
+   largest element above the fold delays Largest Contentful Paint — the reveal
+   is not worth the metric, so it rises instead of fading. */
+@media (prefers-reduced-motion: no-preference){
+  .hero h1{ animation:h1-rise .72s var(--ease-out) both; }
+  @keyframes h1-rise{ from{ translate:0 14px; } to{ translate:0 0; } }
+}
+
+/* Statistics and value propositions are different kinds of thing and now look
+   like it. */
+.hstats{display:flex;gap:clamp(20px,3vw,40px);margin:30px 0 0;flex-wrap:wrap}
+.hstats .s{display:flex;flex-direction:column;gap:2px}
+.hstats .s b{font-family:"Fraunces",Georgia,serif;font-size:clamp(28px,3.4vw,40px);
+  font-weight:600;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
+.hstats .s span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:600}
+.hprops{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}
+.hprops i{display:inline-flex;align-items:center;gap:7px;font-style:normal;
+  font-size:12.5px;font-weight:600;color:var(--mut);
+  border:1px solid var(--line);border-radius:999px;padding:6px 13px;background:var(--bg2)}
+.hprops i::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--gold);flex:none}
+
+/* ── the living column ───────────────────────────────────────────────────
+   Two slow columns of real directory entries. This is the argument for the
+   product made with the product: the names are real, they link to real pages,
+   and they are why the number above says 8,070. */
+.hero-live{
+  --lh:clamp(360px,44vw,520px);
+  height:var(--lh);position:relative;overflow:hidden;
+  mask-image:linear-gradient(to bottom,transparent,#000 13%,#000 87%,transparent);
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 13%,#000 87%,transparent);
+}
+.hero-live .cols{display:grid;grid-template-columns:1fr 1fr;gap:10px;height:100%}
+.hero-live .cols{min-width:0}
+.hero-live .col{display:flex;flex-direction:column;gap:10px;will-change:transform;min-width:0}
+.hero-live .lv{min-width:0;max-width:100%}
+.hero-live .col.b{margin-top:-56px}
+@media (prefers-reduced-motion: no-preference){
+  .hero-live .col{animation:stream 64s linear infinite}
+  .hero-live .col.b{animation-duration:82s;animation-direction:reverse}
+  .hero-live:hover .col,.hero-live:focus-within .col{animation-play-state:paused}
+  @keyframes stream{ from{transform:translateY(0)} to{transform:translateY(-50%)} }
+}
+.lv{
+  display:block;text-decoration:none;color:inherit;flex:none;
+  border:1px solid var(--line);border-radius:13px;padding:11px 13px;
+  background:color-mix(in oklab, var(--card) 76%, transparent);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:border-color var(--t) var(--ease-out), transform var(--t) var(--ease-out);
+}
+.lv:hover{border-color:var(--line2);transform:translateX(3px)}
+.lv .n{display:block;font-size:13.5px;font-weight:650;line-height:1.3;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv .c{display:block;font-size:11.5px;color:var(--mut);margin-top:3px;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lv .bar{display:block;height:2px;width:22px;border-radius:2px;margin-bottom:8px;background:var(--gold)}
+.hero-live[hidden]{display:none}
+@media (max-width:1059px){ .hero-live{--lh:300px} }
+
+.hero-rule{margin-top:clamp(30px,5vw,54px);opacity:.75}
 </style>
 <script>(function(){document.documentElement.setAttribute("data-theme",localStorage.getItem("zoi_theme")||"dark");})()</script>
 <script type="application/ld+json">
@@ -158,24 +243,38 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
 
-<header class="hero"><div class="wrap">
-  <div class="htag"><span class="d"></span><span>ΖΩΗ — Greece · Cyprus · the diaspora</span></div>
-  <div class="htag" id="nameday-chip" style="margin-left:10px;display:none"><span class="d" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span><span id="nameday-txt"></span></div>
-  <h1>The Greek world <span class="serif">runs</span> on Zoi.</h1>
-  <p class="hlead">Free software for Greek business. A worldwide Greek marketplace. The definitive map of Greek life. One account — built for the people who keep the culture running.</p>
-  <div class="hcta">
-    <a class="btn p" href="/social">Start free <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-    <a class="btn g" href="/explore">Explore the Greek world</a>
+<header class="hero">
+  <span class="hero-mark" aria-hidden="true">&#918;&#937;&#919;</span>
+  <div class="wrap hero-grid">
+    <div class="hero-copy">
+      <div class="htag"><span class="d"></span><span>&#918;&#937;&#919; &mdash; Greece &middot; Cyprus &middot; the diaspora</span></div>
+      <div class="htag" id="nameday-chip" style="margin-left:10px;display:none"><span class="d" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span><span id="nameday-txt"></span></div>
+      <h1>The Greek world <span class="serif">runs</span> on Zoi.</h1>
+      <p class="hlead">Free software for Greek business. A worldwide Greek marketplace. The definitive map of Greek life. One account &mdash; built for the people who keep the culture running.</p>
+      <div class="hcta">
+        <a class="btn p" href="/social">Start free <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn g" href="/explore">Explore the Greek world</a>
+      </div>
+      <div class="hstats">
+        <div class="s"><b id="st-listings" data-count>&mdash;</b><span>Greek places</span></div>
+        <div class="s"><b id="st-cities" data-count>&mdash;</b><span>cities</span></div>
+        <div class="s"><b id="st-countries" data-count>&mdash;</b><span>countries</span></div>
+      </div>
+      <div class="hprops">
+        <i>Publish to every network, once</i>
+        <i>Sell tickets, passes, products</i>
+        <i>Be found by the whole diaspora</i>
+      </div>
+      <div class="hero-rule"><svg class="zoi-meander" viewBox="0 0 1200 14" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><path d="M0,13 L0,3 L19,3 L19,9 L7,9 L7,13 L26,13 L26,3 L45,3 L45,9 L33,9 L33,13 L52,13 L52,3 L71,3 L71,9 L59,9 L59,13 L78,13 L78,3 L97,3 L97,9 L85,9 L85,13 L104,13 L104,3 L123,3 L123,9 L111,9 L111,13 L130,13 L130,3 L149,3 L149,9 L137,9 L137,13 L156,13 L156,3 L175,3 L175,9 L163,9 L163,13 L182,13 L182,3 L201,3 L201,9 L189,9 L189,13 L208,13 L208,3 L227,3 L227,9 L215,9 L215,13 L234,13 L234,3 L253,3 L253,9 L241,9 L241,13 L260,13 L260,3 L279,3 L279,9 L267,9 L267,13 L286,13 L286,3 L305,3 L305,9 L293,9 L293,13 L312,13 L312,3 L331,3 L331,9 L319,9 L319,13 L338,13 L338,3 L357,3 L357,9 L345,9 L345,13 L364,13 L364,3 L383,3 L383,9 L371,9 L371,13 L390,13 L390,3 L409,3 L409,9 L397,9 L397,13 L416,13 L416,3 L435,3 L435,9 L423,9 L423,13 L442,13 L442,3 L461,3 L461,9 L449,9 L449,13 L468,13 L468,3 L487,3 L487,9 L475,9 L475,13 L494,13 L494,3 L513,3 L513,9 L501,9 L501,13 L520,13 L520,3 L539,3 L539,9 L527,9 L527,13 L546,13 L546,3 L565,3 L565,9 L553,9 L553,13 L572,13 L572,3 L591,3 L591,9 L579,9 L579,13 L598,13 L598,3 L617,3 L617,9 L605,9 L605,13 L624,13 L624,3 L643,3 L643,9 L631,9 L631,13 L650,13 L650,3 L669,3 L669,9 L657,9 L657,13 L676,13 L676,3 L695,3 L695,9 L683,9 L683,13 L702,13 L702,3 L721,3 L721,9 L709,9 L709,13 L728,13 L728,3 L747,3 L747,9 L735,9 L735,13 L754,13 L754,3 L773,3 L773,9 L761,9 L761,13 L780,13 L780,3 L799,3 L799,9 L787,9 L787,13 L806,13 L806,3 L825,3 L825,9 L813,9 L813,13 L832,13 L832,3 L851,3 L851,9 L839,9 L839,13 L858,13 L858,3 L877,3 L877,9 L865,9 L865,13 L884,13 L884,3 L903,3 L903,9 L891,9 L891,13 L910,13 L910,3 L929,3 L929,9 L917,9 L917,13 L936,13 L936,3 L955,3 L955,9 L943,9 L943,13 L962,13 L962,3 L981,3 L981,9 L969,9 L969,13 L988,13 L988,3 L1007,3 L1007,9 L995,9 L995,13 L1014,13 L1014,3 L1033,3 L1033,9 L1021,9 L1021,13 L1040,13 L1040,3 L1059,3 L1059,9 L1047,9 L1047,13 L1066,13 L1066,3 L1085,3 L1085,9 L1073,9 L1073,13 L1092,13 L1092,3 L1111,3 L1111,9 L1099,9 L1099,13 L1118,13 L1118,3 L1137,3 L1137,9 L1125,9 L1125,13 L1144,13 L1144,3 L1163,3 L1163,9 L1151,9 L1151,13 L1170,13 L1170,3 L1189,3 L1189,9 L1177,9 L1177,13 L1196,13"/></svg></div>
+    </div>
+
+    <!-- Real entries from the directory. Hidden until it has something real to
+         show, so it can never render as an empty frame or invent a name. -->
+    <div class="hero-live" id="heroLive" hidden aria-label="Recent entries in the Zoi directory">
+      <div class="cols"><div class="col a"></div><div class="col b"></div></div>
+    </div>
   </div>
-  <div class="hmeta">
-    <div class="m"><b>Publish</b><span>every network, one post</span></div>
-    <div class="m"><b>Sell</b><span>tickets, passes, products</span></div>
-    <div class="m"><b>Be found</b><span>by the whole diaspora</span></div>
-    <div class="m"><b id="st-listings">—</b><span>Greek places mapped</span></div>
-    <div class="m"><b id="st-cities">—</b><span>cities</span></div>
-    <div class="m"><b id="st-countries">—</b><span>countries</span></div>
-  </div>
-</div></header>
+</header>
 
 <section class="wrap" style="padding:0 0 clamp(30px,5vw,54px)">
   <div class="zoi-globe" id="zoiGlobe" data-mirror='{"gb-listings":"st-listings","gb-cities":"st-cities","gb-countries":"st-countries"}' style="--gh:clamp(340px,46vw,520px)" role="img"
@@ -482,6 +581,76 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();
+})();
+</script>
+
+<script>
+/* The living column.
+   Fills the right side of the hero with real directory entries. Everything here
+   is real: the names come from explore_geo, each card links to that listing's
+   actual page, and if the request fails the column stays hidden rather than
+   showing placeholders. Nothing is invented and nothing is a stand-in. */
+(function(){
+  var TYPES=['business','vendor','event','artist','creator','venue',
+             'church','school','professional','travel_place','sports','organization'];
+  var WHEEL=['--gold','--red','--acc','--green'];
+  function colourFor(type){
+    // Same twelve-slot wheel the map and the emblems use, so a category is the
+    // same colour everywhere on the site.
+    var slot=TYPES.indexOf(type); if(slot<0) slot=0;
+    var seg=Math.floor(slot/3)%4, step=slot%3;
+    var a='var('+WHEEL[seg]+')', b='var('+WHEEL[(seg+1)%4]+')';
+    if(step===0) return a;
+    return 'color-mix(in oklab, '+a+' '+(step===1?67:33)+'%, '+b+')';
+  }
+  function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(m){
+    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});}
+  function nice(x){return String(x||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+  function typeSlug(t){return t==='travel_place'?'travel-place':t;}
+
+  var box=document.getElementById('heroLive');
+  if(!box) return;
+  var cols=box.querySelectorAll('.col');
+  if(!cols.length) return;
+
+  fetch(BASE+'/rest/v1/rpc/explore_geo',{method:'POST',
+    headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},
+    body:JSON.stringify({p_limit:220,p_offset:0})})
+  .then(function(r){return r.ok?r.json():null;})
+  .then(function(rows){
+    if(!rows||!rows.length) return;
+    // Spread across categories so the column reads as the whole directory
+    // rather than forty consecutive lawyers.
+    var byType={}, order=[];
+    rows.forEach(function(r){
+      if(!r||!r.name||!r.slug) return;
+      var t=r.entity_type||'business';
+      (byType[t]||(byType[t]=[])).push(r);
+    });
+    var keys=Object.keys(byType), i=0, guard=0;
+    while(order.length<28 && guard++<900){
+      var k=keys[i%keys.length]; i++;
+      if(byType[k] && byType[k].length) order.push(byType[k].shift());
+    }
+    if(order.length<8) return;
+
+    function card(r){
+      var href='/'+typeSlug(r.entity_type||'business')+'/'+encodeURIComponent(r.slug);
+      var where=[nice(r.category_slug), r.city].filter(Boolean).join(' \u00b7 ');
+      return '<a class="lv" href="'+href+'" tabindex="-1">'+
+        '<span class="bar" style="background:'+colourFor(r.entity_type||'business')+'"></span>'+
+        '<span class="n">'+esc(r.name)+'</span>'+
+        '<span class="c">'+esc(where)+'</span></a>';
+    }
+    var half=Math.ceil(order.length/2);
+    var a=order.slice(0,half), b=order.slice(half);
+    // Each column holds its list twice so the loop is seamless: the animation
+    // travels exactly -50%, landing on an identical frame.
+    cols[0].innerHTML=(a.map(card).join(''))+(a.map(card).join(''));
+    cols[1].innerHTML=(b.map(card).join(''))+(b.map(card).join(''));
+    box.hidden=false;
+  })
+  .catch(function(){ /* leave it hidden — an empty frame is worse than none */ });
 })();
 </script>
 </body>
