@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -13,11 +13,17 @@
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
 :root{
-  --bg:#080a0e; --bg2:#0e131a; --bg3:#141a22; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
-  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774; --acc:#6ea8ff; --acc2:#3d7ce0; --gold:#d9b26a;
-  --ease:cubic-bezier(.22,.61,.36,1); --navbg:rgba(8,10,14,.72); --btnp-fg:#070a0e;
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --bg2, --line, --line2, --tx, --mut, --dim, --acc, --gold, --green, --red */
+  --bg3:var(--card);
+  --acc2:var(--acc);
+  --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
+  --btnp-fg:var(--btn-fg);
+  --ease:cubic-bezier(.22,.61,.36,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -121,11 +127,6 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 .wl .msg.ok{color:#7fe0b0}.wl .msg.err{color:#f09595}
 .wl .row{display:flex;gap:10px;justify-content:flex-end}
 
-[data-theme="light"]{
-  --bg:#f6f4ef; --bg2:#fdfcf9; --bg3:#efece4; --line:rgba(13,27,42,.1); --line2:rgba(13,27,42,.2);
-  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0; --acc:#2f6fd0; --acc2:#2456a8; --gold:#8f6520;
-  --navbg:rgba(246,244,239,.86); --btnp-fg:#ffffff;
-}
 [data-theme="light"] .glow{background:radial-gradient(680px 460px at 82% -6%,rgba(47,111,208,.07),transparent 60%),radial-gradient(560px 520px at 6% 8%,rgba(184,137,59,.07),transparent 58%)}
 [data-theme="light"] .tst.live{color:#1d7a4f;background:rgba(29,122,79,.1);border-color:rgba(29,122,79,.25)}
 [data-theme="light"] .htag .d{box-shadow:0 0 8px rgba(47,111,208,.6)}
@@ -152,7 +153,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 <div class="glow"></div>
 <nav><div class="wrap nv">
   <a class="brand" href="/"><span class="seal">Ζ</span>Zoi</a>
-  <div class="nlinks"><a href="#tools">Tools</a><a href="#marketplace">Marketplace</a><a href="/explore">Directory</a><a href="/community">Community</a></div>
+  <div class="nlinks"><a href="#tools">Tools</a><a href="#marketplace">Marketplace</a><a href="/explore">Directory</a><a href="/community">Community</a><a href="/apps/">Apps</a></div>
   <div class="nr"><a class="si" href="/social">Sign in</a><a class="btn p" href="/social">Start free</a></div>
 </div></nav>
 
@@ -407,17 +408,9 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 </script>
 
-<button class="themeToggle" id="themeBtn" onclick="zoiFlipTheme()" title="Light / dark">
-  <svg id="thIcoSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-  <svg id="thIcoMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
+  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
 </button>
-<script>
-function zoiSyncThemeIcon(){var t=document.documentElement.getAttribute('data-theme')||'dark';
- document.getElementById('thIcoSun').style.display=t==='dark'?'block':'none';
- document.getElementById('thIcoMoon').style.display=t==='dark'?'none':'block';}
-function zoiFlipTheme(){var t=(document.documentElement.getAttribute('data-theme')||'dark')==='light'?'dark':'light';
- document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('zoi_theme',t)}catch(e){};zoiSyncThemeIcon();}
-zoiSyncThemeIcon();
-</script>
+<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

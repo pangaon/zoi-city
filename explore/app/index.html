@@ -1,4 +1,4 @@
-<!doctype html><html lang="en"><head><!-- zoi.city canonical flagship: Breath orbs (home) + live directory (behind) -->
+<!doctype html><html lang="en" data-theme="dark"><head><!-- zoi.city canonical flagship: Breath orbs (home) + live directory (behind) -->
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>Ζωή — zoi.city · The Breath of the Greek World</title>
 <meta name="description" content="Zoi — the agentic, self-tailoring home of the Greek world. Glass orbs lead to a verified directory of churches, tavernas, festivals, bakeries and businesses across the diaspora, plus today's name-day."/>
@@ -7,9 +7,27 @@
 <meta name="theme-color" content="#0d406c"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
-:root{--ink:#0a3155;--paper:#f4efe3;--gold:#c79a4b;--gold2:#e9c87e;--gold-d:#9a6f24;--aeg:#0a4d8c;--sea:#1f9ec9;--pig:#c2557e;--green:#3f9d76;--violet:#7b6fc0;
---marble1:#ffffff;--marble2:#e9f1f6;--txt:#0c2f4e;--mut:#5c7b92;--gline:rgba(255,255,255,.9);--spring:cubic-bezier(.34,1.56,.64,1);--ease:cubic-bezier(.22,.61,.36,1)}
+:root{
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --mut, --gold, --green */
+  --ink:var(--bg);
+  --paper:var(--tx);
+  --txt:var(--tx);
+  --marble1:var(--card);
+  --marble2:var(--card2);
+  --gline:var(--line2);
+  --gold2:var(--gold);
+  --gold-d:var(--gold);
+  --aeg:var(--acc);
+  --sea:var(--acc);
+  --pig:var(--red);
+  --violet:var(--acc);
+  --spring:cubic-bezier(.34,1.56,.64,1);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;background:#0d406c;font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);-webkit-font-smoothing:antialiased}
 #bg{position:fixed;inset:0;background:linear-gradient(180deg,#4a90bd 0%,#226fa1 38%,#0e477a 72%,#0a3a64 100%)}
@@ -2127,4 +2145,5 @@ if(_onbDone){
  setTimeout(function(){if(mode==='home'&&!popped&&!curScreen)openMyZoi();},900);
 }
 tryLive();
-</script><div style="position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:#0d1b2a;color:#f6f4ef;font:600 13px system-ui;padding:10px 16px;text-align:center;border-top:2px solid #d9b26a">Classic prototype — parts of this page use demo data and simulated actions while we rebuild them into the main app. The live directory is at <a href="/explore" style="color:#d9b26a;text-decoration:underline">zoi.city/explore</a>.</div></body></html>
+</script><div style="position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:#0d1b2a;color:#f6f4ef;font:600 13px system-ui;padding:10px 16px;text-align:center;border-top:2px solid #d9b26a">Classic prototype — parts of this page use demo data and simulated actions while we rebuild them into the main app. The live directory is at <a href="/explore" style="color:#d9b26a;text-decoration:underline">zoi.city/explore</a>.</div><script src="/assets/zoi-theme.js"></script>
+</body></html>

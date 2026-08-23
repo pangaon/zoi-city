@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -7,14 +7,35 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
 :root{
-  --ink:#0B1F2E;--ink2:#0a1a28;--paper:#F7F3EC;--paper2:#e9e2d4;
-  --muted:#8ea2b3;--muted2:#5c7689;--gold:#B8893B;--gold-s:#D9B873;
-  --aegean:#0A4D8C;--sea:#1F9EC9;--pigment:#B5325F;--green:#2e8b57;
-  --line:rgba(255,255,255,.12);--glass:rgba(255,255,255,.055);
-  --glass2:rgba(255,255,255,.09);--gl:rgba(255,255,255,.13);
-  --r:22px;--rs:14px;--ease:cubic-bezier(.22,.61,.36,1);--spring:cubic-bezier(.34,1.56,.64,1);
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --gold, --green, --line */
+  --ink:var(--bg);
+  --ink2:var(--bg);
+  --paper:var(--tx);
+  --paper2:var(--mut);
+  --muted:var(--mut);
+  --muted2:var(--dim);
+  --gold-s:var(--gold);
+  --aegean:var(--acc);
+  --sea:var(--acc);
+  --pigment:var(--red);
+  --glass:var(--card2);
+  --glass2:var(--card);
+  --gl:var(--line2);
+  --gold-d:var(--gold);
+  --gold-soft:var(--gold);
+  --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
+  --sidebg:color-mix(in srgb, var(--bg) 85%, transparent);
+  --cardshadow:none;
+  --backdrop:color-mix(in srgb, var(--bg) 72%, transparent);
+  --r:22px;
+  --rs:14px;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --spring:cubic-bezier(.34,1.56,.64,1);
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
 html,body{min-height:100%;scroll-behavior:smooth}
@@ -58,7 +79,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 /* ticket cards */
 .ticket-grid{display:flex;flex-direction:column;gap:14px}
 .ticket-card{background:var(--glass);backdrop-filter:blur(20px) saturate(1.4);border:1px solid var(--gl);border-radius:var(--r);padding:20px 22px;display:flex;align-items:center;gap:18px;transition:transform .3s var(--spring),background .25s,border-color .25s;cursor:pointer}
-.ticket-card:hover{background:var(--glass2);transform:translateY(-1px);border-color:rgba(255,255,255,.2)}
+.ticket-card:hover{background:var(--glass2);transform:translateY(-1px);border-color:color-mix(in srgb, var(--tx) 20%, transparent)}
 .ticket-card.selected{border-color:rgba(184,137,59,.55);background:rgba(184,137,59,.09);box-shadow:0 0 0 1px rgba(184,137,59,.3)}
 .ticket-card.sold-out{opacity:.6;cursor:not-allowed}
 .ticket-icon{width:44px;height:44px;border-radius:14px;flex:none;display:grid;place-items:center;font-size:20px;background:rgba(31,158,201,.18);border:1px solid rgba(31,158,201,.25)}
@@ -68,7 +89,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .ticket-tag{display:inline-block;margin-top:6px;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase}
 .ticket-tag.sold{background:rgba(142,162,179,.1);color:var(--muted);border:1px solid rgba(142,162,179,.2)}
 .ticket-tag.free{background:rgba(46,139,87,.15);color:#5ec882;border:1px solid rgba(46,139,87,.3)}
-.avail-bar{width:100%;height:4px;border-radius:4px;background:rgba(255,255,255,.1);margin-top:8px;overflow:hidden;max-width:220px}
+.avail-bar{width:100%;height:4px;border-radius:4px;background:color-mix(in srgb, var(--tx) 10%, transparent);margin-top:8px;overflow:hidden;max-width:220px}
 .avail-fill{height:100%;border-radius:4px;transition:width .6s var(--ease)}
 .avail-fill.high{background:var(--green)}.avail-fill.med{background:var(--gold)}.avail-fill.low{background:var(--pigment)}
 .avail-text{font-size:11px;color:var(--muted);margin-top:5px}
@@ -81,7 +102,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .order-body{padding:18px 22px;min-height:90px}
 .empty-cart{display:flex;flex-direction:column;align-items:center;gap:10px;padding:24px 0;text-align:center;color:var(--muted);font-size:14px}
 .empty-cart svg{width:38px;height:38px;stroke:var(--muted2);fill:none;stroke-width:1.3;opacity:.6}
-.sel-ticket{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:12px;background:var(--glass2);border:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.sel-ticket{display:flex;justify-content:space-between;gap:10px;padding:12px 14px;border-radius:12px;background:var(--glass2);border:1px solid color-mix(in srgb, var(--tx) 8%, transparent);margin-bottom:16px}
 .sel-ticket .ci-name{font-size:14px;font-weight:700;color:var(--paper)}
 .sel-ticket .ci-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .sel-ticket .ci-price{font-family:'Fraunces';font-size:18px;color:var(--paper);white-space:nowrap}
@@ -93,9 +114,9 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .qty-num{min-width:34px;text-align:center;font:700 15px 'Hanken Grotesk';color:var(--paper)}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .field label{font-size:11px;font-weight:800;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em}
-.field input,.field select,.field textarea{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:11px 14px;color:var(--paper);font:600 14px 'Hanken Grotesk';outline:none;transition:border-color .25s,background .25s;width:100%}
+.field input,.field select,.field textarea{background:color-mix(in srgb, var(--tx) 7%, transparent);border:1px solid color-mix(in srgb, var(--tx) 14%, transparent);border-radius:12px;padding:11px 14px;color:var(--paper);font:600 14px 'Hanken Grotesk';outline:none;transition:border-color .25s,background .25s;width:100%}
 .field input::placeholder,.field textarea::placeholder{color:var(--muted2);font-weight:500}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(184,137,59,.5);background:rgba(255,255,255,.1)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(184,137,59,.5);background:color-mix(in srgb, var(--tx) 10%, transparent)}
 .field select{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%238ea2b3' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
 .field select option{background:#0d2336;color:var(--paper)}
 .field-hint{font-size:11px;color:var(--muted);margin-top:2px}
@@ -135,14 +156,14 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .ev-details span{display:flex;align-items:center;gap:5px}
 .ev-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
 @media(max-width:560px){.ev-stats{grid-template-columns:1fr}}
-.ev-stat{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:12px 14px}
+.ev-stat{background:color-mix(in srgb, var(--tx) 4%, transparent);border:1px solid color-mix(in srgb, var(--tx) 8%, transparent);border-radius:12px;padding:12px 14px}
 .ev-stat .l{font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
 .ev-stat .v{font-family:'Fraunces';font-size:20px;font-weight:500;color:var(--paper);line-height:1}
 .ev-stat .s{font-size:11px;color:var(--muted);margin-top:2px}
 .share-row{display:flex;gap:8px;align-items:center;background:rgba(31,158,201,.07);border:1px solid rgba(31,158,201,.18);border-radius:12px;padding:9px 9px 9px 14px;margin-bottom:14px}
 .share-url{flex:1;min-width:0;font:600 12px 'Hanken Grotesk';color:var(--sea);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mini-btn{padding:7px 12px;border-radius:10px;font:700 12px 'Hanken Grotesk';cursor:pointer;border:1px solid var(--gl);background:var(--glass);color:var(--paper);transition:all .25s;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
-.mini-btn:hover{background:var(--glass2);border-color:rgba(255,255,255,.22)}
+.mini-btn:hover{background:var(--glass2);border-color:color-mix(in srgb, var(--tx) 22%, transparent)}
 .mini-btn.gold{background:linear-gradient(135deg,rgba(184,137,59,.28),rgba(184,137,59,.14));border-color:rgba(184,137,59,.35);color:var(--gold-s)}
 .ev-actions{display:flex;gap:8px;flex-wrap:wrap}
 .empty-state{padding:56px 30px;text-align:center;color:var(--muted);background:var(--glass);border:1px dashed var(--gl);border-radius:var(--r)}
@@ -175,7 +196,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:480px){.field-row{grid-template-columns:1fr}}
 .tt-list{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
-.tt-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--glass2);border:1px solid rgba(255,255,255,.08)}
+.tt-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:var(--glass2);border:1px solid color-mix(in srgb, var(--tx) 8%, transparent)}
 .tt-item .nm{font:700 14px 'Hanken Grotesk';color:var(--paper)}
 .tt-item .sub{font-size:12px;color:var(--muted);margin-top:2px}
 .tt-item .pr{margin-left:auto;font-family:'Fraunces';font-size:16px;color:var(--paper);white-space:nowrap}
@@ -198,7 +219,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .toast.err{background:rgba(181,50,95,.22);border-color:rgba(181,50,95,.45)}
 .toast svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.2;flex:none}
 .loading{padding:60px 20px;text-align:center;color:var(--muted);font-size:14px}
-.spinner{width:26px;height:26px;border:2.5px solid rgba(255,255,255,.15);border-top-color:var(--gold-s);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
+.spinner{width:26px;height:26px;border:2.5px solid color-mix(in srgb, var(--tx) 15%, transparent);border-top-color:var(--gold-s);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 14px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .inline-err{color:#e792ac;font-size:12px;margin-top:4px;min-height:14px}
 </style>
@@ -206,26 +227,6 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 
 <style id="zoiTheme">
 /* ═══ ZOI DESIGN SYSTEM — one language, two modes ═══ */
-[data-theme="light"]{
-  --paper:#0d1b2a; --paper2:#3c4a58; --ink:#f6f4ef; --ink2:#f6f4ef;
-  --muted:#5a6774; --muted2:#7b8794;
-  --line:rgba(13,27,42,.1); --glass:#ffffff; --glass2:#efece4; --gl:rgba(13,27,42,.12);
-  --gold:#b8893b; --gold-s:#d0a355; --gold-d:#8f6520; --gold-soft:#b8893b;
-  --aegean:#0a4d8c; --sea:#1f7fb8; --pigment:#b5325f; --green:#1d7a4f;
-  --navbg:rgba(246,244,239,.86); --sidebg:rgba(250,249,245,.92);
-  --cardshadow:0 2px 12px -8px rgba(13,27,42,.2); --backdrop:rgba(10,16,26,.4);
-  --r:16px; --rs:12px;
-}
-[data-theme="dark"]{
-  --paper:#f3f6fa; --paper2:#c2ccd6; --ink:#f3f6fa; --ink2:#080a0e;
-  --muted:#8b95a3; --muted2:#5d6774;
-  --line:rgba(255,255,255,.08); --glass:#0e131a; --glass2:#141a22; --gl:rgba(255,255,255,.11);
-  --gold:#b8893b; --gold-s:#d9b26a; --gold-d:#d9b26a; --gold-soft:#d9b26a;
-  --aegean:#3d7ce0; --sea:#6ea8ff; --pigment:#d4537e; --green:#3f9d76;
-  --navbg:rgba(8,10,14,.74); --sidebg:rgba(10,13,18,.85);
-  --cardshadow:none; --backdrop:rgba(2,4,8,.6);
-  --r:16px; --rs:12px;
-}
 body{background:var(--ink2)!important;color:var(--paper)!important}
 [data-theme="light"] .world{background:linear-gradient(160deg,#f8f6f1,#f4f1ea 60%,#efece4)!important}
 [data-theme="dark"] .world{background:radial-gradient(700px 460px at 85% -8%,rgba(110,168,255,.08),transparent 60%),#080a0e!important}
@@ -250,8 +251,19 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 .themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--glass);border:1px solid var(--gl);cursor:pointer;color:var(--paper);box-shadow:0 8px 24px -12px rgba(0,0,0,.5);transition:transform .2s}
 .themeToggle:hover{transform:translateY(-2px)}
 .themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
+
+/* legacy-guard: these class names predate the shared design system and mean
+   something different here — re-assert the page's own intent. */
+.field{width:auto;background:none;border:0;border-radius:0;padding:0;font:inherit;
+  display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.eyebrow{display:block;border:0;border-radius:0;padding:0;align-items:initial;gap:0}
+
+.tk-navlinks{display:flex;gap:18px;margin-left:18px}
+.tk-navlinks a{color:var(--muted);font-size:14px;font-weight:600;text-decoration:none}
+.tk-navlinks a:hover{color:var(--paper)}
+@media(max-width:860px){.tk-navlinks{display:none}}
 </style>
-<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 
 </head>
 <body>
@@ -259,8 +271,9 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 <div class="grain"></div>
 
 <div class="topnav">
-  <div class="seal">Z</div>
+  <a class="seal" href="/" aria-label="Zoi home" style="text-decoration:none">Ζ</a>
   <div class="brand">Zoi Tickets</div>
+  <nav class="tk-navlinks" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business suite</a><a href="/apps/">Apps</a></nav>
   <div class="nav-right" id="navRight"></div>
 </div>
 <div class="proto-banner" id="protoBanner">
@@ -928,17 +941,9 @@ document.getElementById('genModal').addEventListener('click',e=>{ if(e.target.id
 route();
 </script>
 
-<button class="themeToggle" id="themeBtn" onclick="zoiFlipTheme()" title="Light / dark">
-  <svg id="thIcoSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-  <svg id="thIcoMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
+  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
 </button>
-<script>
-function zoiSyncThemeIcon(){var t=document.documentElement.getAttribute('data-theme')||'light';
- document.getElementById('thIcoSun').style.display=t==='dark'?'block':'none';
- document.getElementById('thIcoMoon').style.display=t==='dark'?'none':'block';}
-function zoiFlipTheme(){var t=(document.documentElement.getAttribute('data-theme')||'light')==='light'?'dark':'light';
- document.documentElement.setAttribute('data-theme',t);try{localStorage.setItem('zoi_theme',t)}catch(e){};zoiSyncThemeIcon();}
-zoiSyncThemeIcon();
-</script>
+<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

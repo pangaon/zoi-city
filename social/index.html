@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -8,16 +8,17 @@
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
 :root{
-  --bg:#080a0e; --bg2:#0e131a; --bg3:#141a22; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
-  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774; --acc:#6ea8ff; --acc2:#3d7ce0; --gold:#d9b26a; --green:#3f9d76; --red:#e26d6d;
-  --navbg:rgba(8,10,14,.82); --btnp-fg:#070a0e; --ease:cubic-bezier(.22,.61,.36,1);
-}
-[data-theme="light"]{
-  --bg:#f6f4ef; --bg2:#fdfcf9; --bg3:#efece4; --line:rgba(13,27,42,.1); --line2:rgba(13,27,42,.2);
-  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0; --acc:#2f6fd0; --acc2:#2456a8; --gold:#8f6520; --green:#1d7a4f; --red:#b84a4a;
-  --navbg:rgba(246,244,239,.9); --btnp-fg:#ffffff;
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --bg2, --line, --line2, --tx, --mut, --dim, --acc, --gold, --green, --red */
+  --bg3:var(--card);
+  --acc2:var(--acc);
+  --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
+  --btnp-fg:var(--btn-fg);
+  --ease:cubic-bezier(.22,.61,.36,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;min-height:100vh}
@@ -83,6 +84,10 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 @keyframes sp{to{transform:rotate(360deg)}}
 .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(14px);opacity:0;background:var(--bg3);border:1px solid var(--line2);border-radius:11px;padding:11px 20px;font-weight:600;font-size:13.5px;z-index:500;transition:.3s;pointer-events:none;color:var(--tx)}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* legacy-guard: these class names predate the shared design system and mean
+   something different here — re-assert the page's own intent. */
+.field{width:auto;background:none;border:0;border-radius:0;padding:0;font:inherit;margin-bottom:12px}
 </style>
 <script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');}catch(e){}})()</script>
 </head>
@@ -117,7 +122,8 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   var STATE = { me:null, ws:null, wsName:'', workspaces:[], avail:null, channels:[], active:null, ctx:null };
 
   function themeCurrent(){ try{ return document.documentElement.getAttribute('data-theme')||'dark'; }catch(e){ return 'dark'; } }
-  function flipTheme(){ var t=themeCurrent()==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('zoi_theme',t);}catch(e){} }
+  var THEMES=['dark','light','gold'];
+  function flipTheme(){ var i=THEMES.indexOf(themeCurrent()); var t=THEMES[(i+1)%THEMES.length]; document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('zoi_theme',t);}catch(e){} }
 
   /* ---------- sign-in gate ---------- */
   function renderGate(step, email){
@@ -214,7 +220,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
         '</div>'+
         '<nav class="nv" id="nav">'+navHtml+'</nav>'+
         '<div class="sfoot">'+
-          '<button class="iconbtn" id="themeBtn" title="Theme">'+iconTheme()+'</button>'+
+          '<button class="iconbtn" id="suiteThemeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">'+iconTheme()+'</button>'+
           '<button class="btn g" id="signout" style="flex:1;padding:9px">Sign out</button>'+
         '</div>'+
       '</aside>'+
@@ -243,7 +249,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       if(id && id!==STATE.ws){ try{ localStorage.setItem('zoi_ws', id); }catch(err){} location.reload(); }
     });
     // theme + signout + mobile
-    document.getElementById('themeBtn').onclick=function(){ flipTheme(); document.getElementById('themeBtn').innerHTML=iconTheme(); if(STATE.active) selectModule(STATE.active); };
+    document.getElementById('suiteThemeBtn').onclick=function(){ flipTheme(); document.getElementById('suiteThemeBtn').innerHTML=iconTheme(); if(STATE.active) selectModule(STATE.active); };
     document.getElementById('signout').onclick=function(){ C.auth.clear(); try{localStorage.removeItem('zoi_ws');}catch(e){} location.reload(); };
     var side=document.getElementById('side'), scrim=document.getElementById('scrim');
     document.getElementById('hamb').onclick=function(){ side.classList.add('open'); scrim.classList.add('on'); };
@@ -322,5 +328,6 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   boot();
 })();
 </script>
+<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

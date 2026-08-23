@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -8,18 +8,15 @@
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
 :root{
-  --bg:#080a0e; --bg2:#0e131a; --card:#141a22; --line:rgba(255,255,255,.1); --line2:rgba(255,255,255,.16);
-  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774; --acc:#6ea8ff; --gold:#d9b26a; --btn:#141a22; --btnh:#1b2531; --btnfg:#f3f6fa;
-}
-[data-theme="light"]{
-  --bg:#f6f4ef; --bg2:#fdfcf9; --card:#ffffff; --line:rgba(13,27,42,.12); --line2:rgba(13,27,42,.2);
-  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0; --acc:#2f6fd0; --gold:#8f6520; --btn:#ffffff; --btnh:#f0ede6; --btnfg:#0d1b2a;
-}
-[data-theme="gold"]{
-  --bg:#100c04; --bg2:#1a1408; --card:#221a0b; --line:rgba(217,178,106,.22); --line2:rgba(217,178,106,.4);
-  --tx:#f7efdd; --mut:#c7b29d; --dim:#9a8a6e; --acc:#e6c07a; --gold:#e6c07a; --btn:#221a0b; --btnh:#2c2110; --btnfg:#f7efdd;
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --bg2, --card, --line, --line2, --tx, --mut, --dim, --acc, --gold */
+  --btn:var(--card);
+  --btnh:var(--card2);
+  --btnfg:var(--tx);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -53,10 +50,10 @@ a.link:active{transform:translateY(0)}
 .missing a{color:var(--acc);text-decoration:none;font-weight:600}
 .views{font-size:12px;color:var(--dim);margin-top:2px}
 </style>
-<script>(function(){try{document.documentElement.setAttribute('data-theme','dark');}catch(e){}})()</script>
+<script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');}catch(e){}})()</script>
 </head>
 <body>
-<button class="theme" id="themeBtn" title="Theme" style="display:none" onclick="cycleTheme()">
+<button class="theme" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme" style="display:none">
   <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
 </button>
 <div class="wrap" id="wrap">
@@ -93,12 +90,6 @@ async function bioGet(slug){
   if(!r.ok) throw new Error('load failed');
   const t=await r.text(); return t?JSON.parse(t):null;
 }
-let THEMES=['dark','gold','light'];
-function cycleTheme(){
-  const cur=document.documentElement.getAttribute('data-theme')||'dark';
-  const next=THEMES[(THEMES.indexOf(cur)+1)%THEMES.length];
-  document.documentElement.setAttribute('data-theme',next);
-}
 function render(page){
   const wrap=document.getElementById('wrap');
   document.getElementById('themeBtn').style.display='grid';
@@ -133,5 +124,6 @@ function render(page){
   catch(e){ render(null); }
 })();
 </script>
+<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

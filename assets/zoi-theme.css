@@ -1,0 +1,127 @@
+/* ============================================================
+   ZOI DESIGN SYSTEM — zoi-theme.css  (v1)
+   The single source of truth for how every Zoi page looks.
+   Link this on EVERY page:  <link rel="stylesheet" href="/assets/zoi-theme.css">
+   Matches the zoi.city homepage: dark-first, Fraunces italic display,
+   Hanken Grotesk UI, gold accent, light + gold theme variants.
+   ============================================================ */
+
+/* ---- Fonts (load in <head> too for preconnect) ---- */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@400..800&display=swap');
+
+/* ---- Theme tokens ---- */
+:root{
+  --bg:#080a0e; --bg2:#0e131a; --card:#141a22; --card2:#0f151d;
+  --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
+  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774;
+  --acc:#6ea8ff; --gold:#d9b26a; --green:#61c497; --red:#e07a6a;
+  --btn-fg:#0d1b2a; --btn-bg:#f3f6fa;      /* primary = light on dark */
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --r:18px; --r-sm:12px; --maxw:1140px;
+  --shadow:0 22px 44px -26px rgba(0,0,0,.55);
+}
+[data-theme="light"]{
+  --bg:#f6f4ef; --bg2:#fdfcf9; --card:#ffffff; --card2:#f0ede6;
+  --line:rgba(13,27,42,.12); --line2:rgba(13,27,42,.2);
+  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0;
+  --acc:#2f6fd0; --gold:#8f6520; --green:#1f7a55; --red:#b84a38;
+  --btn-fg:#f6f4ef; --btn-bg:#0d1b2a;
+}
+[data-theme="gold"]{
+  --bg:#100c04; --bg2:#1a1408; --card:#221a0b; --card2:#1a1408;
+  --line:rgba(217,178,106,.22); --line2:rgba(217,178,106,.4);
+  --tx:#f7efdd; --mut:#c7b29d; --dim:#9a8a6e;
+  --acc:#e6c07a; --gold:#e6c07a; --green:#8fbf9f; --red:#d99a86;
+  --btn-fg:#100c04; --btn-bg:#e6c07a;
+}
+
+/* ---- Base ---- */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; color:var(--tx);
+  font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.55; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  background:var(--bg);
+  background-image:radial-gradient(1200px 600px at 50% -10%, var(--bg2), var(--bg) 60%);
+  background-attachment:fixed; min-height:100vh;
+  transition:background-color .5s var(--ease), color .5s var(--ease);
+}
+a{color:inherit;text-decoration:none}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.serif{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:400;letter-spacing:-.01em}
+
+/* ---- Type scale ---- */
+h1,.h1{font-family:"Fraunces",Georgia,serif;font-weight:300;font-size:clamp(38px,6.4vw,76px);line-height:1.02;letter-spacing:-.02em;margin:0}
+h1 em,.h1 em,.accent{font-style:italic;color:var(--gold);font-weight:400}
+h2,.h2{font-size:clamp(26px,3.4vw,40px);font-weight:700;letter-spacing:-.02em;margin:0}
+h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
+.lede{color:var(--mut);font-size:clamp(16px,2vw,19px);max-width:56ch}
+.muted{color:var(--mut)} .dim{color:var(--dim)}
+
+/* ---- Header / nav ---- */
+.zoi-header{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);
+  backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);
+  background:color-mix(in srgb, var(--bg) 72%, transparent);}
+.zoi-bar{display:flex;align-items:center;justify-content:space-between;height:68px}
+.zoi-brand{display:flex;align-items:center;gap:12px}
+.zoi-seal{width:36px;height:36px;flex:0 0 36px;border-radius:10px;display:grid;place-items:center;
+  font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:21px;color:var(--btn-fg);
+  background:linear-gradient(150deg,var(--gold),color-mix(in srgb,var(--gold) 55%,#fff));line-height:1}
+.zoi-brand b{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.zoi-nav{display:flex;gap:26px}
+.zoi-nav a{color:var(--mut);font-size:15px;transition:color .25s var(--ease)}
+.zoi-nav a:hover{color:var(--tx)}
+@media(max-width:720px){.zoi-nav{display:none}}
+
+/* ---- Eyebrow pill ---- */
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:7px 15px}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 22%,transparent)}
+
+/* ---- Buttons ---- */
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;
+  padding:13px 22px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer;
+  min-height:46px;transition:transform .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
+.btn svg{width:16px;height:16px}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--btn-bg);color:var(--btn-fg)}
+.btn-primary:hover{transform:translateY(-2px)}
+.btn-ghost{background:transparent;color:var(--tx);border-color:var(--line2)}
+.btn-ghost:hover{border-color:var(--acc);transform:translateY(-2px)}
+.btn-gold{background:var(--gold);color:var(--btn-fg)}
+
+/* ---- Cards ---- */
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:26px;transition:transform .4s var(--ease),border-color .4s var(--ease),box-shadow .4s var(--ease);overflow:hidden}
+a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:var(--shadow)}
+.card .ico{width:48px;height:48px;border-radius:13px;border:1px solid var(--line2);display:grid;place-items:center;
+  color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent);margin-bottom:18px}
+.card .ico svg{width:24px;height:24px}
+.chip{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+
+/* ---- Stat row (homepage style) ---- */
+.stat-row{display:flex;flex-wrap:wrap;gap:34px;align-items:baseline}
+.stat b{font-size:26px;font-weight:800;letter-spacing:-.01em}
+.stat span{display:block;color:var(--mut);font-size:13px;margin-top:2px}
+
+/* ---- Inputs ---- */
+.field{width:100%;background:var(--card2);border:1px solid var(--line2);border-radius:var(--r-sm);
+  color:var(--tx);padding:12px 14px;font:inherit;font-size:15px}
+.field:focus{outline:2px solid var(--acc);outline-offset:1px}
+
+/* ---- Footer ---- */
+.zoi-footer{border-top:1px solid var(--line);margin-top:64px;padding:38px 0 46px;color:var(--mut)}
+.zoi-footer a{color:var(--mut)} .zoi-footer a:hover{color:var(--tx)}
+
+/* ---- Theme toggle button ---- */
+.theme-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--card);
+  color:var(--tx);display:grid;place-items:center;cursor:pointer}
+.theme-btn:hover{border-color:var(--acc)}
+
+/* ---- Accessibility ---- */
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}

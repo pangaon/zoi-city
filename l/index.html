@@ -1,18 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <meta name="robots" content="noindex"/>
 <title>Redirecting… · Zoi</title>
+<meta name="color-scheme" content="dark light">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
-body{margin:0;height:100vh;display:grid;place-items:center;background:#080a0e;color:#8b95a3;
+body{margin:0;height:100vh;display:grid;place-items:center;background:var(--bg);color:var(--mut);
   font-family:system-ui,sans-serif;font-size:14px}
 .box{text-align:center}
-.spin{width:26px;height:26px;border:2px solid rgba(255,255,255,.15);border-top-color:#d9b26a;border-radius:50%;
+.spin{width:26px;height:26px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--gold);border-radius:50%;
   margin:0 auto 14px;animation:s .7s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
-a{color:#6ea8ff}
+a{color:var(--acc)}
 </style>
 </head>
 <body>
@@ -49,5 +53,6 @@ function safe(u){ u=String(u||''); return (u.indexOf('http://')===0||u.indexOf('
   }catch(e){ msg.innerHTML='Could not resolve link. <a href="/">Go to Zoi →</a>'; }
 })();
 </script>
+<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

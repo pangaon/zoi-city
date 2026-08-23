@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -9,16 +9,17 @@
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
 <style>
 :root{
-  --bg:#080a0e; --bg2:#0e131a; --bg3:#141a22; --line:rgba(255,255,255,.08); --line2:rgba(255,255,255,.14);
-  --tx:#f3f6fa; --mut:#8b95a3; --dim:#5d6774; --acc:#6ea8ff; --acc2:#3d7ce0; --gold:#d9b26a; --green:#3f9d76;
-  --navbg:rgba(8,10,14,.74); --btnp-fg:#070a0e; --ease:cubic-bezier(.22,.61,.36,1);
-}
-[data-theme="light"]{
-  --bg:#f6f4ef; --bg2:#fdfcf9; --bg3:#efece4; --line:rgba(13,27,42,.1); --line2:rgba(13,27,42,.2);
-  --tx:#0d1b2a; --mut:#5a6774; --dim:#8a94a0; --acc:#2f6fd0; --acc2:#2456a8; --gold:#8f6520; --green:#1d7a4f;
-  --navbg:rgba(246,244,239,.86); --btnp-fg:#ffffff;
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --bg2, --line, --line2, --tx, --mut, --dim, --acc, --gold, --green, --red */
+  --bg3:var(--card);
+  --acc2:var(--acc);
+  --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
+  --btnp-fg:var(--btn-fg);
+  --ease:cubic-bezier(.22,.61,.36,1);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -95,18 +96,29 @@ footer span,footer a{font-size:13px;color:var(--dim)}
 footer a:hover{color:var(--tx)}
 .toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(16px);opacity:0;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 20px;font-weight:600;font-size:13.5px;z-index:400;transition:.3s;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* quick view */
+.qv{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.qv[hidden]{display:none}
+.qv-box{position:relative;background:var(--card);border:1px solid var(--line2);border-radius:var(--r,18px);padding:26px;max-width:520px;width:100%;max-height:86vh;overflow:auto;box-shadow:var(--shadow)}
+.qv-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:10px;background:none;border:1px solid var(--line);color:var(--mut);font-size:20px;line-height:1;cursor:pointer}
+.qv-x:hover{color:var(--tx);border-color:var(--acc)}
+.qv-box h3{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 6px 6px 0;padding-right:34px}
+.qv-meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.qv-desc{color:var(--mut);font-size:14.5px;line-height:1.6;margin:14px 0 0;white-space:pre-wrap}
+.qv-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 </head>
 <body>
 <nav><div class="wrap nv">
   <a class="brand" href="/"><span class="seal">Ζ</span>Zoi</a>
-  <div class="nlinks"><a href="/">Home</a><a href="/community">Community</a><a href="/social">Business suite</a><a href="/tickets">Tickets</a></div>
+  <div class="nlinks"><a href="/">Home</a><a href="/community">Community</a><a href="/social">Business suite</a><a href="/tickets">Tickets</a><a href="/apps/">Apps</a></div>
   <div class="nr"><a class="btn g" href="/explore/app">Classic view</a><a class="btn p" href="/social">Start free</a></div>
 </div></nav>
 
 <header class="hero"><div class="wrap">
-  <div class="mono" style="margin-bottom:18px">The map — <span id="hd-count">6,000+</span> Greek places · <span id="hd-cities">1,400+</span> cities · <span id="hd-countries">19</span> countries</div>
+  <div class="mono" style="margin-bottom:18px">The map — <span id="hd-count">—</span> Greek places · <span id="hd-cities">—</span> cities · <span id="hd-countries">—</span> countries</div>
   <h1>Find anything <span class="serif">Greek,</span> anywhere.</h1>
   <p class="hsub">Tavernas, churches, lawyers, bakeries, festivals, creators — the living record of the Greek world, verified and searchable.</p>
   <div class="sbar">
@@ -117,6 +129,8 @@ footer a:hover{color:var(--tx)}
   <div class="filters" id="type-pills"></div>
   <div class="filters">
     <select class="city" id="city-sel"><option value="">Every city</option></select>
+    <select class="city" id="country-sel" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
+    <select class="city" id="sort-sel" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
     <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
   </div>
 </div></header>
@@ -143,23 +157,23 @@ footer a:hover{color:var(--tx)}
   <span><a href="/community">Community</a> · <a href="/social">Business suite</a> · <a href="/explore/app">Classic directory</a></span>
 </div></footer>
 
-<button class="themeToggle" onclick="flipTheme()" title="Light / dark">
-  <svg id="icoSun" viewBox="0 0 24 24" style="display:none"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
-  <svg id="icoMoon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
+<button class="themeToggle" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">
+  <svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>
 </button>
+<div class="qv" id="qv" hidden><div class="qv-box" role="dialog" aria-modal="true" aria-labelledby="qv-name">
+  <button class="qv-x" id="qv-x" aria-label="Close">&times;</button>
+  <div id="qv-body"></div>
+</div></div>
 <div class="toast" id="toast"></div>
 
 <script>
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const TYPES=[['','All'],['business','Businesses'],['church','Churches'],['professional','Professionals'],['organization','Associations'],['event','Events'],['creator','Creators'],['school','Schools'],['vendor','Vendors'],['artist','Artists']];
-let ST={q:'',type:'',city:'',offset:0,busy:false,done:false,counts:{}};
+let ST={q:'',type:'',city:'',country:'',sort:'',offset:0,busy:false,done:false,counts:{},rows:[],countries:[]};
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
-function flipTheme(){ const t=(document.documentElement.getAttribute('data-theme')||'dark')==='light'?'dark':'light'; document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('zoi_theme',t)}catch(e){}; syncIco(); }
-function syncIco(){ const d=(document.documentElement.getAttribute('data-theme')||'dark')==='dark'; document.getElementById('icoSun').style.display=d?'block':'none'; document.getElementById('icoMoon').style.display=d?'none':'block'; }
-syncIco();
 
 function authToken(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at*1000>Date.now()+5000) return a.access_token; }catch(e){} return null; }
 async function rpc(fn,params,forceAnon){
@@ -200,6 +214,7 @@ async function boot(){
   }catch(e){}
   try{
     const fresh=await rpc('explore_fresh',{p_limit:8},true);
+    harvestCountries(fresh||[]);
     document.getElementById('fresh').innerHTML=(fresh||[]).map(f=>
       '<a class="fcard" href="'+esc(f.path)+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
   }catch(e){}
@@ -217,9 +232,17 @@ document.addEventListener('DOMContentLoaded',()=>{
   const q=document.getElementById('q');
   q.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(()=>{ ST.q=q.value.trim(); runSearch(true); },350); });
   q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ ST.q=q.value.trim(); runSearch(true); } });
+  const cs=document.getElementById('country-sel');
+  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; runSearch(true); });
+  const ss=document.getElementById('sort-sel');
+  if(ss) ss.addEventListener('change',()=>{ ST.sort=ss.value; renderRows(); });
+  const qv=document.getElementById('qv');
+  document.getElementById('qv-x').addEventListener('click',closeQV);
+  qv.addEventListener('click',e=>{ if(e.target===qv) closeQV(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeQV(); });
 });
 
-function card(r){
+function card(r,idx){
   const loc=[r.city,r.country].filter(Boolean).join(', ');
   const ver=r.verification_status==='verified';
   return '<div class="card">'+
@@ -230,27 +253,89 @@ function card(r){
     (r.description?'<div class="cdesc">'+esc(r.description)+(r.description.length>=170?'…':'')+'</div>':'')+
     '<div class="cfoot">'+
       '<a class="cbtn" href="'+esc(r.path)+'">View page</a>'+
+      '<button class="cbtn" onclick="quickView('+idx+')">Quick view</button>'+
       (r.claimable?'<button class="cbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
     '</div></div>';
 }
 
 async function runSearch(reset){
   if(ST.busy) return; ST.busy=true;
-  if(reset){ ST.offset=0; ST.done=false; document.getElementById('results').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>'; }
-  document.getElementById('res-mode').textContent=ST.q?('“'+ST.q+'”'):'';
+  if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>'; }
+  document.getElementById('res-mode').textContent=ST.q?('\u201c'+ST.q+'\u201d'):'';
   try{
-    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:ST.city||null,p_country:null,p_limit:24,p_offset:ST.offset},true);
-    const el=document.getElementById('results');
-    const html=(rows||[]).map(card).join('');
-    if(reset) el.innerHTML=html||'';
-    else el.insertAdjacentHTML('beforeend',html);
-    if(reset&&!(rows||[]).length){ el.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Nothing yet for that</h3><p>Try a broader word — or the classic directory has deeper filters.</p></div>'; }
-    ST.done=(rows||[]).length<24;
+    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:ST.city||null,p_country:ST.country||null,p_limit:24,p_offset:ST.offset},true);
+    const batch=rows||[];
+    ST.rows = reset ? batch.slice() : ST.rows.concat(batch);
+    harvestCountries(ST.rows);
+    renderRows();
+    ST.done=batch.length<24;
     document.getElementById('more-btn').style.display=ST.done?'none':'inline-flex';
-    document.getElementById('res-count').textContent=(rows||[]).length? (reset?'Showing '+(ST.offset+(rows||[]).length)+' results':'Showing '+(ST.offset+24)+'+ results') : (reset?'No results':'');
+    const n=ST.rows.length;
+    document.getElementById('res-count').textContent = n
+      ? ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+'))
+      : 'No results';
   }catch(e){ toast('Search failed: '+e.message); }
   ST.busy=false;
 }
+
+/* Sorting re-orders the results already loaded on this page. The search RPC has
+   no sort parameter, so we never claim this is a whole-directory ordering. */
+function sortedRows(){
+  const rows=ST.rows.slice();
+  const by=ST.sort;
+  const s_=v=>String(v==null?'':v);
+  if(by==='name')     rows.sort((a,b)=>s_(a.name).localeCompare(s_(b.name)));
+  else if(by==='city')rows.sort((a,b)=>s_(a.city).localeCompare(s_(b.city))||s_(a.name).localeCompare(s_(b.name)));
+  else if(by==='verified') rows.sort((a,b)=>((b.verification_status==='verified')-(a.verification_status==='verified'))||s_(a.name).localeCompare(s_(b.name)));
+  return rows;
+}
+function renderRows(){
+  const el=document.getElementById('results');
+  const rows=sortedRows();
+  ST.view=rows;
+  if(!rows.length){
+    el.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Nothing yet for that</h3><p>Try a broader word \u2014 or the classic directory has deeper filters.</p></div>';
+    return;
+  }
+  el.innerHTML=rows.map((r,i)=>card(r,i)).join('');
+}
+
+/* Country options come from the countries actually present in loaded results,
+   then filter server-side through explore_search's own p_country parameter. */
+function harvestCountries(rows){
+  const seen={}; ST.countries.forEach(c=>seen[c]=true);
+  let added=false;
+  (rows||[]).forEach(r=>{ const c=(r&&r.country||'').trim(); if(c&&!seen[c]){ seen[c]=true; added=true; } });
+  if(ST.country && !seen[ST.country]){ seen[ST.country]=true; added=true; }
+  if(!added) return;
+  ST.countries=Object.keys(seen).sort((a,b)=>a.localeCompare(b));
+  const sel=document.getElementById('country-sel');
+  if(!sel) return;
+  sel.innerHTML='<option value="">Every country</option>'+
+    ST.countries.map(c=>'<option value="'+esc(c)+'"'+(c===ST.country?' selected':'')+'>'+esc(c)+'</option>').join('');
+}
+
+/* Quick view: rendered only from fields already returned for that row. */
+function quickView(i){
+  const r=(ST.view||[])[i]; if(!r) return;
+  const loc=[r.city,r.country].filter(Boolean).join(', ');
+  const ver=r.verification_status==='verified';
+  document.getElementById('qv-body').innerHTML=
+    '<h3 id="qv-name">'+esc(r.name)+(ver?' <span class="vbadge" style="vertical-align:middle"><svg style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>':'')+'</h3>'+
+    '<div class="cmeta qv-meta">'+
+      '<span class="cat">'+esc(r.category||r.entity_type||'')+'</span>'+
+      (loc?'<span>'+esc(loc)+'</span>':'')+
+      (r.rating?'<span>\u2605 '+esc(String(r.rating))+'</span>':'')+
+    '</div>'+
+    (r.description?'<p class="qv-desc">'+esc(r.description)+'</p>':'<p class="qv-desc">No description on this listing yet.</p>')+
+    '<div class="qv-acts"><a class="btn p" href="'+esc(r.path)+'">Open full page</a>'+
+      (r.claimable?'<button class="btn g" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
+    '</div>';
+  const qv=document.getElementById('qv'); qv.hidden=false;
+  document.getElementById('qv-x').focus();
+}
+function closeQV(){ const qv=document.getElementById('qv'); if(qv) qv.hidden=true; }
+
 function loadMore(){ ST.offset+=24; runSearch(false); }
 
 async function claim(slug,btn){
@@ -267,5 +352,6 @@ async function claim(slug,btn){
   }catch(e){ btn.disabled=false; btn.textContent='This is mine'; toast(e.message); }
 }
 </script>
+<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

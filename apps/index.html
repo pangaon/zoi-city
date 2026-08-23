@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apps · Zoi — The home of the Greek world</title>
+<meta name="description" content="Zoi's app hub — launch the Communication Suite, Tickets & Events, Explore, and Community. The home of the Greek world.">
+<meta name="color-scheme" content="dark light">
+<meta property="og:title" content="Apps · Zoi">
+<meta property="og:description" content="The home of the Greek world. Launch every Zoi tool from one place.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400..800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
+<style>
+        *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    font-family:"Hanken Grotesk",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--bg);
+    color:var(--tx);
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    background-image:radial-gradient(1200px 600px at 50% -10%, var(--bg2), var(--bg) 60%);
+    background-attachment:fixed;
+    min-height:100vh;
+    transition:background-color .5s var(--ease), color .5s var(--ease);
+  }
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+  .serif{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:400;letter-spacing:-.01em}
+
+  /* ---- Header ---- */
+  header{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:saturate(140%) blur(14px);
+    -webkit-backdrop-filter:saturate(140%) blur(14px);
+    background:color-mix(in srgb, var(--bg) 72%, transparent);
+    border-bottom:1px solid var(--line);
+  }
+  .bar{display:flex;align-items:center;justify-content:space-between;height:68px}
+  .brand{display:flex;align-items:center;gap:12px;min-height:44px;padding:4px 6px 4px 0;border-radius:12px}
+  .brand:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  .seal{
+    width:38px;height:38px;flex:0 0 38px;border-radius:11px;
+    display:grid;place-items:center;
+    font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:22px;
+    color:var(--bg);
+    background:linear-gradient(150deg,var(--gold),color-mix(in srgb,var(--gold) 55%, #fff));
+    box-shadow:0 4px 18px -6px color-mix(in srgb,var(--gold) 60%, transparent);
+    line-height:1;
+  }
+  .wordmark{display:flex;flex-direction:column;line-height:1.05}
+  .wordmark b{font-weight:800;font-size:19px;letter-spacing:-.02em}
+  .wordmark span{font-size:12px;color:var(--mut);letter-spacing:.02em}
+  .toolbar{display:flex;align-items:center;gap:8px}
+  .iconbtn{
+    width:44px;height:44px;border-radius:12px;
+    border:1px solid var(--line2);background:var(--card);color:var(--tx);
+    display:grid;place-items:center;cursor:pointer;
+    transition:transform .25s var(--ease), border-color .25s var(--ease), background .25s var(--ease);
+  }
+  .iconbtn:hover{border-color:var(--acc);transform:translateY(-1px)}
+  .iconbtn:active{transform:translateY(0)}
+  .iconbtn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+  .iconbtn svg{width:20px;height:20px}
+  .theme-ic{display:none}
+  [data-theme="dark"] .ic-dark{display:block}
+  [data-theme="light"] .ic-light{display:block}
+  [data-theme="gold"] .ic-gold{display:block}
+
+  /* ---- Hero ---- */
+  .hero{padding:66px 0 30px;text-align:center}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--mut);border:1px solid var(--line);border-radius:999px;
+    padding:7px 15px;margin-bottom:26px;
+  }
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 22%, transparent)}
+  h1{
+    font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:300;
+    font-size:clamp(38px,6.4vw,74px);line-height:1.03;letter-spacing:-.02em;
+    margin:0 auto;max-width:14ch;
+  }
+  h1 em{font-style:italic;color:var(--gold);font-weight:400}
+  .lede{
+    margin:22px auto 0;max-width:56ch;color:var(--mut);
+    font-size:clamp(16px,2vw,19px);
+  }
+
+  /* ---- Grid ---- */
+  .grid{
+    display:grid;gap:18px;margin:44px 0 30px;
+    grid-template-columns:repeat(6,1fr);
+  }
+  .card{
+    position:relative;
+    grid-column:span 3;
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--r);
+    padding:26px;
+    display:flex;flex-direction:column;
+    min-height:190px;
+    transition:transform .4s var(--ease), border-color .4s var(--ease), box-shadow .4s var(--ease), background .4s var(--ease);
+    overflow:hidden;
+  }
+  .card::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(420px 200px at 85% -20%, color-mix(in srgb,var(--acc) 12%, transparent), transparent 70%);
+    opacity:0;transition:opacity .4s var(--ease);
+  }
+  a.card:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:0 22px 44px -26px rgba(0,0,0,.55)}
+  a.card:hover::after{opacity:1}
+  a.card:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+  .card.flagship{
+    grid-column:span 6;min-height:240px;
+    background:linear-gradient(150deg, var(--card), color-mix(in srgb,var(--card) 82%, var(--bg2)));
+  }
+  .card.flagship::after{background:radial-gradient(620px 320px at 78% -30%, color-mix(in srgb,var(--acc) 16%, transparent), transparent 70%);opacity:.6}
+  a.card.flagship:hover::after{opacity:1}
+  .card.soon{opacity:.92}
+  .card.soon .ico{color:var(--dim)}
+
+  .chip{
+    position:absolute;top:20px;right:20px;
+    font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--dim);border:1px solid var(--line);border-radius:999px;
+    padding:5px 11px;background:color-mix(in srgb,var(--bg) 40%, transparent);
+  }
+  .ico{
+    width:48px;height:48px;border-radius:13px;
+    border:1px solid var(--line2);
+    display:grid;place-items:center;color:var(--acc);
+    background:color-mix(in srgb,var(--acc) 8%, transparent);
+    margin-bottom:20px;
+    transition:transform .4s var(--ease);
+  }
+  a.card:hover .ico{transform:translateY(-2px) scale(1.03)}
+  .ico svg{width:24px;height:24px}
+  .flagship .ico{color:var(--gold);background:color-mix(in srgb,var(--gold) 10%, transparent);border-color:color-mix(in srgb,var(--gold) 34%, transparent)}
+  .card h3{margin:0;font-size:20px;font-weight:700;letter-spacing:-.015em}
+  .flagship h3{font-size:26px}
+  .card p{margin:8px 0 0;color:var(--mut);font-size:14.5px;max-width:44ch}
+  .flagship p{font-size:16px;max-width:48ch}
+  .go{
+    margin-top:auto;padding-top:18px;
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:13.5px;font-weight:600;color:var(--tx);
+  }
+  .go svg{width:15px;height:15px;transition:transform .35s var(--ease)}
+  a.card:hover .go svg{transform:translateX(4px)}
+  .flag-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .tag{font-size:12px;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+
+  .note{
+    text-align:center;color:var(--dim);font-size:13px;
+    margin:8px auto 0;max-width:60ch;
+  }
+
+  /* ---- Footer ---- */
+  footer{border-top:1px solid var(--line);margin-top:64px;padding:38px 0 46px}
+  .foot{display:flex;flex-wrap:wrap;gap:22px;align-items:center;justify-content:space-between}
+  .foot-links{display:flex;flex-wrap:wrap;gap:20px}
+  .foot-links a{color:var(--mut);font-size:14px;min-height:44px;display:inline-flex;align-items:center;transition:color .25s var(--ease)}
+  .foot-links a:hover{color:var(--tx)}
+  .foot-links a:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:6px}
+  .copy{color:var(--dim);font-size:13px;display:flex;align-items:center;gap:9px}
+  .copy .zx{font-family:"Fraunces",serif;font-style:italic;color:var(--gold);font-weight:500}
+
+  @media (max-width:860px){
+    .card,.card.flagship{grid-column:1 / -1}
+    .grid{grid-template-columns:1fr;gap:14px}
+    .hero{padding:48px 0 20px}
+  }
+  @media (max-width:520px){
+    .wrap{padding:0 18px}
+    .wordmark span{display:none}
+    .card{padding:22px}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none!important}
+    a.card:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+  <header>
+    <div class="wrap bar">
+      <a class="brand" href="/" aria-label="Zoi home">
+        <span class="seal" aria-hidden="true">&#918;</span>
+        <span class="wordmark">
+          <b>Zoi</b>
+          <span>The home of the Greek world</span>
+        </span>
+      </a>
+      <div class="toolbar">
+        <button class="iconbtn" id="themeBtn" type="button" aria-label="Switch color theme">
+          <svg class="theme-ic ic-dark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          <svg class="theme-ic ic-light" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2.5M12 19.5V22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M2 12h2.5M19.5 12H22M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></svg>
+          <svg class="theme-ic ic-gold" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2.5 2.9 5.9 6.6.95-4.8 4.65L18 20.5 12 17l-6 3.5 1.3-6.5L2.5 9.35 9.1 8.4 12 2.5Z"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero wrap">
+      <span class="eyebrow"><span class="dot" aria-hidden="true"></span>App hub</span>
+      <h1>One place to run <em>the Greek world.</em></h1>
+      <p class="lede serif" style="font-size:clamp(17px,2.1vw,21px);color:var(--mut)">Every Zoi tool, launched from a single home.</p>
+    </section>
+
+    <section class="wrap" aria-label="Zoi applications">
+      <div class="grid">
+
+        <!-- Flagship -->
+        <a class="card flagship" href="/social">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v10H8l-4 4V5Z"/><path d="M8 9h8M8 12h5"/></svg>
+          </span>
+          <h3>Communication Suite</h3>
+          <p>Publish, schedule, and grow across every network — one composer, every audience.</p>
+          <div class="flag-row" aria-hidden="true">
+            <span class="tag">Publish</span>
+            <span class="tag">Schedule</span>
+            <span class="tag">Grow</span>
+          </div>
+          <span class="go">Open Suite
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Tickets & Events -->
+        <a class="card" href="/tickets">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2 2 2 0 0 0 0 4 2 2 0 0 1 0 4H6a2 2 0 0 1-2-2 2 2 0 0 0 0-4 2 2 0 0 1 0-4Z"/><path d="M14 6v12" stroke-dasharray="2 2.5"/></svg>
+          </span>
+          <h3>Tickets &amp; Events</h3>
+          <p>Sell tickets, manage events, and design seat maps.</p>
+          <span class="go">Open Tickets
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Explore -->
+        <a class="card" href="/explore">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5 5-2Z"/></svg>
+          </span>
+          <h3>Explore</h3>
+          <p>Discover Greek businesses, pros, churches, and events.</p>
+          <span class="go">Open Explore
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Community -->
+        <a class="card" href="/community">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0"/><path d="M16 6.2a3 3 0 0 1 0 5.6M17.5 14a5.5 5.5 0 0 1 3 5"/></svg>
+          </span>
+          <h3>Community</h3>
+          <p>The Greek world&#8217;s social feed.</p>
+          <span class="go">Open Community
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Seat-Map Studio (3D) -->
+        <a class="card" href="/apps/tickets-studio/">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+          </span>
+          <h3>Seat-Map Studio</h3>
+          <p>Design venues in 3D, build floor plans, and assign seats for ticketed events.</p>
+          <span class="go">Open Studio
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Event OS -->
+        <a class="card" href="/apps/event-os/">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v3M16 3v3M7 13h4M7 16h7"/></svg>
+          </span>
+          <h3>Event OS</h3>
+          <p>The operator cockpit for running live events end to end.</p>
+          <span class="go">Open Event OS
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Business Pro -->
+        <a class="card" href="/apps/business-pro/">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg>
+          </span>
+          <h3>Business Pro</h3>
+          <p>Operator-grade social and growth tools for the Greek world.</p>
+          <span class="go">Open Business Pro
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Intelligence -->
+        <a class="card" href="/apps/intelligence/">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>
+          </span>
+          <h3>Intelligence</h3>
+          <p>SEO, GEO, and AI-citation command center for your presence.</p>
+          <span class="go">Open Intelligence
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Command Center -->
+        <a class="card" href="/apps/command-center/">
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="8" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/><rect x="13" y="13" width="8" height="8" rx="1"/></svg>
+          </span>
+          <h3>Command Center</h3>
+          <p>Your platform operations dashboard at a glance.</p>
+          <span class="go">Open Command Center
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </span>
+        </a>
+
+        <!-- Marketplace (roadmap) -->
+        <div class="card soon" aria-label="Marketplace, coming soon">
+          <span class="chip">Coming soon</span>
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h16l-1 3H5L4 8Z"/><path d="M5 11v8h14v-8"/><path d="M4 8l1.5-3h13L20 8"/><path d="M10 15h4"/></svg>
+          </span>
+          <h3>Marketplace</h3>
+          <p>A home for Greek makers and shops.</p>
+        </div>
+
+        <!-- Us Greeks Can (roadmap) -->
+        <div class="card soon" aria-label="Us Greeks Can, coming soon">
+          <span class="chip">Coming soon</span>
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v11"/><path d="M8.5 6.5 12 3l3.5 3.5"/><path d="M5 14a7 7 0 0 0 14 0"/><path d="M5 14H3M21 14h-2"/></svg>
+          </span>
+          <h3>Us Greeks Can</h3>
+          <p>Causes, drives, and collective action.</p>
+        </div>
+
+        <!-- BuyGreek.Shop (roadmap) -->
+        <div class="card soon" aria-label="BuyGreek.Shop, coming soon">
+          <span class="chip">Coming soon</span>
+          <span class="ico" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14l-1.2 11.2a2 2 0 0 1-2 1.8H8.2a2 2 0 0 1-2-1.8L5 7Z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg>
+          </span>
+          <h3>BuyGreek.Shop</h3>
+          <p>Shop Greek, support Greek.</p>
+        </div>
+
+      </div>
+      <p class="note">Tiles marked &#8220;Coming soon&#8221; aren&#8217;t live yet. Only the linked cards open working tools today.</p>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot">
+      <div class="copy">
+        <span class="zx" aria-hidden="true">&#918;</span>
+        <span>&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
+      </div>
+      <nav class="foot-links" aria-label="Footer">
+        <a href="/">Home</a>
+        <a href="/social">Communication Suite</a>
+        <a href="/tickets">Tickets</a>
+        <a href="/explore">Explore</a>
+        <a href="/community">Community</a>
+      </nav>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+  var THEMES = ["dark","light","gold"];
+  var KEY = "zoi_theme";
+  var root = document.documentElement;
+
+  function readStored(){
+    try { return localStorage.getItem(KEY); } catch(e){ return null; }
+  }
+  function store(v){
+    try { localStorage.setItem(KEY, v); } catch(e){ /* ignore */ }
+  }
+  function apply(theme){
+    if (THEMES.indexOf(theme) === -1) theme = "dark";
+    root.setAttribute("data-theme", theme);
+  }
+
+  // Initial: stored preference, else system preference, else dark.
+  var initial = readStored();
+  if (!initial){
+    var prefersLight = false;
+    try { prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches; } catch(e){}
+    initial = prefersLight ? "light" : "dark";
+  }
+  apply(initial);
+
+  var btn = document.getElementById("themeBtn");
+  if (btn){
+    btn.addEventListener("click", function(){
+      var cur = root.getAttribute("data-theme") || "dark";
+      var next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+      apply(next);
+      store(next);
+    });
+  }
+
+  try {
+    var yr = document.getElementById("yr");
+    if (yr) yr.textContent = String(new Date().getFullYear());
+  } catch(e){}
+})();
+</script>
+<script src="/assets/zoi-theme.js"></script>
+</body>
+</html>

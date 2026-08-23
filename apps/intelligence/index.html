@@ -1,0 +1,506 @@
+<!doctype html><html lang="en" data-theme="dark"><head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Zoi Intelligence — SEO / GEO / AI-citation command center</title>
+<meta name="description" content="Zoi Intelligence — Similarweb-style SEO, GEO and AI-citation readiness command center. Scan, score, ticket, fix, verify, log. Evidence-based, governance-compliant."/>
+<!-- OPERATOR TOOL: never public. Hard noindex always (not flag-gated). -->
+<meta name="robots" content="noindex,nofollow"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css">
+<style>
+:root{
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --line, --acc */
+  --surface:var(--card);
+  --surface-2:var(--card2);
+  --ink:var(--tx);
+  --ink-2:var(--mut);
+  --ink-3:var(--dim);
+  --line-2:var(--line);
+  --acc-ink:var(--acc);
+  --acc-soft:color-mix(in srgb, var(--acc) 10%, transparent);
+  --acc-soft-2:color-mix(in srgb, var(--acc) 6%, transparent);
+  --ok:var(--green);
+  --warn:var(--gold);
+  --crit:var(--red);
+  --shadow:0 1px 2px rgba(16,15,9,.04),0 8px 24px rgba(16,15,9,.06);
+  --shadow-sm:0 1px 2px rgba(16,15,9,.05);
+  --ease:cubic-bezier(0.16,1,0.3,1);
+  --spring:cubic-bezier(0.34,1.56,0.64,1);
+  --r-in:8px;
+  --r-card:12px;
+  --r-modal:18px;
+  --r-pill:999px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:'Hanken Grotesk',system-ui,-apple-system,sans-serif;font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased;font-feature-settings:"ss01","cv01"}
+h1,h2,.fr{font-family:'Fraunces',Georgia,serif;font-weight:500}
+::selection{background:var(--acc-soft);color:var(--acc-ink)}
+a{color:inherit;text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+:focus-visible{outline:2.5px solid var(--acc);outline-offset:2px;border-radius:4px}
+.fr-h1{font-size:2.5rem;line-height:1.1;letter-spacing:-.018em;font-weight:500}
+.fr-h2{font-size:1.875rem;line-height:1.15;letter-spacing:-.015em;font-weight:500}
+.label{font-size:.8125rem;line-height:1.4;letter-spacing:.01em;font-weight:600}
+.cap{font-size:.75rem;line-height:1.45;color:var(--ink-3)}
+.mut{color:var(--ink-2)} .mut3{color:var(--ink-3)} .acc{color:var(--acc-ink)}
+
+#app{display:grid;grid-template-columns:248px 1fr;min-height:100vh}
+@media(max-width:880px){#app{grid-template-columns:1fr}}
+.side{position:sticky;top:0;height:100vh;background:var(--surface);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:18px 14px;gap:4px;z-index:40}
+@media(max-width:880px){.side{position:fixed;left:0;top:0;width:248px;transform:translateX(-110%);transition:transform .28s var(--ease);box-shadow:var(--shadow)}.side.open{transform:none}}
+.brand{display:flex;align-items:center;gap:11px;padding:6px 8px 16px;cursor:pointer}
+.brand .glyph{width:38px;height:38px;border-radius:11px;flex:none;display:grid;place-items:center;background:linear-gradient(150deg,var(--acc),var(--acc-ink));box-shadow:var(--shadow-sm)}
+.brand .glyph svg{width:21px;height:21px;stroke:#fff;fill:none;stroke-width:1.6}
+.brand .bt b{font-family:'Fraunces';font-size:19px;font-weight:600;letter-spacing:-.01em;display:block;line-height:1.05}
+.brand .bt span{font-size:.6875rem;letter-spacing:.04em;color:var(--ink-3);font-weight:600}
+.side-sec{font-size:.6875rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:14px 10px 6px}
+.navitem{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:var(--r-in);border:none;background:none;color:var(--ink-2);width:100%;text-align:left;font:600 .9375rem 'Hanken Grotesk';transition:background .14s,color .14s}
+.navitem svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.5;flex:none}
+.navitem:hover{background:var(--surface-2);color:var(--ink)}
+.navitem.on{background:var(--acc-soft);color:var(--acc-ink)}
+.navitem.on svg{stroke:var(--acc-ink)}
+.side-foot{margin-top:auto;display:flex;align-items:center;gap:11px;padding:10px;border-top:1px solid var(--line)}
+.side-foot .av{width:34px;height:34px;border-radius:var(--r-pill);flex:none;background:linear-gradient(150deg,var(--acc),var(--acc-ink))}
+.sf-txt b{display:block;font-size:.875rem;line-height:1.2}
+.sf-txt span{font-size:.75rem;color:var(--ink-3)}
+
+.ctx{position:sticky;top:0;z-index:30;display:flex;align-items:center;gap:14px;padding:13px 28px;background:rgba(250,250,248,.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.icon-btn{width:38px;height:38px;border-radius:var(--r-in);border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--ink-2);transition:.14s}
+.icon-btn:hover{background:var(--surface-2);transform:translateY(-1px)}
+.icon-btn svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:1.6}
+.ctx-title{font-family:'Fraunces';font-size:1.0625rem;font-weight:600;letter-spacing:-.01em}
+.ctx-crumb{font-size:.8125rem;color:var(--ink-3)}
+.spacer{flex:1}
+.main{min-width:0}
+.wrap{max-width:1160px;margin:0 auto;padding:32px 28px 80px}
+@media(max-width:880px){.wrap{padding:24px 18px 90px}.ctx{padding:11px 16px}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:var(--r-in);font:600 .9375rem 'Hanken Grotesk';padding:11px 18px;border:1px solid transparent;transition:transform .12s var(--ease),box-shadow .12s,background .14s}
+.btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7}
+.btn-primary{background:var(--acc);color:#fff;box-shadow:var(--shadow-sm)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.btn-ghost{background:var(--surface);color:var(--ink);border-color:var(--line)}
+.btn-ghost:hover{background:var(--surface-2);transform:translateY(-2px)}
+.btn-sm{padding:8px 13px;font-size:.8125rem}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-card);padding:28px;box-shadow:var(--shadow-sm)}
+.card.pad-22{padding:22px}
+.card.raised{box-shadow:var(--shadow)}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 11px;border-radius:var(--r-pill);font:600 .75rem 'Hanken Grotesk';background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line)}
+.pill.acc{background:var(--acc-soft);color:var(--acc-ink);border-color:transparent}
+.pill.ok{background:rgba(63,122,79,.1);color:var(--ok);border-color:transparent}
+.pill.warn{background:rgba(178,122,30,.12);color:var(--warn);border-color:transparent}
+.pill.crit{background:rgba(178,58,46,.12);color:var(--crit);border-color:transparent}
+.pill .d{width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge-live{display:inline-flex;align-items:center;gap:6px;font:600 .75rem 'Hanken Grotesk';padding:4px 10px;border-radius:var(--r-pill);background:rgba(63,122,79,.1);color:var(--ok)}
+.badge-live .d{width:7px;height:7px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+.badge-sample{background:var(--surface-2);color:var(--ink-2)}
+.badge-sample .d{background:var(--ink-3);animation:none}
+.badge-est{background:rgba(178,122,30,.12);color:var(--warn)}
+.badge-est .d{background:var(--warn);animation:none}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.grid{display:grid;gap:18px}
+.g-2{grid-template-columns:repeat(2,1fr)} .g-3{grid-template-columns:repeat(3,1fr)} .g-4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:980px){.g-4{grid-template-columns:repeat(2,1fr)}.g-3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.g-2,.g-3,.g-4{grid-template-columns:1fr}}
+.eyebrow{font-size:.8125rem;letter-spacing:.04em;font-weight:600;color:var(--acc-ink);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.eyebrow .ln{width:24px;height:1px;background:var(--acc-ink);opacity:.5}
+.sec-head{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:0 0 18px}
+.sec-head h2{font-size:1.375rem;font-family:'Fraunces';font-weight:600}
+.view{display:none}.view.on{display:block;animation:fade .4s var(--ease) both}
+@keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* gauge */
+.gauge-wrap{display:flex;align-items:center;gap:26px;flex-wrap:wrap}
+.gauge{position:relative;width:148px;height:148px;flex:none}
+.gauge svg{transform:rotate(-90deg)}
+.gauge .num{position:absolute;inset:0;display:grid;place-content:center;text-align:center}
+.gauge .num b{font-family:'Fraunces';font-size:2.5rem;font-weight:600;line-height:1}
+.gauge .num span{font-size:.75rem;color:var(--ink-3);font-weight:600}
+
+/* stat */
+.stat b{font-family:'Fraunces';font-size:2rem;font-weight:600;line-height:1;display:block}
+.stat span{font-size:.8125rem;color:var(--ink-3);font-weight:600}
+.bar{height:7px;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;border-radius:999px;background:var(--acc);transition:width .8s var(--ease)}
+
+/* tables */
+table{width:100%;border-collapse:collapse;font-size:.875rem}
+th{text-align:left;font-size:.6875rem;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);font-weight:600;padding:0 12px 10px}
+td{padding:13px 12px;border-top:1px solid var(--line-2);vertical-align:top}
+tr.clk{cursor:pointer}
+tr.clk:hover td{background:var(--surface-2)}
+.score-chip{display:inline-grid;place-items:center;width:42px;height:42px;border-radius:10px;font:600 .9375rem 'Hanken Grotesk';font-family:'Fraunces'}
+.sc-bad{background:rgba(178,58,46,.12);color:var(--crit)}
+.sc-mid{background:rgba(178,122,30,.12);color:var(--warn)}
+.sc-good{background:rgba(63,122,79,.12);color:var(--ok)}
+
+/* ticket rows */
+.tk{display:flex;gap:14px;padding:16px;border-radius:var(--r-card);border:1px solid var(--line);background:var(--surface);margin-bottom:12px;transition:.14s}
+.tk:hover{border-color:rgba(20,18,12,.14);box-shadow:var(--shadow-sm)}
+.tk .sev{width:4px;border-radius:3px;flex:none}
+.tk .body{flex:1;min-width:0}
+.tk .body .top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+.tk .body code{font:600 .8125rem ui-monospace,monospace;background:var(--surface-2);padding:2px 7px;border-radius:5px}
+.tk .meta{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 18px;margin-top:8px;font-size:.8125rem}
+@media(max-width:620px){.tk .meta{grid-template-columns:1fr}}
+.tk .meta div b{color:var(--ink-3);font-weight:600;font-size:.6875rem;letter-spacing:.04em;text-transform:uppercase;display:block;margin-bottom:1px}
+.tk .ev{margin-top:8px;font:500 .75rem ui-monospace,monospace;background:var(--surface-2);padding:8px 10px;border-radius:7px;color:var(--ink-2);overflow:auto;white-space:pre-wrap;word-break:break-word}
+
+.note{display:flex;gap:10px;padding:13px 15px;border-radius:var(--r-card);background:var(--acc-soft-2);border:1px solid var(--acc-soft);font-size:.8125rem;color:var(--ink-2);line-height:1.5}
+.note svg{width:17px;height:17px;stroke:var(--acc-ink);fill:none;stroke-width:1.7;flex:none;margin-top:1px}
+.note.amber{background:rgba(178,122,30,.07);border-color:rgba(178,122,30,.2)}
+.note.amber svg{stroke:var(--warn)}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:210;background:rgba(20,18,12,.32);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:24px}
+.modal.on{display:flex;animation:fade .25s var(--ease)}
+.modal .box{background:var(--surface);border-radius:var(--r-modal);box-shadow:var(--shadow);max-width:640px;width:100%;max-height:88vh;overflow:auto}
+.modal .box-head{display:flex;align-items:center;justify-content:space-between;padding:22px 26px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--surface);z-index:2}
+.modal .box-head h3{font-size:1.125rem;font-weight:600;font-family:'Fraunces'}
+.modal .box-body{padding:26px}
+pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-card);overflow:auto;font:500 .8125rem ui-monospace,monospace;line-height:1.55;max-height:340px}
+
+.toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(80px);z-index:300;background:var(--ink);color:#fff;padding:13px 20px;border-radius:var(--r-pill);font:600 .875rem 'Hanken Grotesk';display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);opacity:0;transition:transform .4s var(--spring),opacity .3s}
+.toast.on{transform:translateX(-50%) translateY(0);opacity:1}
+.toast svg{width:17px;height:17px;stroke:#7ee0a0;fill:none;stroke-width:2}
+.skel{background:linear-gradient(100deg,var(--surface-2) 30%,#ececea 50%,var(--surface-2) 70%);background-size:200% 100%;animation:shimmer 1.3s infinite;border-radius:8px;height:14px}
+@keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+.mob-only{display:none}@media(max-width:880px){.mob-only{display:grid}.desk-only{display:none}}
+
+/* ---- Zoi shell controls (added with the shared design system) ---- */
+.zoi-appbar{position:fixed;right:16px;bottom:16px;z-index:9990;display:flex;gap:8px;align-items:center}
+.zoi-appbar a,.zoi-appbar button{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+  min-height:40px;padding:0 14px;border-radius:12px;border:1px solid var(--line2);
+  background:var(--card);color:var(--tx);font:600 13px "Hanken Grotesk",system-ui,sans-serif;
+  text-decoration:none;cursor:pointer;box-shadow:0 10px 26px -14px rgba(0,0,0,.5)}
+.zoi-appbar a:hover,.zoi-appbar button:hover{border-color:var(--acc);color:var(--acc)}
+.zoi-appbar button{width:40px;padding:0}
+.zoi-appbar svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+@media(max-width:760px){.zoi-appbar{bottom:calc(72px + env(safe-area-inset-bottom,0px))}}
+@media(max-width:420px){.zoi-appbar a span{display:none}.zoi-appbar a{width:40px;padding:0}}
+</style></head>
+<body>
+<div class="zoi-appbar">
+  <a href="/apps/" title="All Zoi apps"><svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg><span>Apps</span></a>
+  <button id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
+</div>
+
+<div id="app">
+  <aside class="side" id="side">
+    <div class="brand">
+      <span class="glyph"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/><path d="M8 11h6M11 8v6"/></svg></span>
+      <span class="bt"><b>Zoi Intelligence</b><span>SEO · GEO · AI-citation</span></span>
+    </div>
+    <nav style="display:flex;flex-direction:column;gap:2px">
+      <button class="navitem on" data-nav="overview" onclick="go('overview')"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg><span>Overview</span></button>
+      <button class="navitem" data-nav="scans" onclick="go('scans')"><svg viewBox="0 0 24 24"><path d="M11 19a8 8 0 100-16 8 8 0 000 16z"/><path d="M21 21l-4.3-4.3"/></svg><span>Scan results</span></button>
+      <button class="navitem" data-nav="tickets" onclick="go('tickets')"><svg viewBox="0 0 24 24"><path d="M4 7h16v4a2 2 0 000 4v2H4v-2a2 2 0 000-4z"/><path d="M14 7v10"/></svg><span>Issues / tickets</span></button>
+      <div class="side-sec">AI discovery</div>
+      <button class="navitem" data-nav="citations" onclick="go('citations')"><svg viewBox="0 0 24 24"><path d="M8 10h.01M12 10h.01M16 10h.01"/><path d="M21 12a8 8 0 01-11.5 7.2L4 20l1-4.5A8 8 0 1121 12z"/></svg><span>Citation readiness</span></button>
+      <button class="navitem" data-nav="generate" onclick="go('generate')"><svg viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M18 6l-2.5 2.5M8.5 15.5L6 18"/></svg><span>Schema &amp; llms.txt</span></button>
+    </nav>
+    <div class="side-foot">
+      <span class="av"></span>
+      <span class="sf-txt"><b>SEO Engine</b><span id="connState">connecting…</span></span>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="ctx">
+      <button class="icon-btn mob-only" onclick="document.getElementById('side').classList.toggle('open')"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
+      <div>
+        <div class="ctx-title" id="ctxTitle">Overview</div>
+        <div class="ctx-crumb">Zoi ecosystem · MVP scan loop</div>
+      </div>
+      <div class="spacer"></div>
+      <span class="badge-live" id="srcBadge"><span class="d"></span>Live data</span>
+      <button class="btn btn-ghost btn-sm desk-only" onclick="loadData(true)"><svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 11-3-6.7L21 8"/><path d="M21 4v4h-4"/></svg>Refresh</button>
+    </div>
+
+    <div class="wrap">
+
+      <!-- ============ OVERVIEW ============ -->
+      <section class="view on" id="v-overview">
+        <div class="eyebrow"><span class="ln"></span>Command center · scan → score → ticket → fix → verify → log</div>
+        <h1 class="fr-h1" style="margin-bottom:8px">Ecosystem SEO &amp; AI-discovery health</h1>
+        <p class="mut" style="max-width:640px;margin-bottom:24px">Similarweb-style intelligence over the Zoi knowledge graph. Every issue carries source evidence, risk, expected benefit, rollback and a founder-approval flag. AI-citation is tracked as <b>readiness/monitoring — never guaranteed</b>.</p>
+
+        <div class="grid g-2" style="margin-bottom:18px">
+          <div class="card raised">
+            <div class="sec-head"><h2>Ecosystem score</h2><span class="badge-live badge-sample" id="ecoConf"><span class="d"></span>measured coverage</span></div>
+            <div class="gauge-wrap">
+              <div class="gauge">
+                <svg viewBox="0 0 148 148" width="148" height="148">
+                  <circle cx="74" cy="74" r="62" fill="none" stroke="var(--surface-2)" stroke-width="14"/>
+                  <circle id="ecoArc" cx="74" cy="74" r="62" fill="none" stroke="var(--acc)" stroke-width="14" stroke-linecap="round" stroke-dasharray="389.6" stroke-dashoffset="389.6"/>
+                </svg>
+                <div class="num"><b id="ecoScore">—</b><span>/ 100</span></div>
+              </div>
+              <div style="flex:1;min-width:180px">
+                <p class="cap" style="margin-bottom:10px">Measured coverage rollup across <b id="ecoPages">—</b> published pages. JSON-LD &amp; internal-link components estimated from the MVP sample.</p>
+                <div id="covBars"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card raised">
+            <div class="sec-head"><h2>Open issues</h2><span class="pill acc" id="issTotal">—</span></div>
+            <div class="grid g-3" style="gap:12px">
+              <div class="stat"><b id="cCrit" style="color:var(--crit)">—</b><span>critical + high</span></div>
+              <div class="stat"><b id="cMed" style="color:var(--warn)">—</b><span>medium</span></div>
+              <div class="stat"><b id="cLow" style="color:var(--ink-3)">—</b><span>low</span></div>
+            </div>
+            <div class="note amber" style="margin-top:18px"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><span>Top gap: <b>title / meta / canonical / schema_type</b> are unpopulated on ~99% of published listings. The DB infra to fix this already exists (views + <code style="font-size:.75rem">zoi.schema_type()</code>) — this is a population task, not a rebuild.</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="sec-head"><h2>What's reused vs. new</h2><span class="pill">Audit-first</span></div>
+          <div class="grid g-2">
+            <div>
+              <div class="label" style="color:var(--ok);margin-bottom:8px">REUSED (already in DB)</div>
+              <div id="reuseList" style="display:flex;flex-direction:column;gap:7px;font-size:.875rem;color:var(--ink-2)"></div>
+            </div>
+            <div>
+              <div class="label" style="color:var(--acc-ink);margin-bottom:8px">NEW (this foundation)</div>
+              <div id="newList" style="display:flex;flex-direction:column;gap:7px;font-size:.875rem;color:var(--ink-2)"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ SCANS ============ -->
+      <section class="view" id="v-scans">
+        <div class="sec-head" style="margin-bottom:6px"><h2 style="font-size:1.5rem">Scan results</h2><span class="pill acc" id="scanCount">—</span></div>
+        <p class="mut" style="margin-bottom:18px">Real MVP scans against live listings. Click a row for the full ticket breakdown.</p>
+        <div class="card pad-22">
+          <div style="overflow:auto">
+            <table>
+              <thead><tr><th>Entity</th><th>Type</th><th>Score</th><th>Top issues</th><th></th></tr></thead>
+              <tbody id="scanRows"><tr><td colspan="5"><div class="skel" style="width:60%"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ TICKETS ============ -->
+      <section class="view" id="v-tickets">
+        <div class="sec-head" style="margin-bottom:6px"><h2 style="font-size:1.5rem">Issues / tickets queue</h2><span class="pill acc" id="tkCount">—</span></div>
+        <p class="mut" style="margin-bottom:14px">Every ticket is governance-compliant: source evidence, risk, expected benefit, rollback plan, founder-approval flag.</p>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px" id="sevFilters"></div>
+        <div id="tkList"></div>
+      </section>
+
+      <!-- ============ CITATIONS ============ -->
+      <section class="view" id="v-citations">
+        <div class="sec-head" style="margin-bottom:6px"><h2 style="font-size:1.5rem">AI-citation readiness</h2><span class="badge-live badge-est"><span class="d"></span>ESTIMATED</span></div>
+        <div class="note amber" style="margin-bottom:18px"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><span><b>Readiness, not a guarantee.</b> These are queries Zoi wants to be cited for. Appearance/position are <b>ESTIMATED</b> and labeled with confidence until a measurement harness (future) records real engine results. We never fabricate or buy citations (GOVERNANCE rule 5).</span></div>
+        <div class="card pad-22">
+          <div style="overflow:auto">
+            <table>
+              <thead><tr><th>Target query</th><th>Engine</th><th>Appeared</th><th>Est. position</th><th>Confidence</th></tr></thead>
+              <tbody id="citeRows"><tr><td colspan="5"><div class="skel" style="width:50%"></div></td></tr></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ GENERATE ============ -->
+      <section class="view" id="v-generate">
+        <div class="sec-head" style="margin-bottom:6px"><h2 style="font-size:1.5rem">Generate schema / llms.txt</h2><span class="pill">Build, not deploy</span></div>
+        <p class="mut" style="margin-bottom:18px">Preview generators that reuse <code style="font:600 .8125rem ui-monospace,monospace">zoi.schema_type()</code> and <code style="font:600 .8125rem ui-monospace,monospace">v_listing_jsonld</code>. Output is a sample for review — nothing is deployed live.</p>
+        <div class="grid g-2">
+          <div class="card">
+            <div class="label" style="margin-bottom:6px">schema.org JSON-LD (per entity)</div>
+            <p class="cap" style="margin-bottom:14px">Forces a valid <code style="font:600 .72rem ui-monospace,monospace">@type</code> from the entity type even where the column is NULL — fixing the validity gap the scanner found.</p>
+            <button class="btn btn-primary btn-sm" onclick="showJsonld()"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>Preview sample JSON-LD</button>
+          </div>
+          <div class="card">
+            <div class="label" style="margin-bottom:6px">llms.txt (site-wide)</div>
+            <p class="cap" style="margin-bottom:14px">Machine-readable ecosystem summary for AI crawlers: scope, entity-type counts, structured-data conventions, attribution terms.</p>
+            <button class="btn btn-primary btn-sm" onclick="showLlms()"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Preview llms.txt</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<!-- modal -->
+<div class="modal" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="box">
+    <div class="box-head"><h3 id="mTitle">—</h3><button class="icon-btn" onclick="closeModal()"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="box-body" id="mBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span id="toastTxt">Done</span></div>
+
+<script>
+const SUPA_URL='https://csebihpaychdkanjjsmz.supabase.co';
+const SUPA_KEY='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+let DATA=null, SEV='all';
+
+/* ---- sample fallback (graceful, clearly labeled) ---- */
+const SAMPLE={
+  ecosystem_score:28, ecosystem_summary:{published_pages:2652, confidence:'measured (DB coverage counts)',
+    coverage_pct:{meta_title:1,meta_description:1,canonical:1,schema_type:1,og_image:0,body_content:94,freshness:2}},
+  issue_counts:{high:31,medium:48,low:20},
+  scans:[
+    {entity:'Ionion FM',entity_type:'creator',score:15,top_issues:[{check_key:'jsonld_invalid',severity:'high',status:'open',evidence:{missing:'@type'},risk:'Low',expected_benefit:'Rich results',rollback:'Revert schema_type',approval_required:false}]},
+    {entity:'Saint Demetrios Greek Orthodox Church (Chicago)',entity_type:'church',score:21,top_issues:[]}
+  ],
+  citations:[{query:'best greek bakeries in toronto',engine:'perplexity',appeared:null,position:null,confidence:'estimated'}]
+};
+
+async function rpc(fn){
+  const r=await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},body:'{}'});
+  if(!r.ok) throw new Error('rpc '+r.status);
+  return r.json();
+}
+
+async function loadData(refresh){
+  setConn('connecting…');
+  try{
+    DATA=await rpc('seo_dashboard');
+    if(!DATA||DATA.ecosystem_score==null) throw new Error('empty');
+    liveBadge(true); setConn('live · '+new Date().toLocaleTimeString());
+  }catch(e){
+    DATA=SAMPLE; liveBadge(false); setConn('sample data (offline)');
+  }
+  render();
+  if(refresh) toast('Refreshed');
+}
+function liveBadge(live){
+  const b=document.getElementById('srcBadge');
+  b.className='badge-live'+(live?'':' badge-sample');
+  b.innerHTML='<span class="d"></span>'+(live?'Live data':'Sample data');
+}
+function setConn(t){document.getElementById('connState').textContent=t;}
+
+function sevClass(s){return s==='critical'||s==='high'?'sc-bad':s==='medium'?'sc-mid':'sc-good';}
+function scoreClass(n){return n<40?'sc-bad':n<70?'sc-mid':'sc-good';}
+function sevColor(s){return s==='critical'?'var(--crit)':s==='high'?'var(--crit)':s==='medium'?'var(--warn)':'var(--ink-3)';}
+function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+
+function render(){
+  const d=DATA, s=d.ecosystem_summary||{};
+  // gauge
+  const sc=d.ecosystem_score||0;
+  document.getElementById('ecoScore').textContent=sc;
+  const C=389.6; document.getElementById('ecoArc').style.strokeDashoffset=C-(C*sc/100);
+  document.getElementById('ecoArc').style.stroke=sc<40?'var(--crit)':sc<70?'var(--warn)':'var(--ok)';
+  document.getElementById('ecoPages').textContent=(s.published_pages||'—').toLocaleString?.(s.published_pages)||s.published_pages||'—';
+  if(s.confidence) document.getElementById('ecoConf').innerHTML='<span class="d"></span>'+esc(s.confidence);
+  // coverage bars
+  const cov=s.coverage_pct||{}; const labels={meta_title:'Title tags',meta_description:'Meta descriptions',canonical:'Canonicals',schema_type:'Schema type',og_image:'OG images',body_content:'Body content',freshness:'Freshness (180d)'};
+  document.getElementById('covBars').innerHTML=Object.keys(labels).map(k=>{
+    const v=cov[k]??0;
+    return `<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:.75rem"><span class="mut">${labels[k]}</span><b>${v}%</b></div><div class="bar"><i style="width:${v}%;background:${v<25?'var(--crit)':v<60?'var(--warn)':'var(--ok)'}"></i></div></div>`;
+  }).join('');
+  // issue counts
+  const ic=d.issue_counts||{}; const crit=(ic.critical||0)+(ic.high||0);
+  document.getElementById('cCrit').textContent=crit;
+  document.getElementById('cMed').textContent=ic.medium||0;
+  document.getElementById('cLow').textContent=ic.low||0;
+  document.getElementById('issTotal').textContent=(crit+(ic.medium||0)+(ic.low||0))+' open';
+  // reuse / new lists
+  const reuse=['v_listing_jsonld — entity JSON-LD','v_seo_sitemap — sitemap source (4,158 URLs)','v_seo_city_category — hub gating','zoi.schema_type() — @type mapper','listings: meta_title / meta_description / canonical_path / schema_type / og_image / hreflang_alt'];
+  const neu=['seo_scans / seo_issues / citation_checks tables (RLS deny-by-default)','zoi.seo_scan_entity() — 12-check scan engine','zoi.gen_entity_jsonld() — valid @type generator','zoi.gen_llms_txt() — AI-crawler summary','public.seo_dashboard() — read RPC'];
+  const ck='<svg viewBox="0 0 24 24" width="15" height="15" style="stroke:currentColor;fill:none;stroke-width:2.2;flex:none;margin-top:3px"><path d="M20 6L9 17l-5-5"/></svg>';
+  document.getElementById('reuseList').innerHTML=reuse.map(x=>`<div style="display:flex;gap:8px;color:var(--ok)">${ck}<span class="mut">${esc(x)}</span></div>`).join('');
+  document.getElementById('newList').innerHTML=neu.map(x=>`<div style="display:flex;gap:8px;color:var(--acc-ink)">${ck}<span class="mut">${esc(x)}</span></div>`).join('');
+  renderScans(); renderTickets(); renderCitations();
+}
+
+function renderScans(){
+  const rows=(DATA.scans||[]);
+  document.getElementById('scanCount').textContent=rows.length+' scanned';
+  document.getElementById('scanRows').innerHTML=rows.map((r,i)=>{
+    const tops=(r.top_issues||[]).filter(x=>x.severity!=='info').slice(0,3).map(x=>`<span class="pill" style="margin:2px 3px 0 0;font-size:.6875rem">${esc(x.check_key)}</span>`).join('')||'<span class="cap">none</span>';
+    return `<tr class="clk" onclick="openScan(${i})"><td><b>${esc(r.entity||'—')}</b></td><td><span class="pill">${esc(r.entity_type||'')}</span></td><td><span class="score-chip ${scoreClass(r.score)}">${r.score}</span></td><td>${tops}</td><td style="text-align:right"><span class="cap">view →</span></td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="cap">No scans yet.</td></tr>';
+}
+
+function allIssues(){
+  const out=[]; (DATA.scans||[]).forEach(r=>(r.top_issues||[]).forEach(i=>out.push(Object.assign({entity:r.entity},i))));
+  const ord={critical:0,high:1,medium:2,low:3,info:4};
+  return out.sort((a,b)=>(ord[a.severity]??9)-(ord[b.severity]??9));
+}
+function renderTickets(){
+  const all=allIssues();
+  const sevs=['all','critical','high','medium','low'];
+  document.getElementById('sevFilters').innerHTML=sevs.map(s=>`<button class="pill ${SEV===s?'acc':''}" style="cursor:pointer" onclick="SEV='${s}';renderTickets()">${s[0].toUpperCase()+s.slice(1)}</button>`).join('');
+  const list=all.filter(i=>SEV==='all'||i.severity===SEV).filter(i=>i.severity!=='info');
+  document.getElementById('tkCount').textContent=list.length+' tickets';
+  document.getElementById('tkList').innerHTML=list.map(i=>{
+    const appr=i.approval_required?'<span class="pill crit" style="font-size:.6875rem"><span class="d"></span>Founder approval</span>':'<span class="pill ok" style="font-size:.6875rem">Auto-OK</span>';
+    return `<div class="tk"><div class="sev" style="background:${sevColor(i.severity)}"></div><div class="body">
+      <div class="top"><code>${esc(i.check_key)}</code><span class="pill ${i.severity==='critical'||i.severity==='high'?'crit':i.severity==='medium'?'warn':''}" style="font-size:.6875rem">${esc(i.severity)}</span><span class="pill" style="font-size:.6875rem">${esc(i.status)}</span>${appr}<span class="cap" style="margin-left:auto">${esc(i.entity)}</span></div>
+      <div class="meta">
+        <div><b>Risk</b>${esc(i.risk)}</div>
+        <div><b>Expected benefit</b>${esc(i.expected_benefit)}</div>
+        <div><b>Rollback</b>${esc(i.rollback)}</div>
+        <div><b>Evidence</b><span class="cap">source-observed →</span></div>
+      </div>
+      <div class="ev">${esc(JSON.stringify(i.evidence))}</div>
+    </div></div>`;
+  }).join('')||'<div class="card pad-22 cap">No tickets at this filter.</div>';
+}
+
+function renderCitations(){
+  const rows=(DATA.citations||[]);
+  document.getElementById('citeRows').innerHTML=rows.map(c=>{
+    const app=c.appeared===null||c.appeared===undefined?'<span class="pill warn" style="font-size:.6875rem">not yet measured</span>':(c.appeared?'<span class="pill ok" style="font-size:.6875rem">yes</span>':'<span class="pill" style="font-size:.6875rem">no</span>');
+    return `<tr><td><b>${esc(c.query)}</b></td><td><span class="pill">${esc(c.engine)}</span></td><td>${app}</td><td>${c.position??'<span class="cap">—</span>'}</td><td><span class="pill ${c.confidence==='measured'?'ok':'warn'}" style="font-size:.6875rem">${esc(c.confidence||'estimated')}</span></td></tr>`;
+  }).join('')||'<tr><td colspan="5" class="cap">No tracked queries.</td></tr>';
+}
+
+function openScan(i){
+  const r=DATA.scans[i];
+  document.getElementById('mTitle').textContent=r.entity+' · '+r.score+'/100';
+  const iss=(r.top_issues||[]);
+  document.getElementById('mBody').innerHTML=`<p class="cap" style="margin-bottom:14px">${esc(r.entity_type||'')} · ${iss.length} issue(s). Each carries evidence + risk + benefit + rollback + approval flag.</p>`+
+    iss.map(x=>`<div class="tk" style="margin-bottom:10px"><div class="sev" style="background:${sevColor(x.severity)}"></div><div class="body">
+      <div class="top"><code>${esc(x.check_key)}</code><span class="pill ${x.severity==='critical'||x.severity==='high'?'crit':x.severity==='medium'?'warn':''}" style="font-size:.6875rem">${esc(x.severity)}</span>${x.approval_required?'<span class="pill crit" style="font-size:.6875rem">Approval</span>':''}</div>
+      <div class="meta"><div><b>Risk</b>${esc(x.risk)}</div><div><b>Benefit</b>${esc(x.expected_benefit)}</div><div><b>Rollback</b>${esc(x.rollback)}</div></div>
+      <div class="ev">${esc(JSON.stringify(x.evidence))}</div></div></div>`).join('')||'<p class="cap">No open issues.</p>';
+  openModal();
+}
+
+function showJsonld(){
+  const sample={"@context":"https://schema.org","@type":"Church",name:"Saint Demetrios Greek Orthodox Church (Chicago)",url:"https://www.stdemetrioschicago.org/",telephone:"(773) 561-5992",address:{"@type":"PostalAddress",streetAddress:"2727 W. Winona Street, Chicago, IL 60625",addressLocality:"Chicago",addressRegion:"Illinois",addressCountry:"United States"},geo:{"@type":"GeoCoordinates",latitude:41.8781,longitude:-87.6298},description:"Greek Orthodox parish (Lincoln Square) of the Metropolis of Chicago."};
+  document.getElementById('mTitle').textContent='Sample JSON-LD · zoi.gen_entity_jsonld()';
+  document.getElementById('mBody').innerHTML=`<p class="cap" style="margin-bottom:12px">Live output for a real church listing. Valid <code style="font:600 .72rem ui-monospace,monospace">@type</code> from the entity-type mapper. Build-only — not deployed.</p><pre class="code">${esc(JSON.stringify(sample,null,2))}</pre>`;
+  openModal();
+}
+function showLlms(){
+  const txt=`# Zoi\n\n> Zoi is the Greek-ecosystem directory and knowledge graph: Greek businesses, professionals, churches, schools, organizations, events, vendors, products and creators across Greece, Cyprus and the diaspora.\n\n## About\nZoi maintains 2652 published, source-verified entities. Data is first-party and structured (schema.org JSON-LD per entity).\n\n## Entity types\n- business (1082)\n- church (568)\n- organization (274)\n- creator (198)\n- professional (126)\n- event (107)\n- vendor (107)\n- travel_place (97)\n- school (64)\n- venue (22)\n\n## Structured data\n- Each entity page emits schema.org JSON-LD.\n- Canonical URLs: /{entity_type}/{slug}\n- City x category hubs: /{country}/{city}/{category}\n\n## Usage\nCitations welcome with attribution to Zoi. Data reflects verification status and last-verified dates.`;
+  document.getElementById('mTitle').textContent='Sample llms.txt · zoi.gen_llms_txt()';
+  document.getElementById('mBody').innerHTML=`<p class="cap" style="margin-bottom:12px">Live output. Counts pulled from published listings. Build-only.</p><pre class="code">${esc(txt)}</pre>`;
+  openModal();
+}
+
+function openModal(){document.getElementById('modal').classList.add('on');}
+function closeModal(){document.getElementById('modal').classList.remove('on');}
+function go(v){
+  document.querySelectorAll('.navitem').forEach(b=>b.classList.toggle('on',b.dataset.nav===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.toggle('on',s.id==='v-'+v));
+  document.getElementById('ctxTitle').textContent={overview:'Overview',scans:'Scan results',tickets:'Issues / tickets',citations:'Citation readiness',generate:'Schema & llms.txt'}[v];
+  document.getElementById('side').classList.remove('open');
+  window.scrollTo(0,0);
+}
+let tT;
+function toast(t){const e=document.getElementById('toast');document.getElementById('toastTxt').textContent=t;e.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('on'),2200);}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+loadData();
+</script>
+<script src="/assets/zoi-theme.js"></script>
+</body></html>
