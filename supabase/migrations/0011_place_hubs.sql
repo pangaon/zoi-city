@@ -19,6 +19,10 @@ AS $$
 $$;
 
 -- Cities within a region (or a whole country).
+-- NOTE: renamed to explore_region_cities in 0014 — a pre-existing
+-- explore_cities(p_limit integer) already existed with a different shape, and
+-- two same-named functions returning different things is a PGRST203 waiting to
+-- happen. Kept here for history; the live name is explore_region_cities.
 CREATE OR REPLACE FUNCTION public.explore_cities(p_country text DEFAULT NULL, p_region text DEFAULT NULL)
 RETURNS TABLE(country text, region text, city text, listings bigint)
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path TO 'zoi','public'

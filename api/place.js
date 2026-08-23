@@ -199,7 +199,7 @@ export default async function handler(req, res) {
 
     let city = '';
     if (wantCity) {
-      const cities = await rpc('explore_cities', { p_country: country || null, p_region: region || null });
+      const cities = await rpc('explore_region_cities', { p_country: country || null, p_region: region || null });
       const hit = cities.find((c) => slug(c.city) === wantCity);
       if (!hit) return notFound('We have no listings in that city yet.');
       city = hit.city;
@@ -282,7 +282,7 @@ export default async function handler(req, res) {
       }
     }
     if (country && region && !city) {
-      const cities = await rpc('explore_cities', { p_country: country, p_region: region });
+      const cities = await rpc('explore_region_cities', { p_country: country, p_region: region });
       if (cities.length > 1) {
         body += '<section class="ph-sec"><h2>Cities in ' + esc(region) + '</h2>'
           + chips(cities.slice(0, 60).map((c) => ({
