@@ -78,12 +78,12 @@
 
   /* The three token sets, copied from zoi-theme.css. */
   var TOKENS = {
-    dark:  { bg: '#080a0e', card: '#141a22', tx: '#f3f6fa', mut: '#8b95a3',
-             acc: '#6ea8ff', gold: '#d9b26a', green: '#61c497', red: '#e07a6a' },
-    light: { bg: '#f6f4ef', card: '#ffffff', tx: '#0d1b2a', mut: '#5a6774',
-             acc: '#2f6fd0', gold: '#8f6520', green: '#1f7a55', red: '#b84a38' },
-    gold:  { bg: '#100c04', card: '#221a0b', tx: '#f7efdd', mut: '#c7b29d',
-             acc: '#e6c07a', gold: '#e6c07a', green: '#8fbf9f', red: '#d99a86' }
+    dark:  { bg: '#060b14', card: '#0f1b2d', tx: '#eef3fa', mut: '#93a4bd',
+             acc: '#4f9be8', gold: '#d4af5f', green: '#5bc49a', red: '#e0796b' },
+    light: { bg: '#f7f9fc', card: '#ffffff', tx: '#0b2545', mut: '#4a6180',
+             acc: '#1668c4', gold: '#96701c', green: '#1b7a55', red: '#b84a38' },
+    gold:  { bg: '#0a0906', card: '#191509', tx: '#f6f0e2', mut: '#c4b294',
+             acc: '#e0be7a', gold: '#e0be7a', green: '#8fbf9f', red: '#d99a86' }
   };
 
   /**

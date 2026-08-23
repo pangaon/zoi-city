@@ -130,6 +130,14 @@ function page(e, related){
   if(e.phone)   acts.push({ label:'Call', href: 'tel:'+String(e.phone).replace(/[^0-9+]/g,''), icon: IC.phone });
   if(e.website) acts.push({ label:'Website', href: e.website, icon: IC.globe, external:true });
   if(mapHref)   acts.push({ label:'Directions', href: mapHref, icon: IC.pin, external:true });
+  /* Contact was simply absent. An email is the one action a visitor wants that
+     does not need a phone call, and 40% of enriched listings have one. */
+  var contactEmail = e.email || (p && p.email) || '';
+  if(contactEmail && /.+@.+\..+/.test(contactEmail)) {
+    acts.push({ label:'Contact', href:'mailto:'+contactEmail
+      + '?subject=' + encodeURIComponent('Enquiry via Zoi \u2014 ' + (e.name||'')),
+      icon: IC.mail || IC.globe });
+  }
   var actHtml = acts.length ? '<div class="acts">' + acts.map(function(a,i){
       var cls = (a.primary || (i===0 && !acts.some(function(x){return x.primary;}))) ? 'btn btn-primary' : 'btn btn-ghost';
       return '<a class="'+cls+'" href="'+attr(a.href)+'"'+(a.external?' rel="nofollow noopener" target="_blank"':'')+'>'+
@@ -164,9 +172,11 @@ function socialIcon(k){
   if(e.address) row('Address', esc(e.address));
   else if(e.city) row('Location', esc(e.city)+(e.country?(', '+esc(e.country)):''));
   if(e.place_path) row('Area', esc(e.place_path));
+  /* Phone stays — it is worth reading as text, and it is what a visitor copies.
+     Website does NOT: there is a Website button directly above, and repeating a
+     URL in a table row is the 2006 pattern that made this page look like a spec
+     sheet. Category is already the eyebrow above the title. */
   if(e.phone) row('Phone', '<a href="tel:'+attr((e.phone+'').replace(/[^0-9+]/g,''))+'">'+esc(e.phone)+'</a>');
-  if(e.website) row('Website', '<a href="'+attr(e.website)+'" rel="nofollow noopener" target="_blank">'+esc(e.website.replace(/^https?:\/\//,''))+'</a>');
-  if(e.category_slug) row('Category', esc(catLabel));
   if(e.price_range) row('Price', esc(e.price_range));
   /* social_links is empty on every listing in the directory today, so fall back
      to whatever the business links to from its own site. Owner-set values still
@@ -192,8 +202,9 @@ function socialIcon(k){
   });
   /* A row of real marks rather than a text list. Each keeps its accessible name,
      so a screen reader still hears "Instagram", and the visible label is the icon. */
-  if(socLinks.length) rows.push('<div class="row socrow"><span>Social</span><b class="soc">'
-    + socLinks.join('') + '</b></div>');
+  var socHtml = socLinks.length
+    ? '<div class="socbar" aria-label="Social channels">' + socLinks.join('') + '</div>'
+    : '';
   /* Things the business itself links to. These are the actions a visitor came
      for, and none of them existed on the page before. */
   [['booking_url','Book'],['menu_url','Menu'],['order_url','Order'],['give_url','Give']].forEach(function(pp){
@@ -270,6 +281,7 @@ function socialIcon(k){
    +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
    +(e.description?('<p class="desc">'+esc(e.description)+'</p>'):'')
    +actHtml
+   +socHtml
    +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
    +verticalHtml
    +provHtml
@@ -299,10 +311,16 @@ function socialIcon(k){
 
 var PAGE_CSS = [
   '.wrap{max-width:920px}',
-  '.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--card);margin:24px 0 0}',
+  /* A real photograph earns the full band. A generated monogram does not — it
+     was taking 280px of vertical space to say nothing, pushing the actual
+     business below the fold. */
+  '.ep-cover{aspect-ratio:16/3.2;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);'
+    +'background:linear-gradient(160deg,color-mix(in oklab,var(--acc) 12%,var(--card)),var(--card2));margin:20px 0 0}',
+  '.ep-cover.has-img{aspect-ratio:16/6;background:var(--card2)}',
+  '@media (max-width:640px){.ep-cover{aspect-ratio:16/4.4}.ep-cover.has-img{aspect-ratio:4/3}}',
   '.ep-cover svg{display:block;width:100%;height:100%}',
   '.ep-cover img{display:block;width:100%;height:100%;object-fit:cover}',
-  '.row.socrow b{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}',
+  '.socbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}',
   '.socbtn{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;'
     +'border:1px solid var(--line);color:var(--mut);background:var(--card2);'
     +'transition:.18s var(--ease)}',
