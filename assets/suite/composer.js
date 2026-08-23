@@ -6,22 +6,38 @@
  * mount(root, ctx) renders the composer into `root`.
  *   ctx = { C:ZoiCore, ws, channels:[], avail:{publish,email,ai,payments,claims}, toast }
  *
- * Features: per-network live counters, connected-network chips, faithful
- * live previews (FB/IG/X/LinkedIn/TikTok/YouTube), media by URL (+optional
- * upload), hashtag sets, inline link/UTM builder, first comment, X thread
- * mode, best-time-to-post hint from queue slots, schedule / draft / template,
- * honest publish gating, emoji picker, clear/reset.
+ * Features: per-network live counters that count the way a HUMAN counts
+ * (grapheme-aware, t.co-aware for X), connected-network chips, faithful live
+ * previews (FB/IG/X/LinkedIn/TikTok/YouTube), per-network body overrides,
+ * media by URL (+optional upload) with alt-text enforcement, hashtag sets,
+ * inline link/UTM builder, first comment, X thread mode, queue-aware
+ * next-open-slot scheduling, pre-flight checks (channel collisions, network
+ * limits, missing alt text), localStorage draft autosave, templates library,
+ * keyboard shortcuts, honest publish gating, emoji picker, clear/reset.
+ *
+ * THE ORTHODOX LAYER — the part no other scheduler has:
+ *   - the liturgical context of whatever day you are scheduling into: feast,
+ *     name day, fasting season and how strict the fast is;
+ *   - a warning when the post's own words clash with that fast (a bakery
+ *     promoting tyropita on Clean Monday is a real, repeated mistake);
+ *   - today's name-day celebrants from zoi_namedays_today, with a one-click
+ *     "Χρόνια πολλά" greeting draft;
+ *   - "opportunities": the next fortnight's feasts and name days, each with a
+ *     drafted post you can put straight in the box.
+ * All of it comes from assets/suite/_orthocal.js (computed, never typed).
  *
  * p_meta schema written by this module:
  *   { first_comment:string, thread:string[], campaign:string,
  *     per_network_overrides:{ [channelId]: { body:string } },
- *     composer_version:'1.0.0' }
+ *     alt_text:{ [imageUrl]: string },
+ *     liturgical:{ date, feasts:string[], namedays:string[], fast:string },
+ *     composer_version:'1.1.0' }
  */
 (function (global) {
   'use strict';
 
   var STYLE_ID = 'zc-styles';
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
 
   /* ---------- per-network config ---------- */
   // Character limits per platform. Facebook/YouTube counts are the caption /
@@ -49,6 +65,58 @@
   var EMOJI = ['😀','😁','😂','🥰','😊','😍','😎','🤩','🥳','😇','🤝','👏','🙌','💪','👍','🔥','✨','💯','🎉','🎊','❤️','🧡','💛','💚','💙','💜','⭐','🌟','🌈','☀️','🌊','🏛️','🇬🇷','🫒','🍇','🍷','☕','🥖','🧿','📣','📸','🎥','📍','🗓️','🚀','💡','✅','⚡','🎁','🙏'];
 
   var WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var DRAFT_SAVE_MS = 900;      // debounce for the localStorage autosave
+  var CONFLICT_WINDOW_MIN = 30; // two posts to one channel inside this = a collision
+
+  /* ---------- shared libraries, without a build step ----------
+   * _orthocal.js (the liturgical calendar) and _schedule.js (the scheduling
+   * arithmetic) are classic scripts sitting next to this one. The suite shell
+   * does not know about them, and this module has no business editing a page it
+   * does not own, so it loads its own siblings on first mount and caches the
+   * promise. The path is resolved from THIS script's own URL, so it works on any
+   * origin — production, a local server, or a test harness. If a library fails
+   * to load, the module still renders: every feature that needs one checks for
+   * it first and says plainly that it is unavailable.
+   */
+  var SELF_DIR = (function () {
+    try {
+      var cs = global.document && global.document.currentScript;
+      if (cs && cs.src) return String(cs.src).replace(/[^/]+$/, '');
+    } catch (e) { /* no document (unit test) — fall through */ }
+    return '/assets/suite/';
+  })();
+  var LIB_PROMISES = {};
+  function loadLib(doc, file, globalName) {
+    if (global[globalName]) return Promise.resolve(global[globalName]);
+    if (LIB_PROMISES[file]) return LIB_PROMISES[file];
+    LIB_PROMISES[file] = new Promise(function (resolve) {
+      var id = 'zoi-lib-' + file;
+      if (!doc.getElementById(id)) {
+        var tag = doc.createElement('script');
+        tag.id = id;
+        tag.src = SELF_DIR + file + '.js';
+        tag.async = false;
+        (doc.head || doc.documentElement).appendChild(tag);
+      }
+      var tries = 0;
+      (function poll() {
+        if (global[globalName]) return resolve(global[globalName]);
+        if (tries++ > 120) return resolve(null);       // ~3s, then degrade
+        global.setTimeout(poll, 25);
+      })();
+    });
+    return LIB_PROMISES[file];
+  }
+  function loadDeps(doc) {
+    return Promise.all([
+      loadLib(doc, '_orthocal', 'ZoiOrthocal'),
+      loadLib(doc, '_schedule', 'ZoiSchedule')
+    ]).then(function (r) { return { O: r[0], S: r[1] }; });
+  }
+
+  /* Local (not UTC) ISO day key — the composer schedules in the user's own day. */
+  function isoLocal(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
 
   /* ---------- helpers ---------- */
   function normPlat(p) {
@@ -204,7 +272,75 @@
       '.zc-pv.youtube .zc-body{font-size:12px;color:#0b0b0b}',
       '.zc-divider{height:1px;background:var(--line);border:none;margin:2px 0}',
       '.zc-flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}',
-      '.zc-grow{flex:1;min-width:0}'
+      '.zc-grow{flex:1;min-width:0}',
+      /* ---- draft-restore banner ---- */
+      '.zc-banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--tx);background:color-mix(in srgb,var(--acc) 10%,transparent);border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);border-radius:12px;padding:10px 13px}',
+      '.zc-banner b{color:var(--acc)}',
+      /* ---- pre-flight checks ---- */
+      '.zc-checks{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}',
+      '.zc-check{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.45;border-radius:10px;padding:9px 12px;border:1px solid var(--line)}',
+      '.zc-check .zc-cico{flex:none;width:16px;height:16px;margin-top:1px}',
+      '.zc-check .zc-cico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}',
+      '.zc-check b{display:block;font-weight:800}',
+      '.zc-check.stop{color:var(--red);background:color-mix(in srgb,var(--red) 12%,transparent);border-color:color-mix(in srgb,var(--red) 42%,transparent)}',
+      '.zc-check.warn{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);border-color:color-mix(in srgb,var(--gold) 42%,transparent)}',
+      '.zc-check.ok{color:var(--green);background:color-mix(in srgb,var(--green) 10%,transparent);border-color:color-mix(in srgb,var(--green) 34%,transparent)}',
+      '.zc-check span.zc-ctx{color:var(--tx);font-weight:500}',
+      /* ---- liturgical context ---- */
+      '.zc-lit{display:flex;flex-direction:column;gap:10px}',
+      '.zc-litrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}',
+      '.zc-fast{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--bg3);color:var(--mut)}',
+      '.zc-fast .zc-fdot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}',
+      '.zc-fast.f-none{color:var(--green);border-color:color-mix(in srgb,var(--green) 40%,transparent);background:color-mix(in srgb,var(--green) 10%,transparent)}',
+      '.zc-fast.f-dairy{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 40%,transparent);background:color-mix(in srgb,var(--acc) 10%,transparent)}',
+      '.zc-fast.f-fast{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 42%,transparent);background:color-mix(in srgb,var(--gold) 10%,transparent)}',
+      '.zc-fast.f-strict{color:var(--red);border-color:color-mix(in srgb,var(--red) 46%,transparent);background:color-mix(in srgb,var(--red) 12%,transparent)}',
+      '.zc-feast{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);color:var(--tx)}',
+      '.zc-feast.great{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}',
+      '.zc-litwhy{font-size:11.5px;color:var(--mut);line-height:1.5;margin:0}',
+      '.zc-nameday{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--tx)}',
+      '.zc-nameday .zc-nm2{font-weight:800;color:var(--gold)}',
+      '.zc-src{font-size:10.5px;color:var(--dim);letter-spacing:.02em}',
+      /* ---- opportunities ---- */
+      '.zc-opps{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}',
+      '.zc-opp{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg3);transition:border-color .18s var(--ease)}',
+      '.zc-opp:hover{border-color:var(--acc)}',
+      '.zc-opp .zc-od{flex:none;width:44px;text-align:center}',
+      '.zc-opp .zc-od i{display:block;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}',
+      '.zc-opp .zc-od b{display:block;font-size:18px;font-weight:800;line-height:1.1}',
+      '.zc-opp.great .zc-od b{color:var(--gold)}',
+      '.zc-opp .zc-ob{flex:1;min-width:0}',
+      '.zc-opp .zc-ot{font-size:12.5px;font-weight:700;line-height:1.35}',
+      '.zc-opp .zc-os{font-size:11px;color:var(--mut);margin-top:2px}',
+      '.zc-opp .zc-oa{flex:none;display:flex;flex-direction:column;gap:5px}',
+      /* ---- per-network overrides ---- */
+      '.zc-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}',
+      '.zc-tab{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--mut);font-size:12px;font-weight:700;cursor:pointer;transition:.15s}',
+      '.zc-tab svg{width:13px;height:13px;fill:currentColor}',
+      '.zc-tab:hover{color:var(--tx);border-color:var(--acc)}',
+      '.zc-tab.on{color:var(--tx);border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent)}',
+      '.zc-tab .zc-tdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none}',
+      /* ---- alt text ---- */
+      '.zc-alt{position:absolute;bottom:2px;left:2px;font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:1px 5px;border-radius:5px;border:none;cursor:pointer;background:rgba(0,0,0,.68);color:#fff}',
+      '.zc-alt.set{background:var(--gold);color:#1a1205}',
+      '.zc-altrow{display:flex;gap:8px;align-items:center;margin-top:8px}',
+      /* ---- modal (templates, shortcuts) ---- */
+      '.zc-ov{position:fixed;inset:0;background:rgba(4,6,10,.66);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:9000;overflow:auto}',
+      '.zc-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
+      '.zc-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}',
+      '.zc-mh h3{margin:0;font-size:15.5px;font-weight:800}',
+      '.zc-mx{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
+      '.zc-mx:hover{border-color:var(--acc);color:var(--acc)}',
+      '.zc-mb{padding:16px 18px;display:flex;flex-direction:column;gap:12px;max-height:66vh;overflow:auto}',
+      '.zc-tpl{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--bg3);text-align:left;cursor:pointer;color:var(--tx);font:inherit}',
+      '.zc-tpl:hover{border-color:var(--acc)}',
+      '.zc-tpl .zc-tn{font-weight:800;font-size:13px}',
+      '.zc-tpl .zc-tb2{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.zc-keys{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:12.5px}',
+      '.zc-kbd{font:700 11px "JetBrains Mono",monospace;background:var(--bg3);border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;padding:3px 7px;white-space:nowrap;color:var(--tx)}',
+      /* focus states: keyboard users must always see where they are */
+      '.zc-wrap button:focus-visible,.zc-wrap [tabindex]:focus-visible,.zc-wrap input:focus-visible,.zc-wrap textarea:focus-visible,.zc-wrap select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}',
+      '@media(prefers-reduced-motion:reduce){.zc-wrap *{transition:none!important}}'
     ].join('\n');
     var s = doc.createElement('style');
     s.id = STYLE_ID;
@@ -234,14 +370,24 @@
     var state = {
       selected: {},        // channelId -> true
       media: [],           // image urls (max 4)
+      alts: {},            // image url -> alt text (accessibility, enforced below)
+      overrides: {},       // channelId -> tailored body (base body when absent)
+      overrideTab: null,   // channelId whose override is open in the editor
       threadMode: false,
       thread: [''],        // X thread drafts
       slots: [],
       hashtags: [],
       templates: [],
+      posts: [],           // this workspace's scheduled posts, for collision checks
       channels: (ctx.channels || []).slice(),
       editId: null,
-      scheduledAt: null    // ISO string or null
+      scheduledAt: null,   // ISO string or null
+      // the Orthodox layer
+      O: null,             // ZoiOrthocal once loaded (null = unavailable, say so)
+      S: null,             // ZoiSchedule once loaded
+      nameday: null,       // { names:[], feast:'', source:'service'|'table' }
+      oppDays: 14,
+      acknowledged: {}     // warning key -> true, so a confirmed warning stays confirmed
     };
 
     // default-select all connected channels
@@ -256,6 +402,10 @@
     wrap.appendChild(left);
     wrap.appendChild(right);
     root.appendChild(wrap);
+
+    /* ----- LEFT: draft-restore banner (filled only if there is a draft) ----- */
+    var bannerBox = el('div');
+    left.appendChild(bannerBox);
 
     /* ----- LEFT: editor card ----- */
     var editor = el('div', 'zc-card');
@@ -295,6 +445,8 @@
     mediaWrap.appendChild(mediaRow);
     var media = el('div', 'zc-media');
     mediaWrap.appendChild(media);
+    var altBox = el('div');
+    mediaWrap.appendChild(altBox);
     editor.appendChild(mediaWrap);
 
     // hashtags + link builder row cards
@@ -319,6 +471,18 @@
       '</div>';
     left.appendChild(extras);
 
+    /* ----- LEFT: per-network tailoring -----
+     * One message rarely fits six networks. An override is stored per channel
+     * and travels in p_meta.per_network_overrides, which is exactly the shape
+     * the publisher already expects. */
+    var overrideCard = el('div', 'zc-card');
+    overrideCard.innerHTML =
+      '<div class="zc-h">Tailor per network</div>' +
+      '<p class="zc-sub">Optional. Pick a network to write it a version of its own — everything else keeps the shared text.</p>' +
+      '<div class="zc-tabs" data-role="ovtabs" style="margin-top:12px"></div>' +
+      '<div data-role="ovbody"></div>';
+    left.appendChild(overrideCard);
+
     // first comment + thread
     var advanced = el('div', 'zc-card');
     advanced.innerHTML =
@@ -336,24 +500,37 @@
     // schedule + best time + actions
     var actions = el('div', 'zc-card');
     actions.innerHTML =
-      '<span class="zc-lab">Best time to post</span>' +
+      '<span class="zc-lab">Next open slots in your queue</span>' +
       '<div class="zc-hintbox" data-role="besttime"><span>Loading queue slots…</span></div>' +
       '<div style="height:14px"></div>' +
-      '<span class="zc-lab">Schedule</span>' +
+      '<span class="zc-lab">Schedule <span class="zc-src" data-role="tzlab"></span></span>' +
       '<div class="zc-row" style="margin-bottom:12px">' +
-        '<input class="zc-in" type="date" data-role="date">' +
-        '<input class="zc-in" type="time" data-role="time">' +
+        '<input class="zc-in" type="date" data-role="date" aria-label="Scheduled date">' +
+        '<input class="zc-in" type="time" data-role="time" aria-label="Scheduled time">' +
         '<button class="zc-btn" data-role="clearsched">Clear</button>' +
       '</div>' +
+      '<div class="zc-checks" data-role="checks" aria-live="polite"></div>' +
       '<div class="zc-note" data-role="publishnote" style="display:none;margin-bottom:12px"></div>' +
       '<div class="zc-btns">' +
         '<button class="zc-btn pri" data-role="publish">Publish now</button>' +
         '<button class="zc-btn gold" data-role="schedule">Schedule</button>' +
         '<button class="zc-btn" data-role="draft">Save draft</button>' +
+        '<button class="zc-btn" data-role="templates">Templates…</button>' +
         '<button class="zc-btn" data-role="template">Save as template</button>' +
         '<button class="zc-btn" data-role="clear">Clear</button>' +
+        '<button class="zc-btn" data-role="keys" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">⌘ Shortcuts</button>' +
       '</div>';
     left.appendChild(actions);
+
+    /* ----- LEFT: the Orthodox layer ----- */
+    var litCard = el('div', 'zc-card');
+    litCard.innerHTML =
+      '<div class="zc-h">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M7 7h10M9 21h6"/></svg>' +
+      'Liturgical context</div>' +
+      '<p class="zc-sub" data-role="litsub">The day you are posting into — feast, name day and fast.</p>' +
+      '<div class="zc-lit" data-role="lit" style="margin-top:12px"></div>';
+    left.insertBefore(litCard, actions);
 
     /* ----- RIGHT: previews ----- */
     var pvCard = el('div', 'zc-card');
@@ -362,6 +539,16 @@
     previews.style.marginTop = '14px';
     pvCard.appendChild(previews);
     right.appendChild(pvCard);
+
+    /* ----- RIGHT: this fortnight's opportunities ----- */
+    var oppCard = el('div', 'zc-card');
+    oppCard.innerHTML =
+      '<div class="zc-h">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.9H22l-6 4.4 2.3 7-6.3-4.6L5.7 20 8 13.3 2 8.9h7.6z"/></svg>' +
+      'Opportunities</div>' +
+      '<p class="zc-sub">Feasts and name days in the next fortnight, computed — not typed. One click puts a draft in the box.</p>' +
+      '<div class="zc-opps" data-role="opps" style="margin-top:12px"></div>';
+    right.appendChild(oppCard);
 
     /* ---------- query helpers ---------- */
     function q(role, scope) { return (scope || root).querySelector('[data-role="' + role + '"]'); }
@@ -429,39 +616,69 @@
       });
     }
 
-    /* ---------- counters ---------- */
+    /* ---------- the text a given channel will actually publish ---------- */
+    function bodyFor(ch) {
+      if (!ch) return ta.value;
+      var o = state.overrides[ch.id];
+      return (o != null && String(o).length) ? String(o) : ta.value;
+    }
+
+    /* ---------- counters ----------
+     * Counting is delegated to _schedule.js so the composer, the calendar and
+     * the tests all agree: graphemes rather than UTF-16 units (an emoji family
+     * is one character, not eleven) and t.co arithmetic for X (a link costs 23
+     * whatever its real length). If the library did not load we fall back to a
+     * plain code-point count, which is still better than String.length. */
+    function countOf(platform, text) {
+      if (state.S) return state.S.countFor(platform, text);
+      var n = netFor(platform) || {};
+      var len = Array.from(String(text == null ? '' : text)).length;
+      return {
+        name: n.name || normPlat(platform), chars: len, limit: n.limit || null,
+        over: n.limit ? len > n.limit : false,
+        warn: n.limit ? (len > n.limit * 0.9 && len <= n.limit) : false,
+        remaining: n.limit ? n.limit - len : null, urls: 0, urlCost: 0
+      };
+    }
     function renderCounters() {
       counters.innerHTML = '';
       var sel = selectedChannels();
-      var len = ta.value.length;
       if (!sel.length) {
-        counters.innerHTML = '<span class="zc-cnt">' + len + ' characters</span>';
+        counters.innerHTML = '<span class="zc-cnt"><b>' + countOf('facebook', ta.value).chars + '</b> characters</span>';
         return;
       }
-      // dedupe by platform key but show per selected channel
       sel.forEach(function (ch) {
-        var n = netFor(ch.platform);
-        var over = len > n.limit;
-        var warn = !over && len > n.limit * 0.9;
-        var cnt = el('span', 'zc-cnt' + (over ? ' over' : (warn ? ' warn' : '')));
+        var c = countOf(ch.platform, bodyFor(ch));
+        var cnt = el('span', 'zc-cnt' + (c.over ? ' over' : (c.warn ? ' warn' : '')));
+        var linkNote = (c.urls && c.urlCost)
+          ? ' · <span title="X shortens every link to ' + c.urlCost + ' characters">' + c.urls + ' link' + (c.urls > 1 ? 's' : '') + ' @' + c.urlCost + '</span>'
+          : '';
+        var tailored = state.overrides[ch.id] ? ' · <span title="This network has its own text">tailored</span>' : '';
         cnt.innerHTML = '<svg viewBox="0 0 24 24">' + (ICONS[normPlat(ch.platform)] || '') + '</svg>' +
-          esc(n.name) + ' <b>' + len + '</b>/' + n.limit;
+          esc(c.name) + ' <b>' + c.chars + '</b>' + (c.limit ? '/' + c.limit : '') + linkNote + tailored;
+        cnt.setAttribute('title', esc(c.name) + ': ' + c.chars + (c.limit ? ' of ' + c.limit + ' characters' : ' characters'));
         counters.appendChild(cnt);
       });
     }
 
-    /* ---------- media ---------- */
+    /* ---------- media + alt text ----------
+     * Alt text is not decoration: without it an image is invisible to a screen
+     * reader, and on Instagram and LinkedIn it is also what the platform reads
+     * for search. The composer therefore asks for it per image, shows at a
+     * glance which images still lack it, and warns (but never silently blocks)
+     * before scheduling. */
+    var altEditing = null;
     function renderMedia() {
       media.innerHTML = '';
       state.media.forEach(function (url, i) {
         var t = el('div', 'zc-thumb');
+        var hasAlt = !!(state.alts[url] && String(state.alts[url]).trim());
         t.innerHTML =
-          '<img src="' + esc(url) + '" alt="" onerror="this.parentNode.innerHTML=\'<div class=&quot;zc-broke&quot;>bad URL</div>\'+this.parentNode.querySelector?\'\':\'\'">' +
-          '<button class="zc-x" title="Remove">×</button>';
-        // rebuild the remove button cleanly (onerror above may wipe it)
-        t.innerHTML =
-          '<img src="' + esc(url) + '" alt="">' +
-          '<button class="zc-x" title="Remove">×</button>';
+          '<img src="' + esc(url) + '" alt="' + esc(state.alts[url] || '') + '">' +
+          '<button class="zc-x" title="Remove image" aria-label="Remove image">×</button>' +
+          '<button class="zc-alt' + (hasAlt ? ' set' : '') + '" data-altfor="' + esc(url) + '" ' +
+            'title="' + (hasAlt ? 'Alt text: ' + esc(state.alts[url]) : 'No alt text yet — add a description') + '" ' +
+            'aria-label="' + (hasAlt ? 'Edit alt text' : 'Add alt text') + '">ALT</button>';
         var img = t.querySelector('img');
         img.addEventListener('error', function () {
           img.style.display = 'none';
@@ -471,12 +688,60 @@
           }
         });
         t.querySelector('.zc-x').addEventListener('click', function () {
-          state.media.splice(i, 1);
+          var gone = state.media.splice(i, 1)[0];
+          if (gone) delete state.alts[gone];
+          if (altEditing === gone) altEditing = null;
           renderMedia();
           renderPreviews();
         });
+        t.querySelector('.zc-alt').addEventListener('click', function () {
+          altEditing = (altEditing === url) ? null : url;
+          renderAltEditor();
+        });
         media.appendChild(t);
       });
+      renderAltEditor();
+    }
+    function renderAltEditor() {
+      altBox.innerHTML = '';
+      if (!state.media.length) return;
+      var missing = state.media.filter(function (u) { return !(state.alts[u] && String(state.alts[u]).trim()); });
+      if (altEditing && state.media.indexOf(altEditing) !== -1) {
+        var row = el('div', 'zc-altrow');
+        var url = altEditing;
+        row.innerHTML =
+          '<input class="zc-in" data-role="altin" maxlength="420" ' +
+            'placeholder="Describe this image for someone who cannot see it…" ' +
+            'aria-label="Alt text for image ' + (state.media.indexOf(url) + 1) + '">' +
+          '<button class="zc-btn" data-role="altsave">Save</button>';
+        var input = row.querySelector('[data-role="altin"]');
+        input.value = state.alts[url] || '';
+        function commit() {
+          var v = String(input.value || '').trim();
+          if (v) state.alts[url] = v; else delete state.alts[url];
+          altEditing = null;
+          renderMedia();
+          renderPreviews();
+        }
+        row.querySelector('[data-role="altsave"]').addEventListener('click', commit);
+        input.addEventListener('keydown', function (e) {
+          if (e.key === 'Enter') { e.preventDefault(); commit(); }
+          if (e.key === 'Escape') { altEditing = null; renderAltEditor(); }
+        });
+        altBox.appendChild(row);
+        input.focus();
+      } else if (missing.length) {
+        var note = el('p', 'zc-sub');
+        note.style.marginTop = '8px';
+        note.textContent = missing.length + ' of ' + state.media.length +
+          ' image' + (state.media.length === 1 ? '' : 's') + ' still needs alt text — tap ALT on the thumbnail.';
+        altBox.appendChild(note);
+      } else {
+        var ok = el('p', 'zc-sub');
+        ok.style.marginTop = '8px';
+        ok.textContent = 'Every image has alt text.';
+        altBox.appendChild(ok);
+      }
     }
     function addMedia(url) {
       url = String(url || '').trim();
@@ -633,57 +898,84 @@
       renderCounters();
       previews.innerHTML = '';
       var sel = selectedChannels();
-      var raw = ta.value;
       if (!sel.length) {
         previews.innerHTML = '<div class="zc-empty">Select at least one connected network to see live previews.</div>';
+        renderChecks();
         return;
       }
       sel.forEach(function (ch) {
-        previews.appendChild(renderOnePreview(ch, raw));
+        previews.appendChild(renderOnePreview(ch, bodyFor(ch)));
       });
+      renderOverrideTabs();
+      renderChecks();
     }
 
-    /* ---------- best time ---------- */
-    function nextSlot() {
-      var active = (state.slots || []).filter(function (s) { return s.active !== false; });
-      if (!active.length) return null;
+    /* ---------- next OPEN queue slots ----------
+     * The original version suggested the next slot on the clock and ignored the
+     * posts already sitting in it, so clicking twice put two posts on the same
+     * channel at the same minute. _schedule.js now filters out slots that are
+     * already occupied, and the three next free ones are offered as buttons —
+     * "optimal time" derived from the user's own queue, not from a made-up
+     * industry benchmark. */
+    function nextOpenSlots(n) {
+      if (state.S) return state.S.nextOpenSlotTimes(state.slots, state.posts, new Date(), n || 3);
+      // library unavailable: fall back to the plain next occurrences
+      var out = [];
+      var act = (state.slots || []).filter(function (x) { return x && x.active !== false; });
+      if (!act.length) return out;
       var now = new Date();
-      var best = null;
-      active.forEach(function (s) {
-        var wd = Number(s.weekday), min = Number(s.minute);
-        if (isNaN(wd) || isNaN(min)) return;
-        for (var add = 0; add < 8; add++) {
-          var d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + add, 0, 0, 0, 0);
-          if (d.getDay() !== wd) continue;
-          d.setMinutes(min);
-          if (d.getTime() > now.getTime() + 1000) {
-            if (!best || d.getTime() < best.date.getTime()) best = { date: d, slot: s };
-            break;
-          }
-        }
-      });
-      return best;
+      for (var d = 0; d <= 21 && out.length < (n || 3); d++) {
+        var day = new Date(now.getFullYear(), now.getMonth(), now.getDate() + d);
+        act.filter(function (x) { return Number(x.weekday) === day.getDay(); })
+          .sort(function (a, b) { return Number(a.minute) - Number(b.minute); })
+          .forEach(function (x) {
+            if (out.length >= (n || 3)) return;
+            var mins = Number(x.minute) || 0;
+            var when = new Date(day.getFullYear(), day.getMonth(), day.getDate(), Math.floor(mins / 60), mins % 60);
+            if (when.getTime() > now.getTime()) out.push({ when: when, slot: x });
+          });
+      }
+      return out;
     }
     function renderBestTime() {
       var box = q('besttime');
-      var nx = nextSlot();
-      if (!nx) {
-        box.innerHTML = '<span class="zc-sub">No active queue slots. Add posting-time slots to get suggestions.</span>';
+      var slots = nextOpenSlots(3);
+      if (!(state.slots || []).length) {
+        box.innerHTML = '<span class="zc-sub">No posting-time slots yet. Add them in Calendar → Posting queue and they will be offered here.</span>';
         return;
       }
-      var d = nx.date;
-      var label = WEEKDAYS[d.getDay()] + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
-      box.innerHTML = '<span>Next queue slot: <b>' + esc(label) + '</b> <span class="zc-sub">(' + esc(nx.slot.tz || 'local') + ')</span></span>' +
-        '<button class="zc-btn" data-role="addqueue">Add to queue</button>';
-      q('addqueue', box).addEventListener('click', function () {
-        setSchedule(d);
-        toast('Scheduled for the next queue slot.');
+      if (!slots.length) {
+        box.innerHTML = '<span class="zc-sub">Every slot in the next few weeks already has a post in it. Nice problem to have.</span>';
+        return;
+      }
+      box.innerHTML = '<span>Next free:</span>';
+      var row = el('div', 'zc-row');
+      box.appendChild(row);
+      slots.forEach(function (sl, i) {
+        var d = sl.when;
+        var b = el('button', 'zc-btn');
+        b.type = 'button';
+        b.textContent = WEEKDAYS[d.getDay()] + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+        b.setAttribute('title', 'Schedule for ' + MONTHS_SHORT[d.getMonth()] + ' ' + d.getDate() + ', ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()));
+        b.addEventListener('click', function () {
+          setSchedule(d);
+          toast('Scheduled for ' + WEEKDAYS[d.getDay()] + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes()) + '.');
+        });
+        row.appendChild(b);
+        if (i === 0) b.style.borderColor = 'var(--acc)';
       });
     }
     function setSchedule(d) {
       state.scheduledAt = d.toISOString();
       q('date').value = d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
       q('time').value = pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+      afterScheduleChange();
+    }
+    function afterScheduleChange() {
+      state.acknowledged = {};   // a new time deserves a fresh look at the warnings
+      renderLit();
+      renderChecks();
+      scheduleAutosave();
     }
     function scheduledFromInputs() {
       var dv = q('date').value, tv = q('time').value;
@@ -708,6 +1000,539 @@
         }).join('');
     }
 
+
+    /* ================= THE ORTHODOX LAYER =================
+     * Everything below is computed from assets/suite/_orthocal.js. Nothing is
+     * typed in, nothing is fetched, and nothing is guessed: Pascha is calculated
+     * from the Julian Paschalion and every moveable feast hangs off it. If the
+     * library fails to load, each panel says so rather than showing an empty box.
+     */
+
+    /** The local day this post is going out on (today, if nothing is scheduled). */
+    function litDate() {
+      var d = scheduledFromInputs();
+      return isoLocal(d || new Date());
+    }
+    function litForScheduled() {
+      if (!state.O) return null;
+      try { return state.O.dayInfo(litDate()); } catch (e) { return null; }
+    }
+    function fastClass(level) { return 'zc-fast f-' + (level || 'none'); }
+
+    function renderLit() {
+      var box = q('lit');
+      if (!box) return;
+      if (!state.O) {
+        box.innerHTML = '<p class="zc-litwhy">The liturgical calendar could not be loaded, so feast, name-day and fasting context is unavailable for this session. Everything else works.</p>';
+        return;
+      }
+      var info = litForScheduled();
+      var sched = scheduledFromInputs();
+      var when = sched ? (WEEKDAYS[sched.getDay()] + ' ' + MONTHS_SHORT[sched.getMonth()] + ' ' + sched.getDate()) : 'Today';
+      var sub = q('litsub');
+      if (sub) sub.textContent = sched ? 'The day you are scheduling into: ' + when + '.' : 'Today. Pick a date below and this follows it.';
+
+      var html = '<div class="zc-litrow">';
+      html += '<span class="' + fastClass(info.fast.level) + '"><span class="zc-fdot"></span>' + esc(info.fast.label) + '</span>';
+      info.feasts.forEach(function (f) {
+        html += '<span class="zc-feast' + (f.great ? ' great' : '') + '">' + (f.great ? '✦ ' : '') + esc(f.name) + '</span>';
+      });
+      html += '</div>';
+      if (info.fast.why) html += '<p class="zc-litwhy">' + esc(info.fast.why) + '</p>';
+      if (info.namedays.length) {
+        html += '<div class="zc-nameday"><span>Name day' + (info.namedays.length > 1 ? 's' : '') + ':</span>' +
+          '<span class="zc-nm2">' + esc(info.namedays.join(' · ')) + '</span>' +
+          '<button class="zc-btn" data-role="greet">Draft a greeting</button></div>';
+      }
+      if (!info.feasts.length && !info.namedays.length) {
+        html += '<p class="zc-litwhy">No feast or name day ' +
+          (sched ? 'on ' + esc(when) : 'today') + '. An ordinary day is a fine day to post.</p>';
+      }
+
+      // Today's celebrants, from the live service where possible.
+      if (state.nameday) {
+        var nd = state.nameday;
+        if (nd.names && nd.names.length) {
+          html += '<hr class="zc-divider"><div class="zc-nameday">' +
+            '<span>Celebrating today:</span><span class="zc-nm2">' + esc(nd.names.slice(0, 6).join(' · ')) + '</span>' +
+            '<button class="zc-btn" data-role="greettoday">Greet them</button></div>' +
+            '<p class="zc-src">' + (nd.source === 'service'
+              ? 'from zoi.city&rsquo;s name-day service' + (nd.feast ? ' · ' + esc(nd.feast) : '')
+              : 'from the built-in feast table — the name-day service did not answer') + '</p>';
+        } else if (nd.source === 'service') {
+          html += '<hr class="zc-divider"><p class="zc-src">No name days recorded for today by the name-day service.</p>';
+        }
+      }
+      box.innerHTML = html;
+
+      var greet = q('greet', box);
+      if (greet) greet.addEventListener('click', function () {
+        applyDraftText(state.O.suggestDraft(info, wsName()), sched || null);
+        toast('Greeting drafted — edit it to sound like you.');
+      });
+      var greetToday = q('greettoday', box);
+      if (greetToday) greetToday.addEventListener('click', function () {
+        var names = state.nameday.names.slice(0, 4);
+        var info2 = { namedays: names, feasts: state.O.feastsOn(isoLocal(new Date())), fast: state.O.fastInfo(isoLocal(new Date())) };
+        applyDraftText(state.O.suggestDraft(info2, wsName()), null);
+        toast('Name-day greeting drafted.');
+      });
+    }
+
+    function wsName() {
+      // The workspace name is the natural sign-off. It is not always in ctx, so
+      // fall back to nothing rather than inventing a business name.
+      try {
+        var n = ctx.wsName || (ctx.workspace && ctx.workspace.name);
+        if (n) return String(n);
+        var el2 = doc.querySelector('.wsname');
+        return el2 ? String(el2.textContent || '').trim() : '';
+      } catch (e) { return ''; }
+    }
+
+    /** Put a drafted body in the box without destroying work already there. */
+    function applyDraftText(text, when) {
+      if (!text) return;
+      var cur = ta.value.trim();
+      if (cur && global.confirm && !global.confirm('Replace what is in the composer with this draft?')) return;
+      ta.value = text;
+      if (when) setSchedule(when);
+      state.acknowledged = {};
+      onBodyChange();
+      renderLit();
+      ta.focus();
+    }
+
+    function renderOpps() {
+      var box = q('opps');
+      if (!box) return;
+      if (!state.O) {
+        box.innerHTML = '<div class="zc-empty">The liturgical calendar could not be loaded, so opportunities are unavailable for this session.</div>';
+        return;
+      }
+      var ops = state.O.opportunities(isoLocal(new Date()), state.oppDays, { business: wsName() });
+      if (!ops.length) {
+        box.innerHTML = '<div class="zc-empty">No feasts or name days in the next ' + state.oppDays + ' days. Quiet fortnight — a good time for evergreen posts.</div>';
+        return;
+      }
+      box.innerHTML = '';
+      ops.forEach(function (op) {
+        var d = op.date.split('-');
+        var row = el('div', 'zc-opp' + (op.kind === 'great_feast' ? ' great' : ''));
+        var away = op.daysAway === 0 ? 'today' : op.daysAway === 1 ? 'tomorrow' : 'in ' + op.daysAway + 'd';
+        row.innerHTML =
+          '<div class="zc-od"><i>' + esc(MONTHS_SHORT[Number(d[1]) - 1]) + '</i><b>' + esc(String(Number(d[2]))) + '</b></div>' +
+          '<div class="zc-ob">' +
+            '<div class="zc-ot">' + (op.kind === 'great_feast' ? '✦ ' : '') + esc(op.headline) + '</div>' +
+            '<div class="zc-os">' + esc(away) +
+              (op.namedays.length ? ' · name day: ' + esc(op.namedays.slice(0, 3).join(', ')) : '') +
+              (op.fast.level !== 'none' ? ' · ' + esc(op.fast.label) : '') +
+            '</div>' +
+          '</div>' +
+          '<div class="zc-oa"><button class="zc-btn" data-role="opdraft">Draft</button></div>';
+        row.querySelector('[data-role="opdraft"]').addEventListener('click', function () {
+          // 10:00 on the day is a sane default; the user can move it.
+          var when = new Date(Number(d[0]), Number(d[1]) - 1, Number(d[2]), 10, 0, 0, 0);
+          applyDraftText(op.draft, when);
+        });
+        box.appendChild(row);
+      });
+    }
+
+    /* ================= per-network overrides =================
+     * The tab STRIP is cheap and redrawn with the previews. The tab BODY holds a
+     * textarea, so it is only redrawn when the open tab changes — rebuilding it
+     * on every keystroke stole the caret out from under whoever was typing in it.
+     */
+    function renderOverrideTabs() {
+      var tabs = q('ovtabs'), body = q('ovbody');
+      if (!tabs || !body) return;
+      var sel = selectedChannels();
+      tabs.innerHTML = '';
+      if (!sel.length) {
+        state.overrideTab = null;
+        body.innerHTML = '<p class="zc-sub">Select a network above first.</p>';
+        return;
+      }
+      sel.forEach(function (ch) {
+        var b = el('button', 'zc-tab' + (state.overrideTab === ch.id ? ' on' : ''));
+        b.type = 'button';
+        b.setAttribute('aria-pressed', state.overrideTab === ch.id ? 'true' : 'false');
+        b.innerHTML = '<svg viewBox="0 0 24 24">' + (ICONS[normPlat(ch.platform)] || '') + '</svg>' +
+          esc(ch.display_name || ch.handle || (netFor(ch.platform) || {}).name || ch.platform) +
+          (state.overrides[ch.id] ? '<span class="zc-tdot" title="Has its own text"></span>' : '');
+        b.addEventListener('click', function () {
+          state.overrideTab = (state.overrideTab === ch.id) ? null : ch.id;
+          renderOverrideTabs();
+          renderOverrideBody(true);
+        });
+        tabs.appendChild(b);
+      });
+      if (!body.getAttribute('data-open') || body.getAttribute('data-open') !== String(state.overrideTab)) {
+        renderOverrideBody(false);
+      }
+    }
+    function renderOverrideBody(focusIt) {
+      var body = q('ovbody');
+      if (!body) return;
+      var sel = selectedChannels();
+      body.setAttribute('data-open', String(state.overrideTab));
+      if (!sel.length) { body.innerHTML = '<p class="zc-sub">Select a network above first.</p>'; return; }
+      if (!state.overrideTab) {
+        var n = Object.keys(state.overrides).length;
+        body.innerHTML = '<p class="zc-sub">' + (n ? n + ' network' + (n === 1 ? '' : 's') + ' currently tailored.' : 'All networks share the same text.') + '</p>';
+        return;
+      }
+      var ch2 = null;
+      sel.forEach(function (c) { if (c.id === state.overrideTab) ch2 = c; });
+      if (!ch2) { state.overrideTab = null; body.innerHTML = ''; return; }
+      body.innerHTML = '';
+      var tta = el('textarea', 'zc-ta');
+      tta.style.minHeight = '110px';
+      tta.setAttribute('aria-label', 'Text for ' + (ch2.display_name || ch2.platform));
+      tta.value = state.overrides[ch2.id] != null ? state.overrides[ch2.id] : ta.value;
+      tta.addEventListener('input', function () {
+        if (String(tta.value) === ta.value) delete state.overrides[ch2.id];
+        else state.overrides[ch2.id] = tta.value;
+        renderCounters();
+        renderPreviews();
+        scheduleAutosave();
+      });
+      body.appendChild(tta);
+      var row = el('div', 'zc-row');
+      row.style.marginTop = '8px';
+      var reset = el('button', 'zc-btn');
+      reset.type = 'button';
+      reset.textContent = 'Use the shared text';
+      reset.addEventListener('click', function () {
+        delete state.overrides[ch2.id];
+        renderOverrideTabs();
+        renderCounters();
+        renderPreviews();
+        scheduleAutosave();
+      });
+      row.appendChild(reset);
+      body.appendChild(row);
+      if (focusIt) tta.focus();
+    }
+
+    /* ================= modal (templates, shortcuts) ================= */
+    function openModal(title) {
+      var ov = el('div', 'zc-ov');
+      var m = el('div', 'zc-modal');
+      m.setAttribute('role', 'dialog');
+      m.setAttribute('aria-modal', 'true');
+      m.setAttribute('aria-label', title);
+      m.innerHTML =
+        '<div class="zc-mh"><h3></h3><button class="zc-mx" data-role="close" aria-label="Close">×</button></div>' +
+        '<div class="zc-mb" data-role="body"></div>';
+      m.querySelector('h3').textContent = title;
+      ov.appendChild(m);
+      (doc.body || doc.documentElement).appendChild(ov);
+      var restoreFocus = doc.activeElement;
+      function close() {
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+        doc.removeEventListener('keydown', onKey, true);
+        try { if (restoreFocus && restoreFocus.focus) restoreFocus.focus(); } catch (e) {}
+      }
+      function focusables() {
+        return Array.prototype.slice.call(m.querySelectorAll('button,input,textarea,select,[href]'))
+          .filter(function (n) { return !n.disabled; });
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); return; }
+        if (e.key !== 'Tab') return;
+        var f = focusables();
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+      doc.addEventListener('keydown', onKey, true);
+      ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+      m.querySelector('[data-role="close"]').addEventListener('click', close);
+      global.setTimeout(function () {
+        var f = focusables();
+        if (f.length) f[f.length > 1 ? 1 : 0].focus();
+      }, 0);
+      return { body: m.querySelector('[data-role="body"]'), close: close };
+    }
+
+    function openTemplates() {
+      var m = openModal('Templates');
+      function draw(filter) {
+        m.body.innerHTML = '';
+        var search = el('input', 'zc-in');
+        search.setAttribute('placeholder', 'Search templates…');
+        search.setAttribute('aria-label', 'Search templates');
+        search.value = filter || '';
+        search.addEventListener('input', function () { draw(search.value); });
+        m.body.appendChild(search);
+        var list = (state.templates || []).filter(function (t) {
+          if (!filter) return true;
+          var f = String(filter).toLowerCase();
+          return String(t.name || '').toLowerCase().indexOf(f) !== -1 ||
+            String(t.body || '').toLowerCase().indexOf(f) !== -1;
+        });
+        if (!(state.templates || []).length) {
+          m.body.appendChild(el('div', 'zc-empty', 'No templates saved yet. Write a post and press “Save as template”.'));
+          global.setTimeout(function () { search.focus(); }, 0);
+          return;
+        }
+        if (!list.length) {
+          m.body.appendChild(el('div', 'zc-empty', 'No template matches “' + esc(filter) + '”.'));
+        }
+        list.forEach(function (t) {
+          var b = el('button', 'zc-tpl');
+          b.type = 'button';
+          b.innerHTML = '<span class="zc-grow"><span class="zc-tn">' + esc(t.name || 'Untitled') + '</span>' +
+            '<span class="zc-tb2">' + esc(String(t.body || '').replace(/\s+/g, ' ').slice(0, 90)) + '</span></span>';
+          b.addEventListener('click', function () {
+            applyTemplate(t);
+            m.close();
+          });
+          m.body.appendChild(b);
+        });
+        global.setTimeout(function () { search.focus(); }, 0);
+      }
+      draw('');
+    }
+    function applyTemplate(t) {
+      var cur = ta.value.trim();
+      if (cur && global.confirm && !global.confirm('Replace what is in the composer with this template?')) return;
+      ta.value = String(t.body || '');
+      if (Array.isArray(t.media)) {
+        state.media = t.media.map(function (m2) { return typeof m2 === 'string' ? m2 : (m2 && m2.url); }).filter(Boolean).slice(0, 4);
+        state.alts = {};
+        (Array.isArray(t.media) ? t.media : []).forEach(function (m2) {
+          if (m2 && m2.url && m2.alt) state.alts[m2.url] = m2.alt;
+        });
+      }
+      if (Array.isArray(t.channels) && t.channels.length) {
+        var wanted = t.channels.map(String);
+        var matched = false;
+        state.channels.forEach(function (ch) {
+          if (wanted.indexOf(String(ch.id)) !== -1 || wanted.indexOf(normPlat(ch.platform)) !== -1) {
+            if (ch.connected) { state.selected[ch.id] = true; matched = true; }
+          }
+        });
+        if (matched) renderChips();
+      }
+      state.acknowledged = {};
+      renderMedia();
+      onBodyChange();
+      renderLit();
+      toast('Template applied.');
+    }
+
+    var SHORTCUTS = [
+      ['Ctrl / ⌘ + Enter', 'Schedule (or publish, when publishing is available)'],
+      ['Ctrl / ⌘ + S', 'Save as draft'],
+      ['Alt + 1…9', 'Toggle a network on or off'],
+      ['Alt + T', 'Open the templates library'],
+      ['Esc', 'Close a popover or dialog'],
+      ['?', 'This list']
+    ];
+    function openShortcuts() {
+      var m = openModal('Keyboard shortcuts');
+      var grid = el('div', 'zc-keys');
+      SHORTCUTS.forEach(function (s2) {
+        grid.appendChild(el('span', null, '<span class="zc-kbd">' + esc(s2[0]) + '</span>'));
+        grid.appendChild(el('span', null, esc(s2[1])));
+      });
+      m.body.appendChild(grid);
+      m.body.appendChild(el('p', 'zc-sub', 'Shortcuts work while the composer has focus.'));
+    }
+
+    /* ================= draft autosave ================= */
+    /* The composer is the one place where losing typing really hurts, so it is
+     * mirrored to localStorage. It is never restored silently: a body you did not
+     * write appearing in the box is worse than losing it. */
+    var saveTimer = null;
+    function snapshotDraft() {
+      return {
+        body: ta.value,
+        media: state.media.slice(),
+        alts: state.alts,
+        overrides: state.overrides,
+        firstComment: q('firstcomment') ? q('firstcomment').value : '',
+        campaign: q('lu_campaign') ? q('lu_campaign').value : '',
+        date: q('date') ? q('date').value : '',
+        time: q('time') ? q('time').value : '',
+        threadMode: state.threadMode,
+        thread: state.thread.slice()
+      };
+    }
+    function scheduleAutosave() {
+      if (!state.S) return;
+      if (saveTimer) global.clearTimeout(saveTimer);
+      saveTimer = global.setTimeout(function () {
+        var d = snapshotDraft();
+        if (state.S.draftIsMeaningful(d)) state.S.saveDraft(ctx.ws, d);
+        else state.S.clearDraft(ctx.ws);
+      }, DRAFT_SAVE_MS);
+    }
+    function applyStoredDraft(d) {
+      ta.value = String(d.body || '');
+      state.media = Array.isArray(d.media) ? d.media.slice(0, 4) : [];
+      state.alts = d.alts && typeof d.alts === 'object' ? d.alts : {};
+      state.overrides = d.overrides && typeof d.overrides === 'object' ? d.overrides : {};
+      if (q('firstcomment')) q('firstcomment').value = d.firstComment || '';
+      if (q('lu_campaign')) q('lu_campaign').value = d.campaign || '';
+      if (q('date')) q('date').value = d.date || '';
+      if (q('time')) q('time').value = d.time || '';
+      state.threadMode = !!d.threadMode;
+      state.thread = Array.isArray(d.thread) && d.thread.length ? d.thread.slice() : [''];
+      if (q('threadtoggle')) q('threadtoggle').checked = state.threadMode;
+      var when = scheduledFromInputs();
+      state.scheduledAt = when ? when.toISOString() : null;
+      renderMedia();
+      renderThread();
+      renderChips();
+      onBodyChange();
+      renderLit();
+    }
+    /* When the Calendar hands over a post to EDIT (rather than a fresh draft),
+     * the composer must say so: the same buttons now update a row instead of
+     * creating one, and that is not something to leave implicit. */
+    function renderEditBanner(post) {
+      bannerBox.innerHTML = '';
+      if (!state.editId) return;
+      var b = el('div', 'zc-banner');
+      var when = scheduledFromInputs();
+      b.innerHTML = '<span>Editing an existing post' +
+        (when ? ' scheduled for <b>' + esc(WEEKDAYS[when.getDay()] + ' ' + MONTHS_SHORT[when.getMonth()] + ' ' + when.getDate() + ' ' + pad2(when.getHours()) + ':' + pad2(when.getMinutes())) + '</b>' : '') +
+        '. Saving updates that post rather than creating a new one.</span>';
+      var stop = el('button', 'zc-btn');
+      stop.type = 'button';
+      stop.textContent = 'Make it a new post';
+      stop.addEventListener('click', function () {
+        state.editId = null;
+        bannerBox.innerHTML = '';
+        toast('This will now be saved as a new post.');
+      });
+      b.appendChild(stop);
+      bannerBox.appendChild(b);
+      if (post && post.status) applyGating();
+    }
+
+    /* Apply a whole post (from the Calendar) into the composer. */
+    function applyIncomingPost(h) {
+      state.editId = h.id || null;
+      ta.value = String(h.body || '');
+      var media = Array.isArray(h.media) ? h.media : [];
+      state.media = media.map(function (m) { return typeof m === 'string' ? m : (m && m.url); }).filter(Boolean).slice(0, 4);
+      state.alts = {};
+      media.forEach(function (m) { if (m && m.url && m.alt) state.alts[m.url] = m.alt; });
+      var meta = h.meta && typeof h.meta === 'object' ? h.meta : {};
+      if (meta.alt_text && typeof meta.alt_text === 'object') {
+        Object.keys(meta.alt_text).forEach(function (k) { if (!state.alts[k]) state.alts[k] = meta.alt_text[k]; });
+      }
+      state.overrides = {};
+      if (meta.per_network_overrides && typeof meta.per_network_overrides === 'object') {
+        Object.keys(meta.per_network_overrides).forEach(function (k) {
+          var v = meta.per_network_overrides[k];
+          if (v && v.body) state.overrides[k] = String(v.body);
+        });
+      }
+      if (q('firstcomment')) q('firstcomment').value = meta.first_comment || '';
+      if (q('lu_campaign')) q('lu_campaign').value = meta.campaign || '';
+      // only select the channels this post actually targets, when we can match them
+      var want = (Array.isArray(h.channels) ? h.channels : []).map(String);
+      if (want.length) {
+        var matched = false;
+        state.channels.forEach(function (ch) {
+          var hit = want.indexOf(String(ch.id)) !== -1 || want.indexOf(normPlat(ch.platform)) !== -1;
+          if (hit && ch.connected) { state.selected[ch.id] = true; matched = true; }
+          else if (!hit) delete state.selected[ch.id];
+        });
+        if (!matched) {
+          // nothing matched — keep the defaults rather than leaving no target
+          state.channels.forEach(function (ch) { if (ch.connected && netFor(ch.platform)) state.selected[ch.id] = true; });
+        }
+      }
+      if (h.scheduledAt) {
+        var d = (state.S && state.S.fromLocalInput(h.scheduledAt)) || new Date(h.scheduledAt);
+        if (d && !isNaN(d.getTime())) setSchedule(d);
+      }
+      renderChips();
+      renderMedia();
+      onBodyChange();
+      renderLit();
+      renderEditBanner(h);
+    }
+
+    function renderRestoreBanner() {
+      bannerBox.innerHTML = '';
+      if (!state.S) return;
+      var saved = state.S.loadDraft(ctx.ws);
+      if (!saved || !state.S.draftIsMeaningful(saved.draft)) return;
+      if (ta.value.trim()) return;                    // already working on something
+      var age = C.relTime ? C.relTime(new Date(saved.at).toISOString()) : '';
+      var b = el('div', 'zc-banner');
+      b.innerHTML = '<span>You have an unsent draft from <b>' + esc(age || 'earlier') + '</b>: “' +
+        esc(String(saved.draft.body || '').replace(/\s+/g, ' ').slice(0, 60)) + '…”</span>';
+      var acts = el('div', 'zc-row');
+      var restore = el('button', 'zc-btn');
+      restore.type = 'button';
+      restore.textContent = 'Restore';
+      restore.addEventListener('click', function () {
+        applyStoredDraft(saved.draft);
+        bannerBox.innerHTML = '';
+        toast('Draft restored.');
+      });
+      var discard = el('button', 'zc-btn');
+      discard.type = 'button';
+      discard.textContent = 'Discard';
+      discard.addEventListener('click', function () {
+        state.S.clearDraft(ctx.ws);
+        bannerBox.innerHTML = '';
+      });
+      acts.appendChild(restore);
+      acts.appendChild(discard);
+      b.appendChild(acts);
+      bannerBox.appendChild(b);
+    }
+
+    /* ================= keyboard shortcuts =================
+     * Bound to the composer's own root, not to the document: the suite swaps
+     * modules in and out of one page, and a document-level listener from a module
+     * that is no longer mounted is a leak that fires on someone else's screen. */
+    function wireShortcuts() {
+      root.addEventListener('keydown', function (e) {
+        var mod = e.metaKey || e.ctrlKey;
+        var tag = (e.target && e.target.tagName || '').toLowerCase();
+        var typing = tag === 'input' || tag === 'textarea' || tag === 'select';
+        if (mod && e.key === 'Enter') {
+          e.preventDefault();
+          var btn = (ctx.avail && ctx.avail.publish && !scheduledFromInputs()) ? q('publish') : q('schedule');
+          if (btn && !btn.disabled) btn.click();
+          return;
+        }
+        if (mod && (e.key === 's' || e.key === 'S')) {
+          e.preventDefault();
+          var d = q('draft');
+          if (d && !d.disabled) d.click();
+          return;
+        }
+        if (e.altKey && /^[1-9]$/.test(e.key)) {
+          var idx = Number(e.key) - 1;
+          var conn = state.channels.filter(function (ch) { return ch.connected && netFor(ch.platform); });
+          if (conn[idx]) {
+            e.preventDefault();
+            if (state.selected[conn[idx].id]) delete state.selected[conn[idx].id];
+            else state.selected[conn[idx].id] = true;
+            renderChips();
+            onBodyChange();
+            toast((state.selected[conn[idx].id] ? 'Added ' : 'Removed ') + (conn[idx].display_name || conn[idx].platform) + '.');
+          }
+          return;
+        }
+        if (e.altKey && (e.key === 't' || e.key === 'T')) { e.preventDefault(); openTemplates(); return; }
+        if (!typing && (e.key === '?' || (e.key === '/' && e.shiftKey))) { e.preventDefault(); openShortcuts(); }
+      });
+    }
+
     /* ---------- gathering the payload ---------- */
     function currentChannelIds() {
       return selectedChannels().map(function (ch) { return ch.id; });
@@ -720,23 +1545,155 @@
         campaign: currentCampaign() || null,
         per_network_overrides: {}
       };
+      // only channels that are actually selected AND actually overridden
+      selectedChannels().forEach(function (ch) {
+        var o = state.overrides[ch.id];
+        if (o != null && String(o).trim() && String(o) !== ta.value) {
+          meta.per_network_overrides[ch.id] = { body: String(o) };
+        }
+      });
+      var alts = {};
+      var any = false;
+      state.media.forEach(function (u) {
+        var a = state.alts[u] && String(state.alts[u]).trim();
+        if (a) { alts[u] = a; any = true; }
+      });
+      if (any) meta.alt_text = alts;
       if (state.threadMode) {
         meta.thread = state.thread.map(function (t) { return String(t || '').trim(); }).filter(Boolean);
+      }
+      // What day, liturgically, is this post going out on? Stored so the
+      // calendar and the analytics coverage report do not have to guess.
+      var lit = litForScheduled();
+      if (lit) {
+        meta.liturgical = {
+          date: lit.date,
+          feasts: lit.feasts.map(function (f) { return f.name; }),
+          namedays: lit.namedays.slice(),
+          fast: lit.fast.level
+        };
       }
       return meta;
     }
     function mediaJson() {
-      return state.media.map(function (u, i) { return { type: 'image', url: u, order: i }; });
+      return state.media.map(function (u, i) {
+        var row = { type: 'image', url: u, order: i };
+        var alt = state.alts[u] && String(state.alts[u]).trim();
+        if (alt) row.alt = alt;
+        return row;
+      });
     }
-    function validate(channelsRequired) {
+    /* ---------- pre-flight ----------
+     * Everything that could be wrong with this post, in one list, rendered above
+     * the buttons and re-used as the validator. Three severities:
+     *   stop — the platform would reject it; the button refuses.
+     *   warn — a human should look; confirm once and it stays confirmed.
+     *   ok   — nothing to say.
+     * A warning nobody can act on is noise, so each one names the fix. */
+    function preflight(opts) {
+      opts = opts || {};
+      var out = [];
+      var sel = selectedChannels();
       var body = ta.value.trim();
-      if (!body && !state.media.length) { toast('Add some text or media first.'); return false; }
-      if (channelsRequired && !currentChannelIds().length) { toast('Select at least one connected network.'); return false; }
-      // warn on over-limit
-      var over = selectedChannels().filter(function (ch) { return ta.value.length > netFor(ch.platform).limit; });
-      if (over.length) {
-        toast('Text is over the limit for ' + over.map(function (c) { return netFor(c.platform).name; }).join(', ') + '.');
-        return false;
+
+      if (!body && !state.media.length) {
+        out.push({ sev: 'stop', key: 'empty', title: 'Nothing to post', text: 'Write something, or add an image.' });
+      }
+      if (opts.channelsRequired && !sel.length) {
+        out.push({ sev: 'stop', key: 'nochannel', title: 'No network selected',
+          text: 'Pick at least one connected network. Not connected yet? Connect accounts under Connect.' });
+      }
+      sel.forEach(function (ch) {
+        var c = countOf(ch.platform, bodyFor(ch));
+        if (c.over) {
+          out.push({ sev: 'stop', key: 'over-' + ch.id, title: c.name + ' is over its limit',
+            text: c.chars + ' characters where ' + c.limit + ' is the maximum — trim ' + (c.chars - c.limit) +
+              ', or give ' + c.name + ' its own shorter version above.' });
+        } else if (c.warn) {
+          out.push({ sev: 'warn', key: 'near-' + ch.id, title: c.name + ' is close to its limit',
+            text: c.remaining + ' characters left of ' + c.limit + '.' });
+        }
+        if (normPlat(ch.platform) === 'instagram' && !state.media.length) {
+          out.push({ sev: 'warn', key: 'ig-nomedia', title: 'Instagram needs an image',
+            text: 'Instagram will not accept a text-only post — add a photo or drop Instagram from this one.' });
+        }
+      });
+
+      // alt text
+      var missing = state.media.filter(function (u) { return !(state.alts[u] && String(state.alts[u]).trim()); });
+      if (missing.length) {
+        out.push({ sev: 'warn', key: 'alt', title: missing.length + ' image' + (missing.length === 1 ? '' : 's') + ' without alt text',
+          text: 'Without it the image is invisible to anyone using a screen reader. Tap ALT on the thumbnail.' });
+      }
+
+      // channel collisions, from the workspace's real scheduled posts
+      var when = scheduledFromInputs();
+      if (when && state.S && state.posts.length) {
+        var clash = state.S.conflicts(state.posts, when, currentChannelIds(), CONFLICT_WINDOW_MIN, state.editId);
+        if (clash.length) {
+          var first = state.S.postWhen(clash[0]);
+          out.push({ sev: 'warn', key: 'clash-' + when.getTime(), title: 'Another post goes out on the same channel',
+            text: clash.length + ' post' + (clash.length === 1 ? '' : 's') + ' within ' + CONFLICT_WINDOW_MIN +
+              ' minutes' + (first ? ' (' + pad2(first.getHours()) + ':' + pad2(first.getMinutes()) + ')' : '') +
+              '. Two posts minutes apart bury each other — move one.' });
+        }
+      }
+
+      // the liturgical check: does the copy clash with the fast?
+      var lit = litForScheduled();
+      if (lit && state.O) {
+        var conflict = state.O.fastConflict(ta.value + ' ' + Object.keys(state.overrides).map(function (k) { return state.overrides[k]; }).join(' '), lit.date);
+        if (conflict) {
+          out.push({
+            sev: conflict.level === 'strict' ? 'stop' : 'warn',
+            key: 'fast-' + lit.date,
+            title: conflict.label + ' — this post mentions ' + conflict.words.slice(0, 3).join(', '),
+            text: conflict.why + ' Consider ' + conflict.suggest + '.'
+          });
+        } else if (lit.fast.level === 'strict') {
+          out.push({ sev: 'warn', key: 'strictday-' + lit.date, title: lit.fast.label,
+            text: lit.fast.why + ' Nothing in this post clashes — just be sure the tone fits the day.' });
+        }
+      }
+      if (!out.length) {
+        out.push({ sev: 'ok', key: 'ok', title: 'Ready', text: 'Nothing to flag.' });
+      }
+      return out;
+    }
+    var CHECK_ICON = {
+      stop: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>',
+      warn: '<svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg>',
+      ok: '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>'
+    };
+    function renderChecks() {
+      var box = q('checks');
+      if (!box) return;
+      box.innerHTML = '';
+      // An untouched composer has nothing to warn about. Red boxes on an empty
+      // form are how people learn to ignore red boxes.
+      if (!ta.value.trim() && !state.media.length) return;
+      var list = preflight({ channelsRequired: false });
+      list.forEach(function (c) {
+        var row = el('div', 'zc-check ' + c.sev);
+        row.innerHTML = '<span class="zc-cico">' + (CHECK_ICON[c.sev] || '') + '</span>' +
+          '<span><b>' + esc(c.title) + '</b><span class="zc-ctx">' + esc(c.text) + '</span></span>';
+        box.appendChild(row);
+      });
+    }
+    /** The validator the buttons use. Stops on 'stop', asks once on 'warn'. */
+    function validate(channelsRequired) {
+      var list = preflight({ channelsRequired: channelsRequired });
+      renderChecks();
+      var stops = list.filter(function (c) { return c.sev === 'stop'; });
+      if (stops.length) { toast(stops[0].title + ' — ' + stops[0].text); return false; }
+      var warns = list.filter(function (c) { return c.sev === 'warn' && !state.acknowledged[c.key]; });
+      if (warns.length) {
+        var msg = warns.map(function (w) { return '• ' + w.title; }).join('\n');
+        var ask = global.confirm
+          ? global.confirm(warns.length + (warns.length === 1 ? ' thing' : ' things') + ' to check first:\n\n' + msg + '\n\nPost anyway?')
+          : true;
+        if (!ask) return false;
+        warns.forEach(function (w) { state.acknowledged[w.key] = true; });
       }
       return true;
     }
@@ -773,7 +1730,10 @@
     }
 
     /* ---------- wire events ---------- */
-    function onBodyChange() { renderPreviews(); }
+    function onBodyChange() {
+      renderPreviews();      // also refreshes counters, override tabs and checks
+      scheduleAutosave();
+    }
     ta.addEventListener('input', onBodyChange);
 
     // toolbar
@@ -869,17 +1829,23 @@
         medium: String(q('lu_medium').value || '').trim() || null,
         campaign: currentCampaign() || null
       };
+      // The tagged long URL is the fallback: if link_save is unavailable the
+      // user still gets a working, correctly-tagged link instead of an error.
+      var tagged = state.S ? state.S.utmUrl(url, utm) : url;
       try {
         var res = await C.api.rpc('link_save', { p_workspace: ctx.ws, p_long_url: url, p_label: null, p_utm: utm, p_slug: null }, { auth: 'require' });
-        var short = (res && (res.short || res.final_url)) || url;
+        var short = (res && (res.short || res.final_url)) || tagged;
         insertAtCursor((ta.value && !/\s$/.test(ta.value) ? ' ' : '') + short + ' ');
         q('lu_url').value = '';
         toast('Short link inserted.');
-      } catch (e) { toast(e.message || 'Could not shorten link.'); }
+      } catch (e) {
+        insertAtCursor((ta.value && !/\s$/.test(ta.value) ? ' ' : '') + tagged + ' ');
+        q('lu_url').value = '';
+        toast('Shortener unavailable — inserted the tagged full link instead.');
+      }
     });
 
-    // first comment / thread
-    q('firstcomment').addEventListener('input', function () {});
+    // thread
     q('threadtoggle').addEventListener('change', function (e) {
       state.threadMode = !!e.target.checked;
       if (state.threadMode && !state.thread.length) state.thread = [ta.value || ''];
@@ -887,10 +1853,16 @@
       renderPreviews();
     });
 
-    // schedule inputs
-    q('date').addEventListener('change', function () { var d = scheduledFromInputs(); state.scheduledAt = d ? d.toISOString() : null; });
-    q('time').addEventListener('change', function () { var d = scheduledFromInputs(); state.scheduledAt = d ? d.toISOString() : null; });
-    q('clearsched').addEventListener('click', function () { q('date').value = ''; q('time').value = ''; state.scheduledAt = null; });
+    // schedule inputs — every change re-reads the liturgical day and re-checks
+    q('date').addEventListener('change', function () { var d = scheduledFromInputs(); state.scheduledAt = d ? d.toISOString() : null; afterScheduleChange(); });
+    q('time').addEventListener('change', function () { var d = scheduledFromInputs(); state.scheduledAt = d ? d.toISOString() : null; afterScheduleChange(); });
+    q('clearsched').addEventListener('click', function () {
+      q('date').value = ''; q('time').value = ''; state.scheduledAt = null;
+      afterScheduleChange();
+    });
+    q('templates').addEventListener('click', openTemplates);
+    q('keys').addEventListener('click', openShortcuts);
+    q('firstcomment').addEventListener('input', scheduleAutosave);
 
     // actions — every save disables its button while the RPC is in flight
     var _busy = false;
@@ -960,10 +1932,16 @@
       if (global.confirm && !global.confirm('Clear everything in the composer?')) return;
       ta.value = '';
       state.media = [];
+      state.alts = {};
+      state.overrides = {};
+      state.overrideTab = null;
+      state.acknowledged = {};
       state.thread = [''];
       state.threadMode = false;
       state.scheduledAt = null;
       state.editId = null;
+      if (state.S) state.S.clearDraft(ctx.ws);
+      bannerBox.innerHTML = '';   // and with it the "editing an existing post" notice
       q('threadtoggle').checked = false;
       q('firstcomment').value = '';
       q('date').value = ''; q('time').value = '';
@@ -971,6 +1949,7 @@
       renderMedia();
       renderThread();
       renderPreviews();
+      renderLit();
       toast('Composer cleared.');
     });
 
@@ -989,6 +1968,36 @@
       catch (e) { state.slots = []; }
       renderBestTime();
     }
+    /* The workspace's own scheduled posts, so "next free slot" and the collision
+     * check are about reality rather than about an empty calendar. */
+    async function loadPosts() {
+      try {
+        var rows = await C.api.rpc('social_list_posts', {
+          p_workspace: ctx.ws,
+          p_from: new Date(Date.now() - 7 * 86400000).toISOString(),
+          p_to: new Date(Date.now() + 90 * 86400000).toISOString()
+        }, { auth: 'prefer' });
+        state.posts = Array.isArray(rows) ? rows : [];
+      } catch (e) { state.posts = []; }
+      renderBestTime();
+      renderChecks();
+    }
+    /* Today's celebrants. zoi_namedays_today is the live service; the local
+     * feast table is the fallback, and the UI says which one it is looking at.
+     * We never merge them silently. */
+    async function loadNamedays() {
+      var names = [], feast = '', source = 'table';
+      try {
+        var r = await C.api.rpc('zoi_namedays_today', {}, { auth: 'prefer' });
+        var row = Array.isArray(r) ? r[0] : r;
+        var n = (row && (row.names || row.namedays)) || [];
+        if (typeof n === 'string') n = n.split(/[,·]/).map(function (x) { return x.trim(); }).filter(Boolean);
+        if (Array.isArray(n) && n.length) { names = n; source = 'service'; feast = (row && row.feast) || ''; }
+      } catch (e) { /* service unavailable — fall back below */ }
+      if (!names.length && state.O) names = state.O.nameDaysOn(isoLocal(new Date()));
+      state.nameday = { names: names, feast: feast, source: source };
+      renderLit();
+    }
     async function loadChannels() {
       // ctx.channels preferred; refresh in background if empty
       if (!state.channels.length) {
@@ -1001,16 +2010,53 @@
     }
 
     /* ---------- initial render ---------- */
+    wireShortcuts();
     renderChips();
     renderMedia();
     renderThread();
     renderHashtags();
     renderPreviews();
     applyGating();
+    q('lit').innerHTML = '<p class="zc-litwhy">Reading the liturgical calendar…</p>';
+    q('opps').innerHTML = '<div class="zc-empty">Looking at the next fortnight…</div>';
+
+    /* Libraries first: the counters, the pre-flight checks and the whole
+     * Orthodox layer depend on them, and they are two small local files. */
+    var libs = await loadDeps(doc);
+    state.O = libs.O;
+    state.S = libs.S;
+    if (state.S) {
+      q('tzlab').textContent = '· ' + state.S.tzName() + ' (' + state.S.tzOffsetLabel(new Date()) + ')';
+    }
+    renderCounters();
+    renderLit();
+    renderOpps();
+
+    /* A draft handed over from the Calendar ("draft this feast") beats an old
+     * autosaved one — the user just asked for it. */
+    var handoff = state.S ? state.S.takeHandoff() : null;
+    if (handoff && handoff.id) {
+      applyIncomingPost(handoff);
+      toast('Editing the post you picked in the calendar.');
+    } else if (handoff && (handoff.body || handoff.scheduledAt)) {
+      if (handoff.body) ta.value = String(handoff.body);
+      if (handoff.scheduledAt) {
+        var hd = state.S.fromLocalInput(handoff.scheduledAt) || new Date(handoff.scheduledAt);
+        if (hd && !isNaN(hd.getTime())) setSchedule(hd);
+      }
+      onBodyChange();
+      renderLit();
+      toast('Draft brought over from the calendar.');
+    } else {
+      renderRestoreBanner();
+    }
 
     // async data
-    await Promise.all([loadChannels(), loadHashtags(), loadTemplates(), loadSlots()]);
+    await Promise.all([loadChannels(), loadHashtags(), loadTemplates(), loadSlots(), loadPosts(), loadNamedays()]);
     renderPreviews();
+    renderBestTime();
+    renderLit();
+    renderChecks();
   }
 
   /* ---------- register ---------- */

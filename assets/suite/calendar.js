@@ -6,8 +6,22 @@
  * mountCalendar(root, ctx) renders the calendar into `root`.
  *   ctx = { C:ZoiCore, ws, channels:[], avail:{publish,...}, toast }
  *
+ * THE ORTHODOX LAYER — the reason this calendar is not just another grid:
+ *   - every cell carries its feast, name day and fasting strictness, computed
+ *     from assets/suite/_orthocal.js (the Julian Paschalion, not typed dates);
+ *   - "This week's opportunities": the coming feasts and name days, each with a
+ *     one-click drafted post handed straight to the Composer;
+ *   - dropping or scheduling a post onto a strict fast day asks first, and says
+ *     why — a bakery promoting tyropita on Clean Monday is a real mistake;
+ *   - a day's detail sheet shows the liturgical day next to that day's posts.
+ *
  * Features:
- *   - Three views: MONTH grid, WEEK, LIST (upcoming), with prev/next/Today nav.
+ *   - Four views: MONTH grid, WEEK, LIST (upcoming), AGENDA (liturgical), with
+ *     prev/next/Today nav and arrow-key navigation.
+ *   - Search across post bodies; filter by status, network and campaign.
+ *   - Undo on delete (the post is re-created from what we still hold).
+ *   - Repost: duplicate a post forward by a week or a month in one click.
+ *   - Fill the queue: drop every draft into the next free slots.
  *   - Status-coloured post chips (time + snippet + platform dots).
  *   - Click a chip -> detail modal: full body, networks, status, scheduled
  *     time; edit-time (reschedule), duplicate, delete.
@@ -26,7 +40,7 @@
   'use strict';
 
   var STYLE_ID = 'zk-styles';
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
 
   var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   var WEEKDAYS_FULL = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -34,6 +48,49 @@
     'July', 'August', 'September', 'October', 'November', 'December'];
   var MONTHS_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
     'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var CONFLICT_WINDOW_MIN = 30;
+
+  /* ---------- shared libraries, without a build step ----------
+   * Same pattern as composer.js: _orthocal.js and _schedule.js are classic
+   * scripts next to this one, loaded from THIS script's own URL so it works on
+   * any origin, cached per page, and entirely optional — if a library does not
+   * load, the affected panel says so instead of rendering an empty box.
+   */
+  var SELF_DIR = (function () {
+    try {
+      var cs = global.document && global.document.currentScript;
+      if (cs && cs.src) return String(cs.src).replace(/[^/]+$/, '');
+    } catch (e) { /* no document (unit test) */ }
+    return '/assets/suite/';
+  })();
+  var LIB_PROMISES = {};
+  function loadLib(doc, file, globalName) {
+    if (global[globalName]) return Promise.resolve(global[globalName]);
+    if (LIB_PROMISES[file]) return LIB_PROMISES[file];
+    LIB_PROMISES[file] = new Promise(function (resolve) {
+      var id = 'zoi-lib-' + file;
+      if (!doc.getElementById(id)) {
+        var tag = doc.createElement('script');
+        tag.id = id;
+        tag.src = SELF_DIR + file + '.js';
+        tag.async = false;
+        (doc.head || doc.documentElement).appendChild(tag);
+      }
+      var tries = 0;
+      (function poll() {
+        if (global[globalName]) return resolve(global[globalName]);
+        if (tries++ > 120) return resolve(null);
+        global.setTimeout(poll, 25);
+      })();
+    });
+    return LIB_PROMISES[file];
+  }
+  function loadDeps(doc) {
+    return Promise.all([
+      loadLib(doc, '_orthocal', 'ZoiOrthocal'),
+      loadLib(doc, '_schedule', 'ZoiSchedule')
+    ]).then(function (r) { return { O: r[0], S: r[1] }; });
+  }
 
   /* ---------- per-network config (colour + tiny icon) ---------- */
   var NET = {
@@ -167,9 +224,12 @@
       '.zk-dot.failed{background:#c0392b}',
       /* month grid */
       '.zk-grid{background:var(--bg2);border:1px solid var(--line);border-radius:14px;overflow:hidden}',
-      '.zk-dow{display:grid;grid-template-columns:repeat(7,1fr);border-bottom:1px solid var(--line)}',
+      '.zk-dow{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));border-bottom:1px solid var(--line)}',
       '.zk-dow div{padding:9px 10px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);text-align:left}',
-      '.zk-cells{display:grid;grid-template-columns:repeat(7,1fr)}',
+      /* minmax(0,1fr) not 1fr: a bare 1fr is minmax(AUTO,1fr), so one long chip
+         snippet widens its whole weekday column and, on a phone, pushes the last
+         three days out of a grid that clips them. */
+      '.zk-cells{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}',
       '.zk-cell{min-height:112px;border-right:1px solid var(--line2);border-bottom:1px solid var(--line2);padding:6px;display:flex;flex-direction:column;gap:4px;transition:.12s}',
       '.zk-cell:nth-child(7n){border-right:none}',
       '.zk-cell.oth{background:rgba(255,255,255,.012)}',
@@ -207,6 +267,7 @@
       '.zk-chip.scheduled{border-left-color:var(--gold)}',
       '.zk-chip.published{border-left-color:var(--green)}',
       '.zk-chip.failed{border-left-color:#c0392b}',
+      '.zk-chip{min-width:0;overflow:hidden}',
       '.zk-chip .zk-ct{font-weight:800;color:var(--mut);flex:none;font-variant-numeric:tabular-nums}',
       '.zk-chip .zk-cx{color:var(--tx);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}',
       '.zk-cdots{display:inline-flex;gap:2px;flex:none;align-items:center}',
@@ -264,7 +325,71 @@
       '.zk-err{color:#e88;font-size:11px}',
       '.zk-ok{color:#7fd6a2;font-size:11px}',
       '.zk-hint{font-size:11.5px;color:var(--mut);line-height:1.45}',
-      '.zk-count{font-size:12px;font-weight:700;color:var(--mut);margin-right:auto}'
+      '.zk-count{font-size:12px;font-weight:700;color:var(--mut);margin-right:auto}',
+      /* ---- search + filters ---- */
+      '.zk-search{display:inline-flex;align-items:center;gap:7px;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:0 10px}',
+      '.zk-search:focus-within{border-color:var(--acc)}',
+      '.zk-search svg{width:14px;height:14px;fill:none;stroke:var(--mut);stroke-width:2;flex:none}',
+      '.zk-search input{background:none;border:none;outline:none;color:var(--tx);font:600 12.5px "Hanken Grotesk";padding:8px 0;width:150px}',
+      '.zk-search button{background:none;border:none;color:var(--mut);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}',
+      '.zk-search button:hover{color:var(--tx)}',
+      '.zk-toggle{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;color:var(--mut);background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:7px 11px;cursor:pointer}',
+      '.zk-toggle.on{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}',
+      /* ---- the Orthodox layer in the grid ---- */
+      '.zk-cell.fast-strict{background:color-mix(in srgb,var(--red) 7%,transparent)}',
+      '.zk-cell.fast-fast{background:color-mix(in srgb,var(--gold) 5%,transparent)}',
+      '.zk-cell.feast{box-shadow:inset 3px 0 0 var(--gold)}',
+      '.zk-cell.today.fast-strict{background:color-mix(in srgb,var(--red) 10%,transparent)}',
+      '.zk-oday{font-size:9.5px;line-height:1.25;color:var(--mut);display:flex;flex-direction:column;gap:1px;margin:-1px 0 2px}',
+      '.zk-oday b{font-weight:800;color:var(--gold);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}',
+      '.zk-oday i{font-style:normal;color:var(--acc);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block}',
+      '.zk-fmark{font-size:8.5px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;padding:1px 5px;border-radius:20px;border:1px solid currentColor;white-space:nowrap}',
+      '.zk-fmark.strict{color:var(--red)}',
+      '.zk-fmark.fast{color:var(--gold)}',
+      '.zk-fmark.dairy{color:var(--acc)}',
+      '.zk-fmark.none{color:var(--green)}',
+      '.zk-wo{padding:5px 8px;border-bottom:1px solid var(--line2);font-size:9.5px;line-height:1.3;color:var(--mut)}',
+      '.zk-wo b{display:block;color:var(--gold);font-weight:800}',
+      '.zk-wo i{font-style:normal;color:var(--acc)}',
+      /* ---- agenda view ---- */
+      '.zk-ag{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,320px);gap:14px;align-items:start}',
+      '@media(max-width:900px){.zk-ag{grid-template-columns:1fr}}',
+      '.zk-agcol{display:flex;flex-direction:column;gap:8px;min-width:0}',
+      '.zk-agday{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:11px 13px;display:flex;flex-direction:column;gap:8px}',
+      '.zk-agday.strict{border-color:color-mix(in srgb,var(--red) 40%,transparent)}',
+      '.zk-agday.feast{border-color:color-mix(in srgb,var(--gold) 45%,transparent)}',
+      '.zk-agh{display:flex;flex-wrap:wrap;gap:9px;align-items:baseline}',
+      '.zk-agh .zk-agd{font-weight:800;font-size:14px}',
+      '.zk-agh .zk-agw{font-size:11.5px;color:var(--mut);font-weight:700;text-transform:uppercase;letter-spacing:.05em}',
+      '.zk-agmeta{display:flex;flex-wrap:wrap;gap:7px;align-items:center}',
+      '.zk-side{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px}',
+      '.zk-side h4{margin:0 0 4px;font-size:13.5px;font-weight:800}',
+      '.zk-opp{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:11px;padding:9px 11px;background:var(--bg3);margin-top:8px}',
+      '.zk-opp .zk-od{flex:none;width:40px;text-align:center}',
+      '.zk-opp .zk-od i{display:block;font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--mut)}',
+      '.zk-opp .zk-od b{display:block;font-size:17px;font-weight:800;line-height:1.1}',
+      '.zk-opp.great .zk-od b{color:var(--gold)}',
+      '.zk-opp .zk-ob{flex:1;min-width:0}',
+      '.zk-opp .zk-ot{font-size:12px;font-weight:700;line-height:1.35}',
+      '.zk-opp .zk-os{font-size:10.5px;color:var(--mut);margin-top:2px}',
+      /* ---- undo bar ---- */
+      '.zk-undo{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--tx);background:color-mix(in srgb,var(--acc) 10%,transparent);border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);border-radius:11px;padding:9px 13px}',
+      '.zk-warnbox{font-size:12.5px;line-height:1.5;color:var(--red);background:color-mix(in srgb,var(--red) 10%,transparent);border:1px solid color-mix(in srgb,var(--red) 40%,transparent);border-radius:11px;padding:10px 13px}',
+      '.zk-fastnote{font-size:12px;line-height:1.5;color:var(--gold);background:color-mix(in srgb,var(--gold) 10%,transparent);border:1px solid color-mix(in srgb,var(--gold) 38%,transparent);border-radius:11px;padding:10px 13px}',
+      '.zk-wrap button:focus-visible,.zk-wrap input:focus-visible,.zk-wrap select:focus-visible,.zk-wrap [tabindex]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}',
+      /* On a narrow phone a seven-column month is 50px per day: enough for the
+         time and the network dots, not for a snippet or a feast name. Those move
+         to the day sheet (tap the cell) rather than being clipped. */
+      '@media(max-width:680px){',
+      '  .zk-cell{min-height:74px;padding:4px 3px}',
+      '  .zk-cell .zk-cx{display:none}',
+      '  .zk-oday{display:none}',
+      '  .zk-chip{padding:2px 3px;gap:3px;font-size:10px}',
+      '  .zk-dow div{padding:7px 3px;font-size:9.5px}',
+      '  .zk-fmark{font-size:7.5px;padding:0 3px}',
+      '  .zk-daynum{font-size:11px}',
+      '}',
+      '@media(prefers-reduced-motion:reduce){.zk-wrap *{transition:none!important}}'
     ].join('\n');
     var s = doc.createElement('style');
     s.id = STYLE_ID;
@@ -301,14 +426,26 @@
     injectStyle(doc);
 
     var state = {
-      view: 'month',          // 'month' | 'week' | 'list'
+      view: 'month',          // 'month' | 'week' | 'list' | 'agenda'
       cursor: startOfDay(new Date()),
       posts: [],
       slots: [],
       campaign: '',           // '' = all
+      query: '',              // free-text search over bodies
+      status: '',             // '' = all
+      network: '',            // '' = all
+      showOrthodox: true,     // the liturgical layer, on by default
       dragId: null,
-      loading: false
+      loading: false,
+      error: null,
+      O: null,                // ZoiOrthocal once loaded
+      S: null,                // ZoiSchedule once loaded
+      lastDeleted: null       // { post, at } — powers Undo
     };
+    try {
+      var pref = global.localStorage && global.localStorage.getItem('zoi_cal_orthodox');
+      if (pref === '0') state.showOrthodox = false;
+    } catch (e) { /* private mode — default stands */ }
 
     root.innerHTML = '';
     var wrap = el('div', 'zk-wrap');
@@ -318,10 +455,11 @@
     var bar = el('div', 'zk-bar');
     bar.innerHTML =
       '<div class="zk-bl">' +
-        '<div class="zk-seg" data-role="seg">' +
-          '<button data-view="month" class="on">Month</button>' +
-          '<button data-view="week">Week</button>' +
-          '<button data-view="list">List</button>' +
+        '<div class="zk-seg" data-role="seg" role="tablist" aria-label="Calendar view">' +
+          '<button data-view="month" class="on" aria-pressed="true">Month</button>' +
+          '<button data-view="week" aria-pressed="false">Week</button>' +
+          '<button data-view="list" aria-pressed="false">List</button>' +
+          '<button data-view="agenda" aria-pressed="false">Agenda</button>' +
         '</div>' +
         '<div class="zk-nav">' +
           '<button class="zk-ic" data-role="prev" title="Previous"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>' +
@@ -331,7 +469,20 @@
         '<span class="zk-range" data-role="range"></span>' +
       '</div>' +
       '<div class="zk-br">' +
-        '<select class="zk-sel" data-role="campaign" title="Filter by campaign"></select>' +
+        '<label class="zk-search">' +
+          '<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>' +
+          '<input type="search" data-role="q" placeholder="Search posts…" aria-label="Search posts">' +
+          '<button type="button" data-role="qclear" aria-label="Clear search" title="Clear search">×</button>' +
+        '</label>' +
+        '<select class="zk-sel" data-role="status" title="Filter by status" aria-label="Filter by status">' +
+          '<option value="">Any status</option><option value="draft">Draft</option>' +
+          '<option value="scheduled">Scheduled</option><option value="published">Published</option>' +
+          '<option value="failed">Failed</option></select>' +
+        '<select class="zk-sel" data-role="network" title="Filter by network" aria-label="Filter by network"></select>' +
+        '<select class="zk-sel" data-role="campaign" title="Filter by campaign" aria-label="Filter by campaign"></select>' +
+        '<button class="zk-toggle" data-role="orth" aria-pressed="true" title="Show feasts, name days and fasting periods">' +
+          '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M7 7h10M9 21h6"/></svg>Orthodox calendar</button>' +
+        '<button class="zk-btn" data-role="fill" title="Put every draft into the next free queue slots"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h10M4 18h7"/></svg>Fill queue</button>' +
         '<button class="zk-btn" data-role="queue"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>Posting queue</button>' +
         '<button class="zk-btn" data-role="import"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>Import CSV</button>' +
       '</div>';
@@ -350,8 +501,15 @@
       '<span class="zk-lg"><span class="zk-dot scheduled"></span>Scheduled</span>' +
       '<span class="zk-lg"><span class="zk-dot published"></span>Published</span>' +
       '<span class="zk-lg"><span class="zk-dot failed"></span>Failed</span>' +
-      '<span class="zk-lg" style="color:var(--dim)">Drag a chip to another day to reschedule.</span>');
+      '<span class="zk-lg"><span class="zk-fmark strict">strict fast</span></span>' +
+      '<span class="zk-lg"><span class="zk-fmark fast">fast</span></span>' +
+      '<span class="zk-lg" style="color:var(--gold)">✦ great feast</span>' +
+      '<span class="zk-lg" style="color:var(--dim)">Drag a chip to another day to reschedule. ← → moves, T is today.</span>');
     wrap.appendChild(legend);
+
+    // undo bar (only visible after a delete)
+    var undoBox = el('div');
+    wrap.appendChild(undoBox);
 
     // view container
     var viewBox = el('div');
@@ -373,6 +531,11 @@
         var ws = addDays(c, -c.getDay());
         return { from: startOfDay(ws), to: addDays(startOfDay(ws), 7) };
       }
+      if (state.view === 'agenda') {
+        // agenda reads forward from the cursor — it is a planning view
+        var a = startOfDay(state.cursor);
+        return { from: a, to: addDays(a, 28) };
+      }
       // list: upcoming — from start of today, open-ended (fetch a broad window)
       var today = startOfDay(new Date());
       return { from: today, to: addDays(today, 120) };
@@ -388,12 +551,19 @@
         l += (ws.getMonth() === we.getMonth() ? '' : MONTHS_SHORT[we.getMonth()] + ' ') + we.getDate() + ', ' + we.getFullYear();
         return l;
       }
+      if (state.view === 'agenda') {
+        var a = startOfDay(state.cursor);
+        var b = addDays(a, 27);
+        return MONTHS_SHORT[a.getMonth()] + ' ' + a.getDate() + ' – ' + MONTHS_SHORT[b.getMonth()] + ' ' + b.getDate();
+      }
       return 'Upcoming';
     }
 
     /* ---------- data loads ---------- */
     async function loadPosts() {
       var r = rangeForView();
+      state.loading = true;
+      state.error = null;
       try {
         var rows = await C.api.rpc('social_list_posts', {
           p_workspace: ctx.ws,
@@ -403,8 +573,9 @@
         state.posts = Array.isArray(rows) ? rows : [];
       } catch (e) {
         state.posts = [];
-        toast(e && e.message ? e.message : 'Could not load posts.');
+        state.error = (e && e.message) ? e.message : 'The request failed.';
       }
+      state.loading = false;
     }
     async function loadSlots() {
       try {
@@ -436,11 +607,99 @@
       });
       sel.innerHTML = opts;
     }
+    /* Every filter in one place. An empty filter is not a filter — a post is
+     * shown unless something explicitly excludes it. */
     function filteredPosts() {
-      if (!state.campaign) return state.posts.slice();
+      var qy = String(state.query || '').trim().toLowerCase();
       return state.posts.filter(function (p) {
-        return p && p.meta && String(p.meta.campaign || '').trim() === state.campaign;
+        if (!p) return false;
+        if (state.campaign && String((p.meta && p.meta.campaign) || '').trim() !== state.campaign) return false;
+        if (state.status && String(p.status || '').toLowerCase() !== state.status) return false;
+        if (state.network) {
+          var nets = channelList(p).map(function (c) { return normPlat(platformOf(c)); });
+          if (nets.indexOf(state.network) === -1) return false;
+        }
+        if (qy) {
+          var hay = (String(p.body || '') + ' ' + String((p.meta && p.meta.campaign) || '')).toLowerCase();
+          if (hay.indexOf(qy) === -1) return false;
+        }
+        return true;
       });
+    }
+    /* A post's channels may be platform names or channel ids. Map an id back to
+     * its platform through ctx.channels so the network filter works either way. */
+    function platformOf(c) {
+      var key = String(c == null ? '' : c);
+      if (NET[normPlat(key)]) return key;
+      var list = ctx.channels || [];
+      for (var i = 0; i < list.length; i++) {
+        if (String(list[i].id) === key) return list[i].platform;
+      }
+      return key;
+    }
+    function renderNetworkFilter() {
+      var sel = q('network');
+      if (!sel) return;
+      var present = {};
+      state.posts.forEach(function (p) {
+        channelList(p).forEach(function (c) {
+          var k = normPlat(platformOf(c));
+          if (NET[k]) present[k] = true;
+        });
+      });
+      var keys = Object.keys(present).sort();
+      var opts = '<option value="">Any network</option>';
+      keys.forEach(function (k) {
+        opts += '<option value="' + esc(k) + '"' + (k === state.network ? ' selected' : '') + '>' + esc(NET[k].name) + '</option>';
+      });
+      sel.innerHTML = opts;
+      sel.disabled = keys.length === 0;
+    }
+
+    /* ================= THE ORTHODOX LAYER ================= */
+    function dayInfoFor(date) {
+      if (!state.O || !state.showOrthodox) return null;
+      try { return state.O.dayInfo(dayKey(date)); } catch (e) { return null; }
+    }
+    function fastMarkHTML(info) {
+      if (!info) return '';
+      var lvl = info.fast.level;
+      if (lvl === 'none' && !info.feasts.length) return '';
+      var cls = lvl === 'strict' ? 'strict' : lvl === 'fast' ? 'fast' : lvl === 'dairy' ? 'dairy' : 'none';
+      var label = lvl === 'strict' ? 'strict' : lvl === 'fast' ? 'fast' : lvl === 'dairy' ? 'dairy' : 'free';
+      return '<span class="zk-fmark ' + cls + '" title="' + esc(info.fast.label + (info.fast.why ? ' — ' + info.fast.why : '')) + '">' + label + '</span>';
+    }
+    function orthoLinesHTML(info) {
+      if (!info) return '';
+      var out = '';
+      if (info.feasts.length) {
+        var f = info.feasts[0];
+        out += '<b title="' + esc(info.feasts.map(function (x) { return x.name; }).join(' · ')) + '">' +
+          (f.great ? '✦ ' : '') + esc(f.name) + '</b>';
+      }
+      if (info.namedays.length) {
+        out += '<i title="Name day: ' + esc(info.namedays.join(', ')) + '">' + esc(info.namedays.slice(0, 2).join(', ')) + '</i>';
+      }
+      return out ? '<div class="zk-oday">' + out + '</div>' : '';
+    }
+    /* Ask before putting a promotion on a strict fast day, and say why. Returns
+     * true to proceed. Only strict days interrupt — warning on every Wednesday
+     * would teach people to click through warnings. */
+    function confirmFastDay(post, target) {
+      if (!state.O) return true;
+      var key = dayKey(target);
+      var info = state.O.dayInfo(key);
+      var clash = state.O.fastConflict(String(post && post.body || ''), key);
+      if (clash && clash.level === 'strict') {
+        return !global.confirm || global.confirm(
+          clash.label + '\n\nThis post mentions ' + clash.words.slice(0, 4).join(', ') + '.\n' +
+          clash.why + '\n\nConsider ' + clash.suggest + '.\n\nMove it here anyway?');
+      }
+      if (info.fast.level === 'strict') {
+        return !global.confirm || global.confirm(
+          info.fast.label + '\n\n' + info.fast.why + '\n\nSchedule here anyway?');
+      }
+      return true;
     }
     function postsForDay(date) {
       return filteredPosts().filter(function (p) {
@@ -483,10 +742,301 @@
     function render() {
       q('range').textContent = rangeLabel();
       renderCampaignFilter();
+      renderNetworkFilter();
+      renderUndoBar();
       viewBox.innerHTML = '';
+      if (state.error) {
+        var err = el('div', 'zk-warnbox');
+        err.innerHTML = '<b>Could not load your posts.</b> ' + esc(state.error) + ' ';
+        var retry = el('button', 'zk-btn');
+        retry.textContent = 'Try again';
+        retry.style.marginLeft = '8px';
+        retry.addEventListener('click', function () { reloadAndRender(); });
+        err.appendChild(retry);
+        viewBox.appendChild(err);
+        return;
+      }
+      if (state.loading && !state.posts.length) {
+        viewBox.appendChild(el('div', 'zk-empty', 'Loading your calendar…'));
+        return;
+      }
       if (state.view === 'month') viewBox.appendChild(renderMonth());
       else if (state.view === 'week') viewBox.appendChild(renderWeek());
+      else if (state.view === 'agenda') viewBox.appendChild(renderAgenda());
       else viewBox.appendChild(renderList());
+      var active = filteredPosts().length;
+      if (active === 0 && state.posts.length && (state.query || state.status || state.network || state.campaign)) {
+        var none = el('div', 'zk-empty', 'No post matches these filters. ');
+        var clear = el('button', 'zk-btn');
+        clear.textContent = 'Clear filters';
+        clear.addEventListener('click', function () {
+          state.query = ''; state.status = ''; state.network = ''; state.campaign = '';
+          if (q('q')) q('q').value = '';
+          if (q('status')) q('status').value = '';
+          render();
+        });
+        none.appendChild(clear);
+        viewBox.insertBefore(none, viewBox.firstChild);
+      }
+    }
+
+    /* ---------- AGENDA: the liturgical planning view ---------- */
+    function renderAgenda() {
+      var box = el('div', 'zk-ag');
+      var main = el('div', 'zk-agcol');
+      var side = el('div', 'zk-agcol');
+      var start = startOfDay(state.cursor);
+      var shown = 0;
+      for (var i = 0; i < 28; i++) {
+        var day = addDays(start, i);
+        var ps = postsForDay(day);
+        var info = dayInfoFor(day);
+        var interesting = ps.length || (info && (info.feasts.length || info.namedays.length || info.fast.level === 'strict'));
+        if (!interesting) continue;
+        shown++;
+        var cls = 'zk-agday';
+        if (info && info.fast.level === 'strict') cls += ' strict';
+        if (info && info.feasts.some(function (f) { return f.great; })) cls += ' feast';
+        var card = el('div', cls);
+        var head = el('div', 'zk-agh');
+        head.innerHTML = '<span class="zk-agd">' + MONTHS_SHORT[day.getMonth()] + ' ' + day.getDate() + '</span>' +
+          '<span class="zk-agw">' + WEEKDAYS_FULL[day.getDay()] + '</span>' +
+          (sameDay(day, startOfDay(new Date())) ? '<span class="zk-badge scheduled">Today</span>' : '');
+        card.appendChild(head);
+        if (info && (info.feasts.length || info.namedays.length || info.fast.level !== 'none')) {
+          var meta = el('div', 'zk-agmeta');
+          var h = fastMarkHTML(info);
+          info.feasts.forEach(function (f) {
+            h += '<span class="zk-net" style="' + (f.great ? 'color:var(--gold);' : '') + '">' + (f.great ? '✦ ' : '') + esc(f.name) + '</span>';
+          });
+          if (info.namedays.length) {
+            h += '<span class="zk-net" style="color:var(--acc)">Name day: ' + esc(info.namedays.join(', ')) + '</span>';
+          }
+          meta.innerHTML = h;
+          card.appendChild(meta);
+        }
+        if (ps.length) {
+          var list = el('div', 'zk-list');
+          ps.forEach(function (p2) {
+            var d2 = postDate(p2);
+            var row = el('div', 'zk-lrow ' + statusClass(p2.status));
+            row.innerHTML =
+              '<span class="zk-ltime">' + esc(d2 ? hhmm(d2) : '--:--') + '</span>' +
+              '<span class="zk-lbody">' + esc(firstWords(p2.body || '(no text)', 80)) + '</span>' +
+              platDotsHTML(esc, channelList(p2)) +
+              '<span class="zk-badge ' + statusClass(p2.status) + '" style="flex:none">' + esc(statusLabel(p2.status)) + '</span>';
+            row.addEventListener('click', function () { openDetail(p2); });
+            list.appendChild(row);
+          });
+          card.appendChild(list);
+        } else {
+          var empty = el('div', 'zk-hint', 'Nothing scheduled.');
+          var add = el('button', 'zk-btn');
+          add.textContent = 'Draft something';
+          add.style.marginTop = '6px';
+          var theDay = day;
+          add.addEventListener('click', function () { draftForDay(theDay); });
+          card.appendChild(empty);
+          card.appendChild(add);
+        }
+        main.appendChild(card);
+      }
+      if (!shown) {
+        main.appendChild(el('div', 'zk-empty', 'Nothing scheduled and no feast in the next four weeks from here.'));
+      }
+      box.appendChild(main);
+      side.appendChild(renderOppsPanel());
+      side.appendChild(renderQueuePanel());
+      box.appendChild(side);
+      return box;
+    }
+
+    /* ---------- opportunities panel ---------- */
+    function renderOppsPanel() {
+      var card = el('div', 'zk-side');
+      card.innerHTML = '<h4>This week&rsquo;s opportunities</h4>' +
+        '<p class="zk-hint">Feasts and name days in the next seven days, computed from the Paschalion. One click drafts the post.</p>';
+      if (!state.O) {
+        card.appendChild(el('div', 'zk-empty', 'The liturgical calendar could not be loaded, so opportunities are unavailable for this session.'));
+        return card;
+      }
+      var ops = state.O.opportunities(dayKey(startOfDay(new Date())), 7, { business: wsName() });
+      if (!ops.length) {
+        card.appendChild(el('div', 'zk-empty', 'No feast or name day in the next seven days.'));
+        return card;
+      }
+      ops.forEach(function (op) {
+        var parts = op.date.split('-');
+        var row = el('div', 'zk-opp' + (op.kind === 'great_feast' ? ' great' : ''));
+        var away = op.daysAway === 0 ? 'today' : op.daysAway === 1 ? 'tomorrow' : 'in ' + op.daysAway + ' days';
+        row.innerHTML =
+          '<div class="zk-od"><i>' + esc(MONTHS_SHORT[Number(parts[1]) - 1]) + '</i><b>' + esc(String(Number(parts[2]))) + '</b></div>' +
+          '<div class="zk-ob"><div class="zk-ot">' + (op.kind === 'great_feast' ? '✦ ' : '') + esc(op.headline) + '</div>' +
+          '<div class="zk-os">' + esc(away) + (op.fast.level !== 'none' ? ' · ' + esc(op.fast.label) : '') + '</div></div>';
+        var b = el('button', 'zk-btn');
+        b.textContent = 'Draft';
+        b.addEventListener('click', function () {
+          gotoComposer({ body: op.draft, scheduledAt: op.date + 'T10:00' });
+        });
+        row.appendChild(b);
+        card.appendChild(row);
+      });
+      return card;
+    }
+
+    /* ---------- queue health panel: real slots, real posts ---------- */
+    function renderQueuePanel() {
+      var card = el('div', 'zk-side');
+      card.style.marginTop = '12px';
+      var act = state.S ? state.S.activeSlots(state.slots) : (state.slots || []);
+      card.innerHTML = '<h4>Queue</h4>';
+      if (!act.length) {
+        card.innerHTML += '<p class="zk-hint">No posting-time slots yet. Slots are recurring weekly times; once they exist, the Composer offers the next free one and “Fill queue” can place your drafts.</p>';
+        var b = el('button', 'zk-btn');
+        b.textContent = 'Set up the queue';
+        b.addEventListener('click', openQueue);
+        card.appendChild(b);
+        return card;
+      }
+      var open = state.S ? state.S.nextOpenSlotTimes(state.slots, state.posts, new Date(), 4) : [];
+      var drafts = state.posts.filter(function (p) { return String(p.status || '').toLowerCase() === 'draft'; });
+      card.innerHTML += '<p class="zk-hint">' + act.length + ' slot' + (act.length === 1 ? '' : 's') + ' a week · ' +
+        drafts.length + ' draft' + (drafts.length === 1 ? '' : 's') + ' waiting.</p>';
+      if (open.length) {
+        var ul = el('div', 'zk-list');
+        open.forEach(function (o) {
+          var row = el('div', 'zk-lrow scheduled');
+          row.innerHTML = '<span class="zk-ltime">' + esc(hhmm(o.when)) + '</span>' +
+            '<span class="zk-lbody">' + esc(WEEKDAYS_FULL[o.when.getDay()] + ' ' + MONTHS_SHORT[o.when.getMonth()] + ' ' + o.when.getDate()) + '</span>' +
+            '<span class="zk-badge draft" style="flex:none">free</span>';
+          row.addEventListener('click', function () {
+            gotoComposer({ scheduledAt: toLocalInput(o.when) });
+          });
+          ul.appendChild(row);
+        });
+        card.appendChild(ul);
+      } else {
+        card.appendChild(el('div', 'zk-hint', 'Every slot in the next few weeks is taken.'));
+      }
+      return card;
+    }
+
+    function wsName() {
+      try {
+        var n = ctx.wsName || (ctx.workspace && ctx.workspace.name);
+        if (n) return String(n);
+        var e2 = doc.querySelector('.wsname');
+        return e2 ? String(e2.textContent || '').trim() : '';
+      } catch (e) { return ''; }
+    }
+
+    /* ---------- hand a draft to the Composer ----------
+     * The suite mounts one module at a time in one page, so the draft goes
+     * through localStorage and we click the shell's own nav item. If either is
+     * unavailable the user is told where the draft went — never a silent no-op. */
+    function gotoComposer(payload) {
+      var stored = state.S ? state.S.setHandoff(payload) : false;
+      if (!stored) { toast('Storage is unavailable, so the draft could not be handed over.'); return; }
+      var nav = doc.querySelector('.nitem[data-id="composer"]');
+      if (nav && nav.click) { nav.click(); return; }
+      toast('Draft saved — open the Composer to finish it.');
+    }
+    function draftForDay(day) {
+      var body = '';
+      if (state.O) {
+        var info = state.O.dayInfo(dayKey(day));
+        body = state.O.suggestDraft(info, wsName()) || '';
+      }
+      gotoComposer({ body: body, scheduledAt: toLocalInput(new Date(day.getFullYear(), day.getMonth(), day.getDate(), 10, 0)) });
+    }
+
+    /* ---------- undo bar ---------- */
+    function renderUndoBar() {
+      undoBox.innerHTML = '';
+      if (!state.lastDeleted) return;
+      var p = state.lastDeleted.post;
+      var bar = el('div', 'zk-undo');
+      bar.innerHTML = '<span>Deleted &ldquo;' + esc(firstWords(p.body || '(no text)', 48)) + '&rdquo;.</span>';
+      var acts = el('div');
+      acts.style.display = 'flex';
+      acts.style.gap = '8px';
+      var undo = el('button', 'zk-btn pri');
+      undo.textContent = 'Undo';
+      undo.addEventListener('click', async function () {
+        undo.disabled = true;
+        try {
+          await C.api.rpc('social_save_post', {
+            p_workspace: ctx.ws,
+            p_body: p.body || '',
+            p_channels: channelList(p),
+            p_scheduled_at: p.scheduled_at || null,
+            p_status: p.status || 'draft',
+            p_media: p.media || [],
+            p_nameday: p.nameday_ref || null,
+            p_meta: p.meta || {},
+            p_id: null                    // a restored post is a new row
+          }, { auth: 'require' });
+          state.lastDeleted = null;
+          toast('Post restored — it comes back with a new id.');
+          await reloadAndRender();
+        } catch (e) {
+          undo.disabled = false;
+          toast((e && e.message) || 'Could not restore the post.');
+        }
+      });
+      var dismiss = el('button', 'zk-btn');
+      dismiss.textContent = 'Dismiss';
+      dismiss.addEventListener('click', function () { state.lastDeleted = null; renderUndoBar(); });
+      acts.appendChild(undo);
+      acts.appendChild(dismiss);
+      bar.appendChild(acts);
+      undoBox.appendChild(bar);
+    }
+
+    /* ---------- day sheet: the liturgical day beside that day's posts ---------- */
+    function openDay(day) {
+      var key = dayKey(day);
+      var info = state.O && state.showOrthodox ? state.O.dayInfo(key) : null;
+      var m = openModal(WEEKDAYS_FULL[day.getDay()] + ', ' + MONTHS_SHORT[day.getMonth()] + ' ' + day.getDate() + ' ' + day.getFullYear(),
+        '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>', false);
+      var html = '';
+      if (info) {
+        html += '<div><span class="zk-lab">The day</span><div class="zk-agmeta">' + fastMarkHTML(info);
+        info.feasts.forEach(function (f) {
+          html += '<span class="zk-net" style="' + (f.great ? 'color:var(--gold);' : '') + '">' + (f.great ? '✦ ' : '') + esc(f.name) + '</span>';
+        });
+        if (info.namedays.length) html += '<span class="zk-net" style="color:var(--acc)">Name day: ' + esc(info.namedays.join(', ')) + '</span>';
+        if (!info.feasts.length && !info.namedays.length) html += '<span class="zk-hint">No feast or name day.</span>';
+        html += '</div>';
+        if (info.fast.why) html += '<p class="zk-hint" style="margin-top:6px">' + esc(info.fast.why) + '</p>';
+        html += '</div>';
+      } else if (!state.showOrthodox) {
+        html += '<p class="zk-hint">The Orthodox calendar layer is switched off.</p>';
+      }
+      var ps = postsForDay(day);
+      html += '<div><span class="zk-lab">' + ps.length + ' post' + (ps.length === 1 ? '' : 's') + '</span><div data-role="dayposts"></div></div>';
+      m.body.innerHTML = html;
+      var host = m.body.querySelector('[data-role="dayposts"]');
+      if (!ps.length) {
+        host.appendChild(el('div', 'zk-hint', 'Nothing scheduled on this day.'));
+      } else {
+        var list = el('div', 'zk-list');
+        ps.forEach(function (p2) {
+          var d2 = postDate(p2);
+          var row = el('div', 'zk-lrow ' + statusClass(p2.status));
+          row.innerHTML = '<span class="zk-ltime">' + esc(d2 ? hhmm(d2) : '--:--') + '</span>' +
+            '<span class="zk-lbody">' + esc(firstWords(p2.body || '(no text)', 70)) + '</span>' +
+            platDotsHTML(esc, channelList(p2));
+          row.addEventListener('click', function () { m.close(); openDetail(p2); });
+          list.appendChild(row);
+        });
+        host.appendChild(list);
+      }
+      m.foot.innerHTML = '';
+      var draft = el('button', 'zk-btn pri');
+      draft.textContent = info && (info.feasts.length || info.namedays.length) ? 'Draft for this feast' : 'New post on this day';
+      draft.addEventListener('click', function () { m.close(); draftForDay(day); });
+      m.foot.appendChild(draft);
     }
 
     /* ---------- MONTH ---------- */
@@ -503,19 +1053,63 @@
       for (var i = 0; i < 42; i++) {
         var day = addDays(gridStart, i);
         var isOther = day.getMonth() !== c.getMonth();
-        var cell = el('div', 'zk-cell' + (isOther ? ' oth' : '') + (sameDay(day, today) ? ' today' : ''));
+        var info = dayInfoFor(day);
+        var cls = 'zk-cell' + (isOther ? ' oth' : '') + (sameDay(day, today) ? ' today' : '');
+        if (info) {
+          if (info.fast.level === 'strict') cls += ' fast-strict';
+          else if (info.fast.level === 'fast') cls += ' fast-fast';
+          if (info.feasts.some(function (f) { return f.great; })) cls += ' feast';
+        }
+        var cell = el('div', cls);
         cell.setAttribute('data-day', dayKey(day));
+        cell.setAttribute('tabindex', '0');
+        cell.setAttribute('role', 'gridcell');
+        cell.setAttribute('aria-label', dayAriaLabel(day, info));
         var head = el('div', 'zk-daynum');
-        head.innerHTML = (sameDay(day, today) ? '<b>' + day.getDate() + '</b>' : '<span>' + day.getDate() + '</span>') + '<span></span>';
+        head.innerHTML = (sameDay(day, today) ? '<b>' + day.getDate() + '</b>' : '<span>' + day.getDate() + '</span>') +
+          '<span>' + fastMarkHTML(info) + '</span>';
         cell.appendChild(head);
+        if (info) {
+          var lines = orthoLinesHTML(info);
+          if (lines) {
+            var ld = el('div');
+            ld.innerHTML = lines;
+            cell.appendChild(ld.firstChild);
+          }
+        }
         postsForDay(day).forEach(function (p) { cell.appendChild(makeChip(p)); });
+        // the cell itself opens the day: liturgical context plus that day's posts
+        wireCellOpen(cell, day);
         wireDrop(cell, day);
         cells.appendChild(cell);
       }
       grid.appendChild(cells);
+      cells.setAttribute('role', 'grid');
       return grid;
     }
+    function dayAriaLabel(day, info) {
+      var n = postsForDay(day).length;
+      var base = WEEKDAYS_FULL[day.getDay()] + ' ' + MONTHS_SHORT[day.getMonth()] + ' ' + day.getDate() +
+        ', ' + n + ' post' + (n === 1 ? '' : 's');
+      if (!info) return base;
+      var extra = [];
+      if (info.feasts.length) extra.push(info.feasts[0].name);
+      if (info.namedays.length) extra.push('name day ' + info.namedays.join(', '));
+      if (info.fast.level !== 'none') extra.push(info.fast.label);
+      return extra.length ? base + '. ' + extra.join('. ') : base;
+    }
 
+    /* `day` is a PARAMETER, not a closed-over loop variable — see the note in
+     * renderMonth. Every cell must own its own date. */
+    function wireCellOpen(cell, day) {
+      cell.addEventListener('click', function (ev) {
+        if (ev.target && ev.target.closest && ev.target.closest('.zk-chip')) return;
+        openDay(day);
+      });
+      cell.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); openDay(day); }
+      });
+    }
     function wireDrop(cell, day) {
       cell.addEventListener('dragover', function (ev) {
         if (state.dragId == null) return;
@@ -535,6 +1129,8 @@
         var orig = postDate(post) || new Date();
         var target = new Date(day.getFullYear(), day.getMonth(), day.getDate(), orig.getHours(), orig.getMinutes(), 0, 0);
         if (sameDay(target, orig)) return; // no-op
+        // A strict fast is the one drop that deserves a question first.
+        if (!confirmFastDay(post, target)) return;
         reschedule(post, target, null).catch(function () {
           // drag failure -> fall back to explicit edit-time modal
           toast('Could not move the post — try editing the time.');
@@ -559,8 +1155,16 @@
       for (var i = 0; i < 7; i++) {
         var day = addDays(ws, i);
         var col = el('div', 'zk-wcol' + (sameDay(day, today) ? ' today' : ''));
+        var winfo = dayInfoFor(day);
         col.innerHTML = '<div class="zk-whd"><div class="zk-wd">' + WEEKDAYS[day.getDay()] +
-          '</div><div class="zk-wn">' + day.getDate() + '</div></div>';
+          '</div><div class="zk-wn">' + day.getDate() + '</div>' +
+          (winfo ? '<div style="margin-top:3px">' + fastMarkHTML(winfo) + '</div>' : '') + '</div>' +
+          (winfo && (winfo.feasts.length || winfo.namedays.length)
+            ? '<div class="zk-wo">' +
+              (winfo.feasts.length ? '<b>' + esc(winfo.feasts[0].name) + '</b>' : '') +
+              (winfo.namedays.length ? '<i>' + esc(winfo.namedays.slice(0, 2).join(', ')) + '</i>' : '') +
+              '</div>'
+            : '');
         var body = el('div', 'zk-wbody');
         var ps = postsForDay(day);
         if (!ps.length) body.appendChild(el('div', 'zk-wempty', '—'));
@@ -644,7 +1248,31 @@
     }
     async function deletePost(post) {
       await C.api.rpc('social_delete_post', { p_workspace: ctx.ws, p_id: post.id }, { auth: 'require' });
+      // Keep everything we know about the post so Undo can re-create it. There
+      // is no undelete RPC, so the restored post is a NEW row — the undo bar
+      // says so rather than pretending the id survived.
+      state.lastDeleted = { post: post, at: Date.now() };
       toast('Post deleted.');
+      await reloadAndRender();
+    }
+    /* Repost: the same post again, later. Buffer calls this "re-queue"; the
+     * offset is in days so "+1 week" and "+1 month" are the same code path. */
+    async function repost(post, days) {
+      var base = postDate(post) || new Date();
+      var target = addDays(base, days);
+      if (!confirmFastDay(post, target)) return;
+      await C.api.rpc('social_save_post', {
+        p_workspace: ctx.ws,
+        p_body: post.body || '',
+        p_channels: channelList(post),
+        p_scheduled_at: target.toISOString(),
+        p_status: 'scheduled',
+        p_media: post.media || [],
+        p_nameday: post.nameday_ref || null,
+        p_meta: post.meta || {},
+        p_id: null
+      }, { auth: 'require' });
+      toast('Reposted for ' + MONTHS_SHORT[target.getMonth()] + ' ' + target.getDate() + '.');
       await reloadAndRender();
     }
     async function reloadAndRender() {
@@ -685,7 +1313,27 @@
       var when = d ? (WEEKDAYS_FULL[d.getDay()] + ', ' + MONTHS_SHORT[d.getMonth()] + ' ' + d.getDate() + ', ' + d.getFullYear() + ' · ' + hhmm(d)) : 'Not scheduled';
       var rel = d && relTime ? relTime(d.toISOString()) : '';
 
+      // What day, liturgically, is this post going out on?
+      var litHtml = '';
+      if (d && state.O) {
+        var linfo = state.O.dayInfo(dayKey(d));
+        var clash = state.O.fastConflict(String(post.body || ''), dayKey(d));
+        if (linfo.feasts.length || linfo.namedays.length || linfo.fast.level !== 'none') {
+          litHtml = '<div><span class="zk-lab">The day it goes out</span><div class="zk-agmeta">' + fastMarkHTML(linfo);
+          linfo.feasts.forEach(function (f) {
+            litHtml += '<span class="zk-net" style="' + (f.great ? 'color:var(--gold);' : '') + '">' + (f.great ? '✦ ' : '') + esc(f.name) + '</span>';
+          });
+          if (linfo.namedays.length) litHtml += '<span class="zk-net" style="color:var(--acc)">Name day: ' + esc(linfo.namedays.join(', ')) + '</span>';
+          litHtml += '</div>';
+          if (clash) {
+            litHtml += '<div class="zk-fastnote" style="margin-top:8px"><b>' + esc(clash.label) + '.</b> This post mentions ' +
+              esc(clash.words.slice(0, 4).join(', ')) + '. ' + esc(clash.why) + ' Consider ' + esc(clash.suggest) + '.</div>';
+          }
+          litHtml += '</div>';
+        }
+      }
       m.body.innerHTML =
+        litHtml +
         '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">' +
           '<span class="zk-badge ' + statusClass(post.status) + '">' + esc(statusLabel(post.status)) + '</span>' +
           '<span class="zk-meta"><span><b>' + esc(when) + '</b>' + (rel ? ' · ' + esc(rel) : '') + '</span></span>' +
@@ -705,6 +1353,9 @@
       m.foot.innerHTML =
         '<button class="zk-btn" data-role="edit"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Edit time</button>' +
         '<button class="zk-btn" data-role="dup"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Duplicate</button>' +
+        '<button class="zk-btn pri" data-role="editfull"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Edit in Composer</button>' +
+        '<button class="zk-btn" data-role="rp7" title="Schedule this post again a week later">Repost +1w</button>' +
+        '<button class="zk-btn" data-role="rp30" title="Schedule this post again a month later">Repost +1m</button>' +
         '<button class="zk-btn danger" data-role="del"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Delete</button>';
 
       var editRow = m.body.querySelector('[data-role="editrow"]');
@@ -724,6 +1375,27 @@
       m.foot.querySelector('[data-role="dup"]').addEventListener('click', async function () {
         try { await duplicatePost(post); m.close(); }
         catch (e) { toast(e && e.message ? e.message : 'Could not duplicate.'); }
+      });
+      m.foot.querySelector('[data-role="editfull"]').addEventListener('click', function () {
+        // The Composer edits the whole post (body, media, networks, meta) and
+        // saves it back with this same id. Editing the time alone stays here.
+        m.close();
+        gotoComposer({
+          id: post.id,
+          body: post.body || '',
+          media: post.media || [],
+          channels: channelList(post),
+          meta: post.meta || {},
+          scheduledAt: d ? toLocalInput(d) : null
+        });
+      });
+      m.foot.querySelector('[data-role="rp7"]').addEventListener('click', async function () {
+        try { await repost(post, 7); m.close(); }
+        catch (e) { toast(e && e.message ? e.message : 'Could not repost.'); }
+      });
+      m.foot.querySelector('[data-role="rp30"]').addEventListener('click', async function () {
+        try { await repost(post, 30); m.close(); }
+        catch (e) { toast(e && e.message ? e.message : 'Could not repost.'); }
       });
       m.foot.querySelector('[data-role="del"]').addEventListener('click', async function () {
         if (global.confirm && !global.confirm('Delete this post? This cannot be undone.')) return;
@@ -959,6 +1631,51 @@
       doPreview();
     }
 
+    /* ---------- fill the queue from the drafts ----------
+     * Buffer's "add to queue", done honestly: every draft gets the next FREE
+     * slot (never one that already has a post in it), one save per post, and the
+     * result is reported exactly — including how many failed. */
+    async function fillQueue() {
+      if (!state.S) { toast('The scheduling library did not load, so the queue cannot be filled.'); return; }
+      var act = state.S.activeSlots(state.slots);
+      if (!act.length) { toast('Add posting-time slots first (Posting queue).'); return; }
+      var drafts = state.posts.filter(function (p) { return String(p.status || '').toLowerCase() === 'draft'; })
+        .sort(function (a, b) {
+          var da = new Date(a.created_at || 0).getTime(), db = new Date(b.created_at || 0).getTime();
+          return da - db;
+        });
+      if (!drafts.length) { toast('No drafts to place. Save a draft in the Composer first.'); return; }
+      var open = state.S.nextOpenSlotTimes(state.slots, state.posts, new Date(), drafts.length);
+      if (!open.length) { toast('No free slots in the next few weeks.'); return; }
+      var n = Math.min(drafts.length, open.length);
+      if (global.confirm && !global.confirm('Schedule ' + n + ' draft' + (n === 1 ? '' : 's') +
+        ' into the next ' + n + ' free slot' + (n === 1 ? '' : 's') + '?' +
+        (drafts.length > open.length ? '\n\n' + (drafts.length - open.length) + ' draft(s) will stay unscheduled — not enough free slots.' : ''))) return;
+      var ok = 0, fail = 0, firstErr = '';
+      for (var i = 0; i < n; i++) {
+        var p = drafts[i], when = open[i].when;
+        try {
+          await C.api.rpc('social_save_post', {
+            p_workspace: ctx.ws,
+            p_body: p.body || '',
+            p_channels: channelList(p),
+            p_scheduled_at: when.toISOString(),
+            p_status: 'scheduled',
+            p_media: p.media || [],
+            p_nameday: p.nameday_ref || null,
+            p_meta: p.meta || {},
+            p_id: p.id
+          }, { auth: 'require' });
+          ok++;
+        } catch (e) {
+          fail++;
+          if (!firstErr) firstErr = (e && e.message) ? e.message : 'save failed';
+        }
+      }
+      toast(ok + ' scheduled' + (fail ? ', ' + fail + ' failed (' + firstErr + ')' : '') + '.');
+      await reloadAndRender();
+    }
+
     /* ---------- wire toolbar ---------- */
     q('seg').addEventListener('click', function (ev) {
       var b = ev.target.closest && ev.target.closest('[data-view]');
@@ -967,7 +1684,9 @@
       if (v === state.view) return;
       state.view = v;
       Array.prototype.forEach.call(q('seg').querySelectorAll('button'), function (x) {
-        x.classList.toggle('on', x.getAttribute('data-view') === v);
+        var on = x.getAttribute('data-view') === v;
+        x.classList.toggle('on', on);
+        x.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
       reloadAndRender();
     });
@@ -975,19 +1694,75 @@
     q('next').addEventListener('click', function () { navBy(1); });
     q('today').addEventListener('click', function () { state.cursor = startOfDay(new Date()); reloadAndRender(); });
     q('campaign').addEventListener('change', function (e) { state.campaign = e.target.value || ''; render(); });
+    q('status').addEventListener('change', function (e) { state.status = e.target.value || ''; render(); });
+    q('network').addEventListener('change', function (e) { state.network = e.target.value || ''; render(); });
     q('queue').addEventListener('click', function () { openQueue(); });
     q('import').addEventListener('click', function () { openImport(); });
+    q('fill').addEventListener('click', function () { fillQueue(); });
+
+    // search — debounced, because re-rendering a 42-cell grid per keystroke is
+    // visible on a phone
+    var searchTimer = null;
+    q('q').addEventListener('input', function (e) {
+      var v = e.target.value || '';
+      if (searchTimer) global.clearTimeout(searchTimer);
+      searchTimer = global.setTimeout(function () { state.query = v; render(); }, 180);
+    });
+    q('qclear').addEventListener('click', function () {
+      q('q').value = '';
+      state.query = '';
+      render();
+      q('q').focus();
+    });
+
+    // the Orthodox layer toggle, remembered between visits
+    q('orth').addEventListener('click', function () {
+      state.showOrthodox = !state.showOrthodox;
+      var b = q('orth');
+      b.classList.toggle('on', state.showOrthodox);
+      b.setAttribute('aria-pressed', state.showOrthodox ? 'true' : 'false');
+      try { global.localStorage && global.localStorage.setItem('zoi_cal_orthodox', state.showOrthodox ? '1' : '0'); } catch (e) {}
+      render();
+    });
+
+    /* Keyboard navigation. Bound to the calendar's own wrapper rather than the
+     * document, so it dies with the module instead of firing on another screen. */
+    wrap.setAttribute('tabindex', '-1');
+    wrap.addEventListener('keydown', function (e) {
+      var tag = (e.target && e.target.tagName || '').toLowerCase();
+      if (tag === 'input' || tag === 'textarea' || tag === 'select') {
+        if (e.key === 'Escape' && tag === 'input') { e.target.blur(); }
+        return;
+      }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); navBy(-1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); navBy(1); }
+      else if (e.key === 't' || e.key === 'T') { e.preventDefault(); state.cursor = startOfDay(new Date()); reloadAndRender(); }
+      else if (e.key === '/') { e.preventDefault(); q('q').focus(); }
+    });
 
     function navBy(dir) {
       var c = state.cursor;
       if (state.view === 'month') state.cursor = new Date(c.getFullYear(), c.getMonth() + dir, 1);
       else if (state.view === 'week') state.cursor = addDays(c, dir * 7);
+      else if (state.view === 'agenda') state.cursor = addDays(c, dir * 14);
       else state.cursor = addDays(c, dir * 30);
       reloadAndRender();
     }
 
     /* ---------- initial ---------- */
-    render(); // paint shell immediately (empty states)
+    if (!state.showOrthodox) {
+      q('orth').classList.remove('on');
+      q('orth').setAttribute('aria-pressed', 'false');
+    } else {
+      q('orth').classList.add('on');
+    }
+    state.loading = true;
+    render(); // paint the shell immediately, with a loading state
+
+    // The liturgical layer and the scheduling maths are two small local files.
+    var libs = await loadDeps(doc);
+    state.O = libs.O;
+    state.S = libs.S;
     await Promise.all([loadPosts(), loadSlots()]);
     render();
   }

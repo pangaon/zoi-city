@@ -15,9 +15,19 @@
  *   mount(root, ctx); ctx = { C:ZoiCore, ws, channels:[], avail, toast }
  *   ctx.C provides: esc, relTime, toast, api.rpc(fn, params, {auth}) -> Promise
  *
+ * WHAT IS NEW IN 1.1: five cards that are pure arithmetic on the posts the
+ * backend already returns — cadence and the longest silence, queue adherence,
+ * a posting-time heatmap, what the posts are made of, and liturgical coverage
+ * (which feasts and name days actually got a post). None of it needs a provider
+ * API, so none of it is faked: it is the workspace's own behaviour, measured.
+ * Engagement (reach, likes, impressions, followers) still needs provider OAuth,
+ * which is NOT configured — so it stays behind the honest gate at the bottom
+ * and shows no numbers at all.
+ *
  * REAL data RPCs consumed (all reads, auth:'prefer', failures degrade to null):
  *   social_stats(p_workspace)
  *   social_list_posts(p_workspace, p_from, p_to)
+ *   slot_list(p_workspace)
  *   tickets_dashboard(p_workspace) / tickets_event_stats(p_workspace)
  *   community_stats()
  *   home_stats()
@@ -29,8 +39,52 @@
   var STYLE_ID = 'za-styles';
   var CHART_ID = 'za-chartjs';
   var CHART_SRC = 'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js';
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var DAY = 86400000;
+  var WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  /* ---------- shared libraries, without a build step ----------
+   * _schedule.js does the arithmetic (so the composer, the calendar and this
+   * module cannot disagree) and _orthocal.js supplies the liturgical year. Both
+   * are classic scripts next to this one, loaded from this script's own URL and
+   * entirely optional: each card that needs one checks first and says plainly
+   * when it is unavailable rather than rendering a blank.
+   */
+  var SELF_DIR = (function () {
+    try {
+      var cs = global.document && global.document.currentScript;
+      if (cs && cs.src) return String(cs.src).replace(/[^/]+$/, '');
+    } catch (e) { /* no document (unit test) */ }
+    return '/assets/suite/';
+  })();
+  var LIB_PROMISES = {};
+  function loadLib(doc, file, globalName) {
+    if (global[globalName]) return Promise.resolve(global[globalName]);
+    if (LIB_PROMISES[file]) return LIB_PROMISES[file];
+    LIB_PROMISES[file] = new Promise(function (resolve) {
+      var id = 'zoi-lib-' + file;
+      if (!doc.getElementById(id)) {
+        var tag = doc.createElement('script');
+        tag.id = id;
+        tag.src = SELF_DIR + file + '.js';
+        tag.async = false;
+        (doc.head || doc.documentElement).appendChild(tag);
+      }
+      var tries = 0;
+      (function poll() {
+        if (global[globalName]) return resolve(global[globalName]);
+        if (tries++ > 120) return resolve(null);
+        global.setTimeout(poll, 25);
+      })();
+    });
+    return LIB_PROMISES[file];
+  }
+  function loadDeps(doc) {
+    return Promise.all([
+      loadLib(doc, '_orthocal', 'ZoiOrthocal'),
+      loadLib(doc, '_schedule', 'ZoiSchedule')
+    ]).then(function (r) { return { O: r[0], S: r[1] }; });
+  }
 
   /* ---------- tiny helpers ---------- */
   function el(doc, tag, cls, html) {
@@ -112,7 +166,10 @@
 
   /* ---------- posts derivation ---------- */
   // Return array of normalized network keys for a post (from post.channels).
-  function postNetworks(post) {
+  /* `resolve` turns a channel id into a platform. See the note on
+   * contentAnatomy in _schedule.js: without it the charts are labelled with
+   * database ids. */
+  function postNetworks(post, resolve) {
     var chs = post && (post.channels || post.networks || post.targets);
     if (!chs) return [];
     if (!Array.isArray(chs)) {
@@ -125,6 +182,7 @@
     var out = [];
     chs.forEach(function (c) {
       var p = typeof c === 'string' ? c : (c && (c.platform || c.network || c.name || c.type || c.key));
+      if (typeof resolve === 'function' && !NET_META[normNet(p)]) p = resolve(p) || p;
       p = normNet(p);
       if (p) out.push(p);
     });
@@ -169,10 +227,10 @@
     });
     return buckets;
   }
-  function perNetworkCounts(posts) {
+  function perNetworkCounts(posts, resolve) {
     var map = {};
     (posts || []).forEach(function (p) {
-      postNetworks(p).forEach(function (k) { map[k] = (map[k] || 0) + 1; });
+      postNetworks(p, resolve).forEach(function (k) { map[k] = (map[k] || 0) + 1; });
     });
     return Object.keys(map).map(function (k) { return { key: k, name: netName(k), count: map[k] }; })
       .sort(function (a, b) { return b.count - a.count; });
@@ -323,6 +381,31 @@
       '@keyframes za-sh{0%{background-position:200% 0}100%{background-position:-200% 0}}',
       '.za-err{background:rgba(214,112,138,.08);border:1px solid rgba(214,112,138,.35);color:#e8a7b8;border-radius:14px;padding:16px;font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}',
       '.za-spin{width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--acc);border-radius:50%;display:inline-block;animation:za-rot .7s linear infinite;vertical-align:-3px}',
+      /* ---- 1.1: derived-insight cards ---- */
+      '.za-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}',
+      '.za-stat{background:var(--bg3);border:1px solid var(--line);border-radius:12px;padding:11px 13px}',
+      '.za-stat .za-sv{font-weight:800;font-size:21px;line-height:1.1;letter-spacing:-.02em}',
+      '.za-stat .za-sv.za-na{color:var(--mut);font-size:15px;font-weight:700}',
+      '.za-stat .za-sl{font-size:11px;color:var(--mut);font-weight:600;margin-top:3px;line-height:1.3}',
+      '.za-heat{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:2px;align-items:center}',
+      '.za-heat .za-hl{font-size:9.5px;color:var(--mut);font-weight:700;text-align:right;padding-right:4px}',
+      '.za-hc{aspect-ratio:1/1;border-radius:3px;background:var(--bg3);border:1px solid var(--line);min-height:9px}',
+      '.za-hax{display:grid;grid-template-columns:34px repeat(24,minmax(0,1fr));gap:2px;margin-top:4px}',
+      '.za-hax span{font-size:8.5px;color:var(--dim);text-align:center}',
+      '.za-tags{display:flex;flex-wrap:wrap;gap:7px}',
+      '.za-tag{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;background:var(--bg3);border:1px solid var(--line);border-radius:20px;padding:5px 11px;color:var(--tx)}',
+      '.za-tag b{color:var(--acc)}',
+      '.za-rows{display:flex;flex-direction:column;gap:6px}',
+      '.za-row{display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:8px 11px;font-size:12.5px}',
+      '.za-row.hit{border-color:color-mix(in srgb,var(--green) 40%,transparent)}',
+      '.za-row.miss{border-color:color-mix(in srgb,var(--gold) 34%,transparent)}',
+      '.za-row .za-rd{font-weight:800;width:52px;flex:none;font-size:11.5px;color:var(--mut)}',
+      '.za-row .za-rn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+      '.za-row .za-rt{flex:none;font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}',
+      '.za-row.hit .za-rt{color:var(--green)}',
+      '.za-row.miss .za-rt{color:var(--gold)}',
+      '.za-wrap button:focus-visible,.za-wrap [tabindex]:focus-visible{outline:2px solid var(--acc);outline-offset:2px}',
+      '@media(prefers-reduced-motion:reduce){.za-wrap *{transition:none!important;animation:none!important}}',
       '@keyframes za-rot{to{transform:rotate(360deg)}}'
     ].join('\n');
     var st = el(doc, 'style', null, css);
@@ -426,6 +509,47 @@
     lines.push(q('Posts per network'));
     lines.push(['Network', 'Posts'].map(q).join(','));
     (d.nets || []).forEach(function (n) { lines.push([n.name, n.count].map(q).join(',')); });
+    var ins = d.insights || {};
+    if (ins.cadence) {
+      lines.push('');
+      lines.push(q('Cadence (derived from your posts — no provider data involved)'));
+      lines.push([q('Posts in range'), q(ins.cadence.total)].join(','));
+      lines.push([q('Posts per week'), q(ins.cadence.perWeek.toFixed(2))].join(','));
+      lines.push([q('Longest silence (days)'), q(ins.cadence.longestGapDays == null ? '' : ins.cadence.longestGapDays.toFixed(1))].join(','));
+      if (ins.adherence) {
+        lines.push([q('Queue slots defined'), q(ins.adherence.slots)].join(','));
+        lines.push([q('Posts on a queue slot'), q(ins.adherence.onSlot)].join(','));
+        lines.push([q('Queue adherence (%)'), q(ins.adherence.pct == null ? '' : ins.adherence.pct.toFixed(1))].join(','));
+      }
+      lines.push('');
+      lines.push(q('Posts by weekday'));
+      lines.push(['Weekday', 'Posts'].map(q).join(','));
+      ins.cadence.byDow.forEach(function (n, i) {
+        lines.push([['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][i], n].map(q).join(','));
+      });
+    }
+    if (ins.anatomy && ins.anatomy.totals.posts) {
+      lines.push('');
+      lines.push(q('Content anatomy'));
+      lines.push([q('Average characters'), q(ins.anatomy.avgChars)].join(','));
+      lines.push([q('Posts with an image'), q(ins.anatomy.totals.withMedia)].join(','));
+      lines.push([q('Posts with a link'), q(ins.anatomy.totals.withLink)].join(','));
+      lines.push([q('Posts with hashtags'), q(ins.anatomy.totals.withHashtag)].join(','));
+      if (ins.anatomy.topTags.length) {
+        lines.push('');
+        lines.push(q('Top hashtags'));
+        lines.push(['Hashtag', 'Uses'].map(q).join(','));
+        ins.anatomy.topTags.slice(0, 25).forEach(function (t) { lines.push([t.tag, t.count].map(q).join(',')); });
+      }
+    }
+    if (ins.coverage && ins.coverage.length) {
+      lines.push('');
+      lines.push(q('Liturgical coverage'));
+      lines.push(['Date', 'Feast or name day', 'Name days', 'Fast', 'Great feast', 'Posted that day'].map(q).join(','));
+      ins.coverage.forEach(function (r) {
+        lines.push([r.date, r.label, r.namedays, r.fast, r.great ? 'yes' : 'no', r.posted ? 'yes' : 'no'].map(q).join(','));
+      });
+    }
     if (d.events && d.events.length) {
       lines.push('');
       lines.push(q('Ticket revenue per event'));
@@ -471,7 +595,9 @@
       loading: false,
       error: null,
       charts: [],     // live Chart.js instances to destroy on re-render
-      data: null
+      data: null,
+      O: null,        // ZoiOrthocal — the liturgical year
+      S: null         // ZoiSchedule — the shared arithmetic
     };
 
     root.innerHTML = '';
@@ -481,6 +607,16 @@
     function destroyCharts() {
       state.charts.forEach(function (c) { try { c.destroy(); } catch (e) {} });
       state.charts = [];
+    }
+
+    /* Channel id -> platform, from the workspace's own channel list. */
+    function resolveChannel(idOrPlatform) {
+      var key = String(idOrPlatform == null ? '' : idOrPlatform);
+      var list = ctx.channels || [];
+      for (var i = 0; i < list.length; i++) {
+        if (String(list[i].id) === key) return list[i].platform;
+      }
+      return key;
     }
 
     function safeRpc(fn, params) {
@@ -503,7 +639,8 @@
         safeRpc('tickets_dashboard', { p_workspace: ws }),
         safeRpc('tickets_event_stats', { p_workspace: ws }),
         safeRpc('community_stats', {}),
-        safeRpc('home_stats', {})
+        safeRpc('home_stats', {}),
+        safeRpc('slot_list', { p_workspace: ws })
       ]);
 
       var socialStats = results[0];
@@ -517,9 +654,10 @@
       var tickets = deriveTickets(results[2], results[3]);
       var community = results[4] || null;
       var home = results[5] || null;
+      var slots = Array.isArray(results[6]) ? results[6] : [];
 
       var buckets = weeklyBuckets(posts, fromMs, now);
-      var nets = perNetworkCounts(posts);
+      var nets = perNetworkCounts(posts, resolveChannel);
       var derived = statusCounts(posts);
 
       return {
@@ -533,7 +671,9 @@
         nets: nets,
         tickets: tickets,
         community: community,
-        home: home
+        home: home,
+        slots: slots,
+        slotsAvailable: results[6] != null
       };
     }
 
@@ -542,7 +682,7 @@
       var head = el(doc, 'div', 'za-head');
       head.innerHTML =
         '<h2 class="za-title">Analytics &amp; Reporting ' +
-        '<small>real data only · last ' + esc(String(state.range)) + ' days</small></h2>';
+        '<small>real data only · last ' + esc(String(state.range)) + ' days · no engagement provider connected</small></h2>';
       var tools = el(doc, 'div', 'za-tools');
 
       var seg = el(doc, 'div', 'za-seg');
@@ -750,6 +890,282 @@
       return grid;
     }
 
+    /* ================= DERIVED INSIGHTS =================
+     * Everything in this section is arithmetic on the posts the backend already
+     * returned. No provider API is involved, so nothing here is estimated: if a
+     * number cannot be computed it renders as "—" with a reason, never as a 0
+     * pretending to be a measurement.
+     */
+    function statTile(value, label, na) {
+      var t = el(doc, 'div', 'za-stat');
+      var v = el(doc, 'div', 'za-sv' + (value == null ? ' za-na' : ''));
+      v.textContent = value == null ? (na || 'no data') : String(value);
+      t.appendChild(v);
+      t.appendChild(el(doc, 'div', 'za-sl', esc(label)));
+      return t;
+    }
+
+    /* The export must say exactly what the screen says, so the numbers are
+     * computed once here and handed to buildCsv rather than recalculated. */
+    function computeInsights(d) {
+      var out = { cadence: null, adherence: null, anatomy: null, coverage: null };
+      if (state.S && d.postsAvailable) {
+        out.cadence = state.S.cadence(d.posts, d.fromMs, d.toMs);
+        out.adherence = state.S.slotAdherence(d.posts, d.slots);
+        out.anatomy = state.S.contentAnatomy(d.posts, resolveChannel);
+      }
+      if (state.O) {
+        var postedOn = {};
+        function keyOf(ms) {
+          var dt = new Date(ms);
+          function p2(n) { return (n < 10 ? '0' : '') + n; }
+          return dt.getFullYear() + '-' + p2(dt.getMonth() + 1) + '-' + p2(dt.getDate());
+        }
+        (d.posts || []).forEach(function (p) {
+          var iso = p && (p.scheduled_at || p.published_at || p.created_at);
+          if (!iso) return;
+          var dt = new Date(iso);
+          if (!isNaN(dt.getTime())) postedOn[keyOf(dt.getTime())] = true;
+        });
+        var days = Math.max(1, Math.round((d.toMs - d.fromMs) / DAY));
+        var rows = [];
+        for (var i = 0; i <= days; i++) {
+          var key = keyOf(d.fromMs + i * DAY);
+          var info = state.O.dayInfo(key);
+          if (!info.feasts.length && !info.namedays.length) continue;
+          rows.push({
+            date: key,
+            label: info.feasts.length ? info.feasts[0].name : (info.namedays.join(', ') + ' name day'),
+            namedays: info.namedays.join(' / '),
+            fast: info.fast.label,
+            great: info.great,
+            posted: !!postedOn[key]
+          });
+        }
+        out.coverage = rows;
+      }
+      return out;
+    }
+
+    function renderInsights(d) {
+      d.insights = computeInsights(d);
+      var grid = el(doc, 'div', 'za-grid');
+      grid.appendChild(cardCadence(d));
+      grid.appendChild(cardAnatomy(d));
+      grid.appendChild(cardHeatmap(d));
+      grid.appendChild(cardLiturgical(d));
+      return grid;
+    }
+
+    /* (1) Cadence: how often, and — the number that actually matters — how long
+     * the longest silence was. */
+    function cardCadence(d) {
+      var card = el(doc, 'div', 'za-card');
+      card.appendChild(el(doc, 'h3', 'za-ch', 'Cadence &amp; consistency'));
+      card.appendChild(el(doc, 'p', 'za-csub', 'Your own posting rhythm over the last ' + esc(String(d.rangeDays)) + ' days, and how much of it went through your queue slots.'));
+      if (!state.S) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'The scheduling library did not load, so cadence could not be computed.'));
+        return card;
+      }
+      if (!d.postsAvailable) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'Posts could not be loaded, so there is nothing to measure. Sign in and retry.'));
+        return card;
+      }
+      var c = state.S.cadence(d.posts, d.fromMs, d.toMs);
+      if (!c.total) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'No posts in this range yet — schedule one and the rhythm shows up here.'));
+        return card;
+      }
+      var adh = state.S.slotAdherence(d.posts, d.slots);
+      var stats = el(doc, 'div', 'za-stats');
+      stats.appendChild(statTile(c.perWeek.toFixed(1), 'posts per week'));
+      stats.appendChild(statTile(c.longestGapDays == null ? null : Math.round(c.longestGapDays) + 'd', 'longest silence'));
+      stats.appendChild(statTile(c.total, 'posts in range'));
+      stats.appendChild(statTile(adh.pct == null ? null : Math.round(adh.pct) + '%', adh.slots ? 'on a queue slot' : 'no slots defined', 'n/a'));
+      card.appendChild(stats);
+
+      // which weekday gets used, from the real timestamps
+      var max = Math.max.apply(null, c.byDow.concat([1]));
+      var bars = el(doc, 'div', 'za-bars');
+      bars.style.marginTop = '12px';
+      c.byDow.forEach(function (n, i) {
+        var row = el(doc, 'div', 'za-bar-row');
+        row.innerHTML = '<div class="za-bar-lab">' + WEEKDAYS[i] + '</div>' +
+          '<div class="za-bar-track"><div class="za-bar-fill" style="width:' + ((n / max) * 100).toFixed(1) + '%;background:var(--acc)"></div></div>' +
+          '<div class="za-bar-val">' + n + '</div>';
+        bars.appendChild(row);
+      });
+      card.appendChild(bars);
+      if (!adh.slots) {
+        card.appendChild(el(doc, 'p', 'za-note', 'No posting-time slots defined yet, so queue adherence cannot be measured. Add them in Calendar → Posting queue.'));
+      }
+      return card;
+    }
+
+    /* (2) What the posts are actually made of. */
+    function cardAnatomy(d) {
+      var card = el(doc, 'div', 'za-card');
+      card.appendChild(el(doc, 'h3', 'za-ch', 'Content anatomy'));
+      card.appendChild(el(doc, 'p', 'za-csub', 'Length, media, links and hashtags — counted from the posts themselves, not sampled or estimated.'));
+      if (!state.S) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'The scheduling library did not load, so this could not be computed.'));
+        return card;
+      }
+      var a = state.S.contentAnatomy(d.posts, resolveChannel);
+      if (!a.totals.posts) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'No posts in this range yet.'));
+        return card;
+      }
+      var pct = function (n) { return Math.round((n / a.totals.posts) * 100) + '%'; };
+      var stats = el(doc, 'div', 'za-stats');
+      stats.appendChild(statTile(a.avgChars, 'average characters'));
+      stats.appendChild(statTile(pct(a.totals.withMedia), 'have an image'));
+      stats.appendChild(statTile(pct(a.totals.withLink), 'have a link'));
+      stats.appendChild(statTile(pct(a.totals.withHashtag), 'have hashtags'));
+      card.appendChild(stats);
+      if (a.nets.length) {
+        var bars = el(doc, 'div', 'za-bars');
+        bars.style.marginTop = '12px';
+        var max = 1;
+        a.nets.forEach(function (n) { max = Math.max(max, n.avgChars || 0); });
+        a.nets.forEach(function (n, i) {
+          var row = el(doc, 'div', 'za-bar-row');
+          row.innerHTML = '<div class="za-bar-lab">' + esc(n.name) + '</div>' +
+            '<div class="za-bar-track"><div class="za-bar-fill" style="width:' + (((n.avgChars || 0) / max) * 100).toFixed(1) + '%;background:' + netColor(n.key, i) + '"></div></div>' +
+            '<div class="za-bar-val">' + (n.avgChars == null ? '—' : n.avgChars) + '</div>';
+          bars.appendChild(row);
+        });
+        card.appendChild(el(doc, 'p', 'za-note', 'Average characters per post, per network.'));
+        card.appendChild(bars);
+      }
+      if (a.topTags.length) {
+        var tags = el(doc, 'div', 'za-tags');
+        tags.style.marginTop = '12px';
+        a.topTags.slice(0, 10).forEach(function (t) {
+          var pill = el(doc, 'span', 'za-tag');
+          pill.innerHTML = esc(t.tag) + ' <b>' + t.count + '</b>';
+          tags.appendChild(pill);
+        });
+        card.appendChild(tags);
+      } else {
+        card.appendChild(el(doc, 'p', 'za-note', 'No hashtags used in this range.'));
+      }
+      return card;
+    }
+
+    /* (3) When the posts actually go out — a real heatmap of the timestamps. */
+    function cardHeatmap(d) {
+      var card = el(doc, 'div', 'za-card span2');
+      card.appendChild(el(doc, 'h3', 'za-ch', 'When you post'));
+      card.appendChild(el(doc, 'p', 'za-csub', 'Every post in the range, by weekday and hour, in your own timezone. Darker means more posts — the number is in the tooltip.'));
+      var counts = [];
+      for (var i = 0; i < 7; i++) { counts.push(new Array(24)); for (var j = 0; j < 24; j++) counts[i][j] = 0; }
+      var total = 0;
+      (d.posts || []).forEach(function (p) {
+        var iso = p && (p.scheduled_at || p.published_at || p.created_at);
+        if (!iso) return;
+        var dt = new Date(iso);
+        if (isNaN(dt.getTime())) return;
+        counts[dt.getDay()][dt.getHours()]++;
+        total++;
+      });
+      if (!total) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'No dated posts in this range, so there is no pattern to show.'));
+        return card;
+      }
+      var max = 0;
+      counts.forEach(function (r) { r.forEach(function (n) { if (n > max) max = n; }); });
+      var heat = el(doc, 'div', 'za-heat');
+      for (var dow = 0; dow < 7; dow++) {
+        heat.appendChild(el(doc, 'div', 'za-hl', WEEKDAYS[dow]));
+        for (var h = 0; h < 24; h++) {
+          var n = counts[dow][h];
+          var cell = el(doc, 'div', 'za-hc');
+          if (n) {
+            var strength = Math.round((n / max) * 100);
+            cell.style.background = 'color-mix(in srgb, var(--acc) ' + Math.max(18, strength) + '%, transparent)';
+            cell.style.borderColor = 'color-mix(in srgb, var(--acc) 55%, transparent)';
+          }
+          cell.setAttribute('title', WEEKDAYS[dow] + ' ' + (h < 10 ? '0' : '') + h + ':00 — ' + n + ' post' + (n === 1 ? '' : 's'));
+          heat.appendChild(cell);
+        }
+      }
+      card.appendChild(heat);
+      var ax = el(doc, 'div', 'za-hax');
+      ax.appendChild(el(doc, 'span', null, ''));
+      for (var hh = 0; hh < 24; hh++) ax.appendChild(el(doc, 'span', null, hh % 3 === 0 ? String(hh) : ''));
+      card.appendChild(ax);
+      return card;
+    }
+
+    /* (4) Liturgical coverage — the question a Greek business actually asks:
+     * did we post on the days that matter? Feasts and name days come from the
+     * computed calendar; the hits come from the real posts. */
+    function cardLiturgical(d) {
+      var card = el(doc, 'div', 'za-card span2');
+      card.appendChild(el(doc, 'h3', 'za-ch', 'Liturgical coverage'));
+      card.appendChild(el(doc, 'p', 'za-csub', 'The feasts and name days that fell inside this range, and whether anything went out on the day.'));
+      if (!state.O) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'The liturgical calendar could not be loaded, so coverage is unavailable for this session.'));
+        return card;
+      }
+      function keyOf(ms) {
+        var dt = new Date(ms);
+        function p2(n) { return (n < 10 ? '0' : '') + n; }
+        return dt.getFullYear() + '-' + p2(dt.getMonth() + 1) + '-' + p2(dt.getDate());
+      }
+      var postedOn = {};
+      (d.posts || []).forEach(function (p) {
+        var iso = p && (p.scheduled_at || p.published_at || p.created_at);
+        if (!iso) return;
+        var dt = new Date(iso);
+        if (!isNaN(dt.getTime())) postedOn[keyOf(dt.getTime())] = (postedOn[keyOf(dt.getTime())] || 0) + 1;
+      });
+      var days = Math.max(1, Math.round((d.toMs - d.fromMs) / DAY));
+      var rows = [];
+      for (var i = 0; i <= days; i++) {
+        var key = keyOf(d.fromMs + i * DAY);
+        var info = state.O.dayInfo(key);
+        if (!info.feasts.length && !info.namedays.length) continue;
+        rows.push({
+          date: key,
+          label: info.feasts.length ? info.feasts[0].name : (info.namedays.join(', ') + ' name day'),
+          great: info.great,
+          posted: !!postedOn[key]
+        });
+      }
+      if (!rows.length) {
+        card.appendChild(el(doc, 'div', 'za-empty', 'No feast or name day fell inside this range.'));
+        return card;
+      }
+      var hit = rows.filter(function (r) { return r.posted; }).length;
+      var stats = el(doc, 'div', 'za-stats');
+      stats.appendChild(statTile(hit + ' / ' + rows.length, 'feast days with a post'));
+      stats.appendChild(statTile(Math.round((hit / rows.length) * 100) + '%', 'coverage in this range'));
+      var greats = rows.filter(function (r) { return r.great; });
+      stats.appendChild(statTile(greats.length ? greats.filter(function (r) { return r.posted; }).length + ' / ' + greats.length : null,
+        'great feasts covered', 'none in range'));
+      card.appendChild(stats);
+      var list = el(doc, 'div', 'za-rows');
+      list.style.marginTop = '12px';
+      rows.slice(0, 24).forEach(function (r) {
+        var parts = r.date.split('-');
+        var row = el(doc, 'div', 'za-row ' + (r.posted ? 'hit' : 'miss'));
+        row.innerHTML = '<span class="za-rd">' + esc(parts[2] + ' ' + shortMonth(Number(parts[1]))) + '</span>' +
+          '<span class="za-rn">' + (r.great ? '✦ ' : '') + esc(r.label) + '</span>' +
+          '<span class="za-rt">' + (r.posted ? 'posted' : 'nothing') + '</span>';
+        list.appendChild(row);
+      });
+      card.appendChild(list);
+      if (rows.length > 24) {
+        card.appendChild(el(doc, 'p', 'za-note', 'Showing the first 24 of ' + rows.length + '.'));
+      }
+      return card;
+    }
+    function shortMonth(m) {
+      return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][Math.max(0, Math.min(11, m - 1))];
+    }
+
     // ---- honest gated engagement panel ----
     function renderGate(d) {
       var connected = !!(avail && avail.publish);
@@ -800,6 +1216,7 @@
 
       wrap.appendChild(renderKpis(d));
       wrap.appendChild(renderCharts(d, Chart));
+      wrap.appendChild(renderInsights(d));
       wrap.appendChild(renderGate(d));
     }
 
@@ -818,6 +1235,11 @@
       }
       state.data = d;
       state.loading = false;
+      if (!state.S || !state.O) {
+        var libs = await loadDeps(doc);
+        state.O = libs.O;
+        state.S = libs.S;
+      }
       // Load Chart.js (best-effort). Never blocks a full render.
       var Chart = null;
       try { Chart = await loadChart(doc); } catch (e) { Chart = null; }
