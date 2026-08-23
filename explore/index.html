@@ -334,6 +334,28 @@ function typeLabel(t){
 function global_ZE(){ return (typeof ZoiEmblem!=='undefined') ? ZoiEmblem : null; }
 const PIN='<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
 
+/* ---- place-name normalisation ----
+   The data carries the same country under several names ("United States" 2,055,
+   "US" 53, "USA" 10) and the same city spelled differently ("St. Louis" vs
+   "St Louis", "Washington DC" vs "Washington, D.C."). Left alone, the filter
+   lists one place three times and splits its listings across all three. */
+const COUNTRY_ALIAS={
+  'us':'United States','usa':'United States','u.s.':'United States','u.s.a.':'United States',
+  'united states of america':'United States','america':'United States',
+  'uk':'United Kingdom','u.k.':'United Kingdom','great britain':'United Kingdom',
+  'britain':'United Kingdom','england':'United Kingdom','gb':'United Kingdom',
+  'gr':'Greece','hellas':'Greece','ellada':'Greece',
+  'cy':'Cyprus','au':'Australia','ca':'Canada','de':'Germany','deutschland':'Germany',
+  'nl':'Netherlands','holland':'Netherlands','se':'Sweden','ch':'Switzerland',
+  'be':'Belgium','ie':'Ireland','fr':'France','za':'South Africa','nz':'New Zealand'
+};
+function normCountry(v){
+  const t=String(v==null?'':v).trim();
+  if(!t) return '';
+  const a=COUNTRY_ALIAS[t.toLowerCase().replace(/\s+/g,' ')];
+  return a || t;
+}
+
 /* Build listing links from `slug`, never from `path`.
    explore_search derives `path` from the name, dropping the de-duplication
    suffix real slugs carry, so ~14% of paths point at nothing (measured across
@@ -350,7 +372,7 @@ function hrefFor(r){
    from the listing's own name + category (or its photo when it has one), and the
    only badge shown is the verification state the backend actually reports. */
 function card(r,idx){
-  const loc=[r.city,r.country].filter(Boolean).join(', ');
+  const loc=[r.city,normCountry(r.country)].filter(Boolean).join(', ');
   const ZE=global_ZE();
   const cover = ZE
     ? ZE.cover({name:r.name, type:r.entity_type, slug:r.slug||r.id, photo:r.photo_url})
@@ -422,7 +444,7 @@ function renderRows(){
 function harvestCountries(rows){
   const seen={}; ST.countries.forEach(c=>seen[c]=true);
   let added=false;
-  (rows||[]).forEach(r=>{ const c=(r&&r.country||'').trim(); if(c&&!seen[c]){ seen[c]=true; added=true; } });
+  (rows||[]).forEach(r=>{ const c=normCountry(r&&r.country); if(c&&!seen[c]){ seen[c]=true; added=true; } });
   if(ST.country && !seen[ST.country]){ seen[ST.country]=true; added=true; }
   if(!added) return;
   ST.countries=Object.keys(seen).sort((a,b)=>a.localeCompare(b));
@@ -437,7 +459,7 @@ function harvestCountries(rows){
    star row here would be decoration pretending to be data. */
 function quickView(i){
   const r=(ST.view||[])[i]; if(!r) return;
-  const loc=[r.city,r.country].filter(Boolean).join(', ');
+  const loc=[r.city,normCountry(r.country)].filter(Boolean).join(', ');
   const vs=String(r.verification_status||'');
   const ZE=global_ZE();
   const cover=ZE?ZE.cover({name:r.name,type:r.entity_type,slug:r.slug||r.id,photo:r.photo_url}):'';
