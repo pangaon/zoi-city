@@ -107,6 +107,53 @@ footer a:hover{color:var(--tx)}
 .qv-meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
 .qv-desc{color:var(--mut);font-size:14.5px;line-height:1.6;margin:14px 0 0;white-space:pre-wrap}
 .qv-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.qv-cover{aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--bg3)}
+.qv-cover .ze,.qv-cover .ze-photo{width:100%;height:100%;object-fit:cover;display:block}
+.qv-cover .ze-alt{display:none}
+.qv-cat{font-size:12.5px;color:var(--gold);margin-top:6px}
+
+/* ===== listing cards: cover art + body + actions ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px}
+.lcard{position:relative;display:flex;flex-direction:column;background:var(--bg2);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:
+  transform .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease)}
+.lcard:hover{transform:translateY(-3px);border-color:var(--line2);
+  box-shadow:0 22px 44px -26px rgba(0,0,0,.55)}
+.lcover{display:block;position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--bg3);
+  border-bottom:1px solid var(--line)}
+.lcover .ze,.lcover .ze-photo{display:block;width:100%;height:100%;object-fit:cover;
+  transition:transform .5s var(--ease)}
+.lcard:hover .lcover .ze,.lcard:hover .lcover .ze-photo{transform:scale(1.035)}
+.lcover .ze-alt{display:none}
+.lcover.ze-fallback .ze-alt{display:block;width:100%;height:100%}
+.lbody{padding:14px 15px 6px;display:flex;flex-direction:column;gap:6px;flex:1}
+.ltop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ltype{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.lname{font-size:16.5px;font-weight:700;letter-spacing:-.015em;line-height:1.28;margin:0}
+.lname a{color:var(--tx)} .lname a:hover{color:var(--acc)}
+.lloc{font-size:12.5px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.lloc svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex:none}
+.ldesc{font-size:13px;color:var(--mut);line-height:1.5;margin:2px 0 0;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lfoot{display:flex;gap:7px;padding:10px 15px 14px;margin-top:auto;flex-wrap:wrap}
+.lbtn{font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:9px;border:1px solid var(--line2);
+  background:transparent;color:var(--tx);cursor:pointer;transition:.2s var(--ease);min-height:34px;
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.lbtn:hover{border-color:var(--acc);color:var(--acc)}
+.lbtn.pri{background:var(--tx);color:var(--btn-fg);border-color:var(--tx)}
+.lbtn.pri:hover{filter:brightness(1.06);color:var(--btn-fg)}
+.lbtn.claim{color:var(--gold);border-color:color-mix(in srgb, var(--gold) 45%, transparent)}
+.lbtn.claim:hover{border-color:var(--gold);color:var(--gold)}
+.lverify{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--green);
+  background:color-mix(in srgb, var(--green) 14%, transparent);
+  border:1px solid color-mix(in srgb, var(--green) 34%, transparent);border-radius:999px;padding:2px 8px}
+.lverify svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.6}
+.lsrc{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+/* skeletons matched to the real card so loading doesn't jump */
+.skel{height:302px;border-radius:16px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));
+  background-size:200% 100%;animation:sk 1.2s infinite;border:1px solid var(--line)}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 </head>
@@ -168,7 +215,7 @@ footer a:hover{color:var(--tx)}
 <script>
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
-const TYPES=[['','All'],['business','Businesses'],['church','Churches'],['professional','Professionals'],['organization','Associations'],['event','Events'],['creator','Creators'],['school','Schools'],['vendor','Vendors'],['artist','Artists']];
+let TYPES=[['','All']];
 let ST={q:'',type:'',city:'',country:'',sort:'',offset:0,busy:false,done:false,counts:{},rows:[],countries:[]};
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
@@ -186,8 +233,17 @@ function pillsRender(){
   const el=document.getElementById('type-pills');
   el.innerHTML=TYPES.map(([v,l])=>{
     const n=v?(ST.counts[v]||''):'';
-    return '<button class="fpill'+(ST.type===v?' on':'')+'" onclick="setType(\''+v+'\')">'+l+(n?'<b>'+Number(n).toLocaleString()+'</b>':'')+'</button>';
+    return '<button class="fpill'+(ST.type===v?' on':'')+'" onclick="setType(\''+v+'\')">'+esc(l)+
+      (n?'<b>'+Number(n).toLocaleString()+'</b>':'')+'</button>';
   }).join('');
+}
+/* Categories come from dir_counts, so every category in the data gets a filter —
+   nothing is stranded because the UI forgot to list it. */
+function buildTypes(rows){
+  const out=[['','All']];
+  (rows||[]).filter(c=>c.entity_type).sort((a,b)=>(b.n||b.count||0)-(a.n||a.count||0))
+    .forEach(c=>out.push([c.entity_type, typeLabel(c.entity_type)]));
+  TYPES=out;
 }
 function setType(v){ ST.type=v; pillsRender(); runSearch(true); }
 
@@ -195,6 +251,7 @@ async function boot(){
   try{
     const counts=await rpc('dir_counts',{},true);
     (counts||[]).forEach(c=>{ if(c.entity_type) ST.counts[c.entity_type]=c.n||c.count; });
+    buildTypes(counts);
   }catch(e){ try{ const rows=await rpc('dir_counts',{},true); }catch(e2){} }
   pillsRender();
   try{
@@ -217,13 +274,43 @@ async function boot(){
     document.getElementById('fresh').innerHTML=(fresh||[]).map(f=>
       '<a class="fcard" href="'+esc(f.path)+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
   }catch(e){}
-  const u=new URL(location.href);
-  const q=u.searchParams.get('q'); const c=u.searchParams.get('c');
-  if(q){ document.getElementById('q').value=q; ST.q=q; }
-  if(c){ const map={restaurants:'business',bakeries:'business',churches:'church',festivals:'event',professionals:'professional',schools:'school',associations:'organization',creators:'creator'};
-    ST.type=map[c]||''; if(['restaurants','bakeries'].includes(c)) { ST.q=c==='restaurants'?'restaurant':'bakery'; document.getElementById('q').value=ST.q; } pillsRender(); }
+  readUrl();
   runSearch(true);
 }
+
+
+/* ---- URL is the source of truth for a search ----
+   Every filter lands in the querystring, so a result set can be linked, shared
+   and reached with the Back button — the way people expect search to behave. */
+function readUrl(){
+  const u=new URL(location.href), g=k=>u.searchParams.get(k)||'';
+  ST.q=g('q'); ST.city=g('city'); ST.country=g('country'); ST.sort=g('sort');
+  ST.type=g('type');
+  // legacy ?c= shortcuts kept working
+  const c=g('c');
+  if(c && !ST.type){
+    const map={restaurants:'business',bakeries:'business',churches:'church',festivals:'event',
+      professionals:'professional',schools:'school',associations:'organization',creators:'creator'};
+    ST.type=map[c]||'';
+    if(c==='restaurants'||c==='bakeries') ST.q=(c==='restaurants'?'restaurant':'bakery');
+  }
+  const qi=document.getElementById('q'); if(qi) qi.value=ST.q;
+  const cs=document.getElementById('country-sel'); if(cs&&ST.country) harvestCountries([]);
+  const ss=document.getElementById('sort-sel'); if(ss) ss.value=ST.sort;
+  const ci=document.getElementById('city-sel'); if(ci) ci.value=ST.city;
+  pillsRender();
+}
+function writeUrl(push){
+  const u=new URL(location.href);
+  u.search='';
+  const set=(k,v)=>{ if(v) u.searchParams.set(k,v); };
+  set('q',ST.q); set('type',ST.type); set('city',ST.city);
+  set('country',ST.country); set('sort',ST.sort);
+  const next=u.pathname+(u.search?u.search:'');
+  if(next===location.pathname+location.search) return;
+  try{ push?history.pushState({},'',next):history.replaceState({},'',next); }catch(e){}
+}
+window.addEventListener('popstate',()=>{ readUrl(); runSearch(true); });
 
 let debounceT=null;
 document.addEventListener('DOMContentLoaded',()=>{
@@ -241,26 +328,45 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeQV(); });
 });
 
+function typeLabel(t){
+  return (global_ZE() && global_ZE().typeLabel) ? global_ZE().typeLabel(t) : String(t||'Listing');
+}
+function global_ZE(){ return (typeof ZoiEmblem!=='undefined') ? ZoiEmblem : null; }
+const PIN='<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+/* A listing card. Every element is real data: the cover is generated art derived
+   from the listing's own name + category (or its photo when it has one), and the
+   only badge shown is the verification state the backend actually reports. */
 function card(r,idx){
   const loc=[r.city,r.country].filter(Boolean).join(', ');
-  const ver=r.verification_status==='verified';
-  return '<div class="card">'+
-    '<div class="chead"><div class="cname"><a href="'+esc(r.path)+'">'+esc(r.name)+'</a></div>'+
-      (ver?'<span class="vbadge"><svg style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>':'')+
+  const ZE=global_ZE();
+  const cover = ZE
+    ? ZE.cover({name:r.name, type:r.entity_type, slug:r.slug||r.id, photo:r.photo_url})
+    : '';
+  const vs=String(r.verification_status||'');
+  let badge='';
+  if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>';
+  else if(vs==='source_verified') badge='<span class="lsrc">Sourced</span>';
+  return '<article class="lcard">'+
+    '<a class="lcover'+(r.photo_url?'':' ')+'" href="'+esc(r.path)+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
+    '<div class="lbody">'+
+      '<div class="ltop"><span class="ltype">'+esc(typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
+      '<h3 class="lname"><a href="'+esc(r.path)+'">'+esc(r.name)+'</a></h3>'+
+      (loc?'<div class="lloc">'+PIN+esc(loc)+'</div>':'')+
+      (r.description?'<p class="ldesc">'+esc(r.description)+'</p>':'')+
     '</div>'+
-    '<div class="cmeta">'+(r.category?'<span class="cat">'+esc(r.category)+'</span>':'<span class="cat">'+esc(r.entity_type)+'</span>')+(loc?'<span>'+esc(loc)+'</span>':'')+(r.rating?'<span>★ '+r.rating+'</span>':'')+'</div>'+
-    (r.description?'<div class="cdesc">'+esc(r.description)+(r.description.length>=170?'…':'')+'</div>':'')+
-    '<div class="cfoot">'+
-      '<a class="cbtn" href="'+esc(r.path)+'">View page</a>'+
-      '<button class="cbtn" onclick="quickView('+idx+')">Quick view</button>'+
-      (r.claimable?'<button class="cbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
-    '</div></div>';
+    '<div class="lfoot">'+
+      '<a class="lbtn pri" href="'+esc(r.path)+'">View</a>'+
+      '<button class="lbtn" onclick="quickView('+idx+')">Quick look</button>'+
+      (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
+    '</div></article>';
 }
 
 async function runSearch(reset){
   if(ST.busy) return; ST.busy=true;
-  if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML='<div class="skel"></div><div class="skel"></div><div class="skel"></div>'; }
+  if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML=new Array(6).fill('<div class="skel"></div>').join(''); }
   document.getElementById('res-mode').textContent=ST.q?('\u201c'+ST.q+'\u201d'):'';
+  if(reset) writeUrl(true);
   try{
     const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:ST.city||null,p_country:ST.country||null,p_limit:24,p_offset:ST.offset},true);
     const batch=rows||[];
@@ -314,21 +420,29 @@ function harvestCountries(rows){
     ST.countries.map(c=>'<option value="'+esc(c)+'"'+(c===ST.country?' selected':'')+'>'+esc(c)+'</option>').join('');
 }
 
-/* Quick view: rendered only from fields already returned for that row. */
+/* Quick look: rendered only from fields already returned for that row.
+   No rating is shown — the backend reports none for any listing today, so a
+   star row here would be decoration pretending to be data. */
 function quickView(i){
   const r=(ST.view||[])[i]; if(!r) return;
   const loc=[r.city,r.country].filter(Boolean).join(', ');
-  const ver=r.verification_status==='verified';
+  const vs=String(r.verification_status||'');
+  const ZE=global_ZE();
+  const cover=ZE?ZE.cover({name:r.name,type:r.entity_type,slug:r.slug||r.id,photo:r.photo_url}):'';
+  let badge='';
+  if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>';
+  else if(vs==='source_verified') badge='<span class="lsrc">Sourced from a public record</span>';
   document.getElementById('qv-body').innerHTML=
-    '<h3 id="qv-name">'+esc(r.name)+(ver?' <span class="vbadge" style="vertical-align:middle"><svg style="width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>':'')+'</h3>'+
-    '<div class="cmeta qv-meta">'+
-      '<span class="cat">'+esc(r.category||r.entity_type||'')+'</span>'+
-      (loc?'<span>'+esc(loc)+'</span>':'')+
-      (r.rating?'<span>\u2605 '+esc(String(r.rating))+'</span>':'')+
-    '</div>'+
-    (r.description?'<p class="qv-desc">'+esc(r.description)+'</p>':'<p class="qv-desc">No description on this listing yet.</p>')+
-    '<div class="qv-acts"><a class="btn p" href="'+esc(r.path)+'">Open full page</a>'+
-      (r.claimable?'<button class="btn g" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
+    '<div class="qv-cover">'+cover+'</div>'+
+    '<div class="ltop" style="margin-top:16px"><span class="ltype">'+esc(typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
+    '<h3 id="qv-name">'+esc(r.name)+'</h3>'+
+    (loc?'<div class="lloc" style="margin-top:2px">'+PIN+esc(loc)+'</div>':'')+
+    (r.category?'<div class="qv-cat">'+esc(r.category)+'</div>':'')+
+    (r.description?'<p class="qv-desc">'+esc(r.description)+'</p>'
+                  :'<p class="qv-desc">No description on this listing yet.'+
+                   (r.claimable?' If it is yours, claim it and you can write one.':'')+'</p>')+
+    '<div class="qv-acts"><a class="lbtn pri" href="'+esc(r.path)+'">Open full page</a>'+
+      (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
     '</div>';
   const qv=document.getElementById('qv'); qv.hidden=false;
   document.getElementById('qv-x').focus();
@@ -351,6 +465,7 @@ async function claim(slug,btn){
   }catch(e){ btn.disabled=false; btn.textContent='This is mine'; toast(e.message); }
 }
 </script>
+<script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-theme.js"></script>
 </body>
 </html>
