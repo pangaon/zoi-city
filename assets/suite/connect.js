@@ -140,7 +140,14 @@
     };
     var toast = ctx.toast || (C.toast) || function () {};
     var avail = ctx.avail || {};
-    var publishLive = !!avail.publish;
+    /* The feature_social_publish flag says whether Zoi WANTS to publish. It says
+       nothing about whether any provider app actually exists. Those are different
+       facts, and conflating them is why every Connect button looked live and did
+       nothing: the flag is on, no provider credentials are configured, and the
+       click handler only raised a toast promising a handoff that never came.
+       social-config already reports the truth per platform — ask it. */
+    var providerReady = {};      // platform id -> boolean, filled in below
+    var configKnown = false;
 
     var state = {
       channels: (ctx.channels && ctx.channels.slice()) || [],
@@ -165,18 +172,30 @@
     head.appendChild(refreshBtn);
     wrap.appendChild(head);
 
-    // gating banner
-    var banner = el('div', 'zn-banner' + (publishLive ? ' zn-live' : ''));
-    banner.appendChild(el('span', 'zn-dot', publishLive ? CHECK_SVG : SHIELD_SVG));
+    // gating banner — filled in once we know which providers are really configured
+    var banner = el('div', 'zn-banner');
+    var bdot = el('span', 'zn-dot', SHIELD_SVG);
     var bmsg = el('div');
-    if (publishLive) {
-      bmsg.innerHTML = '<b>Social integrations are live.</b><p>Connect an account below to let Zoi publish and schedule directly to it.</p>';
-    } else {
-      bmsg.innerHTML = '<b>Connecting unlocks once Zoi’s social integrations go live.</b>' +
-        '<p>Provider apps are still being configured, so live OAuth is turned off. You can schedule and draft now, and add planning handles below so composer previews look right.</p>';
-    }
-    banner.appendChild(bmsg);
+    bmsg.innerHTML = '<b>Checking which networks are connectable\u2026</b>';
+    banner.appendChild(bdot); banner.appendChild(bmsg);
     wrap.appendChild(banner);
+
+    function paintBanner() {
+      var ready = PLATFORMS.filter(function (p) { return providerReady[p.id]; });
+      banner.className = 'zn-banner' + (ready.length ? ' zn-live' : '');
+      bdot.innerHTML = ready.length ? CHECK_SVG : SHIELD_SVG;
+      if (ready.length === PLATFORMS.length) {
+        bmsg.innerHTML = '<b>Social integrations are live.</b>' +
+          '<p>Connect an account below to let Zoi publish and schedule directly to it.</p>';
+      } else if (ready.length) {
+        bmsg.innerHTML = '<b>' + ready.length + ' of ' + PLATFORMS.length +
+          ' networks are connectable.</b><p>The rest need their developer app registered before Zoi can be authorised to post.</p>';
+      } else {
+        bmsg.innerHTML = '<b>No network can be connected yet.</b>' +
+          '<p>Connecting needs a developer app registered with each network \u2014 Zoi has none yet, so there is nothing to authorise against. ' +
+          'Drafting and scheduling work now, and a planning handle below makes composer previews look right.</p>';
+      }
+    }
 
     // platform grid
     var grid = el('div', 'zn-grid');
@@ -305,22 +324,47 @@
       } else {
         var btn = el('button', 'zn-btn zn-primary', 'Connect');
         btn.type = 'button';
-        if (!publishLive) {
+        if (!providerReady[p.id]) {
           btn.disabled = true;
-          btn.title = 'Live connecting is not available yet';
+          btn.title = configKnown
+            ? p.name + ' has no developer app registered yet'
+            : 'Checking availability\u2026';
           foot.appendChild(btn);
-          foot.appendChild(el('p', 'zn-note',
-            'Connecting unlocks once Zoi’s social integrations go live — you can schedule and draft now.'));
+          foot.appendChild(el('p', 'zn-note', configKnown
+            ? 'Not connectable yet: Zoi needs a ' + esc(p.name) +
+              ' developer app registered before it can ask for permission to post.'
+            : 'Checking whether ' + esc(p.name) + ' is connectable\u2026'));
         } else {
-          // Providers configured. The real handshake runs server-side through the
-          // `social-connect` edge function; this build ships the honest gate, so we
-          // surface a clear message rather than faking a client-side OAuth here.
-          btn.addEventListener('click', function () {
-            toast('Opening ' + p.name + ' connect — Zoi will hand you to ' + p.name + ' to authorise.');
+          // The real handshake. social-connect builds the provider's authorize URL
+          // server-side (PKCE where the provider requires it) and hands it back;
+          // we navigate to it. No OAuth secrets ever touch the browser.
+          btn.addEventListener('click', async function () {
+            btn.disabled = true;
+            var original = btn.textContent;
+            btn.textContent = 'Opening ' + p.name + '\u2026';
+            try {
+              var r = await fetch(C.BASE + '/functions/v1/social-connect', {
+                method: 'POST',
+                headers: {
+                  apikey: C.KEY,
+                  Authorization: 'Bearer ' + (C.auth && C.auth.token ? C.auth.token() : C.KEY),
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ workspace: ctx.ws, platform: p.id })
+              });
+              var j = await r.json().catch(function () { return {}; });
+              var url = j.url || j.authorize_url || j.redirect;
+              if (r.ok && url) { location.href = url; return; }
+              toast(j.error || ('Could not start the ' + p.name + ' connection.'));
+            } catch (e) {
+              toast('Could not reach ' + p.name + '. Please try again.');
+            }
+            btn.disabled = false;
+            btn.textContent = original;
           });
           foot.appendChild(btn);
           foot.appendChild(el('p', 'zn-note',
-            'You’ll be sent to ' + esc(p.name) + ' to authorise access, then returned here.'));
+            'You\u2019ll be sent to ' + esc(p.name) + ' to authorise access, then returned here.'));
         }
       }
       card.appendChild(foot);
@@ -382,6 +426,32 @@
 
     /* ---------- initial render ---------- */
     renderGrid();
+    paintBanner();
+
+    /* Ask the server which networks are genuinely connectable. social-config
+       checks for each provider's CLIENT_ID/CLIENT_SECRET and reports
+       available:true|false per platform, which is the only honest basis for
+       enabling a Connect button. A failure here leaves everything disabled —
+       the safe direction. */
+    (async function loadProviderConfig() {
+      try {
+        var r = await fetch(C.BASE + '/functions/v1/social-config', {
+          method: 'POST',
+          headers: { apikey: C.KEY, Authorization: 'Bearer ' + C.KEY, 'Content-Type': 'application/json' },
+          body: '{}'
+        });
+        var j = await r.json();
+        (j && j.platforms ? j.platforms : []).forEach(function (pl) {
+          if (pl && pl.id) providerReady[pl.id] = !!pl.available;
+        });
+      } catch (e) {
+        // leave every platform unready
+      }
+      configKnown = true;
+      paintBanner();
+      renderGrid();
+    })();
+
     // Refresh from server in the background if we started empty.
     if (!state.channels.length) {
       refreshChannels();
