@@ -1,557 +1,1127 @@
 <!doctype html>
 <html lang="en" data-theme="dark">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5"/>
-<title>The map · Zoi</title>
-<meta name="description" content="Every Greek place on one map — churches, tavernas, schools, associations and businesses across Greece, Cyprus and the diaspora."/>
-<link rel="canonical" href="https://www.zoi.city/explore/map"/>
-<meta property="og:title" content="The map of the Greek world · Zoi"/>
-<meta property="og:description" content="Thousands of Greek places, plotted. Filter by category, jump by country, find what is near you."/>
-<meta name="color-scheme" content="dark light">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<title>The Greek world, mapped — Zoi</title>
+<meta name="description" content="Every Greek business, parish, school, association and place on one map. Pan the globe, zoom to a street, filter by what you're looking for.">
+<link rel="canonical" href="https://www.zoi.city/explore/map">
+<meta name="theme-color" content="#080a0e">
+
+<!-- Tiles come from a third party; warming the connection early is worth ~150ms on first paint. -->
+<link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
+<link rel="dns-prefetch" href="https://tiles.openfreemap.org">
+<link rel="preconnect" href="https://csebihpaychdkanjjsmz.supabase.co" crossorigin>
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
+<link rel="stylesheet" href="/assets/vendor/maplibre-gl.css">
 <link rel="stylesheet" href="/assets/zoi-theme.css">
+
 <style>
-html,body{height:100%}
-body{overflow:hidden}
-#app{position:fixed;inset:0;display:flex;flex-direction:column}
-.zoi-header{flex:none}
+  html,body{height:100%}
+  body{overflow:hidden}
+  .zoi-header{position:relative;z-index:40}
 
-/* ---- stage ---- */
-.stage{position:relative;flex:1;min-height:0;overflow:hidden;
-  background:radial-gradient(120% 90% at 50% -10%, var(--bg2), var(--bg) 70%)}
-#cv{position:absolute;inset:0;width:100%;height:100%;display:block;cursor:grab;touch-action:none}
-#cv.drag{cursor:grabbing}
+  /* ---- stage ---- */
+  .m-stage{position:fixed;inset:var(--hdr,64px) 0 0 0;display:flex;overflow:hidden;background:var(--bg);
+    /* Panel width is declared once here; the tool rail is positioned from it, so
+       the two can no longer end up stacked on each other. */
+    --pw:min(384px,calc(100vw - 28px))}
+  #map{position:absolute;inset:0}
+  #map:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .maplibregl-canvas{outline:none}
 
-/* ---- top control rail ---- */
-.rail{position:absolute;top:0;left:0;right:0;z-index:6;display:flex;gap:10px;align-items:flex-start;
-  padding:14px 16px;pointer-events:none;flex-wrap:wrap}
-.rail > *{pointer-events:auto}
-.pod{background:color-mix(in srgb, var(--bg2) 88%, transparent);border:1px solid var(--line2);
-  border-radius:14px;backdrop-filter:blur(14px) saturate(140%);-webkit-backdrop-filter:blur(14px) saturate(140%);
-  box-shadow:0 18px 40px -26px rgba(0,0,0,.6)}
-.find{display:flex;align-items:center;gap:9px;padding:0 6px 0 13px;min-width:250px;max-width:340px;flex:1}
-.find svg{width:15px;height:15px;stroke:var(--mut);fill:none;stroke-width:2;flex:none}
-.find input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--tx);
-  font:500 14.5px "Hanken Grotesk",system-ui;padding:11px 0}
-.find input::placeholder{color:var(--dim)}
-.find .clr{background:none;border:0;color:var(--dim);cursor:pointer;font-size:17px;line-height:1;padding:4px 8px}
-.find .clr:hover{color:var(--tx)}
+  /* The globe's backdrop. Keeping it token-driven means the void around the
+     planet matches the page instead of MapLibre's default grey. */
+  .maplibregl-map{background:var(--bg)!important;font-family:"Hanken Grotesk",system-ui,sans-serif}
 
-.chips{display:flex;gap:6px;padding:6px;flex-wrap:wrap;max-width:min(560px,100%)}
-.chip2{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid transparent;
-  border-radius:999px;padding:6px 11px;cursor:pointer;color:var(--mut);
-  font:700 12px "Hanken Grotesk",system-ui;white-space:nowrap;transition:.16s var(--ease)}
-.chip2:hover{color:var(--tx);border-color:var(--line)}
-.chip2.on{color:var(--tx);background:var(--card);border-color:var(--line2)}
-.chip2 .sw{width:9px;height:9px;border-radius:50%;flex:none}
-.chip2 b{font-weight:600;color:var(--dim);font-variant-numeric:tabular-nums}
-.chip2.on b{color:var(--mut)}
+  /* ---- floating panes ---- */
+  .m-pane{
+    position:absolute;z-index:12;background:color-mix(in srgb,var(--card) 86%,transparent);
+    backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+    border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)
+  }
 
-/* ---- right side buttons ---- */
-.tools{position:absolute;right:16px;bottom:20px;z-index:6;display:flex;flex-direction:column;gap:8px}
-.tool{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;cursor:pointer;
-  background:color-mix(in srgb, var(--bg2) 88%, transparent);border:1px solid var(--line2);color:var(--tx);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.tool:hover{border-color:var(--acc);color:var(--acc)}
-.tool svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
-.tool[disabled]{opacity:.45;cursor:not-allowed}
+  /* search + filters, top left */
+  .m-controls{top:14px;left:14px;width:min(370px,calc(100vw - 28px));padding:12px;display:grid;gap:10px}
+  .m-searchrow{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:12px;padding:9px 11px}
+  .m-searchrow:focus-within{border-color:color-mix(in srgb,var(--acc) 55%,var(--line))}
+  .m-searchrow svg{flex:0 0 16px;opacity:.6}
+  .m-searchrow input{flex:1;min-width:0;background:none;border:0;color:var(--tx);font:inherit;font-size:14.5px;outline:none}
+  .m-searchrow input::placeholder{color:var(--dim)}
+  .m-clearq{border:0;background:none;color:var(--dim);cursor:pointer;padding:2px 4px;border-radius:6px;font-size:16px;line-height:1}
+  .m-clearq:hover{color:var(--tx)}
 
-/* ---- bottom status ---- */
-.status{position:absolute;left:16px;bottom:20px;z-index:6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;
-  max-width:calc(100% - 90px)}
-.stat2{font:600 12px "Hanken Grotesk",system-ui;color:var(--mut);padding:8px 13px;border-radius:999px;
-  background:color-mix(in srgb, var(--bg2) 88%, transparent);border:1px solid var(--line);
-  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
-.stat2 b{color:var(--tx);font-variant-numeric:tabular-nums}
-.stat2 a{color:var(--acc)}
+  .m-chips{display:flex;flex-wrap:wrap;gap:6px;max-height:min(244px,34vh);overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}
+  .m-chip{
+    display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+    border:1px solid var(--line);background:var(--bg2);color:var(--mut);
+    font:600 12.5px/1.35 "Hanken Grotesk",system-ui,sans-serif;text-transform:none;letter-spacing:0;
+    cursor:pointer;white-space:nowrap;
+    transition:border-color .16s var(--ease),color .16s var(--ease),background .16s var(--ease)
+  }
+  .m-chip:hover{color:var(--tx);border-color:var(--line2)}
+  .m-chip .m-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 8px;box-shadow:none}
+  .m-chip .m-n{font-variant-numeric:tabular-nums;font-size:11.5px;opacity:.75;font-weight:500}
+  .m-chip[aria-pressed="true"]{color:var(--tx);background:color-mix(in srgb,var(--card2) 70%,transparent);
+    border-color:color-mix(in srgb,currentColor 45%,var(--line))}
+  .m-chip[data-off="1"]{opacity:.38}
+  .m-chiprow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .m-chiprow .m-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .m-linkish{border:0;background:none;color:var(--acc);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:2px}
+  .m-linkish:hover{text-decoration:underline}
 
-/* ---- hover tooltip ---- */
-#tip{position:absolute;z-index:8;pointer-events:none;opacity:0;transform:translate(-50%,-100%);
-  transition:opacity .12s;max-width:260px}
-#tip.on{opacity:1}
-.tipin{background:var(--bg2);border:1px solid var(--line2);border-radius:11px;padding:8px 11px;
-  box-shadow:0 16px 34px -20px rgba(0,0,0,.7)}
-.tipin .t1{font:700 13px "Hanken Grotesk";letter-spacing:-.01em;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis;max-width:236px}
-.tipin .t2{font:600 11.5px "Hanken Grotesk";color:var(--dim);margin-top:1px}
+  /* results / detail, right */
+  .m-panel{top:14px;right:14px;bottom:14px;width:var(--pw);display:flex;flex-direction:column;overflow:hidden}
+  .m-panel header{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .m-panel header h2{margin:0;font-family:"Fraunces",serif;font-size:16px;font-weight:600;letter-spacing:-.01em;flex:1}
+  .m-panel header .m-sub{display:block;font-family:"Hanken Grotesk",sans-serif;font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0}
+  .m-panel .m-body{flex:1;overflow-y:auto;overscroll-behavior:contain}
+  .m-xbtn{border:1px solid var(--line);background:var(--bg2);color:var(--mut);width:28px;height:28px;
+    border-radius:8px;cursor:pointer;font-size:15px;line-height:1;flex:0 0 auto}
+  .m-xbtn:hover{color:var(--tx);border-color:var(--line2)}
 
-/* ---- detail panel ---- */
-#panel{position:absolute;top:0;right:0;bottom:0;width:min(380px,100%);z-index:9;
-  background:var(--bg2);border-left:1px solid var(--line2);transform:translateX(101%);
-  transition:transform .3s var(--ease);display:flex;flex-direction:column;
-  box-shadow:-30px 0 60px -30px rgba(0,0,0,.6)}
-#panel.on{transform:none}
-.phead{display:flex;align-items:flex-start;gap:12px;padding:16px 16px 12px;border-bottom:1px solid var(--line)}
-.phead h2{font-size:17px;font-weight:700;letter-spacing:-.02em;margin:0;flex:1;min-width:0}
-.phead .x{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:none;
-  color:var(--mut);cursor:pointer;flex:none;font-size:17px;line-height:1}
-.phead .x:hover{color:var(--tx);border-color:var(--acc)}
-.plist{flex:1;overflow-y:auto;padding:8px}
-.prow{display:flex;align-items:center;gap:11px;padding:10px 11px;border-radius:11px;text-decoration:none;color:inherit}
-.prow:hover{background:var(--card)}
-.prow .av{width:34px;height:34px;border-radius:9px;overflow:hidden;flex:none;background:var(--card2)}
-.prow .av svg{display:block;width:100%;height:100%}
-.prow .bd{flex:1;min-width:0}
-.prow .n1{font-size:14px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.prow .n2{font-size:11.5px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pfoot{padding:12px 16px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim)}
-@media(max-width:640px){
-  #panel{width:100%;top:auto;height:58%;border-left:0;border-top:1px solid var(--line2);
-    transform:translateY(101%);border-radius:18px 18px 0 0}
-  #panel.on{transform:none}
-  .rail{padding:10px}
-  .find{min-width:0}
-  .status{bottom:14px;left:10px}
-  .tools{bottom:14px;right:10px}
-}
-/* ---- loading ---- */
-#load{position:absolute;inset:0;z-index:10;display:grid;place-items:center;
-  background:var(--bg);transition:opacity .4s}
-#load.off{opacity:0;pointer-events:none}
-.lspin{width:34px;height:34px;border:3px solid var(--line2);border-top-color:var(--gold);
-  border-radius:50%;animation:lsp .8s linear infinite;margin:0 auto 14px}
-@keyframes lsp{to{transform:rotate(360deg)}}
-#load p{color:var(--mut);font-size:13.5px;text-align:center}
-@media(prefers-reduced-motion:reduce){#panel,#tip,.chip2{transition:none}}
+  .m-row{display:flex;gap:11px;padding:11px 15px;border-bottom:1px solid var(--line);cursor:pointer;
+    text-decoration:none;color:inherit;transition:background .14s var(--ease)}
+  .m-row:hover,.m-row:focus-visible{background:color-mix(in srgb,var(--card2) 60%,transparent);outline:none}
+  .m-row .m-mark{flex:0 0 34px;height:34px;border-radius:9px;display:grid;place-items:center;
+    font-family:"Fraunces",serif;font-size:14px;font-weight:700;color:var(--bg)}
+  [data-theme="light"] .m-row .m-mark{color:#fff}
+  .m-row .m-meta{min-width:0;flex:1}
+  /* These are spans. Without display:block the name and the category rendered
+     on one run-together line and text-overflow never engaged, so long Greek
+     names spilled straight out of the panel. */
+  .m-row .m-meta{display:block}
+  .m-row .m-nm{display:block;font-weight:600;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-row .m-wh{display:block;font-size:12px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-row .m-km{display:block;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:2px}
+  .m-empty{padding:34px 20px;text-align:center;color:var(--mut);font-size:13.5px;line-height:1.6}
+  .m-panel footer{padding:9px 15px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);line-height:1.5}
+
+  /* map controls, bottom right */
+  .m-tools{bottom:14px;right:calc(var(--pw) + 26px);padding:6px;display:flex;flex-direction:column;gap:4px;z-index:13}
+  .m-tool{
+    width:38px;height:38px;border:0;border-radius:10px;background:none;color:var(--mut);cursor:pointer;
+    display:grid;place-items:center;transition:background .14s var(--ease),color .14s var(--ease)
+  }
+  .m-tool:hover{background:var(--bg2);color:var(--tx)}
+  .m-tool[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc)}
+  .m-tool svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .m-tool .m-txt{font-size:12px;font-weight:700;letter-spacing:.02em}
+  .m-toolsep{height:1px;background:var(--line);margin:2px 4px}
+
+  /* zoom cluster + pin markers */
+  .m-cl{cursor:pointer;will-change:transform}
+  .m-cl svg{display:block;overflow:visible}
+  .m-cl .m-cnt{font:600 11.5px/1 "Hanken Grotesk",sans-serif;fill:var(--tx);
+    paint-order:stroke;stroke:var(--bg);stroke-width:3px;font-variant-numeric:tabular-nums}
+  .m-cl:hover .m-ring{filter:brightness(1.25)}
+
+  .m-pin{cursor:pointer;width:16px;height:16px;border-radius:50%;box-sizing:border-box;
+    border:2px solid color-mix(in srgb,var(--bg) 80%,transparent);
+    box-shadow:0 2px 7px rgba(0,0,0,.45);transition:transform .13s var(--ease)}
+  .m-pin:hover,.m-pin.m-on{transform:scale(1.45);z-index:5}
+  .m-pin.m-on{box-shadow:0 0 0 3px color-mix(in srgb,var(--tx) 55%,transparent)}
+  .m-spider-line{stroke:var(--line2);stroke-width:1;fill:none}
+
+  /* tooltip */
+  .maplibregl-popup{z-index:14}
+  .maplibregl-popup-content{
+    background:color-mix(in srgb,var(--card) 94%,transparent);color:var(--tx);
+    border:1px solid var(--line);border-radius:12px;padding:9px 12px;
+    box-shadow:var(--shadow);font-size:13px;max-width:240px
+  }
+  .maplibregl-popup-tip{border-top-color:color-mix(in srgb,var(--card) 94%,transparent)!important;
+    border-bottom-color:color-mix(in srgb,var(--card) 94%,transparent)!important}
+  .m-tipnm{font-weight:650;line-height:1.3}
+  .m-tipwh{color:var(--mut);font-size:11.5px;margin-top:2px}
+  .m-tipgo{color:var(--acc);font-size:11px;font-weight:600;margin-top:5px;display:block}
+
+  /* attribution + status */
+  .m-attrib{position:absolute;left:14px;bottom:12px;z-index:11;font-size:10.5px;color:var(--dim);
+    background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(8px);
+    padding:4px 9px;border-radius:8px;border:1px solid var(--line);max-width:min(560px,calc(100vw - 120px))}
+  .m-attrib a{color:var(--mut);text-decoration:none}
+  .m-attrib a:hover{color:var(--tx);text-decoration:underline}
+
+  .m-status{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:20;
+    padding:7px 15px;border-radius:999px;font-size:12.5px;font-weight:600;
+    background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--line);
+    color:var(--mut);box-shadow:var(--shadow);pointer-events:none;
+    opacity:0;transition:opacity .22s var(--ease)}
+  .m-status.m-show{opacity:1}
+  .m-status .m-spin{display:inline-block;width:11px;height:11px;margin-right:7px;vertical-align:-1px;
+    border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .m-nowebgl{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:24px;background:var(--bg)}
+
+  .m-nowebgl .m-in{max-width:420px;text-align:center}
+
+  /* mobile: the panel becomes a sheet */
+  @media (max-width:860px){
+    .m-controls{top:10px;left:10px;right:10px;width:auto;padding:10px}
+    .m-chips{max-height:60px}
+    .m-panel{top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:47vh}
+    .m-panel.m-hidden{display:none}
+    .m-tools{bottom:auto;top:calc(50% - 118px);right:10px}
+    .m-attrib{left:10px;bottom:auto;top:calc(100% - 34px);max-width:calc(100vw - 76px)}
+  }
+  @media (prefers-reduced-motion:reduce){.m-pin,.m-tool,.m-chip,.m-row{transition:none}.m-status .m-spin{animation:none}}
 </style>
 </head>
 <body>
-<div id="app">
 
-<header class="zoi-header"><div class="wrap zoi-bar">
+<header class="zoi-header" id="hdr"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
-  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
-  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
-  <div class="zoi-actions">
-    <button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button>
-    <a class="btn btn-primary" id="zoiCta" href="/social">Start free</a>
-  </div>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore" aria-current="page">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world&hellip;" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme &mdash; dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
 
-<div class="stage" id="stage">
-  <canvas id="cv" role="application" aria-label="Map of Greek places. Use arrow keys to pan, plus and minus to zoom."></canvas>
+<main class="m-stage" id="stage">
+  <div id="map" tabindex="0" role="application" aria-label="Map of the Greek world"></div>
 
-  <div class="rail">
-    <div class="pod find">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-      <input id="q" type="text" placeholder="Filter by name, city or country…" autocomplete="off" spellcheck="false" aria-label="Filter the map">
-      <button class="clr" id="clr" hidden aria-label="Clear filter">&times;</button>
+  <section class="m-pane m-controls" aria-label="Map filters">
+    <div class="m-searchrow">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search name, city or category…" autocomplete="off" aria-label="Filter places on the map">
+      <button class="m-clearq" id="clearq" hidden aria-label="Clear search">&times;</button>
     </div>
-    <div class="pod chips" id="chips" role="group" aria-label="Filter by category"></div>
-  </div>
+    <div class="m-chiprow">
+      <span class="m-lbl" id="chipcount">Categories</span>
+      <button class="m-linkish" id="allon">All</button>
+    </div>
+    <div class="m-chips" id="chips" role="group" aria-label="Filter by category"></div>
+  </section>
 
-  <div class="status">
-    <span class="stat2" id="cnt">Loading…</span>
-    <span class="stat2" id="cov"></span>
-  </div>
-
-  <div class="tools">
-    <button class="tool" id="zin" aria-label="Zoom in"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
-    <button class="tool" id="zout" aria-label="Zoom out"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>
-    <button class="tool" id="me" aria-label="Find what is near me"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="8.4"/></svg></button>
-    <button class="tool" id="home" aria-label="Reset the view"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18"/></svg></button>
-  </div>
-
-  <div id="tip"><div class="tipin"><div class="t1"></div><div class="t2"></div></div></div>
-
-  <aside id="panel" aria-live="polite">
-    <div class="phead"><h2 id="ptitle">Places</h2><button class="x" id="pclose" aria-label="Close">&times;</button></div>
-    <div class="plist" id="plist"></div>
-    <div class="pfoot" id="pfoot"></div>
+  <aside class="m-pane m-panel" id="panel" aria-label="Places">
+    <header>
+      <h2 id="ptitle">Loading…<span class="m-sub" id="psub">reading the directory</span></h2>
+      <button class="m-xbtn" id="pclose" hidden aria-label="Back to all results">&times;</button>
+    </header>
+    <div class="m-body" id="pbody"></div>
+    <footer id="pfoot"></footer>
   </aside>
 
-  <div id="load"><div><div class="lspin"></div><p>Plotting the Greek world…</p></div></div>
-</div>
+  <div class="m-pane m-tools" role="group" aria-label="Map view">
+    <button class="m-tool" id="tGlobe" aria-pressed="true" title="Globe view">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/></svg>
+    </button>
+    <button class="m-tool" id="tTerrain" aria-pressed="false" title="Terrain and 3D buildings">
+      <svg viewBox="0 0 24 24"><path d="M2 19h20L14.5 6 10 13l-2.5-3z"/></svg>
+    </button>
+    <button class="m-tool" id="tGreek" aria-pressed="false" title="Greek place names">
+      <span class="m-txt">Ελ</span>
+    </button>
+    <div class="m-toolsep"></div>
+    <button class="m-tool" id="tNear" title="Find places near me">
+      <svg viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+    </button>
+    <button class="m-tool" id="tShare" title="Copy a link to this view">
+      <svg viewBox="0 0 24 24"><path d="M9 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M15 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+    </button>
+    <button class="m-tool" id="tReset" title="Back to the whole world">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+    </button>
+  </div>
 
-</div>
+  <div class="m-attrib" id="attrib"></div>
+  <div class="m-status" id="status" role="status" aria-live="polite"></div>
 
-<script src="/assets/zoi-land.js"></script>
-<script src="/assets/zoi-map.js"></script>
+  <div class="m-nowebgl" id="nowebgl" hidden>
+    <div class="m-in">
+      <h2 style="font-family:Fraunces,serif;margin:0 0 8px">Your browser can't run the map</h2>
+      <p class="muted" style="font-size:14px;line-height:1.6">
+        This map needs WebGL. Everything is still browsable as a list — the
+        panel on the right works, and <a href="/explore">Explore</a> has the
+        full directory.
+      </p>
+    </div>
+  </div>
+</main>
+
+<script src="/assets/zoi-core.js"></script>
+<script src="/assets/zoi-theme.js"></script>
 <script src="/assets/zoi-emblem.js"></script>
-<script src="/assets/zoi-search.js"></script>
+<script src="/assets/zoi-basemap.js"></script>
+<script src="/assets/vendor/maplibre-gl.js"></script>
 <script>
-(function(){
+/* =====================================================================
+ * The Zoi world map.
+ *
+ * MapLibre GL, our own basemap style (assets/zoi-basemap.js), and the
+ * directory's coordinates as a clustered GeoJSON source.
+ *
+ * Two things about the data shape drive most of the design here:
+ *
+ *  1. A large share of listings are positioned at their CITY, not their street
+ *     door, because that is the precision the source data carries. So many
+ *     points share an identical coordinate. Clustering alone cannot separate
+ *     them — no zoom level ever will — so coincident points are spiderfied into
+ *     a ring, and the panel always lists what is under the pin.
+ *
+ *  2. Precision is stated, never implied. A pin placed at a city centroid says
+ *     so when you open it.
+ * ===================================================================== */
+(function () {
   'use strict';
-  var M = window.ZoiMap, LAND = window.ZOI_LAND || [];
-  var BASE='https://csebihpaychdkanjjsmz.supabase.co';
-  var PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
-  var TOTAL_LISTINGS = 8053;   // directory size, for an honest coverage line
+  var C = window.ZoiCore, MB = window.maplibregl, BM = window.ZoiBasemap;
 
-  var cv=document.getElementById('cv'), ctx=cv.getContext('2d');
-  var stage=document.getElementById('stage');
-  var tip=document.getElementById('tip'), panel=document.getElementById('panel');
-  var qEl=document.getElementById('q'), clrEl=document.getElementById('clr');
-  var cntEl=document.getElementById('cnt'), covEl=document.getElementById('cov');
-  var chipsEl=document.getElementById('chips');
+  /* ---------- categories, in the emblem wheel's order ---------- */
+  var TYPES = [
+    { k: 'business',     label: 'Businesses' },
+    { k: 'vendor',       label: 'Vendors' },
+    { k: 'event',        label: 'Events' },
+    { k: 'artist',       label: 'Artists' },
+    { k: 'creator',      label: 'Creators' },
+    { k: 'venue',        label: 'Venues' },
+    { k: 'church',       label: 'Parishes' },
+    { k: 'school',       label: 'Schools' },
+    { k: 'professional', label: 'Professionals' },
+    { k: 'travel_place', label: 'Places' },
+    { k: 'sports',       label: 'Sports' },
+    { k: 'organization', label: 'Associations' }
+  ];
+  var IDX = {}; TYPES.forEach(function (t, i) { IDX[t.k] = i; });
 
-  var ALL=[], pts=[], view={cx:0.5,cy:0.38,z:1.2,w:0,h:0}, tok=M.readTokens();
-  /* longitude bounds per ring, so the wrap test above is a comparison not a scan */
-  var LAND_BB=LAND.map(function(r){
-    var mn=1e9,mx=-1e9;
-    for(var j=0;j<r.length;j+=2){ if(r[j]<mn)mn=r[j]; if(r[j]>mx)mx=r[j]; }
-    return [mn,mx];
-  });
-  var clusters=[], dpr=1, dirty=true, hovered=null, meLoc=null;
-  var active={}, filterText='';
-
-  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,function(m){
-    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m]; }); }
-  function typeLabel(t){ return (window.ZoiEmblem&&window.ZoiEmblem.typeLabel)?window.ZoiEmblem.typeLabel(t):String(t||''); }
-  function hrefFor(r){
-    if(!r||!r.slug) return '/explore';
-    var t=r.entity_type==='travel_place'?'travel-place':(r.entity_type||'p');
-    return '/'+encodeURIComponent(t)+'/'+encodeURIComponent(r.slug);
+  /* Colours come from the same wheel the emblems use, so a pin and the card it
+     opens are never a different colour. Recomputed whenever the theme flips. */
+  var COLOURS = [];
+  function readColours() {
+    var W = ['--gold', '--red', '--acc', '--green'];
+    var cs = getComputedStyle(document.documentElement);
+    var anchors = W.map(function (k) { return (cs.getPropertyValue(k) || '').trim() || '#d9b26a'; });
+    COLOURS = TYPES.map(function (t, slot) {
+      var seg = Math.floor(slot / 3) % 4, step = slot % 3;
+      var a = anchors[seg], b = anchors[(seg + 1) % 4];
+      if (step === 0) return a;
+      return BM.mix(a, b, step === 1 ? 0.33 : 0.67);
+    });
   }
-  function mark(r){
-    return (window.ZoiEmblem&&window.ZoiEmblem.mark)
-      ? window.ZoiEmblem.mark({name:r.name,type:r.entity_type,slug:r.slug}) : '';
+  readColours();
+
+  /* ---------- tiny helpers ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+    });
+  }
+  function typeSlug(t) { return t === 'travel_place' ? 'travel-place' : t; }
+  function href(p) { return '/' + typeSlug(p.t) + '/' + encodeURIComponent(p.s); }
+  function nice(s) {
+    return String(s || '').replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+  function fmtN(n) { return n.toLocaleString(); }
+  function km(d) { return d < 1 ? Math.round(d * 1000) + ' m' : (d < 20 ? d.toFixed(1) : Math.round(d)) + ' km'; }
+  function haversine(a, b, c, d) {
+    var R = 6371, r = Math.PI / 180;
+    var dLa = (c - a) * r, dLo = (d - b) * r;
+    var h = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+      Math.cos(a * r) * Math.cos(c * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
   }
 
-  /* ---------- sizing ---------- */
-  function resize(){
-    dpr=Math.min(window.devicePixelRatio||1,2);
-    var r=stage.getBoundingClientRect();
-    view.w=r.width; view.h=r.height;
-    cv.width=Math.round(r.width*dpr); cv.height=Math.round(r.height*dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
-    dirty=true;
+  var statusT;
+  function status(msg, spin, ms) {
+    var el = $('status');
+    if (!msg) { el.classList.remove('m-show'); return; }
+    el.innerHTML = (spin ? '<span class="m-spin"></span>' : '') + esc(msg);
+    el.classList.add('m-show');
+    clearTimeout(statusT);
+    if (ms) statusT = setTimeout(function () { el.classList.remove('m-show'); }, ms);
+  }
+
+  /* ---------- state ---------- */
+  var ALL = [];                       // every place with a coordinate
+  var on = {};                        // active category filters
+  TYPES.forEach(function (t) { on[t.k] = true; });
+  var query = '';
+  var here = null;                    // {lat,lng} once geolocated
+  var selected = null;
+  var map = null, ready = false;
+  var clusterMarkers = {}, pinMarkers = {}, spider = [];
+
+  /* ---------- URL state ----------
+   * #zoom/lat/lng/bearing/pitch, filters in the query string. Every view is a
+   * link somebody can send.
+   */
+  function readUrl() {
+    var out = { view: null };
+    var h = (location.hash || '').replace(/^#\/?/, '');
+    var m = h.split('/').map(Number);
+    if (m.length >= 3 && m.every(function (n) { return isFinite(n); })) {
+      out.view = { zoom: m[0], center: [m[2], m[1]], bearing: m[3] || 0, pitch: m[4] || 0 };
+    }
+    var p = new URLSearchParams(location.search);
+    if (p.get('q')) { query = p.get('q'); $('q').value = query; }
+    var t = p.get('t');
+    if (t) {
+      TYPES.forEach(function (x) { on[x.k] = false; });
+      t.split(',').forEach(function (k) { if (k in on) on[k] = true; });
+      if (!TYPES.some(function (x) { return on[x.k]; })) TYPES.forEach(function (x) { on[x.k] = true; });
+    }
+    return out;
+  }
+  var urlT;
+  function writeUrl() {
+    clearTimeout(urlT);
+    urlT = setTimeout(function () {
+      if (!map) return;
+      var c = map.getCenter();
+      var hash = '#' + [map.getZoom().toFixed(2), c.lat.toFixed(5), c.lng.toFixed(5),
+        Math.round(map.getBearing()), Math.round(map.getPitch())].join('/');
+      var p = new URLSearchParams();
+      if (query) p.set('q', query);
+      var offCount = TYPES.filter(function (t) { return !on[t.k]; }).length;
+      if (offCount) p.set('t', TYPES.filter(function (t) { return on[t.k]; }).map(function (t) { return t.k; }).join(','));
+      var qs = p.toString();
+      history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + hash);
+    }, 260);
   }
 
   /* ---------- data ---------- */
-  function rpc(fn,body){
-    return fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',
-      headers:{apikey:PUB,Authorization:'Bearer '+PUB,'Content-Type':'application/json'},
-      body:JSON.stringify(body||{})}).then(function(r){ return r.ok?r.json():[]; });
+  function matches(p) {
+    if (!on[p.t]) return false;
+    if (!query) return true;
+    return p.hay.indexOf(query.toLowerCase()) !== -1;
   }
-  function load(){
-    var out=[], off=0;
-    function page(){
-      return rpc('explore_geo',{p_limit:1000,p_offset:off}).then(function(b){
-        if(!Array.isArray(b)||!b.length) return out;
-        out=out.concat(b);
-        cntEl.textContent='Plotting '+out.length.toLocaleString()+'…';
-        if(b.length<1000 || off>12000) return out;
-        off+=1000; return page();
-      });
-    }
-    return page();
+  function toGeoJSON(list) {
+    return {
+      type: 'FeatureCollection',
+      features: list.map(function (p, i) {
+        return {
+          type: 'Feature', id: i,
+          geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+          properties: { i: p.i, ti: IDX[p.t] == null ? 0 : IDX[p.t] }
+        };
+      })
+    };
   }
 
-  /* ---------- filters ---------- */
-  function buildChips(){
-    var counts={};
-    ALL.forEach(function(p){ counts[p.entity_type]=(counts[p.entity_type]||0)+1; });
-    var types=Object.keys(counts).sort(function(a,b){ return counts[b]-counts[a]; });
-    types.forEach(function(t){ if(active[t]===undefined) active[t]=true; });
-    chipsEl.innerHTML=types.map(function(t){
-      var c=M.colourFor(t,tok);
-      return '<button class="chip2'+(active[t]?' on':'')+'" data-t="'+esc(t)+'" aria-pressed="'+(active[t]?'true':'false')+'">'+
-        '<span class="sw" style="background:'+M.rgba(c,1)+'"></span>'+esc(typeLabel(t))+
-        ' <b>'+counts[t].toLocaleString()+'</b></button>';
-    }).join('');
-  }
-  function applyFilters(){
-    var q=filterText.trim().toLowerCase();
-    pts=ALL.filter(function(p){
-      if(!active[p.entity_type]) return false;
-      if(!q) return true;
-      return (p.name&&p.name.toLowerCase().indexOf(q)>=0) ||
-             (p.city&&p.city.toLowerCase().indexOf(q)>=0) ||
-             (p.country&&p.country.toLowerCase().indexOf(q)>=0);
+  async function loadData() {
+    status('Reading the directory…', true);
+    var offsets = [];
+    for (var o = 0; o < 12000; o += 1000) offsets.push(o);
+    var pages = await Promise.all(offsets.map(function (off) {
+      return C.api.rpc('explore_geo', { p_limit: 1000, p_offset: off }, { auth: 'anon' })
+        .catch(function () { return []; });
+    }));
+    var seen = Object.create(null), out = [];
+    pages.forEach(function (page) {
+      (page || []).forEach(function (r) {
+        if (!r || r.lat == null || r.lng == null) return;
+        if (seen[r.slug]) return;
+        seen[r.slug] = 1;
+        var p = {
+          i: out.length, s: r.slug, n: r.name, t: r.entity_type || 'business',
+          city: r.city, country: r.country, cat: r.category_slug,
+          lat: +r.lat, lng: +r.lng
+        };
+        p.hay = ((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
+                 nice(p.cat) + ' ' + (p.t || '')).toLowerCase();
+        out.push(p);
+      });
     });
-    dirty=true; updateStatus();
-  }
-  function updateStatus(){
-    cntEl.innerHTML='<b>'+pts.length.toLocaleString()+'</b> place'+(pts.length===1?'':'s')+' shown';
-    covEl.innerHTML='<b>'+ALL.length.toLocaleString()+'</b> of '+TOTAL_LISTINGS.toLocaleString()+
-      ' listings have coordinates &middot; <a href="/explore">browse all</a>';
-  }
+    ALL = out;
 
-  /* ---------- render ---------- */
-  function draw(){
-    var w=view.w,h=view.h;
-    ctx.clearRect(0,0,w,h);
-
-    /* land. Each ring is drawn at whichever 360-degree offsets overlap the
-       viewport, so panning east or west repeats the world seamlessly instead of
-       running into empty space. */
-    var lo=M.unproject(0,view.h/2,view).lng, hi=M.unproject(w,view.h/2,view).lng;
-    ctx.beginPath();
-    for(var i=0;i<LAND.length;i++){
-      var ring=LAND[i], bb=LAND_BB[i];
-      for(var o=-1;o<=1;o++){
-        var off=o*360;
-        if(bb[1]+off < lo-2 || bb[0]+off > hi+2) continue;
-        for(var j=0;j<ring.length;j+=2){
-          var p=M.project(ring[j]+off,ring[j+1],view);
-          if(j===0) ctx.moveTo(p.x,p.y); else ctx.lineTo(p.x,p.y);
-        }
-        ctx.closePath();
-      }
-    }
-    ctx.fillStyle=M.rgba(M.mix(tok.mut,tok.bg,0.20),1);
-    ctx.fill();
-    ctx.lineWidth=0.8;
-    ctx.strokeStyle=M.rgba(tok.mut,0.34);
-    ctx.stroke();
-
-    /* clusters */
-    clusters=M.cluster(pts,view,46);
-    for(var k=0;k<clusters.length;k++){
-      var c=clusters[k];
-      var domi=null, best=-1;
-      for(var t in c.types){ if(c.types[t]>best){ best=c.types[t]; domi=t; } }
-      var col=M.colourFor(domi,tok);
-      var r=M.radiusFor(c.n);
-      var isHover = hovered && hovered.x===c.x && hovered.y===c.y;
-
-      if(c.n>1){
-        var g=ctx.createRadialGradient(c.x,c.y,0,c.x,c.y,r*1.7);
-        g.addColorStop(0,M.rgba(col,0.26)); g.addColorStop(1,M.rgba(col,0));
-        ctx.beginPath(); ctx.fillStyle=g; ctx.arc(c.x,c.y,r*1.7,0,6.2832); ctx.fill();
-      }
-      ctx.beginPath();
-      ctx.fillStyle=M.rgba(col, c.n>1?0.94:0.98);
-      ctx.arc(c.x,c.y,isHover?r+1.5:r,0,6.2832); ctx.fill();
-      ctx.lineWidth=isHover?2:1.1;
-      ctx.strokeStyle=M.rgba(tok.bg,0.9); ctx.stroke();
-
-      /* Composition ring: one arc per category inside this cluster, sized by
-         share. It turns a dot into a readable summary of what is actually here. */
-      var tl=Object.keys(c.types);
-      if(c.n>1 && tl.length>1 && r>=7){
-        tl.sort(function(a,b){ return c.types[b]-c.types[a]; });
-        var a0=-Math.PI/2;
-        for(var ti=0;ti<tl.length;ti++){
-          var a1=a0+(c.types[tl[ti]]/c.n)*6.2832;
-          ctx.beginPath();
-          ctx.arc(c.x,c.y,r+2.6,a0+0.03,Math.max(a0+0.05,a1-0.03));
-          ctx.strokeStyle=M.rgba(M.colourFor(tl[ti],tok),0.95);
-          ctx.lineWidth=2.4; ctx.lineCap='butt'; ctx.stroke();
-          a0=a1;
-        }
-      }
-
-      if(c.n>1 && r>=11){
-        ctx.fillStyle=M.rgba(tok.bg,0.95);
-        ctx.font='800 '+Math.round(Math.min(13,r*0.86))+'px "Hanken Grotesk",system-ui';
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.fillText(c.n>999?(Math.round(c.n/100)/10)+'k':String(c.n), c.x, c.y+0.5);
-      }
-    }
-
-    /* "you are here" */
-    if(meLoc){
-      var mp=M.project(meLoc.lng,meLoc.lat,view);
-      ctx.beginPath(); ctx.strokeStyle=M.rgba(tok.tx,0.8); ctx.lineWidth=2;
-      ctx.arc(mp.x,mp.y,7,0,6.2832); ctx.stroke();
-      ctx.beginPath(); ctx.fillStyle=M.rgba(tok.tx,0.9); ctx.arc(mp.x,mp.y,2.5,0,6.2832); ctx.fill();
-    }
-  }
-  function loop(){
-    if(dirty){ dirty=false; draw(); }
-    requestAnimationFrame(loop);
+    /* Exact-duplicate coordinates are the defining feature of this dataset, so
+       they are indexed up front rather than discovered on every click. */
+    var at = Object.create(null);
+    ALL.forEach(function (p) {
+      var k = p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
+      (at[k] || (at[k] = [])).push(p);
+    });
+    ALL.forEach(function (p) {
+      p.co = at[p.lat.toFixed(5) + ',' + p.lng.toFixed(5)];
+      p.approx = p.co.length > 2;   // a shared coordinate is a city centroid
+    });
+    status('', false);
+    return out;
   }
 
-  /* ---------- interaction ---------- */
-  var drag=null;
-  function ptr(e){ var r=cv.getBoundingClientRect(); return {x:e.clientX-r.left,y:e.clientY-r.top}; }
-
-  cv.addEventListener('pointerdown',function(e){
-    cv.setPointerCapture(e.pointerId);
-    drag={x:e.clientX,y:e.clientY,cx:view.cx,cy:view.cy,moved:0};
-    cv.classList.add('drag'); hideTip();
-  });
-  cv.addEventListener('pointermove',function(e){
-    if(drag){
-      var s=M.TILE*Math.pow(2,view.z);
-      var dx=e.clientX-drag.x, dy=e.clientY-drag.y;
-      drag.moved=Math.max(drag.moved,Math.abs(dx)+Math.abs(dy));
-      view.cx=drag.cx-dx/s;
-      view.cy=Math.max(0,Math.min(1,drag.cy-dy/s));
-      dirty=true; return;
-    }
-    var p=ptr(e), c=M.hit(p.x,p.y,clusters);
-    if(c!==hovered){ hovered=c; dirty=true; }
-    if(c) showTip(c,p); else hideTip();
-  });
-  cv.addEventListener('pointerup',function(e){
-    var wasDrag=drag&&drag.moved>6;
-    drag=null; cv.classList.remove('drag');
-    if(wasDrag) return;
-    var p=ptr(e), c=M.hit(p.x,p.y,clusters);
-    if(c) openCluster(c);
-  });
-  cv.addEventListener('pointercancel',function(){ drag=null; cv.classList.remove('drag'); });
-  cv.addEventListener('pointerleave',hideTip);
-
-  cv.addEventListener('wheel',function(e){
-    e.preventDefault();
-    var p=ptr(e);
-    zoomAt(p.x,p.y, e.deltaY<0 ? 0.42 : -0.42);
-  },{passive:false});
-  cv.addEventListener('dblclick',function(e){ var p=ptr(e); zoomAt(p.x,p.y,1); });
-
-  function zoomAt(px,py,dz){
-    var before=M.unproject(px,py,view);
-    view.z=Math.max(0.6,Math.min(16,view.z+dz));
-    var after=M.unproject(px,py,view);
-    view.cx+=M.lngToNx(before.lng)-M.lngToNx(after.lng);
-    view.cy+=M.latToNy(before.lat)-M.latToNy(after.lat);
-    view.cy=Math.max(0,Math.min(1,view.cy));
-    dirty=true; hideTip(); syncHash();
-  }
-  document.getElementById('zin').onclick=function(){ zoomAt(view.w/2,view.h/2,0.8); };
-  document.getElementById('zout').onclick=function(){ zoomAt(view.w/2,view.h/2,-0.8); };
-  document.getElementById('home').onclick=function(){ view=M.fit(ALL,view.w,view.h,0.06); dirty=true; syncHash(); };
-
-  cv.setAttribute('tabindex','0');
-  cv.addEventListener('keydown',function(e){
-    var s=60/(M.TILE*Math.pow(2,view.z));
-    if(e.key==='ArrowLeft'){ view.cx-=s; dirty=true; e.preventDefault(); }
-    else if(e.key==='ArrowRight'){ view.cx+=s; dirty=true; e.preventDefault(); }
-    else if(e.key==='ArrowUp'){ view.cy=Math.max(0,view.cy-s); dirty=true; e.preventDefault(); }
-    else if(e.key==='ArrowDown'){ view.cy=Math.min(1,view.cy+s); dirty=true; e.preventDefault(); }
-    else if(e.key==='+'||e.key==='='){ zoomAt(view.w/2,view.h/2,0.8); e.preventDefault(); }
-    else if(e.key==='-'){ zoomAt(view.w/2,view.h/2,-0.8); e.preventDefault(); }
-  });
-
-  /* ---------- tooltip ---------- */
-  function showTip(c,p){
-    var t1,t2;
-    if(c.n===1){ t1=c.items[0].name||'Unnamed'; t2=[c.items[0].city,c.items[0].country].filter(Boolean).join(', '); }
-    else { t1=c.n.toLocaleString()+' places'; t2='Click to see them'; }
-    tip.querySelector('.t1').textContent=t1;
-    tip.querySelector('.t2').textContent=t2;
-    tip.style.left=p.x+'px'; tip.style.top=(p.y-14)+'px';
-    tip.classList.add('on');
-  }
-  function hideTip(){ tip.classList.remove('on'); if(hovered){ hovered=null; dirty=true; } }
-
-  /* ---------- panel ---------- */
-  function openCluster(c){
-    // one pin at high zoom: go straight to the listing
-    if(c.n===1 && view.z>=9){ location.href=hrefFor(c.items[0]); return; }
-    if(c.n>1 && view.z<15){
-      // zoom toward it instead of listing a thousand rows
-      var inside=pts.filter(function(p){
-        var q=M.project(p.lng,p.lat,view);
-        return Math.abs(q.x-c.x)<40 && Math.abs(q.y-c.y)<40;
+  /* ---------- chips ---------- */
+  function buildChips() {
+    var counts = {};
+    ALL.forEach(function (p) { counts[p.t] = (counts[p.t] || 0) + 1; });
+    var box = $('chips');
+    box.innerHTML = '';
+    TYPES.forEach(function (t, i) {
+      if (!counts[t.k]) return;
+      var b = document.createElement('button');
+      b.className = 'm-chip';
+      b.type = 'button';
+      b.style.color = COLOURS[i];
+      b.setAttribute('aria-pressed', on[t.k] ? 'true' : 'false');
+      b.dataset.k = t.k;
+      if (!on[t.k]) b.dataset.off = '1';
+      b.innerHTML = '<span class="m-dot"></span>' + esc(t.label) +
+        ' <span class="m-n">' + fmtN(counts[t.k]) + '</span>';
+      b.addEventListener('click', function (e) {
+        // Alt-click isolates one category — much faster than turning 11 off.
+        if (e.altKey || e.metaKey) {
+          var only = TYPES.every(function (x) { return x.k === t.k ? on[x.k] : !on[x.k]; });
+          TYPES.forEach(function (x) { on[x.k] = only ? true : x.k === t.k; });
+        } else on[t.k] = !on[t.k];
+        if (!TYPES.some(function (x) { return on[x.k]; })) TYPES.forEach(function (x) { on[x.k] = true; });
+        syncChips(); refresh(); writeUrl();
       });
-      if(inside.length>12){
-        var v=M.fit(inside,view.w,view.h,0.25);
-        view.cx=v.cx; view.cy=v.cy; view.z=Math.min(16,Math.max(view.z+1.4,v.z));
-        dirty=true; hideTip(); syncHash(); return;
+      box.appendChild(b);
+    });
+    syncChips();
+  }
+  function syncChips() {
+    Array.prototype.forEach.call($('chips').children, function (b) {
+      var v = on[b.dataset.k];
+      b.setAttribute('aria-pressed', v ? 'true' : 'false');
+      if (v) delete b.dataset.off; else b.dataset.off = '1';
+    });
+    var n = TYPES.filter(function (t) { return on[t.k]; }).length;
+    $('chipcount').textContent = n === TYPES.length ? 'Categories' : n + ' of ' + TYPES.length + ' shown';
+  }
+
+  /* ---------- clusters as composition rings ----------
+   * A cluster is drawn as a ring whose arcs are its actual category mix. It
+   * costs one small SVG per on-screen cluster (tens, not thousands) and it
+   * turns a count into a shape you can read at a glance: gold-heavy is
+   * commerce, blue-heavy is parishes and schools.
+   */
+  function ringSVG(counts, total) {
+    var r = total <= 1 ? 9 : Math.min(26, 11 + Math.sqrt(total) * 0.95);
+    var sw = Math.max(3.5, r * 0.30);
+    var rr = r - sw / 2;
+    var circ = 2 * Math.PI * rr;
+    var parts = [], acc = 0;
+    for (var i = 0; i < counts.length; i++) {
+      if (!counts[i]) continue;
+      var frac = counts[i] / total;
+      var len = frac * circ;
+      parts.push('<circle class="m-ring" cx="0" cy="0" r="' + rr.toFixed(2) + '" fill="none" stroke="' +
+        COLOURS[i] + '" stroke-width="' + sw.toFixed(2) + '" stroke-linecap="butt" ' +
+        'stroke-dasharray="' + len.toFixed(2) + ' ' + (circ - len).toFixed(2) + '" ' +
+        'stroke-dashoffset="' + (-acc * circ).toFixed(2) + '" transform="rotate(-90)"/>');
+      acc += frac;
+    }
+    var d = (r + sw) * 2;
+    return '<svg width="' + d + '" height="' + d + '" viewBox="' +
+      (-d / 2) + ' ' + (-d / 2) + ' ' + d + ' ' + d + '">' +
+      '<circle cx="0" cy="0" r="' + (rr + sw / 2 + 1).toFixed(2) + '" fill="var(--bg)" opacity=".55"/>' +
+      parts.join('') +
+      '<text class="m-cnt" x="0" y="0" text-anchor="middle" dominant-baseline="central">' +
+      (total > 999 ? (total / 1000).toFixed(1).replace('.0', '') + 'k' : total) + '</text></svg>';
+  }
+
+  /**
+   * Draw the markers for whatever the source currently has on screen.
+   *
+   * The unclustered half of this is not the obvious loop, because of how the
+   * data is shaped: hundreds of listings share one exact coordinate (their city
+   * centroid). Once clustering disengages above clusterMaxZoom they would all
+   * land on the same pixel — 197 parishes and tavernas stacked into what looks
+   * like a single dot, with only the top one clickable. So coincident points are
+   * bucketed by coordinate and fanned out, and a bucket too large to fan becomes
+   * a counted stack you can open.
+   */
+  function renderClusters() {
+    if (!ready || !map.getSource('places')) return;
+    var src = map.getSource('places');
+    var feats = map.querySourceFeatures('places');
+    var keep = {};
+    var buckets = Object.create(null);
+
+    feats.forEach(function (f) {
+      var pr = f.properties;
+      if (!pr.cluster) {
+        var p = ALL[pr.i];
+        if (!p) return;
+        var key = p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
+        var b = buckets[key] || (buckets[key] = { lngLat: [p.lng, p.lat], items: [], seen: {} });
+        // querySourceFeatures can hand back the same feature from two tiles
+        if (b.seen[p.i]) return;
+        b.seen[p.i] = 1;
+        b.items.push(p);
+        return;
+      }
+      var cid = 'c' + pr.cluster_id;
+      keep[cid] = 1;
+      if (clusterMarkers[cid]) return;
+      var counts = [];
+      for (var i = 0; i < TYPES.length; i++) counts.push(pr['t' + i] || 0);
+      var el2 = document.createElement('div');
+      el2.className = 'm-cl';
+      el2.innerHTML = ringSVG(counts, pr.point_count);
+      el2.setAttribute('role', 'button');
+      el2.setAttribute('tabindex', '0');
+      el2.setAttribute('aria-label', pr.point_count + ' places — open');
+      var lngLat = f.geometry.coordinates.slice();
+      function listLeaves() {
+        // Zooming will not separate these; they share a coordinate.
+        src.getClusterLeaves(pr.cluster_id, 500, 0).then(function (leaves) {
+          var group = (leaves || []).map(function (l) { return ALL[l.properties.i]; }).filter(Boolean);
+          if (group.length) showList(group, group.length + ' here', groupWhere(group), lngLat);
+        }, function () {});
+      }
+      function openCluster() {
+        var cur = map.getZoom();
+        src.getClusterExpansionZoom(pr.cluster_id).then(function (z) {
+          if (!isFinite(z) || z <= cur + 0.05 || cur > 15.5) { listLeaves(); return; }
+          map.easeTo({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
+        }, listLeaves);
+      }
+      el2.addEventListener('click', openCluster);
+      el2.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCluster(); }
+      });
+      clusterMarkers[cid] = new MB.Marker({ element: el2 }).setLngLat(lngLat).addTo(map);
+    });
+
+    /* Two different city centroids can land a few pixels apart — Omonia and
+       Athens-centre did exactly that, drawing a "158" ring on top of a "7" ring
+       so neither could be read or clicked. Exact-coordinate buckets are merged
+       when they are closer than MERGE_PX on screen. Largest-first and
+       deterministic, so the grouping does not flicker while panning. */
+    buckets = mergeNearby(buckets);
+
+    /* ---- the unclustered buckets ---- */
+    Object.keys(buckets).forEach(function (key) {
+      var b = buckets[key];
+      var n = b.items.length;
+
+      if (n === 1) {
+        var p = b.items[0];
+        var id = 'p' + p.i;
+        keep[id] = 1;
+        if (!pinMarkers[id]) pinMarkers[id] = makePin(p, b.lngLat, null);
+        return;
+      }
+
+      if (n <= FAN_MAX) {
+        // Fan them around their shared point. The marker keeps the true
+        // coordinate and only carries a pixel offset, so the fan tracks
+        // correctly through pan, zoom, rotate and pitch.
+        b.items.forEach(function (p, j) {
+          var id = 'f' + key + ':' + n + ':' + p.i;
+          keep[id] = 1;
+          if (pinMarkers[id]) return;
+          var a = (j / n) * Math.PI * 2 - Math.PI / 2;
+          var rad = n <= 6 ? 21 : 21 + (j % 2) * 15;
+          pinMarkers[id] = makePin(p, b.lngLat, [Math.cos(a) * rad, Math.sin(a) * rad]);
+        });
+        return;
+      }
+
+      // Too many to fan legibly. One counted stack, click to open the list.
+      var sid = 's' + key + ':' + n;
+      keep[sid] = 1;
+      if (pinMarkers[sid]) return;
+      var counts = TYPES.map(function () { return 0; });
+      b.items.forEach(function (p) { counts[IDX[p.t] || 0]++; });
+      var el = document.createElement('div');
+      el.className = 'm-cl';
+      el.innerHTML = ringSVG(counts, n);
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      el.setAttribute('aria-label', n + ' places at this address — open');
+      var items = b.items.slice(), ll = b.lngLat;
+      function open() { showList(items, n + ' here', groupWhere(items), ll); }
+      el.addEventListener('click', function (e) { e.stopPropagation(); open(); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+      pinMarkers[sid] = new MB.Marker({ element: el }).setLngLat(ll).addTo(map);
+    });
+
+    Object.keys(clusterMarkers).forEach(function (k) {
+      if (!keep[k]) { clusterMarkers[k].remove(); delete clusterMarkers[k]; }
+    });
+    Object.keys(pinMarkers).forEach(function (k) {
+      if (!keep[k]) { pinMarkers[k].remove(); delete pinMarkers[k]; }
+    });
+  }
+
+  /** Above this many listings on one spot, a fan stops being readable. */
+  var FAN_MAX = 12;
+  /** Two marker stacks closer than this on screen are drawn as one. */
+  var MERGE_PX = 46;
+
+  function mergeNearby(buckets) {
+    var keys = Object.keys(buckets);
+    if (keys.length < 2) return buckets;
+    // biggest first, then by key, so the result never depends on iteration order
+    keys.sort(function (a, b) {
+      var d = buckets[b].items.length - buckets[a].items.length;
+      return d || (a < b ? -1 : 1);
+    });
+    var pts = {};
+    keys.forEach(function (k) { pts[k] = map.project(buckets[k].lngLat); });
+    var out = {}, taken = [];
+    keys.forEach(function (k) {
+      var p = pts[k];
+      for (var i = 0; i < taken.length; i++) {
+        var t = taken[i], q = pts[t];
+        if (Math.abs(p.x - q.x) < MERGE_PX && Math.abs(p.y - q.y) < MERGE_PX) {
+          // fold into the bigger stack; it keeps its own anchor coordinate
+          var host = out[t];
+          for (var j = 0; j < buckets[k].items.length; j++) host.items.push(buckets[k].items[j]);
+          host.merged = true;
+          return;
+        }
+      }
+      taken.push(k);
+      out[k] = { lngLat: buckets[k].lngLat, items: buckets[k].items.slice() };
+    });
+    return out;
+  }
+
+  function makePin(p, lngLat, offset) {
+    var el = document.createElement('div');
+    el.className = 'm-pin';
+    el.style.background = COLOURS[IDX[p.t] || 0];
+    el.title = p.n || '';
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', p.n || 'place');
+    el.addEventListener('click', function (ev) { ev.stopPropagation(); choose(p, true); });
+    el.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); choose(p, true); }
+    });
+    el.addEventListener('mouseenter', function () { tip(p, lngLat); });
+    el.addEventListener('mouseleave', hideTip);
+    var opts = { element: el };
+    if (offset) opts.offset = offset;
+    return new MB.Marker(opts).setLngLat(lngLat).addTo(map);
+  }
+
+  function groupWhere(group) {
+    var c = {}, best = '', n = 0;
+    group.forEach(function (p) { var k = p.city || ''; c[k] = (c[k] || 0) + 1; if (c[k] > n) { n = c[k]; best = k; } });
+    var country = (group[0] && group[0].country) || '';
+    return [best, country].filter(Boolean).join(', ') || (group.length + ' places');
+  }
+
+  /* ---------- spiderfy ----------
+   * When several listings share one coordinate, offset their markers around a
+   * ring so each is individually hoverable and clickable. The markers stay
+   * anchored to the true coordinate; only the pixel offset changes, so they
+   * track correctly through pan, zoom, rotate and tilt.
+   */
+  function clearSpider() {
+    spider.forEach(function (m) { m.remove(); });
+    spider = [];
+  }
+  function spiderfy(group, lngLat) {
+    clearSpider();
+    if (group.length < 2) return;
+    var n = Math.min(group.length, 28);
+    var rings = n <= 8 ? 1 : n <= 18 ? 2 : 3;
+    var idx = 0;
+    for (var ring = 0; ring < rings; ring++) {
+      var cap = Math.ceil(n / rings);
+      var count = Math.min(cap, n - idx);
+      var rad = 26 + ring * 24;
+      for (var j = 0; j < count; j++, idx++) {
+        var p = group[idx];
+        var a = (j / count) * Math.PI * 2 - Math.PI / 2 + (ring * 0.4);
+        var el = document.createElement('div');
+        el.className = 'm-pin';
+        el.style.background = COLOURS[IDX[p.t] || 0];
+        el.title = p.n || '';
+        (function (pp) {
+          el.addEventListener('click', function (e) { e.stopPropagation(); choose(pp, true); });
+          el.addEventListener('mouseenter', function () { tip(pp, lngLat); });
+          el.addEventListener('mouseleave', hideTip);
+        })(p);
+        spider.push(new MB.Marker({ element: el, offset: [Math.cos(a) * rad, Math.sin(a) * rad] })
+          .setLngLat(lngLat).addTo(map));
       }
     }
-    showList(c.items, c.n);
-  }
-  function showList(items,total){
-    document.getElementById('ptitle').textContent =
-      items.length===1 ? (items[0].name||'Place') : (total||items.length)+' places here';
-    document.getElementById('plist').innerHTML = items.map(function(r){
-      return '<a class="prow" href="'+esc(hrefFor(r))+'">'+
-        '<span class="av">'+mark(r)+'</span><span class="bd">'+
-        '<span class="n1">'+esc(r.name||'Unnamed')+'</span>'+
-        '<span class="n2">'+esc([typeLabel(r.entity_type),r.city,r.country].filter(Boolean).join(' · '))+'</span>'+
-        '</span></a>';
-    }).join('');
-    document.getElementById('pfoot').textContent = (total&&total>items.length)
-      ? ('Showing '+items.length+' of '+total+' here — zoom in for the rest.')
-      : 'Every place shown is a real listing.';
-    panel.classList.add('on');
-  }
-  document.getElementById('pclose').onclick=function(){ panel.classList.remove('on'); };
-
-  /* ---------- near me ---------- */
-  document.getElementById('me').onclick=function(){
-    var btn=this;
-    if(!navigator.geolocation){ btn.disabled=true; return; }
-    btn.disabled=true;
-    navigator.geolocation.getCurrentPosition(function(pos){
-      btn.disabled=false;
-      meLoc={lat:pos.coords.latitude,lng:pos.coords.longitude};
-      var near=ALL.map(function(p){
-        return {p:p,d:M.haversine(meLoc.lat,meLoc.lng,p.lat,p.lng)};
-      }).sort(function(a,b){ return a.d-b.d; }).slice(0,20);
-      view.cx=M.lngToNx(meLoc.lng); view.cy=M.latToNy(meLoc.lat);
-      view.z=Math.max(view.z,7); dirty=true; syncHash();
-      document.getElementById('ptitle').textContent='Nearest to you';
-      document.getElementById('plist').innerHTML=near.map(function(x){
-        return '<a class="prow" href="'+esc(hrefFor(x.p))+'">'+
-          '<span class="av">'+mark(x.p)+'</span><span class="bd">'+
-          '<span class="n1">'+esc(x.p.name||'Unnamed')+'</span>'+
-          '<span class="n2">'+esc([typeLabel(x.p.entity_type),x.p.city].filter(Boolean).join(' · '))+
-          ' · '+(x.d<1?Math.round(x.d*1000)+' m':x.d.toFixed(x.d<10?1:0)+' km')+'</span></span></a>';
-      }).join('');
-      document.getElementById('pfoot').textContent='Straight-line distance from your device location.';
-      panel.classList.add('on');
-    }, function(){ btn.disabled=false; }, {timeout:9000});
-  };
-
-  /* ---------- url state ---------- */
-  var hashT=null;
-  function syncHash(){
-    if(hashT) clearTimeout(hashT);
-    hashT=setTimeout(function(){
-      var lat=M.nyToLat(view.cy).toFixed(4), lng=M.nxToLng(view.cx).toFixed(4);
-      try{ history.replaceState({},'','#'+lat+','+lng+','+view.z.toFixed(2)); }catch(e){}
-    },260);
-  }
-  function readHash(){
-    var m=/^#(-?[\d.]+),(-?[\d.]+),([\d.]+)$/.exec(location.hash||'');
-    if(!m) return false;
-    view.cx=M.lngToNx(parseFloat(m[2]));
-    view.cy=M.latToNy(parseFloat(m[1]));
-    view.z=Math.max(0.6,Math.min(16,parseFloat(m[3])));
-    return true;
   }
 
-  /* ---------- filter wiring ---------- */
-  var ft=null;
-  qEl.addEventListener('input',function(){
-    clrEl.hidden=!qEl.value;
-    if(ft) clearTimeout(ft);
-    ft=setTimeout(function(){ filterText=qEl.value; applyFilters(); },140);
+  /* ---------- popup ---------- */
+  var pop = new MB.Popup({ closeButton: false, closeOnClick: false, offset: 14, maxWidth: '250px' });
+  function tip(p, lngLat) {
+    pop.setLngLat(lngLat).setHTML(
+      '<div class="m-tipnm">' + esc(p.n) + '</div>' +
+      '<div class="m-tipwh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</div>' +
+      '<span class="m-tipgo">Open listing →</span>'
+    ).addTo(map);
+  }
+  function hideTip() { pop.remove(); }
+
+  /* ---------- the panel ---------- */
+  function rowHTML(p) {
+    var i = IDX[p.t] || 0;
+    var initial = (p.n || '?').trim().charAt(0).toUpperCase();
+    var d = here ? haversine(here.lat, here.lng, p.lat, p.lng) : null;
+    return '<a class="m-row" href="' + href(p) + '" data-i="' + p.i + '">' +
+      '<span class="m-mark" style="background:' + COLOURS[i] + '">' + esc(initial) + '</span>' +
+      '<span class="m-meta"><span class="m-nm">' + esc(p.n) + '</span>' +
+      '<span class="m-wh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</span>' +
+      (d != null ? '<span class="m-km">' + km(d) + ' away</span>' : '') +
+      '</span></a>';
+  }
+
+  var listState = { items: [], shown: 0, mode: 'all' };
+  function paint(reset) {
+    var body = $('pbody');
+    if (reset) { body.innerHTML = ''; listState.shown = 0; }
+    var slice = listState.items.slice(listState.shown, listState.shown + 60);
+    if (!slice.length && !listState.shown) {
+      body.innerHTML = '<div class="m-empty">Nothing here yet.<br>' +
+        (query ? 'Try a different search, or ' : '') + 'zoom out to see more.</div>';
+      return;
+    }
+    var frag = document.createElement('div');
+    frag.innerHTML = slice.map(rowHTML).join('');
+    while (frag.firstChild) body.appendChild(frag.firstChild);
+    listState.shown += slice.length;
+  }
+  $('pbody').addEventListener('scroll', function () {
+    var b = $('pbody');
+    if (b.scrollTop + b.clientHeight > b.scrollHeight - 240 && listState.shown < listState.items.length) paint(false);
   });
-  clrEl.onclick=function(){ qEl.value=''; clrEl.hidden=true; filterText=''; applyFilters(); qEl.focus(); };
-  chipsEl.addEventListener('click',function(e){
-    var b=e.target.closest('.chip2'); if(!b) return;
-    var t=b.getAttribute('data-t');
-    active[t]=!active[t];
-    b.classList.toggle('on',active[t]);
-    b.setAttribute('aria-pressed',active[t]?'true':'false');
-    applyFilters();
+  $('pbody').addEventListener('mouseover', function (e) {
+    var a = e.target.closest && e.target.closest('.m-row');
+    if (!a) return;
+    var p = ALL[+a.dataset.i];
+    if (p) tip(p, [p.lng, p.lat]);
+  });
+  $('pbody').addEventListener('mouseout', hideTip);
+
+  function showList(items, title, sub, lngLat) {
+    listState = { items: items, shown: 0, mode: 'group' };
+    $('ptitle').innerHTML = esc(title) + '<span class="m-sub">' + esc(sub) + '</span>';
+    $('pclose').hidden = false;
+    $('panel').classList.remove('m-hidden');
+    paint(true);
+    var approx = items.length > 2 && items[0] && items[0].approx;
+    $('pfoot').innerHTML = fmtN(items.length) + ' place' + (items.length === 1 ? '' : 's') +
+      (approx ? ' · positioned at the city, not the street address' : '');
+    if (lngLat) spiderfy(items, lngLat);
+  }
+
+  function showAll() {
+    clearSpider();
+    selected = null;
+    var vis = ALL.filter(matches);
+    // nearest-first once we know where the user is, otherwise centre-out
+    var c = map ? map.getCenter() : { lat: 37.98, lng: 23.72 };
+    var o = here || c;
+    vis.sort(function (a, b) {
+      return haversine(o.lat, o.lng, a.lat, a.lng) - haversine(o.lat, o.lng, b.lat, b.lng);
+    });
+    listState = { items: vis, shown: 0, mode: 'all' };
+    $('ptitle').innerHTML = (here ? 'Nearest to you' : 'On the map') +
+      '<span class="m-sub">' + (vis.length === ALL.length
+        ? fmtN(vis.length) + ' places'
+        : fmtN(vis.length) + ' of ' + fmtN(ALL.length) + ' shown') + '</span>';
+    $('pclose').hidden = true;
+    paint(true);
+    $('pfoot').innerHTML = coverageNote();
+  }
+
+  var totalListings = null;
+  function coverageNote() {
+    if (totalListings && totalListings > ALL.length) {
+      return fmtN(ALL.length) + ' of ' + fmtN(totalListings) +
+        ' listings have coordinates. The rest are in <a href="/explore">Explore</a>.';
+    }
+    return fmtN(ALL.length) + ' listings mapped.';
+  }
+
+  function choose(p, keepSpider) {
+    selected = p;
+    if (!keepSpider) clearSpider();
+    hideTip();
+    var group = p.co && p.co.length > 1 ? p.co.filter(matches) : [p];
+    if (group.length > 1) {
+      showList(group, group.length + ' here', groupWhere(group), [p.lng, p.lat]);
+    } else {
+      showList([p], p.n, [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
+    }
+    map.easeTo({ center: [p.lng, p.lat], zoom: Math.max(map.getZoom(), 12), duration: 620 });
+  }
+
+  $('pclose').addEventListener('click', function () { showAll(); writeUrl(); });
+
+  /* ---------- filtering ---------- */
+  var refreshT;
+  function refresh() {
+    clearTimeout(refreshT);
+    refreshT = setTimeout(function () {
+      if (!ready) return;
+      clearSpider();
+      currentData = toGeoJSON(ALL.filter(matches));
+      map.getSource('places').setData(currentData);
+      Object.keys(clusterMarkers).forEach(function (k) { clusterMarkers[k].remove(); });
+      Object.keys(pinMarkers).forEach(function (k) { pinMarkers[k].remove(); });
+      clusterMarkers = {}; pinMarkers = {};
+      if (listState.mode === 'all') showAll();
+    }, 90);
+  }
+
+  $('q').addEventListener('input', function () {
+    query = this.value.trim();
+    $('clearq').hidden = !query;
+    refresh(); writeUrl();
+  });
+  $('clearq').addEventListener('click', function () {
+    query = ''; $('q').value = ''; this.hidden = true; refresh(); writeUrl(); $('q').focus();
+  });
+  $('allon').addEventListener('click', function () {
+    TYPES.forEach(function (t) { on[t.k] = true; });
+    syncChips(); refresh(); writeUrl();
   });
 
-  /* theme changes re-read the tokens so pins follow the palette */
-  new MutationObserver(function(){
-    tok=M.readTokens(); buildChips(); dirty=true;
-  }).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+  /* ---------- style / theme ---------- */
+  var pref = { greek: false, terrain: false };
+  function styleOpts() {
+    return {
+      theme: (document.documentElement.getAttribute('data-theme') || 'dark'),
+      greek: pref.greek,
+      terrain: pref.terrain
+    };
+  }
+  function reskin() {
+    if (!map) return;
+    readColours();
+    map.setStyle(BM.style(styleOpts()), { diff: false });
+    map.once('styledata', function () {
+      addDataLayers(currentData);
+      if (pref.terrain) map.setTerrain({ source: 'dem', exaggeration: 1.1 });
+      buildChips();
+    });
+  }
 
-  window.addEventListener('resize',resize);
+  /* ---------- data layers ----------
+   * Points live in a clustered GeoJSON source. clusterProperties accumulates a
+   * per-category count so a cluster knows its own composition without us having
+   * to re-scan the leaves on every frame.
+   */
+  function clusterProps() {
+    var cp = {};
+    TYPES.forEach(function (t, i) {
+      cp['t' + i] = ['+', ['case', ['==', ['get', 'ti'], i], 1, 0]];
+    });
+    return cp;
+  }
+  var currentData = null;
+  function addDataLayers(data) {
+    if (map.getSource('places')) return;
+    currentData = data || toGeoJSON(ALL.filter(matches));
+    map.addSource('places', {
+      type: 'geojson',
+      data: currentData,
+      cluster: true,
+      clusterRadius: 54,
+      clusterMaxZoom: 14,
+      clusterProperties: clusterProps()
+    });
+    // An invisible circle layer is what makes querySourceFeatures() return
+    // rendered features; the visible marks are DOM markers drawn from it.
+    map.addLayer({
+      id: 'places-probe', type: 'circle', source: 'places',
+      paint: { 'circle-radius': 1, 'circle-opacity': 0 }
+    });
+    renderClusters();
+  }
+
+  /* ---------- build the map ---------- */
+  function boot(initial) {
+    var start = initial.view || { center: [23.7275, 37.9838], zoom: 1.35, bearing: 0, pitch: 0 };
+    map = new MB.Map({
+      container: 'map',
+      style: BM.style(styleOpts()),
+      center: start.center,
+      zoom: start.zoom,
+      bearing: start.bearing || 0,
+      pitch: start.pitch || 0,
+      maxZoom: 18.5,
+      minZoom: 0.6,
+      attributionControl: false,
+      hash: false,
+      cooperativeGestures: false,
+      dragRotate: true,
+      pitchWithRotate: true
+    });
+    window.zoiMap = map;
+
+    map.addControl(new MB.NavigationControl({ visualizePitch: true, showZoom: true, showCompass: true }), 'bottom-left');
+    map.addControl(new MB.ScaleControl({ maxWidth: 92, unit: 'metric' }), 'bottom-left');
+
+    $('attrib').innerHTML = BM.ATTRIBUTION;
+
+    map.on('load', function () {
+      ready = true;
+      addDataLayers(null);
+      showAll();
+      status('', false);
+    });
+    map.on('render', function () {
+      // querySourceFeatures only returns anything meaningful once the source
+      // has settled; calling it mid-load churns markers for nothing.
+      if (map.isSourceLoaded('places')) renderClusters();
+    });
+    map.on('moveend', function () { writeUrl(); if (listState.mode === 'all') showAll(); });
+    map.on('click', function () { hideTip(); });
+    map.on('error', function (e) {
+      // A missing tile is normal at the edges of coverage and must not shout.
+      if (e && e.error && /tile|404/i.test(String(e.error.message || ''))) return;
+      console.warn('[map]', e && e.error);
+    });
+  }
+
+  /* ---------- tools ---------- */
+  $('tGlobe').addEventListener('click', function () {
+    var globe = this.getAttribute('aria-pressed') !== 'true';
+    this.setAttribute('aria-pressed', globe ? 'true' : 'false');
+    map.setProjection(globe
+      ? { type: ['interpolate', ['linear'], ['zoom'], 3, 'vertical-perspective', 6, 'mercator'] }
+      : { type: 'mercator' });
+    if (globe && map.getZoom() > 4) map.easeTo({ zoom: 2.2, pitch: 0, duration: 900 });
+  });
+
+  $('tTerrain').addEventListener('click', function () {
+    pref.terrain = this.getAttribute('aria-pressed') !== 'true';
+    this.setAttribute('aria-pressed', pref.terrain ? 'true' : 'false');
+    if (pref.terrain) {
+      if (!map.getSource('dem')) {
+        map.addSource('dem', {
+          type: 'raster-dem', tiles: [BM.DEM], encoding: 'terrarium',
+          tileSize: 256, maxzoom: 13
+        });
+      }
+      map.setTerrain({ source: 'dem', exaggeration: 1.1 });
+      map.easeTo({ pitch: Math.max(map.getPitch(), 52), duration: 900 });
+      status('Terrain on — drag with right button to tilt', false, 3600);
+    } else {
+      map.setTerrain(null);
+      map.easeTo({ pitch: 0, duration: 700 });
+    }
+  });
+
+  $('tGreek').addEventListener('click', function () {
+    pref.greek = this.getAttribute('aria-pressed') !== 'true';
+    this.setAttribute('aria-pressed', pref.greek ? 'true' : 'false');
+    // Only the label layers change, so patch them in place — a full setStyle
+    // would throw away tiles we already have.
+    var NF = pref.greek
+      ? ['coalesce', ['get', 'name:el'], ['get', 'name:latin'], ['get', 'name']]
+      : ['coalesce', ['get', 'name'], ['get', 'name:latin'], ['get', 'name:el']];
+    map.getStyle().layers.forEach(function (l) {
+      if (l.type === 'symbol' && l.layout && l.layout['text-field']) {
+        try { map.setLayoutProperty(l.id, 'text-field', NF); } catch (e) {}
+      }
+    });
+    status(pref.greek ? 'Greek place names' : 'Local place names', false, 2200);
+  });
+
+  $('tNear').addEventListener('click', function () {
+    if (!navigator.geolocation) { status('Your browser will not share a location', false, 3000); return; }
+    status('Finding you…', true);
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      status('', false);
+      map.easeTo({ center: [here.lng, here.lat], zoom: 10.5, duration: 1400 });
+      if (!map.getSource('me')) {
+        map.addSource('me', { type: 'geojson', data: { type: 'Point', coordinates: [here.lng, here.lat] } });
+        map.addLayer({
+          id: 'me-halo', type: 'circle', source: 'me',
+          paint: {
+            'circle-radius': 16, 'circle-color': COLOURS[IDX.church],
+            'circle-opacity': 0.16, 'circle-stroke-width': 1,
+            'circle-stroke-color': COLOURS[IDX.church], 'circle-stroke-opacity': 0.4
+          }
+        });
+        map.addLayer({
+          id: 'me-dot', type: 'circle', source: 'me',
+          paint: {
+            'circle-radius': 5, 'circle-color': COLOURS[IDX.church],
+            'circle-stroke-width': 2, 'circle-stroke-color': '#fff'
+          }
+        });
+      } else {
+        map.getSource('me').setData({ type: 'Point', coordinates: [here.lng, here.lat] });
+      }
+      showAll();
+    }, function () {
+      status('Could not get your location', false, 3200);
+    }, { enableHighAccuracy: false, timeout: 9000, maximumAge: 300000 });
+  });
+
+  $('tShare').addEventListener('click', function () {
+    var url = location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () { status('Link to this view copied', false, 2400); },
+        function () { status(url, false, 5000); }
+      );
+    } else status(url, false, 5000);
+  });
+
+  $('tReset').addEventListener('click', function () {
+    clearSpider();
+    map.easeTo({ center: [23.7275, 37.9838], zoom: 1.35, pitch: 0, bearing: 0, duration: 1500 });
+    showAll();
+  });
+
+  /* keyboard: / focuses search, Escape backs out */
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
+    if (e.key === 'Escape') { hideTip(); clearSpider(); if (listState.mode !== 'all') showAll(); }
+  });
+
+  /* theme changes must repaint the basemap, not just the chrome */
+  new MutationObserver(function (muts) {
+    for (var i = 0; i < muts.length; i++) {
+      if (muts[i].attributeName === 'data-theme') { reskin(); return; }
+    }
+  }).observe(document.documentElement, { attributes: true });
 
   /* ---------- go ---------- */
-  resize();
-  loop();
-  load().then(function(rows){
-    ALL=(rows||[]).filter(function(r){
-      return typeof r.lat==='number' && typeof r.lng==='number' &&
-             r.lat>=-90 && r.lat<=90 && r.lng>=-180 && r.lng<=180;
-    });
+  (async function () {
+    var initial = readUrl();
+
+    // header height drives the stage inset; measure rather than assume
+    var h = document.getElementById('hdr');
+    if (h && h.firstElementChild) {
+      document.documentElement.style.setProperty('--hdr', h.offsetHeight + 'px');
+      new ResizeObserver(function () {
+        document.documentElement.style.setProperty('--hdr', h.offsetHeight + 'px');
+        if (map) map.resize();
+      }).observe(h);
+    }
+
+    if (!MB || typeof MB.Map !== 'function') { $('nowebgl').hidden = false; return; }
+
+    try { await loadData(); }
+    catch (err) {
+      $('ptitle').innerHTML = 'Could not load the map<span class="m-sub">the directory did not answer</span>';
+      $('pbody').innerHTML = '<div class="m-empty">Try again in a moment, or browse <a href="/explore">Explore</a>.</div>';
+      return;
+    }
+
     buildChips();
-    if(!readHash()) view=M.fit(ALL,view.w,view.h,0.06);
-    applyFilters();
-    document.getElementById('load').classList.add('off');
-    setTimeout(function(){ var l=document.getElementById('load'); if(l&&l.parentNode) l.parentNode.removeChild(l); },500);
-  }).catch(function(){
-    cntEl.textContent='Could not load the map';
-    document.getElementById('load').classList.add('off');
-  });
+    C.api.rpc('home_stats', {}, { auth: 'anon' }).then(function (s) {
+      var r = Array.isArray(s) ? s[0] : s;
+      totalListings = r && (r.listings || r.total_listings || r.n_listings) || null;
+      if (listState.mode === 'all') $('pfoot').innerHTML = coverageNote();
+    }).catch(function () {});
+
+    try { boot(initial); }
+    catch (err) {
+      console.error(err);
+      $('nowebgl').hidden = false;
+      showAll();
+    }
+  })();
 })();
 </script>
-<script src="/assets/zoi-theme.js"></script>
 </body>
 </html>

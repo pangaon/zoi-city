@@ -194,6 +194,25 @@ footer a:hover{color:var(--tx)}
   </div>
 </div></header>
 
+<section class="wrap" style="padding:0 0 clamp(30px,5vw,54px)">
+  <div class="zoi-globe" id="zoiGlobe" data-mirror='{"gb-listings":"hd-count","gb-cities":"hd-cities","gb-countries":"hd-countries"}' style="--gh:clamp(230px,26vw,320px)" role="img"
+       aria-label="A globe showing the cities of the Greek world, with lines running from Greece to each one">
+    <div class="gname" id="zoiGlobeName" aria-hidden="true"></div>
+    <div class="gcap">
+      <h2>One world, one people.
+        <span class="gsub">Every line runs from Greece to a city that kept it going.</span>
+      </h2>
+      <div class="gstats">
+        <div><b id="gb-listings">&mdash;</b><span>places</span></div>
+        <div><b id="gb-cities">&mdash;</b><span>cities</span></div>
+        <div><b id="gb-countries">&mdash;</b><span>countries</span></div>
+      </div>
+      <a class="btn btn-primary" href="/explore/map" style="flex:0 0 auto">Open the map</a>
+    </div>
+  </div>
+</section>
+
+
 <section><div class="wrap">
   <div class="meta-row">
     <span class="count" id="res-count">Loading the Greek world…</span>
@@ -516,5 +535,58 @@ async function claim(slug,btn){
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
 <script src="/assets/zoi-theme.js"></script>
+
+<script src="/assets/zoi-globe.js" defer></script>
+<script>
+/* The hero globe. Lazy on purpose: MapLibre is ~276KB gzipped and is only
+   fetched once the container comes near the viewport, so this costs nothing on
+   first paint and degrades to a styled panel where WebGL is unavailable.
+
+   The three figures are MIRRORED from the stats this page already fetches and
+   displays, rather than fetched again — one request instead of two, and the
+   globe can never disagree with the number printed above it. The gazetteer
+   itself carries no counts by design. */
+(function(){
+  function mirror(el){
+    var map = JSON.parse(el.getAttribute('data-mirror') || '{}');
+    var keys = Object.keys(map);
+    function pull(){
+      var done = 0;
+      keys.forEach(function(dst){
+        var from = document.getElementById(map[dst]), to = document.getElementById(dst);
+        if (!from || !to) { done++; return; }
+        var v = (from.textContent || '').trim();
+        if (v && v !== '\u2014' && v !== '-') { to.textContent = v; done++; }
+      });
+      return done === keys.length;
+    }
+    if (pull()) return;
+    var tries = 0;
+    var t = setInterval(function(){ if (pull() || ++tries > 40) clearInterval(t); }, 250);
+  }
+  function boot(){
+    var el = document.getElementById('zoiGlobe');
+    if (!el) return;
+    mirror(el);
+    if (!window.ZoiGlobe) return;
+    var name = document.getElementById('zoiGlobeName');
+    window.ZoiGlobe.lazy(el, {
+      limit: 90,
+      zoom: 1.5,
+      onPick: function(p){ if (p && p.name) location.href = '/explore?q=' + encodeURIComponent(p.name); }
+    }).then(function(inst){
+      if (!inst || !name) return;
+      inst.map.on('mousemove', function(e){
+        var f = inst.map.queryRenderedFeatures(e.point, {layers:['city','city-halo']})[0];
+        if (f && f.properties && f.properties.name) { name.textContent = f.properties.name; name.classList.add('on'); }
+        else name.classList.remove('on');
+      });
+      inst.map.on('mouseout', function(){ name.classList.remove('on'); });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
 </body>
 </html>

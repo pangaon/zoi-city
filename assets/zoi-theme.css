@@ -10,6 +10,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@400..800&display=swap');
 
 /* ---- Theme tokens ---- */
+/* The hidden attribute is only display:none by UA default, which any class
+   rule that sets a display value silently beats. That leaves an "invisible"
+   overlay sitting on top of the page eating clicks — it cost us a completely
+   unclickable map once. Guard it once, here, for every page. */
+[hidden]{display:none!important}
+
 :root{
   --bg:#080a0e; --bg2:#0e131a; --card:#141a22; --card2:#0f151d;
   --line:rgba(255,255,255,.10); --line2:rgba(255,255,255,.16);
@@ -197,3 +203,41 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
 /* ---- Accessibility ---- */
 :focus-visible{outline:2px solid var(--acc);outline-offset:2px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- hero globe ----------
+   A container that looks finished before the globe arrives, because the globe
+   is lazy-loaded and may never arrive at all (no WebGL, slow link, blocked
+   third party). Nothing here depends on it. */
+.zoi-globe{position:relative;overflow:hidden;border-radius:var(--r);
+  border:1px solid var(--line);background:
+    radial-gradient(120% 90% at 50% 8%, color-mix(in srgb,var(--acc) 12%, transparent), transparent 62%),
+    var(--card2);
+  min-height:var(--gh,420px);isolation:isolate}
+.zoi-globe canvas{display:block}
+.zoi-globe .maplibregl-map{background:transparent!important}
+.zoi-globe::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 120% at 50% 50%, transparent 52%, color-mix(in srgb,var(--bg) 72%, transparent) 100%)}
+.zoi-globe[data-live="1"]::after{opacity:.9}
+.zoi-globe .gcap{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:20px 22px;
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;
+  background:linear-gradient(to top, color-mix(in srgb,var(--bg) 88%, transparent), transparent)}
+.zoi-globe .gcap h2{font-family:"Fraunces",serif;font-size:clamp(19px,2.4vw,26px);font-weight:600;
+  letter-spacing:-.02em;margin:0;flex:1 1 240px;line-height:1.15}
+.zoi-globe .gcap .gsub{display:block;font-family:"Hanken Grotesk",sans-serif;font-size:13px;
+  font-weight:500;color:var(--mut);letter-spacing:0;margin-top:5px}
+.zoi-globe .gstats{display:flex;gap:20px;flex:0 0 auto}
+.zoi-globe .gstats div{min-width:64px}
+.zoi-globe .gstats b{display:block;font-family:"Fraunces",serif;font-size:20px;font-weight:600;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.zoi-globe .gstats span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.zoi-globe .gname{position:absolute;top:14px;left:16px;z-index:3;font-size:12.5px;font-weight:600;
+  color:var(--tx);background:color-mix(in srgb,var(--card) 84%,transparent);
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;
+  opacity:0;transform:translateY(-4px);transition:.18s var(--ease);pointer-events:none}
+.zoi-globe .gname.on{opacity:1;transform:none}
+@media (max-width:720px){
+  .zoi-globe{--gh:320px}
+  .zoi-globe .gcap{padding:15px 16px}
+  .zoi-globe .gstats{gap:14px}
+  .zoi-globe .gstats b{font-size:17px}
+}
