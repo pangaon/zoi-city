@@ -36,8 +36,28 @@
   function ymdToUTC(y, m, d) { return Date.UTC(y, m - 1, d); }
   function addDays(ms, n) { return ms + n * 86400000; }
   function iso(ms) { return new Date(ms).toISOString().slice(0, 10); }
+  /**
+   * Accept an ISO day string, a Date, or an epoch-millisecond number.
+   *
+   * This used to take the string form only, and returned null for anything else
+   * — which meant fastInfo(new Date(...)) answered "not a fast day" for Great
+   * Friday, silently. A calendar that quietly says Clean Monday is an ordinary
+   * Monday is worse than one that throws, and every caller reaching for a Date
+   * is making the obvious mistake, not an exotic one.
+   */
   function parseISO(s) {
-    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || ''));
+    if (s == null) return null;
+    if (s instanceof Date) {
+      return isFinite(s.getTime())
+        ? ymdToUTC(s.getFullYear(), s.getMonth() + 1, s.getDate())   // local day, as drawn
+        : null;
+    }
+    // Numbers are deliberately NOT accepted. A bare number is ambiguous —
+    // milliseconds or seconds? — and guessing wrong yields a confidently wrong
+    // date, which is the exact failure this function exists to prevent. Callers
+    // with a timestamp should pass new Date(ms) and say what they mean.
+
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s));
     return m ? ymdToUTC(+m[1], +m[2], +m[3]) : null;
   }
   function dayOfWeek(ms) { return new Date(ms).getUTCDay(); } // 0=Sun
@@ -191,7 +211,12 @@
         }
       }
     }
-    var md = String(dateISO).slice(5);
+    // Derive month-day from the PARSED value, never from the raw argument.
+    // String(dateISO).slice(5) only worked for a bare 'YYYY-MM-DD': a Date gave
+    // 'ug 15 2026 ...' and an ISO datetime gave '08-15T10:00:00Z', so fixed
+    // feasts silently vanished for both. Moveable feasts kept working, which is
+    // what made it hard to see.
+    var md = iso(ms).slice(5);
     for (var k = 0; k < FIXED.length; k++) {
       var g = FIXED[k];
       if (g.md === md) out.push({ key: g.key, name: g.name, md: g.md, civic: !!g.civic, kind: 'fixed', great: !!GREAT[g.key] });
@@ -201,7 +226,9 @@
 
   /** Name days for a date (fixed feasts only — that is how they are kept). */
   function nameDaysOn(dateISO) {
-    return NAMEDAYS[String(dateISO || '').slice(5)] || [];
+    var ms = parseISO(dateISO);
+    if (ms == null) return [];
+    return NAMEDAYS[iso(ms).slice(5)] || [];
   }
 
   /**

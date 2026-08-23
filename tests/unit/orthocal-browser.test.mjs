@@ -247,3 +247,35 @@ test('bad input never throws', () => {
     assert.deepEqual(O.opportunities(bad, 5), []);
   }
 });
+
+// A Date or a timestamp must not silently answer "not a fast day". The string-only
+// version did exactly that, so fastInfo(new Date(greatFriday)) reported an
+// ordinary day — the kind of wrong answer a scheduler would act on.
+test('the liturgical API accepts a Date and a timestamp, not just an ISO string', () => {
+  const D = 86400000;
+  const pascha = O.orthodoxPascha(2026);
+  const cases = [
+    ['Clean Monday', pascha - 48 * D, 'strict'],
+    ['Great Friday', pascha - 2 * D, 'strict'],
+  ];
+  for (const [name, ms, expect] of cases) {
+    const iso = O.iso(ms);
+    const viaString = O.fastInfo(iso).level;
+    const viaDate = O.fastInfo(new Date(ms)).level;
+    assert.equal(viaString, expect, `${name} via ISO string`);
+    assert.equal(viaDate, viaString, `${name}: a Date must agree with the string`);
+    // A bare number stays rejected: ms or seconds is a guess, and guessing wrong
+    // gives a confidently wrong liturgical answer.
+    assert.equal(O.fastInfo(ms).level, 'none', `${name}: a bare number must not be guessed at`);
+  }
+  // and a Great Feast must be found whichever form you pass
+  const aug15 = Date.UTC(2026, 7, 15);
+  assert.ok(O.feastsOn('2026-08-15').some((f) => f.key === 'dormition'));
+  assert.ok(O.feastsOn(new Date(aug15)).some((f) => f.key === 'dormition'),
+    'Dormition must be found when a Date is passed');
+  // junk still yields nothing rather than a wrong answer
+  assert.equal(O.fastInfo(undefined).level, 'none');
+  assert.equal(O.fastInfo('not a date').level, 'none');
+  assert.deepEqual(O.feastsOn(NaN), []);
+  assert.deepEqual(O.feastsOn(new Date('nonsense')), [], 'an invalid Date is junk too');
+});
