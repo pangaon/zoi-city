@@ -272,7 +272,7 @@ async function boot(){
     const fresh=await rpc('explore_fresh',{p_limit:8},true);
     harvestCountries(fresh||[]);
     document.getElementById('fresh').innerHTML=(fresh||[]).map(f=>
-      '<a class="fcard" href="'+esc(f.path)+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
+      '<a class="fcard" href="'+esc(hrefFor(f))+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
   }catch(e){}
   readUrl();
   runSearch(true);
@@ -334,6 +334,18 @@ function typeLabel(t){
 function global_ZE(){ return (typeof ZoiEmblem!=='undefined') ? ZoiEmblem : null; }
 const PIN='<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
 
+/* Build listing links from `slug`, never from `path`.
+   explore_search derives `path` from the name, dropping the de-duplication
+   suffix real slugs carry, so ~14% of paths point at nothing (measured across
+   1,564 listings: artist 83, travel_place 43, vendor 32, school 29...).
+   `slug` always resolves, via the /:type/:slug rewrites. */
+function hrefFor(r){
+  if(!r) return '/explore';
+  if(r.slug && r.entity_type) return '/'+encodeURIComponent(r.entity_type)+'/'+encodeURIComponent(r.slug);
+  if(r.slug) return '/p/'+encodeURIComponent(r.slug);
+  return r.path||'/explore';
+}
+
 /* A listing card. Every element is real data: the cover is generated art derived
    from the listing's own name + category (or its photo when it has one), and the
    only badge shown is the verification state the backend actually reports. */
@@ -348,15 +360,15 @@ function card(r,idx){
   if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>';
   else if(vs==='source_verified') badge='<span class="lsrc">Sourced</span>';
   return '<article class="lcard">'+
-    '<a class="lcover'+(r.photo_url?'':' ')+'" href="'+esc(r.path)+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
+    '<a class="lcover'+(r.photo_url?'':' ')+'" href="'+esc(hrefFor(r))+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
     '<div class="lbody">'+
       '<div class="ltop"><span class="ltype">'+esc(typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
-      '<h3 class="lname"><a href="'+esc(r.path)+'">'+esc(r.name)+'</a></h3>'+
+      '<h3 class="lname"><a href="'+esc(hrefFor(r))+'">'+esc(r.name)+'</a></h3>'+
       (loc?'<div class="lloc">'+PIN+esc(loc)+'</div>':'')+
       (r.description?'<p class="ldesc">'+esc(r.description)+'</p>':'')+
     '</div>'+
     '<div class="lfoot">'+
-      '<a class="lbtn pri" href="'+esc(r.path)+'">View</a>'+
+      '<a class="lbtn pri" href="'+esc(hrefFor(r))+'">View</a>'+
       '<button class="lbtn" onclick="quickView('+idx+')">Quick look</button>'+
       (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
     '</div></article>';
@@ -441,7 +453,7 @@ function quickView(i){
     (r.description?'<p class="qv-desc">'+esc(r.description)+'</p>'
                   :'<p class="qv-desc">No description on this listing yet.'+
                    (r.claimable?' If it is yours, claim it and you can write one.':'')+'</p>')+
-    '<div class="qv-acts"><a class="lbtn pri" href="'+esc(r.path)+'">Open full page</a>'+
+    '<div class="qv-acts"><a class="lbtn pri" href="'+esc(hrefFor(r))+'">Open full page</a>'+
       (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
     '</div>';
   const qv=document.getElementById('qv'); qv.hidden=false;
