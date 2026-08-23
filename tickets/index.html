@@ -270,6 +270,179 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 .tk-adv-note{color:var(--dim);font-size:11.5px}
 @media(max-width:640px){.tk-adv-note{display:none}}
 </style>
+<style id="tkxStyles">
+/* ═══ /tickets own surfaces — every class prefixed tkx- so nothing inherits
+   from the design system by accident (tests/unit/design-system.test.mjs) ═══ */
+.tkx-wrap{max-width:1240px;margin:0 auto;padding:30px clamp(16px,4vw,60px) 90px}
+.tkx-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.tkx-eyebrow{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.tkx-h1{font-family:'Fraunces',Georgia,serif;font-size:clamp(24px,3.4vw,36px);font-weight:500;color:var(--tx);line-height:1.1;margin-top:8px}
+.tkx-sub{font-size:14px;color:var(--mut);margin-top:6px;max-width:64ch;line-height:1.55}
+
+/* KPI row */
+.tkx-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px}
+.tkx-kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px}
+.tkx-kpi-l{font-size:10.5px;font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:.14em}
+.tkx-kpi-v{font-family:'Fraunces',Georgia,serif;font-size:31px;font-weight:500;color:var(--tx);line-height:1.05;margin-top:7px}
+.tkx-kpi-v[data-tone="gold"]{color:var(--gold)}
+.tkx-kpi-s{font-size:11.5px;color:var(--mut);margin-top:5px;line-height:1.4}
+
+/* toolbar */
+.tkx-toolbar{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+.tkx-field{flex:1 1 210px;min-width:0;position:relative;display:flex;align-items:center}
+.tkx-field svg{position:absolute;left:12px;width:15px;height:15px;stroke:var(--dim);fill:none;stroke-width:2;pointer-events:none}
+.tkx-input{width:100%;min-height:42px;border-radius:12px;border:1px solid var(--line2);background:var(--card2);
+  color:var(--tx);font:600 14px 'Hanken Grotesk',system-ui,sans-serif;padding:0 12px 0 34px}
+.tkx-input:focus-visible,.tkx-select:focus-visible{outline:2px solid var(--acc);outline-offset:1px}
+.tkx-select{min-height:42px;border-radius:12px;border:1px solid var(--line2);background:var(--card2);color:var(--tx);
+  font:600 13px 'Hanken Grotesk',system-ui,sans-serif;padding:0 30px 0 12px;cursor:pointer;appearance:none;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='11' height='7'><path d='M1 1l4.5 4.5L10 1' stroke='%2393a4bd' stroke-width='1.8' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 11px center}
+.tkx-btn{min-height:42px;padding:0 15px;border-radius:12px;border:1px solid var(--line2);background:var(--card2);
+  color:var(--tx);font:700 13.5px 'Hanken Grotesk',system-ui,sans-serif;cursor:pointer;display:inline-flex;
+  align-items:center;justify-content:center;gap:7px;transition:background .2s var(--ease),border-color .2s var(--ease)}
+.tkx-btn:hover{background:var(--card);border-color:var(--acc)}
+.tkx-btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tkx-btn[disabled]{opacity:.45;cursor:not-allowed}
+.tkx-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex:none}
+.tkx-btn[data-tone="gold"]{background:var(--gold);border-color:var(--gold);color:var(--btn-fg)}
+.tkx-btn[data-tone="gold"]:hover{filter:brightness(1.08)}
+.tkx-btn[data-tone="door"]{background:var(--green);border-color:var(--green);color:var(--btn-fg)}
+.tkx-btn[data-tone="door"]:hover{filter:brightness(1.08)}
+.tkx-btn[aria-pressed="true"]{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 16%,transparent)}
+.tkx-kbdhint{font-size:11.5px;color:var(--dim);margin-left:auto}
+.tkx-kbdhint kbd{border:1px solid var(--line2);border-radius:5px;padding:1px 5px;font:700 10.5px ui-monospace,Menlo,monospace;color:var(--mut)}
+
+/* event cards */
+.tkx-list{display:flex;flex-direction:column;gap:14px}
+.tkx-ev{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tkx-ev-body{padding:18px 20px}
+.tkx-ev-top{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.tkx-ev-ico{width:44px;height:44px;border-radius:13px;flex:none;display:grid;place-items:center;background:var(--card2);border:1px solid var(--line2)}
+.tkx-ev-ico svg{width:21px;height:21px;stroke:var(--gold);fill:none;stroke-width:1.7}
+.tkx-ev-ttl{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:500;color:var(--tx);line-height:1.2}
+.tkx-ev-meta{display:flex;flex-wrap:wrap;gap:5px 14px;color:var(--mut);font-size:12px;font-weight:600;margin-top:5px}
+.tkx-ev-meta span{display:inline-flex;align-items:center;gap:5px}
+.tkx-ev-meta svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.9}
+.tkx-tag{font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:3px 8px;border-radius:999px;
+  border:1px solid var(--line2);color:var(--mut);white-space:nowrap}
+.tkx-tag[data-tone="live"]{border-color:color-mix(in srgb,var(--green) 45%,transparent);color:var(--green)}
+.tkx-tag[data-tone="past"]{border-color:var(--line2);color:var(--dim)}
+.tkx-tag[data-tone="warn"]{border-color:color-mix(in srgb,var(--gold) 50%,transparent);color:var(--gold)}
+.tkx-tag[data-tone="full"]{border-color:color-mix(in srgb,var(--red) 50%,transparent);color:var(--red)}
+
+/* metric strip inside a card */
+.tkx-mets{display:grid;grid-template-columns:repeat(auto-fit,minmax(126px,1fr));gap:10px;margin-bottom:14px}
+.tkx-met{background:var(--card2);border:1px solid var(--line);border-radius:var(--r-sm,12px);padding:10px 12px}
+.tkx-met .l{font-size:9.5px;font-weight:800;color:var(--dim);text-transform:uppercase;letter-spacing:.1em}
+.tkx-met .v{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:500;color:var(--tx);line-height:1.1;margin-top:4px}
+.tkx-met .s{font-size:11px;color:var(--mut);margin-top:2px}
+
+/* tier bars */
+.tkx-tiers{display:flex;flex-direction:column;gap:10px;margin-bottom:14px}
+.tkx-tier{background:var(--card2);border:1px solid var(--line);border-radius:var(--r-sm,12px);padding:11px 13px}
+.tkx-tier-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.tkx-tier-nm{font:700 13.5px 'Hanken Grotesk',system-ui,sans-serif;color:var(--tx)}
+.tkx-tier-pr{margin-left:auto;font-family:'Fraunces',Georgia,serif;font-size:15px;color:var(--tx);white-space:nowrap}
+.tkx-tier-sub{font-size:11.5px;color:var(--mut);margin-top:3px}
+.tkx-bar{height:7px;border-radius:7px;background:color-mix(in srgb,var(--tx) 10%,transparent);overflow:hidden;margin-top:8px}
+.tkx-bar i{display:block;height:100%;border-radius:7px;background:var(--green);transition:width .5s var(--ease)}
+.tkx-bar i[data-lvl="med"]{background:var(--gold)}
+.tkx-bar i[data-lvl="low"]{background:var(--red)}
+.tkx-bar[data-unl="1"]{background:repeating-linear-gradient(90deg,color-mix(in srgb,var(--tx) 14%,transparent) 0 6px,transparent 6px 12px)}
+
+/* notes / warnings — the honesty surfaces */
+.tkx-note{display:flex;gap:9px;border-radius:var(--r-sm,12px);padding:11px 13px;font-size:12.5px;line-height:1.55;
+  border:1px solid var(--line2);background:var(--card2);color:var(--mut);margin-bottom:12px}
+.tkx-note b,.tkx-note strong{color:var(--tx);font-weight:700}
+.tkx-note code{font:600 11.5px ui-monospace,Menlo,monospace;background:color-mix(in srgb,var(--tx) 8%,transparent);
+  border-radius:5px;padding:1px 5px;color:var(--tx);overflow-wrap:anywhere}
+.tkx-note svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2;flex:none;margin-top:2px}
+.tkx-note[data-tone="warn"]{border-color:color-mix(in srgb,var(--gold) 40%,transparent);
+  background:color-mix(in srgb,var(--gold) 10%,transparent);color:var(--tx)}
+.tkx-note[data-tone="stop"]{border-color:color-mix(in srgb,var(--red) 40%,transparent);
+  background:color-mix(in srgb,var(--red) 10%,transparent);color:var(--tx)}
+.tkx-note[data-tone="info"]{border-color:color-mix(in srgb,var(--acc) 40%,transparent);
+  background:color-mix(in srgb,var(--acc) 9%,transparent);color:var(--tx)}
+.tkx-note ol,.tkx-note ul{margin:6px 0 0 18px;padding:0}
+.tkx-note li{margin-bottom:4px}
+
+/* share row */
+.tkx-share{display:flex;gap:7px;align-items:center;background:var(--card2);border:1px solid var(--line);
+  border-radius:var(--r-sm,12px);padding:7px 7px 7px 12px;margin-bottom:12px;flex-wrap:wrap}
+.tkx-share-url{flex:1 1 180px;min-width:0;font:600 12px ui-monospace,Menlo,monospace;color:var(--acc);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkx-mini{min-height:34px;padding:0 11px;border-radius:9px;border:1px solid var(--line2);background:var(--card);
+  color:var(--tx);font:700 12px 'Hanken Grotesk',system-ui,sans-serif;cursor:pointer;display:inline-flex;
+  align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
+.tkx-mini:hover{border-color:var(--acc)}
+.tkx-mini:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tkx-mini svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2}
+.tkx-acts{display:flex;gap:8px;flex-wrap:wrap}
+
+/* states */
+.tkx-load{padding:52px 20px;text-align:center;color:var(--mut);font-size:14px}
+.tkx-spin{width:24px;height:24px;border:2.5px solid color-mix(in srgb,var(--tx) 14%,transparent);
+  border-top-color:var(--gold);border-radius:50%;animation:tkxspin .8s linear infinite;margin:0 auto 12px}
+@keyframes tkxspin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.tkx-spin{animation-duration:2.4s}}
+.tkx-empty{padding:46px 26px;text-align:center;background:var(--card);border:1px dashed var(--line2);border-radius:var(--r)}
+.tkx-empty-t{font:700 16px 'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);margin-bottom:8px}
+.tkx-empty-s{font-size:13px;color:var(--mut);max-width:46ch;margin:0 auto 16px;line-height:1.6}
+.tkx-skel{height:96px;border-radius:var(--r);background:linear-gradient(90deg,var(--card),var(--card2),var(--card));
+  background-size:200% 100%;animation:tkxsheen 1.4s var(--ease) infinite;border:1px solid var(--line);margin-bottom:12px}
+@keyframes tkxsheen{to{background-position:-200% 0}}
+
+/* attendee drawer */
+.tkx-drawer{position:fixed;inset:0;z-index:600;display:none;align-items:stretch;justify-content:flex-end}
+.tkx-drawer[data-open="1"]{display:flex}
+.tkx-drawer-bg{position:absolute;inset:0;background:color-mix(in srgb,var(--bg) 74%,transparent);backdrop-filter:blur(8px)}
+.tkx-drawer-panel{position:relative;width:min(720px,100%);background:var(--bg2);border-left:1px solid var(--line2);
+  display:flex;flex-direction:column;box-shadow:-20px 0 60px -30px rgba(0,0,0,.7)}
+.tkx-drawer-head{flex:none;padding:16px 18px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
+.tkx-drawer-head h2{font-family:'Fraunces',Georgia,serif;font-size:19px;font-weight:500;color:var(--tx);margin:0;flex:1;min-width:0}
+.tkx-drawer-head p{font-size:12px;color:var(--mut);margin:4px 0 0}
+.tkx-close{flex:none;width:38px;height:38px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);
+  color:var(--tx);font-size:17px;line-height:1;cursor:pointer}
+.tkx-close:hover{background:var(--card)}
+.tkx-close:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tkx-drawer-tools{flex:none;padding:12px 18px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap}
+.tkx-drawer-body{flex:1;overflow-y:auto;padding:12px 18px 28px}
+.tkx-att{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:11px 12px;border-radius:12px;
+  border:1px solid var(--line);background:var(--card);color:var(--tx);cursor:pointer;margin-bottom:8px}
+.tkx-att:hover{border-color:var(--acc)}
+.tkx-att:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tkx-att-m{flex:1;min-width:0}
+.tkx-att-n{font:700 14px 'Hanken Grotesk',system-ui,sans-serif;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkx-att-s{font-size:11.5px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tkx-att-q{font:700 12.5px 'Hanken Grotesk',system-ui,sans-serif;color:var(--mut);flex:none}
+.tkx-dot{width:9px;height:9px;border-radius:50%;flex:none;background:var(--line2)}
+.tkx-dot[data-in="1"]{background:var(--green)}
+.tkx-kv{display:grid;grid-template-columns:auto 1fr;gap:7px 14px;font-size:13px;margin:4px 0 14px}
+.tkx-kv dt{color:var(--mut);font-weight:600}
+.tkx-kv dd{margin:0;color:var(--tx);font-weight:600;overflow-wrap:anywhere}
+
+/* QR + ticket */
+.tkx-qr{display:grid;place-items:center;padding:6px 0}
+.tkx-qr svg{width:min(232px,60vw);height:auto;border-radius:12px;background:#fff;padding:8px;display:block}
+.tkx-ticket{background:var(--card);border:1px solid var(--line2);border-radius:var(--r);padding:18px;text-align:center}
+.tkx-code{display:inline-block;margin-top:10px;padding:9px 18px;border-radius:12px;
+  font:700 21px ui-monospace,Menlo,monospace;letter-spacing:.16em;color:var(--gold);
+  background:color-mix(in srgb,var(--gold) 12%,transparent);border:1px solid color-mix(in srgb,var(--gold) 34%,transparent)}
+
+/* misc */
+.tkx-seg{display:inline-flex;border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+.tkx-seg button{min-height:42px;padding:0 13px;border:0;background:transparent;color:var(--mut);
+  font:700 12.5px 'Hanken Grotesk',system-ui,sans-serif;cursor:pointer}
+.tkx-seg button[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--tx)}
+.tkx-seg button:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.tkx-inline-err{color:var(--red);font-size:12px;margin-top:5px;min-height:15px;font-weight:600}
+.tkx-prog-txt{font-size:12.5px;color:var(--mut);margin-top:8px}
+.tkx-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.tkx-grid2{grid-template-columns:1fr}}
+.tkx-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 
 <link rel="manifest" href="/manifest.webmanifest">
@@ -309,15 +482,16 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
       <div class="confirm-ref" id="confirmCode">—</div>
     </div>
     <div class="confirm-body">
-      <div class="confirm-meta"><span>Quantity</span><b id="cfQty">—</b></div>
+      <div class="tkx-qr" id="cfQr"></div>
+      <div class="confirm-meta"><span>Quantity</span><b id="cfQty">&mdash;</b></div>
       <div class="confirm-meta"><span>Status</span><b id="cfStatus">Reserved</b></div>
-      <div class="confirm-meta"><span>Amount</span><b id="cfAmount">—</b></div>
+      <div class="confirm-meta"><span>Amount</span><b id="cfAmount">&mdash;</b></div>
       <div class="reserve-note" style="margin-top:16px" id="cfNote">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-        <span>Your spot is held and nothing has been charged. Bring this code — the organizer checks you in with it.</span>
+        <span>Your spot is held and nothing has been charged. Bring this code &mdash; the organizer checks you in with it.</span>
       </div>
-      <button class="btn" style="width:100%;margin-bottom:8px;display:none" id="cfIcsBtn" onclick="icsDownload()">Add to calendar</button>
-      <button class="btn gold" style="width:100%" onclick="closeConfirm()">Done</button>
+      <div class="tkx-acts" id="cfActs" style="margin:14px 0"></div>
+      <button class="btn gold" style="width:100%" id="cfDone" data-act="closeconfirm">Done</button>
     </div>
   </div>
 </div>
@@ -330,44 +504,162 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
         <div class="modal-title" id="genTitle">Title</div>
         <div class="modal-desc" id="genDesc"></div>
       </div>
-      <button class="modal-x" onclick="closeGen()">✕</button>
+      <button class="modal-x" data-act="closegen" aria-label="Close">✕</button>
     </div>
     <div class="modal-body" id="genBody"></div>
   </div>
 </div>
 
+<!-- Attendees drawer -->
+<div class="tkx-drawer" id="tkxDrawer" data-open="0" role="dialog" aria-modal="true" aria-label="Attendees">
+  <div class="tkx-drawer-bg"></div>
+  <div class="tkx-drawer-panel">
+    <div class="tkx-drawer-head" id="tkxDrawerHead"></div>
+    <div class="tkx-drawer-tools" id="tkxDrawerTools"></div>
+    <div class="tkx-drawer-body" id="tkxDrawerBody"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span id="toastMsg"></span></div>
 
+<script src="/assets/tickets/lib.js"></script>
+<script src="/assets/tickets/qr.js"></script>
+<script src="/assets/tickets/door.js"></script>
 <script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   /tickets — organiser dashboard, public event page, and door mode.
+
+   Ground rules this file follows:
+     1. Every number on screen comes from tickets_dashboard,
+        tickets_event_stats, tickets_types_list or tickets_reservations_list.
+        Nothing is estimated, projected or filled in.
+     2. Paid checkout is server-gated. Where money would appear, the UI says
+        exactly what is switched off and exactly what switching it on needs.
+     3. Anything the backend cannot do is stated, not simulated.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 /* ============ CONFIG ============ */
 const BASE = 'https://csebihpaychdkanjjsmz.supabase.co';
 const PUBKEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const PUBLIC_BASE = 'https://www.zoi.city/tickets';
 
+const LIB = window.ZoiTicketsLib;
+const QR = window.ZoiQR;
+/* If a helper script did not load, say so instead of leaving a blank page and a
+   console stack trace nobody at a venue is going to read. */
+if(!LIB || !QR || !window.ZoiDoor){
+  const missing = [!LIB&&'/assets/tickets/lib.js', !QR&&'/assets/tickets/qr.js', !window.ZoiDoor&&'/assets/tickets/door.js'].filter(Boolean);
+  document.getElementById('app').innerHTML =
+    '<div style="max-width:520px;margin:60px auto;padding:22px;border:1px solid var(--line);border-radius:18px;'
+    + 'background:var(--card);color:var(--tx);font:15px/1.6 system-ui,sans-serif">'
+    + '<b>Tickets could not start.</b><br>These files did not load: '
+    + missing.map(m=>'<code>'+m+'</code>').join(', ')
+    + '.<br><br>Reload the page. If it keeps happening the deploy is incomplete — nothing you do here can'
+    + ' create or lose a reservation while this message is showing.</div>';
+  throw new Error('tickets: missing '+missing.join(', '));
+}
+
 /* ============ HELPERS ============ */
 const $ = s => document.querySelector(s);
 const app = $('#app');
-const esc = s => String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc = LIB.esc;
+const fmtMoney = LIB.fmtMoney;
+const fmtWhen = LIB.fmtWhen;
+const plural = LIB.plural;
 function qs(k){ return new URLSearchParams(location.search).get(k); }
-function fmtMoney(cents, cur){ cents=Number(cents||0); if(cents===0) return 'Free'; try{ return new Intl.NumberFormat(undefined,{style:'currency',currency:cur||'USD'}).format(cents/100); }catch(e){ return (cur||'USD')+' '+(cents/100).toFixed(2); } }
-function fmtWhen(iso){ if(!iso) return null; const d=new Date(iso); if(isNaN(d)) return null; return d.toLocaleString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }
-function toast(msg, isErr){ const t=$('#toast'); $('#toastMsg').textContent=msg; t.classList.toggle('err',!!isErr); t.querySelector('svg').innerHTML = isErr?'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>':'<path d="M20 6L9 17l-5-5"/>'; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),3200); }
+function toast(msg, isErr){
+  const t=$('#toast'); $('#toastMsg').textContent=msg; t.classList.toggle('err',!!isErr);
+  t.querySelector('svg').innerHTML = isErr?'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>':'<path d="M20 6L9 17l-5-5"/>';
+  t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),3600);
+}
+function download(name, text, mime){
+  const blob=new Blob([text],{type:mime||'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+/* Print via an off-screen iframe rather than window.open().
+   The manifest and CSV buttons have to fetch the reservation list first, and by
+   the time that await resolves the browser no longer counts the click as a user
+   gesture — window.open() came back null and silently downloaded an HTML file
+   instead of opening the print dialog. An iframe needs no popup permission. */
+function printHtml(html, fallbackName){
+  const old=document.getElementById('tkxPrintFrame');
+  if(old) old.remove();
+  let f;
+  try{
+    f=document.createElement('iframe');
+    f.id='tkxPrintFrame';
+    f.setAttribute('aria-hidden','true');
+    f.setAttribute('title','Print preview');
+    f.style.cssText='position:fixed;left:-10000px;top:0;width:816px;height:1056px;border:0';
+    document.body.appendChild(f);
+    const d=f.contentDocument;
+    d.open(); d.write(html); d.close();
+    const go=()=>{
+      try{ f.contentWindow.focus(); f.contentWindow.print(); }
+      catch(e){ download(fallbackName||'zoi-print.html', html, 'text/html;charset=utf-8');
+        toast('Could not open the print dialog — downloaded the sheet instead'); }
+    };
+    if(d.readyState==='complete') setTimeout(go,80); else f.onload=()=>setTimeout(go,80);
+    return f;
+  }catch(e){
+    if(f) f.remove();
+    download(fallbackName||'zoi-print.html', html, 'text/html;charset=utf-8');
+    toast('Could not open the print dialog — downloaded the sheet instead');
+    return null;
+  }
+}
+const ICONS = {
+  cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  pin:'<path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>',
+  ticket:'<path d="M3 8a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4 2 2 0 000-4z"/><path d="M14 6v12"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  copy:'<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+  scan:'<path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M7 12h10"/>'
+};
+function ico(k, cls){ return '<svg viewBox="0 0 24 24" aria-hidden="true"'+(cls?' class="'+cls+'"':'')+'>'+ICONS[k]+'</svg>'; }
 
 /* ---- auth store ---- */
 function getAuth(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at&&(Number(a.expires_at)*1000 > Date.now()+5000)) return a; }catch(e){} return null; }
 function clearAuth(){ localStorage.removeItem('zoi_auth'); }
 function bearer(){ const a=getAuth(); return a?a.access_token:PUBKEY; }
 
-/* ---- RPC ---- */
+/* ---- RPC ----
+   A thrown error carries .transport = true when the request never reached the
+   server. Door mode relies on that distinction: only a transport failure may be
+   queued offline. An HTTP error IS an answer and gets shown. */
 async function rpc(fn, params, token){
-  const res = await fetch(BASE+'/rest/v1/rpc/'+fn, {
-    method:'POST',
-    headers:{ apikey:PUBKEY, Authorization:'Bearer '+(token||bearer()), 'Content-Type':'application/json' },
-    body: JSON.stringify(params||{})
-  });
-  const txt = await res.text();
-  let data=null; try{ data = txt?JSON.parse(txt):null; }catch(e){ data=txt; }
-  if(!res.ok){ throw new Error((data&&(data.message||data.error_description||data.error||data.hint))||('Request failed ('+res.status+')')); }
+  let res;
+  try{
+    res = await fetch(BASE+'/rest/v1/rpc/'+fn, {
+      method:'POST',
+      headers:{ apikey:PUBKEY, Authorization:'Bearer '+(token||bearer()), 'Content-Type':'application/json' },
+      body: JSON.stringify(params||{})
+    });
+  }catch(netErr){
+    const e=new Error('Could not reach the ticket server'); e.transport=true; e.cause=netErr; throw e;
+  }
+  let txt;
+  try{ txt = await res.text(); }
+  catch(bodyErr){
+    // The connection died mid-response. That is still a transport failure, and
+    // door mode's offline queue and runBulk's early stop both depend on knowing.
+    const e=new Error('Lost the connection while reading the reply'); e.transport=true; e.cause=bodyErr; throw e;
+  }
+  let data=null, unparseable=false;
+  if(txt){ try{ data = JSON.parse(txt); }catch(e){ data = txt; unparseable = true; } }
+  if(res.ok && unparseable){
+    // A 200 whose body will not parse is not an empty result. Falling through
+    // rendered "No events yet" for a workspace that has plenty.
+    throw new Error('The ticket server sent a reply Zoi could not read. Nothing has been changed.');
+  }
+  if(!res.ok){
+    const e=new Error((data&&(data.message||data.error_description||data.error||data.hint))||('Request failed ('+res.status+')'));
+    e.status=res.status; throw e;
+  }
   return data;
 }
 
@@ -385,24 +677,65 @@ async function verifyOtp(email, tokenCode){
   return d;
 }
 
+/* ---- payments availability (server-gated; never assumed) ---- */
+let SVC = { payments:false, known:false, why:null };
+async function loadSvc(){
+  const before = SVC.payments;
+  try{
+    const c = await rpc('suite_config', {}, getAuth()?undefined:PUBKEY);
+    SVC = { payments: !!(c && c.payments), known:true, why:null };
+  }catch(e){
+    SVC = { payments:false, known:false, why:e.message||'suite_config unavailable' };
+  }
+  // If it landed after the first paint and changed the answer, repaint. Every
+  // "cannot be sold yet" on screen is read from this flag.
+  if(SVC.payments !== before) repaintForSvc();
+  const b=document.getElementById('protoBanner');
+  if(b){
+    b.innerHTML = SVC.payments
+      ? '<span><b>Reservations and card payments are both live.</b> Free tiers reserve instantly; priced tiers check out with Stripe.</span>'
+      : '<span><b>Reservations are live. Card payments are not.</b> Free tiers reserve instantly and check in at the door. Priced tiers cannot be sold until Stripe is switched on — nothing is charged anywhere on this page.</span>';
+  }
+  return SVC;
+}
+/* The exact, checkable list. Sourced from STATUS-TRUTH.md, not guessed. */
+const PAY_GATE_HTML =
+  '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>Card payments are switched off for this workspace.</b>'
+  + ' This is not a UI placeholder: <code>suite_config</code> reports <code>payments:false</code>, and'
+  + ' <code>tickets_reserve</code> refuses priced ticket types server-side, so a paid tier cannot even be held.'
+  + '<ol><li><code>STRIPE_SECRET_KEY</code> in the <code>tickets-checkout</code> / <code>tickets-confirm</code> edge functions.</li>'
+  + '<li><code>payments_live</code> flipped to true in <code>zoi.app_config</code> (it defaults to off, and it is enforced in the database, not the browser).</li>'
+  + '<li>Stripe webhook signature verification proven before that flag moves.</li></ol>'
+  + 'Until all three land, price your tiers at 0 and take money another way — free tiers work end to end today,'
+  + ' including the door.</div></div>';
+
+function repaintForSvc(){
+  try{
+    if(qs('e')){ if(PUB.eventId && (PUB.ev || PUB.types.length) && !qs('c')) paintPublic(); }
+    else if(DASH.ws && DASH.events.length) paintDashboard();
+  }catch(e){ console.warn('[tickets] repaint after suite_config', e); }
+}
+
 /* ============ ROUTER ============ */
-function route(){
+async function route(){
   const e = qs('e');
-  if(e){ $('#protoBanner').style.display='flex'; loadSvc().then(handlePaidReturn); renderPublic(e); }
+  app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading…</div>';
+  // Whether a priced tier can be sold at all comes from suite_config, so the
+  // first paint waits for it — but never longer than four seconds, and
+  // loadSvc() repaints by itself if it lands late.
+  await Promise.race([
+    loadSvc().catch(()=>{}),
+    new Promise(r=>setTimeout(r, 4000))
+  ]);
+  if(e){ renderPublic(e); handlePaidReturn(); }
   else { renderDashboard(); }
 }
 
-/* ============ PUBLIC EVENT PAGE ============ */
-let PUB = { eventId:null, ev:null, types:[], selected:null, qty:1 };
+/* ═══════════════════════════════════════════════════════════════════
+   PUBLIC EVENT PAGE
+   ═══════════════════════════════════════════════════════════════════ */
+let PUB = { eventId:null, ev:null, types:[], selected:null, qty:1, watch:{}, watchTimer:null, watchPolls:0 };
 
-/* ---- payments (Stripe, credential-gated) ---- */
-let SVCT={stripe:false};
-async function loadSvc(){
-  try{ const r=await fetch(BASE+'/functions/v1/social-config',{headers:{'apikey':PUBKEY,'Authorization':'Bearer '+PUBKEY}}); const j=await r.json(); SVCT=(j&&j.services)||{stripe:false}; }
-  catch(e){ SVCT={stripe:false}; }
-  const b=document.getElementById('protoBanner');
-  if(b&&SVCT.stripe){ b.innerHTML='<span><b>Payments are live.</b> Paid tickets check out securely with Stripe; free tickets reserve instantly.</span>'; }
-}
 async function edgeFnT(name,body){
   const r=await fetch(BASE+'/functions/v1/'+name,{method:'POST',headers:{'apikey':PUBKEY,'Authorization':'Bearer '+PUBKEY,'Content-Type':'application/json'},body:JSON.stringify(body||{})});
   const t=await r.text(); if(!r.ok) throw new Error(name+' ('+r.status+'): '+t); return t?JSON.parse(t):null;
@@ -415,202 +748,419 @@ async function handlePaidReturn(){
   try{
     const res=await edgeFnT('tickets-confirm',{session_id:sid});
     if(res&&res.ok){ showConfirm({code:res.code,qty:res.qty,amount_cents:res.amount_cents,currency:res.currency,paid:true},null); }
-    else if(res&&res.pending){ alert('Payment is still processing. Your confirmation will arrive by email.'); }
-  }catch(e){ console.warn('confirm',e); }
+    else if(res&&res.pending){ toast('Payment is still processing — your confirmation will arrive by email.'); }
+  }catch(e){ toast('Could not confirm that payment: '+e.message, true); }
 }
 
+/* ---- head: OG / Twitter / JSON-LD from real event data ---- */
+function metaTag(kind, key, content){
+  const sel = kind==='property' ? 'meta[property="'+key+'"]' : 'meta[name="'+key+'"]';
+  let el = document.head.querySelector(sel);
+  if(!el){ el=document.createElement('meta'); el.setAttribute(kind,key); document.head.appendChild(el); }
+  el.setAttribute('content', content);
+}
+function paintHead(ev, types, url){
+  const name = (ev && ev.name) ? String(ev.name) : 'Event tickets';
+  document.title = name + ' · Tickets · Zoi';
+  const when = ev && ev.event_at ? fmtWhen(ev.event_at) : null;
+  const place = [ev&&ev.city, ev&&ev.country].filter(Boolean).join(', ');
+  const bits = [];
+  if(when) bits.push(when);
+  if(place) bits.push(place);
+  const free = (types||[]).filter(t=>Number(t.price_cents||0)===0).length;
+  if(free) bits.push(free+' free '+plural(free,'ticket type')+' — reserve in seconds');
+  const desc = (ev && ev.description) ? String(ev.description).replace(/\s+/g,' ').slice(0,200)
+                                      : (bits.join(' · ') || 'Reserve your spot on Zoi.');
+  metaTag('name','description',desc);
+  metaTag('property','og:type','website');
+  metaTag('property','og:site_name','Zoi');
+  metaTag('property','og:title',name+' · Tickets');
+  metaTag('property','og:description',desc);
+  metaTag('property','og:url',url);
+  metaTag('name','twitter:card','summary');
+  metaTag('name','twitter:title',name+' · Tickets');
+  metaTag('name','twitter:description',desc);
+  let ld = document.getElementById('tkxJsonLd');
+  if(!ld){ ld=document.createElement('script'); ld.type='application/ld+json'; ld.id='tkxJsonLd'; document.head.appendChild(ld); }
+  ld.textContent = JSON.stringify(LIB.eventJsonLd(ev||{}, types||[], url));
+  let canon = document.head.querySelector('link[rel="canonical"]');
+  if(!canon){ canon=document.createElement('link'); canon.rel='canonical'; document.head.appendChild(canon); }
+  canon.href = url;
+}
 
 async function renderPublic(eventId){
   PUB.eventId = eventId;
-  app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading tickets…</div>';
+  const code = qs('c');
+  app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading tickets…</div>';
   try{ PUB.ev = await rpc('tickets_event_public', {p_event:eventId}, PUBKEY); }catch(e){ PUB.ev = null; }
   let types;
   try{ types = await rpc('tickets_types_list', {p_event:eventId}, PUBKEY); }
   catch(err){
-    app.innerHTML = errBlock('Could not load this event', err.message + ' — the link may be invalid or the event is not published.');
+    app.innerHTML = errBlock('Could not load this event', err.message + ' — the link may be invalid, or the event is not published.', 'renderPublic');
     return;
   }
   PUB.types = Array.isArray(types)?types:[];
+  paintHead(PUB.ev, PUB.types, PUBLIC_BASE+'?e='+encodeURIComponent(eventId));
+  if(code){ paintTicketView(code); return; }
   paintPublic();
 }
 
+/* A guest reopening their own QR link. This renders the code that is in the
+   link — it is NOT a lookup, because there is no public RPC to fetch a
+   reservation by code, and we say so rather than implying we checked. */
+function paintTicketView(rawCode){
+  const code = LIB.normalizeCode(rawCode);
+  const ev = PUB.ev||{};
+  const when = ev.event_at ? fmtWhen(ev.event_at) : null;
+  const place = [ev.city, ev.country].filter(Boolean).map(esc).join(', ');
+  const payload = PUBLIC_BASE+'?e='+encodeURIComponent(PUB.eventId)+'&c='+encodeURIComponent(code);
+  app.innerHTML = '<div class="tkx-wrap" style="max-width:620px">'
+    + '<div class="tkx-eyebrow">Your ticket</div>'
+    + '<h1 class="tkx-h1">'+esc(ev.name||'Event')+'</h1>'
+    + '<div class="tkx-sub">'+[when?esc(when):'', place].filter(Boolean).join(' · ')+'</div>'
+    + '<div class="tkx-ticket" style="margin-top:18px">'
+    +   (code ? '<div class="tkx-qr">'+qrSvg(payload,'Ticket QR code')+'</div>'
+              + '<div class="tkx-code">'+esc(code)+'</div>'
+            : '<div class="tkx-empty-t">No code in this link</div>')
+    + '</div>'
+    + '<div class="tkx-acts" style="margin-top:14px">'
+    +   (code?'<button class="tkx-btn" data-act="copycode" data-code="'+esc(code)+'">'+ico('copy')+' Copy code</button>':'')
+    +   (code?'<button class="tkx-btn" data-act="printticket" data-code="'+esc(code)+'">Print / save</button>':'')
+    +   (ev.event_at?'<button class="tkx-btn" data-act="pubics">'+ico('cal')+' Add to calendar</button>':'')
+    +   '<a class="tkx-btn" href="'+esc(PUBLIC_BASE+'?e='+encodeURIComponent(PUB.eventId))+'">Event page</a>'
+    + '</div>'
+    + '<div class="tkx-note" data-tone="info" style="margin-top:16px">'+ico('info')
+    + '<div>This page renders the code that is in the link on your own device. Zoi has <b>not</b> looked up your'
+    + ' reservation here — there is no public lookup-by-code, so nothing on this screen is a confirmation of'
+    + ' status. The organiser confirms it when they scan you in at the door.</div></div>'
+    + '</div>';
+}
+
+function qrSvg(payload, title){
+  try{
+    return QR.svg(payload, { ecc:'M', scale:5, quiet:3, dark:'#000000', light:'#ffffff', title:title||'QR code' });
+  }catch(e){
+    return '<div class="tkx-inline-err">Could not draw a QR code for this link ('+esc(e.message)+'). The code below still works typed in by hand.</div>';
+  }
+}
+
 function paintPublic(){
-  const anyLeft = PUB.types.some(t=>!t.sold_out);
   const ev = PUB.ev || {};
-  const esc = v => String(v).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const roll = LIB.rollup(PUB.types);
+  const anyLeft = PUB.types.some(t=>!LIB.tierMath(t).soldOut);
+  const url = PUBLIC_BASE+'?e='+encodeURIComponent(PUB.eventId);
   const title = ev.name ? esc(ev.name) : 'Reserve your spot';
   const place = [ev.city, ev.country].filter(Boolean).map(esc).join(', ');
-  let whenTxt = '';
-  if(ev.event_at){ try{ whenTxt = new Date(ev.event_at).toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }catch(e){} }
-  const placeItem = place ? `<span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> ${place}</span>` : '';
-  const whenItem = whenTxt ? `<span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> ${esc(whenTxt)}</span>` : '';
-  const hero = `
-    <div class="hero">
-      <div class="hero-badge"><span class="dot"></span>Ticket Reservations</div>
-      <h1 class="hero-title">${title}</h1>
-      <div class="hero-meta">
-        ${placeItem}${whenItem}
-        <span class="hero-meta-item"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg> Instant confirmation code</span>
-        <span class="hero-meta-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg> No account needed</span>
-      </div>
-    </div>`;
+  const whenTxt = ev.event_at ? fmtWhen(ev.event_at) : null;
+
+  const hero = '<div class="hero">'
+    + '<div class="hero-badge"><span class="dot"></span>'+(roll.soldOut?'Sold out':'Ticket reservations')+'</div>'
+    + '<h1 class="hero-title">'+title+'</h1>'
+    + (ev.description?'<p class="tkx-sub" style="margin-top:10px">'+esc(ev.description)+'</p>':'')
+    + '<div class="hero-meta">'
+    +   (place?'<span class="hero-meta-item">'+ico('pin')+' '+place+'</span>':'')
+    +   (whenTxt?'<span class="hero-meta-item">'+ico('cal')+' '+esc(whenTxt)+'</span>':'')
+    +   '<span class="hero-meta-item">'+ico('ticket')+' Instant confirmation code</span>'
+    +   '<span class="hero-meta-item">'+ico('info')+' No account needed</span>'
+    + '</div>'
+    + '<div class="tkx-acts" style="margin-top:16px">'
+    +   '<button class="tkx-btn" data-act="share" data-url="'+esc(url)+'">Share this event</button>'
+    +   (ev.event_at?'<button class="tkx-btn" data-act="pubics">'+ico('cal')+' Add to calendar</button>':'')
+    +   '<button class="tkx-btn" data-act="pubqr" data-url="'+esc(url)+'">'+ico('scan')+' Show QR</button>'
+    + '</div>'
+    + '</div>';
 
   let cards;
   if(PUB.types.length===0){
-    cards = `<div class="empty-state"><div class="empty-title">No tickets available yet</div><div class="empty-sub">The organizer hasn't published any ticket types for this event. Check back soon.</div></div>`;
+    cards = '<div class="tkx-empty"><div class="tkx-empty-t">No ticket types published yet</div>'
+      + '<div class="tkx-empty-s">The organiser has not added any tiers for this event. Nothing is available to reserve'
+      + ' — this is the real state of the event, not a loading problem.</div></div>';
   } else {
-    cards = '<div class="ticket-grid">' + PUB.types.map(t=>{
-      const left = (t.capacity!=null) ? Math.max(0, t.capacity - (t.reserved||0)) : null;
-      const pct = (t.capacity!=null && t.capacity>0) ? Math.min(100, Math.round(((t.reserved||0)/t.capacity)*100)) : null;
-      const lvl = pct==null?'':(pct>=90?'low':pct>=60?'med':'high');
-      const isSel = PUB.selected===t.id;
-      const free = Number(t.price_cents)===0;
-      return `<div class="ticket-card ${t.sold_out?'sold-out':''} ${isSel?'selected':''}" ${t.sold_out?'':`onclick="selectType(${t.id})"`}>
-        <div class="ticket-icon">🎫</div>
-        <div class="ticket-info">
-          <div class="ticket-name">${esc(t.name)}</div>
-          ${t.description?`<div class="ticket-desc">${esc(t.description)}</div>`:''}
-          ${t.sold_out?`<span class="ticket-tag sold">Sold out</span>`: (free?`<span class="ticket-tag free">Free RSVP</span>`:'')}
-          ${(left!=null && !t.sold_out)?`<div class="avail-bar"><div class="avail-fill ${lvl}" style="width:${pct}%"></div></div><div class="avail-text">${left} of ${t.capacity} left</div>`:''}
-        </div>
-        <div class="ticket-price">
-          <div class="price">${free?'Free':fmtMoney(t.price_cents,t.currency)}</div>
-          ${free?'':`<div class="price-sub">per ticket</div>`}
-        </div>
-      </div>`;
+    cards = '<div class="tkx-tiers">' + PUB.types.map(t=>{
+      const m = LIB.tierMath(t);
+      const sel = PUB.selected===t.id;
+      const watching = !!PUB.watch[t.id];
+      return '<div class="tkx-tier" style="'+(sel?'border-color:var(--gold)':'')+'">'
+        + '<div class="tkx-tier-top">'
+        +   '<span class="tkx-tier-nm">'+esc(t.name)+'</span>'
+        +   (m.soldOut?'<span class="tkx-tag" data-tone="full">Sold out</span>':(m.free?'<span class="tkx-tag" data-tone="live">Free RSVP</span>':'<span class="tkx-tag" data-tone="warn">Payment required</span>'))
+        +   '<span class="tkx-tier-pr">'+(m.free?'Free':fmtMoney(m.priceCents,m.currency))+'</span>'
+        + '</div>'
+        + (t.description?'<div class="tkx-tier-sub">'+esc(t.description)+'</div>':'')
+        + (m.unlimited
+            ? '<div class="tkx-tier-sub">No capacity limit set by the organiser'+(m.reserved?' · '+m.reserved+' reserved so far':'')+'</div>'
+            : '<div class="tkx-bar"><i data-lvl="'+m.level+'" style="width:'+(m.pct||0)+'%"></i></div>'
+              + '<div class="tkx-tier-sub">'+m.left+' of '+m.capacity+' left · '+m.reserved+' reserved</div>')
+        + '<div class="tkx-acts" style="margin-top:10px">'
+        +   (m.soldOut
+              ? '<button class="tkx-btn" data-act="watch" data-tier="'+esc(String(t.id))+'" aria-pressed="'+(watching?'true':'false')+'">'
+                + (watching?'Watching for openings':'Tell me if a spot opens')+'</button>'
+              : (m.free || SVC.payments
+                  ? '<button class="tkx-btn" data-tone="gold" data-act="pick" data-tier="'+esc(String(t.id))+'">'
+                    + (sel?'Selected':'Choose this ticket')+'</button>'
+                  : '<button class="tkx-btn" disabled title="Card payments are switched off">Cannot be sold yet</button>'))
+        + '</div>'
+        + '</div>';
     }).join('') + '</div>';
   }
 
-  const panel = renderReservePanel(anyLeft);
-
-  app.innerHTML = hero + `<div class="layout">
-    <div>
-      <div class="sec-label">Choose a ticket</div>
-      ${cards}
-      <div class="info-card">
-        <h3>How reservations work</h3>
-        <p>Select a ticket type, enter your name and email, and reserve. You'll get a confirmation code instantly and your spot is held. For priced tickets, payment is collected in a later phase — you are not charged now.</p>
-      </div>
-    </div>
-    <div>${panel}</div>
-  </div>`;
-  bindReserve();
+  const hasPaidTier = PUB.types.some(t=>Number(t.price_cents||0)>0);
+  app.innerHTML = hero + '<div class="layout">'
+    + '<div>'
+    +   '<div class="sec-label">Choose a ticket</div>'
+    +   cards
+    +   (hasPaidTier && !SVC.payments ? PAY_GATE_HTML : '')
+    +   '<div class="tkx-note" data-tone="info" style="margin-top:12px">'+ico('info')
+    +   '<div><b>How a reservation works.</b> Pick a tier, give a name and an email, and reserve. You get a'
+    +   ' confirmation code and a QR code immediately, and your seat is held. At the door the organiser scans'
+    +   ' the QR or types the code. Nothing is charged, and nothing needs an account.</div></div>'
+    + '</div>'
+    + '<div id="tkxPanel">'+renderReservePanel(anyLeft)+'</div>'
+    + '</div>';
 }
 
 function renderReservePanel(anyLeft){
   const t = PUB.types.find(x=>x.id===PUB.selected);
   if(!t){
-    return `<div class="order-box"><div class="order-header">Your reservation</div>
-      <div class="order-body"><div class="empty-cart">
-        <svg viewBox="0 0 24 24"><path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.3 4.6A1 1 0 0 0 5.6 19H17"/><circle cx="9" cy="21" r="1"/><circle cx="18" cy="21" r="1"/></svg>
-        ${anyLeft?'Select a ticket type to reserve your spot.':'No tickets are currently available.'}
-      </div></div></div>`;
+    return '<div class="order-box"><div class="order-header">Your reservation</div>'
+      + '<div class="order-body"><div class="empty-cart">'
+      + '<svg viewBox="0 0 24 24">'+ICONS.ticket+'</svg>'
+      + (anyLeft?'Pick a ticket type and your seat is held instantly.':'Nothing is available to reserve right now.')
+      + '</div></div></div>';
   }
-  const free = Number(t.price_cents)===0;
-  const total = Number(t.price_cents)*PUB.qty;
-  const capLeft = (t.capacity!=null)?Math.max(0,t.capacity-(t.reserved||0)):null;
-  return `<div class="order-box">
-    <div class="order-header">Your reservation</div>
-    <div class="order-body">
-      <div class="sel-ticket">
-        <div><div class="ci-name">${esc(t.name)}</div><div class="ci-sub">${free?'Free RSVP':fmtMoney(t.price_cents,t.currency)+' each'}</div></div>
-        <div class="ci-price">${free?'Free':fmtMoney(total,t.currency)}</div>
-      </div>
-      <div class="qty-row">
-        <span class="lbl">Quantity</span>
-        <div class="qty-ctrl">
-          <button class="qty-btn" onclick="chQty(-1)">−</button>
-          <span class="qty-num" id="qtyNum">${PUB.qty}</span>
-          <button class="qty-btn" onclick="chQty(1)">+</button>
-        </div>
-      </div>
-      ${capLeft!=null?`<div class="field-hint" style="margin:-8px 0 14px">${capLeft} ticket${capLeft===1?'':'s'} left</div>`:''}
-      <div class="field"><label>Full name</label><input id="rName" placeholder="Your name" autocomplete="name"/></div>
-      <div class="field"><label>Email</label><input id="rEmail" type="email" placeholder="you@email.com" autocomplete="email"/></div>
-      <div class="inline-err" id="rErr"></div>
-      <div class="order-divider"></div>
-      <div class="order-row total"><span class="label">Total</span><span>${free?'Free':fmtMoney(total,t.currency)}</span></div>
-      <div class="reserve-note">
-        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
-        <span>${free?'This is a free RSVP — your spot is held instantly.':'This holds your spot as a <b>reservation</b>. Payment/checkout is coming in a later phase — you will not be charged now.'}</span>
-      </div>
-      <button class="reserve-btn" id="reserveBtn" onclick="doReserve()">${free?'Confirm RSVP':'Reserve '+PUB.qty+' ticket'+(PUB.qty>1?'s':'')}</button>
-    </div>
-  </div>`;
+  const m = LIB.tierMath(t);
+  const total = m.priceCents*PUB.qty;
+  const maxQty = m.unlimited ? 10 : Math.min(10, m.left);
+  return '<div class="order-box">'
+    + '<div class="order-header">Your reservation</div>'
+    + '<div class="order-body">'
+    +   '<div class="sel-ticket"><div><div class="ci-name">'+esc(t.name)+'</div>'
+    +     '<div class="ci-sub">'+(m.free?'Free RSVP':fmtMoney(m.priceCents,m.currency)+' each')+'</div></div>'
+    +     '<div class="ci-price">'+(m.free?'Free':fmtMoney(total,m.currency))+'</div></div>'
+    +   '<div class="qty-row"><span class="lbl">Quantity</span>'
+    +     '<div class="qty-ctrl">'
+    +       '<button class="qty-btn" data-act="qty" data-d="-1" aria-label="One fewer ticket">&minus;</button>'
+    +       '<span class="qty-num" id="qtyNum" aria-live="polite">'+PUB.qty+'</span>'
+    +       '<button class="qty-btn" data-act="qty" data-d="1" aria-label="One more ticket">+</button>'
+    +     '</div></div>'
+    +   '<div class="field-hint" style="margin:-8px 0 14px">'
+    +     (m.unlimited ? 'The organiser set no capacity limit. Up to 10 per reservation.'
+                      : m.left+' '+plural(m.left,'ticket')+' left · up to '+maxQty+' per reservation')+'</div>'
+    +   '<div class="field"><label for="rName">Full name</label><input id="rName" placeholder="Your name" autocomplete="name"/></div>'
+    +   '<div class="field"><label for="rEmail">Email</label><input id="rEmail" type="email" placeholder="you@email.com" autocomplete="email"/>'
+    +     '<div class="field-hint">Your confirmation code goes on screen straight away. Zoi cannot email it yet —'
+    +     ' the email sender needs a provider key that is not installed, so save the code or the QR.</div></div>'
+    +   '<div class="tkx-inline-err" id="rErr" role="alert"></div>'
+    +   '<div class="order-divider"></div>'
+    +   '<div class="order-row total"><span class="label">Total</span><span>'+(m.free?'Free':fmtMoney(total,m.currency))+'</span></div>'
+    +   (m.free
+        ? '<div class="tkx-note" data-tone="info" style="margin:12px 0">'+ico('info')+'<div>Free RSVP — your seat is held the moment you press the button.</div></div>'
+        : (SVC.payments
+            ? '<div class="tkx-note" data-tone="info" style="margin:12px 0">'+ico('info')+'<div>You will be taken to Stripe to pay. Zoi never sees your card.</div></div>'
+            : '<div class="tkx-note" data-tone="stop" style="margin:12px 0">'+ico('info')+'<div><b>This tier cannot be sold yet.</b>'
+              + ' Card payments are off and <code>tickets_reserve</code> rejects priced tiers server-side, so pressing'
+              + ' the button will be refused by the database rather than quietly holding a seat.</div></div>'))
+    +   '<button class="reserve-btn" id="reserveBtn" data-act="reserve"'
+    +     ((!m.free && !SVC.payments)?' disabled':'')+'>'
+    +     (m.free?'Confirm RSVP':(SVC.payments?('Pay for '+PUB.qty+' '+plural(PUB.qty,'ticket')):'Unavailable — payments off'))+'</button>'
+    + '</div></div>';
 }
 
+function repaintPanel(){
+  const wrap = document.getElementById('tkxPanel');
+  if(!wrap) return;
+  const n=$('#rName'), em=$('#rEmail');
+  const nv=n?n.value:'', ev=em?em.value:'';
+  wrap.innerHTML = renderReservePanel(true);
+  if($('#rName')) $('#rName').value=nv;
+  if($('#rEmail')) $('#rEmail').value=ev;
+}
 function selectType(id){ PUB.selected=id; PUB.qty=1; paintPublic(); const p=$('#rName'); if(p) p.focus(); }
 function chQty(d){
   const t=PUB.types.find(x=>x.id===PUB.selected); if(!t) return;
-  let max = (t.capacity!=null)?Math.max(1,t.capacity-(t.reserved||0)):20;
+  const m=LIB.tierMath(t);
+  const max = m.unlimited ? 10 : Math.max(1, Math.min(10, m.left));
   PUB.qty = Math.min(max, Math.max(1, PUB.qty+d));
-  // re-render only panel
-  const wrap = document.querySelectorAll('.layout > div')[1];
-  const nameV=$('#rName')?.value||'', emailV=$('#rEmail')?.value||'';
-  if(wrap){ wrap.innerHTML = renderReservePanel(true); bindReserve(); if($('#rName')) $('#rName').value=nameV; if($('#rEmail')) $('#rEmail').value=emailV; }
+  repaintPanel();
 }
-function bindReserve(){ /* placeholder for future field bindings */ }
 
 async function doReserve(){
   const t=PUB.types.find(x=>x.id===PUB.selected); if(!t) return;
+  const m=LIB.tierMath(t);
   const name=($('#rName').value||'').trim(), email=($('#rEmail').value||'').trim();
   const errEl=$('#rErr'); errEl.textContent='';
-  if(!name){ errEl.textContent='Please enter your name.'; return; }
-  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ errEl.textContent='Please enter a valid email.'; return; }
-  const btn=$('#reserveBtn'); btn.disabled=true; const orig=btn.textContent;
-  if(Number(t.price_cents||0)>0 && SVCT.stripe){
+  if(!name){ errEl.textContent='Please enter your name.'; $('#rName').focus(); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ errEl.textContent='Please enter a valid email.'; $('#rEmail').focus(); return; }
+  const btn=$('#reserveBtn'); const orig=btn.textContent; btn.disabled=true;
+  if(!m.free){
+    if(!SVC.payments){
+      errEl.textContent='Paid tiers cannot be reserved while card payments are off. See the note above.';
+      btn.disabled=false; btn.textContent=orig; return;
+    }
     btn.textContent='Opening secure checkout…';
     try{
       const co=await edgeFnT('tickets-checkout',{event:PUB.eventId,type:t.id,qty:PUB.qty,name:name,email:email,return_url:location.href});
       if(co&&co.url){ location.href=co.url; return; }
-      if(co&&co.error){ errEl.textContent=co.error; btn.disabled=false; btn.textContent=orig; return; }
-    }catch(err2){ errEl.textContent='Checkout failed: '+err2.message; btn.disabled=false; btn.textContent=orig; return; }
-  }
-  if(Number(t.price_cents||0)>0 && !SVCT.stripe){
-    errEl.textContent='Paid tickets are almost ready — online payment is being enabled for this event. Please check back soon.';
+      errEl.textContent=(co&&co.error)||'Checkout did not return a payment link.';
+    }catch(err2){ errEl.textContent='Checkout failed: '+err2.message; }
     btn.disabled=false; btn.textContent=orig; return;
   }
   btn.textContent='Reserving…';
   try{
     const res = await rpc('tickets_reserve', {p_event:PUB.eventId, p_type:t.id, p_name:name, p_email:email, p_qty:PUB.qty}, PUBKEY);
     showConfirm(res, t);
-    // refresh counts
     try{ PUB.types = await rpc('tickets_types_list', {p_event:PUB.eventId}, PUBKEY); }catch(e){}
     PUB.selected=null; PUB.qty=1; paintPublic();
   }catch(err){
     btn.disabled=false; btn.textContent=orig;
-    errEl.textContent = err.message || 'Could not reserve. Please try again.';
+    errEl.textContent = err.transport
+      ? 'No connection to the ticket server, so nothing was reserved. Check your signal and try again.'
+      : (err.message || 'Could not reserve. Please try again.');
   }
 }
 
+let LAST_CONFIRM = null;
 function showConfirm(res, t){
-  $('#confirmCode').textContent = res.code || '—';
-  $('#cfQty').textContent = res.qty || PUB.qty;
-  const free = Number(res.amount_cents||0)===0;
-  $('#cfStatus').textContent = res.paid ? 'Paid' : (free?'RSVP held':'Reserved (unpaid)');
-  $('#cfAmount').textContent = free ? 'Free' : fmtMoney(res.amount_cents, res.currency);
-  $('#cfNote').style.display = (free||res.paid) ? 'none' : 'flex';
-  $('#confirmSub').textContent = res.paid ? 'Payment received — you are all set. Keep this code.' : (free ? 'Your RSVP is confirmed. Keep this code.' : 'Your seats are held. Keep this confirmation code.');
-  const ib=document.getElementById('cfIcsBtn'); if(ib) ib.style.display=(PUB.ev&&PUB.ev.event_at)?'inline-flex':'none';
+  const code = (res && res.code) || '';
+  LAST_CONFIRM = { code:code, qty:(res&&res.qty)||PUB.qty, paid:!!(res&&res.paid),
+    amount_cents:(res&&res.amount_cents)||0, currency:(res&&res.currency)||'USD', tier:t?t.name:'' };
+  const free = Number((res&&res.amount_cents)||0)===0;
+  $('#confirmCode').textContent = code || '—';
+  $('#cfQty').textContent = LAST_CONFIRM.qty;
+  $('#cfStatus').textContent = LAST_CONFIRM.paid ? 'Paid' : (free?'RSVP held':'Reserved (unpaid)');
+  $('#cfAmount').textContent = free ? 'Free' : fmtMoney(LAST_CONFIRM.amount_cents, LAST_CONFIRM.currency);
+  $('#cfNote').style.display = (free||LAST_CONFIRM.paid) ? 'none' : 'flex';
+  $('#confirmSub').textContent = LAST_CONFIRM.paid ? 'Payment received. Keep this code.'
+    : (free ? 'Your RSVP is confirmed. Keep this code — it is how you get in.' : 'Your seats are held. Keep this code.');
+  const qrBox = document.getElementById('cfQr');
+  if(qrBox){
+    if(code){
+      qrBox.innerHTML = qrSvg(PUBLIC_BASE+'?e='+encodeURIComponent(PUB.eventId)+'&c='+encodeURIComponent(code), 'Your ticket QR code')
+        + '<div style="font-size:11.5px;color:var(--mut);margin-top:8px;text-align:center;max-width:34ch;line-height:1.5">'
+        + 'Drawn on your device — no third party was sent your code, and it still shows with no signal.</div>';
+    } else { qrBox.innerHTML=''; }
+  }
+  const cfActs = document.getElementById('cfActs');
+  if(cfActs){
+    cfActs.innerHTML = (code?'<button class="tkx-btn" data-act="copycode" data-code="'+esc(code)+'">'+ico('copy')+' Copy code</button>':'')
+      + (code?'<button class="tkx-btn" data-act="printticket" data-code="'+esc(code)+'">Print / save ticket</button>':'')
+      + ((PUB.ev&&PUB.ev.event_at)?'<button class="tkx-btn" data-act="pubics">'+ico('cal')+' Add to calendar</button>':'');
+  }
   $('#confirmModal').classList.add('open');
+  const done=document.getElementById('cfDone'); if(done) done.focus();
 }
-function closeConfirm(){ $('#confirmModal').classList.remove('open'); }
+function closeConfirm(){ $('#confirmModal').classList.remove('open'); restoreFocus(); }
 
-function errBlock(title, sub){
-  return `<div class="layout" style="grid-template-columns:1fr"><div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">${esc(title)}</div><div class="empty-sub">${esc(sub)}</div></div></div>`;
+function publicIcs(){
+  const ev=PUB.ev||{};
+  try{
+    const ics = LIB.buildIcs({
+      uid:'zoi-event-'+PUB.eventId+'@zoi.city',
+      name: ev.name||'Zoi event',
+      description: (ev.description||'') + (LAST_CONFIRM&&LAST_CONFIRM.code ? ('\nConfirmation code: '+LAST_CONFIRM.code) : ''),
+      start: ev.event_at,
+      location: [ev.venue, ev.city, ev.country].filter(Boolean).join(', '),
+      url: PUBLIC_BASE+'?e='+PUB.eventId + (LAST_CONFIRM&&LAST_CONFIRM.code?('&c='+encodeURIComponent(LAST_CONFIRM.code)):''),
+      organizer:'Zoi'
+    });
+    download(slug(ev.name||'zoi-event')+'.ics', ics, 'text/calendar;charset=utf-8');
+    toast('Calendar file downloaded');
+  }catch(e){ toast('No usable date on this event, so there is nothing to add: '+e.message, true); }
+}
+// Keep Unicode letters: stripping them turned "Πανηγύρι της Παναγίας 2026"
+// into a file called "2026.ics".
+function slug(s){
+  var out=String(s==null?'':s).replace(/[\/\\?%*:|"<>\s]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
+  return out.replace(/[^\p{L}\p{N}\-_.]/gu,'') || 'zoi-event';
 }
 
-/* ============ DASHBOARD ============ */
-let DASH = { me:null, ws:null };
+function printTicket(code){
+  const ev=PUB.ev||{};
+  const payload = PUBLIC_BASE+'?e='+encodeURIComponent(PUB.eventId)+'&c='+encodeURIComponent(code);
+  const when = ev.event_at?fmtWhen(ev.event_at):'Date not set';
+  const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"/>'
+    + '<meta name="viewport" content="width=device-width, initial-scale=1"/><title>'+esc(ev.name||'Ticket')+' — ticket</title>'
+    + '<style>body{font:14px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#000;background:#fff;'
+    + 'margin:0;padding:26px;text-align:center}h1{font-size:21px;margin:0 0 4px}.m{color:#444;font-size:13px;margin-bottom:16px}'
+    + '.c{font:700 26px ui-monospace,Menlo,monospace;letter-spacing:.2em;border:2px solid #000;display:inline-block;'
+    + 'padding:9px 16px;margin-top:14px}svg{width:230px;height:230px}.n{font-size:11.5px;color:#444;margin-top:18px;'
+    + 'max-width:44ch;margin-left:auto;margin-right:auto}@media print{.noprint{display:none}}</style></head><body>'
+    + '<h1>'+esc(ev.name||'Zoi event')+'</h1><div class="m">'+esc(when)
+    + ([ev.city,ev.country].filter(Boolean).length?' · '+esc([ev.city,ev.country].filter(Boolean).join(', ')):'')+'</div>'
+    + qrSvg(payload,'Ticket QR code')
+    + '<div class="c">'+esc(code)+'</div>'
+    + '<div class="n">Show this at the door. The organiser scans the QR code or types the code. '
+    + 'Nothing has been charged — this is a reservation.</div>'
+    + '<div class="noprint" style="margin-top:20px"><button onclick="window.print()">Print</button></div></body></html>';
+  printHtml(html, 'zoi-ticket-'+slug(code)+'.html');
+}
+
+/* ---- watch a sold-out tier (real polling, honest wording, no backend) ---- */
+function toggleWatch(tierId){
+  const key=String(tierId);
+  if(PUB.watch[key]){ delete PUB.watch[key]; toast('Stopped watching that tier'); }
+  else{
+    PUB.watch[key]=true;
+    toast('Watching — this tab will check every 45 seconds for 30 minutes');
+    if(window.Notification && Notification.permission==='default'){ try{ Notification.requestPermission(); }catch(e){} }
+    startWatch();
+  }
+  paintPublic();
+}
+function startWatch(){
+  if(PUB.watchTimer) return;
+  PUB.watchPolls=0;
+  PUB.watchTimer=setInterval(async ()=>{
+    if(!Object.keys(PUB.watch).length || PUB.watchPolls>=40){ stopWatch(!Object.keys(PUB.watch).length); return; }
+    PUB.watchPolls++;
+    let types;
+    try{ types = await rpc('tickets_types_list',{p_event:PUB.eventId},PUBKEY); }catch(e){ return; }
+    if(!Array.isArray(types)) return;
+    const opened=[];
+    types.forEach(t=>{ if(PUB.watch[String(t.id)] && !LIB.tierMath(t).soldOut) opened.push(t); });
+    PUB.types=types;
+    if(opened.length){
+      opened.forEach(t=>{ delete PUB.watch[String(t.id)]; });
+      const nm=opened.map(t=>t.name).join(', ');
+      toast('A spot opened: '+nm);
+      try{ if(window.Notification && Notification.permission==='granted') new Notification('Zoi tickets', {body:'A spot opened for '+nm}); }catch(e){}
+      paintPublic();
+    }
+  }, 45000);
+}
+function stopWatch(silent){
+  if(PUB.watchTimer){ clearInterval(PUB.watchTimer); PUB.watchTimer=null; }
+  if(!silent && Object.keys(PUB.watch).length){
+    PUB.watch={};
+    toast('Stopped watching after 30 minutes — reload the page to watch again');
+    paintPublic();
+  }
+}
+
+function errBlock(title, sub, retry){
+  return '<div class="tkx-wrap"><div class="tkx-empty"><div class="tkx-empty-t">'+esc(title)+'</div>'
+    + '<div class="tkx-empty-s">'+esc(sub)+'</div>'
+    + (retry?'<button class="tkx-btn" data-tone="gold" data-act="retry" data-fn="'+esc(retry)+'">Try again</button>':'')
+    + '</div></div>';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ORGANISER DASHBOARD
+   ═══════════════════════════════════════════════════════════════════ */
+let DASH = { me:null, ws:null, events:[], stats:null, statsError:null, types:{}, expanded:{},
+             q:'', when:'all', sort:'soon' };
 
 async function renderDashboard(){
   updateNav();
   const auth = getAuth();
   if(!auth){ renderSignIn(); return; }
-  app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading your account…</div>';
+  app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading your account…</div>';
   let me;
   try{ me = await rpc('zoi_me', {}); }
-  catch(err){ clearAuth(); renderSignIn('Your session expired. Please sign in again.'); return; }
+  catch(err){
+    if(err.transport){ app.innerHTML = errBlock('No connection', 'Could not reach the ticket server. Nothing is lost — try again when you have signal.', 'renderDashboard'); return; }
+    clearAuth(); renderSignIn('Your session expired. Please sign in again.'); return;
+  }
   if(!me || me.authenticated===false){ clearAuth(); renderSignIn(); return; }
   DASH.me = me;
   const workspaces = me.workspaces||[];
@@ -626,258 +1176,641 @@ async function renderDashboard(){
 
 function updateNav(){
   const nr = $('#navRight'); if(!nr) return;
+  const cta = document.getElementById('zoiCta');
   if(qs('e')){ nr.innerHTML = ''; return; }
   const auth=getAuth();
+  // A signed-in organiser does not need a "Start free" call to action, and with
+  // the workspace pill beside it the row overflowed the viewport by ~26px.
+  if(cta) cta.hidden = !!(auth && DASH.me);
   if(auth && DASH.me){
     const ws = (DASH.me.workspaces||[]).find(w=>w.id===DASH.ws);
-    nr.innerHTML = (ws?`<div class="ws-pill"><span class="dot"></span><b>${esc(ws.name)}</b></div>`:'')
-      + ((DASH.me.workspaces||[]).length>1?`<button class="nav-link" onclick="switchWs()">Switch</button>`:'')
-      + `<button class="nav-link" onclick="signOut()">Sign out</button>`;
+    nr.innerHTML = (ws?'<div class="ws-pill"><span class="dot"></span><b>'+esc(ws.name)+'</b></div>':'')
+      + ((DASH.me.workspaces||[]).length>1?'<button class="nav-link" data-act="switchws">Switch</button>':'')
+      + '<button class="nav-link" data-act="signout">Sign out</button>';
   } else { nr.innerHTML=''; }
 }
 function switchWs(){ localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
-function signOut(){ clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null}; updateNav(); renderSignIn('Signed out.'); }
+function signOut(){ clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null,events:[],types:{},expanded:{},q:'',when:'all',sort:'soon'}; updateNav(); renderSignIn('Signed out.'); }
 
 /* ---- soft-identity bridge (unify with zoi.city onboarding) ---- */
 function zoiKnownEmail(){try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);var m=/^zoi_linked_(.+@.+\..+)$/.exec(k);if(m)return m[1];}var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.email)return p.email;}catch(e){}return null;}
 function zoiKnownName(){try{var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.name){var n=String(p.name).split(' / ');return n[1]||n[0];}}catch(e){}return null;}
 
-/* ---- sign in ---- */
 function renderSignIn(note){
-  app.innerHTML = `<div class="center-wrap"><div class="auth-card">
-    <div class="auth-seal">Z</div>
-    <div class="auth-title">Organizer sign-in</div>
-    <div class="auth-sub">${note?esc(note)+' ':''}Enter your email and we'll send a 6-digit code. No password needed.</div>
-    <div id="authStep">
-      <div class="field"><label>Email</label><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email"/></div>
-      <div class="inline-err" id="siErr"></div>
-      <button class="btn gold" style="width:100%" id="siBtn" onclick="doSendCode()">Send code</button>
-    </div>
-  </div></div>`;
+  app.innerHTML = '<div class="center-wrap"><div class="auth-card">'
+    + '<div class="auth-seal">Z</div>'
+    + '<div class="auth-title">Organizer sign-in</div>'
+    + '<div class="auth-sub">'+(note?esc(note)+' ':'')+'Enter your email and we’ll send a 6-digit code. No password needed.</div>'
+    + '<div id="authStep">'
+    +   '<div class="field"><label for="siEmail">Email</label><input id="siEmail" type="email" placeholder="you@email.com" autocomplete="email"/></div>'
+    +   '<div class="tkx-inline-err" id="siErr" role="alert"></div>'
+    +   '<button class="btn gold" style="width:100%" id="siBtn" data-act="sendcode">Send code</button>'
+    + '</div></div></div>';
   const inp=$('#siEmail'); if(inp) inp.addEventListener('keydown',e=>{if(e.key==='Enter')doSendCode();});
   try{ const _ke=zoiKnownEmail(), _kn=zoiKnownName();
     if(_ke && inp){ inp.value=_ke; }
     if(_ke){ const _t=app.querySelector('.auth-title'); if(_t) _t.textContent = _kn? ('Welcome back, '+_kn) : 'Welcome back';
       const _b=$('#siBtn'); if(_b) _b.textContent='Email my code'; }
   }catch(e){}
+  if(inp) inp.focus();
 }
 async function doSendCode(){
   const email=($('#siEmail').value||'').trim(); const err=$('#siErr'); err.textContent='';
   if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){ err.textContent='Enter a valid email.'; return; }
   const btn=$('#siBtn'); btn.disabled=true; btn.textContent='Sending…';
-  try{
-    await sendOtp(email);
-    renderCodeStep(email);
-  }catch(e){ btn.disabled=false; btn.textContent='Send code'; err.textContent=e.message; }
+  try{ await sendOtp(email); renderCodeStep(email); }
+  catch(e){ btn.disabled=false; btn.textContent='Send code'; err.textContent=e.message; }
 }
 function renderCodeStep(email){
-  $('#authStep').innerHTML = `
-    <div class="auth-sub" style="margin-bottom:16px">Code sent to <b style="color:var(--paper)">${esc(email)}</b></div>
-    <div class="field"><label>6-digit code</label><input id="siCode" inputmode="numeric" maxlength="6" placeholder="000000" style="font:700 20px monospace;letter-spacing:.3em;text-align:center"/></div>
-    <div class="inline-err" id="siErr"></div>
-    <button class="btn gold" style="width:100%" id="siVerify" onclick="doVerify('${esc(email)}')">Verify & continue</button>
-    <button class="nav-link" style="width:100%;margin-top:10px" onclick="renderSignIn()">Use a different email</button>`;
+  $('#authStep').innerHTML = '<div class="auth-sub" style="margin-bottom:16px">Code sent to <b style="color:var(--tx)">'+esc(email)+'</b></div>'
+    + '<div class="field"><label for="siCode">6-digit code</label><input id="siCode" inputmode="numeric" maxlength="6" placeholder="000000" style="font:700 20px ui-monospace,Menlo,monospace;letter-spacing:.3em;text-align:center"/></div>'
+    + '<div class="tkx-inline-err" id="siErr" role="alert"></div>'
+    + '<button class="btn gold" style="width:100%" id="siVerify" data-act="verify" data-email="'+esc(email)+'">Verify &amp; continue</button>'
+    + '<button class="nav-link" style="width:100%;margin-top:10px" data-act="signinreset">Use a different email</button>';
   const c=$('#siCode'); c.focus(); c.addEventListener('keydown',e=>{if(e.key==='Enter')doVerify(email);});
 }
 async function doVerify(email){
   const code=($('#siCode').value||'').trim(); const err=$('#siErr'); err.textContent='';
   if(!/^\d{6}$/.test(code)){ err.textContent='Enter the 6-digit code.'; return; }
   const btn=$('#siVerify'); btn.disabled=true; btn.textContent='Verifying…';
-  try{
-    await verifyOtp(email, code);
-    renderDashboard();
-  }catch(e){ btn.disabled=false; btn.textContent='Verify & continue'; err.textContent=e.message; }
+  try{ await verifyOtp(email, code); renderDashboard(); }
+  catch(e){ btn.disabled=false; btn.textContent='Verify & continue'; err.textContent=e.message; }
 }
 
-/* ---- workspace picker ---- */
 function renderWorkspacePicker(workspaces){
-  app.innerHTML = `<div class="center-wrap"><div class="auth-card">
-    <div class="auth-seal">Z</div>
-    <div class="auth-title">Choose a workspace</div>
-    <div class="auth-sub">Select which workspace to manage events for.</div>
-    <div class="ws-choice">
-      ${workspaces.map(w=>`<button class="ws-item" onclick="pickWs('${w.id}')">
-        <div class="av">${esc((w.name||'?').trim().charAt(0).toUpperCase())}</div>
-        <div><div class="nm">${esc(w.name)}</div><div class="rl">${esc(w.role||'member')}${w.kind?' · '+esc(w.kind):''}</div></div>
-        <div class="arr">→</div>
-      </button>`).join('')}
-    </div>
-  </div></div>`;
+  app.innerHTML = '<div class="center-wrap"><div class="auth-card">'
+    + '<div class="auth-seal">Z</div><div class="auth-title">Choose a workspace</div>'
+    + '<div class="auth-sub">Select which workspace to manage events for.</div>'
+    + '<div class="ws-choice">'
+    + workspaces.map(w=>'<button class="ws-item" data-act="pickws" data-ws="'+esc(w.id)+'">'
+        + '<div class="av">'+esc((w.name||'?').trim().charAt(0).toUpperCase())+'</div>'
+        + '<div><div class="nm">'+esc(w.name)+'</div><div class="rl">'+esc(w.role||'member')+(w.kind?' · '+esc(w.kind):'')+'</div></div>'
+        + '<div class="arr">→</div></button>').join('')
+    + '</div></div></div>';
 }
 function pickWs(id){ localStorage.setItem('zoi_ws', id); DASH.ws=id; updateNav(); loadDashboard(); }
 
 function renderNoWorkspace(){
-  app.innerHTML = `<div class="center-wrap"><div class="auth-card">
-    <div class="auth-seal">Z</div>
-    <div class="auth-title">No workspace yet</div>
-    <div class="auth-sub">Your account isn't part of any workspace. A workspace is required to create events and sell tickets. Ask an admin to add you, or set one up in the Zoi console.</div>
-    <button class="nav-link" style="width:100%" onclick="signOut()">Sign out</button>
-  </div></div>`;
+  app.innerHTML = '<div class="center-wrap"><div class="auth-card">'
+    + '<div class="auth-seal">Z</div><div class="auth-title">No workspace yet</div>'
+    + '<div class="auth-sub">Your account is not part of any workspace, and a workspace is what events belong to.'
+    + ' Ask an admin to add you, or create one from the Zoi console.</div>'
+    + '<button class="nav-link" style="width:100%" data-act="signout">Sign out</button></div></div>';
 }
 
-/* ---- dashboard data ---- */
+/* ---- data ---- */
 async function loadDashboard(){
-  app.innerHTML = '<div class="loading"><div class="spinner"></div>Loading events…</div>';
+  app.innerHTML = '<div class="tkx-wrap"><div class="tkx-skel"></div><div class="tkx-skel"></div><div class="tkx-skel"></div></div>';
   let data;
   try{ data = await rpc('tickets_dashboard', {p_workspace:DASH.ws}); }
-  catch(err){ app.innerHTML = errBlock('Could not load dashboard', err.message); return; }
-  const events = (data&&data.events)||[];
-  try{ DASH.tstats = await rpc('tickets_event_stats',{p_workspace:DASH.ws}); }catch(e){ DASH.tstats={}; }
-  paintDashboard(events);
-}
-
-function paintDashboard(events){
-  const totalEvents = events.length;
-  const totalReserved = events.reduce((a,e)=>a+Number(e.reserved||0),0);
-  const totalRevenue = events.reduce((a,e)=>a+Number(e.revenue_cents||0),0);
-  const head = `
-    <div class="dash-head">
-      <div>
-        <div class="eyebrow">Organizer dashboard</div>
-        <div class="dash-title">Your events</div>
-        <div class="dash-sub">Create events, publish ticket types, and track real reservations & revenue.</div>
-      </div>
-      <button class="btn gold" onclick="openCreateEvent()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> New event</button>
-    </div>
-    <div class="stats-row">
-      <div class="stat-card"><div class="stat-label">Events</div><div class="stat-val">${totalEvents}</div><div class="stat-sub">in this workspace</div></div>
-      <div class="stat-card"><div class="stat-label">Tickets reserved</div><div class="stat-val">${totalReserved}</div><div class="stat-sub">across all events</div></div>
-      <div class="stat-card"><div class="stat-label">Paid revenue</div><div class="stat-val gold">${fmtMoney(Object.values(DASH.tstats||{}).reduce((a,x)=>a+(x.revenue_cents||0),0),'USD')}</div><div class="stat-sub">${Object.values(DASH.tstats||{}).reduce((a,x)=>a+(x.paid||0),0)} paid tickets</div></div>
-      <div class="stat-card"><div class="stat-label">Reserved value</div><div class="stat-val gold">${fmtMoney(totalRevenue,'USD')}</div><div class="stat-sub">held (payment pending)</div></div>
-    </div>`;
-
-  let list;
-  if(events.length===0){
-    list = `<div class="empty-state"><div class="empty-title">No events yet</div><div class="empty-sub">Create your first event, then add ticket types. Reservations and revenue will show up here in real time.</div><button class="btn gold" onclick="openCreateEvent()"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Create your first event</button></div>`;
-  } else {
-    list = '<div class="events-list">' + events.map(ev=>{
-      const when = fmtWhen(ev.event_at);
-      const cap = ev.capacity!=null?ev.capacity:null;
-      const link = PUBLIC_BASE+'?e='+ev.id;
-      return `<div class="ev-card"><div class="ev-body">
-        <div class="ev-top">
-          <div class="ev-icon"><svg viewBox="0 0 24 24" style="width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4 2 2 0 000-4z"/><path d="M14 6v12"/></svg></div>
-          <div class="ev-meta">
-            <div class="ev-name">${esc(ev.name)}</div>
-            <div class="ev-details">
-              ${ev.city?`<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>${esc(ev.city)}</span>`:''}
-              ${when?`<span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>${esc(when)}</span>`:'<span style="color:var(--muted2)">Date TBD</span>'}
-            </div>
-          </div>
-        </div>
-        <div class="ev-stats">
-          <div class="ev-stat"><div class="l">Reserved</div><div class="v">${Number(ev.reserved||0)}</div><div class="s">${cap!=null?'of '+cap+' capacity':'no cap set'}</div></div>
-          <div class="ev-stat"><div class="l">Ticket types</div><div class="v">${Number(ev.ticket_types||0)}</div><div class="s">${Number(ev.ticket_types||0)===0?'add some →':'published'}</div></div>
-          <div class="ev-stat"><div class="l">Reserved value</div><div class="v">${fmtMoney(ev.revenue_cents,'USD')}</div><div class="s">payment pending</div></div>
-        </div>
-        <div class="share-row">
-          <div class="share-url" title="${esc(link)}">${esc(link)}</div>
-          <button class="mini-btn" onclick="copyLink('${esc(link)}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy</button>
-          <button class="mini-btn" onclick="showQR('${esc(link)}')">QR</button>
-          <a class="mini-btn" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
-        </div>
-        <div class="ev-actions">
-          <button class="mini-btn gold" onclick="openManageTickets('${ev.id}','${esc((ev.name||'').replace(/'/g,"\\'"))}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v6a2 2 0 0 0 0 4v6H4v-6a2 2 0 0 0 0-4z"/></svg> Manage tickets</button>
-          <button class="mini-btn" onclick="openAttendees('${ev.id}')">Attendees</button>
-          <button class="mini-btn" onclick="openCheckin('${ev.id}')">Check-in</button>
-        </div>
-      </div></div>`;
-    }).join('') + '</div>';
+  catch(err){
+    app.innerHTML = errBlock(err.transport?'No connection':'Could not load your dashboard',
+      err.message+'.', 'loadDashboard');
+    return;
   }
-  app.innerHTML = `<div class="dash">${head}${list}</div>`;
+  DASH.events = (data&&data.events)||[];
+  DASH.statsError = null;
+  try{ DASH.stats = await rpc('tickets_event_stats',{p_workspace:DASH.ws}); }
+  catch(e){ DASH.stats = null; DASH.statsError = e.message; }
+  paintDashboard();
 }
 
-function copyLink(url){ navigator.clipboard.writeText(url).then(()=>toast('Link copied')).catch(()=>toast('Copy failed',true)); }
+function statTotals(){
+  const s = DASH.stats;
+  if(!s || typeof s!=='object') return null;
+  const vals = Array.isArray(s) ? s : Object.values(s);
+  let revenue=0, paid=0, any=false;
+  vals.forEach(v=>{ if(v && typeof v==='object'){ any=true; revenue += Number(v.revenue_cents||0); paid += Number(v.paid||0); } });
+  return any ? {revenue:revenue, paid:paid} : null;
+}
+function eventRow(ev){
+  const s = DASH.stats;
+  let st=null;
+  if(s && typeof s==='object' && !Array.isArray(s) && s[ev.id] && typeof s[ev.id]==='object') st=s[ev.id];
+  return st;
+}
+function isPast(ev){
+  if(!ev.event_at) return false;
+  const d=new Date(ev.event_at); if(isNaN(d.getTime())) return false;
+  return d.getTime() < Date.now()-6*3600*1000;
+}
+function visibleEvents(){
+  let list = DASH.events.slice();
+  const q = DASH.q.trim().toLowerCase();
+  if(q) list = list.filter(e=>String(e.name||'').toLowerCase().indexOf(q)>=0 || String(e.city||'').toLowerCase().indexOf(q)>=0);
+  if(DASH.when==='upcoming') list = list.filter(e=>!isPast(e));
+  else if(DASH.when==='past') list = list.filter(isPast);
+  else if(DASH.when==='notiers') list = list.filter(e=>Number(e.ticket_types||0)===0);
+  const t=(e)=>{ const d=e.event_at?new Date(e.event_at).getTime():NaN; return isNaN(d)?Infinity:d; };
+  if(DASH.sort==='soon'){
+    // Upcoming ascending, then past most-recent-first. Sorting purely by date
+    // buries the event you are about to run under last year's.
+    list.sort((a,b)=>{
+      const pa=isPast(a), pb=isPast(b);
+      if(pa!==pb) return pa?1:-1;
+      return pa ? t(b)-t(a) : t(a)-t(b);
+    });
+  }
+  else if(DASH.sort==='latest') list.sort((a,b)=>t(b)-t(a));
+  else if(DASH.sort==='name') list.sort((a,b)=>String(a.name||'').localeCompare(String(b.name||'')));
+  else if(DASH.sort==='reserved') list.sort((a,b)=>Number(b.reserved||0)-Number(a.reserved||0));
+  return list;
+}
 
+function paintDashboard(){
+  const events = DASH.events;
+  const totals = statTotals();
+  const totalReserved = events.reduce((a,e)=>a+Number(e.reserved||0),0);
+  const heldValue = events.reduce((a,e)=>a+Number(e.revenue_cents||0),0);
+  const anyPaidTier = heldValue>0;
 
-/* ---- attendees / check-in / QR / calendar ---- */
-let ATT={ev:null,list:[]};
-async function openAttendees(evId){
-  ATT.ev=evId;
-  openGen('Attendees','Everyone with a reservation or paid ticket for this event.','<div class="loading"><div class="spinner"></div>Loading…</div>');
+  const kpis = '<div class="tkx-kpis">'
+    + kpi('Events', String(events.length), 'in this workspace')
+    + kpi('Seats reserved', String(totalReserved), 'summed from tickets_dashboard')
+    + (totals
+        ? kpi('Paid tickets', String(totals.paid),
+              (Number(totals.revenue||0)===0?'nothing collected':fmtMoney(totals.revenue,'USD')+' collected')
+              +' · from tickets_event_stats', 'gold')
+        : kpi('Paid tickets', '—', DASH.statsError ? ('tickets_event_stats failed: '+DASH.statsError) : 'No paid-ticket stats returned — nothing has been sold through Stripe'))
+    + kpi('Value held', fmtTotal(heldValue), 'list price of reserved seats — unpaid, not revenue', 'gold')
+    + '</div>';
+
+  const toolbar = '<div class="tkx-toolbar">'
+    + '<div class="tkx-field">'+ico('search')
+    +   '<input class="tkx-input" id="tkxQ" type="search" placeholder="Search events by name or city" value="'+esc(DASH.q)+'" aria-label="Search events"/></div>'
+    + '<div class="tkx-seg" role="group" aria-label="Filter events">'
+    +   seg('all','All') + seg('upcoming','Upcoming') + seg('past','Past') + seg('notiers','Needs tiers')
+    + '</div>'
+    + '<select class="tkx-select" id="tkxSort" aria-label="Sort events">'
+    +   opt('soon','Soonest first') + opt('latest','Latest first') + opt('name','Name A–Z') + opt('reserved','Most reserved')
+    + '</select>'
+    + '<button class="tkx-btn" data-tone="gold" data-act="newevent">'+ico('plus')+' New event</button>'
+    + '<span class="tkx-kbdhint"><kbd>N</kbd> new · <kbd>/</kbd> search · <kbd>?</kbd> shortcuts</span>'
+    + '</div>';
+
+  const list = visibleEvents();
+  let body;
+  if(events.length===0){
+    body = '<div class="tkx-empty"><div class="tkx-empty-t">No events yet</div>'
+      + '<div class="tkx-empty-s">Create an event, add a free tier, and share the link. Reservations, the attendee'
+      + ' list and door mode all start working the moment someone reserves.</div>'
+      + '<button class="tkx-btn" data-tone="gold" data-act="newevent">'+ico('plus')+' Create your first event</button></div>';
+  } else if(list.length===0){
+    body = '<div class="tkx-empty"><div class="tkx-empty-t">No events match that filter</div>'
+      + '<div class="tkx-empty-s">'+events.length+' '+plural(events.length,'event')+' in this workspace, none matching'
+      + ' the current search and filter.</div><button class="tkx-btn" data-act="clearfilters">Clear filters</button></div>';
+  } else {
+    body = '<div class="tkx-list">'+list.map(evCard).join('')+'</div>';
+  }
+
+  app.innerHTML = '<div class="tkx-wrap">'
+    + '<div class="tkx-head"><div>'
+    +   '<div class="tkx-eyebrow">Organiser dashboard</div>'
+    +   '<h1 class="tkx-h1">Your events</h1>'
+    +   '<p class="tkx-sub">Everything below is read straight from your workspace: reservations, tier capacity and'
+    +   ' paid-ticket stats. Where a number is not available, it says so instead of showing a zero.</p>'
+    + '</div></div>'
+    + kpis
+    + (anyPaidTier && !SVC.payments ? PAY_GATE_HTML : '')
+    + toolbar
+    + body
+    + '</div>';
+
+  const qEl=document.getElementById('tkxQ');
+  if(qEl){
+    qEl.addEventListener('input', ()=>{
+      DASH.q=qEl.value;
+      const focused=document.activeElement===qEl;
+      const caret=qEl.selectionStart;   // forcing the caret to the end made mid-word edits impossible
+      paintDashboard();
+      const n=document.getElementById('tkxQ');
+      if(focused&&n){ n.focus(); try{ n.setSelectionRange(caret,caret); }catch(e){} }
+    });
+  }
+  const sEl=document.getElementById('tkxSort');
+  if(sEl){ sEl.value=DASH.sort; sEl.addEventListener('change',()=>{ DASH.sort=sEl.value; paintDashboard(); }); }
+}
+function kpi(label, val, sub, tone){
+  return '<div class="tkx-kpi"><div class="tkx-kpi-l">'+esc(label)+'</div>'
+    + '<div class="tkx-kpi-v"'+(tone?' data-tone="'+tone+'"':'')+'>'+esc(val)+'</div>'
+    + '<div class="tkx-kpi-s">'+esc(sub)+'</div></div>';
+}
+function seg(v,label){ return '<button data-act="when" data-v="'+v+'" aria-pressed="'+(DASH.when===v?'true':'false')+'">'+label+'</button>'; }
+function opt(v,label){ return '<option value="'+v+'"'+(DASH.sort===v?' selected':'')+'>'+label+'</option>'; }
+
+function evCard(ev){
+  const when = fmtWhen(ev.event_at);
+  const link = PUBLIC_BASE+'?e='+ev.id;
+  const st = eventRow(ev);
+  const reserved = Number(ev.reserved||0);
+  const cap = (ev.capacity==null)?null:Number(ev.capacity);
+  const tiers = Number(ev.ticket_types||0);
+  const past = isPast(ev);
+  const pct = (cap!=null&&cap>0)?Math.min(100,Math.round(reserved/cap*100)):null;
+  const lvl = pct==null?'high':(pct>=90?'low':pct>=65?'med':'high');
+  const expanded = !!DASH.expanded[ev.id];
+  const cached = DASH.types[ev.id];
+
+  let tierBlock='';
+  if(expanded){
+    if(cached===undefined){
+      tierBlock = '<div class="tkx-load" style="padding:22px"><div class="tkx-spin"></div>Loading tiers…</div>';
+    } else if(cached===null){
+      tierBlock = '<div class="tkx-note" data-tone="stop">'+ico('info')+'<div>Could not load the ticket tiers for this event.</div></div>';
+    } else if(!cached.length){
+      tierBlock = '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>No tiers yet.</b> Nobody can reserve until this event has at least one ticket type.</div></div>';
+    } else {
+      const roll = LIB.rollup(cached);
+      const warn = LIB.capacityWarning(roll);
+      // A single uncapped tier makes an event-level percentage meaningless, so
+      // fall back to naming the individual tiers that are nearly full. Without
+      // this, an event at 38/40 and 9/10 showed no warning at all.
+      const tight = cached.map(LIB.tierMath)
+        .map((m,i)=>({m:m, name:cached[i].name}))
+        .filter(x=>!x.m.unlimited && x.m.pct!=null && x.m.pct>=90 && !x.m.soldOut);
+      const tightNote = (!warn && tight.length)
+        ? '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>Nearly full:</b> '
+          + tight.map(x=>esc(x.name)+' ('+x.m.left+' '+plural(x.m.left,'left','left')+')').join(', ')
+          + '. Other tiers have no capacity limit, so there is no honest total to show.</div></div>'
+        : '';
+      tierBlock = (warn?'<div class="tkx-note" data-tone="'+(warn.level==='warn'?'warn':'stop')+'">'+ico('info')+'<div>'+esc(warn.text)+'</div></div>':tightNote)
+        + '<div class="tkx-tiers">'+cached.map(t=>{
+          const m=LIB.tierMath(t);
+          return '<div class="tkx-tier"><div class="tkx-tier-top">'
+            + '<span class="tkx-tier-nm">'+esc(t.name)+'</span>'
+            + (m.soldOut?'<span class="tkx-tag" data-tone="full">Sold out</span>':'')
+            + '<span class="tkx-tier-pr">'+(m.free?'Free':fmtMoney(m.priceCents,m.currency))+'</span></div>'
+            + (m.unlimited
+              ? '<div class="tkx-bar" data-unl="1"></div><div class="tkx-tier-sub">'+m.reserved+' reserved · no capacity limit set</div>'
+              : '<div class="tkx-bar"><i data-lvl="'+m.level+'" style="width:'+(m.pct||0)+'%"></i></div>'
+                + '<div class="tkx-tier-sub">'+m.reserved+' of '+m.capacity+' reserved · '+m.left+' left'
+                + (m.free||!m.reserved?'':' · '+fmtMoney(m.priceCents*m.reserved,m.currency)+' at list price, unpaid')+'</div>')
+            + '</div>';
+        }).join('')+'</div>';
+    }
+  }
+
+  return '<div class="tkx-ev"><div class="tkx-ev-body">'
+    + '<div class="tkx-ev-top">'
+    +   '<div class="tkx-ev-ico">'+ico('ticket')+'</div>'
+    +   '<div style="flex:1;min-width:0">'
+    +     '<div class="tkx-ev-ttl">'+esc(ev.name||'Untitled event')+'</div>'
+    +     '<div class="tkx-ev-meta">'
+    +       (ev.city?'<span>'+ico('pin')+esc(ev.city)+'</span>':'')
+    +       (when?'<span>'+ico('cal')+esc(when)+'</span>':'<span style="color:var(--dim)">Date not set</span>')
+    +       '<span class="tkx-tag" data-tone="'+(past?'past':'live')+'">'+(past?'Past':'Upcoming')+'</span>'
+    +       (tiers===0?'<span class="tkx-tag" data-tone="warn">No tiers</span>':'')
+    +     '</div>'
+    +   '</div>'
+    + '</div>'
+    + '<div class="tkx-mets">'
+    +   met('Seats reserved', String(reserved), cap!=null?('of '+cap+' capacity'):'no event cap set')
+    +   met('Ticket tiers', String(tiers), tiers===0?'add one to start selling':'published')
+    +   met('Value held', fmtTotal(ev.revenue_cents),
+          Number(ev.revenue_cents||0)===0 ? 'nothing priced is reserved' : 'list price, unpaid')
+    +   (st?met('Paid', String(Number(st.paid||0)),
+              Number(st.revenue_cents||0)===0 ? 'nothing collected' : fmtMoney(st.revenue_cents,'USD')+' collected')
+           :met('Paid', '—', 'no paid-ticket stats for this event'))
+    + '</div>'
+    + (pct!=null?'<div class="tkx-bar" style="margin-bottom:14px"><i data-lvl="'+lvl+'" style="width:'+pct+'%"></i></div>':'')
+    + '<div class="tkx-share">'
+    +   '<span class="tkx-share-url" title="'+esc(link)+'">'+esc(link)+'</span>'
+    +   '<button class="tkx-mini" data-act="copy" data-url="'+esc(link)+'">'+ico('copy')+'Copy</button>'
+    +   '<button class="tkx-mini" data-act="qr" data-url="'+esc(link)+'" data-name="'+esc(ev.name||'')+'">QR</button>'
+    +   '<a class="tkx-mini" href="'+esc(link)+'" target="_blank" rel="noopener">Open</a>'
+    + '</div>'
+    + tierBlock
+    + '<div class="tkx-acts">'
+    +   '<button class="tkx-btn" data-tone="door" data-act="door" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'" data-when="'+esc(when||'')+'">'+ico('scan')+' Door mode</button>'
+    +   '<button class="tkx-btn" data-act="attendees" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'" data-when="'+esc(when||'')+'">Attendees</button>'
+    +   '<button class="tkx-btn" data-act="tiers" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'">Ticket tiers</button>'
+    +   '<button class="tkx-btn" data-act="expand" data-ev="'+esc(ev.id)+'" aria-pressed="'+(expanded?'true':'false')+'">'+(expanded?'Hide capacity':'Show capacity')+'</button>'
+    +   '<button class="tkx-btn" data-act="dup" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'">Duplicate</button>'
+    +   '<button class="tkx-btn" data-act="manifest" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'" data-when="'+esc(when||'')+'">Print manifest</button>'
+    +   '<button class="tkx-btn" data-act="csv" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'">Export CSV</button>'
+    + '</div>'
+    + '</div></div>';
+}
+/** Totals must not borrow the ticket-price wording: 0 held is not "Free". */
+function fmtTotal(cents){ return Number(cents||0)===0 ? '\u2014' : fmtMoney(cents,'USD'); }
+function met(l,v,s){ return '<div class="tkx-met"><div class="l">'+esc(l)+'</div><div class="v">'+esc(v)+'</div><div class="s">'+esc(s)+'</div></div>'; }
+
+async function toggleExpand(evId){
+  DASH.expanded[evId] = !DASH.expanded[evId];
+  paintDashboard();
+  if(DASH.expanded[evId] && DASH.types[evId]===undefined){
+    try{ const t = await rpc('tickets_types_list',{p_event:evId}); DASH.types[evId]=Array.isArray(t)?t:[]; }
+    catch(e){ DASH.types[evId]=null; }
+    paintDashboard();
+  }
+}
+function copyLink(url){
+  const done=()=>toast('Link copied');
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done).catch(fallbackCopy); }
+  else fallbackCopy();
+  function fallbackCopy(){
+    const ta=document.createElement('textarea'); ta.value=url; ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+    let ok=false; try{ ok=document.execCommand('copy'); }catch(e){}
+    ta.remove(); ok?done():toast('Could not copy — select the link and copy manually', true);
+  }
+}
+function shareUrl(url){
+  if(navigator.share){ navigator.share({title:document.title, url:url}).catch(()=>{}); }
+  else copyLink(url);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   ATTENDEES DRAWER
+   ═══════════════════════════════════════════════════════════════════ */
+let ATT = { ev:null, name:'', when:'', rows:[], error:null, loading:false,
+            q:'', status:'all', tier:'all', sort:'name', selected:null, bulk:null };
+
+function openDrawer(){ const d=$('#tkxDrawer'); d.setAttribute('data-open','1'); document.body.style.overflow='hidden'; }
+function closeDrawer(){
+  const d=$('#tkxDrawer'); d.setAttribute('data-open','0'); document.body.style.overflow='';
+  ATT.selected=null; ATT.bulk=null;
+  $('#tkxDrawerTools').innerHTML=''; $('#tkxDrawerBody').innerHTML='';
+  restoreFocus();
+}
+
+async function openAttendees(evId, name, when, thenFn){
+  ATT = { ev:evId, name:name||'Event', when:when||'', rows:[], error:null, loading:true,
+          q:'', status:'all', tier:'all', sort:'name', selected:null, bulk:null };
+  openDrawer();
+  paintDrawer();
   try{
-    ATT.list=await rpc('tickets_reservations_list',{p_workspace:DASH.ws,p_event:evId})||[];
-    renderAttendees();
-  }catch(e){ document.getElementById('genBody').innerHTML='<div class="inline-err">'+esc(e.message)+'</div>'; }
+    const rows = await rpc('tickets_reservations_list',{p_workspace:DASH.ws,p_event:evId});
+    ATT.rows = Array.isArray(rows)?rows:[];
+  }catch(e){ ATT.error = e.message; }
+  ATT.loading=false;
+  paintDrawer();
+  if(thenFn) thenFn();
 }
-function renderAttendees(){
-  const rows=ATT.list.map(function(r){ return (
-    '<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid var(--line)">'+
-      '<div style="flex:1;min-width:0"><b>'+esc(r.name||'')+'</b>'+
-        '<div style="font-size:11.5px;color:var(--muted)">'+esc(r.email||'')+' \u00b7 '+esc(r.type||'')+' \u00b7 code '+esc(r.code||'')+'</div></div>'+
-      '<span class="ticket-tag '+(r.paid?'free':'sold')+'">'+(r.paid?'Paid':'Reserved')+'</span>'+
-      (r.checked_in?'<span class="ticket-tag free">In</span>':'')+
-      '<b style="font-size:12px">\u00d7'+(r.qty||1)+'</b>'+
-    '</div>'); }).join('');
-  document.getElementById('genBody').innerHTML=
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">'+
-      '<span style="font-size:12.5px;color:var(--muted)">'+ATT.list.length+' entries</span>'+
-      '<button class="mini-btn" onclick="exportAttendees()">Export CSV</button></div>'+
-    (rows||'<div style="color:var(--muted);font-size:13px;padding:14px 0">No reservations yet.</div>');
-}
-function exportAttendees(){
-  const head='name,email,type,code,qty,status,checked_in\n';
-  const body=ATT.list.map(function(r){ return [r.name,r.email,r.type,r.code,r.qty,(r.paid?'paid':'reserved'),(r.checked_in?'yes':'no')].map(function(v){ return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
-  const blob=new Blob([head+body],{type:'text/csv'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='attendees.csv'; a.click();
-  setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
-}
-function openCheckin(evId){
-  openGen('Check-in','Enter a confirmation code to check the guest in.',
-    '<div class="field"><label>Confirmation code</label><input id="ciCode" placeholder="e.g. ZK7-4QX" style="font:700 18px monospace;letter-spacing:.12em"/></div>'+
-    '<div class="inline-err" id="ciErr"></div>'+
-    '<div id="ciResult" style="min-height:22px;font-size:13.5px;margin:6px 0"></div>'+
-    '<button class="btn gold" style="width:100%" onclick="doCheckin()">Check in</button>');
-  setTimeout(function(){ var el=document.getElementById('ciCode'); if(el){ el.focus(); el.addEventListener('keydown',function(e){ if(e.key==='Enter') doCheckin(); }); } },60);
-}
-async function doCheckin(){
-  const code=(document.getElementById('ciCode').value||'').trim();
-  const err=document.getElementById('ciErr'), res=document.getElementById('ciResult');
-  err.textContent=''; res.textContent='';
-  if(!code){ err.textContent='Enter a code.'; return; }
-  try{
-    const r=await rpc('tickets_checkin',{p_workspace:DASH.ws,p_code:code});
-    if(!r.ok){ err.textContent='Code not found for your events.'; return; }
-    if(r.already){ res.innerHTML='<b style="color:var(--gold-d)">Already checked in</b> \u2014 '+esc(r.name||'')+' \u00d7'+(r.qty||1); }
-    else{ res.innerHTML='<b style="color:var(--green)">Welcome, '+esc(r.name||'guest')+'!</b> \u00d7'+(r.qty||1)+' \u00b7 '+esc(r.type||'')+(r.paid?' \u00b7 paid':''); }
-    document.getElementById('ciCode').value='';
-  }catch(e){ err.textContent=e.message; }
-}
-function showQR(link){
-  openGen('Event QR code','Print it, post it, point phones at it \u2014 it opens the ticket page.',
-    '<div style="display:grid;place-items:center;padding:10px 0 4px"><img alt="QR code" style="width:220px;height:220px;border-radius:12px;background:#fff;padding:10px" src="https://api.qrserver.com/v1/create-qr-code/?size=440x440&data='+encodeURIComponent(link)+'"/></div>'+
-    '<div style="text-align:center;font-size:12px;color:var(--muted);word-break:break-all;margin-top:8px">'+esc(link)+'</div>');
-}
-function icsDownload(){
-  const ev=PUB.ev||{}; if(!ev.event_at) return;
-  const dt=new Date(ev.event_at);
-  const fmt=function(d){ return d.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z/,'Z'); };
-  const end=new Date(dt.getTime()+3*3600*1000);
-  const ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Zoi//Tickets//EN\r\nBEGIN:VEVENT\r\nUID:'+(Date.now())+'@zoi.city\r\nDTSTAMP:'+fmt(new Date())+'\r\nDTSTART:'+fmt(dt)+'\r\nDTEND:'+fmt(end)+'\r\nSUMMARY:'+String(ev.name||'Zoi event').replace(/[,;]/g,' ')+'\r\nLOCATION:'+String([ev.city,ev.country].filter(Boolean).join(' ')).replace(/[,;]/g,' ')+'\r\nEND:VEVENT\r\nEND:VCALENDAR';
-  const blob=new Blob([ics],{type:'text/calendar'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='zoi-event.ics'; a.click();
-  setTimeout(function(){ URL.revokeObjectURL(a.href); },2000);
+async function fetchReservations(evId){
+  const rows = await rpc('tickets_reservations_list',{p_workspace:DASH.ws,p_event:evId});
+  return Array.isArray(rows)?rows:[];
 }
 
-/* ---- create event modal ---- */
+function paintDrawer(){
+  const head=$('#tkxDrawerHead'), tools=$('#tkxDrawerTools'), body=$('#tkxDrawerBody');
+  head.innerHTML = '<div style="flex:1;min-width:0"><h2>'+esc(ATT.name)+'</h2>'
+    + '<p>Attendees'+(ATT.when?' · '+esc(ATT.when):'')+'</p></div>'
+    + '<button class="tkx-close" data-act="closedrawer" aria-label="Close attendees">&#10005;</button>';
+
+  if(ATT.selected){ paintDetail(); return; }
+  if(ATT.bulk){ paintBulk(); return; }
+
+  if(ATT.loading){
+    tools.innerHTML=''; body.innerHTML='<div class="tkx-load"><div class="tkx-spin"></div>Loading the attendee list…</div>';
+    return;
+  }
+  if(ATT.error){
+    tools.innerHTML='';
+    body.innerHTML='<div class="tkx-note" data-tone="stop">'+ico('info')+'<div><b>Could not load attendees.</b> '+esc(ATT.error)+'</div></div>'
+      + '<button class="tkx-btn" data-act="attretry">Try again</button>';
+    return;
+  }
+  const counts = LIB.doorCounts(ATT.rows);
+  const shown = LIB.filterSortAttendees(ATT.rows, {q:ATT.q,status:ATT.status,tier:ATT.tier,sort:ATT.sort});
+  const tiers = LIB.tiersIn(ATT.rows);
+  tools.innerHTML = '<div class="tkx-field" style="flex:1 1 100%">'+ico('search')
+    + '<input class="tkx-input" id="tkxAttQ" type="search" placeholder="Search name, email, tier or code" value="'+esc(ATT.q)+'" aria-label="Search attendees"/></div>'
+    + '<select class="tkx-select" id="tkxAttStatus" aria-label="Filter by status">'
+    +   ['all|Everyone','in|Checked in','out|Not yet in','paid|Paid','unpaid|Unpaid'].map(s=>{const[v,l]=s.split('|');
+        return '<option value="'+v+'"'+(ATT.status===v?' selected':'')+'>'+l+'</option>';}).join('')
+    + '</select>'
+    + '<select class="tkx-select" id="tkxAttTier" aria-label="Filter by tier">'
+    +   '<option value="all">All tiers</option>'
+    +   tiers.map(t=>'<option value="'+esc(t)+'"'+(ATT.tier===t?' selected':'')+'>'+esc(t)+'</option>').join('')
+    + '</select>'
+    + '<select class="tkx-select" id="tkxAttSort" aria-label="Sort attendees">'
+    +   ['name|Name A–Z','tier|Tier','qty|Largest party','status|Not-yet-in first','newest|Newest first','oldest|Oldest first']
+        .map(s=>{const[v,l]=s.split('|'); return '<option value="'+v+'"'+(ATT.sort===v?' selected':'')+'>'+l+'</option>';}).join('')
+    + '</select>'
+    + '<button class="tkx-btn" data-act="attcsv">Export CSV</button>'
+    + '<button class="tkx-btn" data-act="attmanifest">Print manifest</button>'
+    + '<button class="tkx-btn" data-act="attbulk"'+(shown.filter(r=>!r.checked_in).length?'':' disabled')+'>Bulk check in ('+shown.filter(r=>!r.checked_in).length+')</button>'
+    + '<button class="tkx-btn" data-tone="door" data-act="attdoor">Door mode</button>';
+
+  if(!ATT.rows.length){
+    body.innerHTML = '<div class="tkx-empty"><div class="tkx-empty-t">No reservations yet</div>'
+      + '<div class="tkx-empty-s">Nobody has reserved for this event. Share the ticket link and this list fills up'
+      + ' in real time.</div></div>';
+    return;
+  }
+  body.innerHTML =
+    '<div class="tkx-note">'+ico('info')+'<div><b>'+counts.reservations+'</b> '+plural(counts.reservations,'reservation')
+    + ' · <b>'+counts.sold+'</b> seats · <b>'+counts.checkedIn+'</b> checked in ('+counts.pct+'%). '
+    + 'Showing '+shown.length+' of '+ATT.rows.length+'.</div></div>'
+    + (shown.length
+      ? shown.map(r=>{
+          const q=Math.max(1,Number(r.qty||1));
+          return '<button class="tkx-att" data-act="attopen" data-code="'+esc(r.code||'')+'">'
+            + '<span class="tkx-dot" data-in="'+(r.checked_in?'1':'0')+'" aria-hidden="true"></span>'
+            + '<span class="tkx-att-m"><span class="tkx-att-n">'+esc(r.name||'(no name)')+'</span>'
+            + '<span class="tkx-att-s">'+esc(r.email||'no email')+' · '+esc(r.type||'no tier')+' · '+esc(r.code||'no code')+'</span></span>'
+            + '<span class="tkx-tag" data-tone="'+(r.paid?'live':'past')+'">'+(r.paid?'Paid':'Reserved')+'</span>'
+            + (r.checked_in?'<span class="tkx-tag" data-tone="live">In</span>':'')
+            + '<span class="tkx-att-q">×'+q+'</span></button>';
+        }).join('')
+      : '<div class="tkx-empty"><div class="tkx-empty-t">Nothing matches</div><div class="tkx-empty-s">'
+        + ATT.rows.length+' '+plural(ATT.rows.length,'reservation')+' on this event, none matching the current filters.'
+        + '</div><button class="tkx-btn" data-act="attclear">Clear filters</button></div>');
+
+  bindDrawerControls();
+}
+function bindDrawerControls(){
+  const q=document.getElementById('tkxAttQ');
+  if(q) q.addEventListener('input',()=>{ ATT.q=q.value; const pos=q.selectionStart; paintDrawer();
+    const n=document.getElementById('tkxAttQ'); if(n){ n.focus(); try{n.setSelectionRange(pos,pos);}catch(e){} } });
+  [['tkxAttStatus','status'],['tkxAttTier','tier'],['tkxAttSort','sort']].forEach(([id,key])=>{
+    const el=document.getElementById(id);
+    if(el) el.addEventListener('change',()=>{ ATT[key]=el.value; paintDrawer(); });
+  });
+}
+
+function paintDetail(){
+  const r = ATT.rows.find(x=>String(x.code||'')===ATT.selected) || {};
+  const q = Math.max(1,Number(r.qty||1));
+  const tools=$('#tkxDrawerTools'), body=$('#tkxDrawerBody');
+  tools.innerHTML = '<button class="tkx-btn" data-act="attback">← Back to list</button>';
+  const payload = PUBLIC_BASE+'?e='+encodeURIComponent(ATT.ev)+'&c='+encodeURIComponent(r.code||'');
+  const mail = 'mailto:'+encodeURIComponent(r.email||'')
+    + '?subject='+encodeURIComponent('Your ticket for '+ATT.name)
+    + '&body='+encodeURIComponent('Hello '+(r.name||'')+',\n\nYour reservation for '+ATT.name+' is confirmed.\n'
+      + 'Confirmation code: '+(r.code||'')+'\nTicket type: '+(r.type||'')+'\nQuantity: '+q+'\n'
+      + 'Ticket page: '+payload+'\n\nSee you there.');
+  body.innerHTML = '<div class="tkx-grid2">'
+    + '<div><dl class="tkx-kv">'
+    +   '<dt>Name</dt><dd>'+esc(r.name||'—')+'</dd>'
+    +   '<dt>Email</dt><dd>'+esc(r.email||'—')+'</dd>'
+    +   '<dt>Tier</dt><dd>'+esc(r.type||'—')+'</dd>'
+    +   '<dt>Code</dt><dd style="font-family:ui-monospace,Menlo,monospace;letter-spacing:.08em">'+esc(r.code||'—')+'</dd>'
+    +   '<dt>Seats</dt><dd>'+q+'</dd>'
+    +   '<dt>Payment</dt><dd>'+(r.paid?'Paid':'Reserved, unpaid')+'</dd>'
+    +   '<dt>Door</dt><dd>'+(r.checked_in?'Checked in':'Not checked in')+'</dd>'
+    +   (r.created_at?'<dt>Reserved</dt><dd>'+esc(fmtWhen(r.created_at)||String(r.created_at))+'</dd>':'')
+    + '</dl></div>'
+    + '<div class="tkx-ticket">'+(r.code?'<div class="tkx-qr">'+qrSvg(payload,'Attendee QR code')+'</div>':'')
+    +   '<div style="font-size:11.5px;color:var(--mut);margin-top:8px">The guest’s QR. Scanning this in door mode checks them in.</div></div>'
+    + '</div>'
+    + '<div class="tkx-acts" style="margin-top:14px">'
+    +   (r.checked_in?'':'<button class="tkx-btn" data-tone="door" data-act="checkinone" data-code="'+esc(r.code||'')+'">Check in now</button>')
+    +   '<button class="tkx-btn" data-act="copycode" data-code="'+esc(r.code||'')+'">'+ico('copy')+' Copy code</button>'
+    +   (r.email?'<a class="tkx-btn" href="'+esc(mail)+'">Email this guest</a>':'')
+    + '</div>'
+    + '<div class="tkx-note" data-tone="warn" style="margin-top:14px">'+ico('info')
+    + '<div><b>Zoi cannot send this email for you.</b> The transactional email sender is credential-gated'
+    + ' (<code>RESEND_API_KEY</code> is not installed), so "resend confirmation" would be a button that does nothing.'
+    + ' The link above opens your own mail app with the details filled in, which actually works.'
+    + '<br><br>There is also no un-check-in: no RPC reverses a confirmed check-in, so that button does not exist.</div></div>';
+}
+
+function paintBulk(){
+  const b=ATT.bulk;
+  const tools=$('#tkxDrawerTools'), body=$('#tkxDrawerBody');
+  tools.innerHTML = b.running?'':'<button class="tkx-btn" data-act="attback">← Back to list</button>';
+  if(!b.started){
+    body.innerHTML = '<div class="tkx-note" data-tone="warn">'+ico('info')
+      + '<div><b>Check in '+b.codes.length+' '+plural(b.codes.length,'guest')+' at once?</b> This calls'
+      + ' <code>tickets_checkin</code> once per reservation, for exactly the '+b.codes.length+' currently shown and'
+      + ' not yet checked in. It cannot be undone — there is no reverse RPC.</div></div>'
+      + '<div class="tkx-acts"><button class="tkx-btn" data-tone="door" data-act="bulkgo">Check in '+b.codes.length+' now</button>'
+      + '<button class="tkx-btn" data-act="attback">Cancel</button></div>';
+    return;
+  }
+  const total=b.codes.length, done=b.done;
+  body.innerHTML = '<div class="tkx-note" data-tone="info">'+ico('info')+'<div>'
+    + (b.running?('Working through the list… '+done+' of '+total+'.')
+               :('Finished '+done+' of '+total+'.'))+'</div></div>'
+    + '<div class="tkx-bar"><i style="width:'+(total?Math.round(done/total*100):0)+'%"></i></div>'
+    + '<div class="tkx-prog-txt">'
+    +   '<b>'+b.ok+'</b> newly checked in · <b>'+b.already+'</b> already in · <b>'+b.missing+'</b> not recognised · <b>'+b.failed+'</b> failed'
+    + '</div>'
+    + (b.errors.length?'<div class="tkx-note" data-tone="stop" style="margin-top:12px">'+ico('info')+'<div><b>Problems:</b><ul>'
+        + b.errors.slice(0,8).map(e=>'<li>'+esc(e)+'</li>').join('')+'</ul></div></div>':'')
+    + (b.running?'':'<div class="tkx-acts" style="margin-top:12px"><button class="tkx-btn" data-act="attreload">Reload the list</button></div>');
+}
+
+async function runBulk(){
+  const b=ATT.bulk; b.started=true; b.running=true; paintDrawer();
+  for(let i=0;i<b.codes.length;i++){
+    const code=b.codes[i];
+    try{
+      const r = await rpc('tickets_checkin',{p_workspace:DASH.ws,p_code:code});
+      const d = LIB.decide({response:r});
+      if(d.kind==='accepted'){ b.ok++; const row=ATT.rows.find(x=>String(x.code||'')===code); if(row) row.checked_in=true; }
+      else if(d.kind==='duplicate'){ b.already++; const row2=ATT.rows.find(x=>String(x.code||'')===code); if(row2) row2.checked_in=true; }
+      else { b.missing++; b.errors.push(code+': not recognised'); }
+    }catch(e){
+      b.failed++; b.errors.push(code+': '+(e.message||'failed'));
+      if(e.transport){ b.errors.push('Stopped early — no connection to the ticket server. '+(b.codes.length-i-1)+' not attempted.'); b.done=i+1; break; }
+    }
+    b.done=i+1;
+    if(i%3===0) paintDrawer();
+  }
+  b.running=false;
+  paintDrawer();
+  toast(b.ok+' checked in, '+b.already+' already in'+(b.failed?', '+b.failed+' failed':''), b.failed>0);
+}
+
+async function checkinOne(code){
+  try{
+    const r = await rpc('tickets_checkin',{p_workspace:DASH.ws,p_code:code});
+    const d = LIB.decide({response:r});
+    if(d.kind==='accepted'||d.kind==='duplicate'){
+      const row=ATT.rows.find(x=>String(x.code||'')===code); if(row) row.checked_in=true;
+      toast(d.kind==='accepted'?('Checked in '+(d.who||code)):'That code was already checked in');
+    } else { toast('That code is not recognised for your events', true); }
+  }catch(e){
+    toast(e.transport?'No connection — nothing was recorded. Use door mode, which queues offline.':('Check-in failed: '+e.message), true);
+  }
+  paintDrawer();
+}
+
+/** Fetch this event's reservations and hand them to fn. No drawer, no detour. */
+function withReservations(btn, fn){
+  const id = btn.dataset.ev;
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Loading…';
+  fetchReservations(id).then(rows => {
+    if(!rows.length) toast('This event has no reservations yet', true);
+    else fn(rows);
+  }).catch(e => {
+    toast(e.transport ? 'No connection — could not load the attendee list'
+                      : ('Could not load attendees: '+e.message), true);
+  }).then(() => { btn.disabled = false; btn.textContent = label; });
+}
+
+function exportCsv(rows, name){
+  if(!rows.length){ toast('Nothing to export — this event has no reservations', true); return; }
+  download(slug(name)+'-attendees.csv', LIB.toCsv(rows, LIB.ATTENDEE_COLUMNS), 'text/csv;charset=utf-8');
+  toast(rows.length+' '+plural(rows.length,'row')+' exported');
+}
+function printManifest(rows, name, when){
+  printHtml(LIB.manifestHtml(rows, {eventName:name, whenText:when}), slug(name)+'-manifest.html');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DOOR MODE LAUNCH
+   ═══════════════════════════════════════════════════════════════════ */
+async function launchDoor(evId, name, when){
+  toast('Loading the attendee list for the door…');
+  let rows=[];
+  try{ rows = await fetchReservations(evId); }
+  catch(e){
+    if(!confirm('Could not load the attendee list ('+e.message+').\n\nOpen door mode anyway? Codes will still be '
+      + 'checked against the server one by one, but the counters will start from zero and will be wrong.')) return;
+  }
+  window.ZoiDoor.open({
+    eventId: evId,
+    eventName: name || 'Event',
+    whenText: when || '',
+    reservations: rows,
+    toast: toast,
+    checkin: function(code){ return rpc('tickets_checkin',{p_workspace:DASH.ws,p_code:code}); },
+    reload: function(){ return fetchReservations(evId); }
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   MODALS: create event, tiers, duplicate, QR, shortcuts
+   ═══════════════════════════════════════════════════════════════════ */
 function openGen(title, desc, bodyHtml){
   $('#genTitle').textContent=title; $('#genDesc').textContent=desc||''; $('#genBody').innerHTML=bodyHtml;
   $('#genModal').classList.add('open');
+  const f=$('#genBody').querySelector('input,select,textarea,button');
+  if(f) setTimeout(()=>f.focus(),40);
 }
-function closeGen(){ $('#genModal').classList.remove('open'); }
+function closeGen(){
+  const m=$('#genModal');
+  if(!m.classList.contains('open')) return;
+  m.classList.remove('open');
+  // Focus must not stay inside a hidden dialog: it traps screen readers and it
+  // ate every keyboard shortcut on the page underneath.
+  $('#genBody').innerHTML='';
+  restoreFocus();
+}
+function restoreFocus(){
+  const a=document.activeElement;
+  if(a && a!==document.body && !document.body.contains(a)) { /* already gone */ }
+  const s=document.getElementById('tkxQ');
+  if(s) { s.focus({preventScroll:true}); return; }
+  const f=app.querySelector('button,a[href],input');
+  if(f) f.focus({preventScroll:true}); else document.body.focus();
+}
 
 function openCreateEvent(){
-  openGen('Create event','Fill in the basics. You can add ticket types next.', `
-    <div class="field"><label>Event name *</label><input id="ceName" placeholder="e.g. Greek Summer Gala"/></div>
-    <div class="field-row">
-      <div class="field"><label>City</label><input id="ceCity" placeholder="Toronto"/></div>
-      <div class="field"><label>Date & time</label><input id="ceWhen" type="datetime-local"/></div>
-    </div>
-    <div class="field"><label>Description</label><textarea id="ceDesc" rows="3" placeholder="Optional — a short description for your event"></textarea></div>
-    <div class="inline-err" id="ceErr"></div>
-    <button class="btn gold" style="width:100%" id="ceBtn" onclick="doCreateEvent()">Create event</button>
-  `);
-  setTimeout(()=>$('#ceName')&&$('#ceName').focus(),50);
+  openGen('Create event','Name it, then add at least one ticket tier — an event with no tiers cannot be reserved.',
+    '<div class="field"><label for="ceName">Event name *</label><input id="ceName" placeholder="e.g. Panigiri 2026"/></div>'
+    + '<div class="field-row">'
+    +   '<div class="field"><label for="ceCity">City</label><input id="ceCity" placeholder="Toronto"/></div>'
+    +   '<div class="field"><label for="ceWhen">Date &amp; time</label><input id="ceWhen" type="datetime-local"/></div>'
+    + '</div>'
+    + '<div class="field"><label for="ceDesc">Description</label><textarea id="ceDesc" rows="3" placeholder="Optional — shown on the public page and in the calendar invite"></textarea></div>'
+    + '<div class="tkx-inline-err" id="ceErr" role="alert"></div>'
+    + '<button class="btn gold" style="width:100%" id="ceBtn" data-act="createevent">Create event</button>');
 }
 async function doCreateEvent(){
   const name=($('#ceName').value||'').trim();
@@ -890,44 +1823,56 @@ async function doCreateEvent(){
   const btn=$('#ceBtn'); btn.disabled=true; btn.textContent='Creating…';
   try{
     const id = await rpc('tickets_event_create', {p_workspace:DASH.ws, p_name:name, p_city:city||null, p_when:when, p_description:desc||null});
-    closeGen(); toast('Event created');
-    // go straight to managing tickets for the new event
-    openManageTickets(typeof id==='string'?id:id, name);
-    loadDashboard();
+    closeGen(); toast('Event created — now add a ticket tier');
+    await loadDashboard();
+    openManageTickets(typeof id==='object'&&id?(id.id||id.event||String(id)):String(id), name);
   }catch(e){ btn.disabled=false; btn.textContent='Create event'; err.textContent=e.message; }
 }
 
-/* ---- manage ticket types modal ---- */
 let MT = { eventId:null, name:'' };
 async function openManageTickets(eventId, name){
   MT.eventId=eventId; MT.name=name;
-  openGen('Manage tickets', name, '<div class="loading"><div class="spinner"></div>Loading ticket types…</div>');
+  openGen('Ticket tiers', name, '<div class="tkx-load"><div class="tkx-spin"></div>Loading tiers…</div>');
   await refreshManageTickets();
 }
 async function refreshManageTickets(){
-  let types=[];
-  try{ types = await rpc('tickets_types_list', {p_event:MT.eventId}); }catch(e){ types=[]; }
-  const list = types.length ? `<div class="tt-list">${types.map(t=>`
-    <div class="tt-item">
-      <div><div class="nm">${esc(t.name)}</div><div class="sub">${Number(t.price_cents)===0?'Free':fmtMoney(t.price_cents,t.currency)} · ${t.reserved||0}${t.capacity!=null?'/'+t.capacity:''} reserved${t.sold_out?' · sold out':''}</div></div>
-      <div class="pr">${Number(t.price_cents)===0?'Free':fmtMoney(t.price_cents,t.currency)}</div>
-    </div>`).join('')}</div>` : `<div class="empty-cart" style="padding:16px 0">No ticket types yet — add your first below.</div>`;
-  $('#genBody').innerHTML = `
-    ${list}
-    <div class="divider-lbl">Add ticket type</div>
-    <div class="field"><label>Name *</label><input id="ttName" placeholder="e.g. General Admission"/></div>
-    <div class="field-row">
-      <div class="field"><label>Price</label><input id="ttPrice" type="number" min="0" step="0.01" placeholder="0.00"/><div class="field-hint">Leave 0 for a free RSVP</div></div>
-      <div class="field"><label>Currency</label>
-        <select id="ttCur"><option value="USD">USD</option><option value="CAD">CAD</option><option value="EUR">EUR</option><option value="GBP">GBP</option><option value="AUD">AUD</option></select>
-      </div>
-    </div>
-    <div class="field"><label>Capacity</label><input id="ttCap" type="number" min="1" step="1" placeholder="Optional — leave blank for unlimited"/></div>
-    <div class="field"><label>Description</label><textarea id="ttDesc" rows="2" placeholder="Optional"></textarea></div>
-    <div class="inline-err" id="ttErr"></div>
-    <button class="btn gold" style="width:100%" id="ttBtn" onclick="doAddType()">Add ticket type</button>
-  `;
-  setTimeout(()=>$('#ttName')&&$('#ttName').focus(),50);
+  let types=[], failed=null;
+  try{ const t = await rpc('tickets_types_list', {p_event:MT.eventId}); types = Array.isArray(t)?t:[]; }
+  catch(e){ failed=e.message; }
+  const list = failed
+    ? '<div class="tkx-note" data-tone="stop">'+ico('info')+'<div>Could not load existing tiers: '+esc(failed)+'</div></div>'
+    : (types.length
+      ? '<div class="tkx-tiers">'+types.map(t=>{
+          const m=LIB.tierMath(t);
+          return '<div class="tkx-tier"><div class="tkx-tier-top"><span class="tkx-tier-nm">'+esc(t.name)+'</span>'
+            + (m.soldOut?'<span class="tkx-tag" data-tone="full">Sold out</span>':'')
+            + '<span class="tkx-tier-pr">'+(m.free?'Free':fmtMoney(m.priceCents,m.currency))+'</span></div>'
+            + (m.unlimited
+              ? '<div class="tkx-bar" data-unl="1"></div><div class="tkx-tier-sub">'+m.reserved+' reserved · no capacity limit</div>'
+              : '<div class="tkx-bar"><i data-lvl="'+m.level+'" style="width:'+(m.pct||0)+'%"></i></div>'
+                + '<div class="tkx-tier-sub">'+m.reserved+' of '+m.capacity+' reserved · '+m.left+' left</div>')
+            + '</div>';
+        }).join('')+'</div>'
+      : '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>No tiers yet.</b> Add one below — until then the public page has nothing to reserve.</div></div>');
+
+  $('#genBody').innerHTML = list
+    + '<div class="tkx-note">'+ico('info')+'<div><b>Add only.</b> <code>tickets_type_save</code> takes no ticket-type id and'
+    + ' there is no delete RPC, so Zoi cannot edit or remove a tier from here. Getting the name, price and capacity'
+    + ' right first time matters.</div></div>'
+    + '<div class="divider-lbl">Add a tier</div>'
+    + '<div class="field"><label for="ttName">Name *</label><input id="ttName" placeholder="e.g. General admission"/></div>'
+    + '<div class="field-row">'
+    +   '<div class="field"><label for="ttPrice">Price</label><input id="ttPrice" type="number" min="0" step="0.01" placeholder="0.00"/>'
+    +     '<div class="field-hint">'+(SVC.payments?'Leave 0 for a free RSVP.':'Leave 0. A priced tier cannot be sold while card payments are off.')+'</div></div>'
+    +   '<div class="field"><label for="ttCur">Currency</label><select id="ttCur">'
+    +     ['USD','CAD','EUR','GBP','AUD'].map(c=>'<option value="'+c+'">'+c+'</option>').join('')+'</select></div>'
+    + '</div>'
+    + '<div class="field"><label for="ttCap">Capacity</label><input id="ttCap" type="number" min="1" step="1" placeholder="Leave blank for no limit"/>'
+    +   '<div class="field-hint">Blank means no cap — the public page will say so rather than show a fake bar.</div></div>'
+    + '<div class="field"><label for="ttDesc">Description</label><textarea id="ttDesc" rows="2" placeholder="Optional"></textarea></div>'
+    + '<div class="tkx-inline-err" id="ttErr" role="alert"></div>'
+    + '<button class="btn gold" style="width:100%" id="ttBtn" data-act="addtier">Add tier</button>';
+  const f=$('#ttName'); if(f) f.focus();
 }
 async function doAddType(){
   const name=($('#ttName').value||'').trim();
@@ -936,23 +1881,204 @@ async function doAddType(){
   const capRaw=$('#ttCap').value;
   const desc=($('#ttDesc').value||'').trim();
   const err=$('#ttErr'); err.textContent='';
-  if(!name){ err.textContent='Ticket name is required.'; return; }
+  if(!name){ err.textContent='Tier name is required.'; return; }
   const price_cents = isNaN(priceD)?0:Math.round(priceD*100);
   if(price_cents<0){ err.textContent='Price cannot be negative.'; return; }
   const capacity = capRaw==='' ? null : parseInt(capRaw,10);
-  if(capacity!=null && (isNaN(capacity)||capacity<1)){ err.textContent='Capacity must be a positive number or blank.'; return; }
+  if(capacity!=null && (isNaN(capacity)||capacity<1)){ err.textContent='Capacity must be a positive whole number, or blank.'; return; }
   const btn=$('#ttBtn'); btn.disabled=true; btn.textContent='Adding…';
   try{
     await rpc('tickets_type_save', {p_workspace:DASH.ws, p_event:MT.eventId, p_name:name, p_price_cents:price_cents, p_currency:cur, p_capacity:capacity, p_description:desc||null});
-    toast('Ticket type added');
+    toast('Tier added');
+    delete DASH.types[MT.eventId];
     await refreshManageTickets();
     loadDashboard();
-  }catch(e){ btn.disabled=false; btn.textContent='Add ticket type'; err.textContent=e.message; }
+  }catch(e){ btn.disabled=false; btn.textContent='Add tier'; err.textContent=e.message; }
 }
 
-/* close modals on backdrop click */
-document.getElementById('confirmModal').addEventListener('click',e=>{ if(e.target.id==='confirmModal') closeConfirm(); });
-document.getElementById('genModal').addEventListener('click',e=>{ if(e.target.id==='genModal') closeGen(); });
+/* ---- duplicate an event (real: create + copy each tier) ---- */
+function openDuplicate(evId, name){
+  openGen('Duplicate event', name,
+    '<div class="tkx-note">'+ico('info')+'<div>This creates a <b>new</b> event and re-adds each of the original’s'
+    + ' ticket tiers with the same name, price, currency, capacity and description. Reservations, attendees and'
+    + ' check-ins are <b>not</b> copied — they belong to the original.</div></div>'
+    + '<div class="field"><label for="dupName">New event name *</label><input id="dupName" value="'+esc(name+' (copy)')+'"/></div>'
+    + '<div class="field-row">'
+    +   '<div class="field"><label for="dupCity">City</label><input id="dupCity" placeholder="Leave blank to copy"/></div>'
+    +   '<div class="field"><label for="dupWhen">New date &amp; time</label><input id="dupWhen" type="datetime-local"/></div>'
+    + '</div>'
+    + '<div class="tkx-inline-err" id="dupErr" role="alert"></div>'
+    + '<div id="dupProg" class="tkx-prog-txt"></div>'
+    + '<button class="btn gold" style="width:100%" id="dupBtn" data-act="dupgo" data-ev="'+esc(evId)+'">Duplicate</button>');
+}
+async function doDuplicate(srcId){
+  const name=($('#dupName').value||'').trim();
+  const err=$('#dupErr'), prog=$('#dupProg');
+  err.textContent='';
+  if(!name){ err.textContent='The new event needs a name.'; return; }
+  const btn=$('#dupBtn'); btn.disabled=true; btn.textContent='Duplicating…';
+  const src = DASH.events.find(e=>String(e.id)===String(srcId)) || {};
+  const cityIn=($('#dupCity').value||'').trim();
+  const whenIn=$('#dupWhen').value;
+  try{
+    let desc=null;
+    prog.textContent='Reading the original…';
+    try{ const pub = await rpc('tickets_event_public',{p_event:srcId}, PUBKEY); if(pub&&pub.description) desc=pub.description; }catch(e){}
+    let tiers=[];
+    try{ const t=await rpc('tickets_types_list',{p_event:srcId}); tiers=Array.isArray(t)?t:[]; }catch(e){ throw new Error('Could not read the original tiers: '+e.message); }
+    prog.textContent='Creating the new event…';
+    const newId = await rpc('tickets_event_create',{p_workspace:DASH.ws, p_name:name,
+      p_city:(cityIn||src.city||null), p_when:(whenIn?new Date(whenIn).toISOString():(src.event_at||null)), p_description:desc});
+    const id = (typeof newId==='object'&&newId)?(newId.id||newId.event||String(newId)):String(newId);
+    let copied=0; const problems=[];
+    for(let i=0;i<tiers.length;i++){
+      const t=tiers[i];
+      prog.textContent='Copying tier '+(i+1)+' of '+tiers.length+'…';
+      try{
+        await rpc('tickets_type_save',{p_workspace:DASH.ws,p_event:id,p_name:t.name,
+          p_price_cents:Number(t.price_cents||0),p_currency:t.currency||'USD',
+          p_capacity:(t.capacity==null?null:Number(t.capacity)),p_description:t.description||null});
+        copied++;
+      }catch(e){ problems.push(t.name+': '+e.message); }
+    }
+    closeGen();
+    await loadDashboard();
+    toast('Duplicated — '+copied+' of '+tiers.length+' '+plural(tiers.length,'tier')+' copied'+(problems.length?', '+problems.length+' failed':''));
+    if(problems.length){
+      openGen('Duplicated, with problems','The new event exists but some tiers did not copy.',
+        '<div class="tkx-note" data-tone="stop">'+ico('info')+'<div><b>'+copied+' of '+tiers.length+' tiers copied.</b><ul>'
+        + problems.map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul>Add the missing ones by hand from Ticket tiers.</div></div>');
+    }
+  }catch(e){
+    btn.disabled=false; btn.textContent='Duplicate'; prog.textContent='';
+    err.textContent=e.message;
+  }
+}
+
+function showQR(link, name){
+  openGen('Event QR code', name||'Print it, post it, point phones at it.',
+    '<div class="tkx-qr">'+qrSvg(link,'Event QR code')+'</div>'
+    + '<div style="text-align:center;font-size:12px;color:var(--mut);word-break:break-all;margin-top:10px">'+esc(link)+'</div>'
+    + '<div class="tkx-note" style="margin-top:12px">'+ico('info')+'<div>Drawn on this device by Zoi — the link was not'
+    + ' sent to a QR service, and it renders with no connection.</div></div>'
+    + '<div class="tkx-acts" style="margin-top:12px"><button class="tkx-btn" data-act="printqr" data-url="'+esc(link)+'" data-name="'+esc(name||'')+'">Print poster</button>'
+    + '<button class="tkx-btn" data-act="copy" data-url="'+esc(link)+'">'+ico('copy')+' Copy link</button></div>');
+}
+function printQr(link, name){
+  const html='<!doctype html><html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>'
+    + '<title>'+esc(name||'Event')+' — QR poster</title><style>body{margin:0;padding:40px;text-align:center;background:#fff;color:#000;'
+    + 'font:16px/1.5 -apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}h1{font-size:30px;margin:0 0 6px}'
+    + 'p{color:#333;margin:0 0 26px}svg{width:min(420px,80vw);height:auto}.u{font:600 13px ui-monospace,Menlo,monospace;'
+    + 'margin-top:18px;word-break:break-all}@media print{.noprint{display:none}}</style></head><body>'
+    + '<h1>'+esc(name||'Get your ticket')+'</h1><p>Scan to reserve a spot</p>'
+    + qrSvg(link,'Event QR code')+'<div class="u">'+esc(link)+'</div>'
+    + '<div class="noprint" style="margin-top:24px"><button onclick="window.print()">Print</button></div></body></html>';
+  printHtml(html,'zoi-qr-'+slug(name||'event')+'.html');
+}
+
+function showShortcuts(){
+  openGen('Keyboard shortcuts','Everything here also has a button — the keys are for speed, not a requirement.',
+    '<div class="tkx-kv" style="grid-template-columns:auto 1fr">'
+    + [['N','New event'],['/','Focus the event search'],['?','This list'],['Esc','Close a dialog or drawer']]
+      .map(([k,v])=>'<dt><kbd style="border:1px solid var(--line2);border-radius:5px;padding:2px 7px;font:700 11px ui-monospace,Menlo,monospace">'+k+'</kbd></dt><dd>'+v+'</dd>').join('')
+    + '</div>'
+    + '<div class="tkx-note" style="margin-top:6px">'+ico('info')+'<div>Door mode has its own set — open it and press'
+    + ' <b>?</b> there. It is built for one thumb, so every shortcut has a large button too.</div></div>');
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EVENT WIRING (delegation — no inline handlers, nothing to escape wrong)
+   ═══════════════════════════════════════════════════════════════════ */
+const ACTIONS = {
+  // public page
+  pick: t => selectType(coerceId(t.dataset.tier)),
+  qty: t => chQty(Number(t.dataset.d)),
+  reserve: () => doReserve(),
+  watch: t => toggleWatch(coerceId(t.dataset.tier)),
+  share: t => shareUrl(t.dataset.url),
+  pubics: () => publicIcs(),
+  pubqr: t => showQR(t.dataset.url, (PUB.ev&&PUB.ev.name)||''),
+  copycode: t => copyLink(t.dataset.code),
+  printticket: t => printTicket(t.dataset.code),
+  // auth
+  sendcode: () => doSendCode(),
+  verify: t => doVerify(t.dataset.email),
+  signinreset: () => renderSignIn(),
+  signout: () => signOut(),
+  switchws: () => switchWs(),
+  pickws: t => pickWs(t.dataset.ws),
+  // dashboard
+  retry: t => ({renderPublic:()=>renderPublic(PUB.eventId), loadDashboard, renderDashboard}[t.dataset.fn]||renderDashboard)(),
+  when: t => { DASH.when=t.dataset.v; paintDashboard(); },
+  clearfilters: () => { DASH.q=''; DASH.when='all'; paintDashboard(); },
+  newevent: () => openCreateEvent(),
+  createevent: () => doCreateEvent(),
+  copy: t => copyLink(t.dataset.url),
+  qr: t => showQR(t.dataset.url, t.dataset.name),
+  printqr: t => printQr(t.dataset.url, t.dataset.name),
+  expand: t => toggleExpand(t.dataset.ev),
+  tiers: t => openManageTickets(t.dataset.ev, t.dataset.name),
+  addtier: () => doAddType(),
+  dup: t => openDuplicate(t.dataset.ev, t.dataset.name),
+  dupgo: t => doDuplicate(t.dataset.ev),
+  door: t => launchDoor(t.dataset.ev, t.dataset.name, t.dataset.when),
+  attendees: t => openAttendees(t.dataset.ev, t.dataset.name, t.dataset.when),
+  csv: t => withReservations(t, rows => exportCsv(rows, t.dataset.name)),
+  manifest: t => withReservations(t, rows => printManifest(rows, t.dataset.name, t.dataset.when)),
+  shortcuts: () => showShortcuts(),
+  // drawer
+  closedrawer: () => closeDrawer(),
+  attretry: () => openAttendees(ATT.ev, ATT.name, ATT.when),
+  attreload: () => openAttendees(ATT.ev, ATT.name, ATT.when),
+  attclear: () => { ATT.q=''; ATT.status='all'; ATT.tier='all'; paintDrawer(); },
+  attopen: t => { ATT.selected=t.dataset.code; paintDrawer(); },
+  attback: () => { ATT.selected=null; ATT.bulk=null; paintDrawer(); },
+  attcsv: () => exportCsv(LIB.filterSortAttendees(ATT.rows,{q:ATT.q,status:ATT.status,tier:ATT.tier,sort:ATT.sort}), ATT.name),
+  attmanifest: () => printManifest(LIB.filterSortAttendees(ATT.rows,{q:ATT.q,status:ATT.status,tier:ATT.tier,sort:ATT.sort}), ATT.name, ATT.when),
+  attdoor: () => { closeDrawer(); launchDoor(ATT.ev, ATT.name, ATT.when); },
+  attbulk: () => {
+    const codes = LIB.filterSortAttendees(ATT.rows,{q:ATT.q,status:ATT.status,tier:ATT.tier,sort:ATT.sort})
+      .filter(r=>!r.checked_in && r.code).map(r=>String(r.code));
+    ATT.bulk = {codes:codes, started:false, running:false, done:0, ok:0, already:0, missing:0, failed:0, errors:[]};
+    paintDrawer();
+  },
+  bulkgo: () => runBulk(),
+  checkinone: t => checkinOne(t.dataset.code),
+  closegen: () => closeGen(),
+  closeconfirm: () => closeConfirm()
+};
+function coerceId(v){ const n=Number(v); return (v!=='' && !isNaN(n) && String(n)===String(v)) ? n : v; }
+
+document.addEventListener('click', function(e){
+  const t = e.target.closest && e.target.closest('[data-act]');
+  if(!t) return;
+  const fn = ACTIONS[t.getAttribute('data-act')];
+  if(!fn) return;
+  e.preventDefault();
+  try{ fn(t); }catch(err){ console.error('[tickets]',err); toast('Something went wrong: '+err.message, true); }
+});
+
+document.addEventListener('keydown', function(e){
+  if(window.ZoiDoor && window.ZoiDoor.isOpen()) return;   // door mode owns the keyboard
+  const typing = e.target && (e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA'||e.target.tagName==='SELECT');
+  if(e.key==='Escape'){
+    if($('#tkxDrawer').getAttribute('data-open')==='1'){ closeDrawer(); return; }
+    if($('#genModal').classList.contains('open')){ closeGen(); return; }
+    if($('#confirmModal').classList.contains('open')){ closeConfirm(); return; }
+    return;
+  }
+  if(typing || e.metaKey || e.ctrlKey || e.altKey) return;
+  if(qs('e')) return;   // public page has no dashboard shortcuts
+  const k=e.key.toLowerCase();
+  if(k==='/'){ const s=document.getElementById('tkxQ'); if(s){ e.preventDefault(); s.focus(); s.select(); } }
+  else if(k==='n'){ if(DASH.ws){ e.preventDefault(); openCreateEvent(); } }
+  else if(e.key==='?'){ e.preventDefault(); showShortcuts(); }
+});
+
+$('#confirmModal').addEventListener('click',e=>{ if(e.target.id==='confirmModal') closeConfirm(); });
+$('#genModal').addEventListener('click',e=>{ if(e.target.id==='genModal') closeGen(); });
+$('#tkxDrawer').addEventListener('click',e=>{ if(e.target.classList.contains('tkx-drawer-bg')) closeDrawer(); });
+window.addEventListener('beforeunload', ()=>{ stopWatch(true); });
 
 /* ============ BOOT ============ */
 route();
