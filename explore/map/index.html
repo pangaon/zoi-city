@@ -85,6 +85,8 @@
   .m-xbtn{border:1px solid var(--line);background:var(--bg2);color:var(--mut);width:28px;height:28px;
     border-radius:8px;cursor:pointer;font-size:15px;line-height:1;flex:0 0 auto}
   .m-xbtn:hover{color:var(--tx);border-color:var(--line2)}
+  .m-sheetbtn{display:none;place-items:center}
+  .m-sheetbtn svg{width:16px;height:16px;transition:transform .2s var(--ease)}
 
   .m-row{display:flex;gap:11px;padding:11px 15px;border-bottom:1px solid var(--line);cursor:pointer;
     text-decoration:none;color:inherit;transition:background .14s var(--ease)}
@@ -165,12 +167,34 @@
 
   /* mobile: the panel becomes a sheet */
   @media (max-width:860px){
-    .m-controls{top:10px;left:10px;right:10px;width:auto;padding:10px}
-    .m-chips{max-height:60px}
-    .m-panel{top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:47vh}
+    /* The panel becomes a bottom sheet. Its height and the tool rail's offset
+       come from one variable so the rail can never end up sitting on top of the
+       sheet — which is exactly what happened when they were set independently. */
+    .m-stage{--sheet:40vh}
+    .m-controls{top:10px;left:10px;right:10px;width:auto;padding:10px;gap:8px}
+    /* One scrolling line rather than a wrapped block: on a phone the wrapped
+       version ate 240px of chrome and left barely 120px of actual map. */
+    .m-chips{flex-wrap:nowrap;max-height:none;overflow-x:auto;overflow-y:hidden;
+      padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .m-chips::-webkit-scrollbar{display:none}
+    .m-chiprow{margin-bottom:-2px}
+    .m-panel{top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:var(--sheet)}
     .m-panel.m-hidden{display:none}
-    .m-tools{bottom:auto;top:calc(50% - 118px);right:10px}
-    .m-attrib{left:10px;bottom:auto;top:calc(100% - 34px);max-width:calc(100vw - 76px)}
+    .m-tools{top:auto;bottom:calc(var(--sheet) + 20px);right:10px;
+      flex-direction:row;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 20px)}
+    .m-toolsep{width:1px;height:26px;margin:6px 2px}
+    .m-attrib{left:10px;bottom:calc(var(--sheet) + 74px);max-width:calc(100vw - 20px)}
+    /* Collapsing the sheet gives the map back; every other element is offset
+       from --sheet, so they all move with it. */
+    .m-sheetbtn{display:grid}
+    .m-stage.m-shut{--sheet:46px}
+    .m-stage.m-shut .m-panel .m-body,
+    .m-stage.m-shut .m-panel footer{display:none}
+    .m-stage.m-shut .m-sheetbtn svg{transform:rotate(180deg)}
+  }
+  /* Short viewports need a smaller sheet or there is no map left to look at. */
+  @media (max-width:860px) and (max-height:730px){
+    .m-stage{--sheet:32vh}
   }
   @media (prefers-reduced-motion:reduce){.m-pin,.m-tool,.m-chip,.m-row{transition:none}.m-status .m-spin{animation:none}}
 </style>
@@ -203,6 +227,9 @@
   <aside class="m-pane m-panel" id="panel" aria-label="Places">
     <header>
       <h2 id="ptitle">Loading…<span class="m-sub" id="psub">reading the directory</span></h2>
+      <button class="m-sheetbtn m-xbtn" id="psheet" aria-label="Collapse the list" aria-expanded="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
       <button class="m-xbtn" id="pclose" hidden aria-label="Back to all results">&times;</button>
     </header>
     <div class="m-body" id="pbody"></div>
@@ -849,6 +876,15 @@
   }
 
   $('pclose').addEventListener('click', function () { showAll(); writeUrl(); });
+
+  // Collapse the bottom sheet on small screens. Everything else is positioned
+  // from --sheet, so the tool rail and attribution follow it up and down.
+  $('psheet').addEventListener('click', function () {
+    var shut = $('stage').classList.toggle('m-shut');
+    this.setAttribute('aria-expanded', shut ? 'false' : 'true');
+    this.setAttribute('aria-label', shut ? 'Show the list' : 'Collapse the list');
+    if (map) setTimeout(function () { map.resize(); }, 220);
+  });
 
   /* ---------- filtering ---------- */
   var refreshT;
