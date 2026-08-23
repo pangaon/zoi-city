@@ -167,7 +167,12 @@ td .st{color:var(--ink);font-weight:600}td a{color:var(--acc)}
   table{font-size:12px}thead th,tbody td{padding:9px 10px}
 }
 /* ---- auth gate ---- */
-#gate{position:fixed;inset:0;z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1100px 600px at 82% -12%,color-mix(in srgb, var(--acc) 10%, transparent),transparent 60%),radial-gradient(900px 560px at 4% -12%,color-mix(in srgb, var(--acc) 14%, transparent),transparent 55%),var(--bg)}
+/* The gate must not trap the visitor. /social and /tickets both keep the
+   global header reachable behind their sign-in state; this page was the only
+   one that covered it, so someone who landed here unauthenticated had no way
+   out except the browser back button. Start below the header and sit under
+   its z-index. */
+#gate{position:fixed;inset:var(--gate-top,116px) 0 0 0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px;background:radial-gradient(1100px 600px at 82% -12%,color-mix(in srgb, var(--acc) 10%, transparent),transparent 60%),radial-gradient(900px 560px at 4% -12%,color-mix(in srgb, var(--acc) 14%, transparent),transparent 55%),var(--bg)}
 #gate.hide{display:none}
 .gcard{width:100%;max-width:380px;background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--hair2);border-radius:20px;padding:28px 26px;box-shadow:0 30px 80px -30px rgba(0,0,0,.8);position:relative;overflow:hidden}
 .gcard::after{content:"";position:absolute;inset:0 0 auto 0;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent)}
