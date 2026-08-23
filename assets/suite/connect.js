@@ -28,17 +28,17 @@
   /* ---------- supported platforms (display order + brand svg) ---------- */
   var PLATFORMS = [
     { key: 'facebook',  name: 'Facebook',  color: '#1877F2',
-      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg>' },
+      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z"/></svg>' , why: 'Posts to your Page. Page events can also feed your Zoi listing.' },
     { key: 'instagram', name: 'Instagram', color: '#E4405F',
-      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>' },
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1.2" fill="currentColor" stroke="none"/></svg>' , why: 'Posts and reels. Instagram requires a Business or Creator account linked to a Facebook Page \u2014 their rule, not ours.' },
     { key: 'x',         name: 'X',         color: '#e8edf3',
-      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.83L1.24 2.25H8.1l4.71 6.23 5.43-6.23Zm-1.16 17.52h1.83L7.02 4.13H5.06l12.02 15.64Z"/></svg>' },
+      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.22-6.82-5.97 6.82H1.66l7.73-8.83L1.24 2.25H8.1l4.71 6.23 5.43-6.23Zm-1.16 17.52h1.83L7.02 4.13H5.06l12.02 15.64Z"/></svg>' , why: 'Short posts and replies.' },
     { key: 'linkedin',  name: 'LinkedIn',  color: '#0A66C2',
-      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.55V9h3.57v11.45ZM22.22 0H1.77C.8 0 0 .78 0 1.75v20.5C0 23.2.8 24 1.77 24h20.45c.98 0 1.78-.8 1.78-1.75V1.75C24 .78 23.2 0 22.22 0Z"/></svg>' },
+      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13ZM7.12 20.45H3.55V9h3.57v11.45ZM22.22 0H1.77C.8 0 0 .78 0 1.75v20.5C0 23.2.8 24 1.77 24h20.45c.98 0 1.78-.8 1.78-1.75V1.75C24 .78 23.2 0 22.22 0Z"/></svg>' , why: 'Posts to a company page. Best for professionals and associations.' },
     { key: 'tiktok',   name: 'TikTok',   color: '#e8edf3',
-      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.06-2.82h-3.2v12.8a2.43 2.43 0 1 1-2.43-2.43c.24 0 .47.04.69.1V10.2a5.7 5.7 0 0 0-.69-.04A5.66 5.66 0 1 0 15.57 15.8V9.32a7.44 7.44 0 0 0 4.35 1.39V7.5a4.29 4.29 0 0 1-3.32-1.68Z"/></svg>' },
+      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.82a4.28 4.28 0 0 1-1.06-2.82h-3.2v12.8a2.43 2.43 0 1 1-2.43-2.43c.24 0 .47.04.69.1V10.2a5.7 5.7 0 0 0-.69-.04A5.66 5.66 0 1 0 15.57 15.8V9.32a7.44 7.44 0 0 0 4.35 1.39V7.5a4.29 4.29 0 0 1-3.32-1.68Z"/></svg>' , why: 'Video posts. TikTok reviews every developer app before it can go live.' },
     { key: 'youtube',  name: 'YouTube',  color: '#FF0000',
-      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8ZM9.6 15.57V8.43L15.82 12 9.6 15.57Z"/></svg>' }
+      icon: '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.51A3.02 3.02 0 0 0 .5 6.2 31.6 31.6 0 0 0 0 12a31.6 31.6 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.88.51 9.38.51 9.38.51s7.5 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.6 31.6 0 0 0 24 12a31.6 31.6 0 0 0-.5-5.8ZM9.6 15.57V8.43L15.82 12 9.6 15.57Z"/></svg>' , why: 'Publishes and schedules video, and pulls your channel into your listing.' }
   ];
 
   var PLAT_BY_KEY = {};
@@ -58,7 +58,16 @@
   function injectStyles() {
     if (document.getElementById(STYLE_ID)) return;
     var css = [
-      '.zn-wrap{color:var(--tx);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:14px}',
+      '.zn-how{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0 18px;background:var(--card2)}',
+    '.zn-how h4{margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:-.01em}',
+    '.zn-how ol{margin:0;padding-left:18px;display:grid;gap:7px}',
+    '.zn-how li{font-size:13px;line-height:1.55;color:var(--mut)}',
+    '.zn-how li b{color:var(--tx);font-weight:650}',
+    '.zn-how-note{margin:12px 0 0;font-size:12.5px;line-height:1.55;color:var(--mut);'
+      +'border-top:1px solid var(--line);padding-top:11px}',
+    '.zn-how-note b{color:var(--tx)}',
+    '.zn-why{margin:0 0 9px;font-size:12px;line-height:1.5;color:var(--dim)}',
+    '.zn-wrap{color:var(--tx);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:14px}',
       '.zn-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 14px}',
       '.zn-title{font-size:18px;font-weight:800;margin:0 0 2px}',
       '.zn-sub{color:var(--mut);font-size:12.5px;margin:0;max-width:60ch;line-height:1.5}',
@@ -181,7 +190,7 @@
     wrap.appendChild(banner);
 
     function paintBanner() {
-      var ready = PLATFORMS.filter(function (p) { return providerReady[p.id]; });
+      var ready = PLATFORMS.filter(function (p) { return providerReady[p.key]; });
       banner.className = 'zn-banner' + (ready.length ? ' zn-live' : '');
       bdot.innerHTML = ready.length ? CHECK_SVG : SHIELD_SVG;
       if (ready.length === PLATFORMS.length) {
@@ -196,6 +205,21 @@
           'Drafting and scheduling work now, and a planning handle below makes composer previews look right.</p>';
       }
     }
+
+    /* How this actually works. Somebody is being asked to let a third party post
+       as their business — the least we owe them is a plain account of what
+       happens, what we can see, and what we cannot. */
+    var how = el('div', 'zn-how');
+    how.innerHTML =
+      '<h4>How connecting works</h4>' +
+      '<ol>' +
+        '<li><b>You press Connect.</b> Zoi sends you to the network itself. You are on Instagram\u2019s page, or Facebook\u2019s \u2014 not ours.</li>' +
+        '<li><b>You approve it there.</b> The network asks whether Zoi may post for you. Your password is typed on their site and never reaches Zoi. We never see it and could not store it if we wanted to.</li>' +
+        '<li><b>They hand back a key, not a login.</b> Zoi gets a token that does only what you approved. Revoke it in your own account settings and Zoi loses access immediately.</li>' +
+      '</ol>' +
+      '<p class="zn-how-note"><b>Nothing here is guessed.</b> A channel shows as connected only because you authorised it and the network confirmed it. ' +
+      'Zoi never finds a handle somewhere and calls it verified. Anything we merely read from your website is labelled as exactly that, in plain words, on your public page.</p>';
+    wrap.appendChild(how);
 
     // platform grid
     var grid = el('div', 'zn-grid');
@@ -324,7 +348,7 @@
       } else {
         var btn = el('button', 'zn-btn zn-primary', 'Connect');
         btn.type = 'button';
-        if (!providerReady[p.id]) {
+        if (!providerReady[p.key]) {
           btn.disabled = true;
           btn.title = configKnown
             ? p.name + ' has no developer app registered yet'
@@ -350,7 +374,7 @@
                   Authorization: 'Bearer ' + (C.auth && C.auth.token ? C.auth.token() : C.KEY),
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ workspace: ctx.ws, platform: p.id })
+                body: JSON.stringify({ workspace: ctx.ws, platform: p.key })
               });
               var j = await r.json().catch(function () { return {}; });
               var url = j.url || j.authorize_url || j.redirect;

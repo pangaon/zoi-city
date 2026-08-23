@@ -138,6 +138,28 @@ function page(e, related){
 
   /* ---- contact card ---- */
   var rows=[];
+
+/* Brand marks, as paths rather than an icon font or a sprite sheet: no extra
+   request, no flash of missing glyph, and they inherit currentColor so they work
+   in all three themes. */
+var SOCIAL_ICON = {
+  instagram:'<rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/>',
+  facebook:'<path d="M14.5 8.5h2.2V5.4h-2.6c-2.4 0-3.9 1.5-3.9 4v2.1H8v3.1h2.2V22h3.3v-7.4h2.3l.4-3.1h-2.7V9.7c0-.8.3-1.2 1-1.2Z"/>',
+  x:'<path d="M4 4l7.1 9.2L4.3 20h2.2l5.5-5.7 4.3 5.7H20l-7.3-9.5L19.5 4h-2.2l-5.1 5.3L8 4H4Z"/>',
+  youtube:'<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.4 9.6l5 2.4-5 2.4V9.6Z" fill="currentColor" stroke="none"/>',
+  linkedin:'<rect x="2.5" y="2.5" width="19" height="19" rx="3"/><path d="M7 10v7M7 7v.01M11.5 17v-4a2.2 2.2 0 0 1 4.4 0v4"/>',
+  tiktok:'<path d="M14.4 3v9.6a3.2 3.2 0 1 1-3.2-3.2c.3 0 .6 0 .9.1"/><path d="M14.4 3c.4 2.3 2 3.9 4.3 4.1"/>',
+  spotify:'<circle cx="12" cy="12" r="9.3"/><path d="M7.6 9.4c2.9-.8 6-.5 8.6 1M8.2 12.4c2.3-.6 4.8-.4 6.9.8M8.8 15.2c1.8-.4 3.6-.3 5.2.6"/>',
+  soundcloud:'<path d="M4 15v-4M7 16V9M10 16V7.5M13 16v-6"/><path d="M16 16h3.2a2.4 2.4 0 0 0 0-4.8c-.2 0-.4 0-.6.1A4 4 0 0 0 13 9.4V16h3Z"/>',
+  telegram:'<path d="M21 4L2.8 11.2l5 1.6L19.4 6 9.7 14.6l-.2 4.6 2.9-2.6 4.4 3.2L21 4Z"/>',
+  whatsapp:'<path d="M20.5 11.7a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.4-4.3A8.5 8.5 0 1 1 20.5 11.7Z"/><path d="M8.9 8.6c.6-.2 1 .1 1.2.6l.5 1.2c.1.3 0 .6-.2.8l-.4.4c.5 1 1.3 1.8 2.3 2.3l.4-.4c.2-.2.5-.3.8-.2l1.2.5c.5.2.8.6.6 1.2-.2.7-1 1.2-1.8 1.1-2.6-.3-5-2.7-5.3-5.3-.1-.8.4-1.6 1.1-1.8"/>'
+};
+function socialIcon(k){
+  var d = SOCIAL_ICON[k];
+  if(!d) return '';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>';
+}
   function row(label, value){ rows.push('<div class="row"><span>'+esc(label)+'</span><b>'+value+'</b></div>'); }
   if(e.address) row('Address', esc(e.address));
   else if(e.city) row('Location', esc(e.city)+(e.country?(', '+esc(e.country)):''));
@@ -156,16 +178,22 @@ function page(e, related){
   if (typeof candidate === 'string' && /^https:\/\//.test(candidate)) coverImg = candidate;
 
   var sl = Object.assign({}, (p && p.social) || {}, e.social_links || {});
-  var socLinks=[];
+  var socLinks=[], seenSoc={};
   [['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok'],['youtube','YouTube'],
    ['twitter','X'],['x','X'],['linkedin','LinkedIn'],['spotify','Spotify'],
    ['soundcloud','SoundCloud'],['telegram','Telegram'],['whatsapp','WhatsApp']].forEach(function(pp){
     var v=sl[pp[0]]; if(!v) return;
-    if(socLinks.some(function(l){return l.indexOf('>'+pp[1]+'<')>-1;})) return;  // X twice
+    if(seenSoc[pp[1]]) return; seenSoc[pp[1]]=1;            // X appears under two keys
     var href=/^https?:/.test(v)?v:('https://'+pp[0]+'.com/'+(''+v).replace(/^@/,''));
-    socLinks.push('<a href="'+attr(href)+'" rel="nofollow noopener" target="_blank">'+pp[1]+'</a>');
+    var ic=socialIcon(pp[0]);
+    socLinks.push('<a class="socbtn" href="'+attr(href)+'" rel="nofollow noopener" target="_blank" '
+      + 'title="'+attr(pp[1])+'" aria-label="'+attr(pp[1])+'">'
+      + (ic || '<span>'+esc(pp[1])+'</span>') + '</a>');
   });
-  if(socLinks.length) row('Social', socLinks.join(' &middot; '));
+  /* A row of real marks rather than a text list. Each keeps its accessible name,
+     so a screen reader still hears "Instagram", and the visible label is the icon. */
+  if(socLinks.length) rows.push('<div class="row socrow"><span>Social</span><b class="soc">'
+    + socLinks.join('') + '</b></div>');
   /* Things the business itself links to. These are the actions a visitor came
      for, and none of them existed on the page before. */
   [['booking_url','Book'],['menu_url','Menu'],['order_url','Order'],['give_url','Give']].forEach(function(pp){
@@ -274,6 +302,13 @@ var PAGE_CSS = [
   '.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);background:var(--card);margin:24px 0 0}',
   '.ep-cover svg{display:block;width:100%;height:100%}',
   '.ep-cover img{display:block;width:100%;height:100%;object-fit:cover}',
+  '.row.socrow b{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}',
+  '.socbtn{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;'
+    +'border:1px solid var(--line);color:var(--mut);background:var(--card2);'
+    +'transition:.18s var(--ease)}',
+  '.socbtn svg{width:17px;height:17px}',
+  '.socbtn:hover{color:var(--tx);border-color:var(--line2);transform:translateY(-1px)}',
+  '.socbtn span{font-size:11px;font-weight:700}',
   '.ep-cover.has-img{background:var(--card2)}',
   /* One quiet line where a detail came from a website rather than its owner. */
   '.prov{font-size:12px;color:var(--dim);line-height:1.55;margin:18px 0 0;'
