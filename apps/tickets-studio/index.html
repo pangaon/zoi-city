@@ -1015,6 +1015,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 
 </style>
 
+<meta name="robots" content="noindex,nofollow">
 </head>
 <body>
 
@@ -2980,36 +2981,36 @@ applySoldoutStates();
    ATTENDEE DATA
    ═══════════════════════════════════════════════════════════ */
 let ATTENDEES = [
-  {id:1,  first:'Nikos',     last:'Papadopoulos', email:'nikos.p@gmail.com',       type:'vip',     section:'VIP Section A',     bookedAt:'Feb 14', orderRef:'ZOI-ORD-2026-1841', diet:''},
-  {id:2,  first:'Maria',     last:'Konstantinou', email:'maria.k@hotmail.com',      type:'general', section:'GA Mid-Left',        bookedAt:'Feb 15', orderRef:'ZOI-ORD-2026-2057', diet:'Vegetarian'},
+  {id:1,  first:'Nikos',     last:'Papadopoulos', email:'nikos.p@example.com',       type:'vip',     section:'VIP Section A',     bookedAt:'Feb 14', orderRef:'ZOI-ORD-2026-1841', diet:''},
+  {id:2,  first:'Maria',     last:'Konstantinou', email:'maria.k@example.com',      type:'general', section:'GA Mid-Left',        bookedAt:'Feb 15', orderRef:'ZOI-ORD-2026-2057', diet:'Vegetarian'},
   {id:3,  first:'Stavros',   last:'Georgiou',     email:'stavros@zoiapp.ca',        type:'vip',     section:'VIP Section A',     bookedAt:'Feb 16', orderRef:'ZOI-ORD-2026-2193', diet:''},
-  {id:4,  first:'Elena',     last:'Dimitriou',    email:'elena.d@gmail.com',        type:'general', section:'GA Mid-Left',        bookedAt:'Feb 17', orderRef:'ZOI-ORD-2026-2340', diet:'Gluten-Free'},
-  {id:5,  first:'Andreas',   last:'Alexandrou',   email:'a.alexandrou@gmail.com',   type:'table',   section:'Reserved Table A',  bookedAt:'Feb 18', orderRef:'ZOI-ORD-2026-2488', diet:''},
-  {id:6,  first:'Sofia',     last:'Nikolaou',     email:'sofia.n@yahoo.ca',         type:'student', section:'Student Zone',       bookedAt:'Feb 19', orderRef:'ZOI-ORD-2026-2601', diet:'Vegan'},
-  {id:7,  first:'Petros',    last:'Christodoulou',email:'petros.c@gmail.com',       type:'general', section:'GA Mid-Left',        bookedAt:'Feb 20', orderRef:'ZOI-ORD-2026-2734', diet:''},
-  {id:8,  first:'Katerina',  last:'Stavridis',    email:'katerina.s@hotmail.com',   type:'vip',     section:'VIP Section B',     bookedAt:'Feb 21', orderRef:'ZOI-ORD-2026-2865', diet:'No Shellfish'},
-  {id:9,  first:'Giorgos',   last:'Papageorgiou', email:'g.papageorgiou@gmail.com', type:'general', section:'GA Mid-Right',       bookedAt:'Feb 22', orderRef:'ZOI-ORD-2026-2991', diet:''},
-  {id:10, first:'Despina',   last:'Vasiliou',     email:'despina.v@gmail.com',      type:'student', section:'Student Zone',       bookedAt:'Feb 23', orderRef:'ZOI-ORD-2026-3108', diet:''},
-  {id:11, first:'Kostas',    last:'Anagnostou',   email:'kostas.a@icloud.com',      type:'general', section:'GA Mid-Left',        bookedAt:'Feb 24', orderRef:'ZOI-ORD-2026-3219', diet:'Vegetarian'},
-  {id:12, first:'Zoe',       last:'Makris',       email:'zoe.makris@gmail.com',     type:'vip',     section:'VIP Section A',     bookedAt:'Feb 25', orderRef:'ZOI-ORD-2026-3342', diet:''},
-  {id:13, first:'Thanasis',  last:'Economou',     email:'thanasis.e@gmail.com',     type:'general', section:'GA Front-Left',      bookedAt:'Feb 26', orderRef:'ZOI-ORD-2026-3461', diet:''},
-  {id:14, first:'Ioanna',    last:'Petridis',     email:'ioanna.p@rogers.com',      type:'table',   section:'Reserved Table B',  bookedAt:'Feb 27', orderRef:'ZOI-ORD-2026-3580', diet:'Halal'},
-  {id:15, first:'Manolis',   last:'Karagiannidis',email:'manolis.k@gmail.com',      type:'general', section:'GA Mid-Right',       bookedAt:'Feb 28', orderRef:'ZOI-ORD-2026-3697', diet:''},
-  {id:16, first:'Christina', last:'Theodorou',    email:'christina.t@gmail.com',    type:'student', section:'Student Zone',       bookedAt:'Mar 1',  orderRef:'ZOI-ORD-2026-3814', diet:'Gluten-Free'},
-  {id:17, first:'Spyros',    last:'Papadimitriou',email:'spyros.p@outlook.com',     type:'general', section:'GA Mid-Left',        bookedAt:'Mar 2',  orderRef:'ZOI-ORD-2026-3928', diet:''},
-  {id:18, first:'Vicky',     last:'Laskaris',     email:'vicky.l@gmail.com',        type:'vip',     section:'VIP Section B',     bookedAt:'Mar 3',  orderRef:'ZOI-ORD-2026-4045', diet:''},
-  {id:19, first:'Dimitris',  last:'Oikonomidis',  email:'dimitris.o@gmail.com',     type:'general', section:'GA Back',            bookedAt:'Mar 4',  orderRef:'ZOI-ORD-2026-4162', diet:''},
-  {id:20, first:'Aggeliki',  last:'Fountoulakis', email:'aggeliki.f@gmail.com',     type:'student', section:'Student Zone',       bookedAt:'Mar 5',  orderRef:'ZOI-ORD-2026-4279', diet:'Vegan'},
-  {id:21, first:'Vasilis',   last:'Tsakiris',     email:'vasilis.t@bell.net',       type:'general', section:'GA Mid-Right',       bookedAt:'Mar 6',  orderRef:'ZOI-ORD-2026-4390', diet:''},
-  {id:22, first:'Eleni',     last:'Samaras',      email:'eleni.s@gmail.com',        type:'table',   section:'Reserved Table A',  bookedAt:'Mar 7',  orderRef:'ZOI-ORD-2026-4511', diet:''},
-  {id:23, first:'Panagiotis',last:'Voulgaris',    email:'p.voulgaris@gmail.com',    type:'general', section:'GA Front-Left',      bookedAt:'Mar 8',  orderRef:'ZOI-ORD-2026-4628', diet:'No Shellfish'},
-  {id:24, first:'Daphne',    last:'Hatzidakis',   email:'daphne.h@gmail.com',       type:'vip',     section:'VIP Section A',     bookedAt:'Mar 9',  orderRef:'ZOI-ORD-2026-4745', diet:''},
-  {id:25, first:'Alexandros',last:'Papadakis',    email:'alex.p@gmail.com',         type:'general', section:'GA Mid-Left',        bookedAt:'Mar 10', orderRef:'ZOI-ORD-2026-4862', diet:''},
-  {id:26, first:'Irene',     last:'Tsolakis',     email:'irene.t@yahoo.ca',         type:'student', section:'Student Zone',       bookedAt:'Mar 11', orderRef:'ZOI-ORD-2026-4979', diet:'Vegetarian'},
-  {id:27, first:'Michalis',  last:'Stephanidis',  email:'m.stephanidis@gmail.com',  type:'general', section:'GA Mid-Right',       bookedAt:'Mar 12', orderRef:'ZOI-ORD-2026-5096', diet:''},
-  {id:28, first:'Theodora',  last:'Karakostas',   email:'theodora.k@gmail.com',     type:'vip',     section:'VIP Section B',     bookedAt:'Mar 13', orderRef:'ZOI-ORD-2026-5213', diet:'Gluten-Free'},
-  {id:29, first:'Stelios',   last:'Papantoniou',  email:'stelios.p@gmail.com',      type:'general', section:'GA Front-Right',     bookedAt:'Mar 14', orderRef:'ZOI-ORD-2026-5330', diet:''},
-  {id:30, first:'Penelope',  last:'Arvanitakis',  email:'penelope.a@gmail.com',     type:'table',   section:'Reserved Table B',  bookedAt:'Mar 15', orderRef:'ZOI-ORD-2026-5447', diet:''},
+  {id:4,  first:'Elena',     last:'Dimitriou',    email:'elena.d@example.com',        type:'general', section:'GA Mid-Left',        bookedAt:'Feb 17', orderRef:'ZOI-ORD-2026-2340', diet:'Gluten-Free'},
+  {id:5,  first:'Andreas',   last:'Alexandrou',   email:'a.alexandrou@example.com',   type:'table',   section:'Reserved Table A',  bookedAt:'Feb 18', orderRef:'ZOI-ORD-2026-2488', diet:''},
+  {id:6,  first:'Sofia',     last:'Nikolaou',     email:'sofia.n@example.com',         type:'student', section:'Student Zone',       bookedAt:'Feb 19', orderRef:'ZOI-ORD-2026-2601', diet:'Vegan'},
+  {id:7,  first:'Petros',    last:'Christodoulou',email:'petros.c@example.com',       type:'general', section:'GA Mid-Left',        bookedAt:'Feb 20', orderRef:'ZOI-ORD-2026-2734', diet:''},
+  {id:8,  first:'Katerina',  last:'Stavridis',    email:'katerina.s@example.com',   type:'vip',     section:'VIP Section B',     bookedAt:'Feb 21', orderRef:'ZOI-ORD-2026-2865', diet:'No Shellfish'},
+  {id:9,  first:'Giorgos',   last:'Papageorgiou', email:'g.papageorgiou@example.com', type:'general', section:'GA Mid-Right',       bookedAt:'Feb 22', orderRef:'ZOI-ORD-2026-2991', diet:''},
+  {id:10, first:'Despina',   last:'Vasiliou',     email:'despina.v@example.com',      type:'student', section:'Student Zone',       bookedAt:'Feb 23', orderRef:'ZOI-ORD-2026-3108', diet:''},
+  {id:11, first:'Kostas',    last:'Anagnostou',   email:'kostas.a@example.com',      type:'general', section:'GA Mid-Left',        bookedAt:'Feb 24', orderRef:'ZOI-ORD-2026-3219', diet:'Vegetarian'},
+  {id:12, first:'Zoe',       last:'Makris',       email:'zoe.makris@example.com',     type:'vip',     section:'VIP Section A',     bookedAt:'Feb 25', orderRef:'ZOI-ORD-2026-3342', diet:''},
+  {id:13, first:'Thanasis',  last:'Economou',     email:'thanasis.e@example.com',     type:'general', section:'GA Front-Left',      bookedAt:'Feb 26', orderRef:'ZOI-ORD-2026-3461', diet:''},
+  {id:14, first:'Ioanna',    last:'Petridis',     email:'ioanna.p@example.com',      type:'table',   section:'Reserved Table B',  bookedAt:'Feb 27', orderRef:'ZOI-ORD-2026-3580', diet:'Halal'},
+  {id:15, first:'Manolis',   last:'Karagiannidis',email:'manolis.k@example.com',      type:'general', section:'GA Mid-Right',       bookedAt:'Feb 28', orderRef:'ZOI-ORD-2026-3697', diet:''},
+  {id:16, first:'Christina', last:'Theodorou',    email:'christina.t@example.com',    type:'student', section:'Student Zone',       bookedAt:'Mar 1',  orderRef:'ZOI-ORD-2026-3814', diet:'Gluten-Free'},
+  {id:17, first:'Spyros',    last:'Papadimitriou',email:'spyros.p@example.com',     type:'general', section:'GA Mid-Left',        bookedAt:'Mar 2',  orderRef:'ZOI-ORD-2026-3928', diet:''},
+  {id:18, first:'Vicky',     last:'Laskaris',     email:'vicky.l@example.com',        type:'vip',     section:'VIP Section B',     bookedAt:'Mar 3',  orderRef:'ZOI-ORD-2026-4045', diet:''},
+  {id:19, first:'Dimitris',  last:'Oikonomidis',  email:'dimitris.o@example.com',     type:'general', section:'GA Back',            bookedAt:'Mar 4',  orderRef:'ZOI-ORD-2026-4162', diet:''},
+  {id:20, first:'Aggeliki',  last:'Fountoulakis', email:'aggeliki.f@example.com',     type:'student', section:'Student Zone',       bookedAt:'Mar 5',  orderRef:'ZOI-ORD-2026-4279', diet:'Vegan'},
+  {id:21, first:'Vasilis',   last:'Tsakiris',     email:'vasilis.t@example.com',       type:'general', section:'GA Mid-Right',       bookedAt:'Mar 6',  orderRef:'ZOI-ORD-2026-4390', diet:''},
+  {id:22, first:'Eleni',     last:'Samaras',      email:'eleni.s@example.com',        type:'table',   section:'Reserved Table A',  bookedAt:'Mar 7',  orderRef:'ZOI-ORD-2026-4511', diet:''},
+  {id:23, first:'Panagiotis',last:'Voulgaris',    email:'p.voulgaris@example.com',    type:'general', section:'GA Front-Left',      bookedAt:'Mar 8',  orderRef:'ZOI-ORD-2026-4628', diet:'No Shellfish'},
+  {id:24, first:'Daphne',    last:'Hatzidakis',   email:'daphne.h@example.com',       type:'vip',     section:'VIP Section A',     bookedAt:'Mar 9',  orderRef:'ZOI-ORD-2026-4745', diet:''},
+  {id:25, first:'Alexandros',last:'Papadakis',    email:'alex.p@example.com',         type:'general', section:'GA Mid-Left',        bookedAt:'Mar 10', orderRef:'ZOI-ORD-2026-4862', diet:''},
+  {id:26, first:'Irene',     last:'Tsolakis',     email:'irene.t@example.com',         type:'student', section:'Student Zone',       bookedAt:'Mar 11', orderRef:'ZOI-ORD-2026-4979', diet:'Vegetarian'},
+  {id:27, first:'Michalis',  last:'Stephanidis',  email:'m.stephanidis@example.com',  type:'general', section:'GA Mid-Right',       bookedAt:'Mar 12', orderRef:'ZOI-ORD-2026-5096', diet:''},
+  {id:28, first:'Theodora',  last:'Karakostas',   email:'theodora.k@example.com',     type:'vip',     section:'VIP Section B',     bookedAt:'Mar 13', orderRef:'ZOI-ORD-2026-5213', diet:'Gluten-Free'},
+  {id:29, first:'Stelios',   last:'Papantoniou',  email:'stelios.p@example.com',      type:'general', section:'GA Front-Right',     bookedAt:'Mar 14', orderRef:'ZOI-ORD-2026-5330', diet:''},
+  {id:30, first:'Penelope',  last:'Arvanitakis',  email:'penelope.a@example.com',     type:'table',   section:'Reserved Table B',  bookedAt:'Mar 15', orderRef:'ZOI-ORD-2026-5447', diet:''},
 ];
 const checkedIn = {};
 
