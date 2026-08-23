@@ -118,3 +118,19 @@ test('the behavioural test file still covers the attacks that matter', () => {
     assert.ok(tests.includes(attack), `the Deno tests must still cover ${attack}`);
   }
 });
+
+test('the worker authenticates its caller rather than trusting a deploy flag', () => {
+  // Deployed with --no-verify-jwt this would otherwise be an open crawl trigger:
+  // anyone could make us fetch other people's sites from our address, under our
+  // User-Agent, as often as they liked.
+  assert.match(worker, /function authorised\(req: Request\)/, 'there must be a caller check');
+  assert.match(worker, /if \(!authorised\(req\)\)/, 'and it must run before anything else');
+  assert.match(worker, /status: 401/, 'an unauthorised caller gets 401');
+  assert.match(worker, /timingSafeEqual/, 'the token compare must not short-circuit');
+  // The check must come before the queue is ever read. Compare against the
+  // actual call site, not the mention of enrich_queue in the header comment.
+  const call = worker.indexOf('sbRpc("enrich_queue"');
+  const check = worker.indexOf('if (!authorised(req))');
+  assert.ok(call > 0 && check > 0, 'both the check and the call must exist');
+  assert.ok(check < call, 'authentication must precede any work');
+});

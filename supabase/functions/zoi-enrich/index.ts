@@ -429,8 +429,38 @@ function extract(doc: string, finalUrl: string) {
   return { profile, provenance, aggregator: isAgg, host };
 }
 
+/* ── caller authentication ──────────────────────────────────────────────────
+   Security must not depend on a deploy flag. Deployed with --no-verify-jwt this
+   endpoint would otherwise be an open crawl trigger: anyone could make Zoi fetch
+   other people's websites on demand, repeatedly, from our address and under our
+   User-Agent. That is our reputation and our egress, not theirs to spend.
+
+   So the worker checks for itself. Only the service role key gets in, which is
+   what the scheduler already has. */
+function timingSafeEqual(a: string, b: string): boolean {
+  // Same length check first is unavoidable; the loop below then does not
+  // short-circuit on the first differing byte.
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  return diff === 0;
+}
+
+function authorised(req: Request): boolean {
+  const raw = req.headers.get("authorization") || "";
+  const token = raw.replace(/^Bearer\s+/i, "").trim();
+  if (!token || !SERVICE) return false;
+  return timingSafeEqual(token, SERVICE);
+}
+
 /* ── the run ────────────────────────────────────────────────────────────── */
 Deno.serve(async (req) => {
+  if (!authorised(req)) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "unauthorised" }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
   if (!ENABLED) {
     // Fail closed, like the other six side-effect functions.
     return new Response(
