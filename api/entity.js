@@ -17,18 +17,64 @@ async function rpc(fn, body) {
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function attr(s){return esc(s);}
 function pretty(slug){return (slug||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+/* schema.org type per vertical. Collapsing five entity types into
+ * LocalBusiness was throwing away the structured data that makes these pages
+ * eligible for rich results at all. Refined by entity_type first, then by
+ * category_slug. */
+/* Public URLs never contain underscores. `travel_place` is the only offender
+ * in the taxonomy; the underscore form 301s to this. */
+function typeSlug(t){ t=String(t||'p'); return t==='travel_place' ? 'travel-place' : t; }
+
 function schemaType(e){
-  var t=e.entity_type, c=e.category_slug||'';
+  var t=String(e.entity_type||'').toLowerCase(), c=String(e.category_slug||'').toLowerCase();
+  // category wins where it is more specific than the type
+  if(/restaurant|taverna|meze|ouzer|grill|souvla|estiatorio|dining/.test(c)) return 'Restaurant';
+  if(/baker|patisserie|zaxarop|pastry/.test(c)) return 'Bakery';
+  if(/cafe|coffee|kafeneio/.test(c)) return 'CafeOrCoffeeShop';
+  if(/hotel|resort|guesthouse/.test(c)) return 'Hotel';
+  if(/villa|rooms|apartment|accommodation/.test(c)) return 'LodgingBusiness';
+  if(/law|legal|attorney|solicitor|barrister/.test(c)) return 'Attorney';
+  if(/dental|dentist/.test(c)) return 'Dentist';
+  if(/doctor|medical|clinic|physio|health/.test(c)) return 'MedicalClinic';
+  if(/account|tax|book-?keep/.test(c)) return 'AccountingService';
+  if(/real-?estate|realtor/.test(c)) return 'RealEstateAgent';
+  if(/insur/.test(c)) return 'InsuranceAgency';
+  if(/financ|mortgage|invest/.test(c)) return 'FinancialService';
+  if(/architect|engineer/.test(c)) return 'ProfessionalService';
+  if(/jewel/.test(c)) return 'JewelryStore';
+  if(/wine|liquor|spirits/.test(c)) return 'LiquorStore';
+  if(/market|grocer|deli|butcher|fish|olive|honey|specialty|food|import/.test(c)) return 'GroceryStore';
+  if(/music|singer|band|bouzouki|composer|\bdj\b|djs/.test(c)) return 'MusicGroup';
+  if(/radio|podcast|broadcast/.test(c)) return 'RadioStation';
+  // then the entity type
   if(t==='church') return 'Church';
   if(t==='school') return 'School';
-  if(t==='event') return 'Event';
-  if(t==='organization') return 'Organization';
-  if(/restaurant|taverna|meze|ouzo/.test(c)) return 'Restaurant';
-  if(/baker/.test(c)) return 'Bakery';
-  if(/cafe|coffee/.test(c)) return 'CafeOrCoffeeShop';
-  if(/hotel/.test(c)) return 'Hotel';
+  if(t==='event') return /festival|panigiri/.test(c) ? 'Festival' : 'Event';
+  if(t==='organization') return 'NGO';
+  if(t==='venue') return 'EventVenue';
+  if(t==='sports') return 'SportsTeam';
+  if(t==='travel_place') return 'TouristAttraction';
+  if(t==='vendor') return 'Store';
+  if(t==='artist') return 'MusicGroup';
+  if(t==='creator') return 'Person';
+  if(t==='professional') return 'ProfessionalService';
   return 'LocalBusiness';
 }
+
+/* Reviews and ratings are a hard NO for whole verticals, not a preference:
+ * AHPRA bans patient testimonials in health advertising (AU/NZ), legal
+ * advertising rules bite on outcome-implying testimonials, and the financial
+ * regimes require conflict disclosure we do not have. Enforced in the
+ * renderer so no data path can turn them on. */
+function reviewsAllowed(e){
+  var t=String(e.entity_type||'').toLowerCase(), c=String(e.category_slug||'').toLowerCase();
+  if(/dental|dentist|doctor|medical|clinic|physio|health|pharmac/.test(c)) return false;
+  if(/law|legal|attorney|solicitor|barrister/.test(c)) return false;
+  if(/insur|financ|mortgage|invest|advis/.test(c)) return false;
+  if(t==='church') return false;
+  return true;
+}
+
 function socialArr(e){
   var sl=e.social_links||{}, a=[]; if(e.website) a.push(e.website);
   ['instagram','facebook','tiktok','youtube','twitter','linkedin','spotify'].forEach(function(k){ if(sl[k]){ var v=sl[k]; if(/^https?:/.test(v)) a.push(v); } });
@@ -46,13 +92,28 @@ function jsonld(e,url){
   if(e.latitude!=null&&e.longitude!=null) o.geo={ '@type':'GeoCoordinates', latitude:e.latitude, longitude:e.longitude };
   if(e.phone) o.telephone=e.phone;
   if(e.price_range) o.priceRange=e.price_range;
-  if(e.rating!=null && e.rating_count!=null && e.rating_count>0) o.aggregateRating={ '@type':'AggregateRating', ratingValue:e.rating, reviewCount:e.rating_count };
+  if(reviewsAllowed(e) && e.rating!=null && e.rating_count!=null && e.rating_count>0){
+    o.aggregateRating={ '@type':'AggregateRating', ratingValue:e.rating, reviewCount:e.rating_count };
+  }
+  // Languages are the diaspora conversion mechanism — a Greek-speaking lawyer is
+  // *why* someone picks this listing. First-class, not a chip.
+  var langs=(e.profile&&Array.isArray(e.profile.languages))?e.profile.languages:[];
+  if(langs.length){
+    o.knowsLanguage=langs.map(function(l){
+      if(typeof l==='string') return { '@type':'Language', name:l };
+      return { '@type':'Language', name:String(l.name||l.code||''), alternateName:String(l.code||'') };
+    }).filter(function(l){ return l.name; });
+  }
+  var areas=(e.profile&&Array.isArray(e.profile.service_areas))?e.profile.service_areas:[];
+  if(areas.length){
+    o.areaServed=areas.map(function(a){ return { '@type':'Place', name:String(a) }; });
+  }
   var sa=socialArr(e); if(sa.length) o.sameAs=sa;
   return JSON.stringify(o);
 }
 function page(e, related){
   var slug = e.canonical_slug || e.slug;
-  var url = SITE + '/' + encodeURIComponent(e.entity_type || 'p') + '/' + encodeURIComponent(slug);
+  var url = SITE + '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' + encodeURIComponent(slug);
   var picked = verticalFor(e), V = picked.v, sub = picked.sub;
   var p = profileOf(e);
   var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
@@ -112,7 +173,7 @@ function page(e, related){
     rel='<section class="sec"><h2>'+icon(IC.pin,'sech')+'More Greek '+esc(catLabel.toLowerCase())+(e.city?(' near '+esc(e.city)):'')+'</h2><div class="relgrid">';
     related.forEach(function(r){
       if(!r.slug) return;
-      var rh = SITE + '/' + encodeURIComponent(r.entity_type||'p') + '/' + encodeURIComponent(r.slug);
+      var rh = SITE + '/' + encodeURIComponent(typeSlug(r.entity_type)) + '/' + encodeURIComponent(r.slug);
       rel+='<a class="relcard" href="'+attr(rh)+'"><b>'+esc(r.name)+'</b>'+(r.city?('<span>'+esc(r.city)+'</span>'):'')+'</a>';
     });
     rel+='</div></section>';
@@ -242,6 +303,17 @@ export default async function handler(req, res) {
     if (!slug) { res.statusCode=404; res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
     var e = await rpc('seo_entity', { p_slug: slug });
     if (Array.isArray(e)) e = e[0];
+    // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
+    // live duplicates of every listing. Send the crawler to the one canonical URL.
+    if (e && e.name && req.query && req.query.canon) {
+      var target = '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' +
+        encodeURIComponent(e.canonical_slug || e.slug);
+      res.statusCode = 301;
+      res.setHeader('Location', target);
+      res.setHeader('Cache-Control', 'public, s-maxage=86400');
+      res.end('');
+      return;
+    }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Listing not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
     var related=[]; try { related = await rpc('seo_related', { p_slug: slug, p_limit: 8 }); if(!Array.isArray(related)) related=[]; } catch(e2) { related=[]; }
     res.statusCode=200;

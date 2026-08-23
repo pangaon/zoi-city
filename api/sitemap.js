@@ -40,7 +40,9 @@ export default async function handler(req, res) {
       seen[key] = 1;
       // Must match the canonical the entity page emits (/<type>/<slug>), or the
       // sitemap and the canonical tag disagree and crawl budget is wasted.
-      var loc = SITE + '/' + encodeURIComponent(r.entity_type || 'p') + '/' + encodeURIComponent(r.slug);
+      var t = String(r.entity_type || 'p');
+      if (t === 'travel_place') t = 'travel-place';   // no underscores in public URLs
+      var loc = SITE + '/' + encodeURIComponent(t) + '/' + encodeURIComponent(r.slug);
       var lm = iso(r.updated_at);
       out += '<url><loc>' + xesc(loc) + '</loc>' + (lm ? ('<lastmod>' + lm + '</lastmod>') : '') + '<changefreq>weekly</changefreq><priority>0.7</priority></url>\n';
     }

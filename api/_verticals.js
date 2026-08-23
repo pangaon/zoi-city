@@ -59,6 +59,151 @@ export function icon(d, cls) {
     'stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>';
 }
 
+/* ================= shared primitives =================
+ * Conventions that apply to every vertical, implemented once.
+ */
+
+/* HONESTY GUARD. An owner-editable JSONB blob must never be able to inject a
+ * rating, a review or a review count — those would flow into JSON-LD as
+ * unverifiable claims (and a Google policy violation). Ratings come from the
+ * entity row alone. Stripped before anything is rendered. */
+const BANNED_PROFILE_KEYS = /^(rating|rating_count|ratingvalue|reviewcount|aggregaterating|reviews?|stars|score)$/i;
+export function safeProfile(e) {
+  const raw = (e && e.profile && typeof e.profile === 'object' && !Array.isArray(e.profile)) ? e.profile : {};
+  const out = {};
+  for (const k of Object.keys(raw)) {
+    if (BANNED_PROFILE_KEYS.test(k)) continue;
+    out[k] = raw[k];
+  }
+  return out;
+}
+
+/* Bilingual convention: any display string may carry an `_el` sibling.
+ * We never machine-translate; we show what the owner wrote. */
+export function bi(obj, key) {
+  const en = str(obj && obj[key]);
+  const el = str(obj && obj[key + '_el']);
+  if (en && el) return esc(en) + ' <span lang="el" class="bi-el">' + esc(el) + '</span>';
+  if (en) return esc(en);
+  if (el) return '<span lang="el">' + esc(el) + '</span>';
+  return '';
+}
+
+const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+const DAY_LABEL = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
+const DAY_SCHEMA = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
+  fri: 'Friday', sat: 'Saturday', sun: 'Sunday' };
+function hhmm(v) { const m = /^(\d{1,2}):(\d{2})$/.exec(str(v)); return m ? (m[1].padStart(2, '0') + ':' + m[2]) : ''; }
+
+/* Machine hours -> display, grouping consecutive identical days:
+ * "Mon–Thu 17:00–23:00". Takes [{day,open,close,note}]. */
+export function hoursBlock(hours) {
+  const rows = arr(hours).map((h) => ({
+    day: str(h.day).slice(0, 3).toLowerCase(),
+    open: hhmm(h.open), close: hhmm(h.close), note: str(h.note),
+  })).filter((h) => DAYS.indexOf(h.day) >= 0 && h.open && h.close);
+  if (!rows.length) return '';
+  const byDay = {};
+  rows.forEach((r) => { (byDay[r.day] = byDay[r.day] || []).push(r); });
+  const sig = (d) => (byDay[d] || []).map((r) => r.open + '-' + r.close + '|' + r.note).join(',');
+  const groups = [];
+  for (const d of DAYS) {
+    if (!byDay[d]) { groups.push({ days: [d], closed: true }); continue; }
+    const last = groups[groups.length - 1];
+    if (last && !last.closed && sig(last.days[0]) === sig(d)) last.days.push(d);
+    else groups.push({ days: [d], closed: false });
+  }
+  // merge runs of closed days too
+  const merged = [];
+  for (const g of groups) {
+    const last = merged[merged.length - 1];
+    if (last && last.closed && g.closed) last.days.push(...g.days);
+    else merged.push(g);
+  }
+  return '<div class="sched">' + merged.map((g) => {
+    const label = g.days.length > 1
+      ? DAY_LABEL[g.days[0]] + '–' + DAY_LABEL[g.days[g.days.length - 1]]
+      : DAY_LABEL[g.days[0]];
+    if (g.closed) {
+      return '<div class="schrow closed"><span class="schday">' + label + '</span>' +
+        '<span class="schlabel">Closed</span><span class="schtime"></span></div>';
+    }
+    const spans = byDay[g.days[0]];
+    return '<div class="schrow"><span class="schday">' + label + '</span>' +
+      '<span class="schlabel">' + spans.map((r) => esc(r.open + '–' + r.close)).join(', ') +
+      (spans[0].note ? '<em>' + esc(spans[0].note) + '</em>' : '') + '</span>' +
+      '<span class="schtime"></span></div>';
+  }).join('') + '</div>';
+}
+
+/* Open-now, computed server-side in the venue's own timezone.
+ * A browser clock cannot be trusted for this and a wrong "Open" is a lie.
+ * Returns true | false | null (null = we cannot say). */
+export function openNow(hours, timezone) {
+  const rows = arr(hours);
+  if (!rows.length) return null;
+  const tz = str(timezone);
+  if (!tz) return null;
+  let parts;
+  try {
+    parts = new Intl.DateTimeFormat('en-GB', {
+      timeZone: tz, weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(new Date());
+  } catch (e) { return null; }
+  const get = (t) => (parts.find((x) => x.type === t) || {}).value || '';
+  const wd = get('weekday').slice(0, 3).toLowerCase();
+  const nowMin = (parseInt(get('hour'), 10) || 0) * 60 + (parseInt(get('minute'), 10) || 0);
+  const idx = DAYS.indexOf(wd);
+  if (idx < 0) return null;
+  const prevDay = DAYS[(idx + 6) % 7];
+  const toMin = (v) => { const m = /^(\d{2}):(\d{2})$/.exec(hhmm(v)); return m ? (+m[1] * 60 + +m[2]) : null; };
+  for (const h of rows) {
+    const d = str(h.day).slice(0, 3).toLowerCase();
+    const o = toMin(h.open), c = toMin(h.close);
+    if (o == null || c == null) continue;
+    if (c > o) { if (d === wd && nowMin >= o && nowMin < c) return true; }
+    else {
+      // spans midnight
+      if (d === wd && nowMin >= o) return true;
+      if (d === prevDay && nowMin < c) return true;
+    }
+  }
+  return false;
+}
+
+/* Seasonal gating, in the listing's timezone. An item whose window has passed
+ * is not rendered and not emitted as an offer — an expired offer is a false
+ * claim about what you can buy today. */
+export function todayISO(timezone) {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: str(timezone) || 'UTC', year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(new Date());
+  } catch (e) { return new Date().toISOString().slice(0, 10); }
+}
+export function inSeason(item, timezone) {
+  const today = todayISO(timezone);
+  const from = str(item && item.from), to = str(item && item.to);
+  if (from && /^\d{4}-\d{2}-\d{2}$/.test(from) && today < from) return false;
+  if (to && /^\d{4}-\d{2}-\d{2}$/.test(to) && today > to) return false;
+  return true;
+}
+export function seasonOf(list, timezone) {
+  return arr(list).filter((i) => inSeason(i, timezone));
+}
+
+/* Visible freshness stamp. A menu nobody has touched in two years is the main
+ * way a page starts lying, so we date it instead of hiding it. */
+export function freshness(dateStr, label) {
+  const d = str(dateStr);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return '';
+  let when = d;
+  try {
+    when = new Date(d + 'T00:00:00Z').toLocaleDateString('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+  } catch (e) { /* keep the ISO date */ }
+  return '<p class="fresh">' + esc((label || 'Updated') + ' ' + when) + '</p>';
+}
+
 /* ---------------- shared section builders ---------------- */
 function panel(title, iconPath, bodyHtml, opts) {
   if (!bodyHtml) return '';

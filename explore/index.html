@@ -363,7 +363,10 @@ function normCountry(v){
    `slug` always resolves, via the /:type/:slug rewrites. */
 function hrefFor(r){
   if(!r) return '/explore';
-  if(r.slug && r.entity_type) return '/'+encodeURIComponent(r.entity_type)+'/'+encodeURIComponent(r.slug);
+  if(r.slug && r.entity_type){
+    const t = r.entity_type==='travel_place' ? 'travel-place' : r.entity_type; // no underscores in URLs
+    return '/'+encodeURIComponent(t)+'/'+encodeURIComponent(r.slug);
+  }
   if(r.slug) return '/p/'+encodeURIComponent(r.slug);
   return r.path||'/explore';
 }

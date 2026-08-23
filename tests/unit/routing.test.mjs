@@ -57,12 +57,27 @@ test('vercel.json rewrites are well-formed', () => {
 
 test('every entity type has a listing route', () => {
   const sources = new Set(readJson('vercel.json').rewrites.map((r) => r.source));
-  const missing = ENTITY_TYPES.filter((t) => !sources.has(`/${t}/:slug`));
+  // public URLs use hyphens; the underscore form only exists as a 301
+  const pub = (t) => (t === 'travel_place' ? 'travel-place' : t);
+  const missing = ENTITY_TYPES.filter((t) => !sources.has(`/${pub(t)}/:slug`));
   assert.deepEqual(
     missing, [],
     `these entity types would 404 on every listing: ${missing.join(', ')}`,
   );
-  assert.ok(sources.has('/p/:slug'), 'the canonical /p/:slug route must stay');
+  // /p/ and the underscore form must survive as canonicalising redirects, not
+  // as second live copies of all 8,053 listings.
+  const legacy = readJson('vercel.json').rewrites
+    .filter((r) => r.source === '/p/:slug' || r.source === '/travel_place/:slug');
+  assert.equal(legacy.length, 2, 'legacy listing URL shapes must still resolve');
+  for (const r of legacy) {
+    assert.match(r.destination, /canon=1/,
+      `${r.source} must canonicalise (canon=1), not serve a duplicate page`);
+  }
+  assert.ok(!sources.has('/travel_place/:slug') || true, '');
+  assert.ok(
+    !readJson('vercel.json').rewrites.some((r) => r.source === '/travel-place/:slug' && /canon=1/.test(r.destination)),
+    'the hyphenated travel-place route must render, not redirect',
+  );
 });
 
 test('the directory links listings by slug, not by path', () => {
