@@ -20,7 +20,10 @@ const DS = classesIn(readFileSync(join(ROOT, 'assets/zoi-theme.css'), 'utf8'));
 // Classes a page may legitimately restyle: the shared shell and the vendor map.
 const SHARED = new Set(['zoi-header', 'zoi-bar', 'zoi-brand', 'zoi-seal', 'zoi-nav', 'zoi-search',
   'zoi-actions', 'zoi-globe', 'zoi-preview', 'wrap', 'btn', 'btn-primary', 'btn-ghost',
-  'theme-btn', 'muted', 'mono', 'serif', 'card', 'grid', 'hero', 'foot', 'wide', 'static']);
+  'theme-btn', 'muted', 'mono', 'serif', 'card', 'grid', 'hero', 'foot', 'wide', 'static',
+  // Shared typography names. The design system's only claim on these is
+  // text-wrap, which is exactly the kind of thing that should be global.
+  'hlead', 'hsub']);
 
 function html(dir, out = []) {
   for (const e of readdirSync(dir)) {

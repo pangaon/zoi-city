@@ -185,9 +185,7 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
    gold hairline that tracks scroll. All of it collapses under
    prefers-reduced-motion, which is honoured at the bottom of this file. */
 @media (prefers-reduced-motion: no-preference) {
-  [data-reveal]{opacity:0;transform:translateY(14px);
-    transition:opacity .55s var(--ease), transform .55s var(--ease)}
-  [data-reveal].in{opacity:1;transform:none}
+  /* reveal rules now live in the MOTION & LIGHT layer at the end of this file */
   .zoi-header{transition:box-shadow .3s var(--ease), background .3s var(--ease)}
   .zoi-header.stuck{box-shadow:0 10px 30px -18px rgba(0,0,0,.55)}
 }
@@ -241,3 +239,303 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
   .zoi-globe .gstats{gap:14px}
   .zoi-globe .gstats b{font-size:17px}
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOTION & LIGHT
+   ───────────────────────────────────────────────────────────────────────────
+   Everything below is progressive: each block is wrapped in @supports or a
+   reduced-motion guard, so a browser that lacks a feature — or a person who has
+   asked for stillness — gets the plain site with nothing broken and nothing
+   invisible.
+
+   Three rules this layer follows, because breaking them is how motion goes bad:
+
+   1. Reveals animate `translate` and `opacity`, never `transform`. `transform`
+      belongs to hover and press states. Animating both from two places means the
+      animation wins and hover silently dies.
+   2. Only compositor properties. No animated width, height, top, left, filter
+      or box-shadow anywhere in a loop.
+   3. Anything decorative is pointer-events:none and aria-hidden, and is
+      `contain`ed so it cannot trigger layout on the rest of the page.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* One easing vocabulary, so the whole site moves like one product.
+     --ease is the existing house curve; these are its siblings. */
+  --ease-out:cubic-bezier(.16,1,.3,1);        /* entrances: fast then settle */
+  --ease-spring:cubic-bezier(.34,1.56,.64,1); /* press/release: slight overshoot */
+  --ease-in-out:cubic-bezier(.65,0,.35,1);    /* moves between two rest states */
+  --t-fast:.16s; --t:.28s; --t-slow:.5s;
+}
+
+/* ── 1. Cross-document view transitions ────────────────────────────────────
+   Navigating between pages stops looking like a page load. The header and the
+   brand mark are named, so they persist across the navigation instead of
+   flickering out and back in. */
+@view-transition{ navigation:auto; }
+
+@media (prefers-reduced-motion: no-preference){
+  ::view-transition-old(root){
+    animation:vt-out .18s var(--ease-in-out) both;
+  }
+  ::view-transition-new(root){
+    animation:vt-in .34s var(--ease-out) both;
+  }
+  @keyframes vt-out{ to{ opacity:0; translate:0 -6px; } }
+  @keyframes vt-in{ from{ opacity:0; translate:0 10px; } }
+
+  /* Persist the shell. A shared name means the browser morphs the element
+     between documents rather than cross-fading the whole viewport. */
+  .zoi-header{ view-transition-name:zoi-header; }
+  .zoi-brand{ view-transition-name:zoi-brand; }
+  .zoi-prog{ view-transition-name:zoi-prog; }
+  ::view-transition-group(zoi-header),
+  ::view-transition-group(zoi-brand){ animation-duration:.3s; }
+}
+
+/* ── 2. Scroll-driven reveals, in CSS ──────────────────────────────────────
+   The old version was an IntersectionObserver that toggled a class, which meant
+   content was opacity:0 until JavaScript ran. This runs on the compositor, needs
+   no JS at all, and is tied to actual scroll position rather than a one-shot
+   trigger — so scrolling back up plays it back. */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    [data-reveal],
+    .zoi-rise{
+      animation:rise-in linear both;
+      animation-timeline:view();
+      /* `cover`, not `entry` — a correctness point, not taste. `entry` progress
+         can sit at 0% for an element that is already on screen: one taller than
+         the viewport, or one inside a nested scroller that has not been
+         scrolled. That leaves real content at opacity 0 with nothing to advance
+         it, which is precisely the intermittent blank-card bug this replaces.
+         `cover` spans the whole time the element overlaps its scrollport, so
+         anything visible is always past 0%. Settling by 22% means it has
+         finished moving long before you read it. */
+      animation-range:cover 0% cover 22%;
+    }
+    /* Belt and braces. The watchdog in zoi-theme.js sets this on anything that
+       is still transparent once the page has settled, whatever the cause. No
+       visitor is ever shown blank space where content should be. */
+    [data-reveal][data-reveal-off], .zoi-rise[data-reveal-off],
+    .zoi-stagger > [data-reveal-off], .zoi-wipe[data-reveal-off]{
+      animation:none !important; opacity:1 !important;
+      translate:none !important; clip-path:none !important;
+    }
+    @keyframes rise-in{
+      from{ opacity:0; translate:0 18px; }
+      to  { opacity:1; translate:0 0; }
+    }
+
+    /* Children cascade instead of arriving as one block. --i is set by
+       zoi-theme.js; without it every child simply shares the parent's range. */
+    .zoi-stagger > *{
+      animation:rise-in linear both;
+      animation-timeline:view();
+      animation-range:cover calc(0% + var(--i,0) * 2%) cover calc(24% + var(--i,0) * 2%);
+    }
+
+    /* Section headings get a mask wipe rather than a fade — it reads as
+       deliberate typesetting instead of a generic fade-in. */
+    .zoi-wipe{
+      animation:wipe linear both;
+      animation-timeline:view();
+      animation-range:cover 0% cover 24%;
+    }
+    @keyframes wipe{
+      from{ clip-path:inset(0 100% 0 0); opacity:.4; }
+      to  { clip-path:inset(0 0 0 0);    opacity:1; }
+    }
+
+    /* Slow parallax drift for anything marked as a backdrop. */
+    .zoi-parallax{
+      animation:drift linear both;
+      animation-timeline:view();
+      animation-range:cover;
+    }
+    @keyframes drift{ from{ translate:0 -3%; } to{ translate:0 3%; } }
+  }
+}
+
+/* Fallback for browsers without scroll-driven animations: keep the old
+   JS-driven class, but ONLY when the CSS path is unavailable, so the two can
+   never fight over the same element. */
+@supports not (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    [data-reveal]{ opacity:0; translate:0 14px;
+      transition:opacity .5s var(--ease-out), translate .5s var(--ease-out); }
+    [data-reveal].in{ opacity:1; translate:0 0; }
+  }
+}
+
+/* ── 3. The light field ───────────────────────────────────────────────────
+   Replaces a `.glow` div that rendered nothing. Three soft brand-coloured
+   lights drifting behind the page: it gives black a sense of depth and stops
+   large dark areas reading as empty.
+
+   Deliberately no `filter: blur()` — a blurred 1200px layer is expensive on
+   every frame. Radial gradients with soft stops are already smooth and cost
+   nothing to composite. */
+.zoi-light{
+  position:fixed; inset:0; z-index:-1; pointer-events:none;
+  contain:strict; overflow:hidden;
+}
+.zoi-light i{
+  position:absolute; display:block; border-radius:50%;
+  opacity:var(--o,.5); will-change:transform;
+}
+.zoi-light i:nth-child(1){
+  width:76vmax; height:76vmax; left:-24vmax; top:-30vmax; --o:.5;
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--acc) 42%, transparent) 0%,
+    color-mix(in oklab, var(--acc) 12%, transparent) 38%, transparent 68%);
+}
+.zoi-light i:nth-child(2){
+  width:62vmax; height:62vmax; right:-22vmax; top:-6vmax; --o:.42;
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--gold) 46%, transparent) 0%,
+    color-mix(in oklab, var(--gold) 12%, transparent) 40%, transparent 70%);
+}
+.zoi-light i:nth-child(3){
+  width:54vmax; height:54vmax; left:18vmax; bottom:-30vmax; --o:.3;
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--green) 40%, transparent) 0%,
+    transparent 66%);
+}
+[data-theme="light"] .zoi-light i{ opacity:calc(var(--o) * .5); }
+[data-theme="gold"] .zoi-light i:nth-child(1){
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--gold) 34%, transparent) 0%, transparent 66%);
+}
+@media (prefers-reduced-motion: no-preference){
+  .zoi-light i:nth-child(1){ animation:float-a 34s var(--ease-in-out) infinite alternate; }
+  .zoi-light i:nth-child(2){ animation:float-b 44s var(--ease-in-out) infinite alternate; }
+  .zoi-light i:nth-child(3){ animation:float-c 52s var(--ease-in-out) infinite alternate; }
+  @keyframes float-a{ to{ transform:translate3d(9vmax,7vmax,0) scale(1.14); } }
+  @keyframes float-b{ to{ transform:translate3d(-11vmax,5vmax,0) scale(1.08); } }
+  @keyframes float-c{ to{ transform:translate3d(7vmax,-8vmax,0) scale(1.18); } }
+}
+/* No stacking override needed on page content: a negative z-index child paints
+   above its parent's background and below in-flow content, which is exactly
+   where a backdrop belongs. Forcing position:relative on every body child would
+   have quietly changed stacking on pages that never asked for it. */
+
+/* ── 4. Grain ─────────────────────────────────────────────────────────────
+   A single inline SVG turbulence tile. It costs one small decode and stops
+   large flat fills and gradients from banding, which is most of why a dark
+   site looks cheap. */
+.zoi-grain{
+  position:fixed; inset:0; z-index:2; pointer-events:none; contain:strict;
+  opacity:.032; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme="light"] .zoi-grain{ opacity:.05; mix-blend-mode:multiply; }
+
+/* ── 5. Surfaces that respond ─────────────────────────────────────────────
+   A specular highlight that follows the pointer. --mx/--my are written by one
+   delegated listener in zoi-theme.js; with no JS the card is simply a card. */
+.zoi-lit{ position:relative; isolation:isolate; }
+.zoi-lit::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; z-index:0;
+  pointer-events:none; opacity:0; transition:opacity var(--t) var(--ease-out);
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),
+    color-mix(in oklab, var(--tx) 9%, transparent), transparent 62%);
+}
+.zoi-lit:hover::before, .zoi-lit:focus-within::before{ opacity:1; }
+[data-theme="light"] .zoi-lit::before{
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),
+    color-mix(in oklab, var(--acc) 10%, transparent), transparent 62%);
+}
+/* Keep real content above the highlight. */
+.zoi-lit > *{ position:relative; z-index:1; }
+
+/* Press states. Cheap, and it is most of what makes an interface feel physical
+   rather than like a document. */
+@media (hover:hover){
+  .btn, .zoi-lit, .chip, button, [role="button"]{
+    transition:transform var(--t-fast) var(--ease-spring),
+               border-color var(--t) var(--ease-out),
+               background-color var(--t) var(--ease-out),
+               color var(--t) var(--ease-out),
+               box-shadow var(--t) var(--ease-out);
+  }
+  .btn:active, button:active, [role="button"]:active{ transform:scale(.97); }
+}
+
+/* Focus that looks designed rather than defaulted. */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:2px solid color-mix(in oklab, var(--acc) 80%, transparent);
+  outline-offset:2px; border-radius:6px;
+}
+
+/* ── 6. Entrances for content that arrives after load ─────────────────────
+   Anything inserted by script animates in on its own, with no class to add and
+   no timer to coordinate. */
+@supports (transition-behavior: allow-discrete){
+  @media (prefers-reduced-motion: no-preference){
+    .zoi-pop{
+      transition:opacity var(--t) var(--ease-out), translate var(--t) var(--ease-out),
+                 display var(--t) allow-discrete;
+    }
+    @starting-style{ .zoi-pop{ opacity:0; translate:0 8px; } }
+  }
+}
+
+/* ── 7. The meander ───────────────────────────────────────────────────────
+   The Greek key, drawn as a stroke that writes itself in. It is the one piece
+   of ornament here that could not belong to any other product. */
+.zoi-meander{ display:block; width:100%; height:14px; overflow:visible; }
+.zoi-meander path{
+  fill:none; stroke:color-mix(in oklab, var(--gold) 62%, transparent);
+  stroke-width:1.4; stroke-linecap:square; stroke-linejoin:miter;
+  vector-effect:non-scaling-stroke;
+}
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .zoi-meander path{
+      stroke-dasharray:var(--len,1400); stroke-dashoffset:var(--len,1400);
+      animation:draw linear both; animation-timeline:view(); animation-range:cover 0% cover 55%;
+    }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+}
+
+/* ── 8. Editorial layout ──────────────────────────────────────────────────
+   A uniform grid of equal cards reads as a template. This gives a run of cells
+   deliberate rhythm — one lead, then supporting pairs — without anyone having
+   to hand-place anything. */
+.zoi-mosaic{
+  display:grid; gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  grid-auto-rows:minmax(0,auto);
+}
+@media (min-width:900px){
+  .zoi-mosaic{ grid-template-columns:repeat(6,1fr); }
+  .zoi-mosaic > *{ grid-column:span 2; }
+  .zoi-mosaic > :nth-child(6n+1){ grid-column:span 4; }
+  .zoi-mosaic > :nth-child(6n+4){ grid-column:span 3; }
+  .zoi-mosaic > :nth-child(6n+5){ grid-column:span 3; }
+}
+
+/* ── 9. Typography in motion ──────────────────────────────────────────────
+   Words are wrapped by zoi-theme.js and rise from behind a mask. The mask is
+   what separates this from a fade: the letters look set, not faded up. */
+.zoi-words{ display:inline; }
+.zoi-words .zoi-w{ display:inline-block; overflow:hidden; vertical-align:top; }
+.zoi-words .zoi-w > span{ display:inline-block; will-change:transform; }
+@media (prefers-reduced-motion: no-preference){
+  .zoi-words .zoi-w > span{
+    animation:word-up .78s var(--ease-out) both;
+    animation-delay:calc(var(--i,0) * 42ms + 60ms);
+  }
+  @keyframes word-up{ from{ translate:0 105%; } to{ translate:0 0; } }
+}
+
+/* Long headings should not break into a one-word orphan line. */
+h1,h2,.hlead,.hsub{ text-wrap:balance; }
+p{ text-wrap:pretty; }
+
+/* ── 10. Long pages ───────────────────────────────────────────────────────
+   Skip rendering work for sections far off screen. Sizes are contained so this
+   cannot cause scrollbar jumping. */
+.zoi-defer{ content-visibility:auto; contain-intrinsic-size:auto 600px; }
