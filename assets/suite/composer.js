@@ -49,11 +49,17 @@
     twitter:   { key:'x',         name:'X',         limit:280,   trunc:280, color:'#111111' },
     linkedin:  { key:'linkedin',  name:'LinkedIn',  limit:3000,  trunc:210, color:'#0A66C2' },
     tiktok:    { key:'tiktok',    name:'TikTok',    limit:2200,  trunc:150, color:'#010101' },
-    youtube:   { key:'youtube',   name:'YouTube',   limit:5000,  trunc:157, color:'#FF0000' }
+    youtube:   { key:'youtube',   name:'YouTube',   limit:5000,  trunc:157, color:'#FF0000' },
+    /* Zoi's own feed. Every external network here reports available:false —
+       none has a registered developer app — so this is currently the only
+       channel the composer can actually deliver to. It needs no OAuth: the
+       person is already signed in to Zoi. */
+    zoi:       { key:'zoi',       name:'Zoi Community', limit:5000, trunc:280, color:'#4f9be8', own:true }
   };
 
   // Small inline SVG icons (24x24 viewBox path fragments) per platform key.
   var ICONS = {
+    zoi:       '<path d="M4 5h16v11a3 3 0 0 1-3 3H9l-5 4V5Z"/><path d="M8 10h8M8 13.5h5"/>',
     facebook:  '<path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.5h-1.2c-1.2 0-1.6.8-1.6 1.5V12h2.7l-.4 2.9h-2.3v7A10 10 0 0 0 22 12z"/>',
     instagram: '<path d="M12 2.2c3.2 0 3.6 0 4.9.07 1.2.06 1.8.26 2.2.43.6.22 1 .48 1.4.9.42.4.68.83.9 1.4.17.44.37 1.06.43 2.2.06 1.3.07 1.7.07 4.9s0 3.6-.07 4.9c-.06 1.2-.26 1.8-.43 2.2-.22.57-.48 1-.9 1.4-.4.42-.83.68-1.4.9-.44.17-1.06.37-2.2.43-1.3.06-1.7.07-4.9.07s-3.6 0-4.9-.07c-1.2-.06-1.8-.26-2.2-.43a3.9 3.9 0 0 1-1.4-.9c-.42-.4-.68-.83-.9-1.4-.17-.44-.37-1.06-.43-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.07-4.9c.06-1.2.26-1.8.43-2.2.22-.57.48-1 .9-1.4.4-.42.83-.68 1.4-.9.44-.17 1.06-.37 2.2-.43C8.4 2.2 8.8 2.2 12 2.2zm0 3.05A6.75 6.75 0 1 0 18.75 12 6.75 6.75 0 0 0 12 5.25zm0 11.14A4.39 4.39 0 1 1 16.39 12 4.39 4.39 0 0 1 12 16.39zm6.99-11.42a1.58 1.58 0 1 1-1.58-1.58 1.58 1.58 0 0 1 1.58 1.58z"/>',
     x:         '<path d="M17.5 3h3.1l-6.77 7.73L21.75 21H15.6l-4.82-6.3L5.28 21H2.17l7.24-8.27L2.25 3H8.5l4.36 5.77zM16.4 19.1h1.72L7.7 4.8H5.86z"/>',
@@ -1534,6 +1540,19 @@
     }
 
     /* ---------- gathering the payload ---------- */
+    /* The community channel is synthetic: there is no row in social_channels for
+       it because there is nothing to authorise. It is prepended so it reads as
+       the primary destination, which today it is. */
+    function withCommunity(rows) {
+      var out = (rows && rows.slice) ? rows.slice() : [];
+      if (out.some(function (c) { return normPlat(c.platform) === 'zoi'; })) return out;
+      out.unshift({
+        id: 'zoi', platform: 'zoi', connected: true, status: 'ready',
+        handle: 'zoi.city/community', display_name: 'Zoi Community', own: true
+      });
+      return out;
+    }
+
     function currentChannelIds() {
       return selectedChannels().map(function (ch) { return ch.id; });
     }
@@ -1698,7 +1717,8 @@
       return true;
     }
 
-    async function savePost(status, scheduledAtIso) {
+    async function savePost(status, scheduledAtIso, opts) {
+      opts = opts || {};
       var params = {
         p_workspace: ctx.ws,
         p_body: ta.value,
@@ -1712,6 +1732,32 @@
       };
       var res = await C.api.rpc('social_save_post', params, { auth: 'require' });
       if (res && res.id) state.editId = res.id;
+
+      /* Publishing to Zoi's own feed happens here and now, through feed_post,
+         which posts as the signed-in person — that is the only way the feed can
+         attribute a post correctly. External networks go through the scheduled
+         publisher; a SCHEDULED community post is picked up by
+         zoi-feed-publish, which uses the author recorded on the row.
+         A failure here must not lose the post: it is already saved above, so the
+         worst case is a saved post that did not appear in the feed, and we say
+         so rather than claiming success. */
+      var wantsCommunity = params.p_channels.indexOf('zoi') !== -1;
+      if (wantsCommunity && opts.publishNow) {
+        try {
+          var fed = await C.api.rpc('feed_post', {
+            p_body: ta.value,
+            p_listing: null,
+            p_nameday: null,
+            p_media: mediaJson()
+          }, { auth: 'require' });
+          res = res || {};
+          res.community = (fed && (fed.ok || fed.id)) ? 'posted' : 'rejected';
+        } catch (e) {
+          res = res || {};
+          res.community = 'failed';
+          res.communityError = (e && e.message) || 'unknown';
+        }
+      }
       return res;
     }
 
@@ -1719,10 +1765,26 @@
     function applyGating() {
       var pubBtn = q('publish');
       var note = q('publishnote');
-      if (!ctx.avail || !ctx.avail.publish) {
+      /* The old gate keyed off ctx.avail.publish alone, which is about external
+         networks. It disabled Publish even when the one channel that works was
+         selected — the flagship tool switched off while its only live destination
+         sat there unused. */
+      var comm = selectedChannels().some(function (ch) { return normPlat(ch.platform) === 'zoi'; });
+      var externals = selectedChannels().filter(function (ch) { return normPlat(ch.platform) !== 'zoi'; });
+      if (comm) {
+        pubBtn.disabled = false;
+        if (externals.length && !(ctx.avail && ctx.avail.publish)) {
+          note.style.display = 'block';
+          note.textContent = 'Publishing to Zoi Community now. The other networks you picked are not '
+            + 'connected yet, so this post will not reach them — connect them under Accounts.';
+        } else {
+          note.style.display = 'none';
+        }
+      } else if (!ctx.avail || !ctx.avail.publish) {
         pubBtn.disabled = true;
         note.style.display = 'block';
-        note.textContent = 'Connect your social accounts to publish. You can still schedule and save drafts now.';
+        note.textContent = 'No connected network selected. Pick Zoi Community to publish now, '
+          + 'or connect a social account under Accounts. You can still schedule and save drafts.';
       } else {
         pubBtn.disabled = false;
         note.style.display = 'none';
@@ -1882,12 +1944,31 @@
     }
 
     q('publish').addEventListener('click', function () {
-      if (!ctx.avail || !ctx.avail.publish) return; // gated
+      /* This used to return early on ctx.avail.publish, which is about EXTERNAL
+         networks. Combined with a button that applyGating() had enabled for the
+         community channel, the result was a live-looking button that did nothing
+         at all when clicked — the same failure the Connect buttons had. */
+      var wantsCommunity = selectedChannels().some(function (ch) { return normPlat(ch.platform) === 'zoi'; });
+      if (!wantsCommunity && (!ctx.avail || !ctx.avail.publish)) return;
       if (!validate(true)) return;
       withBusy(q('publish'), async function () {
         try {
-          await savePost('scheduled', new Date().toISOString());
-          toast('Publishing now — the queue will pick it up.');
+          /* Posting to Zoi's own feed happens now, in this request, as the
+             signed-in person. External networks still go through the queue, so a
+             mixed post is saved as scheduled for them and delivered immediately
+             to the feed. publishNow is explicit rather than inferred from the
+             status, because the status has to stay 'scheduled' for the external
+             publisher to pick the row up. */
+          var res = await savePost('scheduled', new Date().toISOString(), { publishNow: true });
+          if (res && res.community === 'posted') {
+            toast(wantsCommunity && selectedChannels().length > 1
+              ? 'Posted to Zoi Community. The other networks are queued.'
+              : 'Posted to Zoi Community.');
+          } else if (res && res.community === 'failed') {
+            toast('Saved, but it did not reach the feed: ' + (res.communityError || 'unknown error'));
+          } else {
+            toast('Publishing now — the queue will pick it up.');
+          }
         } catch (e) { toast(e.message || 'Could not publish.'); }
       });
     });
@@ -2002,14 +2083,35 @@
       // ctx.channels preferred; refresh in background if empty
       if (!state.channels.length) {
         try {
-          state.channels = (await C.api.rpc('social_channels_list', { p_workspace: ctx.ws }, { auth: 'prefer' })) || [];
-          state.channels.forEach(function (ch) { if (ch.connected && netFor(ch.platform)) state.selected[ch.id] = true; });
-        } catch (e) { state.channels = []; }
+          var rows = (await C.api.rpc('social_channels_list', { p_workspace: ctx.ws }, { auth: 'prefer' })) || [];
+          state.channels = withCommunity(rows);
+        } catch (e) {
+          // Even with no network at all, the community feed is still a valid
+          // destination — the composer should never present zero channels.
+          state.channels = withCommunity([]);
+        }
+        state.channels.forEach(function (ch) {
+          if (ch.connected && netFor(ch.platform)) state.selected[ch.id] = true;
+        });
+      } else {
+        state.channels = withCommunity(state.channels);
+        if (!Object.keys(state.selected).length) {
+          state.channels.forEach(function (ch) {
+            if (ch.connected && netFor(ch.platform)) state.selected[ch.id] = true;
+          });
+        }
       }
       renderChips();
+      applyGating();
     }
 
     /* ---------- initial render ---------- */
+    state.channels = withCommunity(state.channels);
+    state.channels.forEach(function (ch) {
+      if (ch.connected && netFor(ch.platform) && state.selected[ch.id] === undefined) {
+        state.selected[ch.id] = normPlat(ch.platform) === 'zoi';
+      }
+    });
     wireShortcuts();
     renderChips();
     renderMedia();
