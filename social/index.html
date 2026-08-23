@@ -92,6 +92,11 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 /* shell sits under the one global header (68px); the mobile drawer keeps its own offsets */
 #app{min-height:calc(100vh - 68px)}
 @media(min-width:861px){.side{top:68px;height:calc(100vh - 68px)}}
+
+.advlink{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 12px 6px;
+  padding:8px 11px;border:1px dashed var(--line2);border-radius:10px;color:var(--mut);font-size:12.5px;font-weight:600}
+.advlink:hover{color:var(--tx);border-color:var(--acc);border-style:solid}
+.advlink em{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
 </style>
 <script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');}catch(e){}})()</script>
 </head>
@@ -99,6 +104,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 <header class="zoi-header wide"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
   <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
   <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
 
@@ -229,6 +235,8 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
           '</div>'+
         '</div>'+
         '<nav class="nv" id="nav">'+navHtml+'</nav>'+
+        '<a class="advlink" href="/apps/business-pro/">Operator dashboard <em>preview</em></a>'+
+        '<a class="advlink" href="/apps/intelligence/">Intelligence <em>preview</em></a>'+
         '<div class="sfoot">'+
           '<button class="iconbtn" id="suiteThemeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">'+iconTheme()+'</button>'+
           '<button class="btn g" id="signout" style="flex:1;padding:9px">Sign out</button>'+

@@ -257,6 +257,18 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 .field{width:auto;background:none;border:0;border-radius:0;padding:0;font:inherit;
   display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .eyebrow{display:block;border:0;border-radius:0;padding:0;align-items:initial;gap:0}
+
+/* advanced surfaces of this pillar (previews, clearly marked) */
+.tk-advanced{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:10px clamp(16px,4vw,60px);border-bottom:1px solid var(--line);font-size:12.5px}
+.tk-adv-lab{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.tk-advanced a{color:var(--paper);font-weight:600;text-decoration:none;border:1px solid var(--gl);
+  border-radius:999px;padding:5px 12px;display:inline-flex;gap:7px;align-items:center}
+.tk-advanced a:hover{border-color:var(--acc);color:var(--acc)}
+.tk-advanced a em{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold)}
+.tk-adv-note{color:var(--dim);font-size:11.5px}
+@media(max-width:640px){.tk-adv-note{display:none}}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 
@@ -268,12 +280,19 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 <header class="zoi-header"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
   <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
   <div class="zoi-actions"><div class="nav-right" id="navRight"></div><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
 <div class="proto-banner" id="protoBanner">
   <span><b>Reservations are live.</b> Seats hold instantly. Paid checkout ships next — nothing is charged yet.</span>
 </div>
 
+<div class="tk-advanced">
+  <span class="tk-adv-lab">Advanced</span>
+  <a href="/apps/tickets-studio/">Seat maps &amp; 3D studio <em>preview</em></a>
+  <a href="/apps/event-os/">Event OS <em>preview</em></a>
+  <span class="tk-adv-note">Previews use sample data — reservations here are the live product.</span>
+</div>
 <div id="app"></div>
 
 <!-- Confirm reservation modal -->
