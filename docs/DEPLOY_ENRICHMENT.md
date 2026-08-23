@@ -131,3 +131,84 @@ Then open any enriched listing. It should show a cover image, social links, and
 one line naming the site and the date it was read — "not confirmed by them".
 If that line is missing while `_enrich` has data, the renderer is not picking it
 up and `safeProfile()` in `api/_verticals.js` is where to look.
+
+
+---
+
+# What actually happened on deploy (2026-08-23)
+
+Applied and verified in production. Three things the runbook could not have
+known, found by deploying rather than by reading:
+
+**1. PostgREST cannot see the `zoi` schema.** 0003 and 0005 created
+`zoi.enrich_apply` and `zoi.enrich_queue` and revoked them from PUBLIC, which was
+correct — but the worker calls them over PostgREST, which only resolves functions
+in an exposed schema. The worker got `PGRST202: Searched for the function
+public.enrich_queue ... no matches`. Fixed by 0006: thin SECURITY DEFINER
+wrappers in `public`, `GRANT EXECUTE ... TO service_role` only. `anon` and
+`authenticated` still cannot reach either — a visitor must never be able to make
+the site crawl, and machine claims must never be writable by a logged-in user.
+
+**2. Two headers are needed, not one.** With platform JWT verification on, the
+`Authorization` header must be a valid JWT, so it cannot also carry a custom
+shared secret. And `SUPABASE_SERVICE_ROLE_KEY` as injected into the function did
+not match the `service_role` key the Management API returns — this project has
+the newer API-key system alongside the legacy JWT, so comparing against the
+service key alone produced a 401 on a completely legitimate call from pg_cron.
+The worker now accepts a dedicated `ENRICH_TOKEN` via `x-enrich-token`, and the
+cron sends both headers. Both secrets live in Vault; neither is in `cron.job` in
+plaintext.
+
+**3. pg_net's default timeout is 5 seconds**, and that is why
+`zoi-worker-hourly` has been failing on every run — see below. `zoi-enrich-hourly`
+sets `timeout_milliseconds := 150000`.
+
+## Live state after deploy
+
+    published listings with coordinates   3,599 -> 7,805 of 8,081  (44.5% -> 96.6%)
+    listings with any coordinate          3,693 -> 9,549 of 11,829
+    of those, street-level precision      2,027
+    enriched listings                     0 -> 113
+    with a photo                          0 -> 56
+    with social links (from _enrich)      0 -> 83
+    hosts that refused a bot, recorded    2
+
+`zoi-enrich-hourly` runs at :45, 100 listings per run, ~1s per listing. The queue
+holds roughly 5,900 listings with a website, so full coverage takes about
+two and a half days and then settles into a 30-day refresh.
+
+## A separate live fault, found while checking cron conventions
+
+`zoi-worker-hourly` reports `succeeded` in `cron.job_run_details` on every run
+and has not actually worked. `net.http_post` only enqueues the request, so cron
+records success the moment the SQL returns; the real outcome is in
+`net._http_response`, where every hourly attempt shows `status_code = null` and
+`Timeout of 5000 ms reached`. The RSS ingestion behind it has not been running.
+
+The fix is to reschedule that job with an explicit timeout:
+
+```sql
+select cron.unschedule('zoi-worker-hourly');
+select cron.schedule('zoi-worker-hourly', '15 * * * *', $job$
+  select net.http_post(
+    url     := 'https://csebihpaychdkanjjsmz.supabase.co/functions/v1/zoi-worker',
+    headers := jsonb_build_object('Content-Type','application/json',
+                 'Authorization','Bearer ' || (select decrypted_secret
+                    from vault.decrypted_secrets where name='service_role_key')),
+    body    := '{}'::jsonb,
+    timeout_milliseconds := 150000);
+$job$);
+```
+
+Worth auditing every HTTP cron job the same way — `job_run_details` saying
+`succeeded` means only that the SQL ran.
+
+## And one exposure worth a decision
+
+`social_publish_worker` and `zoi-worker-hourly` both call their functions with no
+`Authorization` header at all, and `social-publish` returns HTTP 200 to them.
+That means it is deployed with JWT verification off and is publicly invokable by
+anyone who knows the URL. Its blast radius is limited — it publishes posts that
+are already due — but it is an open endpoint on a project where everything else
+is gated, and the same worker also sends scheduled email. Deploying it with
+verification on, and giving its cron the header above, closes it.

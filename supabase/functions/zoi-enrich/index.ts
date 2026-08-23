@@ -58,6 +58,12 @@ const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ENABLED = (Deno.env.get("ENRICH_ENABLED") || "").toLowerCase() === "on";
 const REQUIRE_DNS = (Deno.env.get("REQUIRE_DNS_GUARD") || "true").toLowerCase() !== "false";
 const BATCH = Math.max(1, Math.min(200, Number(Deno.env.get("ENRICH_BATCH") || 40)));
+// A dedicated shared secret, so authentication does not depend on which flavour
+// of service key the platform happens to inject. Projects on the newer API-key
+// system have several, and SUPABASE_SERVICE_ROLE_KEY is not necessarily the one
+// a caller has to hand — comparing against it alone produced a 401 on a
+// perfectly legitimate call from pg_cron.
+const ENRICH_TOKEN = Deno.env.get("ENRICH_TOKEN") || "";
 
 const UA =
   "ZoiDirectoryBot/1.0 (+https://www.zoi.city; enriches a listing from the site " +
@@ -448,9 +454,17 @@ function timingSafeEqual(a: string, b: string): boolean {
 
 function authorised(req: Request): boolean {
   const raw = req.headers.get("authorization") || "";
-  const token = raw.replace(/^Bearer\s+/i, "").trim();
-  if (!token || !SERVICE) return false;
-  return timingSafeEqual(token, SERVICE);
+  const bearer = raw.replace(/^Bearer\s+/i, "").trim();
+  const header = (req.headers.get("x-enrich-token") || "").trim();
+  // Accept the dedicated secret from either header, or the service role key.
+  // Every branch is a constant-time compare and an empty expected value can
+  // never match, so a missing secret does not open the door.
+  for (const supplied of [bearer, header]) {
+    if (!supplied) continue;
+    if (ENRICH_TOKEN && timingSafeEqual(supplied, ENRICH_TOKEN)) return true;
+    if (SERVICE && timingSafeEqual(supplied, SERVICE)) return true;
+  }
+  return false;
 }
 
 /* ── the run ────────────────────────────────────────────────────────────── */
