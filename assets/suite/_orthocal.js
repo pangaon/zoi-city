@@ -47,9 +47,11 @@
    */
   function parseISO(s) {
     if (s == null) return null;
-    if (s instanceof Date) {
+    // `instanceof Date` fails when the Date came from another realm (an iframe,
+    // test VM, or embedded app shell). Brand-check it, then use its public API.
+    if (Object.prototype.toString.call(s) === '[object Date]') {
       return isFinite(s.getTime())
-        ? ymdToUTC(s.getFullYear(), s.getMonth() + 1, s.getDate())   // local day, as drawn
+        ? ymdToUTC(s.getUTCFullYear(), s.getUTCMonth() + 1, s.getUTCDate())
         : null;
     }
     // Numbers are deliberately NOT accepted. A bare number is ambiguous —
@@ -244,6 +246,7 @@
   function seasonsFor(dateISO) {
     var ms = parseISO(dateISO);
     if (ms == null) return ['all'];
+    dateISO = iso(ms);
     var y = new Date(ms).getUTCFullYear();
     var seen = {};
     var seasons = [];
@@ -286,6 +289,7 @@
   function isFastDay(dateISO) {
     var ms = parseISO(dateISO);
     if (ms == null) return false;
+    dateISO = iso(ms);
     var s = seasonsFor(dateISO);
     function has(x) { return s.indexOf(x) !== -1; }
     if (has('bright_week') || has('pentecost_period')) return false;
@@ -318,6 +322,7 @@
   function fastInfo(dateISO) {
     var ms = parseISO(dateISO);
     if (ms == null) return { level: 'none', label: 'Not a fast day', why: '' };
+    dateISO = iso(ms);
     var s = seasonsFor(dateISO);
     function has(x) { return s.indexOf(x) !== -1; }
     var md = String(dateISO).slice(5);
