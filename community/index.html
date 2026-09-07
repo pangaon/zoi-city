@@ -218,6 +218,11 @@ let AUTH=null, TAG=null, POSTS=[], FEED_FILTER='all', NAMEDAYS=[];
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+function publicError(e,fallback){
+  const m=String(e&&e.message||'');
+  if(/please sign in/i.test(m)) return 'Please sign in.';
+  return fallback||'Something went wrong. Please try again.';
+}
 function relTime(iso){
   const d=(Date.now()-new Date(iso).getTime())/1000;
   if(d<60) return 'just now'; if(d<3600) return Math.floor(d/60)+'m'; if(d<86400) return Math.floor(d/3600)+'h';
@@ -373,7 +378,10 @@ async function refreshFeed(){
     POSTS=await rpc('feed_list',{p_limit:40,p_offset:0})||[];
     renderFeed();
     renderSide();
-  }catch(e){ document.getElementById('feed').innerHTML='<div class="empty"><h3>Could not load the feed</h3><p>'+esc(e.message)+'</p></div>'; }
+  }catch(e){
+    console.error('Community feed failed',e);
+    document.getElementById('feed').innerHTML='<div class="empty"><h3>Could not load the feed</h3><p>Please try again in a moment.</p><button class="btn g" type="button" onclick="refreshFeed()">Try again</button></div>';
+  }
 }
 
 /* The feed RPC takes only limit/offset, so these filters narrow the posts already
@@ -474,7 +482,7 @@ async function toggleCmts(id){
   try{
     const rows=await rpc('feed_comments_list',{p_post:id})||[];
     list.innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+avatarFor(c.author)+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('')||'<div style="font-size:12.5px;color:var(--dim);padding:4px 0">No comments yet.</div>';
-  }catch(e){ list.innerHTML='<div style="font-size:12.5px;color:var(--red)">'+esc(e.message)+'</div>'; }
+  }catch(e){ list.innerHTML='<div style="font-size:12.5px;color:var(--red)">Comments could not load. Please try again.</div>'; }
 }
 async function sendCmt(id){
   if(!AUTH){ toast('Sign in above to reply'); return; }
