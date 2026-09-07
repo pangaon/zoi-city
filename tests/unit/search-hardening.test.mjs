@@ -22,8 +22,31 @@ test('directory does not render raw backend errors to visitors', () => {
   assert.match(html, /Your search and filters have been kept/);
 });
 
+test('community feed does not render raw backend errors to visitors', () => {
+  const html = read('community/index.html');
+  assert.doesNotMatch(html, /Could not load the feed[\s\S]{0,160}esc\(e\.message\)/);
+  assert.doesNotMatch(html, /color:var\(--red\)[^<]*['"]>['"]\+esc\(e\.message\)/);
+  assert.match(html, /Community feed failed/);
+});
+
 test('mobile header constrains navigation and removes the secondary CTA', () => {
   const css = read('assets/zoi-theme.css');
   assert.match(css, /\.zoi-nav\{[^}]*flex:1;min-width:0[^}]*\}/);
   assert.match(css, /@media\(max-width:520px\)[\s\S]*?\.zoi-actions \.btn\{display:none\}/);
+});
+
+test('community feed migration removes the ambiguous scoped overload', () => {
+  const sql = read('supabase/migrations/0020_feed_contract_hardening.sql');
+  assert.match(sql, /DROP FUNCTION IF EXISTS public\.feed_list\(integer, integer, text, uuid, text\)/);
+});
+
+test('Vercel applies baseline browser security headers globally', () => {
+  const cfg = JSON.parse(read('vercel.json'));
+  const global = cfg.headers.find((entry) => entry.source === '/(.*)');
+  assert.ok(global, 'global security header rule missing');
+  const headers = Object.fromEntries(global.headers.map((h) => [h.key.toLowerCase(), h.value]));
+  assert.equal(headers['x-content-type-options'], 'nosniff');
+  assert.equal(headers['x-frame-options'], 'DENY');
+  assert.equal(headers['referrer-policy'], 'strict-origin-when-cross-origin');
+  assert.match(headers['permissions-policy'], /camera=\(\)/);
 });
