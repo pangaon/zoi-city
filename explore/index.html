@@ -462,7 +462,20 @@ async function runSearch(reset){
     document.getElementById('res-count').textContent = n
       ? ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+'))
       : 'No results';
-  }catch(e){ toast('Search failed: '+e.message); }
+  }catch(e){
+    // Never print database/schema details into the public UI. Besides being an
+    // information leak, the old full-width toast made the mobile page unusable.
+    console.error('Directory search failed', e);
+    document.getElementById('res-count').textContent='Directory temporarily unavailable';
+    document.getElementById('results').innerHTML=
+      '<div class="empty" style="grid-column:1/-1">'+
+        '<h3>We could not load the directory</h3>'+
+        '<p>Please try again. Your search and filters have been kept.</p>'+
+        '<button class="btn g" type="button" onclick="runSearch(true)">Try again</button>'+
+      '</div>';
+    document.getElementById('more-btn').style.display='none';
+    toast('The directory could not load. Please try again.');
+  }
   ST.busy=false;
 }
 
