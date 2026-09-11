@@ -428,7 +428,7 @@ async function loadData(refresh){
   setConn('connecting…');
   try{
     DATA=await rpc('seo_dashboard');
-    if(!DATA||DATA.ecosystem_score==null) throw new Error('empty');
+    if(!DATA || (!Array.isArray(DATA.scans) && !DATA.issue_counts)) throw new Error('empty');
     liveBadge(true); setConn('live · '+new Date().toLocaleTimeString());
   }catch(e){
     DATA=SAMPLE; liveBadge(false); setConn('sample data (offline)');
@@ -451,12 +451,13 @@ function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<
 function render(){
   const d=DATA, s=d.ecosystem_summary||{};
   // gauge
-  const sc=d.ecosystem_score||0;
-  document.getElementById('ecoScore').textContent=sc;
-  const C=389.6; document.getElementById('ecoArc').style.strokeDashoffset=C-(C*sc/100);
-  document.getElementById('ecoArc').style.stroke=sc<40?'var(--crit)':sc<70?'var(--warn)':'var(--ok)';
+  const sc=Number.isFinite(Number(d.ecosystem_score))?Number(d.ecosystem_score):null;
+  document.getElementById('ecoScore').textContent=sc==null?'—':sc;
+  const C=389.6; document.getElementById('ecoArc').style.strokeDashoffset=sc==null?C:C-(C*sc/100);
+  document.getElementById('ecoArc').style.stroke=sc==null?'var(--ink-3)':sc<40?'var(--crit)':sc<70?'var(--warn)':'var(--ok)';
   document.getElementById('ecoPages').textContent=(s.published_pages||'—').toLocaleString?.(s.published_pages)||s.published_pages||'—';
-  if(s.confidence) document.getElementById('ecoConf').innerHTML='<span class="d"></span>'+esc(s.confidence);
+  document.getElementById('ecoConf').className='badge-live '+(sc==null?'badge-sample':'');
+  document.getElementById('ecoConf').innerHTML='<span class="d"></span>'+(sc==null?'site score not measured yet':'live site score');
   // coverage bars
   const cov=s.coverage_pct||{}; const labels={meta_title:'Title tags',meta_description:'Meta descriptions',canonical:'Canonicals',schema_type:'Schema type',og_image:'OG images',body_content:'Body content',freshness:'Freshness (180d)'};
   document.getElementById('covBars').innerHTML=Object.keys(labels).map(k=>{
