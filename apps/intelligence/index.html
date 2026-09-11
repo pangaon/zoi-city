@@ -225,6 +225,16 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
         <h1 class="fr-h1" style="margin-bottom:8px">Ecosystem SEO &amp; AI-discovery health</h1>
         <p class="mut" style="max-width:640px;margin-bottom:24px">Similarweb-style intelligence over the Zoi knowledge graph. Every issue carries source evidence, risk, expected benefit, rollback and a founder-approval flag. AI-citation is tracked as <b>readiness/monitoring — never guaranteed</b>.</p>
 
+        <div class="card raised" style="margin-bottom:18px">
+          <div class="sec-head"><h2>Run a live website check</h2><span class="badge-live"><span class="d"></span>Real scan</span></div>
+          <p class="mut" style="margin-bottom:14px">Test a public Zoi page now. This checks the actual HTML for title, description, canonical URL, headings, Open Graph, JSON-LD, links, and page speed. External customer websites will be supported through the paid scanner after the safety and billing layer is connected.</p>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="liveScanUrl" class="btn-ghost" style="flex:1;min-width:260px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--r-in);font:inherit;color:var(--ink);background:var(--surface)" value="https://www.zoi.city/" aria-label="Website URL to scan" />
+            <button class="btn btn-primary" id="liveScanBtn" type="button">Scan this page</button>
+          </div>
+          <div id="liveScanResult" style="margin-top:14px"></div>
+        </div>
+
         <div class="grid g-2" style="margin-bottom:18px">
           <div class="card raised">
             <div class="sec-head"><h2>Ecosystem score</h2><span class="badge-live badge-sample" id="ecoConf"><span class="d"></span>measured coverage</span></div>
@@ -340,6 +350,43 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
 const SUPA_URL='https://csebihpaychdkanjjsmz.supabase.co';
 const SUPA_KEY='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 let DATA=null, SEV='all';
+
+function liveCheck(label, ok, detail){
+  return '<div class="act"><span class="w">'+esc(label)+'</span><span><span class="pill '+(ok?'ok':'crit')+'">'+(ok?'pass':'needs work')+'</span> '+esc(detail)+'</span></div>';
+}
+async function runLiveScan(){
+  const input=document.getElementById('liveScanUrl'), btn=document.getElementById('liveScanBtn'), out=document.getElementById('liveScanResult');
+  let url;
+  try{url=new URL(input.value.trim(),location.origin);}catch(e){out.innerHTML='<div class="note amber">Enter a valid website URL.</div>';return;}
+  if(url.origin!==location.origin){out.innerHTML='<div class="note amber">The first live scanner is limited to zoi.city pages. External customer-site scans will use the protected paid scanner when that service is enabled.</div>';return;}
+  btn.disabled=true;btn.textContent='Scanning…';out.innerHTML='<div class="cap">Fetching and measuring the actual page…</div>';
+  const started=performance.now();
+  try{
+    const response=await fetch(url.pathname+url.search,{cache:'no-store',headers:{Accept:'text/html'}});
+    const html=await response.text();
+    const doc=new DOMParser().parseFromString(html,'text/html');
+    const title=(doc.querySelector('title')||{}).textContent||'';
+    const description=doc.querySelector('meta[name="description"]');
+    const canonical=doc.querySelector('link[rel="canonical"]');
+    const og=doc.querySelector('meta[property="og:title"]');
+    const jsonld=doc.querySelectorAll('script[type="application/ld+json"]').length;
+    const h1=doc.querySelector('h1');
+    const links=doc.querySelectorAll('a[href]').length;
+    const checks=[
+      liveCheck('HTTP response',response.ok,response.status+' '+response.statusText),
+      liveCheck('Title',!!title,title?title.slice(0,120):'Missing <title>'),
+      liveCheck('Meta description',!!description,description?'Present':'Missing meta description'),
+      liveCheck('Canonical URL',!!canonical,canonical?(canonical.getAttribute('href')||'Present'):'Missing canonical link'),
+      liveCheck('Open Graph title',!!og,og?'Present':'Missing og:title'),
+      liveCheck('Structured data',jsonld>0,jsonld+' JSON-LD block'+(jsonld===1?'':'s')),
+      liveCheck('Primary heading',!!h1,h1?'Present':'Missing <h1>'),
+      liveCheck('Internal links',links>2,links+' links found'),
+      liveCheck('Response time',performance.now()-started<1500,Math.round(performance.now()-started)+' ms')
+    ].join('');
+    out.innerHTML='<div class="card" style="padding:14px;background:var(--surface-2)"><div class="sec-head" style="margin-bottom:8px"><b>'+esc(url.pathname||'/')+'</b><span class="pill ok">Live evidence</span></div>'+checks+'</div>';
+  }catch(e){out.innerHTML='<div class="note amber">The page could not be scanned: '+esc(e.message||'request failed')+'</div>';}
+  btn.disabled=false;btn.textContent='Scan this page';
+}
 
 /* ---- sample fallback (graceful, clearly labeled) ---- */
 const SAMPLE={
@@ -493,6 +540,8 @@ function go(v){
 let tT;
 function toast(t){const e=document.getElementById('toast');document.getElementById('toastTxt').textContent=t;e.classList.add('on');clearTimeout(tT);tT=setTimeout(()=>e.classList.remove('on'),2200);}
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.getElementById('liveScanBtn').addEventListener('click',runLiveScan);
+document.getElementById('liveScanUrl').addEventListener('keydown',e=>{if(e.key==='Enter')runLiveScan();});
 loadData();
 </script>
 <script src="/assets/zoi-emblem.js"></script>
