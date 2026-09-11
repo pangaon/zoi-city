@@ -6,37 +6,21 @@
 <!-- OPERATOR TOOL: never public. Hard noindex always (not flag-gated). -->
 <!--
   ============================================================================
-  ADMIN AUTH GATE  ·  HOW GEORGE SETS / CHANGES THE PASSPHRASE
+  ADMIN AUTH GATE  ·  SUPABASE OTP + SERVER-SIDE ADMIN PERMISSIONS
   ============================================================================
   This console is operator-only. It will NOT load data or fire ANY admin RPC
-  until the correct passphrase is entered. The gate is enforced in code: the
+  until an authorized Supabase session is present. The gate is enforced in code: the
   data layer (fetchData / act / callRpc / loadInbox) hard-refuses to run while
   locked, so hiding the UI is not the only protection — no admin call leaves
   the browser until you unlock.
 
-  To set or change the passphrase:
-    1. Pick a strong passphrase (e.g. 4+ random words).
-    2. Compute its SHA-256 hash. Easiest way, paste into your browser console
-       on this page (or any page) and run:
-
-         crypto.subtle.digest('SHA-256', new TextEncoder().encode('YOUR PASSPHRASE HERE'))
-           .then(b => console.log([...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')))
-
-    3. Copy the 64-char hex string it prints.
-    4. Paste it below as the value of GATE_HASH (replace the placeholder).
-    5. Save the file. Done — the old passphrase no longer works.
-
   Notes:
-    - We store only the HASH in the file, never the plaintext passphrase, so the
-      secret is not readable in source. GATE_HASH below is a clearly-marked
-      PLACEHOLDER and is NOT a real credential — replace it before launch.
-    - A successful unlock is remembered for this browser tab only (sessionStorage),
-      so closing the tab re-locks the console.
-    - To force every operator to re-enter the passphrase, just change GATE_HASH.
+    - Sign in with the email code tied to an authorized operator profile.
+    - Admin RPCs must enforce the operator role server-side.
   ============================================================================
 -->
 <meta name="robots" content="noindex,nofollow"/>
-<title>Command Center (preview) · Zoi Business</title>
+<title>Command Center · Zoi Business</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
 <meta name="color-scheme" content="dark light">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -189,7 +173,7 @@ td .st{color:var(--ink);font-weight:600}td a{color:var(--acc)}
 </style>
 </head>
 <body>
-<div class="zoi-preview" role="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><b>Preview · sample data</b><span>Every figure here is illustrative — nothing is connected to your account, and nothing is live.</span><a href="/social">Open the live Zoi Business →</a></div>
+<div class="zoi-preview" role="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><b>Production operator console</b><span>Metrics and actions come from the live database for authorized operators.</span><a href="/social">Open Zoi Business →</a></div>
 <header class="zoi-header static wide"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
   <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
@@ -202,9 +186,10 @@ td .st{color:var(--ink);font-weight:600}td a{color:var(--acc)}
   <form class="gcard" id="gateForm" autocomplete="off">
     <div class="gmark">Z</div>
     <h1>Command Center</h1>
-    <p>Operator access only. Enter the admin passphrase to unlock.</p>
-    <input id="gatePass" type="password" placeholder="Passphrase" autocomplete="off" autofocus aria-label="Admin passphrase"/>
-    <button class="gbtn" type="submit">Unlock console</button>
+    <p>Operator access only. Sign in with your Zoi email. Admin permissions are checked server-side.</p>
+    <input id="gateEmail" type="email" placeholder="you@zoi.city" autocomplete="email" autofocus aria-label="Operator email"/>
+    <input id="gateCode" type="text" inputmode="numeric" maxlength="6" placeholder="6-digit code" autocomplete="one-time-code" aria-label="Verification code" hidden/>
+    <button class="gbtn" id="gateSubmit" type="submit">Send code</button>
     <div class="gerr" id="gateErr" aria-live="polite"></div>
     <div class="gfoot">Zoi · Greek Intelligence OS<br/>Unauthorized access is prohibited.</div>
   </form>
@@ -289,34 +274,29 @@ td .st{color:var(--ink);font-weight:600}td a{color:var(--acc)}
   </nav>
 </div>
 <div id="drawer" class="drawer"><div class="bd"></div><div class="pn"><div style="display:flex;justify-content:space-between;gap:12px"><div><div class="dt"></div><div class="dsub"></div></div><button class="mini" id="dx">✕</button></div><div class="dbody"></div></div></div>
+<script src="/assets/zoi-core.js"></script>
 <script>
 /* ============================================================================
-   AUTH GATE  —  see the credential-config comment block at top of this file.
-   GATE_HASH is a PLACEHOLDER (the SHA-256 of the words "change me before launch").
-   It is NOT a real secret. Replace it with your own passphrase hash before launch.
-   The gate is enforced in the data layer (assertUnlocked) — no admin RPC can run
-   while locked, so this is real auth, not just a hidden div.
+  AUTH GATE — Supabase OTP session, enforced again by the admin RPCs.
    ============================================================================ */
-const GATE_HASH="a20405ad26ca198455f264b3402522908b20cd25f24f1fc539eb02970aaaf1d8"; // PLACEHOLDER = SHA-256 of "change me before launch" — replace (see header)
-const GATE_KEY="zoi_cc_unlocked";
 let UNLOCKED=false;
-async function sha256hex(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
 function assertUnlocked(){if(!UNLOCKED)throw new Error('Locked — sign in first');}
-async function tryUnlock(pass){const h=await sha256hex(pass||'');if(h===GATE_HASH){UNLOCKED=true;try{sessionStorage.setItem(GATE_KEY,h);}catch(e){}return true;}return false;}
 function gateHide(){const g=document.getElementById('gate');if(g)g.classList.add('hide');}
 async function initGate(){
-  // Re-honour an unlock from earlier this tab session (sessionStorage only).
-  try{if(sessionStorage.getItem(GATE_KEY)===GATE_HASH)UNLOCKED=true;}catch(e){}
-  if(UNLOCKED){gateHide();boot();return;}
-  const f=document.getElementById('gateForm'),inp=document.getElementById('gatePass'),err=document.getElementById('gateErr');
-  f.addEventListener('submit',async ev=>{ev.preventDefault();err.textContent='';const ok=await tryUnlock(inp.value);
-    if(ok){gateHide();boot();}else{err.textContent='Incorrect passphrase.';inp.value='';inp.focus();}});
+  const fresh=await ZoiCore.auth.ensureFresh();
+  if(fresh){UNLOCKED=true;gateHide();boot();return;}
+  const f=document.getElementById('gateForm'),email=document.getElementById('gateEmail'),code=document.getElementById('gateCode'),submit=document.getElementById('gateSubmit'),err=document.getElementById('gateErr');
+  f.addEventListener('submit',async ev=>{ev.preventDefault();err.textContent='';
+    if(code.hidden){try{await ZoiCore.otp.send(email.value.trim());code.hidden=false;email.disabled=true;submit.textContent='Verify code';code.focus();}catch(e){err.textContent=e.message||'Could not send code.';}}
+    else{try{await ZoiCore.otp.verify(email.value.trim(),code.value.trim());UNLOCKED=true;gateHide();boot();}catch(e){err.textContent=e.message||'Invalid or expired code.';code.value='';code.focus();}}
+  });
 }
 let BOOTED=false;
 function boot(){if(BOOTED)return;BOOTED=true;load();}
 const PROJECT="csebihpaychdkanjjsmz",TOOL="mcp__f61fb975-3b72-4972-8105-9929001587e5__execute_sql";
 const REST="https://csebihpaychdkanjjsmz.supabase.co";
 const ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNzZWJpaHBheWNoZGthbmpqc216Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEzNzEzODgsImV4cCI6MjA5Njk0NzM4OH0.dJb-DWFBcmkN3IFHZxdmc-9pvQzXx5T4J2eaipb5HyY";
+function bearer(){return (ZoiCore.auth.token()||ANON);}
 const ICONS={grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',book:'<path d="M4 4h12a2 2 0 0 1 2 2v14H6a2 2 0 0 1-2-2z"/><path d="M18 4h2v16"/>',inbox:'<path d="M3 12h4l2 3h6l2-3h4"/><path d="M5 5h14l2 7v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-6z"/>',plug:'<path d="M9 2v6M15 2v6M7 8h10v3a5 5 0 0 1-10 0z"/><path d="M12 16v6"/>',flow:'<circle cx="5" cy="6" r="2"/><circle cx="19" cy="6" r="2"/><circle cx="12" cy="18" r="2"/><path d="M5 8v3a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8M12 13v3"/>',map:'<path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',spark:'<path d="M12 2v4M12 18v4M2 12h4M18 12h4M5 5l3 3M16 16l3 3M19 5l-3 3M8 16l-3 3"/>',refresh:'<path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/>',dl:'<path d="M12 3v12M7 11l5 4 5-4M5 21h14"/>'};
 function ic(n){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[n]||'')+'</svg>';}
 const PM={published:'g',admin_verified:'g',owner_verified:'g',partner_verified:'g',source_verified:'tl',active:'g',claimed:'g',pending_review:'a',claim_pending:'a',stale:'a',unverified:'gy',draft:'gy',hidden:'gy',archived:'gy',rejected:'rd',duplicate:'rd',candidate:'b',proposed:'b',listed:'g',none:'gy',vendor:'b',ticket:'a',booking:'tl',service:'b',product:'b'};
@@ -324,8 +304,8 @@ function pill(v){if(v==null||v==='')return '<span class="pill gy">—</span>';re
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function toast(m){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 async function q(sql){const r=await window.cowork.callMcpTool(TOOL,{project_id:PROJECT,query:sql});let t="";if(r&&r.content&&r.content[0]&&r.content[0].text)t=r.content[0].text;else if(r&&r.structuredContent)t=JSON.stringify(r.structuredContent);const s=t.indexOf('['),e=t.lastIndexOf(']');if(s>=0&&e>s){try{return JSON.parse(t.slice(s,e+1))}catch(err){throw new Error('parse')}}return[];}
-async function fetchData(){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const rows=await q("select public.zoi_admin_dashboard() as data");return (rows[0]&&rows[0].data)||{};}const r=await fetch(REST+"/rest/v1/rpc/zoi_admin_dashboard",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":"application/json"},body:"{}"});if(!r.ok)throw new Error("REST "+r.status);return await r.json();}
-async function act(fn,slug){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const a=slug?("'"+String(slug).replace(/'/g,"''")+"'"):'';await q('select public.'+fn+'('+a+')');return;}const b=slug?JSON.stringify({p_slug:slug}):'{}';const r=await fetch(REST+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:ANON,Authorization:'Bearer '+ANON,'Content-Type':'application/json'},body:b});if(!r.ok)throw new Error('HTTP '+r.status);}
+async function fetchData(){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const rows=await q("select public.zoi_admin_dashboard() as data");return (rows[0]&&rows[0].data)||{};}const r=await fetch(REST+"/rest/v1/rpc/zoi_admin_dashboard",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+bearer(),"Content-Type":"application/json"},body:"{}"});if(!r.ok)throw new Error("REST "+r.status);return await r.json();}
+async function act(fn,slug){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const a=slug?("'"+String(slug).replace(/'/g,"''")+"'"):'';await q('select public.'+fn+'('+a+')');return;}const b=slug?JSON.stringify({p_slug:slug}):'{}';const r=await fetch(REST+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:ANON,Authorization:'Bearer '+bearer(), 'Content-Type':'application/json'},body:b});if(!r.ok)throw new Error('HTTP '+r.status);}
 window.doAction=async function(fn,slug,msg){try{toast('Working…');await act(fn,slug||null);toast(msg||'Done');document.getElementById('drawer').classList.remove('open');await load();}catch(e){toast('Failed: '+(e.message||e));}};
 
 let D={},CH={};
@@ -415,11 +395,11 @@ window.covCity=function(city){F.country=covCountry;F.city=city;F.q='';PAGE=1;go(
 var INBOX=null;
 async function callRpc(fn,params){assertUnlocked();params=params||{};
  if(window.cowork&&window.cowork.callMcpTool){var a=Object.values(params).map(function(v){return v==null?'null':"'"+String(v).replace(/'/g,"''")+"'";}).join(',');await q('select public.'+fn+'('+a+')');return;}
- var r=await fetch(REST+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:ANON,Authorization:'Bearer '+ANON,'Content-Type':'application/json'},body:JSON.stringify(params)});if(!r.ok)throw new Error('HTTP '+r.status);}
+ var r=await fetch(REST+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:ANON,Authorization:'Bearer '+bearer(),'Content-Type':'application/json'},body:JSON.stringify(params)});if(!r.ok)throw new Error('HTTP '+r.status);}
 window.doIt=async function(fn,params,msg){try{toast('Working\u2026');await callRpc(fn,params);toast(msg||'Done');await loadInbox(true);}catch(e){toast('Failed: '+(e.message||e));}};
 async function loadInbox(force){
  if(!UNLOCKED)return;
- if(!INBOX||force){try{assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){var rows=await q("select public.zoi_admin_inbox() as data");INBOX=(rows[0]&&rows[0].data)||{};}else{var r=await fetch(REST+"/rest/v1/rpc/zoi_admin_inbox",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+ANON,"Content-Type":"application/json"},body:"{}"});INBOX=await r.json();}}catch(e){INBOX={};}}
+ if(!INBOX||force){try{assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){var rows=await q("select public.zoi_admin_inbox() as data");INBOX=(rows[0]&&rows[0].data)||{};}else{var r=await fetch(REST+"/rest/v1/rpc/zoi_admin_inbox",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+bearer(),"Content-Type":"application/json"},body:"{}"});if(!r.ok)throw new Error("HTTP "+r.status);INBOX=await r.json();}}catch(e){INBOX={};}}
  var L=(INBOX.leads||[]),C=(INBOX.claims||[]).filter(function(x){return x.status==='claim_pending';}),R=(INBOX.reviews||[]);
  var cl=document.getElementById('c-leads');if(cl)cl.textContent=L.filter(function(x){return x.status==='new';}).length+C.length;
  var el=document.getElementById('t-leads');el.innerHTML=L.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Email</th><th class="x">Plan</th><th class="x">Status</th><th class="x">Actions</th></tr></thead><tbody>'+L.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.email||'')+'</td><td>'+pill(x.plan||x.kind)+'</td><td>'+pill(x.status)+'</td><td><button class="mini g" onclick="doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'contacted\'},\'Marked contacted\')">Contacted</button> <button class="mini buy" onclick="doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'won\'},\'Won!\')">Won</button> <button class="mini" onclick="doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'lost\'},\'Lost\')">Lost</button></td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No leads yet \u2014 they arrive when owners tap \u201cGo Premium\u201d on zoi.city.</div>';

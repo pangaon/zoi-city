@@ -4,6 +4,7 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const REDIRECT = `${SUPABASE_URL}/functions/v1/social-oauth-callback`;
+const APP_ORIGIN = "https://www.zoi.city";
 
 async function sbRpc(fn: string, args: Record<string, unknown>) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
@@ -15,8 +16,14 @@ async function sbRpc(fn: string, args: Record<string, unknown>) {
   const t = await r.text();
   return t ? JSON.parse(t) : null;
 }
+const safeReturnTo = (to: unknown) => {
+  try {
+    const u = new URL(String(to || `${APP_ORIGIN}/social`));
+    return u.origin === APP_ORIGIN && u.pathname === "/social" ? u : new URL(`${APP_ORIGIN}/social`);
+  } catch { return new URL(`${APP_ORIGIN}/social`); }
+};
 const back = (to: string, params: Record<string, string>) => {
-  const u = new URL(to);
+  const u = safeReturnTo(to);
   for (const [k, v] of Object.entries(params)) u.searchParams.set(k, v);
   return Response.redirect(u.toString(), 302);
 };

@@ -859,20 +859,15 @@ function fmtRealDate(iso){
 function realToEvent(row){
  const mode=inferMode(row.name);
  const loc=[row.city,row.state||''].filter(Boolean).join(', ');
- // deterministic but lively demo metrics so the cockpit feels alive on a real event
- const seed=(row.id||row.name||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0);
- const cap=300+ (seed%6)*100;            // 300–800
- const sold=Math.round(cap*(0.42+(seed%30)/100)); // ~42–72%
- const ppl=mode==='festival'?12:mode==='gala'?260:mode==='church'?55:90;
  return {
-  id:'real-'+(row.slug||seed),real:true,realId:row.id,
+  id:'real-'+(row.slug||row.id||row.name),real:true,realId:row.id,
   name:row.name,
   date:fmtRealDate(row.start_date)+(mode==='festival'?' · Festival weekend':' · 6:00 PM'),
   venue:(row.host?row.host+' — ':'')+(loc||row.city||'Venue TBA'),
   host:row.host||row.name, city:row.city, state:row.state||'', country:row.country||'',
   startDate:row.start_date,
-  cap, mode, live:false,
-  sold, revenue:sold*ppl, checkin:0, tables:Math.round(cap/10), goal:Math.round(sold*ppl*1.6),
+  cap:null, mode, live:false, sold:null, revenue:null, checkin:null, tables:null, goal:null,
+  metricsSource:'not connected to an owned event workspace',
  };
 }
 async function fetchRealEvents(){
@@ -903,15 +898,9 @@ async function fetchRealEvents(){
 /* load a discovered real event into the operator workspace */
 function loadRealEvent(id){
  const ev=discover.events.find(e=>e.id===id);if(!ev)return;
- // adopt it as the current event; merge into EVENTS so the switcher keeps it
- if(!EVENTS.find(e=>e.id===ev.id))EVENTS.unshift(ev);
- curEvent=ev;
- // seed a fitting floor layout for its mode + venue name from the real host
- defaultLayout(MODECFG[ev.mode]?ev.mode:'concert');
- floor.venue.name=ev.venue.split(' — ')[0]||ev.venue;
- closeModal();
- go('dash');
- toast('Loaded real event — '+ev.name);
+ openModal(`<div class="mhead"><div><h3>${esc(ev.name)}</h3><div class="sub">Directory reference only</div></div><button class="close" onclick="closeModal()">×</button></div>
+ <div class="mbody"><div class="attn sea"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg><div><div class="at">No operational data attached</div><div class="am">Capacity, sales, guests, floor plans and check-ins are unknown until an owned event is created.</div></div></div>
+ <button class="btn block" onclick="location.href='/tickets'">Open live Tickets</button></div>`);
 }
 
 /* ----- floor layout state ----- */
@@ -1084,13 +1073,13 @@ function renderDiscover(){
   return;
  }
  const usingFallback=discover.error||!discover.events.length;
- const list=usingFallback?EVENTS.filter(e=>!e.real):discover.events;
+ const list=discover.events;
  const banner=usingFallback
-  ? `<div class="attn amb" style="margin-bottom:12px"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><div><div class="at">Showing demo events</div><div class="am">Couldn't reach the live directory${discover.error?' ('+esc(discover.error)+')':''} — this sandbox blocks network egress. In a real browser this lists ~100 ingested Greek events.</div></div><button class="btn sm" onclick="fetchRealEvents()">Retry</button></div>`
-  : `<div class="attn sea" style="margin-bottom:12px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" opacity="0"/><path d="M9 12l2 2 4-4"/></svg><div><div class="at">${discover.events.length} live Greek events</div><div class="am">Ingested by Zoi · ordered soonest-first. Select one to operate it.</div></div></div>`;
+  ? `<div class="attn amb" style="margin-bottom:12px"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><div><div class="at">Live event data unavailable</div><div class="am">No event metrics are shown until this page can reach the Zoi directory${discover.error?' ('+esc(discover.error)+')':''}. Demo records are intentionally hidden.</div></div><button class="btn sm" onclick="fetchRealEvents()">Retry</button></div>`
+  : `<div class="attn sea" style="margin-bottom:12px"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01" opacity="0"/><path d="M9 12l2 2 4-4"/></svg><div><div class="at">${discover.events.length} live Greek events</div><div class="am">Ingested by Zoi · ordered soonest-first. Select one to inspect metadata. Owned operations run in Tickets.</div></div></div>`;
  body.innerHTML=banner+list.map(e=>{
-  const m=MODES[e.mode]||MODES.concert;const real=!usingFallback;
-  return `<div class="tier" onclick="${real?`loadRealEvent('${e.id}')`:`selectEvent('${e.id}')`}">
+  const m=MODES[e.mode]||MODES.concert;const real=true;
+  return `<div class="tier" onclick="loadRealEvent('${e.id}')">
     <div class="tieric" style="background:linear-gradient(150deg,${m.col},#0a2a3f)">${m.ic}</div>
     <div style="flex:1;min-width:0"><div class="tn" style="font-size:14.5px">${esc(e.name)}</div>
      <div class="td">${esc(e.date.split(' · ')[0])} · ${esc(e.venue)}</div></div>

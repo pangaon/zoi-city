@@ -429,17 +429,16 @@ nothing to launch that the global nav does not already reach. Either:
 
 ## 5. Risks, and what I am not sure about
 
-### Risk 1 — `command-center`'s gate is a placeholder, and it calls admin RPCs with the public key. Treat as P0.
+### Risk 1 — `command-center`'s former gate was a placeholder, and it called admin RPCs with the public key. Treat as P0.
 
-`apps/command-center/index.html:300`:
+`apps/command-center/index.html` (resolved 2026-09-11):
 ```js
-const GATE_HASH="a20405ad…"; // PLACEHOLDER = SHA-256 of "change me before launch" — replace
+Supabase OTP session + server-side admin RPC permissions
 ```
-The passphrase is documented in the source. Worse, the gate is client-side
-(`assertUnlocked()` throws in JS) while the fetch at L327 sends the **anon**
-publishable key to `zoi_admin_dashboard` — so the gate protects nothing a `curl`
-cannot skip. The page's own comment claims "The gate is enforced in the data
-layer (assertUnlocked) — no admin RPC can run"; that is not what the code does.
+The exposed passphrase was removed. The page now requires a Supabase OTP session
+and sends that bearer token to admin RPCs. The RPCs must still enforce operator
+roles server-side; frontend authentication is not a replacement for database
+authorization.
 
 I **could not verify from this repo** whether `zoi_admin_dashboard` and
 `zoi_admin_inbox` are themselves role-gated server-side. If they are, the

@@ -374,7 +374,7 @@
                   Authorization: 'Bearer ' + (C.auth && C.auth.token ? C.auth.token() : C.KEY),
                   'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ workspace: ctx.ws, platform: p.key })
+                body: JSON.stringify({ workspace: ctx.ws, platform: p.key, return_to: location.origin + '/social' })
               });
               var j = await r.json().catch(function () { return {}; });
               var url = j.url || j.authorize_url || j.redirect;

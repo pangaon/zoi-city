@@ -11,6 +11,7 @@ const J = (o: unknown, s = 200) => new Response(JSON.stringify(o), { status: s, 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const REDIRECT = `${SUPABASE_URL}/functions/v1/social-oauth-callback`;
+const APP_ORIGIN = "https://www.zoi.city";
 
 async function sbRpc(fn: string, args: Record<string, unknown>) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
@@ -21,6 +22,26 @@ async function sbRpc(fn: string, args: Record<string, unknown>) {
   if (!r.ok) throw new Error(`${fn}: ${r.status} ${await r.text()}`);
   const t = await r.text();
   return t ? JSON.parse(t) : null;
+}
+
+async function caller(req: Request) {
+  const authorization = req.headers.get("Authorization") || "";
+  if (!/^Bearer\s+\S+$/i.test(authorization)) throw new Error("authentication_required");
+  const r = await fetch(`${SUPABASE_URL}/auth/v1/user`, {
+    headers: { apikey: Deno.env.get("SUPABASE_ANON_KEY") || SERVICE_KEY, Authorization: authorization },
+  });
+  if (!r.ok) throw new Error("authentication_required");
+  const user = await r.json();
+  if (!user?.id) throw new Error("authentication_required");
+  return { token: authorization, id: user.id as string };
+}
+
+function safeReturnTo(value: unknown) {
+  try {
+    const u = new URL(String(value || `${APP_ORIGIN}/social`));
+    if (u.origin !== APP_ORIGIN || u.pathname !== "/social") return `${APP_ORIGIN}/social`;
+    return u.toString();
+  } catch { return `${APP_ORIGIN}/social`; }
 }
 
 function b64url(buf: ArrayBuffer) {
@@ -53,6 +74,15 @@ Deno.serve(async (req) => {
   try {
     const { workspace, platform, profile, return_to } = await req.json();
     if (!workspace || !platform) return J({ error: "workspace and platform required" }, 400);
+    const user = await caller(req);
+    const membership = await fetch(`${SUPABASE_URL}/rest/v1/rpc/zoi_me`, {
+      method: "POST",
+      headers: { apikey: Deno.env.get("SUPABASE_ANON_KEY") || SERVICE_KEY, Authorization: user.token, "Content-Type": "application/json" },
+      body: "{}",
+    });
+    if (!membership.ok) return J({ error: "workspace_access_denied" }, 403);
+    const me = await membership.json();
+    if (!(me?.workspaces || []).some((w: any) => String(w.id) === String(workspace))) return J({ error: "workspace_access_denied" }, 403);
     const cfg = REG[platform];
     if (!cfg) return J({ available: false, reason: "unsupported" });
     const clientId = Deno.env.get(cfg.env[0]);
@@ -64,12 +94,13 @@ Deno.serve(async (req) => {
     if (cfg.pkce) { const p = await pkce(); verifier = p.verifier; challenge = p.challenge; }
     await sbRpc("social_oauth_state_put", {
       p_state: state, p_workspace: workspace, p_platform: platform,
-      p_profile: profile ?? null, p_return_to: return_to ?? `https://www.zoi.city/social`,
+      p_profile: user.id, p_return_to: safeReturnTo(return_to),
       p_code_verifier: verifier, p_extra: {},
     });
     const url = cfg.build(clientId, state, challenge);
     return J({ available: true, url });
   } catch (e) {
-    return J({ error: String(e?.message ?? e) }, 500);
+    const message = String(e?.message ?? e);
+    return J({ error: message }, message === "authentication_required" ? 401 : 500);
   }
 });
