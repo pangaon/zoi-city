@@ -74,18 +74,18 @@
    * These are local and read-only; workspace templates still come from the
    * database. A founder can apply one, edit the facts, then save a workspace copy. */
   var BUILTIN_TEMPLATES = [
-    { id:'builtin-welcome', name:'Welcome to our community', category:'Brand', channels:['zoi','facebook','instagram','linkedin'], body:'Welcome to [business name] — proudly serving our Greek community. Follow along for news, events, and the people who make this place feel like home.' },
-    { id:'builtin-event', name:'Event announcement', category:'Events', channels:['zoi','facebook','instagram','linkedin'], body:'Join us for [event name] on [date] at [location]. Bring your people, share the moment, and reserve your place here: [link]' },
-    { id:'builtin-nameday', name:'Χρόνια πολλά', category:'Culture', channels:['zoi','facebook','instagram'], body:'Χρόνια πολλά σε όλους όσοι γιορτάζουν σήμερα. May your name day be filled with health, joy, and the people you love. 🇬🇷' },
-    { id:'builtin-offer', name:'Offer with a clear next step', category:'Growth', channels:['facebook','instagram','x'], body:'A little something for our community: [offer]. Available until [date]. See the details and claim yours here: [link]' },
-    { id:'builtin-review', name:'Customer story', category:'Trust', channels:['zoi','facebook','linkedin'], body:'A kind word from our community: “[short quote]” Thank you for trusting [business name]. Your support keeps this work going.' },
-    { id:'builtin-behind', name:'Behind the scenes', category:'Story', channels:['instagram','tiktok','zoi'], body:'A look behind the scenes at [business name]. The details matter, the people matter, and we are grateful you are here.' },
-    { id:'builtin-menu', name:'Menu or service spotlight', category:'Products', channels:['instagram','facebook'], body:'Today\'s spotlight: [product or service]. Made with care, served with pride. See the full details here: [link]' },
-    { id:'builtin-community', name:'Community invitation', category:'Community', channels:['zoi','facebook','linkedin'], body:'What should we build, celebrate, or improve together? Tell us what matters to you in the comments or at [link].' },
-    { id:'builtin-youtube', name:'Video description', category:'Video', channels:['youtube'], body:'In this video: [what viewers will learn]. Subscribe for more Greek stories, practical guidance, and updates from [business name].\n\nMore details: [link]' },
-    { id:'builtin-x-thread', name:'Short thread starter', category:'Thought leadership', channels:['x'], body:'A quick lesson from [business name]: [one useful insight].\n\nHere is what we have learned, and what we would tell someone starting today:' },
-    { id:'builtin-partner', name:'Partner announcement', category:'Partnerships', channels:['linkedin','facebook','zoi'], body:'We are pleased to work with [partner]. Together we are helping [community or audience] do [outcome]. Learn more: [link]' },
-    { id:'builtin-thanks', name:'Thank you after an event', category:'Events', channels:['zoi','facebook','instagram'], body:'Thank you to everyone who joined us for [event name]. Your energy, generosity, and presence made it special. Photos and next steps: [link]' }
+    { id:'builtin-welcome', name:'Welcome / profile launch', category:'Brand', format:'Portrait or profile image', channels:['zoi','facebook','instagram','linkedin'], body:'Meet [business name]. We are here for [audience] with [specific promise]. Follow us for [three useful things]. Find us, visit us, or start here: [link]' },
+    { id:'builtin-event', name:'Event launch / hero image', category:'Events', format:'Hero image or event poster', channels:['zoi','facebook','instagram','linkedin'], body:'Save the date: [event name].\n\n[One vivid reason to attend]. Join us [date] at [location]. Reserve your place: [link]' },
+    { id:'builtin-nameday', name:'Nameday / cultural moment', category:'Culture', format:'Warm portrait or Greek cultural image', channels:['zoi','facebook','instagram'], body:'Χρόνια πολλά σε όσους γιορτάζουν σήμερα. May your day be filled with health, joy, and the people who make home feel close. 🇬🇷\n\nFrom all of us at [business name].' },
+    { id:'builtin-offer', name:'Offer / clear conversion', category:'Growth', format:'Product hero image or carousel', channels:['facebook','instagram','x'], body:'For our community: [offer].\n\nWhy it matters: [one concrete benefit]. Available until [date]. See the details and claim yours: [link]' },
+    { id:'builtin-review', name:'Customer story / proof', category:'Trust', format:'Customer portrait or product image', channels:['zoi','facebook','linkedin'], body:'“[short customer quote]”\n\nThank you, [customer name]. Stories like this are why we keep building [business name]. Learn more: [link]' },
+    { id:'builtin-behind', name:'Behind the scenes / Reel', category:'Story', format:'Vertical video or candid photo', channels:['instagram','tiktok','zoi'], body:'What you do not see: [specific human/process detail].\n\nThe small details matter. Here is how we make [product/service] with care.' },
+    { id:'builtin-menu', name:'Product / service spotlight', category:'Products', format:'Carousel or close-up hero image', channels:['instagram','facebook'], body:'Spotlight: [product or service].\n\nMade for [audience], known for [benefit]. Try it, book it, or learn more: [link]' },
+    { id:'builtin-community', name:'Community question', category:'Community', format:'Question card or founder portrait', channels:['zoi','facebook','linkedin'], body:'We are building [project or offering] for our community. What would help you most right now?\n\nTell us below or share your answer here: [link]' },
+    { id:'builtin-youtube', name:'YouTube / long-form video', category:'Video', format:'16:9 thumbnail plus description', channels:['youtube'], body:'In this video: [what viewers will learn].\n\nChapters / details:\n00:00 [opening]\n[time] [key idea]\n\nSubscribe for Greek stories, practical guidance, and updates from [business name]. More details: [link]' },
+    { id:'builtin-x-thread', name:'X / insight thread', category:'Thought leadership', format:'Text thread or chart image', channels:['x'], body:'A lesson from [business name]: [one useful insight].\n\n1/ What we noticed: [fact]\n2/ What changed: [action]\n3/ What we would recommend: [advice]\n\nFull details: [link]' },
+    { id:'builtin-partner', name:'Partner announcement', category:'Partnerships', format:'Two-logo image or partner portrait', channels:['linkedin','facebook','zoi'], body:'We are pleased to work with [partner]. Together we are helping [audience] achieve [outcome].\n\nRead the story and meet the people behind it: [link]' },
+    { id:'builtin-thanks', name:'Event thank-you / recap', category:'Events', format:'Photo carousel or recap Reel', channels:['zoi','facebook','instagram'], body:'Thank you to everyone who joined [event name].\n\nYour energy, generosity, and presence made it special. Here are a few moments, and what comes next: [link]' }
   ];
 
   var WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -477,12 +477,13 @@
     var extras = el('div', 'zc-card');
     extras.style.marginTop = '0';
     extras.innerHTML =
-      '<span class="zc-lab">Hashtag sets</span>' +
+      '<span class="zc-lab">Brand &amp; hashtag sets</span>' +
       '<div class="zc-row" style="margin-bottom:12px">' +
         '<select class="zc-sel zc-grow" data-role="hashsel"><option value="">Loading sets…</option></select>' +
         '<button class="zc-btn" data-role="appendtags">Append</button>' +
-        '<button class="zc-btn" data-role="savetags" title="Save current #tags in the body as a set">Save #tags</button>' +
+        '<button class="zc-btn" data-role="savetags" title="Save the brand or campaign hashtags">Save set</button>' +
       '</div>' +
+      '<input class="zc-in" style="width:100%;margin-bottom:14px" placeholder="Brand hashtags, e.g. #MythosTaverna #GreekFoodNYC" data-role="brandtags" aria-label="Brand hashtags" />' +
       '<span class="zc-lab">Link &amp; UTM builder</span>' +
       '<div class="zc-row" style="margin-bottom:6px">' +
         '<input class="zc-in" type="url" placeholder="https://long-url…" data-role="lu_url">' +
@@ -1315,6 +1316,7 @@
           b.type = 'button';
           b.innerHTML = '<span class="zc-grow"><span class="zc-tn">' + esc(t.name || 'Untitled') + '</span>' +
             '<span class="zc-src">' + esc(t.id && String(t.id).indexOf('builtin-') === 0 ? 'Zoi starter' : 'Workspace template') + '</span>' +
+            (t.format ? '<span class="zc-src">' + esc(t.category || '') + ' · ' + esc(t.format) + '</span>' : '') +
             '<span class="zc-tb2">' + esc(String(t.body || '').replace(/\s+/g, ' ').slice(0, 90)) + '</span></span>';
           b.addEventListener('click', function () {
             applyTemplate(t);
@@ -1894,9 +1896,10 @@
       onBodyChange();
     });
     q('savetags').addEventListener('click', async function () {
-      var tags = (ta.value.match(/#[\p{L}0-9_]+/gu) || []);
+      var brand = String(q('brandtags').value || '').trim();
+      var tags = (brand || ta.value).match(/#[\p{L}0-9_]+/gu) || [];
       if (!tags.length) { toast('No #hashtags in the body to save.'); return; }
-      var name = global.prompt ? global.prompt('Name this hashtag set:', 'Set ' + (state.hashtags.length + 1)) : ('Set ' + (state.hashtags.length + 1));
+      var name = global.prompt ? global.prompt('Name this hashtag set:', brand ? 'Brand hashtags' : 'Campaign set ' + (state.hashtags.length + 1)) : (brand ? 'Brand hashtags' : 'Campaign set ' + (state.hashtags.length + 1));
       if (!name) return;
       try {
         await C.api.rpc('hashtag_save', { p_workspace: ctx.ws, p_name: name, p_tags: tags, p_id: null }, { auth: 'require' });
