@@ -3,7 +3,7 @@
    repeat visit paints instantly and a flaky connection still gets a page. It
    never caches API responses or listing HTML — directory data changes hourly and
    a stale listing is worse than a slow one. */
-const V = 'zoi-v1';
+const V = 'zoi-v2';
 const SHELL = [
   '/', '/explore', '/assets/zoi-theme.css', '/assets/zoi-theme.js',
   '/assets/zoi-core.js', '/assets/icons/icon-192.png', '/manifest.webmanifest'
