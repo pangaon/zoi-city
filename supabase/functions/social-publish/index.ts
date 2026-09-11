@@ -58,7 +58,10 @@ Deno.serve(async(req)=>{
     if(!channels.length){ await sbRpc("social_post_finalize",{p_post:post.id,p_status:"failed"}); processed++; continue; }
     let anyOk=false;
     for(const ch of channels){
-      const res=await publishOne(ch.platform,ch,post.body||"",post.media||[]);
+      const overrides=post.meta?.per_network_overrides||{};
+      const override=overrides[ch.id] || overrides[ch.platform];
+      const body=typeof override?.body === "string" ? override.body : (post.body||"");
+      const res=await publishOne(ch.platform,ch,body,post.media||[]);
       await sbRpc("social_target_record",{p_post:post.id,p_channel:ch.id,p_platform:ch.platform,p_status:res.ok?"published":"failed",p_external_id:res.id??null,p_url:res.url??null,p_error:res.error??null});
       if(res.ok) anyOk=true;
     }

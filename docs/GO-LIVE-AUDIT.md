@@ -4,6 +4,32 @@ Updated 2026-09-11. This is the production truth for the four operator surfaces.
 An item is **live** only when its result is durable, permission-checked, and
 observable after a reload. A UI control that changes only browser memory is not live.
 
+## Product Direction
+
+Zoi should beat generic schedulers through a guided daily workflow, not a larger
+pile of buttons:
+
+1. Today view with the next best action, failed work, and approvals.
+2. Goal setup for reservations, foot traffic, donations, growth, or awareness.
+3. Weekly plan proposals that the owner approves before publishing.
+4. Campaign briefs that become coordinated posts, email, community, and listing updates.
+5. Approval lanes for owners, editors, and operators.
+6. Reusable content tied to real events, listings, and source facts.
+7. Network-aware copy, length, media, and call-to-action adaptation.
+8. Safe AI that proposes and previews without inventing facts or publishing silently.
+9. Per-network failure recovery, retry, and explanations.
+10. Analytics that recommends the next action instead of only drawing charts.
+11. Consent-aware audience journeys by intent, nameday, location, and language.
+12. One canonical event link shared across Tickets, email, Social, and Community.
+13. Reviewable content suggestions from verified website facts.
+14. Orthodox calendar, fasting context, Greek/English copy, and diaspora time zones.
+15. A trust center showing source, date, confidence, and owner overrides.
+16. Searchable approved assets: logos, photos, menus, flyers, and alt text.
+17. Campaign link tracking and conversion-aware recommendations.
+18. Mobile approvals, edits, rescheduling, and pause controls.
+19. Safe import of calendars, contacts, and existing content.
+20. Transparent capability limits naming the credential or backend requirement.
+
 ## Social / Business Suite
 
 1. OTP sign-in and workspace selection: live.
@@ -22,6 +48,14 @@ observable after a reload. A UI control that changes only browser memory is not 
 14. Provider media upload pipeline: required for Instagram, TikTok, and YouTube.
 15. Per-target publish status, retry, and error detail: required.
 16. Scheduled post worker monitoring and dead-letter recovery: required.
+17. Today view and prioritized next action: required.
+18. Goal-based weekly planning: required.
+19. Coordinated campaign briefs: required.
+20. Approval lanes and an approved asset library: required.
+21. Link tracking and conversion-aware recommendations: required.
+22. Mobile approval and pause controls: required.
+23. Provider token health and per-target retry: required.
+24. Cross-channel analytics with recommended next actions: required.
 
 ## Tickets
 
@@ -78,6 +112,30 @@ observable after a reload. A UI control that changes only browser memory is not 
 15. Operator sign-out, session expiry, and forced re-authentication: enhancement required.
 
 ## User Journeys
+
+## Verified-Site Enrichment
+
+The enrichment worker is live and runs from each listing's database-owned website,
+not from a URL supplied by a visitor. It follows robots rules, blocks private and
+cloud metadata addresses, checks redirects, limits response size and time, and
+writes machine-derived values under `profile._enrich` with source and date.
+
+The production queue contains more than 10,000 registered websites. Verified,
+owner-verified, and source-verified listings are prioritized. The production
+scheduler invokes the worker automatically. Every attempt records a result,
+including useful fields, an empty page, a robots refusal, an HTTP failure, or a
+network error, so a broken site is not retried invisibly forever.
+
+The worker can extract descriptions, taglines, phone, email, opening hours,
+address parts, coordinates, photos, social links, menus, booking, ordering, and
+donation links. Aggregator sites may contribute contact facts, but their branding
+and descriptions are excluded. Owner-entered fields are protected from machine
+overwrite.
+
+Next enrichment improvements are confidence scores, field-level review, change
+diffs before publishing, same-domain `/menu` and `/contact` discovery, canonical
+URL detection, language-aware extraction, owner correction feedback, and a
+visible “last checked / source” panel on every listing.
 
 ### Connect a social account
 

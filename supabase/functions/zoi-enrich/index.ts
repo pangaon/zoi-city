@@ -541,12 +541,20 @@ Deno.serve(async (req) => {
           delete profile[k]; delete provenance[k];
         }
       }
-      if (!Object.keys(profile).length) { bump("nothing-usable"); continue; }
+      if (!Object.keys(profile).length) {
+        bump("nothing-usable");
+        batch.push({ slug: row.slug, website: got.finalUrl,
+          profile: { crawl_status: "checked_no_data" }, provenance: {} });
+        continue;
+      }
       for (const k of Object.keys(profile)) bump("field:" + k);
       bump("ok");
       batch.push({ slug: row.slug, website: got.finalUrl, profile, provenance });
     } catch (e) {
-      bump("error:" + String(e).slice(0, 40));
+      const error = String(e).slice(0, 160);
+      bump("error:" + error.slice(0, 40));
+      batch.push({ slug: row.slug, website: v.url.toString(),
+        profile: { crawl_status: "error", last_error: error }, provenance: {} });
     }
   }
 
