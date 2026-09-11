@@ -531,7 +531,7 @@ Deno.serve(async (req) => {
         batch.push({ slug: row.slug, website: v.url.toString(),
                      profile: permanent
                        ? { blocked: "true", blocked_reason: got.error }
-                       : { last_error: got.error },
+            : { crawl_status: "error", last_error: got.error },
                      provenance: {} });
         continue;
       }

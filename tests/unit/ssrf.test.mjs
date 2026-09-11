@@ -134,3 +134,14 @@ test('the worker authenticates its caller rather than trusting a deploy flag', (
   assert.ok(call > 0 && check > 0, 'both the check and the call must exist');
   assert.ok(check < call, 'authentication must precede any work');
 });
+
+test('transient crawl failures are recorded and eligible for retry', () => {
+  assert.match(worker, /crawl_status: "error", last_error: got\.error/,
+    'fetch failures must be visible to founder operations');
+  const queue = readFileSync(
+    new URL('../../supabase/migrations/0022_enrich_retry_errors.sql', import.meta.url), 'utf8');
+  assert.match(queue, /crawl_status.*= 'error'/s,
+    'recorded failures must be considered by the queue');
+  assert.match(queue, /current_date - 1/,
+    'failed listings must have a retry cooldown');
+});
