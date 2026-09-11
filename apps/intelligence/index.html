@@ -183,7 +183,7 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
 
 </style></head>
 <body>
-<div class="zoi-preview" role="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><b>Live scanner · benchmark preview</b><span>The website scan is live. Ecosystem score, issue totals, and citation panels are benchmark previews until their backend measurement engine is connected.</span><a href="/social">Open Zoi Business →</a></div>
+<div class="zoi-preview" role="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><b>Live scanner · persisted scan evidence</b><span>Dashboard rows and issue counts come from the Intelligence scan tables. Open a row to load its persisted evidence.</span><a href="/social">Open Zoi Business →</a></div>
 <header class="zoi-header static wide"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
   <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
@@ -250,7 +250,7 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
 
         <div class="grid g-2" style="margin-bottom:18px">
           <div class="card raised">
-            <div class="sec-head"><h2>Ecosystem benchmark</h2><span class="badge-live badge-sample" id="ecoConf"><span class="d"></span>sample benchmark</span></div>
+            <div class="sec-head"><h2>Ecosystem score</h2><span class="badge-live badge-sample" id="ecoConf"><span class="d"></span>not measured</span></div>
             <div class="gauge-wrap">
               <div class="gauge">
                 <svg viewBox="0 0 148 148" width="148" height="148">
@@ -260,7 +260,7 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
                 <div class="num"><b id="ecoScore">—</b><span>/ 100</span></div>
               </div>
               <div style="flex:1;min-width:180px">
-                <p class="cap" style="margin-bottom:10px">This benchmark panel is retained as a product preview. Use the live page scan above for evidence from the page you are testing.</p>
+                <p class="cap" style="margin-bottom:10px">The score is shown only when a persisted site scan exists. The free page check above is separate and is not saved.</p>
                 <div id="covBars"></div>
               </div>
             </div>
@@ -421,20 +421,8 @@ async function runLiveScan(){
   btn.disabled=false;btn.textContent='Scan this page';
 }
 
-/* ---- sample fallback (graceful, clearly labeled) ---- */
-const SAMPLE={
-  ecosystem_score:28, ecosystem_summary:{published_pages:2652, confidence:'measured (DB coverage counts)',
-    coverage_pct:{meta_title:1,meta_description:1,canonical:1,schema_type:1,og_image:0,body_content:94,freshness:2}},
-  issue_counts:{high:31,medium:48,low:20},
-  scans:[
-    {entity:'Ionion FM',entity_type:'creator',score:15,top_issues:[{check_key:'jsonld_invalid',severity:'high',status:'open',evidence:{missing:'@type'},risk:'Low',expected_benefit:'Rich results',rollback:'Revert schema_type',approval_required:false}]},
-    {entity:'Saint Demetrios Greek Orthodox Church (Chicago)',entity_type:'church',score:21,top_issues:[]}
-  ],
-  citations:[{query:'best greek bakeries in toronto',engine:'perplexity',appeared:null,position:null,confidence:'estimated'}]
-};
-
-async function rpc(fn){
-  const r=await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},body:'{}'});
+async function rpc(fn,payload={}){
+  const r=await fetch(`${SUPA_URL}/rest/v1/rpc/${fn}`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},body:JSON.stringify(payload)});
   if(!r.ok) throw new Error('rpc '+r.status);
   return r.json();
 }
@@ -443,10 +431,10 @@ async function loadData(refresh){
   setConn('connecting…');
   try{
     DATA=await rpc('seo_dashboard_fast');
-    if(!DATA || (!Array.isArray(DATA.scans) && !DATA.issue_counts)) throw new Error('empty');
+    if(!DATA || !Array.isArray(DATA.scans) || !DATA.issue_counts) throw new Error('invalid dashboard response');
     liveBadge(true); setConn('live · '+new Date().toLocaleTimeString());
   }catch(e){
-    DATA={ecosystem_score:null,ecosystem_summary:{},issue_counts:{},scans:[],citations:[],error:e.message||'live dashboard unavailable'};
+    DATA={ecosystem_score:null,ecosystem_summary:null,issue_counts:null,scans:null,citations:null,error:e.message||'live dashboard unavailable'};
     liveBadge(false); setConn('live data unavailable');
   }
   render();
@@ -455,7 +443,7 @@ async function loadData(refresh){
 function liveBadge(live){
   const b=document.getElementById('srcBadge');
   b.className='badge-live'+(live?'':' badge-sample');
-  b.innerHTML='<span class="d"></span>'+(live?'Live data':'Sample data');
+  b.innerHTML='<span class="d"></span>'+(live?'Live data':'Live data unavailable');
 }
 function setConn(t){document.getElementById('connState').textContent=t;}
 
@@ -466,7 +454,7 @@ function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<
 
 function render(){
   const d=DATA, s=d.ecosystem_summary||{};
-  const errorNote=d.error?'<div class="note amber" style="margin-bottom:18px"><span><b>Live Intelligence data is unavailable.</b> '+esc(d.error)+' The sample benchmark is hidden. Use Refresh to try again.</span></div>':'';
+  const errorNote=d.error?'<div class="note amber" style="margin-bottom:18px"><span><b>Live Intelligence data is unavailable.</b> '+esc(d.error)+' No sample values are shown. Use Refresh to try again.</span></div>':'';
   const overview=document.getElementById('v-overview');
   if(overview){let old=document.getElementById('liveDataError');if(old)old.remove();if(errorNote){old=document.createElement('div');old.id='liveDataError';old.innerHTML=errorNote;overview.insertBefore(old,overview.firstChild);}}
   // gauge
@@ -474,21 +462,21 @@ function render(){
   document.getElementById('ecoScore').textContent=sc==null?'—':sc;
   const C=389.6; document.getElementById('ecoArc').style.strokeDashoffset=sc==null?C:C-(C*sc/100);
   document.getElementById('ecoArc').style.stroke=sc==null?'var(--ink-3)':sc<40?'var(--crit)':sc<70?'var(--warn)':'var(--ok)';
-  document.getElementById('ecoPages').textContent=(s.published_pages||'—').toLocaleString?.(s.published_pages)||s.published_pages||'—';
+  document.getElementById('ecoPages').textContent=s.published_pages==null?'—':Number(s.published_pages).toLocaleString();
   document.getElementById('ecoConf').className='badge-live '+(sc==null?'badge-sample':'');
   document.getElementById('ecoConf').innerHTML='<span class="d"></span>'+(sc==null?'site score not measured yet':'live site score');
   // coverage bars
   const cov=s.coverage_pct||{}; const labels={meta_title:'Title tags',meta_description:'Meta descriptions',canonical:'Canonicals',schema_type:'Schema type',og_image:'OG images',body_content:'Body content',freshness:'Freshness (180d)'};
   document.getElementById('covBars').innerHTML=Object.keys(labels).map(k=>{
-    const v=cov[k]??0;
-    return `<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:.75rem"><span class="mut">${labels[k]}</span><b>${v}%</b></div><div class="bar"><i style="width:${v}%;background:${v<25?'var(--crit)':v<60?'var(--warn)':'var(--ok)'}"></i></div></div>`;
+    const v=cov[k];
+    return `<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:.75rem"><span class="mut">${labels[k]}</span><b>${v==null?'—':v+'%'}</b></div><div class="bar"><i style="width:${v==null?0:v}%;background:${v==null?'var(--ink-3)':v<25?'var(--crit)':v<60?'var(--warn)':'var(--ok)'}"></i></div></div>`;
   }).join('');
   // issue counts
-  const ic=d.issue_counts||{}; const crit=(ic.critical||0)+(ic.high||0);
-  document.getElementById('cCrit').textContent=crit;
-  document.getElementById('cMed').textContent=ic.medium||0;
-  document.getElementById('cLow').textContent=ic.low||0;
-  document.getElementById('issTotal').textContent=(crit+(ic.medium||0)+(ic.low||0))+' open';
+  const ic=d.issue_counts; const crit=ic?((ic.critical||0)+(ic.high||0)):null;
+  document.getElementById('cCrit').textContent=crit==null?'—':crit;
+  document.getElementById('cMed').textContent=ic?(ic.medium||0):'—';
+  document.getElementById('cLow').textContent=ic?(ic.low||0):'—';
+  document.getElementById('issTotal').textContent=ic?(crit+(ic.medium||0)+(ic.low||0))+' open':'unavailable';
   // reuse / new lists
   const reuse=['v_listing_jsonld — entity JSON-LD','v_seo_sitemap — sitemap source (4,158 URLs)','v_seo_city_category — hub gating','zoi.schema_type() — @type mapper','listings: meta_title / meta_description / canonical_path / schema_type / og_image / hreflang_alt'];
   const neu=['seo_scans / seo_issues / citation_checks tables (RLS deny-by-default)','zoi.seo_scan_entity() — 12-check scan engine','zoi.gen_entity_jsonld() — valid @type generator','zoi.gen_llms_txt() — AI-crawler summary','public.seo_dashboard() — read RPC'];
@@ -499,11 +487,12 @@ function render(){
 }
 
 function renderScans(){
-  const rows=(DATA.scans||[]);
-  document.getElementById('scanCount').textContent=rows.length+' scanned';
+  const rows=DATA.scans||[];
+  document.getElementById('scanCount').textContent=DATA.scans?rows.length+' scanned':'unavailable';
   document.getElementById('scanRows').innerHTML=rows.map((r,i)=>{
     const tops=(r.top_issues||[]).filter(x=>x.severity!=='info').slice(0,3).map(x=>`<span class="pill" style="margin:2px 3px 0 0;font-size:.6875rem">${esc(x.check_key)}</span>`).join('')||'<span class="cap">none</span>';
-    return `<tr class="clk" onclick="openScan(${i})"><td><b>${esc(r.entity||'—')}</b></td><td><span class="pill">${esc(r.entity_type||'')}</span></td><td><span class="score-chip ${scoreClass(r.score)}">${r.score}</span></td><td>${tops}</td><td style="text-align:right"><span class="cap">view →</span></td></tr>`;
+    const issueLabel=r.top_issues?.length?tops:(r.issue_count==null?'<span class="cap">open row for detail</span>':'<span class="cap">none</span>');
+    return `<tr class="clk" onclick="openScan(${i})"><td><b>${esc(r.entity||'—')}</b></td><td><span class="pill">${esc(r.entity_type||'')}</span></td><td><span class="score-chip ${scoreClass(r.score)}">${r.score==null?'—':r.score}</span></td><td>${issueLabel}</td><td style="text-align:right"><span class="cap">view →</span></td></tr>`;
   }).join('')||(DATA.error?'<tr><td colspan="5"><div class="note amber"><span><b>Live scan results unavailable.</b> '+esc(DATA.error)+' <button class="btn btn-sm btn-ghost" onclick="loadData(true)">Retry</button></span></div></td></tr>':'<tr><td colspan="5" class="cap">No scans have been recorded yet.</td></tr>');
 }
 
@@ -541,10 +530,16 @@ function renderCitations(){
   }).join('')||'<tr><td colspan="5" class="cap">No tracked queries.</td></tr>';
 }
 
-function openScan(i){
+async function openScan(i){
   const r=DATA.scans[i];
-  document.getElementById('mTitle').textContent=r.entity+' · '+r.score+'/100';
-  const iss=(r.top_issues||[]);
+  document.getElementById('mTitle').textContent=r.entity+' · '+(r.score==null?'—':r.score)+'/100';
+  document.getElementById('mBody').innerHTML='<p class="cap">Loading persisted scan evidence…</p>';
+  openModal();
+  let detail;
+  try{detail=await rpc('seo_scan_detail',{p_scan:r.scan_id});}
+  catch(e){document.getElementById('mBody').innerHTML='<div class="note amber"><span><b>Scan detail unavailable.</b> '+esc(e.message||'request failed')+' <button class="btn btn-sm btn-ghost" onclick="openScan('+i+')">Retry</button></span></div>';return;}
+  if(!detail||!detail.scan){document.getElementById('mBody').innerHTML='<div class="note amber"><span>This scan no longer has a readable detail record.</span></div>';return;}
+  const iss=Array.isArray(detail.issues)?detail.issues:[];
   document.getElementById('mBody').innerHTML=`<p class="cap" style="margin-bottom:14px">${esc(r.entity_type||'')} · ${iss.length} issue(s). Each carries evidence + risk + benefit + rollback + approval flag.</p>`+
     iss.map(x=>`<div class="tk" style="margin-bottom:10px"><div class="sev" style="background:${sevColor(x.severity)}"></div><div class="body">
       <div class="top"><code>${esc(x.check_key)}</code><span class="pill ${x.severity==='critical'||x.severity==='high'?'crit':x.severity==='medium'?'warn':''}" style="font-size:.6875rem">${esc(x.severity)}</span>${x.approval_required?'<span class="pill crit" style="font-size:.6875rem">Approval</span>':''}</div>

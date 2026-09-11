@@ -1,5 +1,10 @@
 -- Compact Intelligence dashboard read. Detail rows are loaded on demand so a
 -- large issue payload can never block the main screen.
+CREATE INDEX IF NOT EXISTS idx_seo_scans_type_time
+  ON zoi.seo_scans (target_type, scanned_at DESC);
+CREATE INDEX IF NOT EXISTS idx_seo_issues_scan_status_severity
+  ON zoi.seo_issues (scan_id, status, severity);
+
 CREATE OR REPLACE FUNCTION public.seo_dashboard_fast()
 RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER
 SET search_path = zoi, public
@@ -20,7 +25,13 @@ AS $function$
       'score',r.score,'scanned_at',r.scanned_at,'summary',r.summary,
       'issue_count',coalesce((r.summary->>'issues_open')::int,0)
     ) ORDER BY r.scanned_at DESC) FROM recent r LEFT JOIN zoi.listings l ON l.id::text=r.target_ref),'[]'::jsonb),
-    'issue_counts', '{}'::jsonb,
+    'issue_counts', coalesce((SELECT jsonb_object_agg(severity, count) FROM (
+      SELECT i.severity, count(*)::int AS count
+        FROM zoi.seo_issues i
+        JOIN recent r ON r.id = i.scan_id
+       WHERE i.status = 'open'
+       GROUP BY i.severity
+    ) counts), '{}'::jsonb),
     'citations', '[]'::jsonb
   );
 $function$;
