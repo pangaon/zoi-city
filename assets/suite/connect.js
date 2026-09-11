@@ -202,7 +202,9 @@
       } else {
         bmsg.innerHTML = '<b>No network can be connected yet.</b>' +
           '<p>Connecting needs a developer app registered with each network \u2014 Zoi has none yet, so there is nothing to authorise against. ' +
-          'Drafting and scheduling work now, and a planning handle below makes composer previews look right.</p>';
+          'Drafting and scheduling work now, and a planning handle below makes composer previews look right.</p>' +
+          '<p><b>Founder setup:</b> register the provider apps, add their client credentials to Supabase Edge Function secrets, and use this callback URL: <code>https://csebihpaychdkanjjsmz.supabase.co/functions/v1/social-oauth-callback</code>. ' +
+          'Then refresh this page. Zoi and Buy Greek are connected separately by workspace.</p>';
       }
     }
 
