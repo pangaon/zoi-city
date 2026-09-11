@@ -1297,7 +1297,7 @@
   global.ZoiSuite = global.ZoiSuite || { modules: [] };
   global.ZoiSuite.modules.push({
     id: 'analytics',
-    label: 'Analytics',
+    label: 'Performance',
     order: 30,
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M7 13l3-3 3 3 5-5"/></svg>',
     mount: mountAnalytics

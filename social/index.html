@@ -50,6 +50,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 .nitem:hover{color:var(--tx);background:var(--bg3)}
 .nitem.active{color:var(--tx);background:var(--bg3)}
 .nitem.active .nic{color:var(--gold)}
+.navgroup{padding:15px 12px 5px;color:var(--dim);font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
 .nic{width:19px;height:19px;flex:none;color:var(--dim);display:grid;place-items:center}
 .nic svg{width:19px;height:19px}
 .sfoot{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
@@ -225,8 +226,18 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 
   function renderShell(){
     var mods = (window.ZoiSuite.modules||[]).slice().sort(function(a,b){ return (a.order||99)-(b.order||99); });
+    function groupFor(id){
+      if(id==='calendar') return 'Plan';
+      if(id==='composer'||id==='ai') return 'Create';
+      if(id==='analytics'||id==='audience'||id==='bio') return 'Grow';
+      if(id==='email'||id==='bizpage') return 'Convert';
+      return 'Manage';
+    }
+    var lastGroup='';
     var navHtml = mods.map(function(m){
-      return '<div class="nitem" data-id="'+esc(m.id)+'"><span class="nic">'+(m.icon||'')+'</span>'+esc(m.label||m.id)+'</div>';
+      var group=groupFor(m.id), heading=group!==lastGroup?'<div class="navgroup">'+group+'</div>':'';
+      lastGroup=group;
+      return heading+'<div class="nitem" data-id="'+esc(m.id)+'"><span class="nic">'+(m.icon||'')+'</span>'+esc(m.label||m.id)+'</div>';
     }).join('');
     var wsInitial = esc((STATE.wsName||'Z').trim().charAt(0).toUpperCase());
     root.innerHTML =
@@ -253,7 +264,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       '</aside>'+
       '<div class="main">'+
         '<div class="topbar"><button class="hamb" id="hamb"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>'+
-          '<div style="font-weight:700">Zoi suite</div></div>'+
+          '<div><div style="font-weight:700">Zoi suite</div><div style="font-size:11px;color:var(--dim)">Plan · create · grow · convert</div></div></div>'+
         '<div class="mount" id="mount"></div>'+
       '</div>'+
     '</div>';
