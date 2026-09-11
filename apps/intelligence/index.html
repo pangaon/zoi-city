@@ -157,6 +157,13 @@ tr.clk:hover td{background:var(--surface-2)}
 .note svg{width:17px;height:17px;stroke:var(--acc-ink);fill:none;stroke-width:1.7;flex:none;margin-top:1px}
 .note.amber{background:rgba(178,122,30,.07);border-color:rgba(178,122,30,.2)}
 .note.amber svg{stroke:var(--warn)}
+.live-action-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:14px}
+.live-action{display:flex;flex-direction:column;gap:5px;padding:14px;border:1px solid var(--line);border-radius:var(--r-card);background:var(--surface-2);color:var(--ink);text-align:left;cursor:pointer;transition:.16s var(--ease)}
+.live-action:hover{border-color:var(--acc);transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.live-action b{font-size:.875rem}.live-action span{font-size:.75rem;color:var(--ink-2);line-height:1.4}
+.action-plan{display:grid;gap:8px;margin-top:12px}.action-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-in);background:var(--surface-2)}
+.action-item .num{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:var(--acc);color:#fff;font-size:.75rem;font-weight:700;flex:none}
+@media(max-width:720px){.live-action-grid{grid-template-columns:1fr}}
 
 /* modal */
 .modal{position:fixed;inset:0;z-index:210;background:rgba(20,18,12,.32);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:24px}
@@ -233,11 +240,17 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
             <button class="btn btn-primary" id="liveScanBtn" type="button">Scan this page</button>
           </div>
           <div id="liveScanResult" style="margin-top:14px"></div>
+          <div class="live-action-grid">
+            <button class="live-action" type="button" onclick="location.href='/social'"><b>Turn insight into content</b><span>Open the live Composer and start from a platform-ready template.</span></button>
+            <button class="live-action" type="button" onclick="location.href='/apps/command-center/'"><b>Review the ecosystem</b><span>Open the founder dashboard for listings, enrichment, and crawl health.</span></button>
+            <button class="live-action" type="button" onclick="location.href='/explore'"><b>Fix the source listing</b><span>Open the directory and inspect the canonical Zoi profile.</span></button>
+          </div>
+          <div id="liveActionPlan"></div>
         </div>
 
         <div class="grid g-2" style="margin-bottom:18px">
           <div class="card raised">
-            <div class="sec-head"><h2>Ecosystem score</h2><span class="badge-live badge-sample" id="ecoConf"><span class="d"></span>measured coverage</span></div>
+            <div class="sec-head"><h2>Ecosystem benchmark</h2><span class="badge-live badge-sample" id="ecoConf"><span class="d"></span>sample benchmark</span></div>
             <div class="gauge-wrap">
               <div class="gauge">
                 <svg viewBox="0 0 148 148" width="148" height="148">
@@ -247,7 +260,7 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
                 <div class="num"><b id="ecoScore">—</b><span>/ 100</span></div>
               </div>
               <div style="flex:1;min-width:180px">
-                <p class="cap" style="margin-bottom:10px">Measured coverage rollup across <b id="ecoPages">—</b> published pages. JSON-LD &amp; internal-link components estimated from the MVP sample.</p>
+                <p class="cap" style="margin-bottom:10px">This benchmark panel is retained as a product preview. Use the live page scan above for evidence from the page you are testing.</p>
                 <div id="covBars"></div>
               </div>
             </div>
@@ -372,18 +385,23 @@ async function runLiveScan(){
     const jsonld=doc.querySelectorAll('script[type="application/ld+json"]').length;
     const h1=doc.querySelector('h1');
     const links=doc.querySelectorAll('a[href]').length;
-    const checks=[
-      liveCheck('HTTP response',response.ok,response.status+' '+response.statusText),
-      liveCheck('Title',!!title,title?title.slice(0,120):'Missing <title>'),
-      liveCheck('Meta description',!!description,description?'Present':'Missing meta description'),
-      liveCheck('Canonical URL',!!canonical,canonical?(canonical.getAttribute('href')||'Present'):'Missing canonical link'),
-      liveCheck('Open Graph title',!!og,og?'Present':'Missing og:title'),
-      liveCheck('Structured data',jsonld>0,jsonld+' JSON-LD block'+(jsonld===1?'':'s')),
-      liveCheck('Primary heading',!!h1,h1?'Present':'Missing <h1>'),
-      liveCheck('Internal links',links>2,links+' links found'),
-      liveCheck('Response time',performance.now()-started<1500,Math.round(performance.now()-started)+' ms')
-    ].join('');
+    const checksData=[
+      ['HTTP response',response.ok,response.status+' '+response.statusText],
+      ['Title',!!title,title?title.slice(0,120):'Missing <title>'],
+      ['Meta description',!!description,description?'Present':'Missing meta description'],
+      ['Canonical URL',!!canonical,canonical?(canonical.getAttribute('href')||'Present'):'Missing canonical link'],
+      ['Open Graph title',!!og,og?'Present':'Missing og:title'],
+      ['Structured data',jsonld>0,jsonld+' JSON-LD block'+(jsonld===1?'':'s')],
+      ['Primary heading',!!h1,h1?'Present':'Missing <h1>'],
+      ['Internal links',links>2,links+' links found'],
+      ['Response time',performance.now()-started<1500,Math.round(performance.now()-started)+' ms']
+    ];
+    const checks=checksData.map(function(c){return liveCheck(c[0],c[1],c[2]);}).join('');
     out.innerHTML='<div class="card" style="padding:14px;background:var(--surface-2)"><div class="sec-head" style="margin-bottom:8px"><b>'+esc(url.pathname||'/')+'</b><span class="pill ok">Live evidence</span></div>'+checks+'</div>';
+    const failed=checksData.filter(function(c){return !c[1];});
+    document.getElementById('liveActionPlan').innerHTML=failed.length
+      ? '<div class="card" style="margin-top:12px;padding:14px"><div class="label">Recommended next actions</div><div class="action-plan">'+failed.map(function(c,i){return '<div class="action-item"><span class="num">'+(i+1)+'</span><span><b>Fix '+esc(c[0])+'</b><br><span class="cap">'+esc(c[2])+' · open Social or Command Center to continue the work.</span></span></div>';}).join('')+'</div></div>'
+      : '<div class="note" style="margin-top:12px">All checks passed for this page. Move to Social to turn the result into a campaign or review the wider ecosystem in Command Center.</div>';
   }catch(e){out.innerHTML='<div class="note amber">The page could not be scanned: '+esc(e.message||'request failed')+'</div>';}
   btn.disabled=false;btn.textContent='Scan this page';
 }
