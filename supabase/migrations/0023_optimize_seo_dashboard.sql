@@ -51,9 +51,11 @@ AS $function$
     ), '[]'::jsonb),
     'issue_counts', COALESCE((
       SELECT jsonb_object_agg(severity, c) FROM (
-        SELECT i.severity, count(*) c FROM zoi.seo_issues i
-         JOIN zoi.seo_scans s ON s.id = i.scan_id AND s.target_type = 'entity'
-        WHERE i.status = 'open' GROUP BY i.severity
+        SELECT i.severity, count(*) c
+          FROM zoi.seo_issues i
+          JOIN worst es ON es.id = i.scan_id
+         WHERE i.status = 'open'
+         GROUP BY i.severity
       ) t
     ), '{}'::jsonb),
     'citations', COALESCE((
