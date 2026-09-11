@@ -22,3 +22,16 @@ npx expo start
 Scan the QR code with Expo Go. The iOS bundle is configured to match the existing
 App Store Connect/TestFlight record: `com.usgreekscan.zoi`. TestFlight still
 requires Apple Developer signing access and an EAS or Xcode build.
+
+## TestFlight build
+
+From this directory, after authenticating with Expo/EAS:
+
+```bash
+npx eas login
+npx eas build --platform ios --profile testflight
+npx eas submit --platform ios --profile testflight
+```
+
+The App Store Connect app ID is configured as `1464901778`. The build will reuse
+that Zoi app record and will not create a second listing.
