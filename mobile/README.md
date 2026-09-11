@@ -1,6 +1,6 @@
 # Zoi Mobile
 
-This is the native Expo shell for Zoi. It uses the canonical production web
+This is the native Expo shell for Zoi. It uses the existing Zoi production web
 journeys while native feature parity is built: Directory, Map, Business, Tickets,
 Intelligence, Founder Command Center, and BuyGreek.
 
@@ -19,6 +19,6 @@ npm start
 npx expo start
 ```
 
-Scan the QR code with Expo Go. iOS TestFlight requires an Apple Developer account
-and an EAS or Xcode signing setup; this repository currently does not contain those
-credentials or an App Store Connect connection.
+Scan the QR code with Expo Go. The iOS bundle is configured to match the existing
+App Store Connect/TestFlight record: `com.usgreekscan.zoi`. TestFlight still
+requires Apple Developer signing access and an EAS or Xcode build.
