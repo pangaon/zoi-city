@@ -39,6 +39,12 @@ const PAGES = [
     extra: () => {},
   },
   {
+    path: '/explore/map',
+    extra: (html) => {
+      assert(/places-probe/.test(html), '/explore/map: missing interactive places layer');
+    },
+  },
+  {
     path: '/community',
     extra: () => {},
   },

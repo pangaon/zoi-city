@@ -453,7 +453,8 @@
         var p = {
           i: out.length, s: r.slug, n: r.name, t: r.entity_type || 'business',
           city: r.city, country: r.country, cat: r.category_slug,
-          lat: +r.lat, lng: +r.lng
+          lat: +r.lat, lng: +r.lng,
+          precision: r.precision || r.geo_precision || (r._geo && r._geo.precision) || ''
         };
         p.hay = ((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
                  nice(p.cat) + ' ' + (p.t || '')).toLowerCase();
@@ -471,7 +472,7 @@
     });
     ALL.forEach(function (p) {
       p.co = at[p.lat.toFixed(5) + ',' + p.lng.toFixed(5)];
-      p.approx = p.co.length > 2;   // a shared coordinate is a city centroid
+      p.approx = p.precision ? p.precision !== 'street' : p.co.length > 2;
     });
     status('', false);
     return out;
@@ -972,6 +973,29 @@
     renderClusters();
   }
 
+  function openSourceFeature(f) {
+    if (!f || !f.properties) return;
+    var pr = f.properties;
+    if (pr.cluster) {
+      var source = map.getSource('places');
+      var lngLat = f.geometry.coordinates.slice();
+      source.getClusterExpansionZoom(pr.cluster_id).then(function (z) {
+        var cur = map.getZoom();
+        if (!isFinite(z) || z <= cur + 0.05 || cur > 15.5) {
+          source.getClusterLeaves(pr.cluster_id, 500, 0).then(function (leaves) {
+            var group = (leaves || []).map(function (l) { return ALL[l.properties.i]; }).filter(Boolean);
+            if (group.length) showList(group, group.length + ' here', groupWhere(group), lngLat);
+          }, function () {});
+          return;
+        }
+        map.easeTo({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
+      }, function () {});
+      return;
+    }
+    var p = ALL[pr.i];
+    if (p) choose(p, true);
+  }
+
   /* ---------- build the map ---------- */
   function boot(initial) {
     var start = initial.view || { center: [23.7275, 37.9838], zoom: 1.35, bearing: 0, pitch: 0 };
@@ -1008,6 +1032,12 @@
       // has settled; calling it mid-load churns markers for nothing.
       if (map.isSourceLoaded('places')) renderClusters();
     });
+    map.on('idle', function () { renderClusters(); });
+    map.on('click', 'places-probe', function (e) {
+      openSourceFeature(e.features && e.features[0]);
+    });
+    map.on('mouseenter', 'places-probe', function () { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'places-probe', function () { map.getCanvas().style.cursor = ''; });
     map.on('moveend', function () { writeUrl(); if (listState.mode === 'all') showAll(); });
     map.on('click', function () { hideTip(); });
     map.on('error', function (e) {
@@ -1066,8 +1096,9 @@
     if (!navigator.geolocation) { status('Your browser will not share a location', false, 3000); return; }
     status('Finding you…', true);
     navigator.geolocation.getCurrentPosition(function (pos) {
-      here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      status('', false);
+      var accuracy = Math.round(pos.coords.accuracy || 0);
+      here = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: accuracy };
+      status(accuracy ? 'Location found (±' + fmtN(accuracy) + ' m)' : 'Location found', false, 3200);
       map.easeTo({ center: [here.lng, here.lat], zoom: 10.5, duration: 1400 });
       if (!map.getSource('me')) {
         map.addSource('me', { type: 'geojson', data: { type: 'Point', coordinates: [here.lng, here.lat] } });
@@ -1092,7 +1123,7 @@
       showAll();
     }, function () {
       status('Could not get your location', false, 3200);
-    }, { enableHighAccuracy: false, timeout: 9000, maximumAge: 300000 });
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
   });
 
   $('tShare').addEventListener('click', function () {
