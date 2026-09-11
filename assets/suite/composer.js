@@ -70,6 +70,24 @@
 
   var EMOJI = ['😀','😁','😂','🥰','😊','😍','😎','🤩','🥳','😇','🤝','👏','🙌','💪','👍','🔥','✨','💯','🎉','🎊','❤️','🧡','💛','💚','💙','💜','⭐','🌟','🌈','☀️','🌊','🏛️','🇬🇷','🫒','🍇','🍷','☕','🥖','🧿','📣','📸','🎥','📍','🗓️','🚀','💡','✅','⚡','🎁','🙏'];
 
+  /* Built-in starting points for the daily work a Greek business actually does.
+   * These are local and read-only; workspace templates still come from the
+   * database. A founder can apply one, edit the facts, then save a workspace copy. */
+  var BUILTIN_TEMPLATES = [
+    { id:'builtin-welcome', name:'Welcome to our community', category:'Brand', channels:['zoi','facebook','instagram','linkedin'], body:'Welcome to [business name] — proudly serving our Greek community. Follow along for news, events, and the people who make this place feel like home.' },
+    { id:'builtin-event', name:'Event announcement', category:'Events', channels:['zoi','facebook','instagram','linkedin'], body:'Join us for [event name] on [date] at [location]. Bring your people, share the moment, and reserve your place here: [link]' },
+    { id:'builtin-nameday', name:'Χρόνια πολλά', category:'Culture', channels:['zoi','facebook','instagram'], body:'Χρόνια πολλά σε όλους όσοι γιορτάζουν σήμερα. May your name day be filled with health, joy, and the people you love. 🇬🇷' },
+    { id:'builtin-offer', name:'Offer with a clear next step', category:'Growth', channels:['facebook','instagram','x'], body:'A little something for our community: [offer]. Available until [date]. See the details and claim yours here: [link]' },
+    { id:'builtin-review', name:'Customer story', category:'Trust', channels:['zoi','facebook','linkedin'], body:'A kind word from our community: “[short quote]” Thank you for trusting [business name]. Your support keeps this work going.' },
+    { id:'builtin-behind', name:'Behind the scenes', category:'Story', channels:['instagram','tiktok','zoi'], body:'A look behind the scenes at [business name]. The details matter, the people matter, and we are grateful you are here.' },
+    { id:'builtin-menu', name:'Menu or service spotlight', category:'Products', channels:['instagram','facebook'], body:'Today\'s spotlight: [product or service]. Made with care, served with pride. See the full details here: [link]' },
+    { id:'builtin-community', name:'Community invitation', category:'Community', channels:['zoi','facebook','linkedin'], body:'What should we build, celebrate, or improve together? Tell us what matters to you in the comments or at [link].' },
+    { id:'builtin-youtube', name:'Video description', category:'Video', channels:['youtube'], body:'In this video: [what viewers will learn]. Subscribe for more Greek stories, practical guidance, and updates from [business name].\n\nMore details: [link]' },
+    { id:'builtin-x-thread', name:'Short thread starter', category:'Thought leadership', channels:['x'], body:'A quick lesson from [business name]: [one useful insight].\n\nHere is what we have learned, and what we would tell someone starting today:' },
+    { id:'builtin-partner', name:'Partner announcement', category:'Partnerships', channels:['linkedin','facebook','zoi'], body:'We are pleased to work with [partner]. Together we are helping [community or audience] do [outcome]. Learn more: [link]' },
+    { id:'builtin-thanks', name:'Thank you after an event', category:'Events', channels:['zoi','facebook','instagram'], body:'Thank you to everyone who joined us for [event name]. Your energy, generosity, and presence made it special. Photos and next steps: [link]' }
+  ];
+
   var WEEKDAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
   var MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var DRAFT_SAVE_MS = 900;      // debounce for the localStorage autosave
@@ -1274,14 +1292,14 @@
         search.value = filter || '';
         search.addEventListener('input', function () { draw(search.value); });
         m.body.appendChild(search);
-        var list = (state.templates || []).filter(function (t) {
+        var list = BUILTIN_TEMPLATES.concat(state.templates || []).filter(function (t) {
           if (!filter) return true;
           var f = String(filter).toLowerCase();
           return String(t.name || '').toLowerCase().indexOf(f) !== -1 ||
             String(t.body || '').toLowerCase().indexOf(f) !== -1;
         });
-        if (!(state.templates || []).length) {
-          m.body.appendChild(el('div', 'zc-empty', 'No templates saved yet. Write a post and press “Save as template”.'));
+        if (!list.length) {
+          m.body.appendChild(el('div', 'zc-empty', 'No templates match.'));
           global.setTimeout(function () { search.focus(); }, 0);
           return;
         }
@@ -1292,6 +1310,7 @@
           var b = el('button', 'zc-tpl');
           b.type = 'button';
           b.innerHTML = '<span class="zc-grow"><span class="zc-tn">' + esc(t.name || 'Untitled') + '</span>' +
+            '<span class="zc-src">' + esc(t.id && String(t.id).indexOf('builtin-') === 0 ? 'Zoi starter' : 'Workspace template') + '</span>' +
             '<span class="zc-tb2">' + esc(String(t.body || '').replace(/\s+/g, ' ').slice(0, 90)) + '</span></span>';
           b.addEventListener('click', function () {
             applyTemplate(t);

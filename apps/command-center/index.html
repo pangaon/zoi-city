@@ -234,6 +234,10 @@ td .st{color:var(--ink);font-weight:600}td a{color:var(--acc)}
           <div class="card"><h3>Top categories</h3><div class="cb"><canvas id="chCat"></canvas></div></div>
           <div class="card"><h3>Recent activity</h3><div id="activity"></div></div>
         </div>
+        <div class="row c2">
+          <div class="card"><h3>System pulse</h3><div id="opsPulse" class="attn"></div></div>
+          <div class="card"><h3>Recent crawl failures</h3><div id="opsErrors"></div></div>
+        </div>
       </section>
 
       <section class="sec" id="s-directory">
@@ -304,7 +308,7 @@ function pill(v){if(v==null||v==='')return '<span class="pill gy">—</span>';re
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
 function toast(m){let t=document.getElementById('toast');if(!t){t=document.createElement('div');t.id='toast';document.body.appendChild(t);}t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2400);}
 async function q(sql){const r=await window.cowork.callMcpTool(TOOL,{project_id:PROJECT,query:sql});let t="";if(r&&r.content&&r.content[0]&&r.content[0].text)t=r.content[0].text;else if(r&&r.structuredContent)t=JSON.stringify(r.structuredContent);const s=t.indexOf('['),e=t.lastIndexOf(']');if(s>=0&&e>s){try{return JSON.parse(t.slice(s,e+1))}catch(err){throw new Error('parse')}}return[];}
-async function fetchData(){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const rows=await q("select public.zoi_admin_dashboard() as data");return (rows[0]&&rows[0].data)||{};}const r=await fetch(REST+"/rest/v1/rpc/zoi_admin_dashboard",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+bearer(),"Content-Type":"application/json"},body:"{}"});if(!r.ok)throw new Error("REST "+r.status);return await r.json();}
+async function fetchData(){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const rows=await q("select public.zoi_admin_dashboard() as data");return (rows[0]&&rows[0].data)||{};}const h={apikey:ANON,Authorization:"Bearer "+bearer(),"Content-Type":"application/json"};const [dashboard,ops]=await Promise.all([fetch(REST+"/rest/v1/rpc/zoi_admin_dashboard",{method:"POST",headers:h,body:"{}"}),fetch(REST+"/rest/v1/rpc/zoi_founder_ops",{method:"POST",headers:h,body:"{}"})]);if(!dashboard.ok)throw new Error("REST "+dashboard.status);const data=await dashboard.json();if(ops.ok)data.ops=await ops.json();return data;}
 async function act(fn,slug){assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){const a=slug?("'"+String(slug).replace(/'/g,"''")+"'"):'';await q('select public.'+fn+'('+a+')');return;}const b=slug?JSON.stringify({p_slug:slug}):'{}';const r=await fetch(REST+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:ANON,Authorization:'Bearer '+bearer(), 'Content-Type':'application/json'},body:b});if(!r.ok)throw new Error('HTTP '+r.status);}
 window.doAction=async function(fn,slug,msg){try{toast('Working…');await act(fn,slug||null);toast(msg||'Done');document.getElementById('drawer').classList.remove('open');await load();}catch(e){toast('Failed: '+(e.message||e));}};
 
@@ -325,6 +329,9 @@ function renderOverview(){
  const rows=[['Address',cp.address],['Phone',cp.phone],['Website',cp.website],['Hours',cp.hours]];
  document.getElementById('comp').innerHTML=rows.map(r=>{const p=Math.round((r[1]||0)/tot*100);return '<div class="b"><div class="lab"><span>'+r[0]+'</span><span>'+(r[1]||0)+' · '+p+'%</span></div><div class="bar"><i style="width:'+p+'%"></i></div></div>';}).join('');
  const ac=D.activity||[];document.getElementById('activity').innerHTML=ac.length?ac.map(r=>'<div class="act"><span class="w">'+esc(r.w)+'</span><span><span class="st">'+esc(r.actor)+'</span> · '+esc(r.action)+' — '+esc(r.reason||'')+'</span></div>').join(''):'<div class="empty">No activity.</div>';
+ const op=D.ops||{}, en=op.enrichment||{}, ing=op.ingestion||{};
+ document.getElementById('opsPulse').innerHTML='<div class="i"><span>Websites tracked</span><span class="n">'+(en.websites||0)+'</span></div><div class="i"><span>Verified websites</span><span class="n">'+(en.verified_websites||0)+'</span></div><div class="i"><span>Due for crawl</span><span class="n">'+(en.due||0)+'</span></div><div class="i"><span>Checked today</span><span class="n">'+(en.checked_today||0)+'</span></div><div class="i"><span>Successful today</span><span class="n">'+(en.success_today||0)+'</span></div><div class="i"><span>Errors today</span><span class="n">'+(en.errors_today||0)+'</span></div><div class="i"><span>Directory listings</span><span class="n">'+(ing.listings||0)+'</span></div><div class="i"><span>Pending review</span><span class="n">'+(ing.pending_review||0)+'</span></div>';
+ const oe=en.recent_errors||[];document.getElementById('opsErrors').innerHTML=oe.length?oe.map(r=>'<div class="act"><span class="w">'+esc(r.name||r.slug)+'</span><span>'+esc(r.error||'crawl failed')+'</span></div>').join(''):'<div class="empty">No recorded crawl failures.</div>';
 }
 
 /* ---- Directory data grid ---- */
