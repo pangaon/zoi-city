@@ -539,7 +539,6 @@
         '<button class="zc-btn pri" data-role="publish">Publish now</button>' +
         '<button class="zc-btn gold" data-role="schedule">Schedule</button>' +
         '<button class="zc-btn" data-role="draft">Save draft</button>' +
-        '<button class="zc-btn" data-role="templates">Templates…</button>' +
         '<button class="zc-btn" data-role="template">Save as template</button>' +
         '<button class="zc-btn" data-role="clear">Clear</button>' +
         '<button class="zc-btn" data-role="keys" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">⌘ Shortcuts</button>' +
@@ -587,6 +586,11 @@
       clr.setAttribute('data-role', 'quickclear');
       clr.textContent = '↺ Reset text';
       toolbar.appendChild(clr);
+      var templates = el('button', 'zc-tb');
+      templates.type = 'button';
+      templates.setAttribute('data-role', 'templates');
+      templates.textContent = 'Templates';
+      toolbar.appendChild(templates);
     }
     buildToolbar();
 
