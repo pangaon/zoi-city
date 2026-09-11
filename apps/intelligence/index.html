@@ -371,7 +371,22 @@ async function runLiveScan(){
   const input=document.getElementById('liveScanUrl'), btn=document.getElementById('liveScanBtn'), out=document.getElementById('liveScanResult');
   let url;
   try{url=new URL(input.value.trim(),location.origin);}catch(e){out.innerHTML='<div class="note amber">Enter a valid website URL.</div>';return;}
-  if(url.origin!==location.origin){out.innerHTML='<div class="note amber">The first live scanner is limited to zoi.city pages. External customer-site scans will use the protected paid scanner when that service is enabled.</div>';return;}
+  if(url.origin!==location.origin){
+    btn.disabled=true;btn.textContent='Scanning…';out.innerHTML='<div class="cap">Securely fetching the public homepage…</div>';
+    try{
+      const res=await fetch(SUPA_URL+'/functions/v1/seo-site-scan',{method:'POST',headers:{apikey:SUPA_KEY,'Content-Type':'application/json'},body:JSON.stringify({url:url.toString()})});
+      const data=await res.json();
+      if(!res.ok||!data.ok) throw new Error(data.message||data.error||'scan failed');
+      const checksData=data.checks||[];
+      const checks=checksData.map(function(c){return liveCheck(c.label,c.ok,c.detail);}).join('');
+      out.innerHTML='<div class="card" style="padding:14px;background:var(--surface-2)"><div class="sec-head" style="margin-bottom:8px"><b>'+esc(data.url)+'</b><span class="pill ok">Free test evidence</span></div>'+checks+'</div>';
+      const failed=checksData.filter(function(c){return !c.ok;});
+      document.getElementById('liveActionPlan').innerHTML=failed.length
+        ? '<div class="card" style="margin-top:12px;padding:14px"><div class="label">Recommended next actions</div><div class="action-plan">'+failed.map(function(c,i){return '<div class="action-item"><span class="num">'+(i+1)+'</span><span><b>Fix '+esc(c.label)+'</b><br><span class="cap">'+esc(c.detail)+' · open Social or Command Center to continue the work.</span></span></div>';}).join('')+'</div></div>'
+        : '<div class="note" style="margin-top:12px">All checks passed for this homepage. This free test is not saved yet; saved history and scheduled monitoring are part of the paid Intelligence plan.</div>';
+    }catch(e){out.innerHTML='<div class="note amber">The external site could not be scanned: '+esc(e.message||'request failed')+'</div>';}
+    btn.disabled=false;btn.textContent='Scan this page';return;
+  }
   btn.disabled=true;btn.textContent='Scanning…';out.innerHTML='<div class="cap">Fetching and measuring the actual page…</div>';
   const started=performance.now();
   try{
@@ -427,11 +442,12 @@ async function rpc(fn){
 async function loadData(refresh){
   setConn('connecting…');
   try{
-    DATA=await rpc('seo_dashboard');
+    DATA=await rpc('seo_dashboard_fast');
     if(!DATA || (!Array.isArray(DATA.scans) && !DATA.issue_counts)) throw new Error('empty');
     liveBadge(true); setConn('live · '+new Date().toLocaleTimeString());
   }catch(e){
-    DATA=SAMPLE; liveBadge(false); setConn('sample data (offline)');
+    DATA={ecosystem_score:null,ecosystem_summary:{},issue_counts:{},scans:[],citations:[],error:e.message||'live dashboard unavailable'};
+    liveBadge(false); setConn('live data unavailable');
   }
   render();
   if(refresh) toast('Refreshed');
@@ -450,6 +466,9 @@ function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<
 
 function render(){
   const d=DATA, s=d.ecosystem_summary||{};
+  const errorNote=d.error?'<div class="note amber" style="margin-bottom:18px"><span><b>Live Intelligence data is unavailable.</b> '+esc(d.error)+' The sample benchmark is hidden. Use Refresh to try again.</span></div>':'';
+  const overview=document.getElementById('v-overview');
+  if(overview){let old=document.getElementById('liveDataError');if(old)old.remove();if(errorNote){old=document.createElement('div');old.id='liveDataError';old.innerHTML=errorNote;overview.insertBefore(old,overview.firstChild);}}
   // gauge
   const sc=Number.isFinite(Number(d.ecosystem_score))?Number(d.ecosystem_score):null;
   document.getElementById('ecoScore').textContent=sc==null?'—':sc;
