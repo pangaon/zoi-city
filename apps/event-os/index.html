@@ -2344,30 +2344,15 @@ function patronToggleAddon(id){
  if(patron.addons.has(id))patron.addons.delete(id);else patron.addons.add(id);
  patronOpenSheet();patronUpdateBar();
 }
-/* ---- mock checkout ---- */
+/* ---- checkout handoff ---- */
 function patronCheckout(){
  const el=floor.els.find(e=>e.id===patron.selId);if(!el){toast('Pick a table first');return;}
  patron.step='checkout';
- const adds=[...patron.addons].map(id=>ADDONS.find(a=>a.id===id)).filter(Boolean);
  const sheet=$('#patronSheetIn');
  sheet.innerHTML=`<div class="grab"></div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px"><button class="patron-close" style="width:32px;height:32px;font-size:17px;margin:0" onclick="patronOpenSheet()">‹</button><h3 style="font-size:23px">Checkout</h3></div>
-  <div class="psub" style="margin-bottom:16px">Demo only — no payment is taken.</div>
-  <div class="eyebrow">Your details</div>
-  <div class="pfield"><label>Full name</label><input placeholder="e.g. Maria Georgiou"></div>
-  <div class="pfield"><label>Email</label><input placeholder="you@example.com" type="email"></div>
-  <div class="pfield"><label>Mobile (for your QR ticket)</label><input placeholder="+1 (416) 555-0123"></div>
-  <div class="eyebrow" style="margin-top:8px">Order summary</div>
-  <div style="margin-bottom:6px">
-   <div class="psum"><span>${esc(el.name)} · ${patronTierName(el)} · ${el.seats||0} seats</span><b>${fmt(patronTablePrice(el))}</b></div>
-   ${adds.map(a=>`<div class="psum"><span>${esc(a.name)}</span><b>${fmt(a.price)}</b></div>`).join('')}
-   <div class="psum"><span style="color:var(--muted)">Taxes & fees (est.)</span><b>${fmt(Math.round(patronGrand()*0.13))}</b></div>
-   <div class="psum tot"><span>Total</span><b>${fmt(patronGrand()+Math.round(patronGrand()*0.13))}</b></div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center;color:var(--muted);font-size:11.5px;margin:12px 0">
-   <svg viewBox="0 0 24 24" style="width:15px;height:15px;stroke:var(--gold-soft);fill:none;stroke-width:1.9"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
-   Secured checkout demo · powered by Zoi</div>
-  <button class="btn gold block" onclick="patronConfirm()"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg> Confirm reservation</button>`;
+  <div class="attn amb"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><div><div class="at">Checkout is not connected here</div><div class="am">This Event OS studio does not create reservations, charge cards, or issue tickets. Use the live Tickets flow so your reservation is stored and check-in works.</div></div></div>
+  <button class="btn gold block" onclick="location.href='/tickets'">Open live Tickets</button>`;
  $('#patronSheet').classList.add('on');
 }
 function patronConfirm(){
