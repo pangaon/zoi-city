@@ -351,6 +351,13 @@
   }
   function fmtN(n) { return n.toLocaleString(); }
   function km(d) { return d < 1 ? Math.round(d * 1000) + ' m' : (d < 20 ? d.toFixed(1) : Math.round(d)) + ' km'; }
+  function precisionLabel(p) {
+    var v = String((p && p.precision) || '').toLowerCase();
+    if (v === 'street' || v === 'address' || v === 'rooftop') return 'Street-level location';
+    if (v === 'city' || v === 'town' || v === 'locality') return 'Approximate city location';
+    if (v === 'region' || v === 'country') return 'Approximate regional location';
+    return p && p.approx ? 'Approximate location' : 'Location precision unavailable';
+  }
   function haversine(a, b, c, d) {
     var R = 6371, r = Math.PI / 180;
     var dLa = (c - a) * r, dLo = (d - b) * r;
@@ -440,10 +447,13 @@
     status('Reading the directory…', true);
     var offsets = [];
     for (var o = 0; o < 12000; o += 1000) offsets.push(o);
-    var pages = await Promise.all(offsets.map(function (off) {
+    var results = await Promise.all(offsets.map(function (off) {
       return C.api.rpc('explore_geo', { p_limit: 1000, p_offset: off }, { auth: 'anon' })
-        .catch(function () { return []; });
+        .then(function (rows) { return { rows: rows || [], failed: false }; })
+        .catch(function () { return { rows: [], failed: true }; });
     }));
+    if (results.every(function (r) { return r.failed; })) throw new Error('directory unavailable');
+    var pages = results.map(function (r) { return r.rows; });
     var seen = Object.create(null), out = [];
     pages.forEach(function (page) {
       (page || []).forEach(function (r) {
@@ -764,8 +774,14 @@
         el.className = 'm-pin';
         el.style.background = COLOURS[IDX[p.t] || 0];
         el.title = p.n || '';
+        el.setAttribute('role', 'button');
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('aria-label', p.n || 'place');
         (function (pp) {
           el.addEventListener('click', function (e) { e.stopPropagation(); choose(pp, true); });
+          el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(pp, true); }
+          });
           el.addEventListener('mouseenter', function () { tip(pp, lngLat); });
           el.addEventListener('mouseleave', hideTip);
         })(p);
@@ -795,7 +811,7 @@
       '<span class="m-mark" style="background:' + COLOURS[i] + '">' + esc(initial) + '</span>' +
       '<span class="m-meta"><span class="m-nm">' + esc(p.n) + '</span>' +
       '<span class="m-wh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</span>' +
-      (d != null ? '<span class="m-km">' + km(d) + ' away</span>' : '') +
+      '<span class="m-km">' + esc(precisionLabel(p)) + (d != null ? ' · ' + km(d) + ' away' : '') + '</span>' +
       '</span></a>';
   }
 
@@ -900,9 +916,7 @@
       clearSpider();
       currentData = toGeoJSON(ALL.filter(matches));
       map.getSource('places').setData(currentData);
-      Object.keys(clusterMarkers).forEach(function (k) { clusterMarkers[k].remove(); });
-      Object.keys(pinMarkers).forEach(function (k) { pinMarkers[k].remove(); });
-      clusterMarkers = {}; pinMarkers = {};
+      clearMarkers();
       if (listState.mode === 'all') showAll();
     }, 90);
   }
@@ -932,6 +946,7 @@
   function reskin() {
     if (!map) return;
     readColours();
+    clearMarkers();
     map.setStyle(BM.style(styleOpts()), { diff: false });
     map.once('styledata', function () {
       addDataLayers(currentData);
@@ -971,6 +986,14 @@
       paint: { 'circle-radius': 1, 'circle-opacity': 0 }
     });
     renderClusters();
+  }
+
+  function clearMarkers() {
+    Object.keys(clusterMarkers).forEach(function (k) { clusterMarkers[k].remove(); });
+    Object.keys(pinMarkers).forEach(function (k) { pinMarkers[k].remove(); });
+    clusterMarkers = {}; pinMarkers = {};
+    clearSpider();
+    hideTip();
   }
 
   function openSourceFeature(f) {
@@ -1174,7 +1197,8 @@
     try { await loadData(); }
     catch (err) {
       $('ptitle').innerHTML = 'Could not load the map<span class="m-sub">the directory did not answer</span>';
-      $('pbody').innerHTML = '<div class="m-empty">Try again in a moment, or browse <a href="/explore">Explore</a>.</div>';
+      $('pbody').innerHTML = '<div class="m-empty">Try again in a moment, or browse <a href="/explore">Explore</a>.<br><button type="button" class="m-linkish" id="retrymap">Try again</button></div>';
+      $('retrymap').addEventListener('click', function () { location.reload(); });
       return;
     }
 
