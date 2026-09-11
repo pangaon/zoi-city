@@ -504,7 +504,7 @@ function renderScans(){
   document.getElementById('scanRows').innerHTML=rows.map((r,i)=>{
     const tops=(r.top_issues||[]).filter(x=>x.severity!=='info').slice(0,3).map(x=>`<span class="pill" style="margin:2px 3px 0 0;font-size:.6875rem">${esc(x.check_key)}</span>`).join('')||'<span class="cap">none</span>';
     return `<tr class="clk" onclick="openScan(${i})"><td><b>${esc(r.entity||'—')}</b></td><td><span class="pill">${esc(r.entity_type||'')}</span></td><td><span class="score-chip ${scoreClass(r.score)}">${r.score}</span></td><td>${tops}</td><td style="text-align:right"><span class="cap">view →</span></td></tr>`;
-  }).join('')||'<tr><td colspan="5" class="cap">No scans yet.</td></tr>';
+  }).join('')||(DATA.error?'<tr><td colspan="5"><div class="note amber"><span><b>Live scan results unavailable.</b> '+esc(DATA.error)+' <button class="btn btn-sm btn-ghost" onclick="loadData(true)">Retry</button></span></div></td></tr>':'<tr><td colspan="5" class="cap">No scans have been recorded yet.</td></tr>');
 }
 
 function allIssues(){
