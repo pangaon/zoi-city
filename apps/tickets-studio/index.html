@@ -2688,6 +2688,19 @@ Hellenic Community Association of Toronto</textarea>
     <div style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><path d="M20 6L9 17l-5-5"/></svg><b>Your real table tabs</b></div>
     <div id="realTabsList" style="display:grid;gap:8px"></div>
     <div id="realTabsMsg" style="font-size:12.5px;color:var(--muted)"></div>
+    <details>
+      <summary style="cursor:pointer;font-size:13px;color:var(--sea);font-weight:700">+ Manage your real menu (guests order these — price is always set by you, never by them)</summary>
+      <div id="realMenuList" style="display:grid;gap:8px;margin-top:12px"></div>
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px;margin-top:10px">
+        <input id="miName" placeholder="Item name" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <input id="miPrice" type="number" min="0" step="0.01" placeholder="Price $" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <select id="miStation" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+          <option value="kitchen">Kitchen</option><option value="bar">Bar</option><option value="merch">Merch</option>
+        </select>
+        <button class="btn gold sm" onclick="createRealMenuItem()">Add</button>
+      </div>
+      <div id="realMenuMsg" style="font-size:12.5px;color:var(--muted);margin-top:6px"></div>
+    </details>
   </div>
   <div class="tab-view-header" style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
     <div>
@@ -3494,6 +3507,7 @@ async function loadRealTabs(){
       + '<span style="color:var(--gold-s)">$' + Number(t.paid_amount||0).toFixed(2) + ' / $' + Number(t.total_amount||0).toFixed(2) + '</span>'
       + '</div>'
     ).join('');
+    await loadRealMenu(ws);
   }catch(e){ msg.textContent = 'Could not load: ' + e.message; }
 }
 async function loadRealKds(){
@@ -3521,6 +3535,37 @@ async function advanceRealKds(ws, orderId, status){
     if(r && r.ok) showToast('Order marked ' + status); else showToast('Could not update: ' + ((r&&r.error)||'error'));
   }catch(e){ showToast('Could not update: ' + e.message); }
   loadRealKds();
+}
+
+/* Real menu catalog (0034): staff set item + price here; guests can only
+   ever pick an item_id and quantity, never a price, via table_tab_guest_order. */
+async function loadRealMenu(ws){
+  const list = document.getElementById('realMenuList'), msg = document.getElementById('realMenuMsg');
+  if(!list) return;
+  try{
+    const r = await ZoiCore.api.rpc('menu_items_list', {p_workspace: ws});
+    const items = (r && r.ok) ? (r.items || []) : [];
+    list.innerHTML = items.map(i =>
+      '<div style="display:flex;justify-content:space-between;background:rgba(0,0,0,.25);border:1px solid var(--gl);border-radius:8px;padding:8px 12px">'
+      + '<span>' + ZoiCore.esc(i.name) + ' <span style="color:var(--muted);font-size:11px">(' + ZoiCore.esc(i.station) + ')</span></span>'
+      + '<b style="color:var(--gold-s)">$' + (i.price_cents/100).toFixed(2) + '</b></div>'
+    ).join('') || '<div style="font-size:12.5px;color:var(--muted)">No menu items yet.</div>';
+  }catch(e){ if(msg) msg.textContent = 'Could not load menu: ' + e.message; }
+}
+async function createRealMenuItem(){
+  const ws = await currentWorkspaceId();
+  const msg = document.getElementById('realMenuMsg');
+  if(!ws){ msg.textContent = 'Sign in with a Zoi Business workspace to manage a real menu.'; return; }
+  const name = document.getElementById('miName').value.trim();
+  const price = parseFloat(document.getElementById('miPrice').value);
+  const station = document.getElementById('miStation').value;
+  if(!name || isNaN(price) || price < 0){ msg.textContent = 'Enter a name and a valid price.'; return; }
+  msg.textContent = 'Saving…';
+  try{
+    const r = await ZoiCore.api.rpc('menu_item_save', {p_workspace: ws, p_name: name, p_price_cents: Math.round(price*100), p_station: station}, {auth:'require'});
+    if(r && r.ok){ msg.textContent = 'Added.'; document.getElementById('miName').value=''; document.getElementById('miPrice').value=''; loadRealMenu(ws); }
+    else msg.textContent = 'Could not save: ' + ((r && r.error) || 'unknown error');
+  }catch(e){ msg.textContent = 'Could not save: ' + e.message; }
 }
 
 

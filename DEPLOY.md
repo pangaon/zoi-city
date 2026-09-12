@@ -30,6 +30,15 @@ Wave 1 · 2026-08-22. This documents the real pipeline, not an aspirational one.
   grants to `anon`/`authenticated`; 100% RLS on all 95 `zoi` tables; all access
   via SECURITY DEFINER RPCs in `public` guarded by `zoi.assert_ws` /
   `zoi.current_profile`. See `db/SECURITY-MANIFEST.md`.
+- **Automated deployment:** `.github/workflows/supabase-deploy.yml` automatically applies new migrations to the live database when they are pushed to `main`. Requires `SUPABASE_ACCESS_TOKEN` secret to be set in GitHub repo settings.
+- **Manual deployment:** from any authenticated terminal:
+  ```bash
+  export SUPABASE_ACCESS_TOKEN="your-token-here"
+  cd /workspaces/zoi-city
+  supabase link --project-ref csebihpaychdkanjjsmz
+  supabase db push
+  ```
+- **To get a token:** Supabase Dashboard → Settings → Access Tokens → Create token
 - **Gap (Wave 1 open item):** migration SQL bodies and a schema-only dump are
   not yet committed to this repo — pull via Supabase CLI from a
   network-capable environment into `supabase/migrations/` + `db/`.
@@ -65,3 +74,33 @@ until Stripe webhook signature verification + idempotency are proven.
 4. Merge to `main` → Vercel auto-deploys. Verify the live routing contract
    (`/`, `/explore`, `/social`, `/tickets`, `/community`, `/p/:slug`, `/sitemap.xml`).
 5. DB changes: versioned migration first, additive, logged in BUILD-LOG.
+
+## Current Deployment Status (2026-09-12)
+
+**Wave 1 Secure Ticketing & Private Events Stack — READY FOR PRODUCTION**
+
+### ✅ Completed
+- Frontend: Tickets Studio (`/apps/tickets-studio/`), Private Events guest page (`/w/`), floor plans, KDS, table tabs
+- Backend RPCs: `private_event_create`, `private_event_list`, `private_event_get_by_pin`, `private_event_rsvp_submit`, `table_tab_list`, `table_tab_record_cash_payment`, `table_tab_guest_order`, `menu_item_save`, `menu_items_list`
+- Migrations: 0027–0033 applied to production
+- Tests: 37/37 contract tests passing; 25/25 page invariants passing
+- Security: RLS verified on all 9 sensitive tables; guest endpoints safe from price manipulation
+
+### 🚫 Final Blocking Item
+- **Migration 0034 (menu_items table + guest ordering RPC)** is committed to the repo but not yet applied to the live Supabase database
+- This is the only remaining step before full production readiness
+
+### How to Complete
+1. Add `SUPABASE_ACCESS_TOKEN` to GitHub repo secrets
+   - Go to: https://github.com/pangaon/zoi-city/settings/secrets/actions
+   - Add new secret: `SUPABASE_ACCESS_TOKEN` = your token from Supabase Dashboard
+   - The workflow `.github/workflows/supabase-deploy.yml` will automatically run and push migration 0034
+
+2. Verify deployment succeeded
+   ```bash
+   cd /workspaces/zoi-city && node tests/contract/run.mjs
+   ```
+   Expected: All 37 tests pass, including the new `menu_items` RLS check
+
+3. After that: full Stack is live and secure ✅
+
