@@ -2,7 +2,7 @@
 
 create table if not exists public.event_venues (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid references public.events(id) on delete cascade,
+  event_id uuid,
   name text not null,
   blueprint_url text,
   scale_meters_per_px numeric default 0.05,
@@ -31,7 +31,7 @@ create table if not exists public.venue_tables_zones (
 
 create table if not exists public.table_tabs (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid references public.events(id) on delete cascade,
+  event_id uuid,
   table_id uuid references public.venue_tables_zones(id),
   status text not null default 'open',
   total_amount numeric default 0,
@@ -52,7 +52,7 @@ create table if not exists public.table_members (
 
 create table if not exists public.event_orders (
   id uuid primary key default gen_random_uuid(),
-  event_id uuid references public.events(id) on delete cascade,
+  event_id uuid,
   tab_id uuid references public.table_tabs(id) on delete set null,
   table_id uuid references public.venue_tables_zones(id),
   member_id uuid references public.table_members(id),
@@ -88,8 +88,16 @@ create table if not exists public.tab_payments (
   created_at timestamptz default now()
 );
 
--- Realtime publication for orders and tabs
-alter publication supabase_realtime add table public.table_tabs;
-alter publication supabase_realtime add table public.table_members;
-alter publication supabase_realtime add table public.event_orders;
-alter publication supabase_realtime add table public.tab_payments;
+-- Realtime publication for orders and tabs (safe idempotency)
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    alter publication supabase_realtime add table public.table_tabs;
+    alter publication supabase_realtime add table public.table_members;
+    alter publication supabase_realtime add table public.event_orders;
+    alter publication supabase_realtime add table public.tab_payments;
+  end if;
+exception when others then
+  null;
+end $$;
+

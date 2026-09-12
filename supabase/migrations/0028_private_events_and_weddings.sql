@@ -68,9 +68,17 @@ create table if not exists public.private_photo_wall (
   created_at timestamptz default now()
 );
 
--- Realtime subscriptions
-alter publication supabase_realtime add table public.private_events;
-alter publication supabase_realtime add table public.private_rsvps;
-alter publication supabase_realtime add table public.private_registry_items;
-alter publication supabase_realtime add table public.private_event_gifts;
-alter publication supabase_realtime add table public.private_photo_wall;
+-- Realtime subscriptions (safe idempotency)
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    alter publication supabase_realtime add table public.private_events;
+    alter publication supabase_realtime add table public.private_rsvps;
+    alter publication supabase_realtime add table public.private_registry_items;
+    alter publication supabase_realtime add table public.private_event_gifts;
+    alter publication supabase_realtime add table public.private_photo_wall;
+  end if;
+exception when others then
+  null;
+end $$;
+
