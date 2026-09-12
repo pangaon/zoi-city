@@ -1061,6 +1061,18 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Dashboard
     </div>
+    <div class="nav-link" id="navPrivateWedding" onclick="switchView('privatewedding')" style="color:#fff!important;background:linear-gradient(135deg,#7e2a4a,#b5325f)!important;border-color:rgba(181,50,95,.4)!important;display:flex;align-items:center;gap:6px">
+      💒 Weddings &amp; Private
+    </div>
+    <div class="nav-link" id="navTableTab" onclick="switchView('tabletab')" style="color:#F4EFE6!important;background:linear-gradient(135deg,#0e2a44,#1b5e8c)!important;border-color:rgba(31,158,201,.4)!important;display:flex;align-items:center;gap:6px">
+      🍽 Table Tab &amp; Split
+    </div>
+    <div class="nav-link" id="navKds" onclick="switchView('kds')" style="color:#22160a!important;background:linear-gradient(135deg,#d4af5f,#e0be7a)!important;border-color:transparent!important;font-weight:700;display:flex;align-items:center;gap:6px">
+      ⚡ KDS / Host
+    </div>
+    <div class="nav-link" id="navFloorPlan" onclick="switchView('floorplan')">
+      📐 Floor Plan &amp; Sponsors
+    </div>
     <div class="nav-link org-btn" id="navOrg" onclick="switchView('organizer')">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
       Create Event
@@ -2668,6 +2680,471 @@ Hellenic Community Association of Toronto</textarea>
 </div>
 <!-- ═══════════════════════ END MESSAGING VIEW ═══════════════════════ -->
 
+<!-- ═══════════════════════ GUEST IN-SEAT TABLE TAB & SPLIT BILL VIEW ═══════════════════════ -->
+<div class="table-tab-view" id="tableTabView" style="display:none;max-width:1100px;margin:0 auto;padding:32px 20px 80px">
+  <div class="tab-view-header" style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.3);border-radius:20px;color:var(--gold-s);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#5bc49a;display:inline-block"></span> TABLE VIP-4 · SPONSORED BY KRINOS FOODS
+      </div>
+      <h2 style="font-family:'Fraunces';font-size:28px;margin:0 0 6px;color:var(--paper)">Hellenic Gala 2025 · Live Table Tab</h2>
+      <p style="margin:0;color:var(--muted);font-size:14px">Real-time group ordering, itemized split bill, and host settlement.</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn gold sm" onclick="openCrossTableGiftModal()">🥂 Send Round to Another Table</button>
+      <button class="btn outline sm" onclick="switchView('kds')">⚡ Open KDS Station</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px">
+    <!-- LEFT: Table Roster & Menu -->
+    <div>
+      <!-- Table Presence -->
+      <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:20px;margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2)">Seated at Table VIP-4 (4 Guests)</div>
+          <button class="btn sm outline" onclick="inviteGuestToTable()">+ Invite to Table</button>
+        </div>
+        <div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:6px" id="tableMemberList">
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:8px 14px;border-radius:30px;border:1px solid var(--gl)">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--sea);display:grid;place-items:center;font-weight:800;color:#fff;font-size:13px">Γ</div>
+            <div><div style="font-size:12.5px;font-weight:700;color:var(--paper)">George (You)</div><div style="font-size:10px;color:var(--gold-s)">Host · 3 items</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:8px 14px;border-radius:30px;border:1px solid var(--gl)">
+            <div style="width:28px;height:28px;border-radius:50%;background:#b5325f;display:grid;place-items:center;font-weight:800;color:#fff;font-size:13px">E</div>
+            <div><div style="font-size:12.5px;font-weight:700;color:var(--paper)">Eleni K.</div><div style="font-size:10px;color:var(--muted)">2 items</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:8px 14px;border-radius:30px;border:1px solid var(--gl)">
+            <div style="width:28px;height:28px;border-radius:50%;background:#2e8b57;display:grid;place-items:center;font-weight:800;color:#fff;font-size:13px">N</div>
+            <div><div style="font-size:12.5px;font-weight:700;color:var(--paper)">Nikos P.</div><div style="font-size:10px;color:var(--muted)">2 items</div></div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.05);padding:8px 14px;border-radius:30px;border:1px solid var(--gl)">
+            <div style="width:28px;height:28px;border-radius:50%;background:#d4aa60;display:grid;place-items:center;font-weight:800;color:#142238;font-size:13px">Σ</div>
+            <div><div style="font-size:12.5px;font-weight:700;color:var(--paper)">Sofia M.</div><div style="font-size:10px;color:var(--muted)">1 item</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Menu Items to Order -->
+      <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:20px">
+        <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px">In-Seat Menu · Dispatches to Bar &amp; Kitchen</div>
+        <div style="display:grid;gap:12px" id="tableMenuCatalog">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(0,0,0,.2);border:1px solid var(--gl);border-radius:12px">
+            <div><div style="font-weight:700;color:var(--paper);font-size:14px">Grilled Mediterranean Octopus 🐙</div><div style="font-size:11.5px;color:var(--muted)">Charred lemon, oregano, capers · Routes to Kitchen</div></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-weight:800;color:var(--gold-s);font-size:15px">$28</span><button class="btn sm gold" onclick="addTableItem('Grilled Mediterranean Octopus', 28, 'kitchen')">+ Order</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(0,0,0,.2);border:1px solid var(--gl);border-radius:12px">
+            <div><div style="font-weight:700;color:var(--paper);font-size:14px">Assyrtiko Santorini White (Bottle) 🍷</div><div style="font-size:11.5px;color:var(--muted)">Crisp volcanic minerality · Routes to Bar</div></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-weight:800;color:var(--gold-s);font-size:15px">$65</span><button class="btn sm gold" onclick="addTableItem('Assyrtiko Santorini White (Bottle)', 65, 'bar')">+ Order</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(0,0,0,.2);border:1px solid var(--gl);border-radius:12px">
+            <div><div style="font-weight:700;color:var(--paper);font-size:14px">Spanakopita Artisanal Platter 🌿</div><div style="font-size:11.5px;color:var(--muted)">Crisp handmade phyllo, barrel-aged feta · Routes to Kitchen</div></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-weight:800;color:var(--gold-s);font-size:15px">$18</span><button class="btn sm gold" onclick="addTableItem('Spanakopita Artisanal Platter', 18, 'kitchen')">+ Order</button></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 14px;background:rgba(0,0,0,.2);border:1px solid var(--gl);border-radius:12px">
+            <div><div style="font-weight:700;color:var(--paper);font-size:14px">Panigiri Super Raffle Ticket (x5 Pack) 🎟</div><div style="font-size:11.5px;color:var(--muted)">Eligible for grand trip to Greece &amp; cash prize</div></div>
+            <div style="display:flex;align-items:center;gap:12px"><span style="font-weight:800;color:var(--gold-s);font-size:15px">$25</span><button class="btn sm gold" onclick="addTableItem('Panigiri Super Raffle Ticket (x5)', 25, 'bar')">+ Order</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Live Tab & Split Calculator -->
+    <div>
+      <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;position:sticky;top:90px">
+        <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px">Live Table Tab</div>
+        
+        <!-- Split Mode Selector -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:rgba(0,0,0,.3);padding:4px;border-radius:10px;margin-bottom:18px">
+          <button class="btn sm" id="tabModeEqual" style="background:var(--sea);color:#fff;border:none;font-size:11.5px" onclick="setSplitTabMode('equal')">Split 1/4</button>
+          <button class="btn sm" id="tabModeItems" style="background:transparent;color:var(--muted);border:none;font-size:11.5px" onclick="setSplitTabMode('items')">My Items</button>
+          <button class="btn sm" id="tabModeCover" style="background:transparent;color:var(--muted);border:none;font-size:11.5px" onclick="setSplitTabMode('cover')">Cover All</button>
+        </div>
+
+        <div id="tableOrderLines" style="display:grid;gap:8px;max-height:220px;overflow-y:auto;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>Assyrtiko Santorini White (Bottle) <small style="color:var(--muted)">· George</small></span><b>$65.00</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>Grilled Mediterranean Octopus <small style="color:var(--muted)">· George</small></span><b>$28.00</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>Spanakopita Artisanal Platter <small style="color:var(--muted)">· Eleni</small></span><b>$18.00</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>Greek Wine Xinomavro Naoussa <small style="color:var(--muted)">· Nikos</small></span><b>$72.00</b></div>
+          <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>Panigiri Super Raffle Ticket (x5) <small style="color:var(--muted)">· Sofia</small></span><b>$25.00</b></div>
+        </div>
+
+        <div style="border-top:1px solid var(--gl);padding-top:12px;margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:4px"><span>Subtotal</span><span id="tabSubtotal">$208.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:4px"><span>Tax (13% HST)</span><span id="tabTax">$27.04</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin-bottom:6px"><span>Gratuity (18%)</span><span id="tabTip">$37.44</span></div>
+          <div style="display:flex;justify-content:space-between;font-size:16px;font-weight:800;color:var(--paper)"><span>Total Table Balance</span><span id="tabGrandTotal" style="color:var(--gold-s)">$272.48</span></div>
+        </div>
+
+        <!-- Calculated Share Box -->
+        <div style="background:rgba(31,158,201,.1);border:1px solid rgba(31,158,201,.3);border-radius:12px;padding:14px;text-align:center;margin-bottom:18px">
+          <div style="font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sea)" id="tabShareTitle">YOUR 1/4 EQUAL SHARE</div>
+          <div style="font-size:32px;font-family:'Fraunces';font-weight:600;color:#5bc49a;margin:4px 0" id="tabShareAmount">$68.12</div>
+          <div style="font-size:11px;color:var(--muted)">Includes item shares + tax + tip</div>
+        </div>
+
+        <!-- Payment Actions -->
+        <div style="display:grid;gap:8px">
+          <button class="btn" style="width:100%;background:#f2f5fa;color:#06101f;font-weight:800" onclick="payTableTab('apple')">Pay with Pay</button>
+          <button class="btn gold" style="width:100%" onclick="payTableTab('card')">Pay with Credit / Debit Card</button>
+          <button class="btn outline" style="width:100%;border-color:var(--gold-s);color:var(--gold-s)" onclick="requestCashSettlement()">💵 Request Cash Settlement (Pay Waiter)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ KDS / VENDOR & HOST VIEW ═══════════════════════ -->
+<div class="kds-view" id="kdsView" style="display:none;max-width:1300px;margin:0 auto;padding:32px 20px 80px">
+  <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:24px">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(91,196,154,.15);border:1px solid rgba(91,196,154,.3);border-radius:20px;color:#5bc49a;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
+        <span style="width:7px;height:7px;border-radius:50%;background:#5bc49a;display:inline-block"></span> KITCHEN &amp; BAR DISPATCH ACTIVE
+      </div>
+      <h2 style="font-family:'Fraunces';font-size:30px;margin:0 0 4px;color:var(--paper)">Kitchen &amp; Bar Station KDS</h2>
+      <p style="margin:0;color:var(--muted);font-size:14px">Real-time order tickets, cash collection requests, and runner fulfillment.</p>
+    </div>
+
+    <!-- Station Filter -->
+    <div style="display:flex;gap:8px;background:var(--glass);padding:6px;border-radius:12px;border:1px solid var(--gl)">
+      <button class="btn sm" id="kdsFilterAll" style="background:var(--sea);color:#fff" onclick="filterKdsStation('all')">All Stations</button>
+      <button class="btn sm outline" id="kdsFilterKitchen" onclick="filterKdsStation('kitchen')">🍳 Kitchen</button>
+      <button class="btn sm outline" id="kdsFilterBar" onclick="filterKdsStation('bar')">🍷 Bar</button>
+      <button class="btn sm outline" id="kdsFilterCash" style="border-color:var(--gold-s);color:var(--gold-s)" onclick="filterKdsStation('cash')">💵 Cash Requests</button>
+    </div>
+  </div>
+
+  <!-- KDS Active Ticket Grid -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px" id="kdsTicketGrid">
+    <!-- Ticket 1 -->
+    <div class="kds-ticket" data-station="bar" style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:18px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--gl)">
+        <div><b style="font-size:17px;color:var(--paper)">Table VIP-4</b><div style="font-size:11px;color:var(--muted)">George P. · 2m ago</div></div>
+        <span style="background:rgba(31,158,201,.2);color:#5dbedc;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800">BAR · RECEIVED</span>
+      </div>
+      <div style="flex:1;display:grid;gap:8px;margin-bottom:16px">
+        <div style="display:flex;gap:8px;font-size:13px;color:var(--paper)"><b style="color:var(--sea)">1x</b> <span>Assyrtiko Santorini White (Bottle)</span></div>
+        <div style="display:flex;gap:8px;font-size:13px;color:var(--paper)"><b style="color:var(--sea)">1x</b> <span>Mastiha Digestif Round (4 shots)</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--gl)">
+        <span style="font-weight:800;font-size:14px;color:var(--gold-s)">$97.00 (Pay)</span>
+        <button class="btn sm gold" onclick="advanceKdsTicket(this, 'Preparing', 'Ready for Runner')">Mark Preparing ➔</button>
+      </div>
+    </div>
+
+    <!-- Ticket 2 (Cash Pending Alert) -->
+    <div class="kds-ticket" data-station="cash" style="background:rgba(212,175,95,.06);border:1px solid var(--gold-s);border-radius:var(--r);padding:18px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(212,175,95,.3)">
+        <div><b style="font-size:17px;color:var(--paper)">Table 12</b><div style="font-size:11px;color:var(--gold-s)">Dimitris V. · Cash Request</div></div>
+        <span style="background:rgba(212,175,95,.2);color:var(--gold-s);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800">CASH ACTION NEEDED</span>
+      </div>
+      <div style="background:rgba(212,175,95,.1);border:1px solid rgba(212,175,95,.2);border-radius:8px;padding:10px;margin-bottom:12px">
+        <div style="font-size:11.5px;font-weight:800;color:var(--gold-s)">SERVER CASH DISPATCH</div>
+        <div style="font-size:12px;color:var(--paper)">Guest requested to settle $56.00 with physical cash.</div>
+      </div>
+      <div style="flex:1;display:grid;gap:8px;margin-bottom:16px">
+        <div style="display:flex;gap:8px;font-size:13px;color:var(--paper)"><b style="color:var(--sea)">2x</b> <span>Grilled Mediterranean Octopus <small style="color:var(--muted)">(extra lemon)</small></span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid rgba(212,175,95,.3)">
+        <span style="font-weight:800;font-size:14px;color:var(--gold-s)">$56.00</span>
+        <button class="btn sm" style="background:var(--gold-s);color:#142238;font-weight:800" onclick="settleCashTicket(this)">Collect &amp; Settle Cash ✓</button>
+      </div>
+    </div>
+
+    <!-- Ticket 3 -->
+    <div class="kds-ticket" data-station="kitchen" style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:18px;display:flex;flex-direction:column">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--gl)">
+        <div><b style="font-size:17px;color:var(--paper)">Table 8</b><div style="font-size:11px;color:var(--muted)">Anna S. · 5m ago</div></div>
+        <span style="background:rgba(212,175,95,.2);color:var(--gold-s);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800">KITCHEN · PREPARING</span>
+      </div>
+      <div style="flex:1;display:grid;gap:8px;margin-bottom:16px">
+        <div style="display:flex;gap:8px;font-size:13px;color:var(--paper)"><b style="color:var(--sea)">2x</b> <span>Spanakopita Artisanal Platter</span></div>
+        <div style="display:flex;gap:8px;font-size:13px;color:var(--paper)"><b style="color:var(--sea)">1x</b> <span>Honey Loukoumades</span></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--gl)">
+        <span style="font-weight:800;font-size:14px;color:var(--gold-s)">$40.00 (Card)</span>
+        <button class="btn sm gold" onclick="advanceKdsTicket(this, 'Ready for Runner', 'Delivered')">Mark Ready for Runner ➔</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ FLOOR PLAN & 3D SPONSORS VIEW ═══════════════════════ -->
+<div class="floorplan-view" id="floorPlanView" style="display:none;max-width:1200px;margin:0 auto;padding:32px 20px 80px">
+  <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <div>
+      <div style="font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-s);margin-bottom:4px">Blueprint Uploader &amp; 3D Advertising</div>
+      <h2 style="font-family:'Fraunces';font-size:28px;margin:0 0 4px;color:var(--paper)">Custom Floor Plan Calibration &amp; Sponsor Studio</h2>
+      <p style="margin:0;color:var(--muted);font-size:14px">Upload client drawings/CAD/PDFs, calibrate real-world meters, and project sponsor logos on tables &amp; 3D LED screens.</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <label class="btn gold sm" style="cursor:pointer">
+        📁 Upload Blueprint (PDF/PNG)
+        <input type="file" accept="image/*,.pdf" style="display:none" onchange="handleBlueprintUpload(this)">
+      </label>
+      <button class="btn outline sm" onclick="calibrateScale()">📐 2-Point Scale Calibrator</button>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 360px;gap:24px">
+    <!-- Calibration & Canvas Overlay -->
+    <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:20px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-weight:700;color:var(--paper);font-size:14px">Blueprint Overlay &amp; Table Grid</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:var(--muted)">Blueprint Opacity:</span>
+          <input type="range" min="0" max="100" value="45" id="blueprintOpacitySlider" oninput="setBlueprintOpacity(this.value)">
+        </div>
+      </div>
+      <div id="blueprintCanvasWrapper" style="position:relative;height:460px;background:#06101f;border:1px solid var(--gl);border-radius:12px;overflow:hidden;display:flex;align-items:center;justify-content:center">
+        <img id="blueprintImagePreview" src="" alt="Blueprint Layer" style="display:none;position:absolute;inset:0;width:100%;height:100%;object-fit:contain;opacity:0.45;pointer-events:none">
+        <div id="calibrationInstruction" style="text-align:center;color:var(--muted);padding:30px">
+          <div style="font-size:36px;margin-bottom:10px">🏛</div>
+          <div style="font-weight:700;color:var(--paper);margin-bottom:4px">No custom blueprint uploaded yet</div>
+          <div style="font-size:12.5px;max-width:380px;margin:0 auto">Upload your banquet hall or church hall PDF/image blueprint to calibrate dimensions and snap tables to the architectural drawing.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sponsor & 3D Table Plaque Configurator -->
+    <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px">3D Table Sponsor Configurator</div>
+      
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Select Target Table / Zone</label>
+        <select id="sponsorTableSelect" style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">
+          <option value="t1">VIP Table 1 — Front Stage (Platinum)</option>
+          <option value="t2">VIP Table 2 — Beside Dance Floor (Gold)</option>
+          <option value="t3">Table 3 — Centre Room (Silver)</option>
+          <option value="t4" selected>Table VIP-4 — Krinos Foods (Platinum)</option>
+          <option value="led">3D Main Stage LED Billboard (Digital)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Sponsor Brand Name</label>
+        <input type="text" id="sponsorBrandNameInput" value="Krinos Fine Foods" style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Sponsor Pledge Tier</label>
+        <select id="sponsorTierSelect" style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">
+          <option value="platinum" selected>Platinum Sponsor ($25,000)</option>
+          <option value="gold">Gold Sponsor ($15,000)</option>
+          <option value="silver">Silver Sponsor ($7,500)</option>
+          <option value="bronze">Bronze Community Partner ($2,500)</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <label style="display:block;font-size:12px;color:var(--muted);margin-bottom:6px">Upload Sponsor Logo for 3D Plaque</label>
+        <input type="file" accept="image/*" id="sponsorLogoUpload" style="font-size:12px;color:var(--muted)">
+      </div>
+
+      <button class="btn gold" style="width:100%" onclick="applySponsorTo3D()">★ Apply to 3D Venue &amp; Floor Plan</button>
+      
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--gl);font-size:11.5px;color:var(--muted);line-height:1.5">
+        <b>Real-time projection:</b> Injected table textures render high-resolution embossed logo trim in the 3D room, and sponsor banners rotate on the main stage LED screen.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════ PRIVATE EVENTS: WEDDINGS & BAPTISMS VIEW ═══════════════════════ -->
+<div class="private-wedding-view" id="privateWeddingView" style="display:none;max-width:1200px;margin:0 auto;padding:32px 20px 80px">
+  <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
+    <div>
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(181,50,95,.15);border:1px solid rgba(181,50,95,.3);border-radius:20px;color:#d4527d;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
+        💒 SACRAMENT OF HOLY MATRIMONY · PRIVATE SUITE
+      </div>
+      <h2 style="font-family:'Fraunces';font-size:28px;margin:0 0 4px;color:var(--paper)">Dimitris &amp; Maria's Wedding Celebration</h2>
+      <p style="margin:0;color:var(--muted);font-size:14px">St. Nicholas Greek Orthodox Church &amp; The Grand Ballroom · Saturday, June 28, 2025</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn gold sm" onclick="switchPrivateSubTab('registry')">💌 Send Digital Envelope / Shakoula</button>
+      <button class="btn outline sm" onclick="switchPrivateSubTab('photowall')">📸 Live Photo Wall</button>
+    </div>
+  </div>
+
+  <!-- Sub navigation for Weddings -->
+  <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--gl);padding-bottom:12px;overflow-x:auto">
+    <button class="btn sm" id="pwSubRsvp" style="background:var(--sea);color:#fff" onclick="switchPrivateSubTab('rsvp')">RSVP &amp; Meal Preferences</button>
+    <button class="btn sm outline" id="pwSubSeating" onclick="switchPrivateSubTab('seating')">Family Seating Chart</button>
+    <button class="btn sm outline" id="pwSubRegistry" onclick="switchPrivateSubTab('registry')">Digital Envelope (Shakoula)</button>
+    <button class="btn sm outline" id="pwSubPhoto" onclick="switchPrivateSubTab('photowall')">Live Reception Photo Wall</button>
+    <button class="btn sm outline" id="pwSubItinerary" onclick="switchPrivateSubTab('itinerary')">Sacrament &amp; Reception Schedule</button>
+  </div>
+
+  <!-- 1. RSVP & Meal Choices -->
+  <div id="pwPanelRsvp" style="display:grid;grid-template-columns:1.2fr 1fr;gap:24px">
+    <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:14px">Guest Attendance &amp; Dinner Selection</div>
+      
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:12.5px;color:var(--paper);font-weight:700;margin-bottom:6px">Attendance Status</label>
+        <div style="display:flex;gap:10px">
+          <button class="btn sm gold" id="pwRsvpYes" onclick="setPwRsvp(true)">✓ Joyfully Accepts</button>
+          <button class="btn sm outline" id="pwRsvpNo" onclick="setPwRsvp(false)">✕ Regretfully Declines</button>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:12.5px;color:var(--paper);font-weight:700;margin-bottom:6px">Guest 1 (George Panagopoulos) — Entrée Choice</label>
+        <select style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">
+          <option value="lamb" selected>🍖 Roasted Greek Lamb with Lemon Potatoes &amp; Oregano</option>
+          <option value="seabass">🐟 Fresh Aegean Sea Bass (Lavraki) with Horta</option>
+          <option value="gemista">🌱 Traditional Gemista (Stuffed Peppers &amp; Tomatoes) [Vegetarian]</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label style="display:block;font-size:12.5px;color:var(--paper);font-weight:700;margin-bottom:6px">Guest 2 (Eleni K.) — Entrée Choice</label>
+        <select style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">
+          <option value="lamb">🍖 Roasted Greek Lamb with Lemon Potatoes &amp; Oregano</option>
+          <option value="seabass" selected>🐟 Fresh Aegean Sea Bass (Lavraki) with Horta</option>
+          <option value="gemista">🌱 Traditional Gemista (Stuffed Peppers &amp; Tomatoes) [Vegetarian]</option>
+        </select>
+      </div>
+
+      <div style="margin-bottom:18px">
+        <label style="display:block;font-size:12.5px;color:var(--paper);font-weight:700;margin-bottom:6px">Dietary Allergies or Notes</label>
+        <input type="text" value="Gluten-free for guest 2 (Eleni)" style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">
+      </div>
+
+      <button class="btn gold" style="width:100%" onclick="showToast('✓ RSVP confirmed for Party of 2! Entrée preferences sent to catering team.')">Confirm Wedding RSVP</button>
+    </div>
+
+    <!-- RSVP Summary & Headcount -->
+    <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+      <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px">Wedding RSVP Progress</div>
+      <div style="font-size:32px;font-family:'Fraunces';font-weight:600;color:var(--gold-s);margin-bottom:4px">248 of 280 Confirmed</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">88.5% response rate · 28 tables seated</div>
+      
+      <div style="display:grid;gap:8px;margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>🍖 Roasted Lamb Orders</span><b>142</b></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>🐟 Aegean Sea Bass Orders</span><b>84</b></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--paper)"><span>🌱 Vegetarian Gemista</span><b>22</b></div>
+      </div>
+      <div style="background:rgba(91,196,154,.1);border:1px solid rgba(91,196,154,.3);border-radius:10px;padding:12px;font-size:12px;color:#5bc49a">
+        <b>Table Assigned:</b> You and your party are seated at <b>Table 4 — Koumbaroi &amp; Family</b>.
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Seating Chart Panel -->
+  <div id="pwPanelSeating" style="display:none;background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-s);margin-bottom:6px">Your Assigned Wedding Table</div>
+    <h3 style="font-family:'Fraunces';font-size:24px;margin:0 0 6px;color:var(--paper)">Table 4 — Koumbaroi &amp; Close Family</h3>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 18px">Located directly adjacent to the main dance floor.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px">
+      <div style="background:rgba(0,0,0,.3);padding:14px;border-radius:12px;border:1px solid var(--gl)"><b style="color:var(--paper)">George Panagopoulos</b><div style="font-size:11px;color:var(--gold-s)">Lamb · Table 4</div></div>
+      <div style="background:rgba(0,0,0,.3);padding:14px;border-radius:12px;border:1px solid var(--gl)"><b style="color:var(--paper)">Eleni K.</b><div style="font-size:11px;color:var(--sea)">Sea Bass · Gluten Free</div></div>
+      <div style="background:rgba(0,0,0,.3);padding:14px;border-radius:12px;border:1px solid var(--gl)"><b style="color:var(--paper)">Panagiotis K. (Koumbaros)</b><div style="font-size:11px;color:var(--gold-s)">Lamb · Koumbaros</div></div>
+      <div style="background:rgba(0,0,0,.3);padding:14px;border-radius:12px;border:1px solid var(--gl)"><b style="color:var(--paper)">Maria V. (Koumbara)</b><div style="font-size:11px;color:var(--sea)">Sea Bass · Koumbara</div></div>
+      <div style="background:rgba(0,0,0,.3);padding:14px;border-radius:12px;border:1px solid var(--gl)"><b style="color:var(--paper)">Father Vassilios &amp; Presvytera</b><div style="font-size:11px;color:var(--muted)">Parish Priest</div></div>
+    </div>
+  </div>
+
+  <!-- 3. Digital Envelope / Shakoula Panel -->
+  <div id="pwPanelRegistry" style="display:none;background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-s);margin-bottom:6px">Digital Envelope (Shakoula) &amp; Registry Fund</div>
+    <h3 style="font-family:'Fraunces';font-size:24px;margin:0 0 6px;color:var(--paper)">Bless the Couple with a Gift &amp; Note</h3>
+    <p style="color:var(--muted);font-size:13px;margin:0 0 18px">Gifts are paid directly to Dimitris &amp; Maria's verified wedding account with your personal wish attached.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+      <div style="background:rgba(31,158,201,.1);border:1px solid rgba(31,158,201,.3);border-radius:14px;padding:16px">
+        <div style="font-size:24px;margin-bottom:6px">✈️</div>
+        <div style="font-weight:700;color:var(--paper);font-size:15px">Santorini &amp; Milos Honeymoon Fund</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">$3,850 of $5,000 goal raised</div>
+      </div>
+      <div style="background:rgba(212,175,95,.1);border:1px solid rgba(212,175,95,.3);border-radius:14px;padding:16px">
+        <div style="font-size:24px;margin-bottom:6px">💌</div>
+        <div style="font-weight:700;color:var(--paper);font-size:15px">Traditional Shakoula (Cash Envelope)</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Direct gift to newlyweds for new home</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12.5px;color:var(--paper);font-weight:700;margin-bottom:6px">Select Gift Amount</label>
+      <div style="display:flex;gap:10px">
+        <button class="btn sm outline" style="flex:1" onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('gold'));this.classList.add('gold')">$150</button>
+        <button class="btn sm gold" style="flex:1" onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('gold'));this.classList.add('gold')">$250</button>
+        <button class="btn sm outline" style="flex:1" onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('gold'));this.classList.add('gold')">$500</button>
+        <button class="btn sm outline" style="flex:1" onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('gold'));this.classList.add('gold')">$1,000</button>
+      </div>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <label style="display:block;font-size:12.5px;color:var(--paper);font-weight:700;margin-bottom:6px">Personal Wedding Message / Blessing</label>
+      <textarea rows="3" style="width:100%;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:10px;border-radius:8px;color:var(--paper);font-size:13px">Να ζήσετε! Wishing you both a lifetime filled with health, happiness, and abundant love!</textarea>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button class="btn gold" style="flex:1" onclick="showToast('✓ $250 wedding gift sent via Apple Pay with your personal note!')">Send $250 with Pay</button>
+      <button class="btn outline" style="flex:1;border-color:var(--gold-s);color:var(--gold-s)" onclick="showToast('💌 Marked that you are bringing a traditional physical cash envelope to the reception gift table.')">Mark: Bringing Envelope to Reception</button>
+    </div>
+  </div>
+
+  <!-- 4. Photo Wall Panel -->
+  <div id="pwPanelPhoto" style="display:none;background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div>
+        <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-s);margin-bottom:2px">Live Reception Photo Stream</div>
+        <h3 style="font-family:'Fraunces';font-size:22px;margin:0;color:var(--paper)">Photos Displaying Live on Main Screen</h3>
+      </div>
+      <label class="btn gold sm" style="cursor:pointer">
+        📸 Drop Table Photo
+        <input type="file" accept="image/*" style="display:none" onchange="showToast('✓ Photo uploaded! Displaying live on the reception projector slideshow.')">
+      </label>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
+      <div style="background:rgba(0,0,0,.3);border:1px solid var(--gl);border-radius:12px;padding:12px">
+        <div style="height:140px;background:#142238;border-radius:8px;display:grid;place-items:center;color:var(--muted);margin-bottom:8px">📷 [First Dance Zeibekiko]</div>
+        <div style="font-size:12px;color:var(--paper);font-weight:600">"First dance zeibekiko! 🥂"</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Nikos P. · Table 4 · 5m ago</div>
+      </div>
+      <div style="background:rgba(0,0,0,.3);border:1px solid var(--gl);border-radius:12px;padding:12px">
+        <div style="height:140px;background:#142238;border-radius:8px;display:grid;place-items:center;color:var(--muted);margin-bottom:8px">📷 [Stefana Blessing]</div>
+        <div style="font-size:12px;color:var(--paper);font-weight:600">"Stefana &amp; Koumbaroi blessing 🙏"</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:4px">Sofia M. · Table 2 · 18m ago</div>
+      </div>
+      <div style="background:rgba(0,0,0,.3);border:1px solid var(--gl);border-radius:12px;padding:12px">
+        <div style="height:140px;background:#142238;border-radius:8px;display:grid;place-items:center;color:var(--muted);margin-bottom:8px">📷 [Table 4 Toast]</div>
+        <div style="font-size:12px;color:var(--paper);font-weight:600">"Table 4 raising a glass to Dimitris &amp; Maria!"</div>
+        <div style="font-size:10.5px;color:var(--muted);margin-top:4px">George P. · Table 4 · 24m ago</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. Itinerary & Sacrament Schedule Panel -->
+  <div id="pwPanelItinerary" style="display:none;background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-s);margin-bottom:6px">Schedule of the Day</div>
+    <h3 style="font-family:'Fraunces';font-size:24px;margin:0 0 16px;color:var(--paper)">Sacrament &amp; Reception Timetable</h3>
+
+    <div style="display:grid;gap:14px">
+      <div style="display:flex;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--gl)">
+        <span style="font-weight:800;color:var(--gold-s);font-size:16px;width:70px">1:00 PM</span>
+        <div><b style="color:var(--paper);font-size:15px">Sacrament of Holy Matrimony 💒</b><div style="font-size:12.5px;color:var(--sea)">St. Nicholas Greek Orthodox Church</div><div style="font-size:12px;color:var(--muted)">Officiated by Father Vassilios · Koumbaroi: Panagiotis K. &amp; Maria V.</div></div>
+      </div>
+      <div style="display:flex;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--gl)">
+        <span style="font-weight:800;color:var(--gold-s);font-size:16px;width:70px">5:30 PM</span>
+        <div><b style="color:var(--paper);font-size:15px">Cocktail Hour &amp; Mezedes 🍸</b><div style="font-size:12.5px;color:var(--sea)">The Grand Ballroom Foyer</div><div style="font-size:12px;color:var(--muted)">Acoustic bouzouki performance &amp; Aegean wine bar</div></div>
+      </div>
+      <div style="display:flex;gap:16px;padding-bottom:12px;border-bottom:1px solid var(--gl)">
+        <span style="font-weight:800;color:var(--gold-s);font-size:16px;width:70px">7:00 PM</span>
+        <div><b style="color:var(--paper);font-size:15px">Grand Entrance &amp; Dinner 🍽</b><div style="font-size:12.5px;color:var(--sea)">Main Ballroom · Table 4</div><div style="font-size:12px;color:var(--muted)">Four-course Greek banquet with wine pairings</div></div>
+      </div>
+      <div style="display:flex;gap:16px">
+        <span style="font-weight:800;color:var(--gold-s);font-size:16px;width:70px">9:00 PM</span>
+        <div><b style="color:var(--paper);font-size:15px">First Dance, Zeibekiko &amp; Kalamatiano 💃</b><div style="font-size:12.5px;color:var(--sea)">Main Dance Floor</div><div style="font-size:12px;color:var(--muted)">Celebration with live Greek band and DJ until 2:00 AM!</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- ═══════════════════════ REFUND / CANCEL MODAL (Run 12) ═══════════════════════ -->
 <div class="rf-overlay" id="rfOverlay" onclick="if(event.target===this)closeRefundModal()">
   <div class="rf-modal">
@@ -2824,6 +3301,16 @@ function switchView(v) {
   document.getElementById('organizerView').classList.toggle('active', v==='organizer');
   document.getElementById('myEventsView').classList.toggle('active', v==='myevents');
   document.getElementById('messagingView').classList.toggle('active', v==='messaging');
+  
+  const tableTabView = document.getElementById('tableTabView');
+  if(tableTabView) tableTabView.style.display = v==='tabletab' ? 'block' : 'none';
+  const kdsView = document.getElementById('kdsView');
+  if(kdsView) kdsView.style.display = v==='kds' ? 'block' : 'none';
+  const floorPlanView = document.getElementById('floorPlanView');
+  if(floorPlanView) floorPlanView.style.display = v==='floorplan' ? 'block' : 'none';
+  const privateWeddingView = document.getElementById('privateWeddingView');
+  if(privateWeddingView) privateWeddingView.style.display = v==='privatewedding' ? 'block' : 'none';
+
   document.getElementById('navEvent').classList.toggle('active-nav', v==='event');
   document.getElementById('navMap').classList.toggle('active-nav', v==='seatmap');
   document.getElementById('navStaff').classList.toggle('active-nav', v==='staff');
@@ -2832,6 +3319,16 @@ function switchView(v) {
   document.getElementById('navOrg').classList.toggle('active-nav', v==='organizer');
   document.getElementById('navMyEvents').classList.toggle('active-nav', v==='myevents');
   document.getElementById('navMsg').classList.toggle('active-nav', v==='messaging');
+  
+  const navPrivateWedding = document.getElementById('navPrivateWedding');
+  if(navPrivateWedding) navPrivateWedding.classList.toggle('active-nav', v==='privatewedding');
+  const navTableTab = document.getElementById('navTableTab');
+  if(navTableTab) navTableTab.classList.toggle('active-nav', v==='tabletab');
+  const navKds = document.getElementById('navKds');
+  if(navKds) navKds.classList.toggle('active-nav', v==='kds');
+  const navFloorPlan = document.getElementById('navFloorPlan');
+  if(navFloorPlan) navFloorPlan.classList.toggle('active-nav', v==='floorplan');
+
   if(v==='dashboard'){ document.getElementById('navDash').style.opacity='1'; } else { document.getElementById('navDash').style.opacity=''; }
   currentView = v;
   if(v==='staff'){ renderTable(); updateStats(); }
@@ -2842,6 +3339,267 @@ function switchView(v) {
   if(v==='myevents'){ renderMyEvents(); }
   if(v==='messaging'){ initMessagingView(); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PRIVATE WEDDING & BAPTISM CONTROLLERS
+   ═══════════════════════════════════════════════════════════ */
+function switchPrivateSubTab(tab) {
+  const tabs = ['rsvp', 'seating', 'registry', 'photowall', 'itinerary'];
+  tabs.forEach(t => {
+    const btn = document.getElementById('pwSub' + (t === 'photowall' ? 'Photo' : t.charAt(0).toUpperCase() + t.slice(1)));
+    const pnl = document.getElementById('pwPanel' + (t === 'photowall' ? 'Photo' : t.charAt(0).toUpperCase() + t.slice(1)));
+    if(btn) {
+      if(t === tab) {
+        btn.style.background = 'var(--sea)';
+        btn.style.color = '#fff';
+      } else {
+        btn.style.background = 'transparent';
+        btn.style.color = 'var(--muted)';
+      }
+    }
+    if(pnl) {
+      pnl.style.display = (t === tab) ? ((tab === 'rsvp' || tab === 'registry') ? 'grid' : 'block') : 'none';
+    }
+  });
+}
+
+function setPwRsvp(attending) {
+  const yes = document.getElementById('pwRsvpYes');
+  const no = document.getElementById('pwRsvpNo');
+  if(attending) {
+    if(yes) { yes.className = 'btn sm gold'; }
+    if(no) { no.className = 'btn sm outline'; }
+  } else {
+    if(yes) { yes.className = 'btn sm outline'; }
+    if(no) { no.className = 'btn sm gold'; }
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   TABLE TAB, BILL SPLITTING & KDS CONTROLLERS
+   ═══════════════════════════════════════════════════════════ */
+let tableOrdersList = [
+  { name: 'Assyrtiko Santorini White (Bottle)', price: 65, orderedBy: 'George' },
+  { name: 'Grilled Mediterranean Octopus', price: 28, orderedBy: 'George' },
+  { name: 'Spanakopita Artisanal Platter', price: 18, orderedBy: 'Eleni' },
+  { name: 'Greek Wine Xinomavro Naoussa', price: 72, orderedBy: 'Nikos' },
+  { name: 'Panigiri Super Raffle Ticket (x5)', price: 25, orderedBy: 'Sofia' },
+];
+let currentSplitMode = 'equal';
+
+function setSplitTabMode(mode) {
+  currentSplitMode = mode;
+  ['Equal', 'Items', 'Cover'].forEach(m => {
+    const el = document.getElementById('tabMode' + m);
+    if(el) {
+      if(m.toLowerCase() === mode) {
+        el.style.background = 'var(--sea)';
+        el.style.color = '#fff';
+      } else {
+        el.style.background = 'transparent';
+        el.style.color = 'var(--muted)';
+      }
+    }
+  });
+  updateTableTabCalculations();
+}
+
+function updateTableTabCalculations() {
+  const subtotal = tableOrdersList.reduce((sum, item) => sum + item.price, 0);
+  const tax = subtotal * 0.13;
+  const tip = subtotal * 0.18;
+  const grandTotal = subtotal + tax + tip;
+  
+  const subEl = document.getElementById('tabSubtotal');
+  if(subEl) subEl.textContent = '$' + subtotal.toFixed(2);
+  const taxEl = document.getElementById('tabTax');
+  if(taxEl) taxEl.textContent = '$' + tax.toFixed(2);
+  const tipEl = document.getElementById('tabTip');
+  if(tipEl) tipEl.textContent = '$' + tip.toFixed(2);
+  const grandEl = document.getElementById('tabGrandTotal');
+  if(grandEl) grandEl.textContent = '$' + grandTotal.toFixed(2);
+
+  const titleEl = document.getElementById('tabShareTitle');
+  const amountEl = document.getElementById('tabShareAmount');
+  if(currentSplitMode === 'equal') {
+    if(titleEl) titleEl.textContent = 'YOUR 1/4 EQUAL SHARE';
+    if(amountEl) amountEl.textContent = '$' + (grandTotal / 4).toFixed(2);
+  } else if(currentSplitMode === 'items') {
+    const myItems = tableOrdersList.filter(i => i.orderedBy === 'George').reduce((sum, i) => sum + i.price, 0);
+    const myShare = myItems * 1.31;
+    if(titleEl) titleEl.textContent = 'YOUR ITEMIZED SHARE (2 ITEMS)';
+    if(amountEl) amountEl.textContent = '$' + myShare.toFixed(2);
+  } else {
+    if(titleEl) titleEl.textContent = 'COVER ENTIRE TABLE BILL';
+    if(amountEl) amountEl.textContent = '$' + grandTotal.toFixed(2);
+  }
+}
+
+function addTableItem(name, price, station) {
+  tableOrdersList.push({ name, price, orderedBy: 'George' });
+  const linesEl = document.getElementById('tableOrderLines');
+  if(linesEl) {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;justify-content:space-between;font-size:13px;color:var(--paper)';
+    row.innerHTML = `<span>${name} <small style="color:var(--muted)">· George</small></span><b>$${price.toFixed(2)}</b>`;
+    linesEl.appendChild(row);
+  }
+  updateTableTabCalculations();
+  
+  // Add ticket to KDS automatically in real time
+  addLiveKdsTicket(name, price, station, 'Table VIP-4', 'George P.');
+  showToast(`✓ Ordered ${name} ($${price}). Dispatched to ${station.toUpperCase()} in real time!`);
+}
+
+function addLiveKdsTicket(name, price, station, table, guest) {
+  const grid = document.getElementById('kdsTicketGrid');
+  if(!grid) return;
+  const ticket = document.createElement('div');
+  ticket.className = 'kds-ticket';
+  ticket.dataset.station = station;
+  ticket.style.cssText = 'background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:18px;display:flex;flex-direction:column';
+  ticket.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--gl)">
+      <div><b style="font-size:17px;color:var(--paper)">${table}</b><div style="font-size:11px;color:var(--muted)">${guest} · Just now</div></div>
+      <span style="background:rgba(31,158,201,.2);color:#5dbedc;padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800">${station.toUpperCase()} · RECEIVED</span>
+    </div>
+    <div style="flex:1;display:grid;gap:8px;margin-bottom:16px">
+      <div style="display:flex;gap:8px;font-size:13px;color:var(--paper)"><b style="color:var(--sea)">1x</b> <span>${name}</span></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--gl)">
+      <span style="font-weight:800;font-size:14px;color:var(--gold-s)">$${price.toFixed(2)} (Tab)</span>
+      <button class="btn sm gold" onclick="advanceKdsTicket(this, 'Preparing', 'Ready for Runner')">Mark Preparing ➔</button>
+    </div>
+  `;
+  grid.prepend(ticket);
+}
+
+function payTableTab(method) {
+  showToast(`✓ Payment processed via ${method === 'apple' ? 'Apple Pay' : 'Credit Card'}! Table tab settled.`);
+}
+
+function requestCashSettlement() {
+  const grid = document.getElementById('kdsTicketGrid');
+  if(grid) {
+    const cashTicket = document.createElement('div');
+    cashTicket.className = 'kds-ticket';
+    cashTicket.dataset.station = 'cash';
+    cashTicket.style.cssText = 'background:rgba(212,175,95,.08);border:1px solid var(--gold-s);border-radius:var(--r);padding:18px;display:flex;flex-direction:column';
+    cashTicket.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid rgba(212,175,95,.3)">
+        <div><b style="font-size:17px;color:var(--paper)">Table VIP-4</b><div style="font-size:11px;color:var(--gold-s)">George P. · Cash Request</div></div>
+        <span style="background:rgba(212,175,95,.2);color:var(--gold-s);padding:3px 8px;border-radius:6px;font-size:10px;font-weight:800">CASH ACTION NEEDED</span>
+      </div>
+      <div style="background:rgba(212,175,95,.1);border:1px solid rgba(212,175,95,.2);border-radius:8px;padding:10px;margin-bottom:12px">
+        <div style="font-size:11.5px;font-weight:800;color:var(--gold-s)">SERVER CASH DISPATCH</div>
+        <div style="font-size:12px;color:var(--paper)">Guest requested to settle Table VIP-4 ($68.12) with physical cash.</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid rgba(212,175,95,.3)">
+        <span style="font-weight:800;font-size:14px;color:var(--gold-s)">$68.12</span>
+        <button class="btn sm" style="background:var(--gold-s);color:#142238;font-weight:800" onclick="settleCashTicket(this)">Collect &amp; Settle Cash ✓</button>
+      </div>
+    `;
+    grid.prepend(cashTicket);
+  }
+  showToast('💵 Cash request sent to floor host & server! Runner is on the way to Table VIP-4.');
+}
+
+function openCrossTableGiftModal() {
+  const table = prompt('Enter recipient table number (e.g. Table 8):', 'Table 8');
+  if(table) {
+    showToast(`🥂 Round sent to ${table}! On-screen toast delivered to their table.`);
+    addLiveKdsTicket('Mastiha Round Gift (4 shots)', 32, 'bar', table, 'Gift from VIP-4 (George)');
+  }
+}
+
+function inviteGuestToTable() {
+  showToast('Table Code: VIP-4. Guests can scan the QR code or enter "VIP-4" in Zoi App to join the live tab.');
+}
+
+function filterKdsStation(st) {
+  ['All', 'Kitchen', 'Bar', 'Cash'].forEach(s => {
+    const el = document.getElementById('kdsFilter' + s);
+    if(el) {
+      if(s.toLowerCase() === st) {
+        el.style.background = 'var(--sea)';
+        el.style.color = '#fff';
+      } else {
+        el.style.background = 'transparent';
+        el.style.color = 'var(--muted)';
+      }
+    }
+  });
+  document.querySelectorAll('.kds-ticket').forEach(t => {
+    if(st === 'all' || t.dataset.station === st) {
+      t.style.display = 'flex';
+    } else {
+      t.style.display = 'none';
+    }
+  });
+}
+
+function advanceKdsTicket(btn, current, next) {
+  const ticket = btn.closest('.kds-ticket');
+  if(btn.textContent.includes('Ready for Runner')) {
+    btn.textContent = 'Mark Delivered ✓';
+    btn.style.background = '#5bc49a';
+    btn.style.color = '#06101f';
+    showToast('Order marked ready! Runner dispatched with table tray.');
+  } else if(btn.textContent.includes('Delivered')) {
+    ticket.style.opacity = '0.4';
+    btn.textContent = 'Delivered ✓';
+    btn.disabled = true;
+    showToast('Order delivered to table.');
+  } else {
+    btn.textContent = 'Mark Ready for Runner ➔';
+    showToast('Kitchen started preparing order.');
+  }
+}
+
+function settleCashTicket(btn) {
+  const ticket = btn.closest('.kds-ticket');
+  ticket.style.opacity = '0.5';
+  btn.textContent = 'Cash Collected & Settled ✓';
+  btn.disabled = true;
+  showToast('Cash collected & float reconciled.');
+}
+
+function handleBlueprintUpload(input) {
+  if(!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = document.getElementById('blueprintImagePreview');
+    const instr = document.getElementById('calibrationInstruction');
+    if(img && instr) {
+      img.src = e.target.result;
+      img.style.display = 'block';
+      instr.style.display = 'none';
+      showToast('✓ Blueprint layer loaded! Adjust opacity or click 2-Point Calibrator to set real-world meter scale.');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function setBlueprintOpacity(val) {
+  const img = document.getElementById('blueprintImagePreview');
+  if(img) img.style.opacity = (val / 100).toString();
+}
+
+function calibrateScale() {
+  const meters = prompt('Enter real-world distance between your two reference points (in meters):', '15.0');
+  if(meters) {
+    showToast(`✓ Scale calibrated: 1 px = ${(parseFloat(meters)/300).toFixed(4)}m. Aisle clearances and walking corridors active.`);
+  }
+}
+
+function applySponsorTo3D() {
+  const name = document.getElementById('sponsorBrandNameInput').value;
+  const target = document.getElementById('sponsorTableSelect').value;
+  showToast(`★ ${name} applied! Branded plaque textured onto ${target.toUpperCase()} in 3D scene & stage LED billboard updated.`);
+}
+
 
 function filterMeEvents(status, tabEl) {
   document.querySelectorAll('.me-tab').forEach(t => t.classList.remove('active'));
@@ -3927,7 +4685,23 @@ function build3DScene(){
       threeScene.add(pod);
     }
     else if(p.kind === 'screen'){
-      const scr = box3d(p.w, p.h, 0.12, 0x0d1a2e, {emissive:0x14304e, roughness:0.4, metalness:0.5});
+      // Dynamic 3D Stage LED Screen with Sponsor Billboard
+      const canvas = document.createElement('canvas');
+      canvas.width = 512; canvas.height = 256;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#06101f'; ctx.fillRect(0, 0, 512, 256);
+      ctx.strokeStyle = '#d4af5f'; ctx.lineWidth = 12; ctx.strokeRect(6, 6, 500, 244);
+      ctx.fillStyle = '#d4af5f'; ctx.font = 'bold 36px "Hanken Grotesk", sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('HELLENIC GALA 2025', 256, 90);
+      ctx.fillStyle = '#5dbedc'; ctx.font = 'bold 24px "Hanken Grotesk", sans-serif';
+      ctx.fillText('★ OFFICIAL SPONSOR: KRINOS FOODS ★', 256, 150);
+      ctx.fillStyle = '#eef3fa'; ctx.font = '18px "Hanken Grotesk", sans-serif';
+      ctx.fillText('Platinum Corporate Partner · Hellenic Community', 256, 195);
+      
+      const tex = new THREE.CanvasTexture(canvas);
+      tex.anisotropy = 4;
+      const scrMat = new THREE.MeshStandardMaterial({ map: tex, emissive: 0x223548, emissiveIntensity: 0.8, roughness: 0.3 });
+      const scr = new THREE.Mesh(new THREE.BoxGeometry(p.w, p.h, 0.12), scrMat);
       scr.position.set(p.x, p.h / 2 + 1.2, p.z);
       threeScene.add(scr);
     }
@@ -3970,13 +4744,36 @@ function build3DScene(){
       threeScene.add(leg);
     }
 
-    /* Round dinner tables get a table top you can actually see */
+    /* Round dinner tables get a table top you can actually see + sponsor emblem */
     if(s3.shape === 'cyl'){
       const r = Math.min(s3.w, s3.d) / 2 - 0.06;
       const top = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.04, 32),
                                  mat3d(soldout ? 0x3a4650 : 0xd4aa60, {emissive:soldout ? 0x101a22 : 0x6B4010, roughness:0.35, metalness:0.55}));
       top.position.set(s3.x, lift + 0.25, s3.z);
       threeScene.add(top);
+
+      // 3D Floating Sponsor Flag over VIP table
+      if(z.id === 't1' || z.id === 't2' || z.id === 'vip-right'){
+        const flagCanvas = document.createElement('canvas');
+        flagCanvas.width = 256; flagCanvas.height = 128;
+        const fctx = flagCanvas.getContext('2d');
+        fctx.fillStyle = '#0a1628'; fctx.fillRect(0,0,256,128);
+        fctx.strokeStyle = '#d4af5f'; fctx.lineWidth = 6; fctx.strokeRect(4,4,248,120);
+        fctx.fillStyle = '#d4af5f'; fctx.font = 'bold 22px sans-serif'; fctx.textAlign = 'center';
+        fctx.fillText('★ SPONSORED', 128, 48);
+        fctx.fillStyle = '#fff'; fctx.font = 'bold 18px sans-serif';
+        fctx.fillText('KRINOS FOODS', 128, 92);
+        const fTex = new THREE.CanvasTexture(flagCanvas);
+        const fMat = new THREE.MeshBasicMaterial({ map: fTex, side: THREE.DoubleSide });
+        const flagMesh = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 0.7), fMat);
+        flagMesh.position.set(s3.x, lift + 1.6, s3.z);
+        threeScene.add(flagMesh);
+
+        // Pin rod
+        const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.4, 8), mat3d(0xd4af5f, {metalness:0.8, roughness:0.2}));
+        rod.position.set(s3.x, lift + 0.9, s3.z);
+        threeScene.add(rod);
+      }
     }
 
     /* Little markers standing for the seats still free in this area */

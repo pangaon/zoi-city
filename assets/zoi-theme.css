@@ -171,6 +171,47 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
   .zoi-actions .btn{display:none}
   .zoi-actions{gap:0}
 }
+/* ---- Shared product shell ---- */
+.zoi-shell{display:grid;gap:24px}
+.zoi-surface{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.zoi-panel{padding:24px;border:1px solid var(--line);border-radius:var(--r);background:color-mix(in srgb, var(--card) 90%, transparent)}
+.zoi-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:16px}
+.zoi-kicker::before{content:"";display:block;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb, var(--gold) 22%, transparent)}
+.zoi-section-head{display:flex;align-items:end;justify-content:space-between;gap:22px;flex-wrap:wrap;margin-bottom:22px}
+.zoi-section-head h2{margin:0}
+.zoi-section-head p{margin:8px 0 0;color:var(--mut);max-width:62ch}
+.zoi-trust{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.zoi-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb, var(--card2) 94%, transparent);color:var(--mut);font-size:12px}
+.zoi-pill::before{content:"";display:block;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb, var(--gold) 18%, transparent)}
+.zoi-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;list-style:none;padding:0;margin:0}
+.zoi-step{background:var(--bg);padding:26px 24px;border:none;display:block}
+.zoi-step .mono{margin-bottom:12px}
+.zoi-step h3{font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.zoi-step p{font-size:14px;color:var(--mut);margin:0}
+
+.zoi-platform{display:grid;gap:24px;margin:clamp(40px,6vw,72px) 0}
+.zoi-platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px}
+.zoi-platform-card{padding:26px 24px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent), color-mix(in srgb, var(--card2) 92%, transparent));}
+.zoi-platform-card .mono{margin-bottom:10px}
+.zoi-platform-card h3{margin:0 0 8px;font-size:22px;letter-spacing:-.02em}
+.zoi-platform-card p{margin:0;color:var(--mut)}
+.zoi-platform-card .zoi-pill{margin-top:18px}
+.zoi-maturity{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-top:8px}
+.zoi-maturity .zoi-metric{padding:18px 18px 16px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.zoi-maturity .zoi-metric-label{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.zoi-maturity .zoi-metric-value{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px}
+.zoi-maturity .zoi-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--gold)}
+.zoi-maturity .zoi-live .zoi-dot{background:var(--green)}
+.zoi-maturity .zoi-roadmap .zoi-dot{background:var(--acc)}
+.zoi-ops{display:grid;gap:12px;margin-top:12px}
+.zoi-op{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.zoi-op strong{display:block;margin-bottom:4px}
+.zoi-op span{display:block;color:var(--mut);font-size:14px}
+.zoi-op .zoi-state{margin-left:auto;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.zoi-op .zoi-state.zoi-live{color:var(--green);border-color:color-mix(in srgb, var(--green) 28%, transparent);background:color-mix(in srgb, var(--green) 12%, transparent)}
+.zoi-op .zoi-state.zoi-beta{color:var(--gold);border-color:color-mix(in srgb, var(--gold) 26%, transparent);background:color-mix(in srgb, var(--gold) 12%, transparent)}
+.zoi-op .zoi-state.zoi-roadmap{color:var(--acc);border-color:color-mix(in srgb, var(--acc) 26%, transparent);background:color-mix(in srgb, var(--acc) 10%, transparent)}
+
 /* ---- Global footer ---- */
 .zoi-footer .zoi-fnav{display:flex;flex-wrap:wrap;gap:18px}
 .zoi-footer .zoi-fmeta{font-size:12.5px;color:var(--dim)}

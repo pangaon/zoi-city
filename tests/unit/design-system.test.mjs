@@ -131,6 +131,13 @@ test('the hidden attribute is guarded globally', () => {
     'zoi-theme.css must force [hidden] to display:none');
 });
 
+test('the shared shell exposes the continuity utilities needed for a consistent product', () => {
+  const css = readFileSync(join(ROOT, 'assets/zoi-theme.css'), 'utf8');
+  for (const className of ['zoi-shell', 'zoi-surface', 'zoi-panel', 'zoi-kicker', 'zoi-section-head', 'zoi-trust', 'zoi-pill', 'zoi-steps', 'zoi-step']) {
+    assert.match(css, new RegExp(`\\.${className}\\s*\\{`), `${className} is missing from the shared design system`);
+  }
+});
+
 test('every page that styles the globe container also ships the loader', () => {
   for (const file of html(ROOT)) {
     const src = readFileSync(file, 'utf8');
