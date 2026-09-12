@@ -2885,8 +2885,10 @@ Hellenic Community Association of Toronto</textarea>
         <input type="file" accept="image/*,.pdf" style="display:none" onchange="handleBlueprintUpload(this)">
       </label>
       <button class="btn outline sm" onclick="calibrateScale()">📐 2-Point Scale Calibrator</button>
+      <button class="btn outline sm" onclick="loadFloorPlanReal()">☁️ Load my saved plan</button>
     </div>
   </div>
+  <div id="floorPlanRealStatus" style="display:none;background:var(--glass);border:1px solid var(--gl);border-radius:12px;padding:10px 16px;margin:-10px 0 18px;font-size:12.5px;color:var(--muted)"></div>
 
   <div style="display:grid;grid-template-columns:1fr 360px;gap:24px">
     <!-- Calibration & Canvas Overlay -->
@@ -3600,6 +3602,52 @@ function applySponsorTo3D() {
   const name = document.getElementById('sponsorBrandNameInput').value;
   const target = document.getElementById('sponsorTableSelect').value;
   showToast(`★ ${name} applied! Branded plaque textured onto ${target.toUpperCase()} in 3D scene & stage LED billboard updated.`);
+  saveFloorPlanReal();
+}
+
+/* Real persistence for the sponsor/table configurator above, via the
+   venue_layout_save/get RPCs. Only runs for a signed-in operator with a
+   real workspace — otherwise the configurator stays a local-only demo. */
+function floorPlanStatus(msg){ const el=document.getElementById('floorPlanRealStatus'); if(!el) return; el.textContent=msg; el.style.display=msg?'block':'none'; }
+async function currentWorkspaceId(){
+  if(!window.ZoiCore || !ZoiCore.auth.isSignedIn()) return null;
+  try{
+    const me = await ZoiCore.api.rpc('zoi_me', {}, {auth:'require'});
+    if(me && me.authenticated && me.workspaces && me.workspaces.length) return me.workspaces[0].id;
+  }catch(e){}
+  return null;
+}
+async function saveFloorPlanReal(){
+  const ws = await currentWorkspaceId();
+  if(!ws){ floorPlanStatus('Sign in with a Zoi Business workspace to save this floor plan for real — right now it only lives in this browser tab.'); return; }
+  const tierPrice = {platinum:25000, gold:15000, silver:7500, bronze:2500};
+  const tier = document.getElementById('sponsorTierSelect').value;
+  const table = {
+    name: document.getElementById('sponsorTableSelect').selectedOptions[0].textContent,
+    zone_type: 'table_round', capacity: 10, pos_x: 0, pos_y: 0, pos_z: 0, shape: 'round',
+    sponsor_name: document.getElementById('sponsorBrandNameInput').value,
+    sponsor_tier: tier, sponsor_pledge_amount: tierPrice[tier] || 0
+  };
+  try{
+    const r = await ZoiCore.api.rpc('venue_layout_save', {p_workspace: ws, p_name: 'My venue', p_tables: [table]}, {auth:'require'});
+    if(r && r.ok) floorPlanStatus('Saved to your real workspace — venue ' + r.venue_id);
+    else floorPlanStatus('Could not save: ' + ((r && r.error) || 'unknown error'));
+  }catch(e){ floorPlanStatus('Could not save: ' + e.message); }
+}
+async function loadFloorPlanReal(){
+  const ws = await currentWorkspaceId();
+  if(!ws){ floorPlanStatus('Sign in with a Zoi Business workspace to load a saved floor plan.'); return; }
+  try{
+    const r = await ZoiCore.api.rpc('venue_layout_get', {p_workspace: ws}, {auth:'require'});
+    if(!r || !r.ok){ floorPlanStatus('Could not load: ' + ((r && r.error) || 'unknown error')); return; }
+    if(!r.venue){ floorPlanStatus('No saved floor plan yet for your workspace — configure a sponsor table and click “Apply to 3D Venue” to save one.'); return; }
+    const t = (r.tables && r.tables[0]) || null;
+    if(t){
+      document.getElementById('sponsorBrandNameInput').value = t.sponsor_name || '';
+      const tierSel = document.getElementById('sponsorTierSelect'); if(tierSel && t.sponsor_tier) tierSel.value = t.sponsor_tier;
+    }
+    floorPlanStatus('Loaded your real saved venue “' + r.venue.name + '” (' + (r.tables||[]).length + ' table' + ((r.tables||[]).length===1?'':'s') + ').');
+  }catch(e){ floorPlanStatus('Could not load: ' + e.message); }
 }
 
 
