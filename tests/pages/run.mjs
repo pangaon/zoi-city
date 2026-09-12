@@ -79,6 +79,47 @@ const PAGES = [
       assert(html.includes('Classic prototype'), '/explore/app/: missing "Classic prototype" label');
     },
   },
+  {
+    path: '/apps/',
+    extra: (html) => {
+      const cards = count(html, /class="card/gi);
+      assert(cards >= 8, `/apps/: expected at least 8 app cards, found ${cards}`);
+      assert(html.includes('href="/social"'), '/apps/: missing link to Zoi Business');
+      assert(html.includes('href="/apps/command-center/"'), '/apps/: missing link to Command Center');
+    },
+  },
+  {
+    path: '/apps/command-center/',
+    extra: (html) => {
+      assert(/noindex/i.test(html), '/apps/command-center/: founder console must stay noindex');
+      assert(/zoi_founder_dashboard/.test(html), '/apps/command-center/: not wired to founder dashboard RPC');
+    },
+  },
+  {
+    path: '/apps/intelligence/',
+    extra: (html) => {
+      assert(html.includes('zoi.schema_type') || /scan/i.test(html), '/apps/intelligence/: missing scan wiring');
+    },
+  },
+  {
+    path: '/apps/business-pro/',
+    extra: (html) => {
+      assert(/noindex/i.test(html), '/apps/business-pro/: operator tool must stay noindex');
+    },
+  },
+  {
+    path: '/apps/event-os/',
+    extra: (html) => {
+      assert(/noindex/i.test(html), '/apps/event-os/: operator tool must stay noindex');
+      assert(!html.includes('George Pangaon'), '/apps/event-os/: founder\u2019s real name must not appear in demo data');
+    },
+  },
+  {
+    path: '/apps/tickets-studio/',
+    extra: (html) => {
+      assert(/noindex/i.test(html), '/apps/tickets-studio/: operator tool must stay noindex');
+    },
+  },
 ];
 
 async function fetchPage(path) {
