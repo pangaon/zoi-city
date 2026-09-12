@@ -22,12 +22,35 @@
 
   /* Jumps that are always available, so the palette is useful before you type. */
   var ACTIONS = [
-    { label: 'Directory', hint: 'Browse the Greek world', href: '/explore', ic: 'pin' },
-    { label: 'Community', hint: 'The agora', href: '/community', ic: 'chat' },
-    { label: 'Business', hint: 'Publish, schedule, grow', href: '/social', ic: 'spark' },
-    { label: 'Tickets', hint: 'Events and reservations', href: '/tickets', ic: 'ticket' },
-    { label: 'Marketplace', hint: 'Coming soon', href: '/#marketplace', ic: 'cart' }
+    { label: 'Directory Explorer', hint: 'Browse 8,000+ verified Greek places', href: '/explore', ic: 'pin' },
+    { label: 'Weddings & Private Events', hint: 'RSVP, family seating, digital Shakoula', href: '/apps/tickets-studio/', ic: 'heart' },
+    { label: 'In-Seat Table Tab & Split', hint: 'Live group ordering & 3-way bill splitting', href: '/apps/tickets-studio/', ic: 'ticket' },
+    { label: 'Kitchen & Bar KDS', hint: 'Live order dispatching & cashier float', href: '/apps/tickets-studio/', ic: 'spark' },
+    { label: '3D Venue & Blueprint Studio', hint: 'Custom floor plans & sponsor plaques', href: '/apps/tickets-studio/', ic: 'spark' },
+    { label: 'Community Agora', hint: 'The Greek world social feed', href: '/community', ic: 'chat' },
+    { label: 'Business Suite', hint: 'Publish, schedule, audience & analytics', href: '/social', ic: 'spark' },
+    { label: 'Tickets & Door Scanner', hint: 'Public events & QR check-in', href: '/tickets', ic: 'ticket' },
+    { label: 'Website Intelligence', hint: 'SEO, GEO and AI-citation audits', href: '/apps/intelligence/', ic: 'search' },
+    { label: 'Founder Command Center', hint: 'Directory health & crawler operations', href: '/apps/command-center/', ic: 'pin' }
   ];
+
+  /* ── Greeklish / Phonetic dual-script transliteration engine ── */
+  var LATIN_TO_GREEK = [
+    [/th/gi, 'θ'], [/ch/gi, 'χ'], [/ps/gi, 'ψ'], [/ks/gi, 'ξ'], [/ou/gi, 'ου'],
+    [/ai/gi, 'αι'], [/ei/gi, 'ει'], [/oi/gi, 'οι'], [/mp/gi, 'μπ'], [/nt/gi, 'ντ'],
+    [/a/gi, 'α'], [/b/gi, 'β'], [/g/gi, 'γ'], [/d/gi, 'δ'], [/e/gi, 'ε'],
+    [/z/gi, 'ζ'], [/i/gi, 'ι'], [/k/gi, 'κ'], [/l/gi, 'λ'], [/m/gi, 'μ'],
+    [/n/gi, 'ν'], [/x/gi, 'ξ'], [/o/gi, 'ο'], [/p/gi, 'π'], [/r/gi, 'ρ'],
+    [/s/gi, 'σ'], [/t/gi, 'τ'], [/u/gi, 'υ'], [/f/gi, 'φ'], [/v/gi, 'β'],
+    [/w/gi, 'ω'], [/y/gi, 'υ'], [/h/gi, 'χ'], [/j/gi, 'τζ'], [/c/gi, 'κ']
+  ];
+  function toGreeklish(str) {
+    var out = str.toLowerCase();
+    for (var i = 0; i < LATIN_TO_GREEK.length; i++) {
+      out = out.replace(LATIN_TO_GREEK[i][0], LATIN_TO_GREEK[i][1]);
+    }
+    return out;
+  }
 
   var IC = {
     pin: '<path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/>',

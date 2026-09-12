@@ -22,9 +22,9 @@
   --bg:#060b14; --bg2:#0a1220; --card:#0f1b2d; --card2:#0c1524;
   --line:rgba(190,215,255,.10); --line2:rgba(190,215,255,.19);
   --tx:#eef3fa; --mut:#93a4bd; --dim:#64748f;
-  --acc:#1f9ec9; --aegean:#1f9ec9; --med-blue:#1261a0; --med-deep:#0a2a4a; --sea:#1f9ec9;
+  --acc:#0284c7; --aegean:#1f9ec9; --med-blue:#0284c7; --med-deep:#073b6c; --sea:#1f9ec9;
   --gold:#d4af5f; --green:#5bc49a; --red:#e0796b;
-  --btn-fg:#06101f; --btn-bg:#eef3fa;      /* primary = light on dark */
+  --btn-fg:#ffffff; --btn-bg:#0284c7;      /* primary = Mediterranean Blue */
   --ease:cubic-bezier(.22,.61,.36,1);
   --r:18px; --r-sm:12px; --maxw:1140px;
   --shadow:0 22px 44px -26px rgba(0,0,0,.55);
@@ -34,9 +34,9 @@
   --bg:#f7f9fc; --bg2:#ffffff; --card:#ffffff; --card2:#edf2f8;
   --line:rgba(16,42,74,.12); --line2:rgba(16,42,74,.21);
   --tx:#0b2545; --mut:#4a6180; --dim:#7e92ac;
-  --acc:#1261a0; --aegean:#1261a0; --med-blue:#0a4d8c; --med-deep:#073b6c; --sea:#1261a0;
+  --acc:#0284c7; --aegean:#1f9ec9; --med-blue:#0369a1; --med-deep:#073b6c; --sea:#1f9ec9;
   --gold:#96701c; --green:#1b7a55; --red:#b84a38;
-  --btn-fg:#f7f9fc; --btn-bg:#0b2545;
+  --btn-fg:#ffffff; --btn-bg:#0284c7;
 }
 [data-theme="gold"]{
   /* The formal variant: gold on near-black with Mediterranean highlights. */
@@ -100,8 +100,8 @@ h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
   min-height:46px;transition:transform .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
 .btn svg{width:16px;height:16px}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:var(--btn-bg);color:var(--btn-fg)}
-.btn-primary:hover{transform:translateY(-2px)}
+.btn-primary{background:linear-gradient(135deg,#0284c7,#1f9ec9);color:#ffffff;border:none;box-shadow:0 8px 24px -8px rgba(2,132,199,.7)}
+.btn-primary:hover{background:linear-gradient(135deg,#0369a1,#0284c7);transform:translateY(-2px);box-shadow:0 12px 28px -8px rgba(2,132,199,.85)}
 .btn-ghost{background:transparent;color:var(--tx);border-color:var(--line2)}
 .btn-ghost:hover{border-color:var(--acc);transform:translateY(-2px)}
 .btn-gold{background:var(--gold);color:var(--btn-fg)}
