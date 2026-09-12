@@ -586,7 +586,9 @@ body.on-floor .main{max-width:none;padding-left:clamp(16px,2vw,30px);padding-rig
 
 </style></head>
 <body>
-<div class="zoi-preview" role="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><b>Preview · sample data</b><span>Every figure here is illustrative — nothing is connected to your account, and nothing is live.</span><a href="/tickets">Open the live Zoi Tickets →</a></div>
+<div class="zoi-preview" role="note"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg><b>Preview · sample data</b><span>Every figure here below is illustrative — nothing here is connected to your account.</span><a href="/tickets">Open the live Zoi Tickets →</a></div>
+<div class="zoi-preview" id="zoiRealStrip" role="note" style="display:none;border-color:var(--sea)"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><b>Your real numbers</b><span id="zoiRealText">Loading…</span></div>
+<script src="/assets/zoi-core.js"></script>
 <header class="zoi-header static wide"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
   <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
@@ -3002,6 +3004,24 @@ setTimeout(()=>{booted=true;render();
  try{fetchRealEvents();}catch(e){}
 },900);
 /* eventos-live build: real ev_upcoming RPC + white-label brand kit + elite public page */
+
+/* Real-data strip: the cockpit above is a design concept with sample
+   numbers. If the visitor is signed in with a real ticketing workspace,
+   show their real event count instead of pretending the concept is live. */
+(function(){
+  var strip=document.getElementById('zoiRealStrip'), text=document.getElementById('zoiRealText');
+  if(!window.ZoiCore||!strip||!text) return;
+  if(!ZoiCore.auth.isSignedIn()) return;
+  ZoiCore.api.rpc('zoi_me',{},{auth:'require'}).then(function(me){
+    if(!me||!me.authenticated||!(me.workspaces&&me.workspaces.length)) return;
+    var ws=me.workspaces[0];
+    return ZoiCore.api.rpc('tickets_dashboard',{p_workspace:ws.id},{auth:'require'}).then(function(d){
+      var events=(d&&d.events)||[];
+      text.innerHTML='Signed in as <b>'+ZoiCore.esc(me.email||'')+'</b> \u00b7 workspace <b>'+ZoiCore.esc(ws.name||'Workspace')+'</b> \u00b7 <b>'+events.length+'</b> real event'+(events.length===1?'':'s')+'. <a href="/tickets">Open your real dashboard \u2192</a>';
+      strip.style.display='flex';
+    });
+  }).catch(function(){ /* not signed in here, or session expired — leave the strip hidden */ });
+})();
 </script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
