@@ -2684,10 +2684,15 @@ Hellenic Community Association of Toronto</textarea>
 
 <!-- ═══════════════════════ GUEST IN-SEAT TABLE TAB & SPLIT BILL VIEW ═══════════════════════ -->
 <div class="table-tab-view" id="tableTabView" style="display:none;max-width:1100px;margin:0 auto;padding:32px 20px 80px">
+  <div class="zoi-preview" id="realTabsCard" role="note" style="display:none;border-color:var(--sea);margin-bottom:20px;flex-direction:column;align-items:stretch;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><path d="M20 6L9 17l-5-5"/></svg><b>Your real table tabs</b></div>
+    <div id="realTabsList" style="display:grid;gap:8px"></div>
+    <div id="realTabsMsg" style="font-size:12.5px;color:var(--muted)"></div>
+  </div>
   <div class="tab-view-header" style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
     <div>
       <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.3);border-radius:20px;color:var(--gold-s);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
-        <span style="width:7px;height:7px;border-radius:50%;background:#5bc49a;display:inline-block"></span> TABLE VIP-4 · SPONSORED BY KRINOS FOODS
+        <span style="width:7px;height:7px;border-radius:50%;background:#5bc49a;display:inline-block"></span> TABLE VIP-4 · SPONSORED BY KRINOS FOODS (design concept below — sample data)
       </div>
       <h2 style="font-family:'Fraunces';font-size:28px;margin:0 0 6px;color:var(--paper)">Hellenic Gala 2025 · Live Table Tab</h2>
       <p style="margin:0;color:var(--muted);font-size:14px">Real-time group ordering, itemized split bill, and host settlement.</p>
@@ -2798,10 +2803,15 @@ Hellenic Community Association of Toronto</textarea>
 
 <!-- ═══════════════════════ KDS / VENDOR & HOST VIEW ═══════════════════════ -->
 <div class="kds-view" id="kdsView" style="display:none;max-width:1300px;margin:0 auto;padding:32px 20px 80px">
+  <div class="zoi-preview" id="realKdsCard" role="note" style="display:none;border-color:var(--sea);margin-bottom:20px;flex-direction:column;align-items:stretch;gap:10px">
+    <div style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><path d="M20 6L9 17l-5-5"/></svg><b>Your real kitchen/bar tickets</b></div>
+    <div id="realKdsList" style="display:grid;gap:8px"></div>
+    <div id="realKdsMsg" style="font-size:12.5px;color:var(--muted)"></div>
+  </div>
   <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin-bottom:24px">
     <div>
       <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(91,196,154,.15);border:1px solid rgba(91,196,154,.3);border-radius:20px;color:#5bc49a;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
-        <span style="width:7px;height:7px;border-radius:50%;background:#5bc49a;display:inline-block"></span> KITCHEN &amp; BAR DISPATCH ACTIVE
+        <span style="width:7px;height:7px;border-radius:50%;background:#5bc49a;display:inline-block"></span> KITCHEN &amp; BAR DISPATCH ACTIVE (design concept below — sample data)
       </div>
       <h2 style="font-family:'Fraunces';font-size:30px;margin:0 0 4px;color:var(--paper)">Kitchen &amp; Bar Station KDS</h2>
       <p style="margin:0;color:var(--muted);font-size:14px">Real-time order tickets, cash collection requests, and runner fulfillment.</p>
@@ -3329,8 +3339,10 @@ function switchView(v) {
   
   const tableTabView = document.getElementById('tableTabView');
   if(tableTabView) tableTabView.style.display = v==='tabletab' ? 'block' : 'none';
+  if(v==='tabletab') loadRealTabs();
   const kdsView = document.getElementById('kdsView');
   if(kdsView) kdsView.style.display = v==='kds' ? 'block' : 'none';
+  if(v==='kds') loadRealKds();
   const floorPlanView = document.getElementById('floorPlanView');
   if(floorPlanView) floorPlanView.style.display = v==='floorplan' ? 'block' : 'none';
   const privateWeddingView = document.getElementById('privateWeddingView');
@@ -3461,6 +3473,54 @@ async function loadRealRsvps(ws, eventId, btn){
       : 'No RSVPs yet \u2014 share the invite link above.';
   }catch(e){ box.textContent = 'Could not load RSVPs.'; }
   btn.textContent = 'View real RSVPs'; btn.disabled = false;
+}
+
+/* Real table tabs & KDS: both separate from the design-concept demo below,
+   using the workspace-gated RPCs from 0033. No guest self-ordering is wired
+   here on purpose (no menu/catalog table exists yet -- see migration note). */
+async function loadRealTabs(){
+  const card = document.getElementById('realTabsCard'), list = document.getElementById('realTabsList'), msg = document.getElementById('realTabsMsg');
+  if(!card || !window.ZoiCore) return;
+  const ws = await currentWorkspaceId();
+  if(!ws){ card.style.display='none'; return; }
+  card.style.display='flex'; msg.textContent='Loading…';
+  try{
+    const r = await ZoiCore.api.rpc('table_tab_list', {p_workspace: ws}, {auth:'require'});
+    const tabs = (r && r.ok) ? (r.tabs || []) : [];
+    msg.textContent = tabs.length ? '' : 'No real open tabs yet for your venues.';
+    list.innerHTML = tabs.map(t =>
+      '<div style="background:rgba(0,0,0,.25);border:1px solid var(--gl);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+      + '<span><b style="color:var(--paper)">' + ZoiCore.esc(t.table_name||'Table') + '</b> \u00b7 ' + t.member_count + ' member' + (t.member_count===1?'':'s') + ' \u00b7 ' + ZoiCore.esc(t.status) + '</span>'
+      + '<span style="color:var(--gold-s)">$' + Number(t.paid_amount||0).toFixed(2) + ' / $' + Number(t.total_amount||0).toFixed(2) + '</span>'
+      + '</div>'
+    ).join('');
+  }catch(e){ msg.textContent = 'Could not load: ' + e.message; }
+}
+async function loadRealKds(){
+  const card = document.getElementById('realKdsCard'), list = document.getElementById('realKdsList'), msg = document.getElementById('realKdsMsg');
+  if(!card || !window.ZoiCore) return;
+  const ws = await currentWorkspaceId();
+  if(!ws){ card.style.display='none'; return; }
+  card.style.display='flex'; msg.textContent='Loading…';
+  try{
+    const r = await ZoiCore.api.rpc('kds_tickets_list', {p_workspace: ws}, {auth:'require'});
+    const tickets = (r && r.ok) ? (r.tickets || []) : [];
+    msg.textContent = tickets.length ? '' : 'No real open tickets yet for your venues.';
+    list.innerHTML = tickets.map(t =>
+      '<div style="background:rgba(0,0,0,.25);border:1px solid var(--gl);border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">'
+      + '<span><b style="color:var(--paper)">' + ZoiCore.esc(t.table_name||'Table') + '</b> \u00b7 ' + ZoiCore.esc(t.customer_name||'') + ' \u00b7 ' + ZoiCore.esc(t.target_station) + '</span>'
+      + '<select onchange="advanceRealKds(\'' + ws + '\',\'' + t.id + '\',this.value)" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);color:var(--paper);border-radius:6px;padding:4px 8px">'
+      + ['received','preparing','ready','delivered','cancelled'].map(s => '<option value="'+s+'"'+(s===t.fulfillment_status?' selected':'')+'>'+s+'</option>').join('')
+      + '</select></div>'
+    ).join('');
+  }catch(e){ msg.textContent = 'Could not load: ' + e.message; }
+}
+async function advanceRealKds(ws, orderId, status){
+  try{
+    const r = await ZoiCore.api.rpc('kds_ticket_advance', {p_workspace: ws, p_order_id: orderId, p_status: status}, {auth:'require'});
+    if(r && r.ok) showToast('Order marked ' + status); else showToast('Could not update: ' + ((r&&r.error)||'error'));
+  }catch(e){ showToast('Could not update: ' + e.message); }
+  loadRealKds();
 }
 
 
