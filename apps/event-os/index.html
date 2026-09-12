@@ -2,9 +2,9 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <meta name="theme-color" content="#0B1F2E"/>
-<!-- OPERATOR TOOL: never public. Hard noindex always (not flag-gated). -->
+<!-- Event OS: operator event management dashboard, workspace-authenticated -->
 <meta name="robots" content="noindex,nofollow"/>
-<title>Event OS (preview) · Zoi Tickets</title>
+<title>Event OS · Zoi Tickets</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -897,6 +897,60 @@ async function fetchRealEvents(){
   if(typeof renderDiscover==='function')renderDiscover();
  }
 }
+/* ============================================================
+   REAL EVENT OS DATA — Load workspace events from production RPCs
+============================================================ */
+let realEventOSData={workspace:null,events:[],loading:false};
+async function loadRealEventOSData(){
+  if(!window.ZoiCore || realEventOSData.loading) return;
+  realEventOSData.loading = true;
+  try{
+    // Get current user + workspace
+    const me = await ZoiCore.api.rpc('zoi_me',{},{auth:'require'});
+    if(!me || !me.authenticated || !(me.workspaces && me.workspaces.length)){
+      realEventOSData.loading = false;
+      return;
+    }
+    const ws = me.workspaces[0];
+    realEventOSData.workspace = ws;
+    
+    // Load events for this workspace
+    const result = await ZoiCore.api.rpc('event_list', {p_workspace: ws.id}, {auth:'require'});
+    if(result && result.ok && result.events){
+      const evts = JSON.parse(result.events);
+      if(Array.isArray(evts) && evts.length){
+        // Convert RPC events to Event OS format
+        const osEvents = evts.map(e => ({
+          id: e.id,
+          realId: e.id,
+          real: true,
+          name: e.name,
+          date: fmtRealDate(e.start_date),
+          venue: '(workspace event)',
+          cap: e.capacity || 100,
+          mode: e.mode || 'concert',
+          live: e.published_at ? true : false,
+          slug: e.slug,
+          workspace_id: ws.id
+        }));
+        // Replace demo events with real ones
+        EVENTS.length = 0;
+        EVENTS.push(...osEvents);
+        curEvent = EVENTS[0];
+        // Re-render if app is booted
+        if(typeof booted !== 'undefined' && booted && typeof render === 'function'){
+          render();
+        }
+      }
+    }
+  }catch(e){
+    // Silently fail — show demo events if real data unavailable
+    console.log('Event OS real data load failed (using demo)', e);
+  }finally{
+    realEventOSData.loading = false;
+  }
+}
+
 /* load a discovered real event into the operator workspace */
 function loadRealEvent(id){
  const ev=discover.events.find(e=>e.id===id);if(!ev)return;
@@ -1798,17 +1852,70 @@ function saveLayout(){
  <div class="mbody"><div class="field"><label>Layout name</label><input id="lname" placeholder="e.g. Concert config" value="Layout ${Object.keys(savedLayouts).length+1}"></div>
  <button class="btn gold block" onclick="doSaveLayout()">Save floor plan</button></div>`);
 }
-function doSaveLayout(){const n=$('#lname').value.trim()||('Layout '+(Object.keys(savedLayouts).length+1));
- savedLayouts[n]={els:JSON.parse(JSON.stringify(floor.els)),venue:JSON.parse(JSON.stringify(floor.venue))};
- try{STORE.set('zoi_layouts',JSON.stringify(savedLayouts));}catch(e){}
- closeModal();go('floor');toast('Layout "'+n+'" saved');}
+function doSaveLayout(){
+  const n = $('#lname').value.trim() || ('Layout ' + (Object.keys(savedLayouts).length + 1));
+  const layoutData = {els:JSON.parse(JSON.stringify(floor.els)),venue:JSON.parse(JSON.stringify(floor.venue))};
+  
+  // Save to localStorage for offline access
+  savedLayouts[n] = layoutData;
+  try{STORE.set('zoi_layouts',JSON.stringify(savedLayouts));}catch(e){}
+  
+  // If this is a real event with a workspace, also save to database
+  if(curEvent && curEvent.real && curEvent.workspace_id && window.ZoiCore){
+    ZoiCore.api.rpc('floor_plan_save', {
+      p_event_id: curEvent.id,
+      p_workspace: curEvent.workspace_id,
+      p_layout_json: layoutData
+    }, {auth:'require'}).then(r => {
+      if(r && r.ok) toast('Layout saved to workspace');
+    }).catch(e => {
+      console.log('Layout save to workspace failed (using local)', e);
+      toast('Layout "'+n+'" saved locally');
+    });
+  } else {
+    closeModal();go('floor');toast('Layout "'+n+'" saved');
+  }
+}
 function loadLayout(n){
  if(!n){defaultLayout();renderCanvas();refreshProps();fitToScreen(true);return;}
- const L=savedLayouts[n];if(!L)return;
- // support both new {els,venue} and legacy [els] shapes
- if(Array.isArray(L)){floor.els=JSON.parse(JSON.stringify(L));}
- else{floor.els=JSON.parse(JSON.stringify(L.els));if(L.venue)floor.venue=JSON.parse(JSON.stringify(L.venue));}
- floor.sel.clear();renderCanvas();refreshProps();fitToScreen(true);toast('Loaded "'+n+'"');}
+ 
+ // If this is a real event, try loading from database first
+ if(curEvent && curEvent.real && curEvent.id && window.ZoiCore){
+   ZoiCore.api.rpc('floor_plan_get', {p_event_id: curEvent.id}, {auth:'require'}).then(r => {
+     if(r && r.ok && r.plan){
+       const L = r.plan.layout_json;
+       if(L && L.els){
+         floor.els = JSON.parse(JSON.stringify(L.els));
+         if(L.venue) floor.venue = JSON.parse(JSON.stringify(L.venue));
+         floor.sel.clear();
+         renderCanvas();refreshProps();fitToScreen(true);
+         toast('Loaded from workspace');
+         return;
+       }
+     }
+     // Fallback to localStorage
+     const localLayout = savedLayouts[n];
+     if(!localLayout) return;
+     if(Array.isArray(localLayout)){floor.els=JSON.parse(JSON.stringify(localLayout));}
+     else{floor.els=JSON.parse(JSON.stringify(localLayout.els));if(localLayout.venue)floor.venue=JSON.parse(JSON.stringify(localLayout.venue));}
+     floor.sel.clear();renderCanvas();refreshProps();fitToScreen(true);toast('Loaded "'+n+'"');
+   }).catch(e => {
+     // Fallback to localStorage
+     const localLayout = savedLayouts[n];
+     if(!localLayout) return;
+     if(Array.isArray(localLayout)){floor.els=JSON.parse(JSON.stringify(localLayout));}
+     else{floor.els=JSON.parse(JSON.stringify(localLayout.els));if(localLayout.venue)floor.venue=JSON.parse(JSON.stringify(localLayout.venue));}
+     floor.sel.clear();renderCanvas();refreshProps();fitToScreen(true);toast('Loaded "'+n+'" (local)');
+   });
+ } else {
+   // No workspace — use localStorage only
+   const L = savedLayouts[n];
+   if(!L) return;
+   if(Array.isArray(L)){floor.els=JSON.parse(JSON.stringify(L));}
+   else{floor.els=JSON.parse(JSON.stringify(L.els));if(L.venue)floor.venue=JSON.parse(JSON.stringify(L.venue));}
+   floor.sel.clear();renderCanvas();refreshProps();fitToScreen(true);toast('Loaded "'+n+'"');
+ }
+}
 function assignTable(id){
  const e=floor.els.find(x=>x.id===id);
  openModal(`<div class="mhead"><div><h3>Assign ${esc(e.name)}</h3><div class="sub">${e.seats} seats · ${fmt(e.min)} minimum spend</div></div><button class="close" onclick="closeModal()">×</button></div>
@@ -3000,6 +3107,8 @@ render(); // skeleton
 setTimeout(()=>{booted=true;render();
  // refresh the sidebar seal/brand text now that the app is interactive
  try{const a=brandAccent();const seal=document.querySelector('.side .seal');if(seal)seal.innerHTML=brand.logo?`<img src="${brand.logo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:inherit">`:brandInitials();const bd=document.querySelector('.side .brand');if(bd)bd.innerHTML=`${esc(brand.name)}<small>${esc(brand.sub||'Operator cockpit')}</small>`;}catch(e){}
+ // load real Event OS events from workspace (replaces demo with live data)
+ try{loadRealEventOSData();}catch(e){}
  // warm the real-events cache in the background so the switcher is instant
  try{fetchRealEvents();}catch(e){}
 },900);

@@ -254,6 +254,7 @@ const RLS_LOCKED_TABLES = [
   'event_orders', 'event_order_items', 'tab_payments',
   'private_events', 'private_rsvps', 'private_registry_items',
   'private_event_gifts', 'private_photo_wall', 'menu_items',
+  'events', 'event_floor_plans', 'event_team_members',
 ];
 for (const tbl of RLS_LOCKED_TABLES) {
   t(`SECURITY: ${tbl} rejects anon REST access (RLS must stay enabled)`, async () => {
