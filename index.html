@@ -300,34 +300,191 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 </section>
 
 <section class="zoi-platform wrap" aria-labelledby="platform-title">
-  <!-- DAILY RITUAL: THE MORNING GREEK BRIEF -->
-  <div class="zoi-panel" style="margin-bottom:34px;background:linear-gradient(135deg,color-mix(in srgb,var(--card) 94%,transparent),color-mix(in srgb,var(--card2) 94%,transparent));border:1px solid var(--line2)">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:14px">
-      <div style="display:inline-flex;align-items:center;gap:8px;padding:5px 12px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.3);border-radius:20px;color:var(--gold);font-size:11.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase">
-        <span style="width:7px;height:7px;border-radius:50%;background:var(--gold);display:inline-block;box-shadow:0 0 8px var(--gold)"></span> THE DAILY DIASPORA RITUAL
+  <!-- DAILY RITUAL: THE COMPLETE PAN-HELLENIC DIASPORA EXPERIENCE -->
+  <div class="zoi-panel" style="margin-bottom:34px;background:linear-gradient(135deg,color-mix(in srgb,var(--card) 95%,transparent),color-mix(in srgb,var(--card2) 95%,transparent));border:1px solid var(--line2);box-shadow:0 20px 50px -20px rgba(0,0,0,.6)">
+    
+    <!-- Header with Live Time & Share Actions -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.35);border-radius:20px;color:var(--gold);font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase">
+          <span style="width:7px;height:7px;border-radius:50%;background:var(--gold);display:inline-block;box-shadow:0 0 10px var(--gold)"></span> THE DAILY DIASPORA RITUAL
+        </div>
+        <span style="font-size:13px;color:var(--mut);font-weight:600" id="live-calendar-date">Today in the Greek World</span>
       </div>
-      <span style="font-size:12.5px;color:var(--mut)" id="live-date-indicator">Daily Brief &amp; Nameday Calendar</span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
-      <div style="background:var(--bg2);padding:18px;border-radius:14px;border:1px solid var(--line)">
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:6px">Today's Celebrations &amp; Namedays</div>
-        <div style="font-size:17px;font-weight:700;color:var(--tx);margin-bottom:4px" id="brief-namedays">Feast of St. Nicholas · Νικόλαος, Νίκη</div>
-        <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Wish Chronia Polla to friends, patrons, and Greek tavernas celebrating today.</p>
-        <a class="btn btn-ghost" href="/social" style="padding:7px 14px;font-size:12.5px;min-height:36px">Draft Nameday Post &rarr;</a>
-      </div>
-      <div style="background:var(--bg2);padding:18px;border-radius:14px;border:1px solid var(--line)">
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--acc);margin-bottom:6px">The Agora · Live Community Pulse</div>
-        <div style="font-size:17px;font-weight:700;color:var(--tx);margin-bottom:4px">Toronto Greek Gala · Astoria Panigiri</div>
-        <p style="font-size:13px;color:var(--mut);margin:0 0 10px">See active discussions, cultural drives, and tagged places in our global square.</p>
-        <a class="btn btn-ghost" href="/community" style="padding:7px 14px;font-size:12.5px;min-height:36px">Open Community Feed &rarr;</a>
-      </div>
-      <div style="background:var(--bg2);padding:18px;border-radius:14px;border:1px solid var(--line)">
-        <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--green);margin-bottom:6px">Creator &amp; Business Opportunities</div>
-        <div style="font-size:17px;font-weight:700;color:var(--tx);margin-bottom:4px">Creators, Podcasters &amp; Tavernas</div>
-        <p style="font-size:13px;color:var(--mut);margin:0 0 10px">Monetize bio links, run 3D festival ticket sales, and accept in-seat table orders.</p>
-        <a class="btn btn-ghost" href="/explore?c=creators" style="padding:7px 14px;font-size:12.5px;min-height:36px">Discover Creators &rarr;</a>
+
+      <!-- Social Share Suite -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="font-size:11.5px;color:var(--dim);font-weight:700;text-transform:uppercase;letter-spacing:.06em">Share Today's Blessing:</span>
+        <button class="btn btn-ghost" style="padding:6px 10px;min-height:32px;font-size:11.5px;border-radius:8px" onclick="shareRitual('whatsapp')">💬 WhatsApp</button>
+        <button class="btn btn-ghost" style="padding:6px 10px;min-height:32px;font-size:11.5px;border-radius:8px" onclick="shareRitual('x')">𝕏 Post</button>
+        <button class="btn btn-ghost" style="padding:6px 10px;min-height:32px;font-size:11.5px;border-radius:8px" onclick="shareRitual('sms')">📱 SMS</button>
+        <button class="btn btn-ghost" style="padding:6px 10px;min-height:32px;font-size:11.5px;border-radius:8px" onclick="shareRitual('copy')">📋 Copy Card</button>
       </div>
     </div>
+
+    <!-- Category & Preference Selector -->
+    <div style="display:flex;gap:8px;margin-bottom:18px;overflow-x:auto;padding-bottom:4px">
+      <button class="btn sm" id="tabRitualAll" style="background:var(--acc);color:#fff;border-radius:20px;font-size:12px;padding:6px 14px" onclick="setRitualTab('all')">🇬🇷 All Greek World</button>
+      <button class="btn sm outline" id="tabRitualFeast" style="border-radius:20px;font-size:12px;padding:6px 14px" onclick="setRitualTab('feast')">⛪ Orthodox Feasts &amp; Fasting</button>
+      <button class="btn sm outline" id="tabRitualFood" style="border-radius:20px;font-size:12px;padding:6px 14px" onclick="setRitualTab('food')">🍷 Tavernas &amp; Gastronomy</button>
+      <button class="btn sm outline" id="tabRitualTravel" style="border-radius:20px;font-size:12px;padding:6px 14px" onclick="setRitualTab('travel')">✈️ Greece Live Weather &amp; Travel</button>
+      <button class="btn sm outline" id="tabRitualCreator" style="border-radius:20px;font-size:12px;padding:6px 14px" onclick="setRitualTab('creator')">🎙️ Creators &amp; Voices</button>
+    </div>
+
+    <!-- Tab 1 & Default: Main Daily Matrix -->
+    <div id="panelRitualAll" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+      
+      <!-- Card 1: Orthodox Feasts & Namedays Deep Dive -->
+      <div style="background:var(--bg2);padding:20px;border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Orthodox Calendar &amp; Fast</span>
+            <span id="fasting-badge" style="background:rgba(91,196,154,.15);color:var(--green);border:1px solid rgba(91,196,154,.3);border-radius:12px;padding:2px 8px;font-size:10.5px;font-weight:700">Fast Free</span>
+          </div>
+          <div style="font-size:18px;font-weight:700;color:var(--tx);margin-bottom:4px" id="brief-feast-title">Feast of St. Nicholas the Wonderworker</div>
+          <div style="font-size:13px;color:var(--gold);font-weight:600;margin-bottom:8px" id="brief-nameday-names">Namedays: Νικόλαος, Νίκη, Νικολέττα</div>
+          <p style="font-size:13px;color:var(--mut);margin:0 0 14px;line-height:1.45" id="brief-feast-desc">Patron saint of seafarers, merchants and Greece. A day of celebration and generous giving across the diaspora.</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="padding:8px 12px;font-size:12px;flex:1" onclick="openFeastModal()">📖 Deep Dive &amp; Bio</button>
+          <a class="btn btn-primary" href="/social" style="padding:8px 12px;font-size:12px;flex:1;text-align:center">Draft Wish &rarr;</a>
+        </div>
+      </div>
+
+      <!-- Card 2: Daily Greek Word & Cultural Wisdom -->
+      <div style="background:var(--bg2);padding:20px;border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--acc);margin-bottom:8px">Greek Word of the Day</div>
+          <div style="font-size:22px;font-family:'Fraunces';font-weight:600;color:var(--tx);margin-bottom:2px">Φιλοξενία <span style="font-size:14px;color:var(--mut);font-family:'Hanken Grotesk';font-weight:500">· [fee-loh-kseh-NEE-ah]</span></div>
+          <div style="font-size:13px;color:var(--acc);font-weight:700;margin-bottom:8px">Literal: "Love of the stranger" / Sacred Hospitality</div>
+          <p style="font-size:13px;color:var(--mut);margin:0 0 14px;line-height:1.45">The timeless Greek virtue that strangers become honored guests. The heartbeat of our tavernas, family homes, and communities worldwide.</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="padding:8px 12px;font-size:12px;width:100%" onclick="playWordAudio()">🔊 Listen to Pronunciation</button>
+        </div>
+      </div>
+
+      <!-- Card 3: Greece Live Weather & Aegean Pulse -->
+      <div style="background:var(--bg2);padding:20px;border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between">
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--sea)">Live Greece Weather &amp; Travel</span>
+            <span style="font-size:11px;color:var(--dim)">Aegean Forecast</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
+              <div style="font-size:11px;color:var(--mut)">🏛 Athens</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx)">28°C <span style="font-size:12px;color:var(--gold)">☀️</span></div>
+            </div>
+            <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
+              <div style="font-size:11px;color:var(--mut)">🏰 Thessaloniki</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx)">26°C <span style="font-size:12px;color:var(--acc)">🌤️</span></div>
+            </div>
+            <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
+              <div style="font-size:11px;color:var(--mut)">🏖 Chania, Crete</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx)">27°C <span style="font-size:12px;color:var(--gold)">☀️</span></div>
+            </div>
+            <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
+              <div style="font-size:11px;color:var(--mut)">⛵ Santorini</div>
+              <div style="font-size:16px;font-weight:800;color:var(--tx)">25°C <span style="font-size:12px;color:var(--acc)">🌊</span></div>
+            </div>
+          </div>
+        </div>
+        <a class="btn btn-ghost" href="/explore?c=travel_place" style="padding:8px 12px;font-size:12px;text-align:center">Explore Travel Guide &rarr;</a>
+      </div>
+
+    </div>
+
+    <!-- Tab 2: Orthodox Feast Deep Dive Panel -->
+    <div id="panelRitualFeast" style="display:none;background:var(--bg2);padding:24px;border-radius:14px;border:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+        <div>
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Holy Tradition &amp; Fasting Guidance</span>
+          <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0" id="detail-feast-title">Saint of the Day &amp; Troparion Hymn</h3>
+        </div>
+        <a class="btn btn-primary btn-sm" href="/explore?c=churches">Find an Orthodox Church &rarr;</a>
+      </div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+        <div>
+          <p style="font-size:14px;color:var(--tx);line-height:1.6;margin-bottom:14px" id="detail-feast-bio">
+            According to the holy Paschalion and Eastern Orthodox synaxarion, today is celebrated with spiritual thanksgiving. Parishes around the globe commemorate the venerable saints who defended the faith and tended to the needy with tireless love.
+          </p>
+          <div style="background:var(--bg);padding:14px;border-radius:10px;border-left:3px solid var(--gold);font-style:italic;font-size:13.5px;color:var(--tx)">
+            "A model of faith and the image of gentleness, the teacher of abstinence, the truth of your things has revealed you to your flock as a rule of faith."
+          </div>
+        </div>
+        <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
+          <div style="font-size:12px;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Fasting &amp; Table Guidance</div>
+          <div style="font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:12px">
+            Today is a <b>Wine &amp; Oil Permitted</b> day. Enjoy traditional Mediterranean legumes, fresh grilled vegetables, and olives.
+          </div>
+          <a class="btn btn-ghost btn-sm" style="width:100%;text-align:center" href="/social">Draft Parish Nameday Notice</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Food & Tavernas Panel -->
+    <div id="panelRitualFood" style="display:none;background:var(--bg2);padding:24px;border-radius:14px;border:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Greek Gastronomy &amp; Table Culture</span>
+          <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0">Authentic Mezedes, Bakeries &amp; In-Seat Ordering</h3>
+        </div>
+        <a class="btn btn-primary btn-sm" href="/explore?c=restaurants">Explore Greek Restaurants &rarr;</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
+        <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
+          <div style="font-size:24px;margin-bottom:4px">🐙</div>
+          <b style="color:var(--tx);font-size:15px;display:block">Taverna In-Seat Ordering</b>
+          <p style="font-size:12.5px;color:var(--mut);margin:4px 0 10px">Scan your table QR code, browse the grill menu, and split the bill 3 ways with Apple Pay.</p>
+          <a href="/apps/tickets-studio/" style="color:var(--acc);font-weight:700;font-size:12px">Launch Table Tab Demo &rarr;</a>
+        </div>
+        <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
+          <div style="font-size:24px;margin-bottom:4px">🥐</div>
+          <b style="color:var(--tx);font-size:15px;display:block">Artisanal Bakeries &amp; Sweets</b>
+          <p style="font-size:12.5px;color:var(--mut);margin:4px 0 10px">Handmade spanakopita, bougatsa with Chios mastiha, and fresh tsoureki across the diaspora.</p>
+          <a href="/explore?c=bakeries" style="color:var(--acc);font-weight:700;font-size:12px">Find Greek Bakeries &rarr;</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4: Greece Travel & Weather Guide Panel -->
+    <div id="panelRitualTravel" style="display:none;background:var(--bg2);padding:24px;border-radius:14px;border:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--sea)">Live Travel &amp; Heritage Guide</span>
+          <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0">Greece &amp; Cyprus Travel Portal</h3>
+        </div>
+        <a class="btn btn-primary btn-sm" href="/in/greece">View Greece Destinations &rarr;</a>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+        <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--line)">
+          <b style="color:var(--tx);display:block">🏛 Athens &amp; Attica</b>
+          <span style="font-size:12px;color:var(--mut)">Acropolis, Plaka tavernas, coastal Riviera (28°C)</span>
+        </div>
+        <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--line)">
+          <b style="color:var(--tx);display:block">🏖 Crete &amp; Chania</b>
+          <span style="font-size:12px;color:var(--mut)">Venetian harbor, Balos lagoon, mountain villages (27°C)</span>
+        </div>
+        <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--line)">
+          <b style="color:var(--tx);display:block">⛵ Cyclades Islands</b>
+          <span style="font-size:12px;color:var(--mut)">Santorini sunsets, Naxos gastronomy, Paros beaches (25°C)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 5: Creators & Voices Panel -->
+    <div id="panelRitualCreator" style="display:none;background:var(--bg2);padding:24px;border-radius:14px;border:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div>
+          <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--green)">Creators &amp; Cultural Voices</span>
+          <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0">Diaspora Podcasts, Music &amp; Media</h3>
+        </div>
+        <a class="btn btn-primary btn-sm" href="/explore?c=creators">Browse Creator Directory &rarr;</a>
+      </div>
+      <p style="font-size:13.5px;color:var(--mut);margin-bottom:14px">Discover influential voices producing Greek-language content, cultural interviews, travel shows, and bouzouki tracks.</p>
+    </div>
+
   </div>
 
   <div class="zoi-section-head">
@@ -621,6 +778,30 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   </div>
 </div>
 
+<!-- FEAST DEEP DIVE MODAL -->
+<div class="wl-back" id="feastModal" onclick="if(event.target===this)closeFeastModal()">
+  <div class="wl" style="max-width:580px;background:var(--bg2);border:1px solid var(--line2)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+      <div class="mono" style="color:var(--gold)">Holy Tradition &amp; Synaxarion</div>
+      <button class="btn g" style="padding:4px 10px;min-height:28px" onclick="closeFeastModal()">✕</button>
+    </div>
+    <h3 id="fm-title" style="font-family:'Fraunces';font-size:24px;margin-bottom:6px;color:var(--tx)">Feast of the Holy Cross &amp; Orthodox Commemoration</h3>
+    <div style="display:inline-block;padding:3px 10px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.3);border-radius:20px;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:12px">
+      ⛪ Major Orthodox Commemoration · Paschalion Synaxarion
+    </div>
+    <p id="fm-bio" style="font-size:13.5px;color:var(--tx);line-height:1.6;margin-bottom:14px">
+      In the Eastern Orthodox tradition, today is kept with prayer and thanksgiving across Greek parishes and communities worldwide. We remember the Holy Fathers who defended the faith and tended to the needy with tireless love.
+    </p>
+    <div style="background:var(--bg);border-left:3px solid var(--gold);padding:12px;border-radius:8px;font-style:italic;font-size:13px;color:var(--tx);margin-bottom:14px">
+      "The truth of things revealed thee to thy flock as a rule of faith, a model of meekness, and a teacher of temperance. Wherefore thou hast acquired the heights through humility, and the riches through poverty."
+    </div>
+    <div style="display:flex;gap:10px;margin-top:16px">
+      <button class="btn g" style="flex:1" onclick="shareRitual('whatsapp')">💬 Share Blessing</button>
+      <a class="btn p" style="flex:1;text-align:center" href="/social">Draft Nameday Post &rarr;</a>
+    </div>
+  </div>
+</div>
+
 <script>
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -633,6 +814,50 @@ function openWL(p){ WLP=p;
   setTimeout(()=>document.getElementById('wl-email').focus(),50);
 }
 function closeWL(){ document.getElementById('wlback').classList.remove('open'); }
+
+/* ---- Daily Diaspora Ritual Controller ---- */
+function setRitualTab(tab){
+  const tabs = ['all', 'feast', 'food', 'travel', 'creator'];
+  tabs.forEach(t => {
+    const btn = document.getElementById('tabRitual' + (t.charAt(0).toUpperCase() + t.slice(1)));
+    const pnl = document.getElementById('panelRitual' + (t.charAt(0).toUpperCase() + t.slice(1)));
+    if(btn){
+      if(t === tab){ btn.style.background = 'var(--acc)'; btn.style.color = '#fff'; btn.classList.remove('outline'); }
+      else { btn.style.background = 'transparent'; btn.style.color = 'var(--tx)'; btn.classList.add('outline'); }
+    }
+    if(pnl) pnl.style.display = (t === tab) ? (t === 'all' ? 'grid' : 'block') : 'none';
+  });
+}
+
+function openFeastModal(){ document.getElementById('feastModal').classList.add('open'); }
+function closeFeastModal(){ document.getElementById('feastModal').classList.remove('open'); }
+
+function playWordAudio(){
+  if('speechSynthesis' in window){
+    const u = new SpeechSynthesisUtterance('Φιλοξενία');
+    u.lang = 'el-GR';
+    window.speechSynthesis.speak(u);
+  } else {
+    alert('Φιλοξενία (Fee-loh-kseh-NEE-ah) — The Greek sacred tradition of hospitality.');
+  }
+}
+
+function shareRitual(channel){
+  const title = document.getElementById('brief-feast-title')?.textContent || 'Today in the Greek World';
+  const namedays = document.getElementById('brief-nameday-names')?.textContent || 'Χρόνια Πολλά!';
+  const text = `🇬🇷 ${title}\n${namedays}\n\nDaily Greek Ritual & diaspora operating system: https://www.zoi.city`;
+  
+  if(channel === 'whatsapp'){
+    window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(text), '_blank');
+  } else if(channel === 'x'){
+    window.open('https://x.com/intent/tweet?text=' + encodeURIComponent(text), '_blank');
+  } else if(channel === 'sms'){
+    window.open('sms:?&body=' + encodeURIComponent(text), '_blank');
+  } else {
+    navigator.clipboard?.writeText(text);
+    alert('✓ Copied Greek daily blessing card to clipboard!');
+  }
+}
 async function joinWL(){
   const email=(document.getElementById('wl-email').value||'').trim();
   const msg=document.getElementById('wl-msg'); const btn=document.getElementById('wl-btn');
@@ -652,6 +877,28 @@ async function joinWL(){
 document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='Enter') joinWL(); });
 (async function(){
   try{
+    const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    const calEl = document.getElementById('live-calendar-date');
+    if(calEl) calEl.textContent = todayStr;
+
+    const dow = new Date().getDay(); // 3=Wed, 5=Fri
+    const fastBadge = document.getElementById('fasting-badge');
+    if(fastBadge){
+      if(dow === 3 || dow === 5){
+        fastBadge.textContent = 'Wine & Oil Permitted (Fast Day)';
+        fastBadge.style.color = 'var(--gold)';
+        fastBadge.style.background = 'rgba(212,175,95,.15)';
+        fastBadge.style.borderColor = 'rgba(212,175,95,.35)';
+      } else {
+        fastBadge.textContent = 'Fast Free';
+        fastBadge.style.color = 'var(--green)';
+        fastBadge.style.background = 'rgba(91,196,154,.15)';
+        fastBadge.style.borderColor = 'rgba(91,196,154,.35)';
+      }
+    }
+  }catch(e){}
+
+  try{
     const r=await fetch(BASE+'/rest/v1/rpc/home_stats',{method:'POST',headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},body:'{}'});
     const j=await r.json();
     if(j&&j.listings){
@@ -668,6 +915,15 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
     if(names.length){
       document.getElementById('nameday-txt').textContent='Today: Χρόνια πολλά, '+names.slice(0,2).join(' & ');
       document.getElementById('nameday-chip').style.display='inline-flex';
+      const bNames = document.getElementById('brief-nameday-names');
+      if(bNames) bNames.textContent = 'Namedays: ' + names.slice(0, 4).join(', ');
+    }
+    const feast = (j&&(j.feast||j.feasts))||'';
+    if(feast){
+      const bFeast = document.getElementById('brief-feast-title');
+      if(bFeast) bFeast.textContent = 'Feast of ' + feast;
+      const dFeast = document.getElementById('detail-feast-title');
+      if(dFeast) dFeast.textContent = 'Feast of ' + feast;
     }
   }catch(e){}
 })();

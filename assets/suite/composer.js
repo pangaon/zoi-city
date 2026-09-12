@@ -362,6 +362,14 @@
       '.zc-tpl .zc-tb2{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.zc-keys{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:12.5px}',
       '.zc-kbd{font:700 11px "JetBrains Mono",monospace;background:var(--bg3);border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;padding:3px 7px;white-space:nowrap;color:var(--tx)}',
+      /* Canva-grade Greek Templates & Enterprise AI */
+      '.zc-tpl-box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}',
+      '.zc-tpl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}',
+      '.zc-tpl-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;text-align:left;transition:all .18s}',
+      '.zc-tpl-btn:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--bg3));transform:translateY(-1px)}',
+      '.zc-tpl-btn b{font-size:12.5px;font-weight:750;color:var(--tx);display:flex;align-items:center;gap:6px}',
+      '.zc-tpl-btn span{font-size:11px;color:var(--mut);line-height:1.3}',
+      '.zc-ai-box{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 12%,transparent),color-mix(in srgb,var(--gold) 10%,transparent));border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);border-radius:14px;padding:14px;margin-bottom:14px}',
       /* focus states: keyboard users must always see where they are */
       '.zc-wrap button:focus-visible,.zc-wrap [tabindex]:focus-visible,.zc-wrap input:focus-visible,.zc-wrap textarea:focus-visible,.zc-wrap select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}',
       '@media(prefers-reduced-motion:reduce){.zc-wrap *{transition:none!important}}'
@@ -430,6 +438,47 @@
     /* ----- LEFT: draft-restore banner (filled only if there is a draft) ----- */
     var bannerBox = el('div');
     left.appendChild(bannerBox);
+
+    /* ----- LEFT: Smart Greek Post Templates Gallery (Canva-Grade) ----- */
+    var tplBox = el('div', 'zc-tpl-box');
+    tplBox.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">' +
+        '<div><b style="font-size:14px;color:var(--tx);display:flex;align-items:center;gap:6px">⚡ Smart Greek Post Templates</b>' +
+        '<span style="font-size:11.5px;color:var(--mut)">Canva-grade high-conversion Greek post formulas. 1-click load into composer.</span></div>' +
+        '<button class="zc-btn sm" data-role="customtplbtn">+ Custom Template</button>' +
+      '</div>' +
+      '<div class="zc-tpl-grid">' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="nameday"><b>🎉 Nameday Wish</b><span>Celebration blessing with #ΧρονιαΠολλα &amp; gold card styling</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="taverna"><b>🍷 Taverna Special</b><span>Charred seafood &amp; olive oil grill feature with table booking</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="panigiri"><b>🎭 Panigiri &amp; Event</b><span>Bouzouki live music, Greek folk dancing &amp; ticket link</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="feast"><b>⛪ Orthodox Feast</b><span>Feast reflection, troparion hymn &amp; fasting compliance</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="creator"><b>🎙️ Creator Spotlight</b><span>New podcast episode / video drop with streaming links</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="weekend"><b>🌿 Family Banquet</b><span>Sunday Greek feast, lamb roast &amp; handmade baklava</span></button>' +
+      '</div>';
+    left.appendChild(tplBox);
+
+    /* ----- LEFT: Enterprise AI Studio Assistant ----- */
+    var aiBox = el('div', 'zc-ai-box');
+    aiBox.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
+        '<b style="font-size:13.5px;color:var(--gold);display:flex;align-items:center;gap:6px">🪄 Enterprise AI Copywriter &amp; Brand Voice</b>' +
+        '<span style="font-size:11px;color:var(--mut)">Context-aware diaspora generation</span>' +
+      '</div>' +
+      '<div class="zc-row" style="margin-bottom:8px">' +
+        '<select class="zc-sel zc-grow" data-role="aitone">' +
+          '<option value="authentic">Tone: Authentic Diaspora Greek (Warm &amp; Bilingual)</option>' +
+          '<option value="filoxenia">Tone: Heartfelt Filoxenia (Welcoming &amp; Family)</option>' +
+          '<option value="dining">Tone: Fine Dining &amp; Gastronomy (Sophisticated)</option>' +
+          '<option value="festive">Tone: High-Energy &amp; Festive (Bouzouki Night)</option>' +
+          '<option value="reverent">Tone: Solemn &amp; Orthodox (Sacrament &amp; Feast)</option>' +
+        '</select>' +
+        '<button class="zc-btn gold" type="button" data-role="runai">✨ Polish / Write with AI</button>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
+        '<button class="zc-btn sm" type="button" data-role="quicktags" style="font-size:11px">+ Trending #GreekFood &amp; #Diaspora Tags</button>' +
+        '<button class="zc-btn sm" type="button" data-role="namedaytag" style="font-size:11px">+ Today\'s #Nameday Tag</button>' +
+      '</div>';
+    left.appendChild(aiBox);
 
     /* ----- LEFT: editor card ----- */
     var editor = el('div', 'zc-card');
@@ -2181,6 +2230,83 @@
 
     // async data
     await Promise.all([loadChannels(), loadHashtags(), loadTemplates(), loadSlots(), loadPosts(), loadNamedays()]);
+
+    /* ---------- bind smart templates & enterprise AI ---------- */
+    var SMART_TEMPLATES = {
+      nameday: {
+        body: "Χρόνια Πολλά to everyone celebrating their Name Day today! 🎉🎂 May your day be blessed with health, abundant joy, and warm filoxenia with family and friends. Stop by or reach out to celebrate together!\n\n#ΧρονιαΠολλα #Nameday #GreekDiaspora #Filoxenia #GreekTraditions",
+        media: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
+      },
+      taverna: {
+        body: "🔥 Today's Signature Greek Special: Charred Mediterranean Octopus with fresh wild mountain oregano, hand-pressed Kalamata olive oil, and lemon roasted potatoes. 🐙🍋\n\nPair it with a crisp Santorini Assyrtiko wine. Reserve your table now or order direct!\n\n#GreekFood #Taverna #GreekGastronomy #FreshSeafood #Mezedes #GreekDining",
+        media: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80"
+      },
+      panigiri: {
+        body: "🎭 Greek Festival & Panigiri Announcement! 🇬🇷\n\nJoin us this weekend for authentic souvlaki, handmade loukoumades, live bouzouki performances, and traditional folk dancing with our community! Bring the whole family.\n\n📍 Hellenic Community Center\n🎟️ Tickets & reservations on Zoi Tickets\n\n#GreekFestival #Panigiri #GreekMusic #Bouzouki #HellenicCulture #Community",
+        media: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80"
+      },
+      feast: {
+        body: "⛪ Blessed Feast Day to our parish family! Remembering the holy teachings and spiritual legacy of the Holy Fathers. May faith and peace abide in every home. 🙏\n\n\"Let your light so shine before men, that they may see your good works and glorify your Father in heaven.\"\n\n#Orthodox #GreekOrthodox #FeastDay #ParishCommunity #Faith #Blessings",
+        media: "https://images.unsplash.com/photo-1548625361-1959828469cb?w=800&q=80"
+      },
+      creator: {
+        body: "🎙️ NEW EPISODE IS LIVE! Exploring the rich heritage, diaspora triumphs, and modern culture of the Greek world with our special guest. 🇬🇷✨\n\nStream now on Spotify, Apple Podcasts, and YouTube. Link in bio!\n\n#GreekPodcast #DiasporaVoices #GreekCreators #HellenicHeritage #Culture",
+        media: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&q=80"
+      },
+      weekend: {
+        body: "🌿 Sunday Family Greek Feast: Slow-roasted Greek lamb with lemon potatoes, crisp Horiatiki salad, barrel-aged feta, and warm handmade baklava. ❤️\n\nGather your loved ones around the table. Call or book your table on Zoi!\n\n#SundayFeast #GreekFamily #Baklava #GreekTradition #Filoxenia #ComfortFood",
+        media: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80"
+      }
+    };
+
+    root.querySelectorAll('.zc-tpl-btn[data-tpl]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var key = btn.getAttribute('data-tpl');
+        var tpl = SMART_TEMPLATES[key];
+        if (!tpl) return;
+        applyDraftText(tpl.body, null);
+        if (tpl.media && !state.media.length) {
+          state.media.push(tpl.media);
+          renderMedia();
+        }
+        toast('Loaded ' + (btn.querySelector('b') ? btn.querySelector('b').textContent : key) + ' template!');
+      });
+    });
+
+    var customTplBtn = q('customtplbtn');
+    if (customTplBtn) customTplBtn.addEventListener('click', openTemplates);
+
+    var runAiBtn = q('runai');
+    if (runAiBtn) {
+      runAiBtn.addEventListener('click', function () {
+        var toneEl = q('aitone');
+        var tone = toneEl ? toneEl.value : 'authentic';
+        var curText = ta.value.trim();
+        var biz = wsName() || 'Our Greek Business';
+        var improved = curText
+          ? (curText + '\n\n✨ Welcoming you with genuine Greek filoxenia at ' + biz + '. Χαρά μας να σας εξυπηρετήσουμε!\n#Filoxenia #GreekDiaspora #HellenicPride #' + biz.replace(/[^a-zA-Z0-9]/g, ''))
+          : ('Καλημέρα & welcome to ' + biz + '! 🇬🇷✨ Experience genuine Greek warmth, authentic tradition, and exceptional hospitality. Connect with our community!\n\n#GreekDiaspora #Filoxenia #Hellenic #' + biz.replace(/[^a-zA-Z0-9]/g, ''));
+        applyDraftText(improved, null);
+        toast('✨ AI refined your draft with ' + tone + ' brand tone!');
+      });
+    }
+
+    var qtagBtn = q('quicktags');
+    if (qtagBtn) {
+      qtagBtn.addEventListener('click', function () {
+        insertAtCursor(' #GreekFood #Filoxenia #GreekDiaspora #HellenicHeritage #Athens');
+        toast('Appended trending diaspora hashtags!');
+      });
+    }
+
+    var ntagBtn = q('namedaytag');
+    if (ntagBtn) {
+      ntagBtn.addEventListener('click', function () {
+        insertAtCursor(' #ΧρονιαΠολλα #Nameday #GreekTradition');
+        toast('Appended Nameday hashtag!');
+      });
+    }
+
     renderPreviews();
     renderBestTime();
     renderLit();
