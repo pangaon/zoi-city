@@ -378,16 +378,32 @@ function extract(doc: string, finalUrl: string) {
       }
     }
     let img = biz.image ?? biz.logo;
-    if (Array.isArray(img)) img = img[0];
-    if (img && typeof img === "object") img = (img as Record<string, unknown>).url;
-    if (typeof img === "string" && img.startsWith("https://")) put("photo_url", img, "jsonld");
+    if (Array.isArray(img)) {
+      if (typeof img[0] === "string") put("photo_url", img[0], "jsonld");
+      if (img.length > 1 && typeof img[1] === "string") put("hero_url", img[1], "jsonld");
+    } else if (img && typeof img === "object") {
+      const u = (img as Record<string, unknown>).url;
+      if (typeof u === "string" && u.startsWith("https://")) put("photo_url", u, "jsonld");
+    } else if (typeof img === "string" && img.startsWith("https://")) {
+      put("photo_url", img, "jsonld");
+    }
+
+    if (typeof biz.servesCuisine === "string") put("cuisine", biz.servesCuisine.trim().slice(0, 100), "jsonld");
+    else if (Array.isArray(biz.servesCuisine)) put("cuisine", (biz.servesCuisine as string[]).slice(0, 5).join(", "), "jsonld");
+
+    if (typeof biz.hasMenu === "string" && biz.hasMenu.startsWith("http")) put("menu_url", biz.hasMenu.trim(), "jsonld");
+    if (typeof biz.menu === "string" && biz.menu.startsWith("http")) put("menu_url", biz.menu.trim(), "jsonld");
+    if (typeof biz.acceptsReservations === "string" && biz.acceptsReservations.startsWith("http")) put("booking_url", biz.acceptsReservations.trim(), "jsonld");
   }
 
   if (!isAgg) {
     put("tagline", metaTag(doc, "og:site_name"), "og");
     put("description", (metaTag(doc, "og:description") || metaTag(doc, "description", "name") || "").slice(0, 1200), "og");
-    const im = metaTag(doc, "og:image");
-    if (im && im.startsWith("https://")) put("photo_url", im, "og");
+    const im = metaTag(doc, "og:image") || metaTag(doc, "twitter:image");
+    if (im && im.startsWith("https://")) {
+      put("photo_url", im, "og");
+      put("hero_url", im, "og");
+    }
   }
 
   const tel = [...doc.matchAll(/tel:([+\d][\d().\s\-\/]{6,24})/gi)]

@@ -291,8 +291,14 @@ def extract(url, doc, final):
         if isinstance(img, dict):
             img = img.get("url")
         if isinstance(img, list) and img:
-            img = img[0].get("url") if isinstance(img[0], dict) else img[0]
-        if isinstance(img, str) and img.startswith("http"):
+            first = img[0].get("url") if isinstance(img[0], dict) else img[0]
+            if isinstance(first, str) and first.startswith("http"):
+                put("photo_url", first, "jsonld")
+            if len(img) > 1:
+                second = img[1].get("url") if isinstance(img[1], dict) else img[1]
+                if isinstance(second, str) and second.startswith("http"):
+                    put("hero_url", second, "jsonld")
+        elif isinstance(img, str) and img.startswith("http"):
             put("photo_url", img, "jsonld")
 
     # OpenGraph, only trusted for branding when it is the business's own site
@@ -303,9 +309,10 @@ def extract(url, doc, final):
                 (meta(doc, "og:description") or meta(doc, "description", "name") or "")[:1200] or None,
                 "og")
         if "photo_url" not in prof:
-            im = meta(doc, "og:image")
+            im = meta(doc, "og:image") or meta(doc, "twitter:image")
             if im and im.startswith("http"):
                 put("photo_url", im, "og")
+                put("hero_url", im, "og")
 
     # contact details from markup
     if "phone" not in prof:
