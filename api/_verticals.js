@@ -517,6 +517,9 @@ const RESTAURANT = {
   actions(e, p) {
     const out = [];
     if (str(p.reserve)) out.push({ label: 'Reserve a table', href: httpish(p.reserve), icon: IC.cal, primary: true, external: true });
+    if (p.table_tab_enabled || p.in_seat_ordering) {
+      out.push({ label: 'Table Tab & Order In-Seat', href: '/apps/tickets-studio/', icon: IC.cart, primary: true });
+    }
     arr(p.order).forEach((o) => {
       const u = httpish(typeof o === 'string' ? o : o.url);
       if (u) out.push({ label: str(o.label) || 'Order online', href: u, icon: IC.cart, external: true });
@@ -526,17 +529,21 @@ const RESTAURANT = {
   },
   sections(e, p) {
     let h = '';
-    h += panel('Hours', IC.clock, scheduleBlock(p.hours));
-    h += panel('Menu', IC.menu, menuBlock(p.menu), { id: 'menu' });
-    h += panel("Today's specials", IC.spark, chipList(p.specials));
-    h += panel('Photos', IC.camera, gallery(p.photos));
-    h += panel('Catering & private dining', IC.users, prose(p.catering));
+    h += panel('Hours & Open Status', IC.clock, scheduleBlock(p.hours));
+    h += panel('Menu & Gastronomy', IC.menu, menuBlock(p.menu), { id: 'menu' });
+    h += panel("Today's Namedays & Specials", IC.spark, chipList(p.specials));
+    h += panel('Photos & Ambiance', IC.camera, gallery(p.photos));
+    h += panel('In-Seat QR Ordering & Table Tabs', IC.cart, 
+      '<p class="secp">Guests seated at this venue can scan their table QR code to order food, wine, and split the bill directly from their phone.</p>' +
+      '<a class="btn btn-primary btn-sm" href="/apps/tickets-studio/">Open Live Table Tab &rarr;</a>');
+    h += panel('Catering & Private Dining', IC.users, prose(p.catering));
     h += panel('Good to know', IC.star, chipList(p.payment));
     return h;
   },
   unlock: [
     ['Your menu', 'Sections, dishes, prices — the thing every customer opens first.'],
     ['Hours & open-now', 'So nobody drives over on the day you are closed.'],
+    ['In-seat QR table tabs', 'Let guests order and split the bill equally or by item.'],
     ['Reservations', 'Take bookings from the page, or link the system you already use.'],
     ['Ordering & delivery', 'Every ordering link in one place instead of five.'],
     ["Today's specials", 'Change the plate of the day in seconds.'],
@@ -638,25 +645,28 @@ const MUSIC = {
 
 const CREATOR = {
   key: 'creator', noun: 'creator', eyebrow: (e, sub) => sub || 'Creator',
-  /* profile: {platforms{}, work[], collab{email}, rate_card, press} */
+  /* profile: {platforms{}, work[], collab{email}, rate_card, press, media_kit_url} */
   actions(e, p) {
     const out = [];
-    if (p.collab && str(p.collab.email)) out.push({ label: 'Work with me', href: 'mailto:' + str(p.collab.email), icon: IC.mail, primary: true });
+    if (p.collab && str(p.collab.email)) out.push({ label: 'Work with me / Sponsor', href: 'mailto:' + str(p.collab.email) + '?subject=' + encodeURIComponent('Diaspora Sponsorship Inquiry via Zoi'), icon: IC.mail, primary: true });
+    if (p.media_kit_url && str(p.media_kit_url)) out.push({ label: 'Download Media Kit', href: httpish(p.media_kit_url), icon: IC.book, external: true });
     return out;
   },
   sections(e, p) {
     let h = '';
-    h += panel('Recent work', IC.camera, datesBlock(p.work, 'View'));
-    h += panel('Collaborations', IC.spark, prose(p.rate_card));
-    h += panel('Press', IC.book, prose(p.press));
+    h += panel('Recent Work & Episodes', IC.camera, datesBlock(p.work, 'View'));
+    h += panel('Diaspora Brand Collaborations', IC.spark, 
+      (p.rate_card ? prose(p.rate_card) : '<p class="secp">Available for cultural partnerships, podcast appearances, and diaspora brand sponsorships across Greek communities worldwide.</p>') +
+      '<div style="margin-top:12px"><a class="btn btn-ghost btn-sm" href="/explore?c=creators">Browse Creator Network &rarr;</a></div>');
+    h += panel('Press & Bio', IC.book, prose(p.press));
     return h;
   },
   unlock: [
-    ['Every channel in one place', 'Instagram, TikTok, YouTube — the whole footprint.'],
-    ['Your work', 'Recent posts, films, campaigns.'],
-    ['Brand enquiries', 'A real inbound channel for paid work.'],
-    ['Rate card', 'Set the terms before the DM.'],
-    ['Link in bio', 'A Zoi bio page that matches this listing.'],
+    ['Every channel in one place', 'Instagram, TikTok, YouTube, Spotify — the whole footprint.'],
+    ['Your work & episodes', 'Recent podcasts, films, music releases, and cultural campaigns.'],
+    ['Brand sponsorship channel', 'A verified inbound channel for paid diaspora sponsorships.'],
+    ['Media kit & rate card', 'Set your audience reach and terms before the DM.'],
+    ['Link in bio', 'A Zoi bio page that connects directly with your community.'],
   ],
 };
 
