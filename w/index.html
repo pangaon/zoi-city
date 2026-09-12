@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>You're invited · Zoi</title>
+<meta name="description" content="View your invitation and RSVP — weddings, baptisms and private celebrations on Zoi."/>
+<meta name="robots" content="noindex,nofollow"/>
+<meta name="theme-color" content="#080a0e"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<style>
+:root{ --btn:var(--card); --btnh:var(--card2); --btnfg:var(--tx); }
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:
+  radial-gradient(1200px 600px at 50% -10%, var(--bg2), var(--bg) 60%);
+  min-height:100%;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;display:flex;flex-direction:column;align-items:center}
+.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
+.wrap{width:100%;max-width:560px;padding:clamp(28px,7vw,56px) 22px 60px;display:flex;flex-direction:column;align-items:center;flex:1}
+.seal{width:52px;height:52px;border-radius:50%;background:var(--card);border:1px solid var(--line2);display:grid;place-items:center;font-family:'Fraunces';font-size:22px;color:var(--gold)}
+h1{font-size:clamp(24px,5vw,32px);font-weight:400;letter-spacing:-.02em;margin-top:18px;text-align:center}
+.sub{color:var(--mut);font-size:14.5px;margin-top:8px;text-align:center;max-width:40ch;line-height:1.5}
+.card{width:100%;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;margin-top:26px}
+label{display:block;font-size:12.5px;font-weight:700;color:var(--tx);margin-bottom:6px}
+input,textarea,select{width:100%;background:var(--bg2);border:1px solid var(--line2);color:var(--tx);border-radius:10px;padding:11px 13px;font:inherit;font-size:14.5px;margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 18px;border-radius:10px;font-weight:700;font-size:14.5px;cursor:pointer;border:1px solid transparent;background:var(--acc);color:#fff}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.ghost{background:transparent;border-color:var(--line2);color:var(--tx)}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.pin-boxes{display:flex;gap:8px;justify-content:center;margin:22px 0}
+.pin-boxes input{width:44px;height:52px;text-align:center;font-size:22px;font-weight:700;margin:0;padding:0}
+.msg{font-size:13px;color:var(--red);margin-top:-6px;margin-bottom:12px;min-height:1em}
+.msg.ok{color:var(--green)}
+.detail{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-bottom:1px solid var(--line)}
+.detail:last-child{border-bottom:none}
+.registry-item{background:var(--bg2);border:1px solid var(--line2);border-radius:12px;padding:14px;margin-bottom:10px}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="seal" aria-label="Zoi home">&#918;</a>
+
+  <div id="pinGate">
+    <h1 class="serif">You're invited</h1>
+    <p class="sub">Enter the 6-character invitation code from your invite to view the details and RSVP.</p>
+    <div class="pin-boxes">
+      <input id="pinInput" maxlength="6" autocapitalize="characters" autocomplete="off" style="width:220px;height:52px;text-align:center;letter-spacing:.3em;font-size:20px;font-weight:700" placeholder="ABC123">
+    </div>
+    <div class="msg" id="pinMsg"></div>
+    <button class="btn" id="pinBtn" onclick="lookupPin()">View invitation</button>
+  </div>
+
+  <div id="eventView" class="hide" style="width:100%">
+    <h1 class="serif" id="evTitle" style="text-align:left"></h1>
+    <p class="sub" id="evSub" style="text-align:left;max-width:none"></p>
+
+    <div class="card">
+      <div class="detail" id="evCeremony"></div>
+      <div class="detail" id="evReception"></div>
+    </div>
+
+    <div class="card" id="rsvpCard">
+      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">RSVP</label>
+      <div id="rsvpDone" class="hide">
+        <p class="sub ok" style="color:var(--green);text-align:left;margin:8px 0 0">Thank you — your RSVP has been received.</p>
+      </div>
+      <div id="rsvpForm">
+        <label style="margin-top:6px">Your name</label>
+        <input id="rsvpName" placeholder="Full name">
+        <div class="row">
+          <div>
+            <label>Party size</label>
+            <input id="rsvpParty" type="number" min="1" value="1">
+          </div>
+          <div>
+            <label>Attending?</label>
+            <select id="rsvpAttending"><option value="yes">Joyfully accepts</option><option value="no">Regretfully declines</option></select>
+          </div>
+        </div>
+        <label>Dietary notes (optional)</label>
+        <textarea id="rsvpNotes" rows="2" placeholder="Allergies, vegetarian, etc."></textarea>
+        <div class="msg" id="rsvpMsg"></div>
+        <button class="btn" id="rsvpBtn" onclick="submitRsvp()">Confirm RSVP</button>
+      </div>
+    </div>
+
+    <div class="card hide" id="registryCard">
+      <label style="font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim)">Registry &amp; gifts</label>
+      <div id="registryList" style="margin-top:10px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const BASE='https://csebihpaychdkanjjsmz.supabase.co';
+const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+let CURRENT_PIN='';
+
+async function rpc(fn,params){
+  const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+PUB,'Content-Type':'application/json'},body:JSON.stringify(params||{})});
+  const t=await r.text(); let j=null; try{ j=t?JSON.parse(t):null; }catch(e){ j=t; }
+  if(!r.ok) throw new Error((j&&j.message)||'Request failed');
+  return j;
+}
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function fmtDate(d){ if(!d) return ''; try{ return new Date(d+'T00:00:00').toLocaleDateString(undefined,{weekday:'long',year:'numeric',month:'long',day:'numeric'}); }catch(e){ return d; } }
+function fmtTime(t){ if(!t) return ''; const [h,m]=t.split(':'); const d=new Date(); d.setHours(+h,+m); return d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'}); }
+
+async function lookupPin(){
+  const pin=(document.getElementById('pinInput').value||'').trim().toUpperCase();
+  const msg=document.getElementById('pinMsg'); msg.textContent=''; msg.className='msg';
+  if(pin.length<4){ msg.textContent='Enter the code from your invitation.'; return; }
+  const btn=document.getElementById('pinBtn'); btn.disabled=true; btn.textContent='Looking up…';
+  try{
+    const r=await rpc('private_event_get_by_pin',{p_pin:pin});
+    if(!r||!r.ok){ msg.textContent='We could not find an invitation with that code.'; btn.disabled=false; btn.textContent='View invitation'; return; }
+    CURRENT_PIN=pin;
+    renderEvent(r.event, r.registry||[]);
+  }catch(e){ msg.textContent='Something went wrong. Please try again.'; }
+  btn.disabled=false; btn.textContent='View invitation';
+}
+
+function renderEvent(ev, registry){
+  document.getElementById('pinGate').classList.add('hide');
+  document.getElementById('eventView').classList.remove('hide');
+  document.getElementById('evTitle').textContent=ev.hosts||ev.title||'You are invited';
+  document.getElementById('evSub').textContent=ev.title||'';
+
+  const cer=document.getElementById('evCeremony');
+  if(ev.ceremony_venue){
+    cer.innerHTML='<span>Ceremony</span><b>'+esc(ev.ceremony_venue)+(ev.ceremony_time?' · '+fmtTime(ev.ceremony_time):'')+'</b>';
+  } else cer.style.display='none';
+
+  const rec=document.getElementById('evReception');
+  rec.innerHTML='<span>'+(ev.event_type==='wedding'?'Reception':'Event')+'</span><b>'+esc(ev.reception_venue||'')+' · '+fmtDate(ev.event_date)+(ev.reception_time?' · '+fmtTime(ev.reception_time):'')+'</b>';
+
+  if(ev.registry_enabled && registry.length){
+    const rc=document.getElementById('registryCard'); rc.classList.remove('hide');
+    document.getElementById('registryList').innerHTML=registry.map(r=>
+      '<div class="registry-item"><b>'+esc(r.title)+'</b>'+
+      (r.target_amount>0?'<div style="font-size:12px;color:var(--mut);margin-top:4px">$'+Number(r.collected_amount||0).toLocaleString()+' of $'+Number(r.target_amount).toLocaleString()+' raised</div>':'')+
+      (r.description?'<div style="font-size:12.5px;color:var(--mut);margin-top:4px">'+esc(r.description)+'</div>':'')+
+      '</div>'
+    ).join('');
+  }
+}
+
+async function submitRsvp(){
+  const name=(document.getElementById('rsvpName').value||'').trim();
+  const party=+document.getElementById('rsvpParty').value||1;
+  const attending=document.getElementById('rsvpAttending').value==='yes';
+  const notes=document.getElementById('rsvpNotes').value||'';
+  const msg=document.getElementById('rsvpMsg'); msg.textContent=''; msg.className='msg';
+  if(!name){ msg.textContent='Please enter your name.'; return; }
+  const btn=document.getElementById('rsvpBtn'); btn.disabled=true; btn.textContent='Sending…';
+  try{
+    const r=await rpc('private_event_rsvp_submit',{
+      p_pin:CURRENT_PIN, p_guest_name:name, p_party_size:party,
+      p_attending_ceremony:attending, p_attending_reception:attending,
+      p_dietary_notes:notes||null
+    });
+    if(r&&r.ok){
+      document.getElementById('rsvpForm').classList.add('hide');
+      document.getElementById('rsvpDone').classList.remove('hide');
+    } else {
+      msg.textContent='Could not submit your RSVP. Please try again.';
+      btn.disabled=false; btn.textContent='Confirm RSVP';
+    }
+  }catch(e){ msg.textContent='Something went wrong. Please try again.'; btn.disabled=false; btn.textContent='Confirm RSVP'; }
+}
+
+(function(){
+  const q=new URLSearchParams(location.search);
+  const p=q.get('pin');
+  if(p){ document.getElementById('pinInput').value=p.toUpperCase(); lookupPin(); }
+  document.getElementById('pinInput').addEventListener('keydown',e=>{ if(e.key==='Enter') lookupPin(); });
+})();
+</script>
+</body>
+</html>

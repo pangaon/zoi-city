@@ -120,6 +120,14 @@ const PAGES = [
       assert(/noindex/i.test(html), '/apps/tickets-studio/: operator tool must stay noindex');
     },
   },
+  {
+    path: '/w',
+    extra: (html) => {
+      assert(/noindex/i.test(html), '/w: guest invite page must stay noindex');
+      assert(/private_event_get_by_pin/.test(html), '/w: not wired to the real pin-lookup RPC');
+      assert(/private_event_rsvp_submit/.test(html), '/w: not wired to the real RSVP RPC');
+    },
+  },
 ];
 
 async function fetchPage(path) {

@@ -2956,10 +2956,30 @@ Hellenic Community Association of Toronto</textarea>
 
 <!-- ═══════════════════════ PRIVATE EVENTS: WEDDINGS & BAPTISMS VIEW ═══════════════════════ -->
 <div class="private-wedding-view" id="privateWeddingView" style="display:none;max-width:1200px;margin:0 auto;padding:32px 20px 80px">
+  <div class="zoi-preview" id="realEventsCard" role="note" style="display:none;border-color:var(--sea);margin-bottom:20px;flex-direction:column;align-items:stretch;gap:12px">
+    <div style="display:flex;align-items:center;gap:10px"><svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2"><path d="M20 6L9 17l-5-5"/></svg><b>Your real private events</b></div>
+    <div id="realEventsList" style="display:grid;gap:10px"></div>
+    <details>
+      <summary style="cursor:pointer;font-size:13px;color:var(--sea);font-weight:700">+ Create a real private event</summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px">
+        <input id="reTitle" placeholder="Title (e.g. Dimitris &amp; Maria's Wedding)" style="grid-column:1/-1;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <input id="reHosts" placeholder="Hosts (e.g. Dimitris &amp; Maria)" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <select id="reType" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+          <option value="wedding">Wedding</option><option value="baptism">Baptism</option><option value="engagement">Engagement</option><option value="memorial">Memorial</option><option value="private_gala">Private gala</option>
+        </select>
+        <input id="reDate" type="date" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <input id="reTime" type="time" value="18:00" style="background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <input id="reVenue" placeholder="Reception venue" style="grid-column:1/-1;background:rgba(0,0,0,.3);border:1px solid var(--gl);padding:9px 11px;border-radius:8px;color:var(--paper)">
+        <button class="btn gold sm" style="grid-column:1/-1" onclick="createRealEvent()">Create real event &amp; get invite code</button>
+      </div>
+    </details>
+    <div id="realEventsMsg" style="font-size:12.5px;color:var(--muted)"></div>
+  </div>
+
   <div style="background:var(--glass);border:1px solid var(--gl);border-radius:var(--r);padding:24px;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px">
     <div>
       <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(181,50,95,.15);border:1px solid rgba(181,50,95,.3);border-radius:20px;color:#d4527d;font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
-        💒 SACRAMENT OF HOLY MATRIMONY · PRIVATE SUITE
+        💒 SACRAMENT OF HOLY MATRIMONY · PRIVATE SUITE (design concept below \u2014 sample data)
       </div>
       <h2 style="font-family:'Fraunces';font-size:28px;margin:0 0 4px;color:var(--paper)">Dimitris &amp; Maria's Wedding Celebration</h2>
       <p style="margin:0;color:var(--muted);font-size:14px">St. Nicholas Greek Orthodox Church &amp; The Grand Ballroom · Saturday, June 28, 2025</p>
@@ -2969,6 +2989,7 @@ Hellenic Community Association of Toronto</textarea>
       <button class="btn outline sm" onclick="switchPrivateSubTab('photowall')">📸 Live Photo Wall</button>
     </div>
   </div>
+
 
   <!-- Sub navigation for Weddings -->
   <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--gl);padding-bottom:12px;overflow-x:auto">
@@ -3314,6 +3335,7 @@ function switchView(v) {
   if(floorPlanView) floorPlanView.style.display = v==='floorplan' ? 'block' : 'none';
   const privateWeddingView = document.getElementById('privateWeddingView');
   if(privateWeddingView) privateWeddingView.style.display = v==='privatewedding' ? 'block' : 'none';
+  if(v==='privatewedding') loadRealEvents();
 
   document.getElementById('navEvent').classList.toggle('active-nav', v==='event');
   document.getElementById('navMap').classList.toggle('active-nav', v==='seatmap');
@@ -3377,6 +3399,68 @@ function setPwRsvp(attending) {
     if(yes) { yes.className = 'btn sm outline'; }
     if(no) { no.className = 'btn sm gold'; }
   }
+}
+
+/* Real private events: separate from the design-concept demo above. Uses
+   private_event_create/list (0032) so a signed-in operator's real weddings/
+   baptisms/etc are genuinely created, listed and shareable via /w?pin=... */
+async function loadRealEvents(){
+  const card = document.getElementById('realEventsCard'), list = document.getElementById('realEventsList'), msg = document.getElementById('realEventsMsg');
+  if(!card || !window.ZoiCore) return;
+  const ws = await currentWorkspaceId();
+  if(!ws){ card.style.display='none'; return; }
+  card.style.display='flex';
+  msg.textContent='Loading your real events…';
+  try{
+    const r = await ZoiCore.api.rpc('private_event_list', {p_workspace: ws}, {auth:'require'});
+    if(!r || !r.ok){ msg.textContent = 'Could not load: ' + ((r && r.error) || 'unknown error'); return; }
+    const events = r.events || [];
+    msg.textContent = events.length ? '' : 'No real events yet \u2014 create one below.';
+    list.innerHTML = events.map(e => {
+      const link = location.origin + '/w?pin=' + encodeURIComponent(e.access_pin);
+      return '<div style="background:rgba(0,0,0,.25);border:1px solid var(--gl);border-radius:10px;padding:12px 14px">'
+        + '<div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">'
+        + '<b style="color:var(--paper)">' + ZoiCore.esc(e.title) + '</b>'
+        + '<span style="font-size:11px;color:var(--muted)">' + ZoiCore.esc(e.event_date) + '</span></div>'
+        + '<div style="font-size:12px;color:var(--sea);margin-top:4px">Invite code <b>' + ZoiCore.esc(e.access_pin) + '</b> \u00b7 <a href="' + link + '" target="_blank" style="color:var(--sea)">' + link + '</a></div>'
+        + '<button class="btn outline sm" style="margin-top:8px" onclick="loadRealRsvps(\'' + ws + '\',\'' + e.id + '\',this)">View real RSVPs</button>'
+        + '<div class="real-rsvps" style="margin-top:8px;font-size:12px;color:var(--muted)"></div>'
+        + '</div>';
+    }).join('');
+  }catch(e){ msg.textContent = 'Could not load: ' + e.message; }
+}
+async function createRealEvent(){
+  const ws = await currentWorkspaceId();
+  const msg = document.getElementById('realEventsMsg');
+  if(!ws){ msg.textContent = 'Sign in with a Zoi Business workspace to create a real event.'; return; }
+  const title = document.getElementById('reTitle').value.trim();
+  const hosts = document.getElementById('reHosts').value.trim();
+  const venue = document.getElementById('reVenue').value.trim();
+  const date = document.getElementById('reDate').value;
+  const time = document.getElementById('reTime').value || '18:00';
+  const type = document.getElementById('reType').value;
+  if(!title || !hosts || !venue || !date){ msg.textContent = 'Fill in title, hosts, venue and date.'; return; }
+  msg.textContent = 'Creating…';
+  try{
+    const r = await ZoiCore.api.rpc('private_event_create', {
+      p_workspace: ws, p_event_type: type, p_title: title, p_hosts: hosts,
+      p_event_date: date, p_reception_venue: venue, p_reception_time: time
+    }, {auth:'require'});
+    if(r && r.ok){ msg.textContent = 'Created \u2014 invite code ' + r.access_pin; loadRealEvents(); }
+    else msg.textContent = 'Could not create: ' + ((r && r.error) || 'unknown error');
+  }catch(e){ msg.textContent = 'Could not create: ' + e.message; }
+}
+async function loadRealRsvps(ws, eventId, btn){
+  const box = btn.nextElementSibling;
+  btn.textContent = 'Loading…'; btn.disabled = true;
+  try{
+    const r = await ZoiCore.api.rpc('private_event_rsvps_list', {p_workspace: ws, p_event_id: eventId}, {auth:'require'});
+    const rows = (r && r.ok) ? (r.rsvps || []) : [];
+    box.textContent = rows.length
+      ? rows.length + ' real RSVP' + (rows.length===1?'':'s') + ': ' + rows.map(x=>x.guest_name).join(', ')
+      : 'No RSVPs yet \u2014 share the invite link above.';
+  }catch(e){ box.textContent = 'Could not load RSVPs.'; }
+  btn.textContent = 'View real RSVPs'; btn.disabled = false;
 }
 
 
