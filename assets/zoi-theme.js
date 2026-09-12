@@ -320,6 +320,154 @@
       cta.setAttribute("href", "/social");
     }
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind);
-  else bind();
-})();
+
+  /* ── Diaspora Messenger FAB & Agora Drawer ────────────────────────── */
+  function mountMessenger() {
+    if (document.querySelector('.zoi-msg-fab')) return;
+    var fab = document.createElement('button');
+    fab.className = 'zoi-msg-fab';
+    fab.setAttribute('aria-label', 'Open Diaspora Messenger');
+    fab.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg><span>Agora Chat</span>';
+    
+    var drawer = document.createElement('div');
+    drawer.className = 'zoi-msg-drawer';
+    drawer.innerHTML =
+      '<div class="zoi-msg-hdr">' +
+        '<b>💬 Pan-Hellenic Agora Messenger</b>' +
+        '<button class="zoi-msg-close" aria-label="Close chat">✕</button>' +
+      '</div>' +
+      '<div class="zoi-msg-threads" id="zoiMsgThreads">' +
+        '<div class="zoi-msg-item" data-chat="mythos">' +
+          '<div class="zoi-msg-av">M</div>' +
+          '<div class="zoi-msg-body">' +
+            '<div class="zoi-msg-name">Mythos Taverna (Astoria)</div>' +
+            '<div class="zoi-msg-snippet">Table reservation confirmed for Saturday 7:30 PM!</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="zoi-msg-item" data-chat="gala">' +
+          '<div class="zoi-msg-av" style="background:linear-gradient(135deg,#7e2a4a,#b5325f)">G</div>' +
+          '<div class="zoi-msg-body">' +
+            '<div class="zoi-msg-name">Hellenic Gala 2025 Table 4</div>' +
+            '<div class="zoi-msg-snippet">Eleni: Raising a glass to the whole table! 🥂</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="zoi-msg-item" data-chat="ypn">' +
+          '<div class="zoi-msg-av" style="background:linear-gradient(135deg,#1261a0,#0284c7)">Y</div>' +
+          '<div class="zoi-msg-body">' +
+            '<div class="zoi-msg-name">Greek Young Professionals Network</div>' +
+            '<div class="zoi-msg-snippet">Next networking breakfast announced in Toronto.</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="zoi-msg-chatview" id="zoiMsgChatView">' +
+        '<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--card)">' +
+          '<button class="zoi-msg-close" id="zoiMsgBack" style="font-size:14px;font-weight:700">‹ Back</button>' +
+          '<b id="zoiMsgActiveTitle" style="font-size:13px;color:var(--tx)">Mythos Taverna</b>' +
+        '</div>' +
+        '<div class="zoi-msg-messages" id="zoiMsgMessages">' +
+          '<div class="zoi-msg-bubble recv">Γεια σας George! Your table reservation is confirmed for Saturday 7:30 PM. Would you like us to chill an Assyrtiko wine for your arrival? 🇬🇷</div>' +
+          '<div class="zoi-msg-bubble sent">Ναι παρακαλώ! We are looking forward to it.</div>' +
+        '</div>' +
+        '<div class="zoi-msg-stickers">' +
+          '<button class="zoi-sticker-btn" data-stk="🥂 Χρόνια Πολλά!">🥂 Χρόνια Πολλά!</button>' +
+          '<button class="zoi-sticker-btn" data-stk="OPA! 🧿">OPA! 🧿</button>' +
+          '<button class="zoi-sticker-btn" data-stk="🇬🇷 Μπράβο!">🇬🇷 Μπράβο!</button>' +
+          '<button class="zoi-sticker-btn" data-stk="🙏 Ευλογίες">🙏 Ευλογίες</button>' +
+        '</div>' +
+        '<div class="zoi-msg-footer">' +
+          '<input type="text" class="zoi-msg-in" id="zoiMsgInput" placeholder="Message or tap sticker…" />' +
+          '<button class="btn btn-primary" id="zoiMsgSend" style="padding:7px 14px;min-height:36px;font-size:12px">Send</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(fab);
+    document.body.appendChild(drawer);
+
+    fab.addEventListener('click', function () {
+      drawer.classList.toggle('open');
+    });
+
+    drawer.querySelector('.zoi-msg-close').addEventListener('click', function () {
+      drawer.classList.remove('open');
+    });
+
+    var threads = drawer.querySelector('#zoiMsgThreads');
+    var chatview = drawer.querySelector('#zoiMsgChatView');
+    var backBtn = drawer.querySelector('#zoiMsgBack');
+    var msgList = drawer.querySelector('#zoiMsgMessages');
+    var input = drawer.querySelector('#zoiMsgInput');
+    var sendBtn = drawer.querySelector('#zoiMsgSend');
+    var title = drawer.querySelector('#zoiMsgActiveTitle');
+
+    drawer.querySelectorAll('.zoi-msg-item').forEach(function (item) {
+      item.addEventListener('click', function () {
+        var nm = item.querySelector('.zoi-msg-name').textContent;
+        title.textContent = nm;
+        threads.style.display = 'none';
+        chatview.classList.add('active');
+      });
+    });
+
+    if (backBtn) {
+      backBtn.addEventListener('click', function () {
+        chatview.classList.remove('active');
+        threads.style.display = 'flex';
+      });
+    }
+
+    function sendMsg(txt) {
+      var val = (txt || (input && input.value) || '').trim();
+      if (!val || !msgList) return;
+      var bubble = document.createElement('div');
+      bubble.className = 'zoi-msg-bubble sent';
+      bubble.textContent = val;
+      msgList.appendChild(bubble);
+      if (input) input.value = '';
+      msgList.scrollTop = msgList.scrollHeight;
+
+      // Simulated auto-reply from taverna/host for high-polish experience
+      setTimeout(function () {
+        var reply = document.createElement('div');
+        reply.className = 'zoi-msg-bubble recv';
+        reply.textContent = 'Ευχαριστούμε! Received loud and clear. See you soon in the Greek world! 🇬🇷✨';
+        msgList.appendChild(reply);
+        msgList.scrollTop = msgList.scrollHeight;
+      }, 900);
+    }
+
+    if (sendBtn) sendBtn.addEventListener('click', function () { sendMsg(); });
+    if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendMsg(); });
+
+    drawer.querySelectorAll('.zoi-sticker-btn').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        sendMsg(btn.getAttribute('data-stk'));
+      });
+    });
+  }
+
+  function bind() {
+    var navs = document.querySelectorAll('.zoi-nav');
+    for (var ni = 0; ni < navs.length; ni++) {
+      if (!navs[ni].querySelector('a[href="/apps/"]')) {
+        var appsLink = document.createElement('a');
+        appsLink.href = '/apps/';
+        appsLink.textContent = 'Apps';
+        navs[ni].appendChild(appsLink);
+      }
+    }
+    var btns = document.querySelectorAll("#themeBtn,[data-theme-toggle]");
+    for (var i = 0; i < btns.length; i++) {
+      btns[i].addEventListener("click", function () {
+        var cur = root.getAttribute("data-theme") || "dark";
+        var next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+        apply(next); save(next);
+      });
+    }
+    var yr = document.getElementById("yr");
+    if (yr) { try { yr.textContent = String(new Date().getFullYear()); } catch (e) {} }
+    markCurrent();
+    reflectSession();
+    motion();
+    mountMessenger();
+  }
+

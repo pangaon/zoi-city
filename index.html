@@ -623,6 +623,98 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   </div>
 </div></section>
 
+<!-- ETHICAL PAN-HELLENIC SPOTLIGHT & USER DISCOVERY NETWORK -->
+<section id="spotlight" class="wrap"><div class="zoi-spotlight-box">
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;margin-bottom:12px">
+    <div>
+      <span class="zoi-spotlight-badge">★ PAN-HELLENIC DISCOVERY &amp; ETHICAL SPOTLIGHT</span>
+      <h2 style="font-family:'Fraunces';font-size:26px;color:var(--tx);margin:4px 0">Relevant Greek Discovery, zero spam.</h2>
+      <p style="font-size:13.5px;color:var(--mut);margin:0;max-width:60ch">
+        Our algorithm matches authentic Greek businesses, festivals, and artisans to people who care — with zero invasive tracking and full user privacy control.
+      </p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary btn-sm" onclick="openPromoteModal()">★ Sponsor &amp; Feature Your Business</button>
+      <button class="btn btn-ghost btn-sm" onclick="togglePrefPanel()">⚙️ My Interest Controls</button>
+    </div>
+  </div>
+
+  <!-- User Interest Control Panel (Interactive & Privacy-First) -->
+  <div id="userPrefPanel" style="display:none;background:var(--bg);border:1px solid var(--line2);border-radius:14px;padding:16px;margin:16px 0;animation:zoiSlideUp .25s var(--ease-out)">
+    <div style="font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">Your Cultural Interest Dial (User-Owned Algorithm)</div>
+    <p style="font-size:12.5px;color:var(--mut);margin:0 0 14px">Adjust what you want to see more of across the Zoi platform:</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>🍷 Greek Gastronomy</span><b id="valGastro">85%</b></div>
+        <input type="range" min="0" max="100" value="85" style="width:100%" oninput="document.getElementById('valGastro').textContent=this.value+'%'">
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>🎭 Festivals &amp; Galas</span><b id="valFest">90%</b></div>
+        <input type="range" min="0" max="100" value="90" style="width:100%" oninput="document.getElementById('valFest').textContent=this.value+'%'">
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>⛪ Orthodox &amp; Feasts</span><b id="valChurch">80%</b></div>
+        <input type="range" min="0" max="100" value="80" style="width:100%" oninput="document.getElementById('valChurch').textContent=this.value+'%'">
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>🎙️ Diaspora Creators</span><b id="valCreator">75%</b></div>
+        <input type="range" min="0" max="100" value="75" style="width:100%" oninput="document.getElementById('valCreator').textContent=this.value+'%'">
+      </div>
+    </div>
+    <div style="margin-top:14px;text-align:right">
+      <button class="btn btn-primary btn-sm" onclick="saveUserPrefs()">Save My Preferences ✓</button>
+    </div>
+  </div>
+
+  <!-- Active Sponsored Spotlight Cards -->
+  <div class="zoi-spotlight-grid">
+    <div class="zoi-spotlight-card">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)">FEATURED GREEK PRODUCER</span>
+          <span style="font-size:10px;color:var(--dim)">Verified Partner</span>
+        </div>
+        <div class="zoi-spotlight-title">Krinos Foods · Mediterranean Heritage Harvest</div>
+        <div class="zoi-spotlight-sub">Pure Greek extra virgin olive oil, barrel-aged feta &amp; traditional Greek honey delivered to your doorstep.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+        <span style="font-size:12px;color:var(--gold);font-weight:700">Official Sponsor</span>
+        <a class="btn btn-ghost btn-sm" href="/explore?q=krinos">View Products &rarr;</a>
+      </div>
+    </div>
+
+    <div class="zoi-spotlight-card">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sea)">GASTRONOMY SPOTLIGHT</span>
+          <span style="font-size:10px;color:var(--dim)">Astoria, New York</span>
+        </div>
+        <div class="zoi-spotlight-title">Mythos Taverna · Aegean Seafood Night</div>
+        <div class="zoi-spotlight-sub">Charred octopus, whole grilled lavraki, and chilled Assyrtiko with live bouzouki every Friday &amp; Saturday.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+        <span style="font-size:12px;color:var(--green);font-weight:700">Table Tabs Live</span>
+        <a class="btn btn-ghost btn-sm" href="/apps/tickets-studio/">Reserve / Table Tab &rarr;</a>
+      </div>
+    </div>
+
+    <div class="zoi-spotlight-card">
+      <div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">ANNUAL CULTURAL GALA</span>
+          <span style="font-size:10px;color:var(--dim)">Toronto, ON</span>
+        </div>
+        <div class="zoi-spotlight-title">Hellenic Gala 2025 · 3D Seat Map On Sale</div>
+        <div class="zoi-spotlight-sub">Celebrate Greek culture, heritage awards, and live music at the Grand Ballroom with 3D seat booking.</div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
+        <span style="font-size:12px;color:var(--acc);font-weight:700">Tickets Available</span>
+        <a class="btn btn-ghost btn-sm" href="/apps/tickets-studio/">Get Tickets &rarr;</a>
+      </div>
+    </div>
+  </div>
+</div></section>
+
 <section id="marketplace"><div class="wrap">
   <div class="zoi-section-head">
     <div>
@@ -831,6 +923,22 @@ function setRitualTab(tab){
 
 function openFeastModal(){ document.getElementById('feastModal').classList.add('open'); }
 function closeFeastModal(){ document.getElementById('feastModal').classList.remove('open'); }
+
+function togglePrefPanel(){
+  const pnl = document.getElementById('userPrefPanel');
+  if(pnl) pnl.style.display = pnl.style.display === 'none' ? 'block' : 'none';
+}
+function saveUserPrefs(){
+  const pnl = document.getElementById('userPrefPanel');
+  if(pnl) pnl.style.display = 'none';
+  alert('✓ Cultural interest preferences saved! Zoi now customizes your daily discovery feed accordingly.');
+}
+function openPromoteModal(){
+  const biz = prompt('Enter your Greek business or event name to feature in the Pan-Hellenic Spotlight:', 'Mythos Taverna');
+  if(biz){
+    alert('✓ Spotlight Request Initiated for ' + biz + '!\nOur team will review your verified listing and connect your high-conversion spotlight card.');
+  }
+}
 
 function playWordAudio(){
   if('speechSynthesis' in window){

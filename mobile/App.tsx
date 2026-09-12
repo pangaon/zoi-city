@@ -4,11 +4,20 @@ import { useState } from 'react';
 
 const WEB = 'https://www.zoi.city';
 
-type MainTab = 'home' | 'table' | 'private' | 'kds' | 'business' | 'tickets' | 'more';
+type MainTab = 'home' | 'chat' | 'table' | 'private' | 'kds' | 'business' | 'tickets' | 'more';
 type SplitMode = 'equal' | 'items' | 'custom' | 'cover';
 type Station = 'all' | 'kitchen' | 'bar' | 'host';
 type PrivateSubTab = 'rsvp' | 'seating' | 'registry' | 'photos' | 'itinerary';
 type MealChoice = 'lamb' | 'sea_bass' | 'vegetarian' | 'kids';
+
+interface ChatMessage {
+  id: string;
+  sender: string;
+  text: string;
+  time: string;
+  isMe: boolean;
+  sticker?: string;
+}
 
 interface TableMember {
   id: string;
@@ -706,6 +715,126 @@ function VendorKDSView() {
 }
 
 /* ─────────────────────────────────────────────────────────────
+   DIASPORA AGORA MESSENGER (P2P, BIZ & TABLE CHAT)
+   ───────────────────────────────────────────────────────────── */
+function AgoraMessengerView() {
+  const [activeThread, setActiveThread] = useState<'mythos' | 'table' | 'gala'>('mythos');
+  const [inputMsg, setInputMsg] = useState('');
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    { id: '1', sender: 'Mythos Taverna', text: 'Γεια σας George! Your table reservation is confirmed for Saturday 7:30 PM. Would you like us to chill an Assyrtiko wine for your arrival? 🇬🇷', time: '10:14 AM', isMe: false },
+    { id: '2', sender: 'You', text: 'Ναι παρακαλώ! We are looking forward to it. We will have 4 guests.', time: '10:18 AM', isMe: true },
+  ]);
+
+  const handleSend = (customText?: string) => {
+    const txt = (customText || inputMsg).trim();
+    if (!txt) return;
+    const newMsg: ChatMessage = {
+      id: 'msg_' + Date.now(),
+      sender: 'You',
+      text: txt,
+      time: 'Just now',
+      isMe: true,
+    };
+    setMessages([...messages, newMsg]);
+    setInputMsg('');
+    setTimeout(() => {
+      setMessages(prev => [
+        ...prev,
+        {
+          id: 'reply_' + Date.now(),
+          sender: activeThread === 'mythos' ? 'Mythos Taverna' : 'Table 4 Host',
+          text: 'Ευχαριστούμε! Received loud and clear. See you soon in the Greek world! 🇬🇷✨',
+          time: 'Just now',
+          isMe: false,
+        }
+      ]);
+    }, 800);
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.content}>
+      <View style={styles.privateHeaderBox}>
+        <View style={styles.privatePillRow}>
+          <Text style={styles.privatePillText}>💬 PAN-HELLENIC AGORA MESSENGER</Text>
+        </View>
+        <Text style={styles.privateTitle}>Direct &amp; Business Messenger</Text>
+        <Text style={styles.privateSubtitle}>Chat with tavernas, event organizers, and your table guests.</Text>
+      </View>
+
+      {/* THREAD SELECTOR */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.privateTabScroll}>
+        <Pressable
+          style={[styles.privateTabBtn, activeThread === 'mythos' && styles.privateTabBtnActive]}
+          onPress={() => setActiveThread('mythos')}
+        >
+          <Text style={[styles.privateTabText, activeThread === 'mythos' && styles.privateTabTextActive]}>🍷 Mythos Taverna</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.privateTabBtn, activeThread === 'table' && styles.privateTabBtnActive]}
+          onPress={() => setActiveThread('table')}
+        >
+          <Text style={[styles.privateTabText, activeThread === 'table' && styles.privateTabTextActive]}>🍽 Table VIP-4 Group</Text>
+        </Pressable>
+        <Pressable
+          style={[styles.privateTabBtn, activeThread === 'gala' && styles.privateTabBtnActive]}
+          onPress={() => setActiveThread('gala')}
+        >
+          <Text style={[styles.privateTabText, activeThread === 'gala' && styles.privateTabTextActive]}>🎭 Hellenic Gala Committee</Text>
+        </Pressable>
+      </ScrollView>
+
+      {/* CHAT MESSAGES CONTAINER */}
+      <View style={styles.chatContainer}>
+        <View style={styles.chatHeader}>
+          <View style={styles.chatAvatar}>
+            <Text style={{ color: '#fff', fontWeight: '800' }}>
+              {activeThread === 'mythos' ? 'M' : activeThread === 'table' ? 'T' : 'H'}
+            </Text>
+          </View>
+          <View>
+            <Text style={styles.chatTitle}>
+              {activeThread === 'mythos' ? 'Mythos Taverna (Astoria)' : activeThread === 'table' ? 'Table VIP-4 Group Chat' : 'Hellenic Gala Committee'}
+            </Text>
+            <Text style={styles.chatStatus}>● Online · Responds in minutes</Text>
+          </View>
+        </View>
+
+        <View style={styles.messageList}>
+          {messages.map(m => (
+            <View key={m.id} style={[styles.bubble, m.isMe ? styles.bubbleMe : styles.bubbleThem]}>
+              <Text style={[styles.bubbleText, m.isMe && styles.bubbleTextMe]}>{m.text}</Text>
+              <Text style={styles.bubbleTime}>{m.time}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* GREEK STICKERS BAR */}
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stickerScroll}>
+          {['🥂 Χρόνια Πολλά!', 'OPA! 🧿', '🇬🇷 Μπράβο!', '🙏 Ευλογίες', '🍷 Στην υγειά μας!'].map(stk => (
+            <Pressable key={stk} style={styles.stickerBtn} onPress={() => handleSend(stk)}>
+              <Text style={styles.stickerText}>{stk}</Text>
+            </Pressable>
+          ))}
+        </ScrollView>
+
+        <View style={styles.chatInputRow}>
+          <TextInput
+            style={styles.chatInput}
+            placeholder="Write in Greek or English…"
+            placeholderTextColor="#64748f"
+            value={inputMsg}
+            onChangeText={setInputMsg}
+          />
+          <Pressable style={styles.chatSendBtn} onPress={() => handleSend()}>
+            <Text style={styles.chatSendBtnText}>Send</Text>
+          </Pressable>
+        </View>
+      </View>
+    </ScrollView>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────
    STANDARD ECOSYSTEM TABS
    ───────────────────────────────────────────────────────────── */
 function Home({ onGoTable, onGoPrivate }: { onGoTable: () => void; onGoPrivate: () => void }) {
@@ -789,6 +918,7 @@ export default function App() {
       </View>
       <View style={styles.screen}>
         {tab === 'home' && <Home onGoTable={() => setTab('table')} onGoPrivate={() => setTab('private')} />}
+        {tab === 'chat' && <AgoraMessengerView />}
         {tab === 'private' && <PrivateEventsView />}
         {tab === 'table' && <GuestTableView />}
         {tab === 'kds' && <VendorKDSView />}
@@ -814,6 +944,7 @@ export default function App() {
       <View style={styles.nav} accessibilityRole="tablist">
         {([
           ['home', 'Home', '⌂'],
+          ['chat', 'Messenger', '💬'],
           ['private', 'Weddings', '💒'],
           ['table', 'Table Tab', '🍽'],
           ['kds', 'KDS / Host', '⚡'],
@@ -1046,6 +1177,28 @@ const styles = StyleSheet.create({
   timeTitle: { color: '#f2f5fa', fontWeight: '700', fontSize: 14, marginBottom: 2 },
   timeLoc: { color: '#5dbedc', fontSize: 12, fontWeight: '600' },
   timeDesc: { color: '#9bb0c7', fontSize: 11.5, marginTop: 2 },
+
+  /* Chat & Messenger styles */
+  chatContainer: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, overflow: 'hidden' },
+  chatHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: '#1d3852', backgroundColor: '#132438' },
+  chatAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#0284c7', alignItems: 'center', justifyContent: 'center' },
+  chatTitle: { color: '#f2f5fa', fontSize: 14, fontWeight: '750' },
+  chatStatus: { color: '#5bc49a', fontSize: 11, fontWeight: '600', marginTop: 1 },
+  messageList: { padding: 14, gap: 10, minHeight: 180 },
+  bubble: { maxWidth: '82%', paddingHorizontal: 13, paddingVertical: 9, borderRadius: 14 },
+  bubbleMe: { alignSelf: 'flex-end', backgroundColor: '#0284c7' },
+  bubbleThem: { alignSelf: 'flex-start', backgroundColor: '#132438', borderWidth: 1, borderColor: '#1d3852' },
+  bubbleText: { color: '#f2f5fa', fontSize: 13, lineHeight: 18 },
+  bubbleTextMe: { color: '#fff' },
+  bubbleTime: { fontSize: 9.5, color: 'rgba(255,255,255,0.6)', marginTop: 4, alignSelf: 'flex-end' },
+  stickerScroll: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#091827', borderTopWidth: 1, borderTopColor: '#1d3852' },
+  stickerBtn: { backgroundColor: '#132438', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, marginRight: 6 },
+  stickerText: { color: '#d4af5f', fontSize: 11, fontWeight: '700' },
+  chatInputRow: { flexDirection: 'row', gap: 8, padding: 10, backgroundColor: '#091827', borderTopWidth: 1, borderTopColor: '#1d3852' },
+  chatInput: { flex: 1, backgroundColor: '#132438', borderWidth: 1, borderColor: '#1d3852', borderRadius: 10, paddingHorizontal: 12, color: '#fff', fontSize: 13 },
+  chatSendBtn: { backgroundColor: '#0284c7', paddingHorizontal: 14, justifyContent: 'center', borderRadius: 10 },
+  chatSendBtnText: { color: '#fff', fontWeight: '800', fontSize: 12 },
 });
+
 
 
