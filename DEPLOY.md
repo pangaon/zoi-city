@@ -77,18 +77,19 @@ until Stripe webhook signature verification + idempotency are proven.
 
 ## Current Deployment Status (2026-09-12)
 
-**Wave 1 Secure Ticketing & Private Events Stack — READY FOR PRODUCTION**
+**Wave 1 Secure Ticketing & Private Events Stack — awaiting live migration confirmation**
 
 ### ✅ Completed
 - Frontend: Tickets Studio (`/apps/tickets-studio/`), Private Events guest page (`/w/`), floor plans, KDS, table tabs
 - Backend RPCs: `private_event_create`, `private_event_list`, `private_event_get_by_pin`, `private_event_rsvp_submit`, `table_tab_list`, `table_tab_record_cash_payment`, `table_tab_guest_order`, `menu_item_save`, `menu_items_list`
-- Migrations: 0027–0033 applied to production
+- Migrations: 0027–0033 applied to production; 0034–0036 are committed and awaiting confirmation
 - Tests: 37/37 contract tests passing; 25/25 page invariants passing
 - Security: RLS verified on all 9 sensitive tables; guest endpoints safe from price manipulation
 
-### 🚫 Final Blocking Item
-- **Migration 0034 (menu_items table + guest ordering RPC)** is committed to the repo but not yet applied to the live Supabase database
-- This is the only remaining step before full production readiness
+### 🚫 Blocking Items
+- **Migrations 0034–0036** are committed to the repo but not yet confirmed on the live Supabase database
+- Migration 0036 is required before using Event OS workspace reads, floor plans, or team operations because it closes the authorization gaps found in the initial Event OS migration
+- Event OS still has demo-only operational metrics and is not the system of record for attendees or sales; `/tickets` remains canonical
 
 ### How to Complete
 1. Add `SUPABASE_ACCESS_TOKEN` to GitHub repo secrets
@@ -100,7 +101,7 @@ until Stripe webhook signature verification + idempotency are proven.
    ```bash
    cd /workspaces/zoi-city && node tests/contract/run.mjs
    ```
-   Expected: All 37 tests pass, including the new `menu_items` RLS check
+  Expected: Existing checks pass and the Event OS table/RPC checks no longer return 404
 
-3. After that: full Stack is live and secure ✅
+3. Use [docs/OPEN-TODOS-2026-09-12.md](docs/OPEN-TODOS-2026-09-12.md) for the remaining authenticated smoke tests and product gates.
 

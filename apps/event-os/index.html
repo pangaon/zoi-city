@@ -901,6 +901,21 @@ async function fetchRealEvents(){
    REAL EVENT OS DATA — Load workspace events from production RPCs
 ============================================================ */
 let realEventOSData={workspace:null,events:[],loading:false};
+let eventTeam={members:[],loading:false,error:null};
+function rpcJson(value){
+  if(typeof value==='string'){try{return JSON.parse(value);}catch(e){return null;}}
+  return value;
+}
+async function loadEventTeam(eventId,workspaceId){
+  if(!eventId||!workspaceId||!window.ZoiCore)return;
+  eventTeam.loading=true;eventTeam.error=null;
+  try{
+    const result=await ZoiCore.api.rpc('event_team_members_list',{p_event_id:eventId,p_workspace:workspaceId},{auth:'require'});
+    const members=rpcJson(result&&result.members);
+    eventTeam.members=Array.isArray(members)?members:[];
+  }catch(e){eventTeam.error='Team data unavailable';eventTeam.members=[];}
+  finally{eventTeam.loading=false;if(typeof booted!=='undefined'&&booted&&typeof render==='function')render();}
+}
 async function loadRealEventOSData(){
   if(!window.ZoiCore || realEventOSData.loading) return;
   realEventOSData.loading = true;
@@ -917,7 +932,7 @@ async function loadRealEventOSData(){
     // Load events for this workspace
     const result = await ZoiCore.api.rpc('event_list', {p_workspace: ws.id}, {auth:'require'});
     if(result && result.ok && result.events){
-      const evts = JSON.parse(result.events);
+      const evts = rpcJson(result.events);
       if(Array.isArray(evts) && evts.length){
         // Convert RPC events to Event OS format
         const osEvents = evts.map(e => ({
@@ -937,6 +952,7 @@ async function loadRealEventOSData(){
         EVENTS.length = 0;
         EVENTS.push(...osEvents);
         curEvent = EVENTS[0];
+        loadEventTeam(curEvent.id,ws.id);
         // Re-render if app is booted
         if(typeof booted !== 'undefined' && booted && typeof render === 'function'){
           render();
@@ -1147,6 +1163,7 @@ function renderDiscover(){
 function selectEvent(id){curEvent=EVENTS.find(e=>e.id===id);closeModal();
  // re-seed the floor for the new event's mode so floor/3D/box reflect it
  try{defaultLayout(MODECFG[curEvent.mode]?curEvent.mode:'concert');floor.venue.name=curEvent.venue.split(' — ')[0]||floor.venue.name;}catch(e){}
+ if(curEvent&&curEvent.real)loadEventTeam(curEvent.id,curEvent.workspace_id);
  go(cur||'dash');
  toast('Switched to '+curEvent.name.split(' feat')[0]);}
 
@@ -1881,7 +1898,7 @@ function loadLayout(n){
  
  // If this is a real event, try loading from database first
  if(curEvent && curEvent.real && curEvent.id && window.ZoiCore){
-   ZoiCore.api.rpc('floor_plan_get', {p_event_id: curEvent.id}, {auth:'require'}).then(r => {
+  ZoiCore.api.rpc('floor_plan_get', {p_event_id: curEvent.id, p_workspace: curEvent.workspace_id}, {auth:'require'}).then(r => {
      if(r && r.ok && r.plan){
        const L = r.plan.layout_json;
        if(L && L.els){
@@ -3088,13 +3105,23 @@ function viewSettings(){
   </div>
   <div class="sect"><h2>Team &amp; roles</h2><span class="lnk" onclick="inviteTeam()">+ Invite</span></div>
   <div class="card glass stag">
-   ${[['You','Owner','#0A4D8C'],['Anna M.','Box office','#B5325F'],['Theo K.','Door / check-in','#2e8b57'],['Sophia L.','Floor manager','#B8893B']].map(t=>`<div class="grow" style="cursor:default"><div class="gav" style="background:${t[2]}">${initials(t[0])}</div><div><div class="gn">${t[0]}</div><div class="gm">${t[1]}</div></div><div class="gright"><span class="pill mut">${t[1]==='Owner'?'Full access':'Limited'}</span></div></div>`).join('')}
+   ${!curEvent.real?'<div class="attn amb"><div><div class="at">Demo event</div><div class="am">Team changes are available after you open an owned event from your workspace.</div></div></div>':eventTeam.loading?'<div class="am">Loading workspace team…</div>':eventTeam.error?`<div class="attn amb"><div><div class="at">${eventTeam.error}</div><div class="am">Retry by switching events or refreshing the page.</div></div></div>`:eventTeam.members.length?eventTeam.members.map(t=>`<div class="grow" style="cursor:default"><div class="gav" style="background:#0A4D8C">${initials(t.name)}</div><div><div class="gn">${esc(t.name)}</div><div class="gm">${esc(t.role.replace('_',' / '))}</div></div><div class="gright"><span class="pill mut">Limited</span></div></div>`).join(''):'<div class="am">No team members have been invited to this event yet.</div>'}
   </div>`;
 }
-function inviteTeam(){openModal(`<div class="mhead"><div><h3>Invite team member</h3></div><button class="close" onclick="closeModal()">×</button></div>
- <div class="mbody"><div class="field"><label>Email</label><input placeholder="team@example.com"></div>
- <div class="field"><label>Role</label><select><option>Box office</option><option>Door / check-in</option><option>Floor manager</option><option>Owner</option></select></div>
- <button class="btn gold block" onclick="closeModal();toast('Invite sent')">Send invite</button></div>`);}
+function inviteTeam(){
+ if(!curEvent.real||!curEvent.workspace_id){toast('Open an owned workspace event first');return;}
+ openModal(`<div class="mhead"><div><h3>Invite team member</h3></div><button class="close" onclick="closeModal()">×</button></div>
+ <div class="mbody"><div class="field"><label for="teamName">Name</label><input id="teamName" placeholder="Team member name"></div>
+ <div class="field"><label for="teamEmail">Email</label><input id="teamEmail" type="email" placeholder="team@example.com"></div>
+ <div class="field"><label for="teamRole">Role</label><select id="teamRole"><option value="box_office">Box office</option><option value="door">Door / check-in</option><option value="floor_manager">Floor manager</option><option value="manager">Manager</option><option value="staff">Staff</option></select></div>
+ <button class="btn gold block" onclick="doInviteTeam()">Send invite</button></div>`);
+}
+async function doInviteTeam(){
+ const name=$('#teamName').value.trim(),email=$('#teamEmail').value.trim(),role=$('#teamRole').value;
+ if(!name||!email){toast('Name and email are required');return;}
+ try{const r=await ZoiCore.api.rpc('event_team_member_invite',{p_event_id:curEvent.id,p_workspace:curEvent.workspace_id,p_name:name,p_email:email,p_role:role},{auth:'require'});if(!r||!r.ok)throw new Error(r&&r.error||'Invite failed');closeModal();await loadEventTeam(curEvent.id,curEvent.workspace_id);toast('Team member added to this event');}
+ catch(e){toast(e.message||'Could not add team member');}
+}
 
 /* ============ BOOT ============ */
 try{const ls=STORE.get('zoi_layouts');if(ls)savedLayouts=JSON.parse(ls);}catch(e){}
