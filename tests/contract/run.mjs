@@ -246,6 +246,23 @@ t('SECURITY: REST root schema exposes no zoi tables', async () => {
   assert(zoiish.length === 0, `zoi-ish tables exposed at REST root: ${zoiish.join(', ')}`);
 });
 
+// Regression guard for the 0027/0028 incident: these tables were created
+// without RLS and served full anon read/write until migration 0030. Every
+// one must now reject anon REST access outright (401/403), never a row.
+const RLS_LOCKED_TABLES = [
+  'event_venues', 'venue_tables_zones', 'table_tabs', 'table_members',
+  'event_orders', 'event_order_items', 'tab_payments',
+  'private_events', 'private_rsvps', 'private_registry_items',
+  'private_event_gifts', 'private_photo_wall',
+];
+for (const tbl of RLS_LOCKED_TABLES) {
+  t(`SECURITY: ${tbl} rejects anon REST access (RLS must stay enabled)`, async () => {
+    const res = await fetch(`${BASE}/rest/v1/${tbl}?select=*&limit=1`, { headers: HDRS });
+    assert(res.status === 401 || res.status === 403,
+      `${tbl}: expected 401/403 from RLS lockdown, got ${res.status}`);
+  });
+}
+
 // ---------- runner ----------
 (async () => {
   console.log(`# zoi.city contract tests — BASE=${BASE}`);
