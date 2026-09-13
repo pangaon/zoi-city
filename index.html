@@ -242,8 +242,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 <div class="glow"></div>
 <header class="zoi-header"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
-  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/#marketplace">Marketplace</a></nav>
-  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="https://buygreek.shop" target="_blank" rel="noopener">Marketplace</a></nav>
   <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
 
@@ -251,14 +250,23 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   <span class="hero-mark" aria-hidden="true">&#918;&#937;&#919;</span>
   <div class="wrap hero-grid">
     <div class="hero-copy">
-      <div class="htag"><span class="d"></span><span>&#918;&#937;&#919; &mdash; Greece &middot; Cyprus &middot; the diaspora</span></div>
-      <div class="htag" id="nameday-chip" style="margin-left:10px;display:none"><span class="d" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span><span id="nameday-txt"></span></div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
+        <div class="htag"><span class="d"></span><span>Pan-Hellenic Platform &middot; Greece &middot; Cyprus &middot; Diaspora</span></div>
+        <div class="htag" id="nameday-chip" style="display:none"><span class="d" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span><span id="nameday-txt"></span></div>
+      </div>
       <h1>The Greek world <span class="serif">runs</span> on Zoi.</h1>
-      <p class="hlead">Free software for Greek business. A worldwide Greek marketplace. The definitive map of Greek life. One account &mdash; built for the people who keep the culture running.</p>
+      <p class="hlead">The unified platform for the global Hellenic community: free business software, a worldwide marketplace, and the living map of Greek life.</p>
+      
+      <!-- Unified Single Search Bar Above The Fold -->
+      <form class="dbar" action="/explore" method="get" style="margin:22px 0 20px;max-width:620px">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input name="q" placeholder="Search 8,000+ tavernas, churches, festivals, creators &amp; businesses…" aria-label="Search the Greek world"/>
+        <button class="btn btn-primary" style="padding:10px 22px" type="submit">Search</button>
+      </form>
+
       <div class="hcta">
-        <a class="btn p" href="/social">Start free <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btn g" href="/explore">Explore the Greek world</a>
-    <a class="btn g" href="/in">Browse by country</a>
+        <a class="btn btn-primary" href="/social">Start Free Business Suite <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-ghost" href="/explore/map">Explore Map &amp; Directory</a>
       </div>
       <div class="hstats">
         <div class="s"><b id="st-listings" data-count>&mdash;</b><span>Greek places</span></div>

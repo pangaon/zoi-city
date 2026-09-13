@@ -45,8 +45,9 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [ ] Complete provider OAuth credentials/review, token refresh, disconnect/revoke, media upload, retry, and dead-letter monitoring.
 - [ ] Configure Anthropic only after AI output review, source attribution, and spend/rate limits are enforced.
 
-## P2: Product consolidation
+## P2: Product consolidation & Design Audit
 
+- [x] Streamline `index.html` main page: eliminate duplicate search bars, organize above-the-fold logic, group offerings into 4 canonical ecosystem pillars, and enforce Mediterranean Blue CTA button branding.
 - [ ] Keep `/tickets` canonical for owned event operations; label retained Event OS preview areas truthfully until the journey above is complete.
 - [ ] Retire or quarantine demo-only `/apps/tickets-studio/`, `/apps/business-pro/`, and `/apps/intelligence/` surfaces according to `docs/CONSOLIDATION.md`.
 - [ ] Preserve the useful Event OS floor-builder work while removing fabricated metrics and fake success actions.
