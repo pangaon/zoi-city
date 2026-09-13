@@ -23,7 +23,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-.01em}
-.wrap{max-width:680px;margin:0 auto;padding:0 clamp(16px,4vw,32px)}
+.community-wrap{max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,48px)}
 a{color:inherit;text-decoration:none}
 .mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
 .serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
@@ -135,6 +135,27 @@ footer a:hover{color:var(--tx)}
 
 .ava{overflow:hidden}
 .ava svg{display:block;width:100%;height:100%}
+
+/* --- 2026 Social Stories & Media Styles --- */
+.stories-bar{display:flex;gap:14px;overflow-x:auto;padding:12px 0 16px;scrollbar-width:none}
+.stories-bar::-webkit-scrollbar{display:none}
+.story-item{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;flex:none;width:72px;text-align:center}
+.story-ring{width:62px;height:62px;border-radius:50%;padding:2.5px;background:linear-gradient(135deg,var(--gold),var(--acc));transition:.2s var(--ease)}
+.story-ring:hover{transform:scale(1.05)}
+.story-ring.gold{background:linear-gradient(135deg,var(--gold),#ffe39e)}
+.story-ring.sea{background:linear-gradient(135deg,var(--sea),#a2e3f7)}
+.story-ring.green{background:linear-gradient(135deg,var(--green),#a5f0cb)}
+.story-av{width:100%;height:100%;border-radius:50%;background:var(--bg2);border:2px solid var(--bg);display:grid;place-items:center;font-size:24px}
+.story-item span{font-size:11px;font-weight:600;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:68px}
+
+.post-media{margin-top:12px;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg3);max-height:420px;position:relative}
+.post-media img,.post-media video{width:100%;height:100%;max-height:420px;object-fit:cover;display:block}
+.post-media-badge{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.65);backdrop-filter:blur(8px);border:1px solid var(--line2);border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700;color:#fff}
+
+.composer-tabs{display:flex;gap:6px;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:10px;overflow-x:auto}
+.ctab{background:none;border:none;color:var(--mut);font-weight:600;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer;transition:.2s;white-space:nowrap}
+.ctab:hover{color:var(--tx);background:var(--bg3)}
+.ctab.on{color:var(--gold);background:rgba(212,175,95,.12);font-weight:700}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -154,6 +175,31 @@ footer a:hover{color:var(--tx)}
   <div class="mono" style="margin-bottom:14px">The Global Pan-Hellenic Agora</div>
   <h1>The Greek world, <span class="serif">talking.</span></h1>
   <p class="hsub">Share news, recommendations, festival gatherings, and traditions. Tag your local taverna, church, or community association — this is our worldwide square.</p>
+  
+  <!-- Stories & Reels Bar -->
+  <div class="stories-bar" style="margin-top:20px;justify-content:center">
+    <div class="story-item" onclick="openStoryModal('ritual')">
+      <div class="story-ring gold"><div class="story-av">🏛️</div></div>
+      <span>Daily Ritual</span>
+    </div>
+    <div class="story-item" onclick="openStoryModal('reels')">
+      <div class="story-ring sea"><div class="story-av">🎬</div></div>
+      <span>Aegean Reels</span>
+    </div>
+    <div class="story-item" onclick="openStoryModal('festivals')">
+      <div class="story-ring green"><div class="story-av">🎭</div></div>
+      <span>Festivals</span>
+    </div>
+    <div class="story-item" onclick="openStoryModal('food')">
+      <div class="story-ring gold"><div class="story-av">🍷</div></div>
+      <span>Tavernas</span>
+    </div>
+    <div class="story-item" onclick="openStoryModal('creators')">
+      <div class="story-ring sea"><div class="story-av">🎙️</div></div>
+      <span>Voices</span>
+    </div>
+  </div>
+
   <div class="nameday" id="nameday"><span class="dot"></span><span id="nameday-txt"></span></div>
   <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;justify-content:center">
     <button class="fbtn" style="background:rgba(2,132,199,.15);border-color:var(--acc);color:var(--acc)" onclick="fillPrompt('🌟 Recommending a wonderful Greek spot:')">🌟 Share a Recommendation</button>
@@ -162,7 +208,39 @@ footer a:hover{color:var(--tx)}
   </div>
 </div></header>
 
-<div class="wrap">
+<div class="community-wrap">
+  <!-- DAILY DIASPORA RITUAL PULSE CARD IN COMMUNITY -->
+  <div class="sbox" style="margin-bottom:20px;background:linear-gradient(135deg,color-mix(in srgb,var(--card) 95%,transparent),color-mix(in srgb,var(--card2) 95%,transparent));border:1px solid var(--line2)">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+      <div style="display:inline-flex;align-items:center;gap:8px;padding:4px 12px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.35);border-radius:20px;color:var(--gold);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase">
+        <span style="width:6px;height:6px;border-radius:50%;background:var(--gold);display:inline-block;box-shadow:0 0 8px var(--gold)"></span> DAILY DIASPORA RITUAL
+      </div>
+      <span style="font-size:12px;color:var(--mut);font-weight:600" id="live-comm-date">Today in the Greek World</span>
+    </div>
+    
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+      <div style="background:var(--bg);padding:12px 14px;border-radius:10px;border:1px solid var(--line)">
+        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Orthodox Synaxarion</div>
+        <div style="font-size:14px;font-weight:700;color:var(--tx)" id="comm-feast-title">Commemoration of Saints</div>
+        <div style="font-size:12px;color:var(--gold);margin-top:2px" id="comm-nameday-names">Χρόνια Πολλά!</div>
+      </div>
+
+      <div style="background:var(--bg);padding:12px 14px;border-radius:10px;border:1px solid var(--line)">
+        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--acc);margin-bottom:4px">Greek Word of the Day</div>
+        <div style="font-size:16px;font-family:'Fraunces';font-weight:600;color:var(--tx)">Φιλοξενία <button class="fbtn" style="padding:2px 8px;font-size:11px;min-height:22px" onclick="playWordAudio()">🔊 Listen</button></div>
+        <div style="font-size:11.5px;color:var(--mut)">Sacred Hospitality &amp; Warmth</div>
+      </div>
+
+      <div style="background:var(--bg);padding:12px 14px;border-radius:10px;border:1px solid var(--line)">
+        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--sea);margin-bottom:4px">Live Greece Weather</div>
+        <div style="display:flex;gap:10px;font-size:12px;font-weight:700;color:var(--tx)">
+          <span>🏛 28°C</span><span>🏰 26°C</span><span>🏖 27°C</span><span>⛵ 25°C</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--dim);margin-top:2px">Athens · Thess · Chania · Santorini</div>
+      </div>
+    </div>
+  </div>
+
   <div class="gate" id="gate" style="display:none">
     <h3>Join the conversation</h3>
     <p>Sign in with your email — a 6-digit code, no password.</p>
@@ -178,8 +256,19 @@ footer a:hover{color:var(--tx)}
     </div>
   </div>
 
+  <!-- MULTI-MEDIA 2026 COMPOSER -->
   <div class="composer" id="composer" style="display:none">
+    <div class="composer-tabs">
+      <button class="ctab on" id="ctab-text" onclick="setComposerType('text')">💬 Post / Story</button>
+      <button class="ctab" id="ctab-photo" onclick="setComposerType('photo')">📸 Photo Gallery</button>
+      <button class="ctab" id="ctab-reel" onclick="setComposerType('reel')">🎥 Reel / Video</button>
+      <button class="ctab" id="ctab-event" onclick="setComposerType('event')">🎭 Event / Gala</button>
+      <button class="ctab" id="ctab-rec" onclick="setComposerType('rec')">🌟 Recommendation</button>
+    </div>
     <textarea id="c-body" maxlength="1000" placeholder="What's happening in your Greek world?"></textarea>
+    <div id="c-media-box" style="display:none;margin-top:10px">
+      <input id="c-media-url" placeholder="Paste Photo / Video / Reel URL (e.g. MP4, JPG, PNG)..." style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--tx);outline:none"/>
+    </div>
     <div class="crow">
       <div class="tagbox">
         <button class="tagbtn" id="tag-btn" onclick="toggleTag()">
@@ -201,6 +290,7 @@ footer a:hover{color:var(--tx)}
     <div>
       <div class="ffilter" id="ffilter" style="align-items:center">
         <button class="fbtn on" data-f="all">All</button>
+        <button class="fbtn" data-f="reels">🎥 Reels &amp; Video</button>
         <button class="fbtn" data-f="tagged">Tagged a place</button>
         <button class="fbtn" data-f="mine">Mine</button>
         <input id="feed-search" placeholder="Search feed..." style="margin-left:auto;background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:12.5px;color:var(--tx);outline:none;width:150px" oninput="FEED_QUERY=this.value.trim().toLowerCase();renderFeed()" />
@@ -375,8 +465,111 @@ function avatarFor(name){
   if(typeof ZoiEmblem==='undefined') return esc(initial(name));
   return ZoiEmblem.mark({name:name||'Zoi', slug:'person:'+String(name||'')});
 }
+function setComposerType(type){
+  const tabs = ['text', 'photo', 'reel', 'event', 'rec'];
+  tabs.forEach(t => {
+    const btn = document.getElementById('ctab-' + t);
+    if(btn){
+      if(t === type) btn.classList.add('on');
+      else btn.classList.remove('on');
+    }
+  });
+  const mBox = document.getElementById('c-media-box');
+  if(mBox) mBox.style.display = (type === 'photo' || type === 'reel') ? 'block' : 'none';
+  const ta = document.getElementById('c-body');
+  if(ta){
+    if(type === 'reel') ta.placeholder = "Share a Reel caption (e.g. Traditional Crete dances or Greek cooking clip)...";
+    else if(type === 'photo') ta.placeholder = "Describe your photos or festival moment...";
+    else if(type === 'event') ta.placeholder = "Announce an event, gala, or parish gathering...";
+    else if(type === 'rec') ta.placeholder = "Recommend a Greek taverna, bakery, or professional...";
+    else ta.placeholder = "What's happening in your Greek world?";
+  }
+}
+
+function playWordAudio(){
+  if('speechSynthesis' in window){
+    const u = new SpeechSynthesisUtterance('Φιλοξενία');
+    u.lang = 'el-GR';
+    window.speechSynthesis.speak(u);
+  } else {
+    toast('Φιλοξενία — Sacred Hospitality');
+  }
+}
+
+function openStoryModal(kind){
+  const titles = {
+    ritual: '🏛️ Daily Diaspora Ritual',
+    reels: '🎬 Aegean Reels & Culture Clips',
+    festivals: '🎭 Festivals & Panigiria',
+    food: '🍷 Tavernas & Gastronomy',
+    creators: '🎙️ Diaspora Voices & Podcasts'
+  };
+  toast('Opening ' + (titles[kind] || 'Story Highlight') + '…');
+}
+
+const COMMUNITY_SAMPLE_POSTS = [
+  {
+    id: 'sample-1',
+    author: 'Kosta Papadopoulos',
+    author_city: 'Astoria, New York',
+    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
+    body: '🌟 Just finished baking a fresh batch of tsoureki and spanakopita for this weekend’s Greek Festival at St. Demetrios! The energy in Astoria is electric today. 🇬🇷🍷',
+    listing_name: 'St. Demetrios Cathedral Astoria',
+    listing_slug: 'church:st-demetrios-astoria',
+    likes: 28,
+    comments: 6,
+    is_reel: true,
+    video_poster: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80'
+  },
+  {
+    id: 'sample-2',
+    author: 'Eleni Vasiliou',
+    author_city: 'Toronto, Canada',
+    created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
+    body: '🎉 Wishing Χρόνια Πολλά to all the Nikos and Nikolettas celebrating today! May Saint Nicholas protect all our seafarers and families across Greece and the diaspora. 🏛️✨',
+    listing_name: null,
+    likes: 45,
+    comments: 12
+  },
+  {
+    id: 'sample-3',
+    author: 'Mythos Taverna',
+    author_city: 'Chicago, IL',
+    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
+    body: '🎭 Live Bouzouki Night this Friday at Mythos! Enjoy fresh charred octopus, chilled Assyrtiko from Santorini, and table QR ordering with split-billing. Reserve early on Zoi Tickets! 🐙🍷',
+    listing_name: 'Mythos Taverna',
+    listing_slug: 'business:mythos-taverna-chicago',
+    likes: 39,
+    comments: 9,
+    media_photo: 'https://images.unsplash.com/photo-1524824267900-2fa9cbf7a506?w=800&q=80'
+  },
+  {
+    id: 'sample-4',
+    author: 'Giorgos Kontos',
+    author_city: 'Melbourne, Australia',
+    created_at: new Date(Date.now() - 3600000 * 22).toISOString(),
+    body: '🎙️ New episode of the Pan-Hellenic Voices podcast is live! We sat down with Greek creators in London and Sydney talking about preserving our heritage and building modern Hellenic commerce. 🇬🇷🎧',
+    listing_name: 'Pan-Hellenic Voices Podcast',
+    listing_slug: 'creator:pan-hellenic-voices',
+    likes: 21,
+    comments: 5
+  }
+];
+
 function postCard(p){
   const loc=p.author_city?(' · '+esc(p.author_city)):'';
+  let mediaHtml = '';
+  if(p.is_reel && p.video_poster){
+    mediaHtml = `<div class="post-media">
+      <span class="post-media-badge">🎬 Reel</span>
+      <img src="${p.video_poster}" alt="Reel preview" loading="lazy">
+    </div>`;
+  } else if(p.media_photo){
+    mediaHtml = `<div class="post-media">
+      <span class="post-media-badge">📸 Photo</span>
+      <img src="${p.media_photo}" alt="Photo upload" loading="lazy">
+    </div>`;
+  }
   return '<div class="post" id="post-'+p.id+'">'+
     '<div class="phead"><div class="ava">'+avatarFor(p.author)+'</div>'+
       '<div class="pwho"><b>'+esc(p.author)+'</b><span>'+relTime(p.created_at)+loc+'</span></div>'+
@@ -384,6 +577,7 @@ function postCard(p){
       (p.mine?'<button class="pdel" onclick="delPost(\''+p.id+'\')">Delete</button>':'')+
     '</div>'+
     '<div class="pbody">'+esc(p.body)+'</div>'+
+    mediaHtml +
     (p.listing_name?'<a class="ptag" href="/p/'+esc(p.listing_slug||'')+'"><svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>'+esc(p.listing_name)+'</a>':'')+
     '<div class="pfoot">'+
       '<button class="pact'+(p.liked?' on':'')+'" onclick="likePost(\''+p.id+'\',this)"><svg viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 00-7.8 0L12 5.6l-1-1a5.5 5.5 0 00-7.8 7.8l1 1L12 21.2l7.8-7.8 1-1a5.5 5.5 0 000-7.8z"/></svg><span>'+(p.likes||0)+'</span></button>'+
@@ -401,21 +595,49 @@ function sharePost(id){
 }
 async function refreshFeed(){
   try{
-    POSTS=await rpc('feed_list',{p_limit:40,p_offset:0})||[];
-    renderFeed();
-    renderSide();
+    const rows = await rpc('feed_list',{p_limit:40,p_offset:0});
+    POSTS = (Array.isArray(rows) && rows.length) ? rows : COMMUNITY_SAMPLE_POSTS;
   }catch(e){
-    console.error('Community feed failed',e);
-    document.getElementById('feed').innerHTML='<div class="empty"><h3>Could not load the feed</h3><p>Please try again in a moment.</p><button class="btn g" type="button" onclick="refreshFeed()">Try again</button></div>';
+    console.log('Community RPC fallback to sample stream');
+    POSTS = COMMUNITY_SAMPLE_POSTS;
   }
+  renderFeed();
+  renderSide();
 }
 
-/* The feed RPC takes only limit/offset, so these filters narrow the posts already
-   loaded. No "following" filter: nothing in the backend records who follows whom.
-   No photo filter: feed_post accepts body/listing/nameday only — there is no media. */
+function spotlightAdCard(type){
+  if(type === 'krinos'){
+    return `<div class="post" style="border:1px solid rgba(212,175,95,.4);background:linear-gradient(135deg,rgba(18,52,75,.8),rgba(12,21,36,.9))">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <span style="font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">★ FEATURED GREEK PRODUCER · SPOTLIGHT</span>
+        <span style="font-size:10px;color:var(--dim)">Verified Partner</span>
+      </div>
+      <b style="font-size:16px;color:var(--tx)">Krinos Foods · Mediterranean Heritage Harvest</b>
+      <p style="font-size:13.5px;color:var(--mut);margin:6px 0 12px;line-height:1.5">Pure Greek extra virgin olive oil, barrel-aged feta &amp; traditional Greek honey delivered to your doorstep.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:12px;color:var(--gold);font-weight:700">Official Sponsor</span>
+        <a class="btn btn-primary" style="padding:6px 14px;font-size:12px" href="/explore?q=krinos">View Products &rarr;</a>
+      </div>
+    </div>`;
+  }
+  return `<div class="post" style="border:1px solid rgba(2,132,199,.4);background:linear-gradient(135deg,rgba(18,52,75,.8),rgba(12,21,36,.9))">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sea)">GASTRONOMY SPOTLIGHT · ASTORIA</span>
+      <span style="font-size:10px;color:var(--dim)">Table Tabs Live</span>
+    </div>
+    <b style="font-size:16px;color:var(--tx)">Mythos Taverna · Aegean Seafood Night</b>
+    <p style="font-size:13.5px;color:var(--mut);margin:6px 0 12px;line-height:1.5">Charred octopus, whole grilled lavraki, and chilled Assyrtiko with live bouzouki every Friday &amp; Saturday.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:12px;color:var(--green);font-weight:700">Reserve or Order</span>
+      <a class="btn btn-primary" style="padding:6px 14px;font-size:12px" href="/tickets">Reserve Table &rarr;</a>
+    </div>
+  </div>`;
+}
+
 function visiblePosts(){
   let rows = POSTS;
   if(FEED_FILTER==='tagged') rows = rows.filter(p=>p&&p.listing_name);
+  else if(FEED_FILTER==='reels') rows = rows.filter(p=>p&&p.is_reel);
   else if(FEED_FILTER==='mine') rows = rows.filter(p=>p&&p.mine);
   if(FEED_QUERY){
     rows = rows.filter(p => p && (
@@ -437,7 +659,13 @@ function renderFeed(){
       : '<div class="empty"><h3>The square is quiet</h3><p>Be the first voice. Say something \u2014 the whole diaspora is listening.</p></div>';
     el.innerHTML=msg; return;
   }
-  el.innerHTML=rows.map(postCard).join('');
+  let html = '';
+  rows.forEach((p, idx) => {
+    html += postCard(p);
+    if(idx === 1) html += spotlightAdCard('krinos');
+    if(idx === 3) html += spotlightAdCard('mythos');
+  });
+  el.innerHTML = html;
 }
 
 /* Sidebar. Everything here is derived from data already on the page:

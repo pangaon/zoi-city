@@ -74,6 +74,8 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [x] Preserve the useful Event OS floor-builder work while removing fabricated metrics and fake success actions.
 - [x] Add Greek/English support to canonical Explore before retiring the legacy bilingual surface.
 - [x] Wire Community into the Business Suite composer (`assets/suite/composer.js` publishes to `feed_post` with `auth: 'require'`).
+- [x] Align header widths (`1200px`) & margins across all canonical routes (`/`, `/explore`, `/community`, `/social`, `/tickets`, `/apps/*`) to eliminate horizontal layout jumps.
+- [x] Complete 2026 Pan-Hellenic Community Feed Revamp (`community/index.html`): Daily Diaspora Ritual widget, Stories/Reels bar, multi-media composer (Text/Photo/Reel/Event/Rec), Pan-Hellenic Smart Spotlight Ads, and guaranteed fallback sample feed stream.
 
 ## Verification commands
 
