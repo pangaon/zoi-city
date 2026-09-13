@@ -34,7 +34,7 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [ ] Review every `SECURITY DEFINER` function for `SET search_path TO ''`, explicit membership checks, and least-privilege grants.
 - [ ] Add cross-workspace negative tests for every new workspace RPC.
 - [ ] Confirm no service-role key, provider secret, or private URL is shipped to browser code.
-- [ ] Add CSP/security headers and verify external links use appropriate `rel` attributes.
+- [x] Add global browser security headers and report-only CSP with regression coverage. Tightening inline-script CSP and auditing every external link remain follow-up work.
 - [ ] Verify auth expiry, forced re-authentication, sign-out, and permission-denied states on operator routes.
 - [ ] Add rate limits and abuse monitoring for invite, reservation, claim, and email workflows.
 
