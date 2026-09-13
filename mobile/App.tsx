@@ -1182,7 +1182,7 @@ const styles = StyleSheet.create({
   chatContainer: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, overflow: 'hidden' },
   chatHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: '#1d3852', backgroundColor: '#132438' },
   chatAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#0284c7', alignItems: 'center', justifyContent: 'center' },
-  chatTitle: { color: '#f2f5fa', fontSize: 14, fontWeight: '750' },
+  chatTitle: { color: '#f2f5fa', fontSize: 14, fontWeight: '700' },
   chatStatus: { color: '#5bc49a', fontSize: 11, fontWeight: '600', marginTop: 1 },
   messageList: { padding: 14, gap: 10, minHeight: 180 },
   bubble: { maxWidth: '82%', paddingHorizontal: 13, paddingVertical: 9, borderRadius: 14 },
