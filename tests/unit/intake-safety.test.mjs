@@ -133,3 +133,49 @@ test('a submitter can only read their own draft', () => {
   assert.ok(/REVOKE ALL ON FUNCTION public\.intake_status[\s\S]{0,80}FROM public, anon/.test(sql),
     'intake_status is readable by anon');
 });
+
+/* ---------- the rebinding blast radius ----------
+ * Intake lets a stranger choose which host the crawler resolves, which is
+ * exactly the input DNS rebinding needs. These hold the containment. */
+
+test('intake_status returns a fixed projection, never the raw enrich blob', () => {
+  const fn = sql.slice(sql.indexOf('FUNCTION public.intake_status'));
+  // Returning profile->'_enrich' wholesale would make the product the read-back
+  // channel for whatever a rebound fetch landed on.
+  assert.ok(!/'enrich', coalesce\(l\.profile -> '_enrich'/.test(fn),
+    'intake_status hands back the whole enrich namespace');
+  assert.ok(/unnest\(ARRAY\[/.test(fn), 'no field allowlist');
+  for (const f of ['name', 'phone', 'street', 'hours']) {
+    assert.ok(fn.includes(`'${f}'`), `allowlist missing an expected field: ${f}`);
+  }
+});
+
+test('returned values are length capped', () => {
+  const fn = sql.slice(sql.indexOf('FUNCTION public.intake_status'));
+  assert.ok(/left\(/.test(fn), 'values are returned uncapped');
+});
+
+test('the crawl outcome is reported without the page body', () => {
+  const fn = sql.slice(sql.indexOf('FUNCTION public.intake_status'));
+  for (const k of ['checked_at', 'status', 'source_url']) {
+    assert.ok(fn.includes(k), `crawl outcome missing: ${k}`);
+  }
+  assert.ok(!/'body'|'html'|'raw'/.test(fn), 'the response body is exposed');
+});
+
+test('the worker no longer claims the queue holds only owner-supplied domains', () => {
+  // That sentence was the justification for tolerating rebinding. Intake made it
+  // false, and a safety comment that is quietly wrong is worse than none. The
+  // phrase may still appear, but only as a quotation marked historical.
+  const claim = /queue only ever contains domains an authenticated owner/;
+  if (claim.test(worker)) {
+    assert.ok(/used to end "and the queue only ever contains/.test(worker),
+      'the worker still states the pre-intake assumption as current');
+  }
+  assert.ok(/intake_submit now lets any signed-in/.test(worker),
+    'the worker does not record that intake widened the risk');
+  assert.ok(/network egress[\s/]*control/i.test(worker),
+    'the worker does not name the actual fix');
+  assert.ok(/does NOT rule out an internal service that serves HTML/.test(worker),
+    'the worker overstates what the content-type gate buys');
+});

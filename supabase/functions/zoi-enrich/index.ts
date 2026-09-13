@@ -35,9 +35,30 @@
 // Residual risk, stated plainly: between resolving a hostname and connecting,
 // DNS could change to a private address (rebinding). Closing that fully needs
 // connect-time pinning, which fetch() does not expose. REQUIRE_DNS_GUARD=true
-// (the default) at least guarantees we never knowingly resolve to a bad address,
-// and the queue only ever contains domains an authenticated owner put on their
-// own listing.
+// (the default) at least guarantees we never knowingly resolve to a bad address.
+//
+// THAT RISK GREW WHEN SELF-SERVE INTAKE SHIPPED (migration 0038).
+// This paragraph used to end "and the queue only ever contains domains an
+// authenticated owner put on their own listing", which was the reason rebinding
+// was tolerable: every domain in the queue belonged to someone who had already
+// proven they controlled the listing. public.intake_submit now lets any signed-in
+// account put an arbitrary domain in the queue, so an attacker can choose the
+// hostname we resolve. The chain is: register a domain, answer the first lookup
+// with a public address and the second with an internal one, submit it.
+//
+// What still stands in the way, and what does not:
+//   - the content-type gate rejects anything that is not html/xml, which rules
+//     out the EC2, GCP and Azure metadata services (text/plain and json)
+//   - it does NOT rule out an internal service that serves HTML — a CI server,
+//     a dashboard, a router admin page
+//   - public.intake_status returns a fixed projection of business fields, so a
+//     rebound page cannot be read back out through the product
+//
+// The application cannot close this on its own. The fix is network egress
+// control: run this worker where RFC1918, 127/8, 169.254/16, and the IPv6
+// equivalents are not routable, so a rebind resolves to an address the host
+// physically cannot reach. Until that exists, treat intake-sourced domains as
+// the lower-trust tier they are.
 // ─────────────────────────────────────────────────────────────────────────────
 //
 // Env:

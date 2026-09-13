@@ -208,6 +208,14 @@ COMMENT ON FUNCTION public.intake_submit(text, text, text, text) IS
 
 -- Read back what enrichment found, for the confirmation screen. Only the
 -- submitter sees their own draft; this is not a public read.
+--
+-- Returns a fixed, length-capped projection rather than profile->'_enrich'
+-- wholesale. Self-serve intake lets a stranger choose which host the crawler
+-- visits, and the crawler's accepted residual risk is DNS rebinding. If a
+-- rebind ever lands us on an internal page that happens to serve HTML, this
+-- function is the only way the submitter could read the result back — so it
+-- returns a known set of business fields and nothing else. Whatever else the
+-- crawler stored stays server-side.
 CREATE OR REPLACE FUNCTION public.intake_status(p_slug text)
 RETURNS jsonb
 LANGUAGE sql
@@ -215,20 +223,45 @@ STABLE
 SECURITY DEFINER
 SET search_path = public, zoi, pg_temp
 AS $function$
+  WITH row AS (
+    SELECT l.slug, l.name, l.website, l.publish_status, l.verification_status,
+           coalesce(l.profile -> '_enrich', '{}'::jsonb) AS en
+      FROM zoi.listings l
+     WHERE l.slug = p_slug
+       AND l.profile -> '_intake' ->> 'submitted_by' = auth.uid()::text
+     LIMIT 1
+  ), picked AS (
+    SELECT r.*,
+      (SELECT jsonb_object_agg(k, left(r.en -> 'fields' ->> k, 400))
+         FROM unnest(ARRAY[
+           'name','tagline','description','phone','email',
+           'street','city','region','postal','country','hours','logo'
+         ]) AS k
+        WHERE r.en -> 'fields' ? k) AS fields,
+      (SELECT jsonb_object_agg(k, r.en -> 'provenance' -> k)
+         FROM unnest(ARRAY[
+           'name','tagline','description','phone','email',
+           'street','city','region','postal','country','hours','logo'
+         ]) AS k
+        WHERE r.en -> 'provenance' ? k) AS provenance
+      FROM row r
+  )
   SELECT jsonb_build_object(
     'ok', true,
-    'slug', l.slug,
-    'name', l.name,
-    'website', l.website,
-    'publish_status', l.publish_status,
-    'verification_status', l.verification_status,
-    -- _enrich carries its own provenance: source url, checked_at, per-field
-    -- method, and crawl status including failures.
-    'enrich', coalesce(l.profile -> '_enrich', '{}'::jsonb))
-    FROM zoi.listings l
-   WHERE l.slug = p_slug
-     AND l.profile -> '_intake' ->> 'submitted_by' = auth.uid()::text
-   LIMIT 1;
+    'slug', p.slug,
+    'name', p.name,
+    'website', p.website,
+    'publish_status', p.publish_status,
+    'verification_status', p.verification_status,
+    'enrich', jsonb_build_object(
+      -- crawl outcome is reported so a refusal is visible, never the body
+      'checked_at', p.en ->> 'checked_at',
+      'status',     p.en ->> 'status',
+      'error',      left(p.en ->> 'error', 200),
+      'source_url', p.en ->> 'source_url',
+      'fields',     coalesce(p.fields, '{}'::jsonb),
+      'provenance', coalesce(p.provenance, '{}'::jsonb)))
+    FROM picked p;
 $function$;
 
 REVOKE ALL ON FUNCTION public.intake_status(text) FROM public, anon;
