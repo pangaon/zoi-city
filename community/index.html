@@ -511,6 +511,13 @@ async function sendCmt(id){
     inp.value='';
     const rows=await rpc('feed_comments_list',{p_post:id})||[];
     document.getElementById('cl-'+id).innerHTML=rows.map(c=>'<div class="cmt"><div class="ava">'+avatarFor(c.author)+'</div><div><b>'+esc(c.author)+'</b><span>'+esc(c.body)+'</span></div></div>').join('');
+    POSTS.forEach(p=>{ if(String(p.id)===String(id)){ p.comments=rows.length; } });
+    const postEl=document.getElementById('post-'+id);
+    if(postEl){
+      const cmtBtnSpan=postEl.querySelector('.pfoot button:nth-child(2) span');
+      if(cmtBtnSpan) cmtBtnSpan.textContent=String(rows.length);
+    }
+    renderSide();
   }catch(e){ toast(e.message); }
 }
 async function nameday(){
