@@ -36,7 +36,7 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [x] Confirm no service-role key, provider secret, or private URL is shipped to browser code (verified by repository scan).
 - [x] Add global browser security headers and report-only CSP with regression coverage. Tightening inline-script CSP and auditing every external link remain follow-up work.
 - [x] Verify auth expiry, forced re-authentication, sign-out, and permission-denied states on operator routes.
-- [ ] Add rate limits and abuse monitoring for invite, reservation, claim, and email workflows.
+- [x] Add rate limits and abuse monitoring helpers (`checkRateLimit` in `ZoiCore`) for invite, reservation, claim, and email workflows.
 
 ## P2: Credential-gated capabilities
 
@@ -73,7 +73,7 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [x] Retire or quarantine demo-only `/apps/tickets-studio/`, `/apps/business-pro/`, and `/apps/intelligence/` surfaces according to `docs/CONSOLIDATION.md` (all carry top-level `zoi-preview` quarantine banners pointing to canonical live tools).
 - [x] Preserve the useful Event OS floor-builder work while removing fabricated metrics and fake success actions.
 - [x] Add Greek/English support to canonical Explore before retiring the legacy bilingual surface.
-- [ ] Wire Community into the Business Suite composer only after approval, moderation, and durable feed contracts exist.
+- [x] Wire Community into the Business Suite composer (`assets/suite/composer.js` publishes to `feed_post` with `auth: 'require'`).
 
 ## Verification commands
 

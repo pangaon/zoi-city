@@ -234,6 +234,20 @@
     }
   }
 
+  /* ---- Rate Limiting Helper (Abuse Guard) ---- */
+  var _rateLimitStore = {};
+  function checkRateLimit(key, maxCalls, windowMs) {
+    key = String(key || 'default');
+    maxCalls = maxCalls || 5;
+    windowMs = windowMs || 60000;
+    var now = Date.now();
+    if (!_rateLimitStore[key]) _rateLimitStore[key] = [];
+    _rateLimitStore[key] = _rateLimitStore[key].filter(function(t) { return now - t < windowMs; });
+    if (_rateLimitStore[key].length >= maxCalls) return false;
+    _rateLimitStore[key].push(now);
+    return true;
+  }
+
   var ZoiCore = {
     version: '1.0.0',
     BASE: BASE,
@@ -247,7 +261,8 @@
     api: { rpc: rpc },
     otp: otp,
     trapFocus: trapFocus,
-    releaseFocus: releaseFocus
+    releaseFocus: releaseFocus,
+    checkRateLimit: checkRateLimit
   };
 
   global.ZoiCore = ZoiCore;

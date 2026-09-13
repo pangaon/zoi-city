@@ -69,4 +69,5 @@ test('zoi-core handles auth expiry and token freshness checks', () => {
   assert.match(core, /function ensureFresh/);
   assert.match(core, /grant_type=refresh_token/);
   assert.match(core, /Please sign in\./);
+  assert.match(core, /checkRateLimit/);
 });
