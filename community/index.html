@@ -295,7 +295,12 @@ footer a:hover{color:var(--tx)}
         <button class="fbtn" data-f="mine">Mine</button>
         <input id="feed-search" placeholder="Search feed..." style="margin-left:auto;background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:12.5px;color:var(--tx);outline:none;width:150px" oninput="FEED_QUERY=this.value.trim().toLowerCase();renderFeed()" />
       </div>
-      <div class="feed" id="feed"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      <div class="feed" id="feed" style="display:none"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+      <div id="feed-err" style="display:none;padding:50px 20px;text-align:center;color:var(--mut);border-radius:14px;background:var(--bg2);border:1px solid var(--line)">
+        <h3 style="font-size:20px;font-weight:700;color:var(--red);margin-bottom:6px">Community feed failed</h3>
+        <p>The feed is temporarily unavailable. Please try again in a moment.</p>
+        <button class="btn p" style="margin-top:14px" onclick="refreshFeed()">Retry</button>
+      </div>
     </div>
   </div>
 </div>
@@ -594,12 +599,25 @@ function sharePost(id){
   } else toast('Post link: ' + url);
 }
 async function refreshFeed(){
+  let feedFailed = false;
   try{
     const rows = await rpc('feed_list',{p_limit:40,p_offset:0});
     POSTS = (Array.isArray(rows) && rows.length) ? rows : COMMUNITY_SAMPLE_POSTS;
   }catch(e){
     console.log('Community RPC fallback to sample stream');
     POSTS = COMMUNITY_SAMPLE_POSTS;
+    feedFailed = true;
+  }
+  const feedEl = document.getElementById('feed');
+  const errEl = document.getElementById('feed-err');
+  if(feedEl && errEl){
+    if(feedFailed && !POSTS.length){
+      feedEl.style.display = 'none';
+      errEl.style.display = 'block';
+    } else {
+      feedEl.style.display = 'block';
+      errEl.style.display = 'none';
+    }
   }
   renderFeed();
   renderSide();
