@@ -360,6 +360,19 @@
   }
   function typeSlug(t) { return t === 'travel_place' ? 'travel-place' : t; }
   function href(p) { return '/' + typeSlug(p.t) + '/' + encodeURIComponent(p.s); }
+
+  /* Diacritics are routinely omitted when typing, in both scripts: nobody
+   * reaches for the tonos to find Μύκονος, and "melani" should find "Meláni".
+   * Folding the index and the query the same way is what makes an accented
+   * directory searchable by the people who use it. Final sigma folds to sigma
+   * for the same reason. */
+  function fold(s) {
+    return String(s == null ? '' : s)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\u03c2/g, '\u03c3');
+  }
   function nice(s) {
     return String(s || '').replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
   }
@@ -443,6 +456,7 @@
   var here = null;                    // {lat,lng} once geolocated
   var selected = null;
   var truncated = false;              // true when the page cap, not the data, ended the walk
+  var failedPages = 0;                // pages the directory did not return
   var map = null, ready = false;
   var clusterMarkers = {}, pinMarkers = {}, spider = [];
 
@@ -459,6 +473,7 @@
     }
     var p = new URLSearchParams(location.search);
     if (p.get('q')) { query = p.get('q'); $('q').value = query; }
+    out.place = p.get('place') || null;
     var t = p.get('t');
     if (t) {
       TYPES.forEach(function (x) { on[x.k] = false; });
@@ -477,6 +492,8 @@
         Math.round(map.getBearing()), Math.round(map.getPitch())].join('/');
       var p = new URLSearchParams();
       if (query) p.set('q', query);
+      // A shared link should reopen the place that was open, not just the view.
+      if (selected && selected.s) p.set('place', selected.s);
       var offCount = TYPES.filter(function (t) { return !on[t.k]; }).length;
       if (offCount) p.set('t', TYPES.filter(function (t) { return on[t.k]; }).map(function (t) { return t.k; }).join(','));
       var qs = p.toString();
@@ -488,7 +505,7 @@
   function matches(p) {
     if (!on[p.t]) return false;
     if (!query) return true;
-    return p.hay.indexOf(query.toLowerCase()) !== -1;
+    return p.hay.indexOf(fold(query)) !== -1;
   }
   function toGeoJSON(list) {
     return {
@@ -514,6 +531,10 @@
         .catch(function () { return { rows: [], failed: true }; });
     }));
     if (results.every(function (r) { return r.failed; })) throw new Error('directory unavailable');
+    /* A page that failed is a hole in the map, not an empty region. Count them:
+       rendering 80% of the directory as though it were all of it is the kind of
+       silent loss nobody reports because nothing looks broken. */
+    failedPages = results.filter(function (r) { return r.failed; }).length;
     var pages = results.map(function (r) { return r.rows; });
     /* A full last page means the cap, not the dataset, ended the walk. Say so
        rather than silently dropping pins off the end of the map. */
@@ -531,8 +552,8 @@
           addr: r.address || null,
           precision: r.precision || r.geo_precision || (r._geo && r._geo.precision) || ''
         };
-        p.hay = ((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
-                 nice(p.cat) + ' ' + (p.t || '')).toLowerCase();
+        p.hay = fold((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
+                 nice(p.cat) + ' ' + (p.t || ''));
         out.push(p);
       });
     });
@@ -739,7 +760,11 @@
       el.innerHTML = ringSVG(counts, n);
       el.setAttribute('role', 'button');
       el.setAttribute('tabindex', '0');
-      el.setAttribute('aria-label', n + ' places at this address — open');
+      // mergeNearby folds stacks that are merely close on screen, so only an
+      // unmerged bucket genuinely shares one coordinate.
+      el.setAttribute('aria-label', b.merged
+        ? n + ' places in this area \u2014 open the list'
+        : n + ' places at this location \u2014 open the list');
       var items = b.items.slice(), ll = b.lngLat;
       function open() { showList(items, n + ' here', groupWhere(items), ll); }
       el.addEventListener('click', function (e) { e.stopPropagation(); open(); });
@@ -879,6 +904,10 @@
     var i = IDX[p.t] || 0;
     var initial = (p.n || '?').trim().charAt(0).toUpperCase();
     var d = here ? haversine(here.lat, here.lng, p.lat, p.lng) : null;
+    /* A distance is only as good as both ends of it. A coarse fix or an
+       unverified pin makes an exact-looking figure a false claim. */
+    var fuzzy = d != null && ((here && here.coarse) || !p.exact);
+    var dist = d == null ? '' : ' · ' + (fuzzy ? '~' : '') + km(d) + ' away';
     var dir = directionsUrl(p);
     var basis = directionsBasis(p);
     var note = basis === 'address' ? 'Directions use the street address on file'
@@ -891,8 +920,7 @@
       '<span class="m-meta"><span class="m-nm">' + esc(p.n) + '</span>' +
       '<span class="m-wh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</span>' +
       (p.addr ? '<span class="m-ad">' + esc(p.addr) + '</span>' : '') +
-      '<span class="m-km' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) +
-        (d != null ? ' · ' + km(d) + ' away' : '') + '</span>' +
+      '<span class="m-km' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) + esc(dist) + '</span>' +
       '</span></a>' +
       (dir ? '<a class="m-dir" href="' + esc(dir) + '" target="_blank" rel="noopener noreferrer"' +
         ' title="' + esc(note) + '" aria-label="Directions to ' + esc(p.n) + '. ' + esc(note) + '">' +
@@ -960,7 +988,7 @@
       return haversine(o.lat, o.lng, a.lat, a.lng) - haversine(o.lat, o.lng, b.lat, b.lng);
     });
     listState = { items: vis, shown: 0, mode: 'all' };
-    $('ptitle').innerHTML = (here ? 'Nearest to you' : 'On the map') +
+    $('ptitle').innerHTML = (here ? (here.coarse ? 'Near your area' : 'Nearest to you') : 'On the map') +
       '<span class="m-sub">' + (vis.length === ALL.length
         ? fmtN(vis.length) + ' places'
         : fmtN(vis.length) + ' of ' + fmtN(ALL.length) + ' shown') + '</span>';
@@ -981,6 +1009,10 @@
     var unver = ALL.filter(function (p) { return p.unknown; }).length;
     if (unver) parts.push(fmtN(unver) + ' have an unverified position.');
     if (truncated) parts.push('Showing the first ' + fmtN(ALL.length) + ' only.');
+    if (failedPages) {
+      parts.push('<strong>Part of the directory did not load</strong> — some places are missing. ' +
+        '<button type="button" class="m-linkish" id="reloadmap">Reload</button>');
+    }
     return parts.join(' ');
   }
 
@@ -995,9 +1027,14 @@
       showList([p], p.n, [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
     }
     map.easeTo({ center: [p.lng, p.lat], zoom: Math.max(map.getZoom(), 12), duration: 620 });
+    writeUrl();
   }
 
   $('pclose').addEventListener('click', function () { showAll(); writeUrl(); });
+
+  $('pfoot').addEventListener('click', function (e) {
+    if (e.target && e.target.id === 'reloadmap') location.reload();
+  });
 
   // Collapse the bottom sheet on small screens. Everything else is positioned
   // from --sheet, so the tool rail and attribution follow it up and down.
@@ -1149,6 +1186,16 @@
       ready = true;
       addDataLayers(null);
       showAll();
+      // A ?place= link should reopen that listing, not just its viewport. If the
+      // slug no longer resolves, fall through to the full list rather than
+      // leaving the panel asserting a selection that is not there.
+      var want = initial && initial.place;
+      if (want) {
+        var hit = null;
+        for (var i = 0; i < ALL.length; i++) { if (ALL[i].s === want) { hit = ALL[i]; break; } }
+        if (hit) choose(hit);
+        else status('That place is not on the map', false, 3600);
+      }
       status('', false);
     });
     map.on('render', function () {
@@ -1216,39 +1263,91 @@
     status(pref.greek ? 'Greek place names' : 'Local place names', false, 2200);
   });
 
+  /* Browser geolocation accuracy spans three orders of magnitude: a GPS fix is
+   * metres, a wifi fix is hundreds, an IP fix can be tens of kilometres. Zooming
+   * to street level on an IP fix and captioning the list "Nearest to you" states
+   * something we do not know. Zoom follows the radius, and the radius is drawn. */
+  function zoomForAccuracy(m) {
+    if (!m || m <= 0) return 11;
+    if (m <= 100) return 15;
+    if (m <= 500) return 13.5;
+    if (m <= 2000) return 12;
+    if (m <= 10000) return 10;
+    if (m <= 50000) return 8;
+    return 6;
+  }
+  /* Beyond this the fix locates a city, not a person, so distances built from it
+     are not worth presenting as "nearest". */
+  var COARSE_FIX_M = 25000;
+
   $('tNear').addEventListener('click', function () {
     if (!navigator.geolocation) { status('Your browser will not share a location', false, 3000); return; }
+    if (!window.isSecureContext) {
+      status('Location needs a secure connection (https)', false, 4000);
+      return;
+    }
     status('Finding you…', true);
     navigator.geolocation.getCurrentPosition(function (pos) {
       var accuracy = Math.round(pos.coords.accuracy || 0);
-      here = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: accuracy };
-      status(accuracy ? 'Location found (±' + fmtN(accuracy) + ' m)' : 'Location found', false, 3200);
-      map.easeTo({ center: [here.lng, here.lat], zoom: 10.5, duration: 1400 });
-      if (!map.getSource('me')) {
-        map.addSource('me', { type: 'geojson', data: { type: 'Point', coordinates: [here.lng, here.lat] } });
-        map.addLayer({
-          id: 'me-halo', type: 'circle', source: 'me',
-          paint: {
-            'circle-radius': 16, 'circle-color': COLOURS[IDX.church],
-            'circle-opacity': 0.16, 'circle-stroke-width': 1,
-            'circle-stroke-color': COLOURS[IDX.church], 'circle-stroke-opacity': 0.4
-          }
-        });
-        map.addLayer({
-          id: 'me-dot', type: 'circle', source: 'me',
-          paint: {
-            'circle-radius': 5, 'circle-color': COLOURS[IDX.church],
-            'circle-stroke-width': 2, 'circle-stroke-color': '#fff'
-          }
-        });
-      } else {
-        map.getSource('me').setData({ type: 'Point', coordinates: [here.lng, here.lat] });
-      }
+      here = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: accuracy, coarse: accuracy > COARSE_FIX_M };
+      status(accuracy
+        ? (here.coarse ? 'Approximate area found (±' + km(accuracy / 1000) + ')'
+                       : 'Location found (±' + fmtN(accuracy) + ' m)')
+        : 'Location found', false, 3600);
+      map.easeTo({ center: [here.lng, here.lat], zoom: zoomForAccuracy(accuracy), duration: 1400 });
+      drawHere();
       showAll();
-    }, function () {
-      status('Could not get your location', false, 3200);
+    }, function (err) {
+      // One message for every failure taught the user nothing. Permission denied
+      // is recoverable by them; a timeout is worth retrying; neither is "unknown".
+      var code = err && err.code;
+      var msg = code === 1 ? 'Location permission denied — you can allow it in your browser settings'
+        : code === 2 ? 'Your location is unavailable right now'
+        : code === 3 ? 'Finding you took too long — try again'
+        : 'Could not get your location';
+      status(msg, false, 4800);
     }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
   });
+
+  /* The accuracy radius is drawn to scale in metres, so a coarse fix visibly
+     covers the neighbourhood it actually represents instead of a tidy dot. */
+  function drawHere() {
+    if (!here) return;
+    var pt = { type: 'Point', coordinates: [here.lng, here.lat] };
+    if (!map.getSource('me')) {
+      map.addSource('me', { type: 'geojson', data: pt });
+      map.addLayer({
+        id: 'me-acc', type: 'circle', source: 'me',
+        paint: {
+          'circle-color': COLOURS[IDX.church], 'circle-opacity': 0.12,
+          'circle-stroke-width': 1, 'circle-stroke-color': COLOURS[IDX.church],
+          'circle-stroke-opacity': 0.35,
+          'circle-radius': accuracyRadiusExpr()
+        }
+      });
+      map.addLayer({
+        id: 'me-dot', type: 'circle', source: 'me',
+        paint: {
+          'circle-radius': 5, 'circle-color': COLOURS[IDX.church],
+          'circle-stroke-width': 2, 'circle-stroke-color': '#fff'
+        }
+      });
+    } else {
+      map.getSource('me').setData(pt);
+      try { map.setPaintProperty('me-acc', 'circle-radius', accuracyRadiusExpr()); } catch (e) {}
+    }
+  }
+  /* metres -> pixels at this latitude, recomputed per zoom by the interpolation */
+  function accuracyRadiusExpr() {
+    var m = (here && here.accuracy) || 0;
+    if (!m) return 16;
+    var metresPerPx = function (z) {
+      return 156543.03392 * Math.cos(here.lat * Math.PI / 180) / Math.pow(2, z);
+    };
+    var stops = [];
+    for (var z = 1; z <= 20; z += 1) stops.push(z, Math.min(m / metresPerPx(z), 1400));
+    return ['interpolate', ['linear'], ['zoom']].concat(stops);
+  }
 
   $('tShare').addEventListener('click', function () {
     var url = location.href;
@@ -1269,7 +1368,7 @@
   /* keyboard: / focuses search, Escape backs out */
   document.addEventListener('keydown', function (e) {
     if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
-    if (e.key === 'Escape') { hideTip(); clearSpider(); if (listState.mode !== 'all') showAll(); }
+    if (e.key === 'Escape') { hideTip(); clearSpider(); if (listState.mode !== 'all') { showAll(); writeUrl(); } }
   });
 
   /* theme changes must repaint the basemap, not just the chrome */

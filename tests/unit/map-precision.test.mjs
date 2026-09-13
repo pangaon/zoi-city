@@ -145,3 +145,113 @@ test('directions destinations are url-encoded', () => {
   assert.ok(!/[ ]/.test(url), `unencoded space in ${url}`);
   assert.ok(url.startsWith('https://www.google.com/maps/dir/?api=1&destination='));
 });
+
+/* ---------- geolocation accuracy ---------- */
+
+const geo = new Function(
+  lift('function zoomForAccuracy(', "$('tNear')") +
+  'return { zoomForAccuracy, COARSE_FIX_M };'
+)();
+
+test('zoom follows the accuracy radius', () => {
+  // A browser fix ranges from metres (GPS) to tens of kilometres (IP). Zooming
+  // to street level on an IP fix frames a block the user is probably not on.
+  const { zoomForAccuracy } = geo;
+  const metres = [10, 100, 500, 2000, 10000, 50000, 200000];
+  const zooms = metres.map(zoomForAccuracy);
+  for (let i = 1; i < zooms.length; i++) {
+    assert.ok(zooms[i] <= zooms[i - 1],
+      `zoom must not increase as accuracy worsens: ${metres[i - 1]}m->${zooms[i - 1]}, ${metres[i]}m->${zooms[i]}`);
+  }
+  assert.ok(zoomForAccuracy(10) >= 15, 'a GPS fix should frame the street');
+  assert.ok(zoomForAccuracy(200000) <= 7, 'a 200km fix must not frame a street');
+});
+
+test('a missing or zero accuracy does not pretend to be precise', () => {
+  const { zoomForAccuracy } = geo;
+  for (const v of [0, null, undefined, -1]) {
+    const z = zoomForAccuracy(v);
+    assert.ok(z <= 11, `unknown accuracy framed at zoom ${z}`);
+  }
+});
+
+test('the coarse-fix threshold is a real-world city radius', () => {
+  // Above this the fix locates a city, not a person, so "nearest to you" and an
+  // exact distance both stop being supportable.
+  const { COARSE_FIX_M } = geo;
+  assert.ok(COARSE_FIX_M >= 5000 && COARSE_FIX_M <= 100000,
+    `implausible coarse threshold: ${COARSE_FIX_M}`);
+});
+
+/* ---------- source invariants ----------
+ * These assert against the file rather than the deployed page, so they gate the
+ * commit instead of reporting on it after release. */
+
+test('the map ships a directions affordance', () => {
+  // A visible marker must be actionable. Without this the map answers "where is
+  // it" but never "how do I get there", which was the reported gap.
+  assert.ok(/maps\/dir\/\?api=1&destination=/.test(src),
+    'no directions destination in explore/map');
+});
+
+test('the stale precision fallback copy is gone', () => {
+  assert.ok(/Location not verified/.test(src),
+    'unverified positions are not labelled');
+  assert.ok(!/Location precision unavailable/.test(src),
+    'stale fallback copy still present');
+});
+
+test('precision is never inferred from coordinate collisions', () => {
+  // The old heuristic read accuracy off how many pins shared a coordinate.
+  assert.ok(!/co\.length\s*>\s*2/.test(src),
+    'precision is being guessed from coincident pins');
+});
+
+test('a selected place is addressable in the url', () => {
+  // Without this a shared link restores the viewport but loses the listing.
+  assert.ok(/p\.set\('place'/.test(src), 'selected place is not written to the url');
+  assert.ok(/p\.get\('place'\)/.test(src), 'place param is not read back');
+});
+
+test('partial directory failures are counted, not swallowed', () => {
+  // Rendering 80% of the directory as though it were all of it is silent loss.
+  assert.ok(/failedPages\s*=/.test(src), 'failed pages are not tracked');
+});
+
+/* ---------- accent folding ---------- */
+
+const { fold } = new Function(lift('function fold(s) {', 'function nice(') + 'return { fold };')();
+
+test('latin diacritics fold so unaccented typing finds accented names', () => {
+  // The reported listing is "Meláni". Typing "melani" found nothing.
+  assert.equal(fold('Meláni'), fold('melani'));
+  assert.ok(fold('Meláni – Modern Greek Dining').includes(fold('melani')));
+  assert.equal(fold('Ãgean'), fold('agean'));
+});
+
+test('greek tonos folds so untoned typing finds toned names', () => {
+  // Greek speakers routinely omit the tonos; requiring it hides the directory.
+  assert.equal(fold('Μύκονος'), fold('μυκονος'));
+  assert.equal(fold('Αθήνα'), fold('αθηνα'));
+  assert.equal(fold('Θεσσαλονίκη'), fold('θεσσαλονικη'));
+});
+
+test('greek final sigma folds to sigma', () => {
+  // ς and σ are the same letter; which one you get depends on word position.
+  assert.equal(fold('Μύκονος'), fold('ΜΥΚΟΝΟΣ'));
+  assert.equal(fold('πατερας'), fold('πατεραΣ'));
+});
+
+test('folding is idempotent and total', () => {
+  for (const v of ['', null, undefined, 'plain', 'Μύκονος', 'Meláni', 123]) {
+    const once = fold(v);
+    assert.equal(fold(once), once, `not idempotent for ${JSON.stringify(v)}`);
+    assert.equal(typeof once, 'string');
+  }
+});
+
+test('folding does not collapse distinct words', () => {
+  // Over-folding would make search useless in the other direction.
+  assert.notEqual(fold('Meláni'), fold('Melissa'));
+  assert.notEqual(fold('Αθήνα'), fold('Πάτρα'));
+});
