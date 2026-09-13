@@ -101,7 +101,21 @@
   .m-row .m-meta{display:block}
   .m-row .m-nm{display:block;font-weight:600;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .m-row .m-wh{display:block;font-size:12px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-row .m-ad{display:block;font-size:12px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .m-row .m-km{display:block;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:2px}
+  /* Unverified coordinates are muted rather than dressed up as a precision
+     tier, so the eye reads them as missing information, not as a measurement. */
+  .m-unk{color:var(--mut);opacity:.75;font-style:italic}
+
+  .m-rowwrap{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+  .m-rowwrap .m-row{flex:1;border-bottom:none;min-width:0}
+  .m-dir{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    padding:0 13px;text-decoration:none;color:var(--acc);font-size:10.5px;font-weight:600;
+    border-left:1px solid var(--line);transition:background .14s var(--ease)}
+  .m-dir:hover,.m-dir:focus-visible{background:color-mix(in srgb,var(--acc) 12%,transparent);outline:none}
+  .m-dir:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .m-dir svg{width:17px;height:17px;fill:currentColor}
+  @media (max-width:520px){.m-dir span{display:none}.m-dir{padding:0 15px}}
   .m-empty{padding:34px 20px;text-align:center;color:var(--mut);font-size:13.5px;line-height:1.6}
   .m-panel footer{padding:9px 15px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);line-height:1.5}
 
@@ -351,12 +365,57 @@
   }
   function fmtN(n) { return n.toLocaleString(); }
   function km(d) { return d < 1 ? Math.round(d * 1000) + ' m' : (d < 20 ? d.toFixed(1) : Math.round(d)) + ' km'; }
-  function precisionLabel(p) {
-    var v = String((p && p.precision) || '').toLowerCase();
-    if (v === 'street' || v === 'address' || v === 'rooftop') return 'Street-level location';
-    if (v === 'city' || v === 'town' || v === 'locality') return 'Approximate city location';
-    if (v === 'region' || v === 'country') return 'Approximate regional location';
-    return p && p.approx ? 'Approximate location' : 'Location precision unavailable';
+
+  /* Geocoder precision vocabulary.
+   * Production carries ten distinct raw values, including the spelling pairs
+   * approx/approximate and neighborhood/neighbourhood. Anything unrecognised —
+   * and the 'none' bucket, which is the single largest — resolves to UNKNOWN
+   * rather than to "approximate", because "approximate" is itself a claim about
+   * accuracy. The 'none' bucket demonstrably contains pins on the wrong
+   * continent, so describing it as approximate overstates what we know. */
+  var PRECISION = {
+    rooftop:       { rank: 3, exact: true,  label: 'Exact location' },
+    address:       { rank: 3, exact: true,  label: 'Exact location' },
+    street:        { rank: 3, exact: true,  label: 'Street-level location' },
+    neighborhood:  { rank: 2, label: 'Neighbourhood-level location' },
+    neighbourhood: { rank: 2, label: 'Neighbourhood-level location' },
+    suburb:        { rank: 2, label: 'Neighbourhood-level location' },
+    locality:      { rank: 1, label: 'Approximate city location' },
+    town:          { rank: 1, label: 'Approximate city location' },
+    city:          { rank: 1, label: 'Approximate city location' },
+    region:        { rank: 0, label: 'Approximate regional location' },
+    country:       { rank: 0, label: 'Approximate regional location' },
+    approx:        { rank: 0, label: 'Approximate location' },
+    approximate:   { rank: 0, label: 'Approximate location' }
+  };
+  var UNKNOWN_PRECISION = { rank: -1, unknown: true, label: 'Location not verified' };
+  function precisionOf(p) {
+    return PRECISION[String((p && p.precision) || '').toLowerCase()] || UNKNOWN_PRECISION;
+  }
+  function precisionLabel(p) { return precisionOf(p).label; }
+
+  /* Directions route by postal address whenever we hold one, and only fall back
+   * to the pin when the pin is the better evidence. A city-centroid or
+   * unverified coordinate must never become a routing destination: the address
+   * on the record is exact even when the coordinate derived from it is not. */
+  function directionsUrl(p) {
+    if (!p) return null;
+    var dest = null;
+    if (p.addr) {
+      dest = [p.addr, p.city, p.country].filter(Boolean).join(', ');
+    } else if (precisionOf(p).exact) {
+      dest = p.lat + ',' + p.lng;
+    } else if (p.city) {
+      dest = [p.n, p.city, p.country].filter(Boolean).join(', ');
+    }
+    if (!dest) return null;
+    return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest);
+  }
+  function directionsBasis(p) {
+    if (!p) return '';
+    if (p.addr) return 'address';
+    if (precisionOf(p).exact) return 'pin';
+    return p.city ? 'name' : '';
   }
   function haversine(a, b, c, d) {
     var R = 6371, r = Math.PI / 180;
@@ -383,6 +442,7 @@
   var query = '';
   var here = null;                    // {lat,lng} once geolocated
   var selected = null;
+  var truncated = false;              // true when the page cap, not the data, ended the walk
   var map = null, ready = false;
   var clusterMarkers = {}, pinMarkers = {}, spider = [];
 
@@ -445,15 +505,19 @@
 
   async function loadData() {
     status('Reading the directory…', true);
+    var PAGE = 1000, CAP = 40000;
     var offsets = [];
-    for (var o = 0; o < 12000; o += 1000) offsets.push(o);
+    for (var o = 0; o < CAP; o += PAGE) offsets.push(o);
     var results = await Promise.all(offsets.map(function (off) {
-      return C.api.rpc('explore_geo', { p_limit: 1000, p_offset: off }, { auth: 'anon' })
+      return C.api.rpc('explore_geo', { p_limit: PAGE, p_offset: off }, { auth: 'anon' })
         .then(function (rows) { return { rows: rows || [], failed: false }; })
         .catch(function () { return { rows: [], failed: true }; });
     }));
     if (results.every(function (r) { return r.failed; })) throw new Error('directory unavailable');
     var pages = results.map(function (r) { return r.rows; });
+    /* A full last page means the cap, not the dataset, ended the walk. Say so
+       rather than silently dropping pins off the end of the map. */
+    truncated = pages.length && (pages[pages.length - 1] || []).length === PAGE;
     var seen = Object.create(null), out = [];
     pages.forEach(function (page) {
       (page || []).forEach(function (r) {
@@ -464,6 +528,7 @@
           i: out.length, s: r.slug, n: r.name, t: r.entity_type || 'business',
           city: r.city, country: r.country, cat: r.category_slug,
           lat: +r.lat, lng: +r.lng,
+          addr: r.address || null,
           precision: r.precision || r.geo_precision || (r._geo && r._geo.precision) || ''
         };
         p.hay = ((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
@@ -482,7 +547,12 @@
     });
     ALL.forEach(function (p) {
       p.co = at[p.lat.toFixed(5) + ',' + p.lng.toFixed(5)];
-      p.approx = p.precision ? p.precision !== 'street' : p.co.length > 2;
+      /* Precision is read, never inferred. Counting coincident pins to guess at
+         accuracy produced the old "Approximate location" label on records whose
+         precision was simply never recorded. */
+      var pr = precisionOf(p);
+      p.exact = pr.exact === true;
+      p.unknown = pr.unknown === true;
     });
     status('', false);
     return out;
@@ -797,6 +867,8 @@
     pop.setLngLat(lngLat).setHTML(
       '<div class="m-tipnm">' + esc(p.n) + '</div>' +
       '<div class="m-tipwh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</div>' +
+      (p.addr ? '<div class="m-tipwh">' + esc(p.addr) + '</div>' : '') +
+      '<div class="m-tipwh' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) + '</div>' +
       '<span class="m-tipgo">Open listing →</span>'
     ).addTo(map);
   }
@@ -807,12 +879,26 @@
     var i = IDX[p.t] || 0;
     var initial = (p.n || '?').trim().charAt(0).toUpperCase();
     var d = here ? haversine(here.lat, here.lng, p.lat, p.lng) : null;
-    return '<a class="m-row" href="' + href(p) + '" data-i="' + p.i + '">' +
+    var dir = directionsUrl(p);
+    var basis = directionsBasis(p);
+    var note = basis === 'address' ? 'Directions use the street address on file'
+      : basis === 'pin' ? 'Directions use the verified pin'
+      : basis === 'name' ? 'Directions search by name — the pin is not exact'
+      : '';
+    return '<div class="m-rowwrap">' +
+      '<a class="m-row" href="' + href(p) + '" data-i="' + p.i + '">' +
       '<span class="m-mark" style="background:' + COLOURS[i] + '">' + esc(initial) + '</span>' +
       '<span class="m-meta"><span class="m-nm">' + esc(p.n) + '</span>' +
       '<span class="m-wh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</span>' +
-      '<span class="m-km">' + esc(precisionLabel(p)) + (d != null ? ' · ' + km(d) + ' away' : '') + '</span>' +
-      '</span></a>';
+      (p.addr ? '<span class="m-ad">' + esc(p.addr) + '</span>' : '') +
+      '<span class="m-km' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) +
+        (d != null ? ' · ' + km(d) + ' away' : '') + '</span>' +
+      '</span></a>' +
+      (dir ? '<a class="m-dir" href="' + esc(dir) + '" target="_blank" rel="noopener noreferrer"' +
+        ' title="' + esc(note) + '" aria-label="Directions to ' + esc(p.n) + '. ' + esc(note) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4.5 20l7.5-4 7.5 4z"/></svg>' +
+        '<span>Directions</span></a>' : '') +
+      '</div>';
   }
 
   var listState = { items: [], shown: 0, mode: 'all' };
@@ -848,9 +934,18 @@
     $('pclose').hidden = false;
     $('panel').classList.remove('m-hidden');
     paint(true);
-    var approx = items.length > 2 && items[0] && items[0].approx;
-    $('pfoot').innerHTML = fmtN(items.length) + ' place' + (items.length === 1 ? '' : 's') +
-      (approx ? ' · positioned at the city, not the street address' : '');
+    /* Any stack of pins sharing a coordinate deserves an explanation, including
+       a stack of two — that is the common case for a duplicated record, and the
+       old "more than two" threshold hid it precisely when it mattered. */
+    var note = '';
+    if (items.length > 1) {
+      var unknown = items.filter(function (x) { return x.unknown; }).length;
+      var centroid = items.filter(function (x) { return !x.exact && !x.unknown; }).length;
+      if (unknown === items.length) note = ' · these coordinates are unverified';
+      else if (centroid + unknown === items.length) note = ' · positioned at the city, not the street address';
+      else if (unknown) note = ' · ' + fmtN(unknown) + ' unverified';
+    }
+    $('pfoot').innerHTML = fmtN(items.length) + ' place' + (items.length === 1 ? '' : 's') + note;
     if (lngLat) spiderfy(items, lngLat);
   }
 
@@ -876,11 +971,17 @@
 
   var totalListings = null;
   function coverageNote() {
+    var parts = [];
     if (totalListings && totalListings > ALL.length) {
-      return fmtN(ALL.length) + ' of ' + fmtN(totalListings) +
-        ' listings have coordinates. The rest are in <a href="/explore">Explore</a>.';
+      parts.push(fmtN(ALL.length) + ' of ' + fmtN(totalListings) +
+        ' listings have coordinates. The rest are in <a href="/explore">Explore</a>.');
+    } else {
+      parts.push(fmtN(ALL.length) + ' listings mapped.');
     }
-    return fmtN(ALL.length) + ' listings mapped.';
+    var unver = ALL.filter(function (p) { return p.unknown; }).length;
+    if (unver) parts.push(fmtN(unver) + ' have an unverified position.');
+    if (truncated) parts.push('Showing the first ' + fmtN(ALL.length) + ' only.');
+    return parts.join(' ');
   }
 
   function choose(p, keepSpider) {
