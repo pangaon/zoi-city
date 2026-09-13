@@ -1934,9 +1934,15 @@ function autoArrange(){
  renderCanvas();fitToScreen(true);toast('Tables auto-arranged into a grid');
 }
 function saveLayout(){
- openModal(`<div class="mhead"><div><h3>Save layout</h3><div class="sub">Name this floor plan to reuse it</div></div><button class="close" onclick="closeModal()">×</button></div>
+ openModal(`<div class="mhead"><div><h3>Save or Export layout</h3><div class="sub">Name this floor plan, export JSON, or save to workspace</div></div><button class="close" onclick="closeModal()">×</button></div>
  <div class="mbody"><div class="field"><label>Layout name</label><input id="lname" placeholder="e.g. Concert config" value="Layout ${Object.keys(savedLayouts).length+1}"></div>
- <button class="btn gold block" onclick="doSaveLayout()">Save floor plan</button></div>`);
+ <button class="btn gold block" style="margin-bottom:10px" onclick="doSaveLayout()">Save floor plan</button>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+  <button class="btn sm" onclick="exportLayoutJson()">📥 Export JSON</button>
+  <button class="btn sm" onclick="importLayoutJsonModal()">📤 Import JSON</button>
+ </div>
+ <button class="btn sm danger block" style="margin-top:10px" onclick="clearTableAssignmentsModal()">🧹 Reset all table assignments</button>
+ </div>`);
 }
 function doSaveLayout(){
   const n = $('#lname').value.trim() || ('Layout ' + (Object.keys(savedLayouts).length + 1));
@@ -1961,6 +1967,59 @@ function doSaveLayout(){
   } else {
     closeModal();go('floor');toast('Layout "'+n+'" saved');
   }
+}
+function exportLayoutJson(){
+ const data = {event:curEvent?curEvent.name:'Event', venue:floor.venue, els:floor.els, exportedAt:new Date().toISOString()};
+ const str = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data,null,2));
+ const a = document.createElement('a');
+ a.setAttribute("href", str);
+ a.setAttribute("download", (curEvent?curEvent.slug||'floor-plan':'floor-plan') + ".json");
+ document.body.appendChild(a); a.click(); a.remove();
+ toast('Floor plan JSON exported');
+}
+function importLayoutJsonModal(){
+ openModal(`<div class="mhead"><div><h3>Import Floor Plan JSON</h3><div class="sub">Upload or paste a JSON layout configuration</div></div><button class="close" onclick="closeModal()">×</button></div>
+ <div class="mbody">
+  <div class="field"><label>Select JSON File</label><input type="file" id="jsonFileInput" accept=".json,application/json"></div>
+  <div class="field"><label>Or paste JSON text</label><textarea id="jsonPasteInput" rows="5" placeholder="{ &quot;els&quot;: [...] }"></textarea></div>
+  <button class="btn gold block" onclick="doImportLayoutJson()">Apply Floor Plan</button>
+ </div>`);
+}
+function doImportLayoutJson(){
+ const file = $('#jsonFileInput').files[0];
+ const text = $('#jsonPasteInput').value.trim();
+ function apply(json){
+  try{
+   const parsed = typeof json==='string'?JSON.parse(json):json;
+   if(parsed && Array.isArray(parsed.els)){
+    floor.els = parsed.els;
+    if(parsed.venue) floor.venue = parsed.venue;
+    floor.sel.clear(); renderCanvas(); refreshProps(); fitToScreen(true);
+    closeModal(); toast('Floor plan imported successfully');
+   } else throw new Error('Invalid layout JSON structure');
+  }catch(e){ toast('Import failed: ' + e.message); }
+ }
+ if(file){
+  const rd = new FileReader(); rd.onload = e => apply(e.target.result); rd.readAsText(file);
+ } else if(text){ apply(text); } else { toast('Provide a file or paste JSON'); }
+}
+function clearTableAssignmentsModal(){
+ openModal(`<div class="mhead"><div><h3>Reset Table Assignments?</h3><div class="sub">This will reset status to available, clear guest names, and sponsor assignments across all tables.</div></div><button class="close" onclick="closeModal()">×</button></div>
+ <div class="mbody"><div class="attn pig"><svg viewBox="0 0 24 24"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg><div><div class="at">Warning: Irreversible action</div><div class="am">All guest party names, bottle orders, and table minimum statuses will be cleared.</div></div></div>
+ <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+  <button class="btn g" onclick="closeModal()">Cancel</button>
+  <button class="btn danger" onclick="doClearTableAssignments()">Yes, reset all</button>
+ </div></div>`);
+}
+function doClearTableAssignments(){
+ floor.els.forEach(el => {
+  if(!ELTYPES[el.t].struct){
+   el.status = 'available'; el.family = null; el.guestName = null;
+   el.sponsorname = null; el.sponsorlogo = null; el.meals = null;
+   el.bottle = 0; el.petala = 0;
+  }
+ });
+ closeModal(); renderCanvas(); refreshProps(); toast('Table assignments reset');
 }
 function loadLayout(n){
  if(!n){defaultLayout();renderCanvas();refreshProps();fitToScreen(true);return;}

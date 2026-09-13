@@ -199,10 +199,11 @@ footer a:hover{color:var(--tx)}
   <div class="clayout">
     <aside class="cside" id="cside"></aside>
     <div>
-      <div class="ffilter" id="ffilter">
+      <div class="ffilter" id="ffilter" style="align-items:center">
         <button class="fbtn on" data-f="all">All</button>
         <button class="fbtn" data-f="tagged">Tagged a place</button>
         <button class="fbtn" data-f="mine">Mine</button>
+        <input id="feed-search" placeholder="Search feed..." style="margin-left:auto;background:var(--bg2);border:1px solid var(--line);border-radius:20px;padding:6px 12px;font-size:12.5px;color:var(--tx);outline:none;width:150px" oninput="FEED_QUERY=this.value.trim().toLowerCase();renderFeed()" />
       </div>
       <div class="feed" id="feed"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
     </div>
@@ -219,7 +220,7 @@ footer a:hover{color:var(--tx)}
 <script>
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
-let AUTH=null, TAG=null, POSTS=[], FEED_FILTER='all', NAMEDAYS=[];
+let AUTH=null, TAG=null, POSTS=[], FEED_FILTER='all', FEED_QUERY='', NAMEDAYS=[];
 
 function fillPrompt(txt){
   const c=document.getElementById('c-body');
@@ -379,6 +380,7 @@ function postCard(p){
   return '<div class="post" id="post-'+p.id+'">'+
     '<div class="phead"><div class="ava">'+avatarFor(p.author)+'</div>'+
       '<div class="pwho"><b>'+esc(p.author)+'</b><span>'+relTime(p.created_at)+loc+'</span></div>'+
+      '<button class="pact" style="margin-left:auto;padding:3px 8px" onclick="sharePost(\''+p.id+'\')">🔗 Share</button>'+
       (p.mine?'<button class="pdel" onclick="delPost(\''+p.id+'\')">Delete</button>':'')+
     '</div>'+
     '<div class="pbody">'+esc(p.body)+'</div>'+
@@ -390,6 +392,12 @@ function postCard(p){
     '<div class="cmts" id="cmts-'+p.id+'"><div id="cl-'+p.id+'"></div>'+
       '<div class="cmtrow"><input id="ci-'+p.id+'" maxlength="500" placeholder="Add a comment…" onkeydown="if(event.key===\'Enter\')sendCmt(\''+p.id+'\')"/><button class="btn g" onclick="sendCmt(\''+p.id+'\')">Reply</button></div>'+
     '</div></div>';
+}
+function sharePost(id){
+  const url = location.origin + '/community#post-' + id;
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(()=>toast('Post link copied to clipboard')).catch(()=>toast('Post link: ' + url));
+  } else toast('Post link: ' + url);
 }
 async function refreshFeed(){
   try{
@@ -406,9 +414,17 @@ async function refreshFeed(){
    loaded. No "following" filter: nothing in the backend records who follows whom.
    No photo filter: feed_post accepts body/listing/nameday only — there is no media. */
 function visiblePosts(){
-  if(FEED_FILTER==='tagged') return POSTS.filter(p=>p&&p.listing_name);
-  if(FEED_FILTER==='mine')   return POSTS.filter(p=>p&&p.mine);
-  return POSTS;
+  let rows = POSTS;
+  if(FEED_FILTER==='tagged') rows = rows.filter(p=>p&&p.listing_name);
+  else if(FEED_FILTER==='mine') rows = rows.filter(p=>p&&p.mine);
+  if(FEED_QUERY){
+    rows = rows.filter(p => p && (
+      (p.body && p.body.toLowerCase().includes(FEED_QUERY)) ||
+      (p.author && p.author.toLowerCase().includes(FEED_QUERY)) ||
+      (p.listing_name && p.listing_name.toLowerCase().includes(FEED_QUERY))
+    ));
+  }
+  return rows;
 }
 function renderFeed(){
   const el=document.getElementById('feed');

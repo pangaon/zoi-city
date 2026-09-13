@@ -204,6 +204,8 @@ footer a:hover{color:var(--tx)}
     <select class="city" id="country-sel" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
     <select class="city" id="sort-sel" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
     <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
+    <button class="mapcta" style="color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)" onclick="randomGreekSpot()">🎲 Surprise Spot</button>
+    <button class="mapcta" id="clear-filters-btn" style="display:none;color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)" onclick="clearExploreFilters()">✕ Clear Filters</button>
     <a class="mapcta" href="/explore/map">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
       See it on the map
@@ -475,6 +477,9 @@ async function runSearch(reset){
   if(ST.busy) return; ST.busy=true;
   if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML=new Array(6).fill('<div class="skel"></div>').join(''); }
   document.getElementById('res-mode').textContent=ST.q?('\u201c'+ST.q+'\u201d'):'';
+  const hasFilters = !!(ST.q || ST.type || ST.city || ST.country || ST.sort);
+  const clrBtn = document.getElementById('clear-filters-btn');
+  if(clrBtn) clrBtn.style.display = hasFilters ? 'inline-flex' : 'none';
   if(reset) writeUrl(true);
   try{
     const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:ST.city||null,p_country:ST.country||null,p_limit:24,p_offset:ST.offset},true);
@@ -572,6 +577,25 @@ function quickView(i){
 function closeQV(){ const qv=document.getElementById('qv'); if(qv) qv.hidden=true; }
 
 function loadMore(){ ST.offset+=24; runSearch(false); }
+
+function clearExploreFilters(){
+  ST.q=''; ST.type=''; ST.city=''; ST.country=''; ST.sort='';
+  const qEl=document.getElementById('q'); if(qEl) qEl.value='';
+  const cEl=document.getElementById('city-sel'); if(cEl) cEl.value='';
+  const coEl=document.getElementById('country-sel'); if(coEl) coEl.value='';
+  const sEl=document.getElementById('sort-sel'); if(sEl) sEl.value='';
+  const clrBtn=document.getElementById('clear-filters-btn'); if(clrBtn) clrBtn.style.display='none';
+  pillsRender();
+  runSearch(true);
+  toast('Filters cleared');
+}
+
+function randomGreekSpot(){
+  if(!ST.rows || !ST.rows.length){ toast('Loading directory spots...'); return; }
+  const idx = Math.floor(Math.random() * ST.rows.length);
+  quickView(idx);
+  toast('Found a surprise Greek spot!');
+}
 
 async function claim(slug,btn){
   const tk=authToken();

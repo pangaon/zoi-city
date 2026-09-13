@@ -17,11 +17,28 @@
   function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});}
   function slug(){return decodeURIComponent(location.pathname.replace(/^\/e\/?/,'').replace(/\/$/,''));}
   function date(s){if(!s)return '';try{return new Date(s).toLocaleString(undefined,{dateStyle:'long',timeStyle:'short'});}catch(e){return s;}}
+  function downloadIcs(e){
+    var dt = e.start_date ? new Date(e.start_date) : new Date();
+    var fmtDt = dt.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
+    var ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Zoi City Events//EN','BEGIN:VEVENT',
+      'SUMMARY:'+(e.brand_name||e.name),'DESCRIPTION:'+(e.description||'Event on Zoi'),
+      'DTSTART:'+fmtDt,'URL:'+location.href,'END:VEVENT','END:VCALENDAR'].join('\r\n');
+    var blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = (e.slug||'event') + '.ics'; document.body.appendChild(a); a.click(); a.remove();
+  }
+  window.downloadEventIcs = null;
   fetch(BASE+'/rest/v1/rpc/event_public_get',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_slug:slug()})})
     .then(function(r){return r.json();}).then(function(r){
       if(!r||!r.ok||!r.event){app.innerHTML='<p class="notice error">This event is not published or could not be found.</p>';return;}
       var e=r.event;document.title=e.name+' · Zoi';
-      app.innerHTML='<h1>'+esc(e.brand_name||e.name)+'</h1>'+(e.description?'<p>'+esc(e.description)+'</p>':'')+'<div class="meta">'+(e.start_date?'<div><b>When</b><br>'+esc(date(e.start_date))+'</div>':'')+'<div><b>Event type</b><br>'+esc(e.mode)+'</div>'+(e.capacity?'<div><b>Capacity</b><br>'+esc(e.capacity)+'</div>':'')+'</div><p>Tickets, reservations, attendees, and check-in are managed securely in Zoi Tickets.</p><a class="btn" href="/tickets">Open Zoi Tickets</a>';
+      window.downloadEventIcs = function(){ downloadIcs(e); };
+      app.innerHTML='<h1>'+esc(e.brand_name||e.name)+'</h1>'+(e.description?'<p>'+esc(e.description)+'</p>':'')
+        +'<div class="meta">'+(e.start_date?'<div><b>When</b><br>'+esc(date(e.start_date))+'</div>':'')
+        +'<div><b>Event type</b><br>'+esc(e.mode)+'</div>'+(e.capacity?'<div><b>Capacity</b><br>'+esc(e.capacity)+'</div>':'')+'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px"><a class="btn" href="/tickets">Open Zoi Tickets</a>'
+        +'<button class="btn" style="background:transparent;border:1px solid var(--line);color:var(--text)" onclick="downloadEventIcs()">📅 Add to Calendar (.ics)</button></div>'
+        +'<p>Tickets, reservations, attendees, and check-in are managed securely in Zoi Tickets.</p>';
     }).catch(function(){app.innerHTML='<p class="notice error">Event details are temporarily unavailable. Please try again.</p>';});
 })();
 </script>

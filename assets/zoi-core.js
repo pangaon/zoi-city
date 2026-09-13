@@ -207,6 +207,33 @@
     }
   };
 
+  /* ---- Modal Focus Trap (Accessibility Helper) ---- */
+  var _activeFocusTrap = null;
+  function trapFocus(container) {
+    if (!container) return;
+    releaseFocus();
+    var focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    if (!focusables.length) return;
+    var first = focusables[0], last = focusables[focusables.length - 1];
+    first.focus();
+    function handleTab(e) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+    container.addEventListener('keydown', handleTab);
+    _activeFocusTrap = { container: container, handler: handleTab };
+  }
+  function releaseFocus() {
+    if (_activeFocusTrap && _activeFocusTrap.container && _activeFocusTrap.handler) {
+      _activeFocusTrap.container.removeEventListener('keydown', _activeFocusTrap.handler);
+      _activeFocusTrap = null;
+    }
+  }
+
   var ZoiCore = {
     version: '1.0.0',
     BASE: BASE,
@@ -218,7 +245,9 @@
     theme: theme,
     auth: { load: authLoad, save: authSave, clear: authClear, token: token, ensureFresh: ensureFresh, isSignedIn: isSignedIn },
     api: { rpc: rpc },
-    otp: otp
+    otp: otp,
+    trapFocus: trapFocus,
+    releaseFocus: releaseFocus
   };
 
   global.ZoiCore = ZoiCore;

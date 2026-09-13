@@ -48,6 +48,27 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 ## P2: Product consolidation & Design Audit
 
 - [x] Streamline `index.html` main page: eliminate duplicate search bars, organize above-the-fold logic, group offerings into 4 canonical ecosystem pillars, and enforce Mediterranean Blue CTA button branding.
+- [x] 20 New User-Journey & Logic Enhancements across Ecosystem:
+  1. Floor Plan JSON Export & File Download (`apps/event-os`).
+  2. Floor Plan JSON Import modal with File Upload and JSON text parsing (`apps/event-os`).
+  3. 1-Click Table Assignment Reset with safety confirmation modal (`apps/event-os`).
+  4. Guided Sponsor Logo Upload with requirements guidance, placement (center/top/full), and scale controls (`apps/event-os`).
+  5. 2D & 3D Sponsor Logo & Party Name overlay rendering on tables (`apps/event-os`).
+  6. Table Renaming, Party Assignment, and Sponsor Deck Builder (`apps/event-os`).
+  7. Door Mode audio/sound feedback (synthesized Web Audio beeps for scan/duplicate/error) (`assets/tickets/door.js`).
+  8. Ticket Tier Capacity alert indicators and warning badges (`tickets/index.html`).
+  9. 1-Click Copy Public Event Link button with toast confirmation (`tickets/index.html`).
+  10. Community Feed Live Keyword Filter & Search (`community/index.html`).
+  11. Community Feed 1-Click Post Share & Permalink copy (`community/index.html`).
+  12. Real-time Comment Counter & Sidebar Ranking sync upon reply submission (`community/index.html`).
+  13. Nameday Quick-Wish Auto-Fill prompt button (`community/index.html`).
+  14. Random Greek Spot "Surprise Spot" serendipity discovery button (`explore/index.html`).
+  15. Active Filter Count badge & "Clear All Filters" button (`explore/index.html`).
+  16. "Locate Near Me" Geolocation API integration with permission handling (`explore/map/index.html`).
+  17. Vector Map Category Quick Toggles (`explore/map/index.html`).
+  18. Social Composer Local Draft Auto-Save indicator & Draft Recovery (`social/index.html`).
+  19. Public Event `.ics` Calendar Download generator (`e/index.html`).
+  20. High-contrast `:focus-visible` focus rings across theme tokens for WCAG AA compliance (`assets/zoi-theme.css`).
 - [ ] Keep `/tickets` canonical for owned event operations; label retained Event OS preview areas truthfully until the journey above is complete.
 - [ ] Retire or quarantine demo-only `/apps/tickets-studio/`, `/apps/business-pro/`, and `/apps/intelligence/` surfaces according to `docs/CONSOLIDATION.md`.
 - [ ] Preserve the useful Event OS floor-builder work while removing fabricated metrics and fake success actions.
