@@ -902,6 +902,7 @@ async function fetchRealEvents(){
 ============================================================ */
 let realEventOSData={workspace:null,events:[],loading:false};
 let eventTeam={members:[],loading:false,error:null};
+let eventAudit={entries:[],loading:false,error:null};
 function rpcJson(value){
   if(typeof value==='string'){try{return JSON.parse(value);}catch(e){return null;}}
   return value;
@@ -915,6 +916,16 @@ async function loadEventTeam(eventId,workspaceId){
     eventTeam.members=Array.isArray(members)?members:[];
   }catch(e){eventTeam.error='Team data unavailable';eventTeam.members=[];}
   finally{eventTeam.loading=false;if(typeof booted!=='undefined'&&booted&&typeof render==='function')render();}
+}
+async function loadEventAudit(eventId,workspaceId){
+  if(!eventId||!workspaceId||!window.ZoiCore)return;
+  eventAudit.loading=true;eventAudit.error=null;
+  try{
+    const result=await ZoiCore.api.rpc('event_audit_list',{p_event_id:eventId,p_workspace:workspaceId},{auth:'require'});
+    const entries=rpcJson(result&&result.entries);
+    eventAudit.entries=Array.isArray(entries)?entries:[];
+  }catch(e){eventAudit.error='Audit history unavailable';eventAudit.entries=[];}
+  finally{eventAudit.loading=false;if(typeof booted!=='undefined'&&booted&&typeof render==='function')render();}
 }
 async function loadRealEventOSData(){
   if(!window.ZoiCore || realEventOSData.loading) return;
@@ -955,6 +966,7 @@ async function loadRealEventOSData(){
         EVENTS.push(...osEvents);
         curEvent = EVENTS[0];
         loadEventTeam(curEvent.id,ws.id);
+        loadEventAudit(curEvent.id,ws.id);
         // Re-render if app is booted
         if(typeof booted !== 'undefined' && booted && typeof render === 'function'){
           render();
@@ -1187,6 +1199,7 @@ function selectEvent(id){curEvent=EVENTS.find(e=>e.id===id);closeModal();
  // re-seed the floor for the new event's mode so floor/3D/box reflect it
  try{defaultLayout(MODECFG[curEvent.mode]?curEvent.mode:'concert');floor.venue.name=curEvent.venue.split(' — ')[0]||floor.venue.name;}catch(e){}
  if(curEvent&&curEvent.real)loadEventTeam(curEvent.id,curEvent.workspace_id);
+ if(curEvent&&curEvent.real)loadEventAudit(curEvent.id,curEvent.workspace_id);
  go(cur||'dash');
  toast('Switched to '+curEvent.name.split(' feat')[0]);}
 
@@ -3128,7 +3141,8 @@ function viewSettings(){
   <div class="sect"><h2>Team &amp; roles</h2><span class="lnk" onclick="inviteTeam()">+ Invite</span></div>
   <div class="card glass stag">
    ${!curEvent.real?'<div class="attn amb"><div><div class="at">Demo event</div><div class="am">Team changes are available after you open an owned event from your workspace.</div></div></div>':eventTeam.loading?'<div class="am">Loading workspace team…</div>':eventTeam.error?`<div class="attn amb"><div><div class="at">${eventTeam.error}</div><div class="am">Retry by switching events or refreshing the page.</div></div></div>`:eventTeam.members.length?eventTeam.members.map(t=>`<div class="grow" style="cursor:default"><div class="gav" style="background:#0A4D8C">${initials(t.name)}</div><div><div class="gn">${esc(t.name)}</div><div class="gm">${esc(t.role.replace('_',' / '))}</div></div><div class="gright"><span class="pill mut">Limited</span></div></div>`).join(''):'<div class="am">No team members have been invited to this event yet.</div>'}
-  </div>`;
+  </div>
+  ${curEvent.real?`<div class="sect"><h2>Audit history</h2><span class="lnk" onclick="loadEventAudit(curEvent.id,curEvent.workspace_id)">Refresh</span></div><div class="card glass stag">${eventAudit.loading?'<div class="am">Loading audit history…</div>':eventAudit.error?`<div class="attn amb"><div><div class="at">${eventAudit.error}</div><div class="am">Try refreshing the history.</div></div></div>`:eventAudit.entries.length?eventAudit.entries.map(a=>`<div class="grow" style="cursor:default"><div class="gav" style="background:#0A4D8C">✓</div><div><div class="gn">${esc(a.action.replaceAll('_',' '))}</div><div class="gm">${esc(new Date(a.created_at).toLocaleString())}</div></div></div>`).join(''):'<div class="am">No recorded changes yet.</div>'}</div>`:''}`;
 }
 async function saveEventSettings(){
  const name=$('#eventName').value.trim(),start=$('#eventStart').value,capacity=Number($('#eventCapacity').value);

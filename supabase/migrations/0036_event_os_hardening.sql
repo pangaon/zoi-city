@@ -195,7 +195,7 @@ BEGIN
   IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
   IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
   SELECT COALESCE(json_agg(row_to_json(a) ORDER BY a.created_at DESC), '[]'::json) INTO v_rows
-    FROM (SELECT action, details, created_at FROM public.event_audit_log WHERE event_id = p_event_id AND workspace_id = p_workspace LIMIT 100) a;
+    FROM (SELECT action, details, created_at FROM public.event_audit_log WHERE event_id = p_event_id AND workspace_id = p_workspace ORDER BY created_at DESC LIMIT 100) a;
   RETURN json_build_object('ok', true, 'entries', v_rows);
 END$function$;
 
