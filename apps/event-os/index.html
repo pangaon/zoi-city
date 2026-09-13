@@ -1395,18 +1395,27 @@ function elHTML(el){
  }
  let inner=el.name;
  if(s.struct){inner=`<span style="font-size:10px;letter-spacing:.1em;text-transform:uppercase;opacity:.9">${esc(el.name)}${s.vendor&&el.vendor?'<br><small style="font-size:8px;opacity:.75">'+esc(el.vendor)+'</small>':''}</span>`;}
- else inner=`<span>${esc(el.name)}${el.seats?'<br><small style="font-size:8px;opacity:.7;font-weight:600">'+el.seats+' seats</small>':''}</span>`;
+ else inner=`<span>${esc(el.name)}${el.family?'<br><small style="font-size:8.5px;color:var(--gold-soft);font-weight:700">'+esc(el.family)+'</small>':''}${el.seats?'<br><small style="font-size:8px;opacity:.7;font-weight:600">'+el.seats+' seats</small>':''}</span>`;
  const structBg=el.t==='stage'?'linear-gradient(150deg,#3a2a4a,#241a30)':el.t==='dance'?'repeating-linear-gradient(45deg,#11283a,#11283a 10px,#0e2233 10px,#0e2233 20px)':el.t==='bar'?'linear-gradient(150deg,#2a3540,#1a242e)':el.t==='foodtruck'?'linear-gradient(150deg,#3a3320,#241f10)':el.t==='zone'?'repeating-linear-gradient(-45deg,rgba(31,158,201,.07),rgba(31,158,201,.07) 12px,transparent 12px,transparent 24px)':'linear-gradient(150deg,#1b3548,#13283a)';
  const zoneBorder=el.t==='zone'?'border-style:dashed;border-color:rgba(31,158,201,.5);':'';
  const radius=isRound?'50%':el.t==='couch'?'14px 14px 5px 5px':'10px';
  const shapeStyle=s.struct?`background:${structBg};border-radius:${radius};${zoneBorder}`:`border-radius:${radius};`;
  const lock=el.fixture?'<div class="lockbadge"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>':'';
+ let logoOverlay = '';
+ if(el.sponsorlogo){
+  const scale = el.sponsorscale || 1;
+  const pos = el.sponsorpos || 'center';
+  const posCss = pos === 'top' ? 'top:3px;left:50%;transform:translateX(-50%) scale('+scale+');max-height:40%;'
+               : pos === 'full' ? 'inset:3px;width:calc(100% - 6px);height:calc(100% - 6px);opacity:.85;'
+               : 'top:50%;left:50%;transform:translate(-50%,-50%) scale('+scale+');max-height:80%;';
+  logoOverlay = `<img class="el-sponsor-img" src="${el.sponsorlogo}" alt="Sponsor logo" style="position:absolute;max-width:85%;object-fit:contain;pointer-events:none;z-index:2;${posCss}" />`;
+ }
  let flags='';
  if(el.sponsorname)flags+=`<div class="sponsorflag" style="background:linear-gradient(135deg,var(--gold),var(--gold-soft))">★ ${esc(el.sponsorname)}</div>`;
  if(!s.struct&&el.min)flags+=`<div class="minflag">min ${fmt(el.min)}${el.pledge?' · pledged '+fmt(el.pledge):''}</div>`;
  else if(el.pledge)flags+=`<div class="minflag">pledged ${fmt(el.pledge)}</div>`;
  return `<div class="el st-${el.status} ${sel} ${el.fixture?'fixture':''}" data-id="${el.id}" style="left:${el.x}px;top:${el.y}px;width:${el.w}px;height:${el.h}px;transform:rotate(${el.rot}deg)">
-   ${lounge}<div class="shape" style="${shapeStyle}">${inner}</div>
+   ${lounge}<div class="shape" style="${shapeStyle}">${logoOverlay}${inner}</div>
    <div class="seats">${seatsHtml}</div>${lock}${flags}
   </div>`;
 }
@@ -1498,7 +1507,7 @@ function propsFor(){
     <button class="btn sm block" onclick="toggleLock(${el.id})" style="${el.fixture?'border-color:rgba(217,184,115,.4);color:var(--gold-soft)':''}">
      <svg viewBox="0 0 24 24">${el.fixture?'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>':'<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-1.5"/>'}</svg>
      ${el.fixture?'Locked — tap to unlock':'Unlocked — tap to lock'}</button></div>`:''}
-  <div class="field"><label>${isVendor?'Booth label':'Label'}</label><input value="${esc(el.name)}" oninput="updEl(${el.id},'name',this.value)"></div>
+  <div class="field"><label>${isVendor?'Booth label':'Table / Element Label'}</label><input value="${esc(el.name)}" oninput="updEl(${el.id},'name',this.value)"></div>
   ${isVendor?`
    <div class="field"><label>Vendor name</label><input value="${esc(el.vendor||'')}" placeholder="e.g. Loukoumades" oninput="updEl(${el.id},'vendor',this.value)"></div>
    <div class="field"><label>Booth fee ($)</label><input type="number" min="0" step="25" value="${el.fee||0}" oninput="updEl(${el.id},'fee',+this.value||0)"></div>
@@ -1509,14 +1518,40 @@ function propsFor(){
     ${['sold','reserved','available'].map(k=>`<button class="statbtn ${el.status===k?'on':''}" onclick="updEl(${el.id},'status','${k}')"><span class="sw" style="background:${STATUS[k].c}"></span>${k==='sold'?'Sold':STATUS[k].l}</button>`).join('')}</div></div>
    <div class="quickrow" style="margin-top:10px"><button class="quickbtn sold" onclick="quickAction(${el.id},'sellbooth')"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 6"/></svg>Sell booth</button><button class="quickbtn resv" onclick="quickAction(${el.id},'reserve')"><svg viewBox="0 0 24 24"><path d="M12 7v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>Reserve</button></div>
   `:s.struct?'<div class="field"><label>Type</label><input value="Structural element" disabled></div>':`
+   <div class="field"><label>Guest / Party Name</label><input value="${esc(el.family||el.guestName||'')}" placeholder="e.g. Papadopoulos party" oninput="updEl(${el.id},'family',this.value)"></div>
    <div class="field"><label>Seats</label><input type="number" min="0" max="16" value="${el.seats}" oninput="updEl(${el.id},'seats',+this.value||0)"></div>
    ${fields.includes('tier')?`<div class="field"><label>Tier</label><select onchange="updEl(${el.id},'tier',this.value)">${Object.entries(TTIERS).map(([k,v])=>`<option value="${k}"${el.tier===k?' selected':''}>${v.name} · $${v.price}/seat</option>`).join('')}</select></div>`:''}
    ${fields.includes('min')?`<div class="field"><label>Table minimum ($)</label><input type="number" min="0" step="50" value="${el.min}" oninput="updEl(${el.id},'min',+this.value||0)"></div>`:''}
    ${fields.includes('member')?`<div class="statusrow" style="margin-bottom:13px"><button class="statbtn ${el.member?'on':''}" onclick="setMember(${el.id},true)">Members</button><button class="statbtn ${!el.member?'on':''}" onclick="setMember(${el.id},false)">Non-members</button></div>`:''}
-   ${fields.includes('family')?`<div class="field"><label>Family / party name</label><input value="${esc(el.family||'')}" placeholder="e.g. Papadopoulos" oninput="updEl(${el.id},'family',this.value)"></div>`:''}
    ${fields.includes('meal')?`<div class="field"><label>Meal choices (per-seat counts)</label>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${['Lamb','Fish','Veg','Kids'].map(ml=>`<div style="display:flex;align-items:center;gap:6px;background:rgba(0,0,0,.2);border:1px solid var(--line);border-radius:10px;padding:4px 7px"><span style="flex:1;font-size:11.5px">${ml}</span><button class="zb" style="width:22px;height:22px" onclick="mealStep(${el.id},'${ml}',-1)">−</button><span style="min-width:16px;text-align:center;font-weight:700">${(el.meals&&el.meals[ml])||0}</span><button class="zb" style="width:22px;height:22px" onclick="mealStep(${el.id},'${ml}',1)">+</button></div>`).join('')}</div></div>`:''}
-   ${fields.includes('sponsorname')?`<div class="field"><label>Sponsor name (names the table)</label><input value="${esc(el.sponsorname||'')}" placeholder="e.g. Krinos Foods" oninput="updEl(${el.id},'sponsorname',this.value)"></div>`:''}
+   <div class="field"><label>Sponsor Name</label><input value="${esc(el.sponsorname||'')}" placeholder="e.g. Krinos Foods" oninput="updEl(${el.id},'sponsorname',this.value)"></div>
+   <div class="field" style="background:rgba(0,0,0,.22);border:1px solid var(--line2);border-radius:12px;padding:12px;margin-top:10px">
+     <label style="color:var(--gold-soft);font-size:11px;font-weight:800;letter-spacing:.06em">★ Sponsor Logo &amp; Placement</label>
+     <div style="font-size:11px;color:var(--muted);margin:4px 0 8px;line-height:1.4"><b>Guidance:</b> Upload PNG, JPG, or SVG &middot; Under 1MB &middot; Transparent background recommended.</div>
+     <div class="glass2" style="padding:10px;border-radius:10px;border:1px dashed var(--glassline);text-align:center;cursor:pointer" onclick="document.getElementById('elLogoInput_${el.id}').click()">
+       ${el.sponsorlogo ? `<img src="${el.sponsorlogo}" alt="Sponsor logo" style="max-height:42px;max-width:100%;object-fit:contain;margin:0 auto 4px;display:block">` : `<svg viewBox="0 0 24 24" style="width:20px;height:20px;stroke:var(--gold-soft);fill:none;stroke-width:1.8;margin:0 auto 4px;display:block"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>`}
+       <span style="font-size:12px;font-weight:600;color:var(--tx)">${el.sponsorlogo ? 'Tap to replace logo' : 'Upload sponsor logo'}</span>
+     </div>
+     <input type="file" id="elLogoInput_${el.id}" accept="image/*" style="display:none" onchange="onElementLogoUpload(${el.id}, this)">
+     ${el.sponsorlogo ? `
+       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:8px">
+         <div>
+           <label style="font-size:10px">Placement</label>
+           <select style="padding:6px;font-size:11.5px" onchange="updEl(${el.id},'sponsorpos',this.value)">
+             <option value="center" ${el.sponsorpos==='center'||!el.sponsorpos?'selected':''}>Center Badge</option>
+             <option value="top" ${el.sponsorpos==='top'?'selected':''}>Top Crest</option>
+             <option value="full" ${el.sponsorpos==='full'?'selected':''}>Full Surface</option>
+           </select>
+         </div>
+         <div>
+           <label style="font-size:10px">Scale (${Math.round((el.sponsorscale||1)*100)}%)</label>
+           <input type="range" min="0.5" max="1.5" step="0.1" value="${el.sponsorscale||1}" oninput="updEl(${el.id},'sponsorscale',+this.value)">
+         </div>
+       </div>
+       <button class="btn sm" style="margin-top:8px;width:100%" onclick="removeElementLogo(${el.id})">Remove sponsor logo</button>
+     ` : ''}
+   </div>
    ${fields.includes('pledge')?`<div class="field"><label>Pledges raised at table ($)</label><input type="number" min="0" step="50" value="${el.pledge||0}" oninput="updEl(${el.id},'pledge',+this.value||0)"></div>`:''}
    ${fields.includes('bottle')?`<div class="field"><label>Bottle service + πέταλα pre-order</label>
      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
@@ -1967,19 +2002,66 @@ function loadLayout(n){
    floor.sel.clear();renderCanvas();refreshProps();fitToScreen(true);toast('Loaded "'+n+'"');
  }
 }
+function onElementLogoUpload(id, input){
+ const f = input.files && input.files[0]; if(!f) return;
+ if(f.size > 1000000){ toast('Logo too large — please upload an image under 1MB'); return; }
+ const rd = new FileReader();
+ rd.onload = e => {
+  const el = floor.els.find(x => x.id === id); if(!el) return;
+  el.sponsorlogo = e.target.result;
+  if(!el.sponsorpos) el.sponsorpos = 'center';
+  if(!el.sponsorscale) el.sponsorscale = 1;
+  renderCanvas(); refreshProps();
+  toast('Sponsor logo applied to ' + el.name);
+ };
+ rd.readAsDataURL(f);
+}
+
+function removeElementLogo(id){
+ const el = floor.els.find(x => x.id === id); if(!el) return;
+ el.sponsorlogo = null;
+ renderCanvas(); refreshProps();
+ toast('Sponsor logo removed');
+}
+
 function assignTable(id){
- const e=floor.els.find(x=>x.id===id);
- openModal(`<div class="mhead"><div><h3>Assign ${esc(e.name)}</h3><div class="sub">${e.seats} seats · ${fmt(e.min)} minimum spend</div></div><button class="close" onclick="closeModal()">×</button></div>
+ const e=floor.els.find(x=>x.id===id); if(!e) return;
+ openModal(`<div class="mhead"><div><h3>Assign &amp; Brand ${esc(e.name)}</h3><div class="sub">${e.seats} seats · ${fmt(e.min)} minimum spend</div></div><button class="close" onclick="closeModal()">×</button></div>
  <div class="mbody">
-  <div class="field"><label>Guest / party name</label><input id="atName" placeholder="e.g. Papadopoulos party"></div>
-  <div class="field"><label>Status</label><select id="atStat"><option value="reserved">Reserved (deposit)</option><option value="sold">Sold (paid in full)</option><option value="vip">VIP hold</option></select></div>
+  <div class="field"><label>Table / Element Label</label><input id="atLabel" value="${esc(e.name)}" placeholder="e.g. Table 12"></div>
+  <div class="field"><label>Guest / Party Name</label><input id="atName" value="${esc(e.family||e.guestName||'')}" placeholder="e.g. Papadopoulos party"></div>
+  <div class="field"><label>Status</label><select id="atStat">
+    <option value="reserved" ${e.status==='reserved'?'selected':''}>Reserved (deposit)</option>
+    <option value="sold" ${e.status==='sold'?'selected':''}>Sold (paid in full)</option>
+    <option value="vip" ${e.status==='vip'?'selected':''}>VIP hold</option>
+    <option value="available" ${e.status==='available'?'selected':''}>Available</option>
+  </select></div>
+  <div class="field"><label>Sponsor Name</label><input id="atSponsor" value="${esc(e.sponsorname||'')}" placeholder="e.g. Krinos Foods"></div>
+  <div class="field" style="background:rgba(0,0,0,.2);border:1px solid var(--line2);border-radius:12px;padding:12px">
+    <label style="color:var(--gold-soft);font-size:11px;font-weight:800">★ Sponsor Logo</label>
+    <div style="font-size:11px;color:var(--muted);margin:4px 0 8px;line-height:1.4"><b>Guidance:</b> PNG/JPG/SVG &middot; &lt;1MB &middot; Transparent background recommended.</div>
+    <div class="glass2" style="padding:10px;border-radius:8px;border:1px dashed var(--glassline);text-align:center;cursor:pointer" onclick="document.getElementById('atLogoInput').click()">
+      ${e.sponsorlogo ? `<img src="${e.sponsorlogo}" style="max-height:36px;max-width:100%;object-fit:contain;margin:0 auto 4px;display:block">` : `<svg viewBox="0 0 24 24" style="width:18px;height:18px;stroke:var(--gold-soft);fill:none;stroke-width:1.8;margin:0 auto 4px;display:block"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>`}
+      <span style="font-size:11.5px;color:var(--muted)">${e.sponsorlogo ? 'Tap to replace logo' : 'Upload sponsor logo'}</span>
+    </div>
+    <input type="file" id="atLogoInput" accept="image/*" style="display:none" onchange="onElementLogoUpload(${id}, this);setTimeout(()=>assignTable(${id}),300)">
+    ${e.sponsorlogo ? `<button class="btn sm" style="margin-top:6px;width:100%" onclick="removeElementLogo(${id});assignTable(${id})">Remove logo</button>` : ''}
+  </div>
   <div class="addon" onclick="this.classList.toggle('on')"><div class="ck">${SVG.check}</div><div style="flex:1"><div style="font-weight:600;font-size:13px">Add bottle service</div><div style="font-size:11px;color:var(--muted)">Premium · +$650</div></div></div>
   <div class="addon" onclick="this.classList.toggle('on')"><div class="ck">${SVG.check}</div><div style="flex:1"><div style="font-weight:600;font-size:13px">πέταλα — money shower petals</div><div style="font-size:11px;color:var(--muted)">Greek tradition · +$120</div></div></div>
-  <button class="btn gold block" style="margin-top:6px" onclick="doAssign(${id})">Confirm assignment</button>
+  <button class="btn gold block" style="margin-top:6px" onclick="doAssign(${id})">Confirm assignment &amp; branding</button>
  </div>`);
 }
-function doAssign(id){const e=floor.els.find(x=>x.id===id);const st=$('#atStat').value;e.status=st;const nm=$('#atName').value.trim();if(nm)e.name=e.name;
- closeModal();renderCanvas();refreshProps();toast((nm||'Table')+' — '+e.name+' marked '+STATUS[st].l.toLowerCase());}
+
+function doAssign(id){
+ const e=floor.els.find(x=>x.id===id); if(!e) return;
+ const st=$('#atStat').value; e.status=st;
+ const lbl=$('#atLabel').value.trim(); if(lbl) e.name=lbl;
+ const family=$('#atName').value.trim(); e.family=family;
+ const sp=$('#atSponsor').value.trim(); e.sponsorname=sp;
+ closeModal(); renderCanvas(); refreshProps();
+ toast((e.family||e.name) + ' updated (' + (STATUS[st]?STATUS[st].l.toLowerCase():st) + ')');
+}
 /* ============ 3D ROOM VIEW (Three.js r128) ============ */
 function viewThree(){
  return evHeader('')+
@@ -2999,15 +3081,46 @@ function viewSpons(){
    <div style="display:flex;justify-content:space-between;font-family:'Fraunces';font-size:20px;margin-top:6px;padding-top:10px;border-top:1px solid var(--glassline)"><span>Net payout</span><b>${fmt((curEvent.revenue+sponTotal)*0.82)}</b></div>
   </div>
  </div>
- <div class="sect"><h2>Sponsors</h2><span class="lnk" onclick="toast('Sponsor deck builder (stub)')">+ Add sponsor</span></div>
+ <div class="sect"><h2>Sponsors</h2><span class="lnk" onclick="addSponsorModal()">+ Add sponsor</span></div>
  <div class="grid g3">
   ${spons.map((s,i)=>{const tc=s.tier==='Gold'?'var(--gold-soft)':s.tier==='Platinum'?'#7fd4ef':s.tier==='Bronze'?'#f0cd86':'var(--muted)';
    const tb=s.tier==='Gold'?'rgba(184,137,59,.16)':s.tier==='Platinum'?'rgba(31,158,201,.16)':'rgba(255,255,255,.08)';
    return `<div class="card sptile glass stag" style="animation-delay:${.04*i}s">
-    <div class="splock" style="background:${s.bg}">${(SPONLOGO[s.logo]||(()=>esc(s.n)))(s.bg)}</div>
+    <div class="splock" style="background:${s.bg}">${s.logoImg ? `<img src="${s.logoImg}" style="max-height:40px;max-width:85%;object-fit:contain">` : (SPONLOGO[s.logo]||(()=>esc(s.n)))(s.bg)}</div>
     <div class="spmeta"><span class="spn">${esc(s.n)}</span><span class="spt" style="color:${tc};background:${tb}">${s.tier} · ${fmt(s.amt)}</span></div>
    </div>`;}).join('')}
  </div>`;
+}
+function addSponsorModal(){
+ openModal(`<div class="mhead"><div><h3>Add Event Sponsor</h3><div class="sub">Attach a partner, logo &amp; optional table sponsorship</div></div><button class="close" onclick="closeModal()">×</button></div>
+ <div class="mbody">
+  <div class="field"><label>Sponsor Name *</label><input id="spName" placeholder="e.g. Krinos Foods"></div>
+  <div class="field"><label>Sponsorship Tier</label><select id="spTier">
+    <option value="Platinum">Platinum ($25,000)</option>
+    <option value="Gold">Gold ($15,000)</option>
+    <option value="Silver">Silver ($8,000)</option>
+    <option value="Bronze">Bronze ($4,000)</option>
+  </select></div>
+  <div class="field"><label>Sponsorship Amount ($)</label><input id="spAmt" type="number" min="0" step="500" value="15000"></div>
+  <div class="field"><label>Assign to Floor Plan Table (optional)</label><select id="spTable">
+    <option value="">No specific table</option>
+    ${floor.els.filter(e=>!ELTYPES[e.t].struct).map(t=>`<option value="${t.id}">${esc(t.name)}${t.family?' ('+esc(t.family)+')':''}</option>`).join('')}
+  </select></div>
+  <button class="btn gold block" style="margin-top:12px" onclick="saveSponsor()">Save Sponsor</button>
+ </div>`);
+}
+function saveSponsor(){
+ const name=$('#spName').value.trim();
+ if(!name){ toast('Sponsor name is required'); return; }
+ const tier=$('#spTier').value;
+ const amt=Number($('#spAmt').value)||0;
+ const tableId=$('#spTable').value;
+ if(tableId){
+  const el=floor.els.find(x=>x.id===+tableId);
+  if(el){ el.sponsorname=name; el.status='vip'; }
+ }
+ closeModal(); renderCanvas(); refreshProps();
+ toast('Sponsor "' + name + '" added to event');
 }
 function afterSpons(){
  $$('[data-cnt]').forEach(el=>countUp(el,+el.dataset.cnt,{money:el.dataset.money==='1'}));
