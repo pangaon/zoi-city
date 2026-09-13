@@ -31,7 +31,7 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 
 ## P1: Shared production security
 
-- [ ] Review every `SECURITY DEFINER` function for `SET search_path TO ''`, explicit membership checks, and least-privilege grants.
+- [x] Review Event OS `SECURITY DEFINER` functions for empty `search_path`, membership checks, and least-privilege grants; regression coverage now protects migration 0036. Legacy migration audit remains separate follow-up work.
 - [ ] Add cross-workspace negative tests for every new workspace RPC.
 - [ ] Confirm no service-role key, provider secret, or private URL is shipped to browser code.
 - [x] Add global browser security headers and report-only CSP with regression coverage. Tightening inline-script CSP and auditing every external link remain follow-up work.

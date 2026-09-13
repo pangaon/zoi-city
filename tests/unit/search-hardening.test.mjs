@@ -54,3 +54,12 @@ test('Vercel applies baseline browser security headers globally', () => {
   assert.match(headers['content-security-policy-report-only'], /default-src 'self'/);
   assert.match(headers['content-security-policy-report-only'], /frame-ancestors 'none'/);
 });
+
+test('Event OS SECURITY DEFINER functions pin an empty search_path', () => {
+  const sql = read('supabase/migrations/0036_event_os_hardening.sql');
+  const functions = sql.split('CREATE OR REPLACE FUNCTION public.').slice(1);
+  assert.ok(functions.length >= 10, 'Event OS hardening functions are missing');
+  for (const definition of functions) {
+    if (/SECURITY DEFINER/.test(definition)) assert.match(definition, /SET search_path TO ''/);
+  }
+});
