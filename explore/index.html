@@ -204,7 +204,8 @@ footer a:hover{color:var(--tx)}
     <select class="city" id="country-sel" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
     <select class="city" id="sort-sel" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
     <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
-    <button class="mapcta" style="color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)" onclick="randomGreekSpot()">🎲 Surprise Spot</button>
+    <button class="mapcta" id="lang-btn" style="color:var(--tx);border-color:var(--line2)" onclick="toggleExploreLang()">🌐 <span id="langTxt">EN</span></button>
+    <button class="mapcta" id="surprise-btn" style="color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)" onclick="randomGreekSpot()">🎲 Surprise Spot</button>
     <button class="mapcta" id="clear-filters-btn" style="display:none;color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)" onclick="clearExploreFilters()">✕ Clear Filters</button>
     <a class="mapcta" href="/explore/map">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
@@ -314,7 +315,7 @@ function pillsRender(){
 /* Categories come from dir_counts, so every category in the data gets a filter —
    nothing is stranded because the UI forgot to list it. */
 function buildTypes(rows){
-  const out=[['','All']];
+  const out=[['', LANG === 'el' ? 'Όλα' : 'All']];
   (rows||[]).filter(c=>c.entity_type).sort((a,b)=>(b.n||b.count||0)-(a.n||a.count||0))
     .forEach(c=>out.push([c.entity_type, typeLabel(c.entity_type)]));
   TYPES=out;
@@ -324,6 +325,7 @@ function setType(v){ ST.type=v; pillsRender(); runSearch(true); }
 async function boot(){
   try{
     const counts=await rpc('dir_counts',{},true);
+    ST.raw_counts = counts || [];
     (counts||[]).forEach(c=>{ if(c.entity_type) ST.counts[c.entity_type]=c.n||c.count; });
     buildTypes(counts);
   }catch(e){ try{ const rows=await rpc('dir_counts',{},true); }catch(e2){} }
@@ -349,6 +351,7 @@ async function boot(){
       '<a class="fcard" href="'+esc(hrefFor(f))+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
   }catch(e){}
   readUrl();
+  applyExploreLang();
   runSearch(true);
 }
 
@@ -402,7 +405,89 @@ document.addEventListener('DOMContentLoaded',()=>{
   document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeQV(); });
 });
 
+let LANG = localStorage.getItem('zoi_lang') || 'en';
+
+const TYPE_LABELS_EL = {
+  '': 'Όλα',
+  'business': 'Επιχειρήσεις',
+  'church': 'Εκκλησίες',
+  'event': 'Εκδηλώσεις',
+  'professional': 'Επαγγελματίες',
+  'creator': 'Δημιουργοί',
+  'school': 'Σχολεία',
+  'organization': 'Οργανισμοί',
+  'vendor': 'Πωλητές',
+  'travel_place': 'Προορισμοί',
+  'venue': 'Χώροι',
+  'artist': 'Καλλιτέχνες',
+  'sports': 'Αθλητισμός'
+};
+
+function toggleExploreLang(){
+  LANG = (LANG === 'en') ? 'el' : 'en';
+  try{ localStorage.setItem('zoi_lang', LANG); }catch(e){}
+  applyExploreLang();
+  toast(LANG === 'el' ? 'Γλώσσα: Ελληνικά' : 'Language: English');
+}
+
+function applyExploreLang(){
+  const langTxt = document.getElementById('langTxt');
+  if (langTxt) langTxt.textContent = LANG === 'el' ? 'ΕΛ' : 'EN';
+  
+  const heroH1 = document.querySelector('.hero h1');
+  if (heroH1) {
+    heroH1.innerHTML = LANG === 'el' ? 'Βρες οτιδήποτε <span class="serif">Ελληνικό,</span> παντού.' : 'Find anything <span class="serif">Greek,</span> anywhere.';
+  }
+  const hsub = document.querySelector('.hsub');
+  if (hsub) {
+    hsub.textContent = LANG === 'el' ? 'Ταβέρνες, εκκλησίες, δικηγόροι, φούρνοι, φεστιβάλ, δημιουργοί — η ζωντανή βάση του Ελληνισμού.' : 'Tavernas, churches, lawyers, bakeries, festivals, creators — the living record of the Greek world, verified and searchable.';
+  }
+  const qi = document.getElementById('q');
+  if (qi) {
+    qi.placeholder = LANG === 'el' ? 'Δοκίμασε «ταβέρνα», «ορθόδοξη εκκλησία», «δικηγόρος»…' : 'Try “taverna”, “orthodox church”, “lawyer”…';
+  }
+  const searchBtn = document.querySelector('.sbar .btn');
+  if (searchBtn) {
+    searchBtn.textContent = LANG === 'el' ? 'Αναζήτηση' : 'Search';
+  }
+  const surpriseBtn = document.getElementById('surprise-btn');
+  if (surpriseBtn) {
+    surpriseBtn.textContent = LANG === 'el' ? '🎲 Τυχαία Ανακάλυψη' : '🎲 Surprise Spot';
+  }
+  const clearBtn = document.getElementById('clear-filters-btn');
+  if (clearBtn) {
+    clearBtn.textContent = LANG === 'el' ? '✕ Καθαρισμός' : '✕ Clear Filters';
+  }
+  const mapCta = document.querySelector('a.mapcta');
+  if (mapCta) {
+    mapCta.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg> ' + (LANG === 'el' ? 'Δες το στον χάρτη' : 'See it on the map');
+  }
+
+  const citySel = document.getElementById('city-sel');
+  if (citySel && citySel.options.length) {
+    citySel.options[0].textContent = LANG === 'el' ? 'Όλες οι πόλεις' : 'Every city';
+  }
+  const countrySel = document.getElementById('country-sel');
+  if (countrySel && countrySel.options.length) {
+    countrySel.options[0].textContent = LANG === 'el' ? 'Όλες οι χώρες' : 'Every country';
+  }
+  const sortSel = document.getElementById('sort-sel');
+  if (sortSel && sortSel.options.length >= 4) {
+    sortSel.options[0].textContent = LANG === 'el' ? 'Καλύτερη αντιστοίχιση' : 'Best match';
+    sortSel.options[1].textContent = LANG === 'el' ? 'Όνομα Α–Ω' : 'Name A–Z';
+    sortSel.options[2].textContent = LANG === 'el' ? 'Επαληθευμένα πρώτα' : 'Verified first';
+    sortSel.options[3].textContent = LANG === 'el' ? 'Πόλη Α–Ω' : 'City A–Z';
+  }
+
+  if (ST.raw_counts) {
+    buildTypes(ST.raw_counts);
+    pillsRender();
+  }
+  renderRows();
+}
+
 function typeLabel(t){
+  if (LANG === 'el' && TYPE_LABELS_EL[t]) return TYPE_LABELS_EL[t];
   return (global_ZE() && global_ZE().typeLabel) ? global_ZE().typeLabel(t) : String(t||'Listing');
 }
 function global_ZE(){ return (typeof ZoiEmblem!=='undefined') ? ZoiEmblem : null; }
@@ -456,8 +541,8 @@ function card(r,idx){
     : '';
   const vs=String(r.verification_status||'');
   let badge='';
-  if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>';
-  else if(vs==='source_verified') badge='<span class="lsrc">Sourced</span>';
+  if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>'+(LANG==='el'?'Επαληθευμένο':'Verified')+'</span>';
+  else if(vs==='source_verified') badge='<span class="lsrc">'+(LANG==='el'?'Πηγή':'Sourced')+'</span>';
   return '<article class="lcard">'+
     '<a class="lcover'+(r.photo_url?'':' ')+'" href="'+esc(hrefFor(r))+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
     '<div class="lbody">'+
@@ -467,9 +552,9 @@ function card(r,idx){
       (r.description?'<p class="ldesc">'+esc(r.description)+'</p>':'')+
     '</div>'+
     '<div class="lfoot">'+
-      '<a class="lbtn pri" href="'+esc(hrefFor(r))+'">View</a>'+
-      '<button class="lbtn" onclick="quickView('+idx+')">Quick look</button>'+
-      (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
+      '<a class="lbtn pri" href="'+esc(hrefFor(r))+'">'+(LANG==='el'?'Προβολή':'View')+'</a>'+
+      '<button class="lbtn" onclick="quickView('+idx+')">'+(LANG==='el'?'Ματιά':'Quick look')+'</button>'+
+      (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">'+(LANG==='el'?'Είναι δικό μου':'This is mine')+'</button>':'')+
     '</div></article>';
 }
 
@@ -491,8 +576,8 @@ async function runSearch(reset){
     document.getElementById('more-btn').style.display=ST.done?'none':'inline-flex';
     const n=ST.rows.length;
     document.getElementById('res-count').textContent = n
-      ? ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+'))
-      : 'No results';
+      ? (LANG === 'el' ? ('Προβολή ' + n + ' αποτελεσμάτων' + (ST.done ? '' : '+')) : ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+')))
+      : (LANG === 'el' ? 'Χωρίς αποτελέσματα' : 'No results');
   }catch(e){
     // Never print database/schema details into the public UI. Besides being an
     // information leak, the old full-width toast made the mobile page unusable.

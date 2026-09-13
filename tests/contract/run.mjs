@@ -230,6 +230,32 @@ t('SECURITY: profile_update without auth is rejected', async () => {
   assertRejected(r, 'profile_update anon');
 });
 
+// Workspace-scoped Event OS RPC unauthenticated rejection tests
+const EVENT_OS_WORKSPACE_RPCS = [
+  ['event_create', { p_workspace: RANDOM_UUID, p_name: 'test' }],
+  ['event_list', { p_workspace: RANDOM_UUID }],
+  ['event_get', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID }],
+  ['event_update', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID, p_name: 'test' }],
+  ['event_publish', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID, p_publish: true }],
+  ['event_archive', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID }],
+  ['floor_plan_save', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID, p_layout_json: {} }],
+  ['floor_plan_get', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID }],
+  ['event_team_members_list', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID }],
+  ['event_team_member_invite', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID, p_name: 'test', p_email: 'test@example.com' }],
+  ['event_audit_list', { p_event_id: RANDOM_UUID, p_workspace: RANDOM_UUID }],
+];
+
+for (const [fn, params] of EVENT_OS_WORKSPACE_RPCS) {
+  t(`SECURITY: ${fn} without auth is cleanly rejected`, async () => {
+    const r = await rpc(fn, params);
+    if (!STRICT_EVENT_OS && r.status === 404) {
+      console.log(`# SKIP ${fn}: Event OS RPC is not deployed yet; use STRICT_EVENT_OS=1 after deployment`);
+      return;
+    }
+    assertRejected(r, `${fn} anon`);
+  });
+}
+
 t('SECURITY: zoi tables are NOT exposed via anon REST (GET /rest/v1/listings)', async () => {
   const res = await fetch(`${BASE}/rest/v1/listings?select=*&limit=1`, { headers: HDRS });
   const text = await res.text();

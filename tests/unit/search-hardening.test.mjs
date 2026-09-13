@@ -63,3 +63,10 @@ test('Event OS SECURITY DEFINER functions pin an empty search_path', () => {
     if (/SECURITY DEFINER/.test(definition)) assert.match(definition, /SET search_path TO ''/);
   }
 });
+
+test('zoi-core handles auth expiry and token freshness checks', () => {
+  const core = read('assets/zoi-core.js');
+  assert.match(core, /function ensureFresh/);
+  assert.match(core, /grant_type=refresh_token/);
+  assert.match(core, /Please sign in\./);
+});
