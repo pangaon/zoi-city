@@ -946,6 +946,7 @@ async function loadRealEventOSData(){
           cap: e.capacity || 100,
           mode: e.mode || 'concert',
           live: e.published_at ? true : false,
+          is_public: !!e.is_public,
           slug: e.slug,
           workspace_id: ws.id
         }));
@@ -3106,7 +3107,7 @@ function viewSettings(){
     <div class="field"><label for="eventVenue">Venue</label><input id="eventVenue" value="${esc(e.venue)}" disabled><div class="am" style="margin-top:5px">Venue and ticket inventory are managed in the canonical Tickets dashboard.</div></div>
     <div style="display:flex;gap:10px"><div class="field" style="flex:1"><label for="eventCapacity">Capacity</label><input id="eventCapacity" type="number" min="1" value="${e.cap}" ${e.real?'':'disabled'}></div>
     <div class="field" style="flex:1"><label>Revenue goal ($)</label><input type="number" value="${e.goal}"></div></div>
-    ${e.real?'<button class="btn gold sm" onclick="saveEventSettings()">Save changes</button>':'<button class="btn gold sm" onclick="openCreateEvent()">Create owned event</button>'}
+    ${e.real?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold sm" onclick="saveEventSettings()">Save changes</button><button class="btn sm" onclick="toggleEventPublish()">${e.is_public?'Unpublish public page':'Publish public page'}</button></div>`:'<button class="btn gold sm" onclick="openCreateEvent()">Create owned event</button>'}
    </div>
    <div class="card glass stag" style="animation-delay:.06s"><div class="eyebrow">White-label brand kit <span class="pill gold" style="margin-left:6px">Sellable</span></div>
     <div class="field"><label>Brand name</label><input value="${esc(brand.name)}" oninput="brand.name=this.value;applyBrand()"></div>
@@ -3138,6 +3139,14 @@ async function saveEventSettings(){
   curEvent.name=name;curEvent.cap=capacity;curEvent.start_date=new Date(start).toISOString();curEvent.date=fmtRealDate(curEvent.start_date);
   closeModal();await loadRealEventOSData();toast('Event details saved to workspace');
  }catch(e){toast(e.message||'Could not save event details');}
+}
+async function toggleEventPublish(){
+ try{
+  const next=!curEvent.is_public;
+  const r=await ZoiCore.api.rpc('event_publish',{p_event_id:curEvent.id,p_workspace:curEvent.workspace_id,p_publish:next},{auth:'require'});
+  if(!r||!r.ok)throw new Error(r&&r.error||'Could not update publication');
+  curEvent.is_public=next;curEvent.live=next;closeModal();render();toast(next?'Public event page published':'Public event page unpublished');
+ }catch(e){toast(e.message||'Could not update publication');}
 }
 function inviteTeam(){
  if(!curEvent.real||!curEvent.workspace_id){toast('Open an owned workspace event first');return;}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index,follow">
+<title>Event · Zoi</title>
+<style>
+:root{color-scheme:dark;--bg:#0b1f2e;--panel:#12344b;--text:#f7f3ec;--muted:#b9c8d0;--gold:#d9b873;--line:rgba(255,255,255,.14)}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(900px 420px at 50% -10%,#1f5069,var(--bg) 65%);color:var(--text);font:16px/1.55:"Hanken Grotesk",system-ui,sans-serif}.wrap{width:min(760px,calc(100% - 36px));margin:0 auto;padding:72px 0}.brand{color:var(--gold);font-weight:800;letter-spacing:.08em;text-transform:uppercase;font-size:12px}.panel{margin-top:18px;padding:30px;border:1px solid var(--line);border-radius:14px;background:rgba(18,52,75,.82);box-shadow:0 24px 70px rgba(0,0,0,.24)}h1{font:italic 400 clamp(36px,7vw,64px)/1.05 Georgia,serif;margin:12px 0 16px}p{color:var(--muted);margin:10px 0}.meta{display:grid;gap:10px;margin:26px 0;padding-top:20px;border-top:1px solid var(--line)}.meta b{color:var(--text)}.btn{display:inline-block;margin-top:14px;padding:11px 16px;border-radius:9px;background:var(--gold);color:#21180b;text-decoration:none;font-weight:800}.notice{color:var(--muted);text-align:center}.error{color:#f0a2a2}.hidden{display:none}
+</style>
+</head>
+<body><main class="wrap"><div class="brand">Zoi events</div><section id="app" class="panel"><p class="notice">Loading event…</p></section></main>
+<script>
+(function(){
+  var BASE='https://csebihpaychdkanjjsmz.supabase.co',KEY='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j',app=document.getElementById('app');
+  function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(m){return({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});}
+  function slug(){return decodeURIComponent(location.pathname.replace(/^\/e\/?/,'').replace(/\/$/,''));}
+  function date(s){if(!s)return '';try{return new Date(s).toLocaleString(undefined,{dateStyle:'long',timeStyle:'short'});}catch(e){return s;}}
+  fetch(BASE+'/rest/v1/rpc/event_public_get',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({p_slug:slug()})})
+    .then(function(r){return r.json();}).then(function(r){
+      if(!r||!r.ok||!r.event){app.innerHTML='<p class="notice error">This event is not published or could not be found.</p>';return;}
+      var e=r.event;document.title=e.name+' · Zoi';
+      app.innerHTML='<h1>'+esc(e.brand_name||e.name)+'</h1>'+(e.description?'<p>'+esc(e.description)+'</p>':'')+'<div class="meta">'+(e.start_date?'<div><b>When</b><br>'+esc(date(e.start_date))+'</div>':'')+'<div><b>Event type</b><br>'+esc(e.mode)+'</div>'+(e.capacity?'<div><b>Capacity</b><br>'+esc(e.capacity)+'</div>':'')+'</div><p>Tickets, reservations, attendees, and check-in are managed securely in Zoi Tickets.</p><a class="btn" href="/tickets">Open Zoi Tickets</a>';
+    }).catch(function(){app.innerHTML='<p class="notice error">Event details are temporarily unavailable. Please try again.</p>';});
+})();
+</script>
+</body></html>

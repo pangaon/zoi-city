@@ -86,6 +86,30 @@ BEGIN
   RETURN json_build_object('ok', true, 'id', p_event_id);
 END$function$;
 
+CREATE OR REPLACE FUNCTION public.event_publish(p_event_id uuid, p_workspace uuid, p_publish boolean)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
+DECLARE v_prof uuid; v_role text;
+BEGIN
+  v_prof := zoi.ensure_profile();
+  IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
+  SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
+  IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
+  UPDATE public.events SET is_public = p_publish, published_at = CASE WHEN p_publish THEN COALESCE(published_at, now()) ELSE NULL END, updated_at = now() WHERE id = p_event_id;
+  RETURN json_build_object('ok', true, 'is_public', p_publish);
+END$function$;
+
+CREATE OR REPLACE FUNCTION public.event_public_get(p_slug text)
+RETURNS json LANGUAGE sql SECURITY DEFINER SET search_path TO '' AS $function$
+  SELECT COALESCE((SELECT json_build_object(
+    'ok', true, 'event', json_build_object('slug', e.slug, 'name', e.name, 'mode', e.mode,
+      'capacity', e.capacity, 'start_date', e.start_date, 'end_date', e.end_date,
+      'description', e.description, 'brand_accent', e.brand_accent, 'brand_name', e.brand_name,
+      'brand_logo_url', e.brand_logo_url, 'published_at', e.published_at)
+    ) FROM public.events e WHERE e.slug = lower(trim(p_slug)) AND e.is_public = true),
+    json_build_object('ok', false, 'error', 'not_found'));
+$function$;
+
 CREATE OR REPLACE FUNCTION public.floor_plan_save(p_event_id uuid, p_workspace uuid, p_layout_json jsonb)
 RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
 DECLARE v_prof uuid; v_role text; v_plan_id uuid;
@@ -154,6 +178,10 @@ END$function$;
 GRANT EXECUTE ON FUNCTION public.floor_plan_get(uuid, uuid) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.floor_plan_get(uuid, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.floor_plan_get(uuid, uuid) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.event_publish(uuid, uuid, boolean) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.event_publish(uuid, uuid, boolean) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.event_public_get(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.event_public_get(text) TO anon, authenticated, service_role;
 REVOKE ALL ON FUNCTION public.event_team_members_list(uuid, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.event_team_members_list(uuid, uuid) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.event_team_member_invite(uuid, uuid, text, text, text) FROM PUBLIC, anon;

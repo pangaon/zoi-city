@@ -15,9 +15,9 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 
 - [x] Add a real Event OS `event_create` form and connect it to `event_create()`.
 - [x] Persist Event OS event edits through `event_update()`; settings now save name, time, mode, and capacity server-side.
-- [ ] Link owned Event OS events to the canonical `/tickets` event and attendee ledger; do not duplicate reservations or sales.
+- [ ] Link owned Event OS events to the canonical `/tickets` event and attendee ledger; do not duplicate reservations or sales. The repo does not contain the Tickets schema/RPC bodies needed for a safe foreign key, so this remains blocked on an explicit backend contract.
 - [x] Replace demo dashboard sales, guest, check-in, sponsor, and revenue panels with durable ticketing RPC data or visibly label them as sample/unavailable. Real owned events now show unavailable states and link to Tickets.
-- [ ] Add event publishing controls that update `is_public`, `published_at`, and a canonical public event route.
+- [x] Add event publishing controls that update `is_public`, `published_at`, and a canonical public `/e/:slug` route. Published pages expose metadata only and hand reservations/sales to Tickets.
 - [ ] Add durable team invitation delivery and acceptance state; the current RPC records an invite row but does not send email.
 - [ ] Add event deletion/archive semantics and compensating migration coverage.
 
