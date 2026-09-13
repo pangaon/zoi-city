@@ -7,7 +7,7 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [ ] Add `SUPABASE_ACCESS_TOKEN` to GitHub Actions secrets.
 - [ ] Confirm migrations 0034, 0035, and 0036 applied successfully in Supabase.
 - [ ] Re-run `STRICT_EVENT_OS=1 node tests/contract/run.mjs` and require the Event OS REST lockdown checks to return 401/403, not 404.
-- [ ] Sign in with a real workspace member and verify: event list, event switch, floor-plan save, reload, team list, and team invite.
+- [ ] Sign in with a real workspace member and verify: event list, event switch, floor-plan save, reload, team list, team invite, publish, and archive.
 - [ ] Confirm Vercel serves the pushed commit and cache-busting URLs return the new Event OS title and assets.
 - [ ] Add an authenticated production smoke test for workspace isolation: member of workspace A cannot read or mutate workspace B.
 
@@ -19,13 +19,13 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 - [x] Replace demo dashboard sales, guest, check-in, sponsor, and revenue panels with durable ticketing RPC data or visibly label them as sample/unavailable. Real owned events now show unavailable states and link to Tickets.
 - [x] Add event publishing controls that update `is_public`, `published_at`, and a canonical public `/e/:slug` route. Published pages expose metadata only and hand reservations/sales to Tickets.
 - [ ] Add durable team invitation delivery and acceptance state; the current RPC records an invite row but does not send email.
-- [ ] Add event deletion/archive semantics and compensating migration coverage.
+- [x] Add archive semantics and compensating migration coverage. Archived events leave normal lists, unpublish, and reject further event mutations.
 
 ## P1: Ticketing hardening
 
 - [ ] Apply migration 0034 and verify guest ordering cannot alter server-side price.
 - [ ] Keep `payments_live` off until Stripe webhook signature verification, replay protection, and settlement reconciliation are proven.
-- [ ] Add audit records for reservations, refunds, check-ins, event edits, and team changes.
+- [x] Add Event OS audit records for event creation, edits, publication, floor-plan saves, team invitations, and archive actions. Tickets reservation/refund/check-in audit remains pending in its backend contract.
 - [ ] Add ticket-tier edit/delete, cancellation/refund, waitlist expiry/promotion, and capacity alerts.
 - [ ] Verify offline Door mode conflict handling after reconnect and make the final server result visible.
 

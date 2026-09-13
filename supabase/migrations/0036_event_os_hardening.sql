@@ -1,5 +1,27 @@
 BEGIN;
 
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS archived_at timestamptz;
+
+CREATE TABLE IF NOT EXISTS public.event_audit_log (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  event_id uuid NOT NULL REFERENCES public.events(id) ON DELETE CASCADE,
+  workspace_id uuid NOT NULL REFERENCES zoi.workspaces(id) ON DELETE CASCADE,
+  actor_profile_id uuid REFERENCES zoi.profiles(id) ON DELETE SET NULL,
+  action text NOT NULL,
+  details jsonb NOT NULL DEFAULT '{}'::jsonb,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS event_audit_log_event_idx ON public.event_audit_log(event_id, created_at DESC);
+ALTER TABLE public.event_audit_log ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON public.event_audit_log FROM anon, authenticated;
+
+CREATE OR REPLACE FUNCTION public.event_audit_write(p_event_id uuid, p_workspace uuid, p_actor uuid, p_action text, p_details jsonb DEFAULT '{}'::jsonb)
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
+BEGIN
+  INSERT INTO public.event_audit_log(event_id, workspace_id, actor_profile_id, action, details)
+  VALUES (p_event_id, p_workspace, p_actor, p_action, COALESCE(p_details, '{}'::jsonb));
+END$function$;
+
 DELETE FROM public.event_floor_plans older
 WHERE EXISTS (
   SELECT 1 FROM public.event_floor_plans newer
@@ -22,7 +44,7 @@ BEGIN
   SELECT COALESCE(json_agg(row_to_json(e) ORDER BY e.start_date DESC), '[]'::json) INTO v_rows
   FROM (
     SELECT id, slug, name, mode, capacity, start_date, end_date, is_public, brand_accent, created_at
-    FROM public.events WHERE workspace_id = p_workspace
+    FROM public.events WHERE workspace_id = p_workspace AND archived_at IS NULL
   ) e;
   RETURN json_build_object('ok', true, 'events', v_rows);
 END$function$;
@@ -46,6 +68,7 @@ BEGIN
     || '-' || to_char(p_start_date, 'YYYYMMDD') || '-' || substring(encode(gen_random_bytes(3), 'hex'), 1, 6);
   INSERT INTO public.events(workspace_id, name, mode, capacity, start_date, slug)
     VALUES (p_workspace, trim(p_name), p_mode, p_capacity, p_start_date, v_slug) RETURNING id INTO v_id;
+  PERFORM public.event_audit_write(v_id, p_workspace, v_prof, 'event_created', jsonb_build_object('mode', p_mode, 'capacity', p_capacity));
   RETURN json_build_object('ok', true, 'id', v_id, 'slug', v_slug);
 END$function$;
 
@@ -58,7 +81,7 @@ BEGIN
   IF p_workspace IS NULL OR NOT EXISTS (SELECT 1 FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof) THEN
     RETURN json_build_object('ok', false, 'error', 'not_a_workspace_member');
   END IF;
-  SELECT * INTO v_event FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace;
+  SELECT * INTO v_event FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL;
   IF v_event IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_found'); END IF;
   RETURN json_build_object('ok', true, 'event', row_to_json(v_event));
 END$function$;
@@ -78,11 +101,12 @@ BEGIN
   IF p_name IS NOT NULL AND nullif(trim(p_name), '') IS NULL THEN RETURN json_build_object('ok', false, 'error', 'invalid_event'); END IF;
   IF p_capacity IS NOT NULL AND (p_capacity < 1 OR p_capacity > 100000) THEN RETURN json_build_object('ok', false, 'error', 'invalid_event'); END IF;
   IF p_mode IS NOT NULL AND p_mode NOT IN ('concert', 'banquet', 'gala', 'festival', 'church') THEN RETURN json_build_object('ok', false, 'error', 'invalid_event'); END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
   UPDATE public.events SET name = COALESCE(trim(p_name), name), mode = COALESCE(p_mode, mode),
     capacity = COALESCE(p_capacity, capacity), start_date = COALESCE(p_start_date, start_date),
     brand_accent = COALESCE(p_brand_accent, brand_accent), brand_name = COALESCE(p_brand_name, brand_name), updated_at = now()
     WHERE id = p_event_id;
+  PERFORM public.event_audit_write(p_event_id, p_workspace, v_prof, 'event_updated', jsonb_build_object('fields', jsonb_build_array('name', 'mode', 'capacity', 'start_date')));
   RETURN json_build_object('ok', true, 'id', p_event_id);
 END$function$;
 
@@ -94,8 +118,9 @@ BEGIN
   IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
   SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
   IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
   UPDATE public.events SET is_public = p_publish, published_at = CASE WHEN p_publish THEN COALESCE(published_at, now()) ELSE NULL END, updated_at = now() WHERE id = p_event_id;
+  PERFORM public.event_audit_write(p_event_id, p_workspace, v_prof, CASE WHEN p_publish THEN 'event_published' ELSE 'event_unpublished' END);
   RETURN json_build_object('ok', true, 'is_public', p_publish);
 END$function$;
 
@@ -118,13 +143,14 @@ BEGIN
   IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
   SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
   IF v_role NOT IN ('owner', 'admin', 'operator', 'floor_manager') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace) THEN
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL) THEN
     RETURN json_build_object('ok', false, 'error', 'not_your_event');
   END IF;
   INSERT INTO public.event_floor_plans(event_id, layout_json, updated_at)
   VALUES (p_event_id, p_layout_json, now())
   ON CONFLICT (event_id) DO UPDATE SET layout_json = EXCLUDED.layout_json, updated_at = now()
   RETURNING id INTO v_plan_id;
+  PERFORM public.event_audit_write(p_event_id, p_workspace, v_prof, 'floor_plan_saved');
   RETURN json_build_object('ok', true, 'plan_id', v_plan_id);
 END$function$;
 
@@ -137,7 +163,7 @@ BEGIN
   v_prof := zoi.ensure_profile();
   IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
   IF NOT EXISTS (SELECT 1 FROM zoi.workspace_members wm JOIN public.events e ON e.workspace_id = wm.workspace_id
-                 WHERE wm.workspace_id = p_workspace AND wm.profile_id = v_prof AND e.id = p_event_id) THEN
+                 WHERE wm.workspace_id = p_workspace AND wm.profile_id = v_prof AND e.id = p_event_id AND e.archived_at IS NULL) THEN
     RETURN json_build_object('ok', false, 'error', 'not_authorized');
   END IF;
   SELECT * INTO v_plan FROM public.event_floor_plans WHERE event_id = p_event_id;
@@ -151,12 +177,26 @@ BEGIN
   v_prof := zoi.ensure_profile();
   IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
   IF NOT EXISTS (SELECT 1 FROM zoi.workspace_members wm JOIN public.events e ON e.workspace_id = wm.workspace_id
-                 WHERE wm.workspace_id = p_workspace AND wm.profile_id = v_prof AND e.id = p_event_id) THEN
+                 WHERE wm.workspace_id = p_workspace AND wm.profile_id = v_prof AND e.id = p_event_id AND e.archived_at IS NULL) THEN
     RETURN json_build_object('ok', false, 'error', 'not_authorized');
   END IF;
   SELECT COALESCE(json_agg(row_to_json(t) ORDER BY t.created_at), '[]'::json) INTO v_rows
   FROM (SELECT id, role, name, email, invited_at, accepted_at, created_at FROM public.event_team_members WHERE event_id = p_event_id) t;
   RETURN json_build_object('ok', true, 'members', v_rows);
+END$function$;
+
+CREATE OR REPLACE FUNCTION public.event_audit_list(p_event_id uuid, p_workspace uuid)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
+DECLARE v_prof uuid; v_role text; v_rows json;
+BEGIN
+  v_prof := zoi.ensure_profile();
+  IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
+  SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
+  IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
+  SELECT COALESCE(json_agg(row_to_json(a) ORDER BY a.created_at DESC), '[]'::json) INTO v_rows
+    FROM (SELECT action, details, created_at FROM public.event_audit_log WHERE event_id = p_event_id AND workspace_id = p_workspace LIMIT 100) a;
+  RETURN json_build_object('ok', true, 'entries', v_rows);
 END$function$;
 
 CREATE OR REPLACE FUNCTION public.event_team_member_invite(p_event_id uuid, p_workspace uuid, p_name text, p_email text, p_role text DEFAULT 'staff')
@@ -166,13 +206,28 @@ BEGIN
   v_prof := zoi.ensure_profile();
   IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
   SELECT wm.role INTO v_role FROM zoi.workspace_members wm JOIN public.events e ON e.workspace_id = wm.workspace_id
-    WHERE wm.workspace_id = p_workspace AND wm.profile_id = v_prof AND e.id = p_event_id;
+    WHERE wm.workspace_id = p_workspace AND wm.profile_id = v_prof AND e.id = p_event_id AND e.archived_at IS NULL;
   IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
   IF nullif(trim(p_name), '') IS NULL OR nullif(trim(p_email), '') IS NULL OR p_role NOT IN ('manager', 'box_office', 'door', 'floor_manager', 'staff') THEN
     RETURN json_build_object('ok', false, 'error', 'invalid_team_member');
   END IF;
   INSERT INTO public.event_team_members(event_id, name, email, role) VALUES (p_event_id, trim(p_name), lower(trim(p_email)), p_role) RETURNING id INTO v_id;
+  PERFORM public.event_audit_write(p_event_id, p_workspace, v_prof, 'team_member_invited', jsonb_build_object('role', p_role));
   RETURN json_build_object('ok', true, 'id', v_id);
+END$function$;
+
+CREATE OR REPLACE FUNCTION public.event_archive(p_event_id uuid, p_workspace uuid)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
+DECLARE v_prof uuid; v_role text;
+BEGIN
+  v_prof := zoi.ensure_profile();
+  IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
+  SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
+  IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace AND archived_at IS NULL) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
+  UPDATE public.events SET archived_at = now(), is_public = false, published_at = NULL, updated_at = now() WHERE id = p_event_id;
+  PERFORM public.event_audit_write(p_event_id, p_workspace, v_prof, 'event_archived');
+  RETURN json_build_object('ok', true, 'id', p_event_id);
 END$function$;
 
 GRANT EXECUTE ON FUNCTION public.floor_plan_get(uuid, uuid) TO authenticated, service_role;
@@ -180,10 +235,16 @@ REVOKE ALL ON FUNCTION public.floor_plan_get(uuid, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.floor_plan_get(uuid, uuid) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.event_publish(uuid, uuid, boolean) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.event_publish(uuid, uuid, boolean) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.event_archive(uuid, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.event_archive(uuid, uuid) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.event_audit_write(uuid, uuid, uuid, text, jsonb) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.event_audit_write(uuid, uuid, uuid, text, jsonb) TO service_role;
 REVOKE ALL ON FUNCTION public.event_public_get(text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.event_public_get(text) TO anon, authenticated, service_role;
 REVOKE ALL ON FUNCTION public.event_team_members_list(uuid, uuid) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.event_team_members_list(uuid, uuid) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.event_audit_list(uuid, uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.event_audit_list(uuid, uuid) TO authenticated, service_role;
 REVOKE ALL ON FUNCTION public.event_team_member_invite(uuid, uuid, text, text, text) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.event_team_member_invite(uuid, uuid, text, text, text) TO authenticated, service_role;
 

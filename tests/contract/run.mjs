@@ -202,6 +202,13 @@ t('zoi_namedays_today responds 200 with data', async () => {
   assert(r.json !== undefined, 'no body');
 });
 
+t('event_public_get with an unknown slug returns not_found', async () => {
+  const r = await rpc('event_public_get', { p_slug: '__contract_event_not_found__' });
+  if (r.status === 404) return;
+  assert(r.status < 500, `server 5xx: ${r.status}`);
+  if (r.status === 200) assert(isObj(r.json) && r.json.ok === false, `unexpected public event response: ${JSON.stringify(r.json).slice(0, 200)}`);
+});
+
 // --- SECURITY-CRITICAL negative tests ---
 t('SECURITY: tickets_reserve with random uuids is cleanly rejected', async () => {
   const r = await rpc('tickets_reserve', { p_event: RANDOM_UUID, p_type: RANDOM_UUID, p_qty: 1, p_name: 'contract-test', p_email: 'test@example.com' });
@@ -255,12 +262,12 @@ const RLS_LOCKED_TABLES = [
   'event_orders', 'event_order_items', 'tab_payments',
   'private_events', 'private_rsvps', 'private_registry_items',
   'private_event_gifts', 'private_photo_wall', 'menu_items',
-  'events', 'event_floor_plans', 'event_team_members',
+  'events', 'event_floor_plans', 'event_team_members', 'event_audit_log',
 ];
 for (const tbl of RLS_LOCKED_TABLES) {
   t(`SECURITY: ${tbl} rejects anon REST access (RLS must stay enabled)`, async () => {
     const res = await fetch(`${BASE}/rest/v1/${tbl}?select=*&limit=1`, { headers: HDRS });
-    if (!STRICT_EVENT_OS && res.status === 404 && ['events', 'event_floor_plans', 'event_team_members'].includes(tbl)) {
+    if (!STRICT_EVENT_OS && res.status === 404 && ['events', 'event_floor_plans', 'event_team_members', 'event_audit_log'].includes(tbl)) {
       console.log(`# SKIP ${tbl}: Event OS migration is not deployed; use STRICT_EVENT_OS=1 after deployment`);
       return;
     }

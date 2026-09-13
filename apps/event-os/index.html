@@ -3107,7 +3107,7 @@ function viewSettings(){
     <div class="field"><label for="eventVenue">Venue</label><input id="eventVenue" value="${esc(e.venue)}" disabled><div class="am" style="margin-top:5px">Venue and ticket inventory are managed in the canonical Tickets dashboard.</div></div>
     <div style="display:flex;gap:10px"><div class="field" style="flex:1"><label for="eventCapacity">Capacity</label><input id="eventCapacity" type="number" min="1" value="${e.cap}" ${e.real?'':'disabled'}></div>
     <div class="field" style="flex:1"><label>Revenue goal ($)</label><input type="number" value="${e.goal}"></div></div>
-    ${e.real?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold sm" onclick="saveEventSettings()">Save changes</button><button class="btn sm" onclick="toggleEventPublish()">${e.is_public?'Unpublish public page':'Publish public page'}</button></div>`:'<button class="btn gold sm" onclick="openCreateEvent()">Create owned event</button>'}
+    ${e.real?`<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn gold sm" onclick="saveEventSettings()">Save changes</button><button class="btn sm" onclick="toggleEventPublish()">${e.is_public?'Unpublish public page':'Publish public page'}</button><button class="btn sm" onclick="archiveCurrentEvent()">Archive event</button></div>`:'<button class="btn gold sm" onclick="openCreateEvent()">Create owned event</button>'}
    </div>
    <div class="card glass stag" style="animation-delay:.06s"><div class="eyebrow">White-label brand kit <span class="pill gold" style="margin-left:6px">Sellable</span></div>
     <div class="field"><label>Brand name</label><input value="${esc(brand.name)}" oninput="brand.name=this.value;applyBrand()"></div>
@@ -3147,6 +3147,17 @@ async function toggleEventPublish(){
   if(!r||!r.ok)throw new Error(r&&r.error||'Could not update publication');
   curEvent.is_public=next;curEvent.live=next;closeModal();render();toast(next?'Public event page published':'Public event page unpublished');
  }catch(e){toast(e.message||'Could not update publication');}
+}
+async function archiveCurrentEvent(){
+ if(!window.confirm('Archive this event? It will leave the workspace event list and its public page will be unpublished.'))return;
+ try{
+  const r=await ZoiCore.api.rpc('event_archive',{p_event_id:curEvent.id,p_workspace:curEvent.workspace_id},{auth:'require'});
+  if(!r||!r.ok)throw new Error(r&&r.error||'Could not archive event');
+  EVENTS.splice(EVENTS.indexOf(curEvent),1);closeModal();
+  if(EVENTS.length){curEvent=EVENTS[0];loadEventTeam(curEvent.id,curEvent.workspace_id);go('dash');}
+  else{curEvent={id:'empty',name:'No owned events',date:'',venue:'',cap:0,mode:'concert',real:false,sold:0,revenue:0,checkin:0,tables:0,goal:0};go('dash');}
+  toast('Event archived');
+ }catch(e){toast(e.message||'Could not archive event');}
 }
 function inviteTeam(){
  if(!curEvent.real||!curEvent.workspace_id){toast('Open an owned workspace event first');return;}
