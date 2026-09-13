@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>Add your business · Zoi</title>
+<meta name="description" content="Put your Greek business on Zoi. Paste your website and we read what you have already published — you confirm it. Free."/>
+<link rel="canonical" href="https://www.zoi.city/add"/>
+<meta name="theme-color" content="#080a0e"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
+.wrap{max-width:var(--maxw,1200px);margin:0 auto;padding:0 clamp(18px,4vw,48px)}
+
+.hero{padding:clamp(40px,6vw,72px) 0 10px;text-align:center}
+.hero h1{font-size:clamp(32px,5vw,50px);letter-spacing:-.03em;font-weight:700;line-height:1.04}
+.hero h1 .serif{color:var(--gold);font-weight:300}
+.hero p.lead{color:var(--mut);font-size:16px;margin:12px auto 0;max-width:620px}
+
+.form{max-width:640px;margin:30px auto 0}
+.urlrow{display:flex;gap:8px;flex-wrap:wrap}
+.urlrow input{flex:1;min-width:260px;background:var(--card2);border:1px solid var(--line2);border-radius:12px;padding:15px 17px;font:500 16px 'Hanken Grotesk';color:var(--tx);outline:none;transition:.2s}
+.urlrow input:focus{border-color:var(--acc);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc) 14%,transparent)}
+.urlrow button{padding:15px 26px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;border:none;background:var(--acc);color:#fff;white-space:nowrap;transition:.2s}
+.urlrow button:hover:not(:disabled){transform:translateY(-1px)}
+.urlrow button:disabled{opacity:.55;cursor:default;transform:none}
+.note{font-size:12.5px;color:var(--dim);margin-top:10px;text-align:center}
+.err{color:var(--red);font-size:13.5px;margin-top:10px;min-height:18px;text-align:center}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin:42px 0 0}
+.step{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:18px}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--gold);letter-spacing:.1em}
+.step h3{font-size:15px;font-weight:700;margin:8px 0 5px}
+.step p{font-size:13.5px;color:var(--mut);line-height:1.5}
+
+.panel{max-width:640px;margin:24px auto 0;background:var(--card2);border:1px solid var(--line2);border-radius:16px;padding:22px;display:none}
+.panel.on{display:block}
+.panel h2{font-size:19px;font-weight:700;margin-bottom:4px}
+.panel .sub{color:var(--mut);font-size:13.5px;margin-bottom:16px}
+.frow{display:flex;gap:12px;padding:11px 0;border-top:1px solid var(--line);font-size:14px;align-items:baseline}
+.frow:first-of-type{border-top:0}
+.frow .k{color:var(--dim);font-size:11px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;min-width:104px}
+.frow .v{flex:1;word-break:break-word}
+.prov{font-size:11px;color:var(--dim);margin-left:6px;border:1px solid var(--line);border-radius:999px;padding:1px 7px}
+.statusline{display:flex;align-items:center;gap:9px;font-size:13.5px;color:var(--mut);padding:10px 0}
+.spin{width:14px;height:14px;border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:sp .8s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;border:1px solid var(--line2);color:var(--mut)}
+
+.honest{max-width:640px;margin:34px auto 0;border-left:2px solid var(--line2);padding:4px 0 4px 16px}
+.honest h4{font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin-bottom:8px}
+.honest p{font-size:13px;color:var(--mut);line-height:1.6;margin-bottom:8px}
+footer{border-top:1px solid var(--line);margin-top:60px;padding:26px 0 40px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+footer span,footer a{font-size:13px;color:var(--dim)}
+</style>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
+</head>
+<body>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/add" aria-current="page">Add your business</a></nav>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button></div>
+</div></header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="mono">Free · takes about a minute</div>
+    <h1>Your website already says it. <span class="serif">Let it do the typing.</span></h1>
+    <p class="lead">Paste your address and we read what you have published — name, phone, hours, address, photo. You check it and it goes live. Nothing is guessed, and you can change every field.</p>
+
+    <form class="form" id="f" novalidate>
+      <div class="urlrow">
+        <input id="site" type="url" inputmode="url" autocomplete="url" spellcheck="false"
+               placeholder="yourtaverna.gr" aria-label="Your website address"/>
+        <button type="submit" id="go">Read my site</button>
+      </div>
+      <div class="err" id="err" role="alert" aria-live="polite"></div>
+      <p class="note">We fetch the page once, honour your robots.txt, and identify ourselves as ZoiDirectoryBot.</p>
+    </form>
+  </section>
+
+  <section class="panel" id="panel" aria-live="polite">
+    <h2 id="p-title">Reading your site…</h2>
+    <p class="sub" id="p-sub"></p>
+    <div id="p-body"></div>
+    <div id="p-actions" style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"></div>
+  </section>
+
+  <section class="steps">
+    <div class="step"><div class="n">01</div><h3>You paste the address</h3><p>Only a real website. We will not accept an internal or private address, and we check again the moment before we connect.</p></div>
+    <div class="step"><div class="n">02</div><h3>We read the page</h3><p>Structured data and the tags your site already publishes. One request, eight second limit, your robots.txt respected.</p></div>
+    <div class="step"><div class="n">03</div><h3>You confirm</h3><p>Everything we found is shown with where it came from. Nothing publishes until you say so.</p></div>
+    <div class="step"><div class="n">04</div><h3>You prove it is yours</h3><p>A separate step, because a page loading does not prove you own the business. That is what makes a verified mark worth anything.</p></div>
+  </section>
+
+  <div class="honest">
+    <h4>What we will not do</h4>
+    <p>We will not invent a field. If your site does not publish a phone number, the field stays empty rather than being filled with a guess.</p>
+    <p>We will not mark you verified because your site loaded. A successful fetch proves the site exists — not that it is yours.</p>
+    <p>We will not overwrite anything you type. Machine-read values live in their own namespace and yours always win.</p>
+  </div>
+</main>
+
+<footer><div class="wrap">
+  <span>© 2026 Zoi</span>
+  <span><a href="/explore">Directory</a> · <a href="/community">Community</a> · <a href="/social">Business</a></span>
+</div></footer>
+
+<script src="/assets/zoi-core.js"></script>
+<script src="/assets/zoi-theme.js"></script>
+<script>
+(function(){
+  'use strict';
+  var C = window.ZoiCore;
+  var $ = function(id){ return document.getElementById(id); };
+  function esc(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,function(m){
+      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
+    });
+  }
+
+  /* The same refusals the database and the crawler apply, run here so the
+     obvious mistake is answered instantly instead of after a round trip. This
+     is a courtesy, not a control — the real check is at fetch time. */
+  function localRefusal(raw){
+    var v = String(raw||'').trim();
+    if(!v) return 'Enter your website address.';
+    if(!/^https?:\/\//i.test(v)) v = 'https://' + v;
+    var host;
+    try{ host = new URL(v).hostname.toLowerCase(); }
+    catch(e){ return 'That does not look like a web address.'; }
+    if(!host || host.indexOf('.') === -1) return 'That does not look like a web address.';
+    if(/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return 'Enter a domain name, not an IP address.';
+    if(/(^|\.)(localhost|internal|intranet|lan|home|corp|private|test|example|invalid|onion|local)$/.test(host))
+      return 'That is a private or reserved address.';
+    return null;
+  }
+
+  function panel(title, sub, body, actions){
+    $('panel').classList.add('on');
+    $('p-title').textContent = title;
+    $('p-sub').textContent = sub || '';
+    $('p-body').innerHTML = body || '';
+    $('p-actions').innerHTML = actions || '';
+    $('panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+  }
+
+  /* Every value carries where it came from. A field with no provenance is a
+     field we should not be showing. */
+  function fieldRows(enrich){
+    var fields = (enrich && enrich.fields) || {};
+    var keys = Object.keys(fields);
+    if(!keys.length) return '';
+    return keys.map(function(k){
+      var f = fields[k];
+      var val = (f && typeof f === 'object') ? f.value : f;
+      var via = (f && typeof f === 'object') ? f.via : '';
+      if(val == null || val === '') return '';
+      return '<div class="frow"><span class="k">' + esc(k.replace(/_/g,' ')) + '</span>' +
+             '<span class="v">' + esc(String(val).slice(0,300)) +
+             (via ? '<span class="prov">from ' + esc(via) + '</span>' : '') + '</span></div>';
+    }).join('');
+  }
+
+  var POLL_MS = 4000, POLL_MAX = 15;
+
+  async function poll(slug, tries){
+    tries = tries || 0;
+    var r;
+    try{ r = await C.api.rpc('intake_status', { p_slug: slug }, { auth: 'require' }); }
+    catch(e){ r = null; }
+    var d = Array.isArray(r) ? r[0] : r;
+    var en = (d && d.enrich) || {};
+
+    if(en.checked_at){
+      var rows = fieldRows(en);
+      if(en.status && en.status !== 'ok' && !rows){
+        // A refusal is information. Say which one it was and let them proceed by hand.
+        panel('We could not read that page',
+          'Your draft is saved either way — you can fill it in yourself.',
+          '<div class="frow"><span class="k">Reason</span><span class="v">' + esc(en.status) +
+          (en.error ? ' — ' + esc(en.error) : '') + '</span></div>',
+          '<a class="btn btn-primary" href="/social">Fill it in myself →</a>');
+        return;
+      }
+      panel('Here is what your site says',
+        'Check it. Correct anything. Nothing is published yet.',
+        rows || '<p class="sub">We reached the page but it publishes no structured details.</p>',
+        '<a class="btn btn-primary" href="/social">Confirm and continue →</a>' +
+        ' <span class="badge">Draft · unverified</span>');
+      return;
+    }
+
+    if(tries >= POLL_MAX){
+      panel('Still working',
+        'Your draft is saved. We will keep trying and you can carry on now.',
+        '<div class="statusline">Enrichment runs on a schedule — this can take a few minutes at busy times.</div>',
+        '<a class="btn btn-primary" href="/social">Continue to your page →</a>');
+      return;
+    }
+    setTimeout(function(){ poll(slug, tries + 1); }, POLL_MS);
+  }
+
+  $('f').addEventListener('submit', async function(ev){
+    ev.preventDefault();
+    $('err').textContent = '';
+    var raw = $('site').value;
+    var bad = localRefusal(raw);
+    if(bad){ $('err').textContent = bad; $('site').focus(); return; }
+
+    var btn = $('go');
+    btn.disabled = true; btn.textContent = 'Reading…';
+    panel('Reading your site…', 'One request, then we show you everything we found.',
+      '<div class="statusline"><span class="spin"></span>Fetching and checking the address…</div>', '');
+
+    var res;
+    try{
+      res = await C.api.rpc('intake_submit', { p_website: raw }, { auth: 'require' });
+    }catch(e){
+      // Signing in is the honest ask: an open endpoint that makes a server fetch
+      // a named host is a crawler pointed at other people's sites.
+      var m = String((e && e.message) || e);
+      if(/401|403|auth/i.test(m)){
+        panel('Sign in first',
+          'One email code. It stops this becoming a way to aim our crawler at other people.',
+          '', '<a class="btn btn-primary" href="/social">Sign in and come back →</a>');
+      } else {
+        panel('That did not go through', m, '', '');
+      }
+      btn.disabled = false; btn.textContent = 'Read my site';
+      return;
+    }
+
+    var d = Array.isArray(res) ? res[0] : res;
+    btn.disabled = false; btn.textContent = 'Read my site';
+
+    if(!d || d.ok === false){
+      var code = (d && d.error) || 'unknown';
+      var human = {
+        auth_required: 'Sign in first — one email code.',
+        website_required: 'Enter your website address.',
+        credentials_in_url: 'Remove the username from the address.',
+        invalid_host: 'That does not look like a web address.',
+        ip_literal: 'Enter a domain name, not an IP address.',
+        reserved_host: 'That is a private or reserved address.',
+        rate_limited: (d && d.detail) || 'You have reached today\u2019s limit.'
+      }[code] || code;
+      panel('We cannot use that address', human, '', '');
+      return;
+    }
+
+    if(d.status === 'already_listed'){
+      panel('You are already here',
+        esc(d.name || 'This business') + ' is in the directory. Claim it rather than starting a second entry.',
+        '', '<a class="btn btn-primary" href="/p/' + encodeURIComponent(d.slug) + '">Open and claim it →</a>');
+      return;
+    }
+
+    poll(d.slug, 0);
+  });
+})();
+</script>
+</body>
+</html>
