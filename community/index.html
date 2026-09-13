@@ -156,6 +156,13 @@ footer a:hover{color:var(--tx)}
 .ctab{background:none;border:none;color:var(--mut);font-weight:600;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer;transition:.2s;white-space:nowrap}
 .ctab:hover{color:var(--tx);background:var(--bg3)}
 .ctab.on{color:var(--gold);background:rgba(212,175,95,.12);font-weight:700}
+
+#zsheet{position:fixed;inset:0;z-index:500;display:none}
+#zsheet.on{display:block}
+#zsheet .zsh-bd{position:absolute;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px)}
+#zsheet .zsh-pn{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,92vw);max-height:84vh;overflow:auto;background:var(--bg2);border:1px solid var(--line2);border-radius:16px;padding:20px}
+@media(max-width:600px){#zsheet .zsh-pn{top:auto;bottom:0;transform:translateX(-50%);width:100%;border-radius:18px 18px 0 0;max-height:88vh}}
+.story-item:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:10px}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -174,37 +181,37 @@ footer a:hover{color:var(--tx)}
 <header class="hero"><div class="wrap">
   <div class="mono" style="margin-bottom:14px">The Global Pan-Hellenic Agora</div>
   <h1>The Greek world, <span class="serif">talking.</span></h1>
-  <p class="hsub">Share news, recommendations, festival gatherings, and traditions. Tag your local taverna, church, or community association — this is our worldwide square.</p>
+  <p class="hsub">What the diaspora is saying today — recommendations, gatherings, and the days worth marking. Tag the taverna, the parish, the association.</p>
   
   <!-- Stories & Reels Bar -->
   <div class="stories-bar" style="margin-top:20px;justify-content:center">
-    <div class="story-item" onclick="openStoryModal('ritual')">
+    <div class="story-item" role="button" tabindex="0" aria-label="Daily Ritual" onclick="openStoryModal('ritual')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStoryModal('ritual')}">
       <div class="story-ring gold"><div class="story-av">🏛️</div></div>
       <span>Daily Ritual</span>
     </div>
-    <div class="story-item" onclick="openStoryModal('reels')">
+    <div class="story-item" role="button" tabindex="0" aria-label="Aegean Reels" onclick="openStoryModal('reels')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStoryModal('reels')}">
       <div class="story-ring sea"><div class="story-av">🎬</div></div>
       <span>Aegean Reels</span>
     </div>
-    <div class="story-item" onclick="openStoryModal('festivals')">
+    <div class="story-item" role="button" tabindex="0" aria-label="Festivals" onclick="openStoryModal('festivals')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStoryModal('festivals')}">
       <div class="story-ring green"><div class="story-av">🎭</div></div>
       <span>Festivals</span>
     </div>
-    <div class="story-item" onclick="openStoryModal('food')">
+    <div class="story-item" role="button" tabindex="0" aria-label="Tavernas" onclick="openStoryModal('food')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStoryModal('food')}">
       <div class="story-ring gold"><div class="story-av">🍷</div></div>
       <span>Tavernas</span>
     </div>
-    <div class="story-item" onclick="openStoryModal('creators')">
+    <div class="story-item" role="button" tabindex="0" aria-label="Voices" onclick="openStoryModal('creators')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openStoryModal('creators')}">
       <div class="story-ring sea"><div class="story-av">🎙️</div></div>
       <span>Voices</span>
     </div>
   </div>
 
   <div class="nameday" id="nameday"><span class="dot"></span><span id="nameday-txt"></span></div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;justify-content:center">
-    <button class="fbtn" style="background:rgba(2,132,199,.15);border-color:var(--acc);color:var(--acc)" onclick="fillPrompt('🌟 Recommending a wonderful Greek spot:')">🌟 Share a Recommendation</button>
-    <button class="fbtn" style="background:rgba(212,175,95,.15);border-color:var(--gold);color:var(--gold)" onclick="fillPrompt('🎉 Wishing Χρόνια Πολλά to everyone celebrating today!')">🎉 Wish Χρόνια Πολλά</button>
-    <button class="fbtn" style="background:rgba(91,196,154,.15);border-color:var(--green);color:var(--green)" onclick="fillPrompt('🎭 Upcoming Greek Festival / Event update:')">🎭 Announce an Event</button>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;justify-content:center" id="quickacts">
+    <button class="fbtn" style="background:rgba(2,132,199,.15);border-color:var(--acc);color:var(--acc)" onclick="fillPrompt('Somewhere worth knowing about: ')">Recommend a place</button>
+    <button class="fbtn" id="qa-nameday" hidden style="background:rgba(212,175,95,.15);border-color:var(--gold);color:var(--gold)"></button>
+    <button class="fbtn" style="background:rgba(91,196,154,.15);border-color:var(--green);color:var(--green)" onclick="fillPrompt('Coming up: ')">Post an event</button>
   </div>
 </div></header>
 
@@ -220,23 +227,22 @@ footer a:hover{color:var(--tx)}
     
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
       <div style="background:var(--bg);padding:12px 14px;border-radius:10px;border:1px solid var(--line)">
-        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Orthodox Synaxarion</div>
-        <div style="font-size:14px;font-weight:700;color:var(--tx)" id="comm-feast-title">Commemoration of Saints</div>
-        <div style="font-size:12px;color:var(--gold);margin-top:2px" id="comm-nameday-names">Χρόνια Πολλά!</div>
+        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:4px">Orthodox Calendar</div>
+        <div style="font-size:14px;font-weight:700;color:var(--tx)" id="comm-feast-title">Reading the calendar…</div>
+        <div style="font-size:12px;color:var(--gold);margin-top:2px" id="comm-nameday-names"></div>
+        <div style="font-size:11.5px;color:var(--dim);margin-top:4px" id="comm-fast"></div>
       </div>
 
       <div style="background:var(--bg);padding:12px 14px;border-radius:10px;border:1px solid var(--line)">
         <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--acc);margin-bottom:4px">Greek Word of the Day</div>
-        <div style="font-size:16px;font-family:'Fraunces';font-weight:600;color:var(--tx)">Φιλοξενία <button class="fbtn" style="padding:2px 8px;font-size:11px;min-height:22px" onclick="playWordAudio()">🔊 Listen</button></div>
-        <div style="font-size:11.5px;color:var(--mut)">Sacred Hospitality &amp; Warmth</div>
+        <div style="font-size:16px;font-family:'Fraunces';font-weight:600;color:var(--tx)"><span id="wotd-word">—</span> <button class="fbtn" style="padding:2px 8px;font-size:11px;min-height:22px" onclick="playWordAudio()" aria-label="Hear this word pronounced">🔊 Listen</button></div>
+        <div style="font-size:11.5px;color:var(--mut)" id="wotd-gloss"></div>
       </div>
 
       <div style="background:var(--bg);padding:12px 14px;border-radius:10px;border:1px solid var(--line)">
-        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--sea);margin-bottom:4px">Live Greece Weather</div>
-        <div style="display:flex;gap:10px;font-size:12px;font-weight:700;color:var(--tx)">
-          <span>🏛 28°C</span><span>🏰 26°C</span><span>🏖 27°C</span><span>⛵ 25°C</span>
-        </div>
-        <div style="font-size:11.5px;color:var(--dim);margin-top:2px">Athens · Thess · Chania · Santorini</div>
+        <div style="font-size:10.5px;font-weight:800;text-transform:uppercase;color:var(--sea);margin-bottom:4px" id="wx-head">Greece Weather</div>
+        <div style="display:flex;gap:10px;font-size:12px;font-weight:700;color:var(--tx);flex-wrap:wrap" id="wx-temps"><span style="color:var(--dim);font-weight:500">Checking…</span></div>
+        <div style="font-size:11.5px;color:var(--dim);margin-top:2px" id="wx-foot">Athens · Thessaloniki · Chania · Santorini</div>
       </div>
     </div>
   </div>
@@ -426,7 +432,7 @@ document.addEventListener('DOMContentLoaded',()=>{
     Array.prototype.forEach.call(ff.querySelectorAll('.fbtn'),x=>x.classList.toggle('on',x===b));
     renderFeed();
   });
-  nameday(); refreshFeed();
+  nameday(); refreshFeed(); renderRitual(); loadWeather();
 });
 function toggleTag(){
   const p=document.getElementById('tag-pop');
@@ -491,25 +497,224 @@ function setComposerType(type){
   }
 }
 
-function playWordAudio(){
-  if('speechSynthesis' in window){
-    const u = new SpeechSynthesisUtterance('Φιλοξενία');
-    u.lang = 'el-GR';
-    window.speechSynthesis.speak(u);
+/* ---- the daily ritual ----
+   Every value here is computed or fetched. The page previously hardcoded
+   "Commemoration of Saints / Χρόνια Πολλά!" and a fixed set of temperatures,
+   which meant that on a day with no feast and no namedays — today, 13 September
+   — it told the whole diaspora to celebrate nothing in particular, and missed
+   that the Exaltation of the Holy Cross falls tomorrow. */
+
+/* Curated vocabulary, cycled by date so the word genuinely changes daily.
+   Glosses are literal; nothing here is invented etymology. */
+const WOTD = [
+  ['Φιλοξενία', 'filo-xe-NEE-a', 'Love of the stranger — the duty to treat a guest as sacred'],
+  ['Μεράκι', 'me-RA-ki', 'Doing something with your soul in it'],
+  ['Κέφι', 'KE-fi', 'The high spirit that takes over a room'],
+  ['Παρέα', 'pa-RE-a', 'The company you keep — the point of the evening'],
+  ['Νόστος', 'NO-stos', 'The homecoming; the root of nostalgia'],
+  ['Φιλότιμο', 'filo-TI-mo', 'Love of honour — doing right without being asked'],
+  ['Ελευθερία', 'elef-the-REE-a', 'Freedom'],
+  ['Αγάπη', 'a-GA-pi', 'Love, in its unconditional sense'],
+  ['Χαρά', 'ha-RA', 'Joy'],
+  ['Γλέντι', 'GLEN-di', 'A feast that turns into music and dancing'],
+  ['Σιγά σιγά', 'si-GA si-GA', 'Slowly, slowly — an instruction and a philosophy'],
+  ['Ψυχή', 'psi-HEE', 'Soul'],
+  ['Θάλασσα', 'THA-la-sa', 'The sea'],
+  ['Παλικάρι', 'pali-KA-ri', 'A young man of courage'],
+  ['Ευχαριστώ', 'efhari-STO', 'Thank you — literally "I give grace"'],
+];
+function todayISO(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function dayIndex(iso){
+  return Math.floor(Date.UTC(+iso.slice(0,4), +iso.slice(5,7)-1, +iso.slice(8,10)) / 86400000);
+}
+let WORD = WOTD[0];
+
+function renderRitual(){
+  const iso = todayISO();
+  WORD = WOTD[((dayIndex(iso) % WOTD.length) + WOTD.length) % WOTD.length];
+  const w = document.getElementById('wotd-word');
+  const g = document.getElementById('wotd-gloss');
+  if(w) w.textContent = WORD[0];
+  if(g) g.textContent = WORD[2];
+
+  const dEl = document.getElementById('live-comm-date');
+  if(dEl){
+    try{ dEl.textContent = new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long'}); }
+    catch(e){ dEl.textContent = iso; }
+  }
+
+  const O = window.ZoiOrthocal;
+  const title = document.getElementById('comm-feast-title');
+  const names = document.getElementById('comm-nameday-names');
+  const fast  = document.getElementById('comm-fast');
+  if(!O || !title) return;
+
+  const info = O.dayInfo(iso);
+  if(info.feasts && info.feasts.length){
+    title.textContent = info.feasts.map(f=>f.name).join(' · ');
   } else {
-    toast('Φιλοξενία — Sacred Hospitality');
+    // Saying "no feast today" and pointing at the next one is more use than
+    // inventing a commemoration, and it is the truth.
+    const next = (O.upcomingFeasts(iso, 60) || [])[0];
+    title.textContent = next
+      ? 'No feast today · next: ' + next.name
+      : 'No feast recorded today';
+    if(next && next.date){
+      const days = dayIndex(next.date) - dayIndex(iso);
+      title.textContent = 'No feast today · ' + next.name +
+        (days === 1 ? ' tomorrow' : days > 1 ? ' in ' + days + ' days' : '');
+    }
+  }
+  if(names){
+    names.textContent = (info.namedays && info.namedays.length)
+      ? 'Χρόνια πολλά: ' + info.namedays.join(', ')
+      : 'No namedays today';
+    names.style.color = (info.namedays && info.namedays.length) ? 'var(--gold)' : 'var(--dim)';
+  }
+  if(fast) fast.textContent = info.fast ? info.fast.label : '';
+
+  // The greeting shortcut only appears when somebody is actually celebrating,
+  // and it names them. Offering "Wish Χρόνια Πολλά" on a day with no namedays
+  // invites the user to congratulate nobody.
+  const qa = document.getElementById('qa-nameday');
+  if(qa){
+    if(info.namedays && info.namedays.length){
+      const who = info.namedays.slice(0,2).join(' & ');
+      qa.hidden = false;
+      qa.textContent = 'Χρόνια πολλά, ' + who;
+      qa.onclick = function(){ fillPrompt('Χρόνια πολλά to every ' + info.namedays.join(', ') + ' celebrating today. '); };
+    } else {
+      qa.hidden = true;
+      qa.onclick = null;
+    }
   }
 }
 
+/* Open-Meteo: no key, no account, CORS-clean. The card only claims to be live
+   once a response actually lands. */
+const WX = [
+  ['Athens', 37.98, 23.73, '🏛'],
+  ['Thessaloniki', 40.64, 22.94, '🏰'],
+  ['Chania', 35.51, 24.02, '🏖'],
+  ['Santorini', 36.39, 25.46, '⛵'],
+];
+async function loadWeather(){
+  const head = document.getElementById('wx-head');
+  const box  = document.getElementById('wx-temps');
+  const foot = document.getElementById('wx-foot');
+  if(!box) return;
+  try{
+    const url = 'https://api.open-meteo.com/v1/forecast'
+      + '?latitude=' + WX.map(c=>c[1]).join(',')
+      + '&longitude=' + WX.map(c=>c[2]).join(',')
+      + '&current=temperature_2m&timezone=Europe%2FAthens';
+    const r = await fetch(url, { mode:'cors' });
+    if(!r.ok) throw new Error('weather ' + r.status);
+    const j = await r.json();
+    const rows = Array.isArray(j) ? j : [j];
+    const out = rows.map((x,i)=>{
+      const t = x && x.current && x.current.temperature_2m;
+      if(t == null) return '';
+      return '<span title="' + esc(WX[i][0]) + '">' + WX[i][3] + ' ' + Math.round(t) + '°C</span>';
+    }).filter(Boolean);
+    if(!out.length) throw new Error('no readings');
+    box.innerHTML = out.join('');
+    if(head) head.textContent = 'Live Greece Weather';
+    if(foot) foot.textContent = WX.map(c=>c[0]).join(' · ') + ' · updated just now';
+  }catch(e){
+    // Never leave a stale number under a "live" heading.
+    box.innerHTML = '<span style="color:var(--dim);font-weight:500">Weather unavailable right now</span>';
+    if(head) head.textContent = 'Greece Weather';
+    if(foot) foot.textContent = WX.map(c=>c[0]).join(' · ');
+  }
+}
+
+function playWordAudio(){
+  if('speechSynthesis' in window){
+    const u = new SpeechSynthesisUtterance(WORD[0]);
+    u.lang = 'el-GR';
+    window.speechSynthesis.speak(u);
+  } else {
+    toast(WORD[0] + ' — ' + WORD[1]);
+  }
+}
+
+/* The highlight circles now go somewhere. Each one either filters the feed in
+   place or opens the directory query behind it; none of them announce an
+   action they do not perform. */
 function openStoryModal(kind){
-  const titles = {
-    ritual: '🏛️ Daily Diaspora Ritual',
-    reels: '🎬 Aegean Reels & Culture Clips',
-    festivals: '🎭 Festivals & Panigiria',
-    food: '🍷 Tavernas & Gastronomy',
-    creators: '🎙️ Diaspora Voices & Podcasts'
-  };
-  toast('Opening ' + (titles[kind] || 'Story Highlight') + '…');
+  if(kind === 'ritual'){ showRitualDetail(); return; }
+  if(kind === 'reels'){
+    FEED_FILTER = 'reels';
+    document.querySelectorAll('#ffilter .fbtn').forEach(b=>b.classList.toggle('on', b.dataset.f === 'reels'));
+    renderFeed();
+    const f = document.getElementById('feed');
+    if(f) f.scrollIntoView({behavior:'smooth', block:'start'});
+    return;
+  }
+  const dest = {
+    festivals: '/explore?c=events',
+    food: '/explore?c=restaurants',
+    creators: '/explore?c=creators'
+  }[kind];
+  if(dest) location.href = dest;
+}
+
+function showRitualDetail(){
+  const O = window.ZoiOrthocal;
+  const iso = todayISO();
+  let html = '';
+  if(O){
+    const info = O.dayInfo(iso);
+    const dateLine = (function(){ try{ return new Date().toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'}); }catch(e){ return iso; } })();
+    html += '<p class="mono" style="margin-bottom:12px">' + esc(dateLine) + '</p>';
+    html += '<h3 style="font-size:17px;margin-bottom:4px">' +
+      (info.feasts.length ? esc(info.feasts.map(f=>f.name).join(' · ')) : 'No feast today') + '</h3>';
+    html += '<p style="color:var(--mut);font-size:14px;margin-bottom:14px">' +
+      (info.namedays.length ? 'Χρόνια πολλά to ' + esc(info.namedays.join(', ')) : 'Nobody has a nameday today.') +
+      ' · ' + esc(info.fast ? info.fast.label : '') + '</p>';
+    const up = O.upcomingFeasts(iso, 45) || [];
+    if(up.length){
+      html += '<h4 style="font-size:12px;text-transform:uppercase;letter-spacing:.1em;color:var(--dim);margin:16px 0 8px">Coming up</h4>';
+      html += up.slice(0,6).map(function(f){
+        const days = f.date ? (dayIndex(f.date) - dayIndex(iso)) : null;
+        const when = days === 0 ? 'today' : days === 1 ? 'tomorrow' : days != null ? 'in ' + days + ' days' : '';
+        return '<div class="srow"><div class="sb"><b>' + esc(f.name) + '</b><span>' + esc(when) + '</span></div></div>';
+      }).join('');
+    }
+  } else {
+    html = '<p style="color:var(--mut)">The calendar could not load.</p>';
+  }
+  openSheet('The Orthodox day', html);
+}
+
+/* One reusable sheet, so a highlight opens something real instead of a toast. */
+function openSheet(title, html){
+  let el = document.getElementById('zsheet');
+  if(!el){
+    el = document.createElement('div');
+    el.id = 'zsheet';
+    el.innerHTML = '<div class="zsh-bd"></div><div class="zsh-pn" role="dialog" aria-modal="true" aria-labelledby="zsh-t">' +
+      '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+      '<b id="zsh-t" style="font-size:16px"></b>' +
+      '<button id="zsh-x" class="btn g" style="margin-left:auto;padding:5px 11px" aria-label="Close">✕</button></div>' +
+      '<div id="zsh-b"></div></div>';
+    document.body.appendChild(el);
+    el.querySelector('.zsh-bd').addEventListener('click', closeSheet);
+    el.querySelector('#zsh-x').addEventListener('click', closeSheet);
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeSheet(); });
+  }
+  el.querySelector('#zsh-t').textContent = title;
+  el.querySelector('#zsh-b').innerHTML = html;
+  el.classList.add('on');
+  const x = el.querySelector('#zsh-x'); if(x) x.focus();
+}
+function closeSheet(){
+  const el = document.getElementById('zsheet');
+  if(el) el.classList.remove('on');
 }
 
 const COMMUNITY_SAMPLE_POSTS = [
@@ -796,6 +1001,7 @@ async function nameday(){
   }catch(e){}
 }
 </script>
+<script src="/assets/suite/_orthocal.js"></script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
 <script src="/assets/zoi-theme.js"></script>
