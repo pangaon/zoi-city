@@ -39,6 +39,28 @@
 
 BEGIN;
 
+-- Pre-flight. The INSERT below was written against column names read from the
+-- other migrations rather than from the live schema, so check them up front and
+-- fail with a readable message instead of part-way through.
+DO $preflight$
+DECLARE
+  missing text;
+BEGIN
+  SELECT string_agg(c, ', ')
+    INTO missing
+    FROM unnest(ARRAY['slug','name','website','city','country','entity_type',
+                      'publish_status','verification_status','claim_status','profile']) AS c
+   WHERE NOT EXISTS (
+     SELECT 1 FROM information_schema.columns
+      WHERE table_schema = 'zoi' AND table_name = 'listings' AND column_name = c);
+
+  IF missing IS NOT NULL THEN
+    RAISE EXCEPTION
+      'zoi.listings is missing: %. Adjust the INSERT in this migration to match the real schema.', missing;
+  END IF;
+END
+$preflight$;
+
 -- Registrable-ish host for duplicate detection. Not a public-suffix parser: it
 -- keeps the last two labels, plus three for the common second-level TLDs the
 -- diaspora actually uses (.co.uk, .com.au, .com.gr). Good enough to stop the
