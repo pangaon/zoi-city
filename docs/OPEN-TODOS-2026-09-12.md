@@ -6,7 +6,7 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 
 - [ ] Add `SUPABASE_ACCESS_TOKEN` to GitHub Actions secrets.
 - [ ] Confirm migrations 0034, 0035, and 0036 applied successfully in Supabase.
-- [ ] Re-run contract tests and require the Event OS REST lockdown checks to return 401/403, not 404.
+- [ ] Re-run `STRICT_EVENT_OS=1 node tests/contract/run.mjs` and require the Event OS REST lockdown checks to return 401/403, not 404.
 - [ ] Sign in with a real workspace member and verify: event list, event switch, floor-plan save, reload, team list, and team invite.
 - [ ] Confirm Vercel serves the pushed commit and cache-busting URLs return the new Event OS title and assets.
 - [ ] Add an authenticated production smoke test for workspace isolation: member of workspace A cannot read or mutate workspace B.

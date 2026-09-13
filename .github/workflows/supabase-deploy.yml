@@ -31,6 +31,9 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
+      - name: Verify Event OS RLS after migration
+        run: STRICT_EVENT_OS=1 node tests/contract/run.mjs
+
       - name: Notify deployment
         if: success()
         run: echo "✅ Supabase migrations deployed successfully"
