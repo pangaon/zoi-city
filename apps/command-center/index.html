@@ -284,12 +284,15 @@ td .st{color:var(--ink);font-weight:600}td a{color:var(--acc)}
   AUTH GATE — Supabase OTP session, enforced again by the admin RPCs.
    ============================================================================ */
 let UNLOCKED=false;
-function assertUnlocked(){if(!UNLOCKED)throw new Error('Locked — sign in first');}
+function assertUnlocked(){if(!UNLOCKED)throw new Error('auth:locked');}
 function gateHide(){const g=document.getElementById('gate');if(g)g.classList.add('hide');}
+function gateShow(){const g=document.getElementById('gate');if(g)g.classList.remove('hide');}
 async function initGate(){
-  const fresh=await ZoiCore.auth.ensureFresh();
-  if(fresh){UNLOCKED=true;gateHide();boot();return;}
-  const f=document.getElementById('gateForm'),email=document.getElementById('gateEmail'),code=document.getElementById('gateCode'),submit=document.getElementById('gateSubmit'),err=document.getElementById('gateErr');
+  try{
+    const fresh=await ZoiCore.auth.ensureFresh();
+    if(fresh){UNLOCKED=true;gateHide();boot();return;}
+  }catch(e){console.error('Auth check failed:',e);}
+  UNLOCKED=false;gateShow();const f=document.getElementById('gateForm'),email=document.getElementById('gateEmail'),code=document.getElementById('gateCode'),submit=document.getElementById('gateSubmit'),err=document.getElementById('gateErr');
   f.addEventListener('submit',async ev=>{ev.preventDefault();err.textContent='';
     if(code.hidden){try{await ZoiCore.otp.send(email.value.trim());code.hidden=false;email.disabled=true;submit.textContent='Verify code';code.focus();}catch(e){err.textContent=e.message||'Could not send code.';}}
     else{try{await ZoiCore.otp.verify(email.value.trim(),code.value.trim());UNLOCKED=true;gateHide();boot();}catch(e){err.textContent=e.message||'Invalid or expired code.';code.value='';code.focus();}}
@@ -362,7 +365,7 @@ function renderDir(){
  const pv=document.getElementById('prev'),nx=document.getElementById('next');if(pv)pv.onclick=()=>{PAGE--;renderDir();};if(nx)nx.onclick=()=>{PAGE++;renderDir();};
  renderBulk();
 }
-function renderBulk(){const el=document.getElementById('bulkbar');if(!SEL.size){el.innerHTML='';return;}
+function renderBulk(){const el=document.getElementById('bulkbar');if(!SEL.size||!UNLOCKED){el.innerHTML='';return;}
  el.innerHTML='<div class="bulk"><b>'+SEL.size+' selected</b><button class="mini g" onclick="bulk(\'zoi_action_publish\',\'Published\')">Publish</button><button class="mini g" onclick="bulk(\'zoi_action_verify\',\'Verified\')">Verify</button><button class="mini buy" onclick="bulk(\'zoi_action_list_vendor\',\'Listed on BuyGreek\')">List on BuyGreek</button><button class="mini" onclick="bulk(\'zoi_action_unpublish\',\'Hidden\')">Hide</button><button class="mini" onclick="SEL.clear();renderDir();">Clear</button></div>';}
 window.bulk=async function(fn,msg){const slugs=[...SEL];if(!slugs.length)return;toast('Applying to '+slugs.length+'…');try{for(const s of slugs){await act(fn,s);}toast(msg+' '+slugs.length);SEL.clear();await load();}catch(e){toast('Bulk failed: '+(e.message||e));}};
 function exportCSV(){const rows=sorted(filtered());const cols=['name','et','category','city','country','vs','ps','phone','email','address','web'];
@@ -371,7 +374,7 @@ function exportCSV(){const rows=sorted(filtered());const cols=['name','et','cate
 function openDetail(r){if(!r)return;const d=document.getElementById('drawer');d.querySelector('.dt').textContent=r.name;d.querySelector('.dsub').textContent=(r.category||r.et)+' · '+(r.city||'')+', '+(r.country||'');
  const kv=[['Type',r.et],['Category',r.category],['Publish',r.ps],['Verification',r.vs],['Trust',r.trust],['Marketplace',r.ms],['Booking',r.booking],['City',r.city],['Country',r.country],['Address',r.address],['Phone',r.phone],['Email',r.email],['Hours',r.hours],['Price',r.price],['Rating',r.rating],['Website',r.web?'<a href="'+esc(r.web)+'" target="_blank" rel="noopener">'+esc(r.web)+'</a>':'']];
  d.querySelector('.dbody').innerHTML=(r.descr?'<p style="color:var(--mut);font-size:13px">'+esc(r.descr)+'</p>':'')+kv.filter(x=>x[1]!==''&&x[1]!=null).map(x=>'<div class="drow"><span class="k">'+x[0]+'</span><span class="v">'+(typeof x[1]==='string'&&x[1].indexOf('<a')===0?x[1]:esc(x[1]))+'</span></div>').join('')+
-  '<div class="dact"><button onclick="doAction(\'zoi_action_publish\',\''+esc(r.slug)+'\',\'Published\')">Publish</button><button onclick="doAction(\'zoi_action_verify\',\''+esc(r.slug)+'\',\'Verified\')">Verify</button><button onclick="doAction(\'zoi_action_list_vendor\',\''+esc(r.slug)+'\',\'Listed on BuyGreek\')">List on BuyGreek</button><button onclick="doAction(\'zoi_action_feature_content\',\''+esc(r.slug)+'\',\'Queued for Us Greeks Can\')">Feature</button></div>';
+  '<div class="dact"><button onclick="if(!UNLOCKED){gateShow();return;}doAction(\'zoi_action_publish\',\''+esc(r.slug)+'\',\'Published\')">Publish</button><button onclick="if(!UNLOCKED){gateShow();return;}doAction(\'zoi_action_verify\',\''+esc(r.slug)+'\',\'Verified\')">Verify</button><button onclick="if(!UNLOCKED){gateShow();return;}doAction(\'zoi_action_list_vendor\',\''+esc(r.slug)+'\',\'Listed on BuyGreek\')">List on BuyGreek</button><button onclick="if(!UNLOCKED){gateShow();return;}doAction(\'zoi_action_feature_content\',\''+esc(r.slug)+'\',\'Queued for Us Greeks Can\')">Feature</button></div>';
  d.classList.add('open');}
 
 function tbl(el,cols,rows,empt){el=document.getElementById(el);if(!rows||!rows.length){el.innerHTML='<div class="empty">'+(empt||'Nothing here.')+'</div>';return;}el.innerHTML='<table><thead><tr>'+cols.map(c=>'<th class="x">'+c.t+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+cols.map(c=>'<td>'+c.f(r)+'</td>').join('')+'</tr>').join('')+'</tbody></table>';}
@@ -384,7 +387,7 @@ function renderRest(){
  tbl('t-seo',[{t:'City',f:r=>'<span class="st">'+esc(r.city)+'</span>'},{t:'Country',f:r=>esc(r.country)},{t:'Category',f:r=>esc(r.category)},{t:'Published',f:r=>r.n}],D.seo,'No SEO pages yet.');
  tbl('t-tr',[{t:'Topic',f:r=>'<span class="st">'+esc(r.topic)+'</span>'},{t:'Category',f:r=>esc(r.cat)},{t:'Status',f:r=>pill(r.status)}],D.trends,'No trends yet.');
  tbl('t-op',[{t:'Angle',f:r=>'<span class="st">'+esc(r.angle)+'</span>'},{t:'Platforms',f:r=>esc(r.p)},{t:'Status',f:r=>pill(r.status)}],D.opps,'No opportunities yet.');
- const mk=D.mkt||[];document.getElementById('t-mk').innerHTML=mk.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Type</th><th class="x">Status</th><th class="x">City</th><th class="x">Action</th></tr></thead><tbody>'+mk.map(r=>'<tr><td><span class="st">'+esc(r.name)+'</span></td><td>'+pill(r.lt)+'</td><td>'+pill(r.status)+'</td><td>'+esc(r.city)+'</td><td>'+(r.status!=='active'?'<button class="mini buy" onclick="doAction(\'zoi_action_list_vendor\',\''+esc(r.slug)+'\',\'Listed\')">List</button>':'<span class="pill g">listed</span>')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">No marketplace candidates.</div>';
+ const mk=D.mkt||[];document.getElementById('t-mk').innerHTML=mk.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Type</th><th class="x">Status</th><th class="x">City</th><th class="x">Action</th></tr></thead><tbody>'+mk.map(r=>'<tr><td><span class="st">'+esc(r.name)+'</span></td><td>'+pill(r.lt)+'</td><td>'+pill(r.status)+'</td><td>'+esc(r.city)+'</td><td>'+(r.status!=='active'?'<button class="mini buy" onclick="if(!UNLOCKED){gateShow();return;}doAction(\'zoi_action_list_vendor\',\''+esc(r.slug)+'\',\'Listed\')">List</button>':'<span class="pill g">listed</span>')+'</td></tr>').join('')+'</tbody></table>':'<div class="empty">No marketplace candidates.</div>';
 }
 
 function renderCoverageDrill(){var el=document.getElementById('covbody');var t=document.getElementById('covtitle');var dir=D.directory||[];
@@ -405,13 +408,13 @@ async function callRpc(fn,params){assertUnlocked();params=params||{};
  var r=await fetch(REST+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:ANON,Authorization:'Bearer '+bearer(),'Content-Type':'application/json'},body:JSON.stringify(params)});if(!r.ok)throw new Error('HTTP '+r.status);}
 window.doIt=async function(fn,params,msg){try{toast('Working\u2026');await callRpc(fn,params);toast(msg||'Done');await loadInbox(true);}catch(e){toast('Failed: '+(e.message||e));}};
 async function loadInbox(force){
- if(!UNLOCKED)return;
+ assertUnlocked();
  if(!INBOX||force){try{assertUnlocked();if(window.cowork&&window.cowork.callMcpTool){var rows=await q("select public.zoi_admin_inbox() as data");INBOX=(rows[0]&&rows[0].data)||{};}else{var r=await fetch(REST+"/rest/v1/rpc/zoi_admin_inbox",{method:"POST",headers:{apikey:ANON,Authorization:"Bearer "+bearer(),"Content-Type":"application/json"},body:"{}"});if(!r.ok)throw new Error("HTTP "+r.status);INBOX=await r.json();}}catch(e){INBOX={};}}
  var L=(INBOX.leads||[]),C=(INBOX.claims||[]).filter(function(x){return x.status==='claim_pending';}),R=(INBOX.reviews||[]);
  var cl=document.getElementById('c-leads');if(cl)cl.textContent=L.filter(function(x){return x.status==='new';}).length+C.length;
- var el=document.getElementById('t-leads');el.innerHTML=L.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Email</th><th class="x">Plan</th><th class="x">Status</th><th class="x">Actions</th></tr></thead><tbody>'+L.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.email||'')+'</td><td>'+pill(x.plan||x.kind)+'</td><td>'+pill(x.status)+'</td><td><button class="mini g" onclick="doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'contacted\'},\'Marked contacted\')">Contacted</button> <button class="mini buy" onclick="doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'won\'},\'Won!\')">Won</button> <button class="mini" onclick="doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'lost\'},\'Lost\')">Lost</button></td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No leads yet \u2014 they arrive when owners tap \u201cGo Premium\u201d on zoi.city.</div>';
- var ec=document.getElementById('t-claims');ec.innerHTML=C.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Email</th><th class="x">Type</th><th class="x">Actions</th></tr></thead><tbody>'+C.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.email||'')+'</td><td>'+pill(x.claim_type)+'</td><td><button class="mini g" onclick="doIt(\'zoi_claim_set\',{p_id:\''+x.id+'\',p_status:\'claimed\'},\'Approved\')">Approve</button> <button class="mini" onclick="doIt(\'zoi_claim_set\',{p_id:\''+x.id+'\',p_status:\'claim_rejected\'},\'Rejected\')">Reject</button></td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No pending claims.</div>';
- var er=document.getElementById('t-reviews');er.innerHTML=R.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Author</th><th class="x">Rating</th><th class="x">Review</th><th class="x">Action</th></tr></thead><tbody>'+R.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.author)+'</td><td>'+'\u2605'.repeat(x.rating||0)+'</td><td>'+esc((x.body||'').slice(0,90))+'</td><td>'+(x.ms==='hidden'?'<span class="pill gy">hidden</span>':'<button class="mini" onclick="doIt(\'zoi_review_hide\',{p_id:\''+x.id+'\'},\'Hidden\')">Hide</button>')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No reviews yet.</div>';
+ var el=document.getElementById('t-leads');el.innerHTML=L.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Email</th><th class="x">Plan</th><th class="x">Status</th><th class="x">Actions</th></tr></thead><tbody>'+L.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.email||'')+'</td><td>'+pill(x.plan||x.kind)+'</td><td>'+pill(x.status)+'</td><td><button class="mini g" onclick="if(!UNLOCKED){gateShow();return;}doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'contacted\'},\'Marked contacted\')">Contacted</button> <button class="mini buy" onclick="if(!UNLOCKED){gateShow();return;}doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'won\'},\'Won!\')">Won</button> <button class="mini" onclick="if(!UNLOCKED){gateShow();return;}doIt(\'zoi_lead_set\',{p_id:\''+x.id+'\',p_status:\'lost\'},\'Lost\')">Lost</button></td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No leads yet \u2014 they arrive when owners tap \u201cGo Premium\u201d on zoi.city.</div>';
+ var ec=document.getElementById('t-claims');ec.innerHTML=C.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Email</th><th class="x">Type</th><th class="x">Actions</th></tr></thead><tbody>'+C.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.email||'')+'</td><td>'+pill(x.claim_type)+'</td><td><button class="mini g" onclick="if(!UNLOCKED){gateShow();return;}doIt(\'zoi_claim_set\',{p_id:\''+x.id+'\',p_status:\'claimed\'},\'Approved\')">Approve</button> <button class="mini" onclick="if(!UNLOCKED){gateShow();return;}doIt(\'zoi_claim_set\',{p_id:\''+x.id+'\',p_status:\'claim_rejected\'},\'Rejected\')">Reject</button></td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No pending claims.</div>';
+ var er=document.getElementById('t-reviews');er.innerHTML=R.length?'<table><thead><tr><th class="x">Listing</th><th class="x">Author</th><th class="x">Rating</th><th class="x">Review</th><th class="x">Action</th></tr></thead><tbody>'+R.map(function(x){return '<tr><td><span class="st">'+esc(x.name)+'</span></td><td>'+esc(x.author)+'</td><td>'+'\u2605'.repeat(x.rating||0)+'</td><td>'+esc((x.body||'').slice(0,90))+'</td><td>'+(x.ms==='hidden'?'<span class="pill gy">hidden</span>':'<button class="mini" onclick="if(!UNLOCKED){gateShow();return;}doIt(\'zoi_review_hide\',{p_id:\''+x.id+'\'},\'Hidden\')">Hide</button>')+'</td></tr>';}).join('')+'</tbody></table>':'<div class="empty">No reviews yet.</div>';
 }
 const TT={overview:['Founder Command Center','The Greek knowledge graph'],inbox:['Leads, Claims & Reviews','Work demand · moderate UGC'],directory:['Directory Explorer','Filter · sort · act'],review:['Review Queue','Approvals'],sources:['Source Registry','Compliance-gated'],ingestion:['Ingestion Pipeline','Automated'],coverage:['Coverage & SEO','Rollout & pages'],content:['Content & Marketplace','Trends → commerce']};
 function go(s){document.querySelectorAll('.nav').forEach(n=>n.classList.toggle('on',n.dataset.s===s));document.querySelectorAll('#bnav .bi').forEach(n=>n.classList.toggle('on',n.dataset.s===s));document.querySelectorAll('.sec').forEach(x=>x.classList.toggle('on',x.id==='s-'+s));document.getElementById('title').textContent=TT[s][0];document.getElementById('crumb').textContent=TT[s][1];if(s==='overview')renderOverview();if(s==='coverage')renderCoverageDrill();if(s==='inbox')loadInbox();window.scrollTo(0,0);}
@@ -435,21 +438,21 @@ function wireFilters(){
 }
 
 async function load(){const btn=document.getElementById('refresh');btn.classList.add('spin');document.getElementById('sync').textContent='syncing…';document.getElementById('errbox').innerHTML='';
- try{D=await fetchData();const o=D.overview||{};
+ try{assertUnlocked();D=await fetchData();const o=D.overview||{};
    document.getElementById('c-dir').textContent=(o.total_listings||0);document.getElementById('c-rev').textContent=(o.pending_review||0);
    renderOverview();wireFilters();renderDir();renderRest();
    document.getElementById('sync').textContent=new Date().toLocaleTimeString()+' · '+(o.total_listings||0)+' records';
  }catch(e){
    const msg=String(e.message||e);
-   const isAuth=msg.includes('401')||msg.includes('403')||msg.includes('500')||msg.includes('Locked');
+   const isAuth=msg.includes('auth:')||msg.includes('401')||msg.includes('403')||msg.includes('500');
    document.getElementById('errbox').innerHTML='<div class="errbar" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px"><span>'+
      (isAuth?'<b>Operator session required.</b> Sign in with an authorized @zoi.city profile to load metrics.':'<b>Console notice:</b> '+esc(msg))+
-     '</span><div style="display:flex;gap:8px"><button class="mini g" onclick="document.getElementById(\'gate\').classList.remove(\'hide\');">Sign in</button><button class="mini" onclick="load()">Retry</button></div></div>';
-   document.getElementById('sync').textContent='offline';
+     '</span><div style="display:flex;gap:8px"><button class="mini g" onclick="gateShow();document.getElementById(\'gateEmail\').focus();">Sign in</button><button class="mini" onclick="load()">Retry</button></div></div>';
+   document.getElementById('sync').textContent=isAuth?'requires auth':'offline';
  }
  btn.classList.remove('spin');}
 document.getElementById('refresh').addEventListener('click',load);
-document.getElementById('runworker').addEventListener('click',()=>doAction('zoi_action_run_worker',null,'Ingestion started'));
+document.getElementById('runworker').addEventListener('click',()=>{if(!UNLOCKED){gateShow();toast('Sign in to run ingestion.');return;}doAction('zoi_action_run_worker',null,'Ingestion started');});
 document.getElementById('dx').addEventListener('click',()=>document.getElementById('drawer').classList.remove('open'));
 document.querySelector('#drawer .bd').addEventListener('click',()=>document.getElementById('drawer').classList.remove('open'));
 document.querySelectorAll('#bnav .bi').forEach(b=>b.addEventListener('click',()=>go(b.dataset.s)));
