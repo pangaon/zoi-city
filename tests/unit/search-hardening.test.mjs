@@ -49,4 +49,8 @@ test('Vercel applies baseline browser security headers globally', () => {
   assert.equal(headers['x-frame-options'], 'DENY');
   assert.equal(headers['referrer-policy'], 'strict-origin-when-cross-origin');
   assert.match(headers['permissions-policy'], /camera=\(\)/);
+  assert.equal(headers['cross-origin-opener-policy'], 'same-origin-allow-popups');
+  assert.equal(headers['cross-origin-resource-policy'], 'same-site');
+  assert.match(headers['content-security-policy-report-only'], /default-src 'self'/);
+  assert.match(headers['content-security-policy-report-only'], /frame-ancestors 'none'/);
 });
