@@ -13,10 +13,10 @@ Updated 2026-09-12 after the Event OS hardening audit. This is the operational c
 
 ## P1: Canonical Event OS journey
 
-- [ ] Add a real Event OS `event_create` form and connect it to `event_create()`.
-- [ ] Persist Event OS event edits through `event_update()`; current settings inputs still mutate browser state only.
+- [x] Add a real Event OS `event_create` form and connect it to `event_create()`.
+- [x] Persist Event OS event edits through `event_update()`; settings now save name, time, mode, and capacity server-side.
 - [ ] Link owned Event OS events to the canonical `/tickets` event and attendee ledger; do not duplicate reservations or sales.
-- [ ] Replace demo dashboard sales, guest, check-in, sponsor, and revenue panels with durable ticketing RPC data or visibly label them as sample/unavailable.
+- [x] Replace demo dashboard sales, guest, check-in, sponsor, and revenue panels with durable ticketing RPC data or visibly label them as sample/unavailable. Real owned events now show unavailable states and link to Tickets.
 - [ ] Add event publishing controls that update `is_public`, `published_at`, and a canonical public event route.
 - [ ] Add durable team invitation delivery and acceptance state; the current RPC records an invite row but does not send email.
 - [ ] Add event deletion/archive semantics and compensating migration coverage.

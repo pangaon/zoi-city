@@ -27,6 +27,28 @@ BEGIN
   RETURN json_build_object('ok', true, 'events', v_rows);
 END$function$;
 
+CREATE OR REPLACE FUNCTION public.event_create(
+  p_workspace uuid, p_name text, p_mode text DEFAULT 'concert',
+  p_capacity integer DEFAULT 100, p_start_date timestamptz DEFAULT now()
+)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
+DECLARE v_prof uuid; v_role text; v_id uuid; v_slug text;
+BEGIN
+  v_prof := zoi.ensure_profile();
+  IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
+  SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
+  IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
+  IF nullif(trim(p_name), '') IS NULL OR p_capacity < 1 OR p_capacity > 100000
+     OR p_mode NOT IN ('concert', 'banquet', 'gala', 'festival', 'church') THEN
+    RETURN json_build_object('ok', false, 'error', 'invalid_event');
+  END IF;
+  v_slug := trim(both '-' from regexp_replace(lower(trim(p_name)), '[^a-z0-9]+', '-', 'g'))
+    || '-' || to_char(p_start_date, 'YYYYMMDD') || '-' || substring(encode(gen_random_bytes(3), 'hex'), 1, 6);
+  INSERT INTO public.events(workspace_id, name, mode, capacity, start_date, slug)
+    VALUES (p_workspace, trim(p_name), p_mode, p_capacity, p_start_date, v_slug) RETURNING id INTO v_id;
+  RETURN json_build_object('ok', true, 'id', v_id, 'slug', v_slug);
+END$function$;
+
 CREATE OR REPLACE FUNCTION public.event_get(p_event_id uuid, p_workspace uuid DEFAULT NULL)
 RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
 DECLARE v_prof uuid; v_event record;
@@ -39,6 +61,29 @@ BEGIN
   SELECT * INTO v_event FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace;
   IF v_event IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_found'); END IF;
   RETURN json_build_object('ok', true, 'event', row_to_json(v_event));
+END$function$;
+
+CREATE OR REPLACE FUNCTION public.event_update(
+  p_event_id uuid, p_workspace uuid, p_name text DEFAULT NULL,
+  p_mode text DEFAULT NULL, p_capacity integer DEFAULT NULL, p_start_date timestamptz DEFAULT NULL,
+  p_brand_accent text DEFAULT NULL, p_brand_name text DEFAULT NULL
+)
+RETURNS json LANGUAGE plpgsql SECURITY DEFINER SET search_path TO '' AS $function$
+DECLARE v_prof uuid; v_role text;
+BEGIN
+  v_prof := zoi.ensure_profile();
+  IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_signed_in'); END IF;
+  SELECT role INTO v_role FROM zoi.workspace_members WHERE workspace_id = p_workspace AND profile_id = v_prof;
+  IF v_role NOT IN ('owner', 'admin', 'operator') THEN RETURN json_build_object('ok', false, 'error', 'insufficient_permission'); END IF;
+  IF p_name IS NOT NULL AND nullif(trim(p_name), '') IS NULL THEN RETURN json_build_object('ok', false, 'error', 'invalid_event'); END IF;
+  IF p_capacity IS NOT NULL AND (p_capacity < 1 OR p_capacity > 100000) THEN RETURN json_build_object('ok', false, 'error', 'invalid_event'); END IF;
+  IF p_mode IS NOT NULL AND p_mode NOT IN ('concert', 'banquet', 'gala', 'festival', 'church') THEN RETURN json_build_object('ok', false, 'error', 'invalid_event'); END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.events WHERE id = p_event_id AND workspace_id = p_workspace) THEN RETURN json_build_object('ok', false, 'error', 'not_your_event'); END IF;
+  UPDATE public.events SET name = COALESCE(trim(p_name), name), mode = COALESCE(p_mode, mode),
+    capacity = COALESCE(p_capacity, capacity), start_date = COALESCE(p_start_date, start_date),
+    brand_accent = COALESCE(p_brand_accent, brand_accent), brand_name = COALESCE(p_brand_name, brand_name), updated_at = now()
+    WHERE id = p_event_id;
+  RETURN json_build_object('ok', true, 'id', p_event_id);
 END$function$;
 
 CREATE OR REPLACE FUNCTION public.floor_plan_save(p_event_id uuid, p_workspace uuid, p_layout_json jsonb)

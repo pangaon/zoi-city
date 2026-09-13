@@ -941,6 +941,7 @@ async function loadRealEventOSData(){
           real: true,
           name: e.name,
           date: fmtRealDate(e.start_date),
+          start_date: e.start_date,
           venue: '(workspace event)',
           cap: e.capacity || 100,
           mode: e.mode || 'concert',
@@ -1111,8 +1112,9 @@ function evHeader(extra){
 let switcherTab='yours';
 function openEventSwitcher(){
  switcherTab='yours';
- openModal(`<div class="mhead"><div><h3>Events</h3><div class="sub">Operate a demo event or load a real ingested one</div></div><button class="close" onclick="closeModal()">×</button></div>
+ openModal(`<div class="mhead"><div><h3>Events</h3><div class="sub">Operate owned workspace events or inspect directory metadata</div></div><button class="close" onclick="closeModal()">×</button></div>
  <div class="mbody" style="padding-top:6px">
+  <button class="btn gold block" style="margin-bottom:12px" onclick="openCreateEvent()">+ Create workspace event</button>
   <div class="pubtoggle" style="display:flex;width:100%;margin-bottom:14px">
    <button id="swTabYours" class="on" style="flex:1" onclick="switcherSetTab('yours')">Your events</button>
    <button id="swTabReal" style="flex:1" onclick="switcherSetTab('real')"><span class="ppulse-dot" style="margin-right:6px"></span>Discover real events</button>
@@ -1131,9 +1133,29 @@ function switcherYoursHTML(){
  return `${EVENTS.map(e=>`<div class="tier" onclick="selectEvent('${e.id}')" style="${e.id===curEvent.id?'border-color:var(--gold-soft);background:rgba(184,137,59,.1)':''}">
    <div class="tieric" style="background:linear-gradient(150deg,${MODES[e.mode].col},#0a2a3f)">${MODES[e.mode].ic}</div>
    <div style="flex:1;min-width:0"><div class="tn" style="font-size:15px">${esc(e.name)} ${e.real?'<span class="pill sea" style="padding:1px 7px;font-size:9px">real</span>':''}</div><div class="td">${esc(e.date)} · ${esc(e.venue)}</div></div>
-   <div style="text-align:right"><div class="tp" style="font-size:15px">${e.sold}/${e.cap}</div><div class="td">sold</div></div>
+  <div style="text-align:right"><div class="tp" style="font-size:15px">${e.real?'—':e.sold+'/'+e.cap}</div><div class="td">${e.real?'metrics in Tickets':'sold'}</div></div>
   </div>`).join('')}
   <button class="btn block ghost" style="margin-top:10px;border:1px dashed var(--glassline);background:none" onclick="switcherSetTab('real')"><svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2"><path d="M12 2.5l8.5 4.9v9.2L12 21.5 3.5 16.6V7.4z"/></svg> Browse real Greek events from Zoi</button>`;
+}
+function openCreateEvent(){
+ if(!realEventOSData.workspace){toast('Sign in to a workspace before creating an event');return;}
+ openModal(`<div class="mhead"><div><h3>Create workspace event</h3><div class="sub">This creates an owned event. Tickets and attendees remain in the canonical Tickets system.</div></div><button class="close" onclick="closeModal()">×</button></div>
+  <div class="mbody">
+   <div class="field"><label for="newEventName">Event name</label><input id="newEventName" placeholder="e.g. Hellenic Summer Gala" maxlength="160"></div>
+   <div class="field"><label for="newEventDate">Start date and time</label><input id="newEventDate" type="datetime-local"></div>
+   <div class="field"><label for="newEventMode">Event mode</label><select id="newEventMode">${Object.entries(MODES).map(([k,m])=>`<option value="${k}">${esc(m.n)}</option>`).join('')}</select></div>
+   <div class="field"><label for="newEventCapacity">Capacity</label><input id="newEventCapacity" type="number" min="1" max="100000" value="100"></div>
+   <button class="btn gold block" onclick="createWorkspaceEvent()">Create event</button>
+  </div>`);
+}
+async function createWorkspaceEvent(){
+ const name=$('#newEventName').value.trim(),date=$('#newEventDate').value,mode=$('#newEventMode').value,capacity=Number($('#newEventCapacity').value);
+ if(!name||!date||!Number.isInteger(capacity)||capacity<1){toast('Enter a name, start time, and valid capacity');return;}
+ try{
+  const r=await ZoiCore.api.rpc('event_create',{p_workspace:realEventOSData.workspace.id,p_name:name,p_mode:mode,p_capacity:capacity,p_start_date:new Date(date).toISOString()},{auth:'require'});
+  if(!r||!r.ok)throw new Error(r&&r.error||'Event creation failed');
+  closeModal();EVENTS.length=0;await loadRealEventOSData();toast('Event created in your workspace');
+ }catch(e){toast(e.message||'Could not create event');}
 }
 /* live-updating Discover surface (real events from Supabase RPC) */
 function renderDiscover(){
@@ -1191,31 +1213,29 @@ function skeleton(){
 
 /* ============ DASHBOARD ============ */
 function viewDash(){
- const e=curEvent;const pct=Math.round(e.sold/e.cap*100);
+ const e=curEvent;const hasMetrics=!e.real;const pct=hasMetrics?Math.round(e.sold/e.cap*100):0;
  const sold=floor.els.filter(x=>x.status==='sold').length, resv=floor.els.filter(x=>x.status==='reserved').length;
  return evHeader(e.live?'<button class="btn pig" onclick="go(\'live\')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 12a7 7 0 0 1 14 0"/></svg> Open live ops</button>':'')+
  `<div class="grid g4">
-   <div class="card metric glass stag">${ring(pct,'var(--gold-soft)')}<div class="eyebrow">${SVG.ticket} Tickets sold</div><div class="big" data-cnt="${e.sold}">0</div><div class="sub">of ${e.cap} capacity · <b>${pct}% full</b></div></div>
-   <div class="card metric glass stag" style="animation-delay:.06s"><div class="eyebrow">${SVG.dollar} Gross revenue</div><div class="big" data-cnt="${e.revenue}" data-money="1">0</div><div class="sub"><b>▲ 12%</b> vs last event</div></div>
-   <div class="card metric glass stag" style="animation-delay:.12s"><div class="eyebrow">${SVG.check} Checked in</div><div class="big" data-cnt="${e.checkin}">0</div><div class="sub">${e.live?'Doors open':'Day-of metric'} · live count</div></div>
-   <div class="card metric glass stag" style="animation-delay:.18s"><div class="eyebrow">${SVG.star} Tables</div><div class="big"><span data-cnt="${sold}">0</span><span style="font-size:18px;color:var(--muted)">/${e.tables}</span></div><div class="sub"><b>${sold} sold</b> · ${resv} reserved</div></div>
+   <div class="card metric glass stag">${hasMetrics?ring(pct,'var(--gold-soft)'):'<div class="big" style="color:var(--muted)">—</div>'}<div class="eyebrow">${SVG.ticket} Tickets sold</div><div class="big">${hasMetrics?`<span data-cnt="${e.sold}">0</span>`:'—'}</div><div class="sub">${hasMetrics?`of ${e.cap} capacity · <b>${pct}% full</b>`:'Live sales metrics are in Tickets'}</div></div>
+   <div class="card metric glass stag" style="animation-delay:.06s"><div class="eyebrow">${SVG.dollar} Gross revenue</div><div class="big">${hasMetrics?`<span data-cnt="${e.revenue}" data-money="1">0</span>`:'—'}</div><div class="sub">${hasMetrics?'<b>▲ 12%</b> vs last event':'Available in the canonical Tickets dashboard'}</div></div>
+   <div class="card metric glass stag" style="animation-delay:.12s"><div class="eyebrow">${SVG.check} Checked in</div><div class="big">${hasMetrics?`<span data-cnt="${e.checkin}">0</span>`:'—'}</div><div class="sub">${hasMetrics?(e.live?'Doors open':'Day-of metric')+' · live count':'Door results are tracked in Tickets'}</div></div>
+   <div class="card metric glass stag" style="animation-delay:.18s"><div class="eyebrow">${SVG.star} Tables</div><div class="big">${hasMetrics?`<span data-cnt="${sold}">0</span><span style="font-size:18px;color:var(--muted)">/${e.tables}</span>`:'—'}</div><div class="sub">${hasMetrics?`<b>${sold} sold</b> · ${resv} reserved`:'Floor layout only · assignments are not yet linked'}</div></div>
   </div>
   <div class="grid g2" style="margin-top:16px">
-   <div class="card glass stag" style="animation-delay:.1s">
+  <div class="card glass stag" style="animation-delay:.1s">
     <div class="eyebrow">Revenue over time</div>
-    <div style="height:200px"><canvas id="revChart"></canvas></div>
-    <div class="progbar" style="margin-top:14px"><i style="width:${Math.min(100,e.revenue/e.goal*100)}%"></i></div>
-    <div class="sub" style="font-size:12px;color:var(--muted);margin-top:7px">${fmt(e.revenue)} of ${fmt(e.goal)} goal · <b style="color:var(--gold-soft)">${Math.round(e.revenue/e.goal*100)}%</b></div>
+   ${hasMetrics?`<div style="height:200px"><canvas id="revChart"></canvas></div><div class="progbar" style="margin-top:14px"><i style="width:${Math.min(100,e.revenue/e.goal*100)}%"></i></div><div class="sub" style="font-size:12px;color:var(--muted);margin-top:7px">${fmt(e.revenue)} of ${fmt(e.goal)} goal · <b style="color:var(--gold-soft)">${Math.round(e.revenue/e.goal*100)}%</b></div>`:'<div class="attn sea"><div><div class="at">Metrics not connected yet</div><div class="am">This owned event is real, but sales and settlement data remain in the canonical Tickets dashboard.</div><a class="btn sm" href="/tickets">Open Tickets</a></div></div>'}
    </div>
-   <div class="card glass stag" style="animation-delay:.16s">
+  <div class="card glass stag" style="animation-delay:.16s">
     <div class="eyebrow">Recent activity</div>
-    <div class="feed">
+   ${hasMetrics?`<div class="feed">
      <div class="fitem"><div class="ficon gr">${SVG.check}</div><div><div class="ft">Christina Pappas checked in</div><div class="fm">Table T2 · door scan</div></div><div class="fwhen">just now</div></div>
      <div class="fitem"><div class="ficon g">${SVG.dollar}</div><div><div class="ft">VIP 1 sold — ${fmt(2400)}</div><div class="fm">Bottle service + 12 πέταλα add-on</div></div><div class="fwhen">4m</div></div>
      <div class="fitem"><div class="ficon">${SVG.rsvp}</div><div><div class="ft">Maria Georgiou RSVP'd going</div><div class="fm">+3 guests · meal: vegetarian</div></div><div class="fwhen">18m</div></div>
      <div class="fitem"><div class="ficon p">${SVG.ticket}</div><div><div class="ft">6 GA tickets sold</div><div class="fm">via shareable event page</div></div><div class="fwhen">32m</div></div>
      <div class="fitem"><div class="ficon g">${SVG.star}</div><div><div class="ft">Table T9 reserved</div><div class="fm">Deposit received · $500 min</div></div><div class="fwhen">1h</div></div>
-    </div>
+    </div>`:'<div class="attn amb"><div><div class="at">No Event OS activity feed</div><div class="am">Check-ins, reservations, and payments are intentionally not duplicated here.</div></div></div>'}
    </div>
   </div>
   <div class="sect"><h2>Needs attention</h2></div>
@@ -3080,12 +3100,13 @@ function viewSettings(){
  return evHeader('')+
  `<div class="grid g2">
    <div class="card glass stag"><div class="eyebrow">Event details</div>
-    <div class="field"><label>Event name</label><input value="${esc(e.name)}" oninput="curEvent.name=this.value"></div>
-    <div class="field"><label>Date &amp; time</label><input value="${esc(e.date)}"></div>
-    <div class="field"><label>Venue</label><input value="${esc(e.venue)}"></div>
-    <div style="display:flex;gap:10px"><div class="field" style="flex:1"><label>Capacity</label><input type="number" value="${e.cap}" oninput="curEvent.cap=+this.value||${e.cap}"></div>
+    ${e.real?`<div class="attn sea" style="margin-bottom:12px"><div><div class="at">Owned workspace event</div><div class="am">Changes are saved to your workspace and reload after refresh.</div></div></div>`:'<div class="attn amb" style="margin-bottom:12px"><div><div class="at">Demo event</div><div class="am">Create an owned workspace event to persist event details.</div></div></div>'}
+    <div class="field"><label for="eventName">Event name</label><input id="eventName" value="${esc(e.name)}" ${e.real?'':'disabled'}></div>
+    <div class="field"><label for="eventStart">Date &amp; time</label><input id="eventStart" type="datetime-local" value="${e.start_date?esc(new Date(e.start_date).toISOString().slice(0,16)):''}" ${e.real?'':'disabled'}></div>
+    <div class="field"><label for="eventVenue">Venue</label><input id="eventVenue" value="${esc(e.venue)}" disabled><div class="am" style="margin-top:5px">Venue and ticket inventory are managed in the canonical Tickets dashboard.</div></div>
+    <div style="display:flex;gap:10px"><div class="field" style="flex:1"><label for="eventCapacity">Capacity</label><input id="eventCapacity" type="number" min="1" value="${e.cap}" ${e.real?'':'disabled'}></div>
     <div class="field" style="flex:1"><label>Revenue goal ($)</label><input type="number" value="${e.goal}"></div></div>
-    <button class="btn gold sm" onclick="toast('Event details saved')">Save changes</button>
+    ${e.real?'<button class="btn gold sm" onclick="saveEventSettings()">Save changes</button>':'<button class="btn gold sm" onclick="openCreateEvent()">Create owned event</button>'}
    </div>
    <div class="card glass stag" style="animation-delay:.06s"><div class="eyebrow">White-label brand kit <span class="pill gold" style="margin-left:6px">Sellable</span></div>
     <div class="field"><label>Brand name</label><input value="${esc(brand.name)}" oninput="brand.name=this.value;applyBrand()"></div>
@@ -3107,6 +3128,16 @@ function viewSettings(){
   <div class="card glass stag">
    ${!curEvent.real?'<div class="attn amb"><div><div class="at">Demo event</div><div class="am">Team changes are available after you open an owned event from your workspace.</div></div></div>':eventTeam.loading?'<div class="am">Loading workspace team…</div>':eventTeam.error?`<div class="attn amb"><div><div class="at">${eventTeam.error}</div><div class="am">Retry by switching events or refreshing the page.</div></div></div>`:eventTeam.members.length?eventTeam.members.map(t=>`<div class="grow" style="cursor:default"><div class="gav" style="background:#0A4D8C">${initials(t.name)}</div><div><div class="gn">${esc(t.name)}</div><div class="gm">${esc(t.role.replace('_',' / '))}</div></div><div class="gright"><span class="pill mut">Limited</span></div></div>`).join(''):'<div class="am">No team members have been invited to this event yet.</div>'}
   </div>`;
+}
+async function saveEventSettings(){
+ const name=$('#eventName').value.trim(),start=$('#eventStart').value,capacity=Number($('#eventCapacity').value);
+ if(!name||!start||!Number.isInteger(capacity)||capacity<1){toast('Enter a name, start time, and valid capacity');return;}
+ try{
+  const r=await ZoiCore.api.rpc('event_update',{p_event_id:curEvent.id,p_workspace:curEvent.workspace_id,p_name:name,p_mode:curEvent.mode,p_capacity:capacity,p_start_date:new Date(start).toISOString(),p_brand_accent:null,p_brand_name:null},{auth:'require'});
+  if(!r||!r.ok)throw new Error(r&&r.error||'Could not save event');
+  curEvent.name=name;curEvent.cap=capacity;curEvent.start_date=new Date(start).toISOString();curEvent.date=fmtRealDate(curEvent.start_date);
+  closeModal();await loadRealEventOSData();toast('Event details saved to workspace');
+ }catch(e){toast(e.message||'Could not save event details');}
 }
 function inviteTeam(){
  if(!curEvent.real||!curEvent.workspace_id){toast('Open an owned workspace event first');return;}
