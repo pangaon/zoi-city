@@ -78,7 +78,7 @@
 
   /* The three token sets, copied from zoi-theme.css. */
   var TOKENS = {
-    dark:  { bg: '#060b14', card: '#0f1b2d', tx: '#eef3fa', mut: '#93a4bd',
+    dark:  { bg: '#062f55', card: '#0b5688', tx: '#eef3fa', mut: '#93a4bd',
              acc: '#0284c7', gold: '#d4af5f', green: '#5bc49a', red: '#e0796b' },
     light: { bg: '#f7f9fc', card: '#ffffff', tx: '#0b2545', mut: '#4a6180',
              acc: '#0284c7', gold: '#96701c', green: '#1b7a55', red: '#b84a38' },
@@ -104,8 +104,8 @@
       // Measured in CIELAB: dE 12.5 apart, water markedly cooler (b* -13 vs
       // land's -3). The first pass had these dE 4.9 apart and looked like one
       // flat surface. Guarded by tests/unit/basemap.test.mjs.
-      P.land    = mix(T.bg, T.tx, 0.055);
-      P.water   = mix(mix(T.bg, T.acc, 0.20), '#000000', 0.10);
+      P.land    = mix(mix(T.bg, T.tx, 0.08), T.gold, 0.08);
+      P.water   = mix(T.bg, T.acc, 0.72);
       // The gold theme has no cool token at all — its --acc IS its --gold — so
       // a blue sea cannot be derived from it. Mixing toward --green just yields
       // olive that reads as more land (dE 2.3, invisible). It gets lifted
