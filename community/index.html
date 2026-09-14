@@ -717,55 +717,6 @@ function closeSheet(){
   if(el) el.classList.remove('on');
 }
 
-const COMMUNITY_SAMPLE_POSTS = [
-  {
-    id: 'sample-1',
-    author: 'Kosta Papadopoulos',
-    author_city: 'Astoria, New York',
-    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    body: '🌟 Just finished baking a fresh batch of tsoureki and spanakopita for this weekend’s Greek Festival at St. Demetrios! The energy in Astoria is electric today. 🇬🇷🍷',
-    listing_name: 'St. Demetrios Cathedral Astoria',
-    listing_slug: 'church:st-demetrios-astoria',
-    likes: 28,
-    comments: 6,
-    is_reel: true,
-    video_poster: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80'
-  },
-  {
-    id: 'sample-2',
-    author: 'Eleni Vasiliou',
-    author_city: 'Toronto, Canada',
-    created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-    body: '🎉 Wishing Χρόνια Πολλά to all the Nikos and Nikolettas celebrating today! May Saint Nicholas protect all our seafarers and families across Greece and the diaspora. 🏛️✨',
-    listing_name: null,
-    likes: 45,
-    comments: 12
-  },
-  {
-    id: 'sample-3',
-    author: 'Mythos Taverna',
-    author_city: 'Chicago, IL',
-    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-    body: '🎭 Live Bouzouki Night this Friday at Mythos! Enjoy fresh charred octopus, chilled Assyrtiko from Santorini, and table QR ordering with split-billing. Reserve early on Zoi Tickets! 🐙🍷',
-    listing_name: 'Mythos Taverna',
-    listing_slug: 'business:mythos-taverna-chicago',
-    likes: 39,
-    comments: 9,
-    media_photo: 'https://images.unsplash.com/photo-1524824267900-2fa9cbf7a506?w=800&q=80'
-  },
-  {
-    id: 'sample-4',
-    author: 'Giorgos Kontos',
-    author_city: 'Melbourne, Australia',
-    created_at: new Date(Date.now() - 3600000 * 22).toISOString(),
-    body: '🎙️ New episode of the Pan-Hellenic Voices podcast is live! We sat down with Greek creators in London and Sydney talking about preserving our heritage and building modern Hellenic commerce. 🇬🇷🎧',
-    listing_name: 'Pan-Hellenic Voices Podcast',
-    listing_slug: 'creator:pan-hellenic-voices',
-    likes: 21,
-    comments: 5
-  }
-];
-
 function postCard(p){
   const loc=p.author_city?(' · '+esc(p.author_city)):'';
   let mediaHtml = '';
@@ -807,10 +758,10 @@ async function refreshFeed(){
   let feedFailed = false;
   try{
     const rows = await rpc('feed_list',{p_limit:40,p_offset:0});
-    POSTS = (Array.isArray(rows) && rows.length) ? rows : COMMUNITY_SAMPLE_POSTS;
+    POSTS = Array.isArray(rows) ? rows : [];
   }catch(e){
-    console.log('Community RPC fallback to sample stream');
-    POSTS = COMMUNITY_SAMPLE_POSTS;
+    console.log('Community RPC unavailable');
+    POSTS = [];
     feedFailed = true;
   }
   const feedEl = document.getElementById('feed');
@@ -826,35 +777,6 @@ async function refreshFeed(){
   }
   renderFeed();
   renderSide();
-}
-
-function spotlightAdCard(type){
-  if(type === 'krinos'){
-    return `<div class="post" style="border:1px solid rgba(212,175,95,.4);background:linear-gradient(135deg,rgba(18,52,75,.8),rgba(12,21,36,.9))">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <span style="font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">★ FEATURED GREEK PRODUCER · SPOTLIGHT</span>
-        <span style="font-size:10px;color:var(--dim)">Verified Partner</span>
-      </div>
-      <b style="font-size:16px;color:var(--tx)">Krinos Foods · Mediterranean Heritage Harvest</b>
-      <p style="font-size:13.5px;color:var(--mut);margin:6px 0 12px;line-height:1.5">Pure Greek extra virgin olive oil, barrel-aged feta &amp; traditional Greek honey delivered to your doorstep.</p>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:12px;color:var(--gold);font-weight:700">Official Sponsor</span>
-        <a class="btn btn-primary" style="padding:6px 14px;font-size:12px" href="/explore?q=krinos">View Products &rarr;</a>
-      </div>
-    </div>`;
-  }
-  return `<div class="post" style="border:1px solid rgba(2,132,199,.4);background:linear-gradient(135deg,rgba(18,52,75,.8),rgba(12,21,36,.9))">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-      <span style="font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sea)">GASTRONOMY SPOTLIGHT · ASTORIA</span>
-      <span style="font-size:10px;color:var(--dim)">Table Tabs Live</span>
-    </div>
-    <b style="font-size:16px;color:var(--tx)">Mythos Taverna · Aegean Seafood Night</b>
-    <p style="font-size:13.5px;color:var(--mut);margin:6px 0 12px;line-height:1.5">Charred octopus, whole grilled lavraki, and chilled Assyrtiko with live bouzouki every Friday &amp; Saturday.</p>
-    <div style="display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:12px;color:var(--green);font-weight:700">Reserve or Order</span>
-      <a class="btn btn-primary" style="padding:6px 14px;font-size:12px" href="/tickets">Reserve Table &rarr;</a>
-    </div>
-  </div>`;
 }
 
 function visiblePosts(){
@@ -882,13 +804,7 @@ function renderFeed(){
       : '<div class="empty"><h3>The square is quiet</h3><p>Be the first voice. Say something \u2014 the whole diaspora is listening.</p></div>';
     el.innerHTML=msg; return;
   }
-  let html = '';
-  rows.forEach((p, idx) => {
-    html += postCard(p);
-    if(idx === 1) html += spotlightAdCard('krinos');
-    if(idx === 3) html += spotlightAdCard('mythos');
-  });
-  el.innerHTML = html;
+  el.innerHTML = rows.map(postCard).join('');
 }
 
 /* Sidebar. Everything here is derived from data already on the page:
