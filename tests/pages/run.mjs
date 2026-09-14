@@ -73,13 +73,6 @@ const PAGES = [
     },
   },
   {
-    path: '/explore/app/',
-    extra: (html) => {
-      assert(/noindex/i.test(html), '/explore/app/: missing noindex');
-      assert(html.includes('Classic prototype'), '/explore/app/: missing "Classic prototype" label');
-    },
-  },
-  {
     path: '/apps/',
     extra: (html) => {
       const cards = count(html, /class="card/gi);

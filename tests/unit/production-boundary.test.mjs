@@ -25,6 +25,11 @@ test('demo-only Tickets Studio route cannot be entered as production', () => {
   assert.equal(destination('/apps/tickets-studio/:path*'), '/tickets');
 });
 
+test('legacy classic directory route cannot compete with canonical Discover', () => {
+  assert.equal(destination('/explore/app'), '/explore');
+  assert.equal(destination('/explore/app/:path*'), '/explore');
+});
+
 test('live operator products remain distinct from retired previews', () => {
   assert.equal(destination('/apps/command-center'), undefined);
   assert.equal(destination('/apps/intelligence'), undefined);
