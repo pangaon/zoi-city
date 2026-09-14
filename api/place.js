@@ -58,8 +58,8 @@ const typeSlug = (t) => (t === 'travel_place' ? 'travel-place' : t);
 /* ---------- the page ---------- */
 
 function shell(o) {
-  const nav = ['/explore:Directory', '/community:Community', '/social:Business',
-    '/tickets:Tickets', '/#marketplace:Marketplace']
+  const nav = ['/explore:Discover', '/community:Community', '/tickets:Events',
+    'https://buygreek.shop:Marketplace', '/business:For Business']
     .map((x) => { const i = x.indexOf(':'); const h = x.slice(0, i), l = x.slice(i + 1);
       return '<a href="' + h + '"' + (h === '/explore' ? ' aria-current="page"' : '') + '>' + l + '</a>'; })
     .join('');
@@ -295,7 +295,7 @@ export default async function handler(req, res) {
       const regions = await rpc('explore_regions', { p_country: country });
       if (regions.length) {
         body += '<section class="ph-sec"><h2>Regions of ' + esc(country) + '</h2>'
-          + chips(regions.slice(0, 60).map((r) => ({
+          + chips(regions.filter((r) => r && r.region && country).slice(0, 60).map((r) => ({
             label: r.region, count: r.listings,
             href: '/in/' + slug(country) + '/' + slug(r.region) })))
           + '</section>';
@@ -303,7 +303,7 @@ export default async function handler(req, res) {
     }
     if (!country) {
       body += '<section class="ph-sec"><h2>Countries</h2>'
-        + chips(countries.map((c) => ({
+        + chips(countries.filter((c) => c && c.country).map((c) => ({
           label: c.country, count: c.listings, href: '/in/' + slug(c.country) })))
         + '</section>';
     }
@@ -312,11 +312,11 @@ export default async function handler(req, res) {
     if (cat && (region || country)) {
       const scope = region ? { p_country: country } : {};
       const siblings = region
-        ? (await rpc('explore_regions', scope)).slice(0, 30)
-            .filter((r) => r.region !== region)
+          ? (await rpc('explore_regions', scope)).slice(0, 30)
+            .filter((r) => r && r.country && r.region && r.region !== region)
             .map((r) => ({ label: catLabel + ' in ' + r.region, count: r.listings,
               href: '/c/' + cat + '/in/' + slug(country) + '/' + slug(r.region) }))
-        : countries.slice(0, 20).filter((c) => c.country !== country)
+        : countries.slice(0, 20).filter((c) => c && c.country && c.country !== country)
             .map((c) => ({ label: catLabel + ' in ' + c.country, count: c.listings,
               href: '/c/' + cat + '/in/' + slug(c.country) }));
       if (siblings.length) {

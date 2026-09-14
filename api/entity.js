@@ -245,7 +245,7 @@ function socialIcon(k){
     rel+='</div></section>';
   }
 
-  var NAV = [['/explore','Directory'],['/community','Community'],['/social','Business'],['/tickets','Tickets'],['/#marketplace','Marketplace']];
+  var NAV = [['/explore','Discover'],['/community','Community'],['/tickets','Events'],['https://buygreek.shop','Marketplace'],['/business','For Business']];
   var nav = NAV.map(function(n){ return '<a href="'+n[0]+'">'+n[1]+'</a>'; }).join('');
   var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
 
