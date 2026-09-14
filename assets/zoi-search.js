@@ -23,10 +23,10 @@
   /* Jumps that are always available, so the palette is useful before you type. */
   var ACTIONS = [
     { label: 'Directory Explorer', hint: 'Browse 8,000+ verified Greek places', href: '/explore', ic: 'pin' },
-    { label: 'Weddings & Private Events', hint: 'RSVP, family seating, digital Shakoula', href: '/apps/tickets-studio/', ic: 'heart' },
-    { label: 'In-Seat Table Tab & Split', hint: 'Live group ordering & 3-way bill splitting', href: '/apps/tickets-studio/', ic: 'ticket' },
-    { label: 'Kitchen & Bar KDS', hint: 'Live order dispatching & cashier float', href: '/apps/tickets-studio/', ic: 'spark' },
-    { label: '3D Venue & Blueprint Studio', hint: 'Custom floor plans & sponsor plaques', href: '/apps/tickets-studio/', ic: 'spark' },
+    { label: 'Weddings & Private Events', hint: 'Create and manage private events in Zoi Tickets', href: '/tickets', ic: 'heart' },
+    { label: 'In-Seat Table Tab & Split', hint: 'Tickets and reservations are live; table ordering is being connected', href: '/tickets', ic: 'ticket' },
+    { label: 'Kitchen & Bar KDS', hint: 'Event operations are live in Zoi Tickets; KDS is coming next', href: '/tickets', ic: 'spark' },
+    { label: '3D Venue & Blueprint Studio', hint: 'Research preview; create live events in Zoi Tickets', href: '/tickets', ic: 'spark' },
     { label: 'Community Agora', hint: 'The Greek world social feed', href: '/community', ic: 'chat' },
     { label: 'Business Suite', hint: 'Publish, schedule, audience & analytics', href: '/social', ic: 'spark' },
     { label: 'Tickets & Door Scanner', hint: 'Public events & QR check-in', href: '/tickets', ic: 'ticket' },
