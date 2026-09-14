@@ -164,7 +164,7 @@ footer a:hover{color:var(--tx)}
 @media(max-width:600px){#zsheet .zsh-pn{top:auto;bottom:0;transform:translateX(-50%);width:100%;border-radius:18px 18px 0 0;max-height:88vh}}
 .story-item:focus-visible{outline:2px solid var(--acc);outline-offset:3px;border-radius:10px}
 </style>
-<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'dark');})()</script>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -651,9 +651,9 @@ function openStoryModal(kind){
     return;
   }
   const dest = {
-    festivals: '/explore?c=events',
-    food: '/explore?c=restaurants',
-    creators: '/explore?c=creators'
+    festivals: '/c/festivals',
+    food: '/c/restaurants',
+    creators: '/c/media-creators'
   }[kind];
   if(dest) location.href = dest;
 }
