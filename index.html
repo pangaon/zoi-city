@@ -656,19 +656,19 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px">
       <div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>🍷 Greek Gastronomy</span><b id="valGastro">85%</b></div>
-        <input type="range" min="0" max="100" value="85" style="width:100%" oninput="document.getElementById('valGastro').textContent=this.value+'%'">
+        <input id="prefGastro" type="range" min="0" max="100" value="85" style="width:100%" oninput="document.getElementById('valGastro').textContent=this.value+'%'">
       </div>
       <div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>🎭 Festivals &amp; Galas</span><b id="valFest">90%</b></div>
-        <input type="range" min="0" max="100" value="90" style="width:100%" oninput="document.getElementById('valFest').textContent=this.value+'%'">
+        <input id="prefFest" type="range" min="0" max="100" value="90" style="width:100%" oninput="document.getElementById('valFest').textContent=this.value+'%'">
       </div>
       <div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>⛪ Orthodox &amp; Feasts</span><b id="valChurch">80%</b></div>
-        <input type="range" min="0" max="100" value="80" style="width:100%" oninput="document.getElementById('valChurch').textContent=this.value+'%'">
+        <input id="prefChurch" type="range" min="0" max="100" value="80" style="width:100%" oninput="document.getElementById('valChurch').textContent=this.value+'%'">
       </div>
       <div>
         <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--tx);margin-bottom:4px"><span>🎙️ Diaspora Creators</span><b id="valCreator">75%</b></div>
-        <input type="range" min="0" max="100" value="75" style="width:100%" oninput="document.getElementById('valCreator').textContent=this.value+'%'">
+        <input id="prefCreator" type="range" min="0" max="100" value="75" style="width:100%" oninput="document.getElementById('valCreator').textContent=this.value+'%'">
       </div>
     </div>
     <div style="margin-top:14px;text-align:right">
@@ -941,8 +941,14 @@ function togglePrefPanel(){
 }
 function saveUserPrefs(){
   const pnl = document.getElementById('userPrefPanel');
+  const prefs = {};
+  ['Gastro','Fest','Church','Creator'].forEach(k=>{
+    const input=document.getElementById('pref'+k);
+    if(input) prefs[k]=Number(input.value);
+  });
+  try{ localStorage.setItem('zoi_interest_prefs',JSON.stringify(prefs)); }catch(e){}
   if(pnl) pnl.style.display = 'none';
-  alert('✓ Cultural interest preferences saved! Zoi now customizes your daily discovery feed accordingly.');
+  alert('Your interest settings are saved on this device.');
 }
 function openPromoteModal(){ window.location.href='/add'; }
 
@@ -1046,6 +1052,15 @@ async function joinWL(){
 }
 document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='Enter') joinWL(); });
 (async function(){
+  try{
+    const prefs=JSON.parse(localStorage.getItem('zoi_interest_prefs')||'null');
+    if(prefs){
+      Object.keys(prefs).forEach(k=>{
+        const input=document.getElementById('pref'+k), label=document.getElementById('val'+k);
+        if(input && Number.isFinite(prefs[k])){ input.value=Math.max(0,Math.min(100,prefs[k])); if(label) label.textContent=input.value+'%'; }
+      });
+    }
+  }catch(e){}
   renderHomeRitual();
   loadHomeWeather();
   try{
