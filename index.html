@@ -1030,8 +1030,14 @@ function shareRitual(channel){
   } else if(channel === 'sms'){
     window.open('sms:?&body=' + encodeURIComponent(text), '_blank');
   } else {
-    navigator.clipboard?.writeText(text);
-    alert('✓ Copied Greek daily blessing card to clipboard!');
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(
+        ()=>alert('Copied the Greek daily card.'),
+        ()=>alert(text)
+      );
+    } else {
+      alert(text);
+    }
   }
 }
 async function joinWL(){

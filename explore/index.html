@@ -693,7 +693,7 @@ async function claim(slug,btn){
     await rpc('zoi_claim_entity',{p_slug:slug,p_workspace:ws,p_method:'owner_request'});
     btn.textContent='Claim submitted ✓'; btn.style.color='var(--green)'; btn.style.borderColor='var(--green)';
     toast('Claim submitted — track it in your suite under Business page');
-  }catch(e){ btn.disabled=false; btn.textContent='This is mine'; toast(e.message); }
+  }catch(e){ btn.disabled=false; btn.textContent='This is mine'; toast('We could not submit the claim. Please try again.'); }
 }
 </script>
 <script src="/assets/zoi-emblem.js"></script>
