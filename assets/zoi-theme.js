@@ -13,19 +13,10 @@
   if (!initial) {
     var light = false;
     try { light = window.matchMedia && matchMedia("(prefers-color-scheme: light)").matches; } catch (e) {}
-    initial = light ? "light" : "dark";
+    initial = light ? "light" : "light";
   }
   apply(initial);
   function bind() {
-    var navs = document.querySelectorAll('.zoi-nav');
-    for (var ni = 0; ni < navs.length; ni++) {
-      if (!navs[ni].querySelector('a[href="/apps/"]')) {
-        var appsLink = document.createElement('a');
-        appsLink.href = '/apps/';
-        appsLink.textContent = 'Apps';
-        navs[ni].appendChild(appsLink);
-      }
-    }
     var btns = document.querySelectorAll("#themeBtn,[data-theme-toggle]");
     for (var i = 0; i < btns.length; i++) {
       btns[i].addEventListener("click", function () {

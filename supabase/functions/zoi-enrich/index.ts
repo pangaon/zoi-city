@@ -408,6 +408,9 @@ function extract(doc: string, finalUrl: string) {
     } else if (typeof img === "string" && img.startsWith("https://")) {
       put("photo_url", img, "jsonld");
     }
+    const logo = biz.logo;
+    const logoUrl = typeof logo === "string" ? logo : logo && typeof logo === "object" ? (logo as Record<string, unknown>).url : null;
+    if (typeof logoUrl === "string" && logoUrl.startsWith("https://")) put("logo_url", logoUrl, "jsonld");
 
     if (typeof biz.servesCuisine === "string") put("cuisine", biz.servesCuisine.trim().slice(0, 100), "jsonld");
     else if (Array.isArray(biz.servesCuisine)) put("cuisine", (biz.servesCuisine as string[]).slice(0, 5).join(", "), "jsonld");
@@ -425,6 +428,8 @@ function extract(doc: string, finalUrl: string) {
       put("photo_url", im, "og");
       put("hero_url", im, "og");
     }
+    const logo = metaTag(doc, "og:logo") || metaTag(doc, "logo");
+    if (logo && logo.startsWith("https://")) put("logo_url", logo, "og");
   }
 
   const tel = [...doc.matchAll(/tel:([+\d][\d().\s\-\/]{6,24})/gi)]

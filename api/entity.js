@@ -184,8 +184,13 @@ function socialIcon(k){
   /* Owner photo first, then whatever the business publishes on its own site.
      https only — a mixed-content image would be blocked and leave a hole. */
   var coverImg = '';
-  var candidate = e.photo_url || e.photo || (p && p.photo_url) || '';
+  var candidate = e.hero_url || e.photo_url || e.photo || (p && (p.hero_url || p.photo_url)) || '';
   if (typeof candidate === 'string' && /^https:\/\//.test(candidate)) coverImg = candidate;
+  var logoImg = e.logo_url || (p && p.logo_url) || '';
+  if (typeof logoImg !== 'string' || !/^https:\/\//.test(logoImg)) logoImg = '';
+  var galleryImgs = [];
+  var gallerySource = (p && (p.photo_urls || p.photos)) || [];
+  if (Array.isArray(gallerySource)) galleryImgs = gallerySource.filter(function(v){ return typeof v === 'string' && /^https:\/\//.test(v); }).slice(0, 8);
 
   var sl = Object.assign({}, (p && p.social) || {}, e.social_links || {});
   var socLinks=[], seenSoc={};
@@ -249,7 +254,7 @@ function socialIcon(k){
   var nav = NAV.map(function(n){ return '<a href="'+n[0]+'">'+n[1]+'</a>'; }).join('');
   var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
 
-  return '<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">'
+  return '<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">'
    +'<meta name="viewport" content="width=device-width, initial-scale=1">'
    +'<meta name="color-scheme" content="dark light">'
    +'<title>'+esc(title)+'</title>'
@@ -275,7 +280,9 @@ function socialIcon(k){
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
    +'<div class="ep-cover" id="epCover"'
      + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
-     + '></div>'
+     + '><div class="ep-brand">'
+     + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
+     + '</div></div>'
    +'<span class="ep-type">'+esc(eyebrow)+'</span>'
    +'<h1>'+esc(e.name)+'</h1>'
    +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
@@ -283,14 +290,15 @@ function socialIcon(k){
    +actHtml
    +socHtml
    +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
-   +verticalHtml
+  + (galleryImgs.length ? '<section class="sec ep-gallery"><h2>'+icon(IC.camera,'sech')+'More to explore</h2><div class="gal">'+galleryImgs.map(function(u){ return '<img src="'+attr(u)+'" alt="'+attr(e.name||'')+'" loading="lazy" referrerpolicy="no-referrer">'; }).join('')+'</div></section>' : '')
+  +verticalHtml
    +provHtml
    +claim
    +rel
    +'</div>'
    +'<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">'
      +'<span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>'
-     +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'<a href="/apps/">Advanced tools</a></nav>'
+     +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'</nav>'
    +'</div></footer>'
    +'<script src="/assets/zoi-emblem.js"></script>'
    +'<script src="/assets/zoi-search.js"></script>'
@@ -302,7 +310,7 @@ function socialIcon(k){
        +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}}'
      +'if(src){var im=new Image();im.alt=h.getAttribute("data-alt")||"";'
        +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
-       +'im.onload=function(){h.innerHTML="";h.appendChild(im);h.className+=" has-img";};'
+      +'im.onload=function(){h.insertBefore(im,h.firstChild);h.className+=" has-img";};'
        +'im.onerror=emblem;im.src=src;}else{emblem();}'
      +'})();</script>'
    +'<script src="/assets/zoi-theme.js"></script>'
@@ -314,12 +322,16 @@ var PAGE_CSS = [
   /* A real photograph earns the full band. A generated monogram does not — it
      was taking 280px of vertical space to say nothing, pushing the actual
      business below the fold. */
-  '.ep-cover{aspect-ratio:16/3.2;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);'
-    +'background:linear-gradient(160deg,color-mix(in oklab,var(--acc) 12%,var(--card)),var(--card2));margin:20px 0 0}',
+  '.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);position:relative;'
+    +'background:linear-gradient(135deg,color-mix(in oklab,var(--acc) 24%,var(--card)),var(--card2));margin:20px 0 0}',
   '.ep-cover.has-img{aspect-ratio:16/6;background:var(--card2)}',
   '@media (max-width:640px){.ep-cover{aspect-ratio:16/4.4}.ep-cover.has-img{aspect-ratio:4/3}}',
   '.ep-cover svg{display:block;width:100%;height:100%}',
   '.ep-cover img{display:block;width:100%;height:100%;object-fit:cover}',
+  '.ep-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,24,48,.78),transparent 64%),linear-gradient(0deg,rgba(5,24,48,.48),transparent 55%);pointer-events:none}',
+  '.ep-brand{position:absolute;z-index:2;left:24px;bottom:22px;width:94px;height:94px;border-radius:22px;padding:10px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.8);box-shadow:0 18px 36px rgba(3,32,61,.28);display:grid;place-items:center}',
+  '.ep-brand img{width:100%;height:100%;object-fit:contain;border-radius:13px}',
+  '.ep-monogram{font-family:Fraunces,Georgia,serif;font-size:52px;line-height:1;color:var(--med-deep);font-weight:600}',
   '.socbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}',
   '.socbtn{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;'
     +'border:1px solid var(--line);color:var(--mut);background:var(--card2);'
@@ -336,6 +348,7 @@ var PAGE_CSS = [
   '.bc a{color:var(--mut)}.bc a:hover{color:var(--tx)}',
   '.ep-type{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:20px;display:block}',
   'h1{font-size:clamp(30px,4.6vw,46px);margin:8px 0 0}',
+  '.ep-gallery{margin-top:34px}.ep-gallery .gal{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.ep-gallery .gal img{aspect-ratio:4/3;box-shadow:0 12px 30px -20px rgba(3,32,61,.5)}',
   '.ep-loc{color:var(--mut);font-size:14.5px;margin-top:8px;display:flex;align-items:center;gap:7px}',
   '.ic{width:15px;height:15px;flex:none}',
   'p.desc{font-size:16.5px;color:var(--mut);line-height:1.65;margin:16px 0 0;max-width:64ch}',

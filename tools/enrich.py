@@ -300,6 +300,11 @@ def extract(url, doc, final):
                     put("hero_url", second, "jsonld")
         elif isinstance(img, str) and img.startswith("http"):
             put("photo_url", img, "jsonld")
+        logo = biz.get("logo")
+        if isinstance(logo, dict):
+            logo = logo.get("url")
+        if isinstance(logo, str) and logo.startswith("http"):
+            put("logo_url", logo, "jsonld")
 
     # OpenGraph, only trusted for branding when it is the business's own site
     if not is_agg:
@@ -313,6 +318,9 @@ def extract(url, doc, final):
             if im and im.startswith("http"):
                 put("photo_url", im, "og")
                 put("hero_url", im, "og")
+        logo = meta(doc, "og:logo") or meta(doc, "logo")
+        if logo and logo.startswith("http"):
+            put("logo_url", logo, "og")
 
     # contact details from markup
     if "phone" not in prof:

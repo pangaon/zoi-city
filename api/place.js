@@ -63,7 +63,7 @@ function shell(o) {
     .map((x) => { const i = x.indexOf(':'); const h = x.slice(0, i), l = x.slice(i + 1);
       return '<a href="' + h + '"' + (h === '/explore' ? ' aria-current="page"' : '') + '>' + l + '</a>'; })
     .join('');
-  return '<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8">'
+  return '<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">'
     + '<meta name="viewport" content="width=device-width,initial-scale=1">'
     + '<title>' + esc(o.title) + '</title>'
     + '<meta name="description" content="' + attr(o.desc) + '">'
@@ -80,7 +80,7 @@ function shell(o) {
     + '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
     + '<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">'
     + '<link rel="stylesheet" href="/assets/zoi-theme.css">'
-    + '<script>(function(){try{document.documentElement.setAttribute("data-theme",localStorage.getItem("zoi_theme")||"dark")}catch(e){}})()</script>'
+    + '<script>(function(){try{document.documentElement.setAttribute("data-theme",localStorage.getItem("zoi_theme")||"light")}catch(e){}})()</script>'
     + '<style>' + CSS + '</style>'
     + (o.jsonld ? '<script type="application/ld+json">' + JSON.stringify(o.jsonld).replace(/</g, '\\u003c') + '</script>' : '')
     + '</head><body>'
@@ -101,6 +101,9 @@ function shell(o) {
 
 const CSS = [
   '.ph{padding:clamp(22px,4vw,44px) 0 clamp(40px,6vw,70px)}',
+  '.ph-hero{position:relative;overflow:hidden;min-height:300px;padding:clamp(28px,5vw,58px);margin:0 0 30px;border-radius:28px;border:1px solid rgba(255,255,255,.22);background:linear-gradient(115deg,#063b70 0%,#087fb7 54%,#39bfd0 100%);color:#fff;box-shadow:0 28px 70px -34px rgba(2,92,145,.7)}',
+  '.ph-hero:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 82% 18%,rgba(255,255,255,.32),transparent 28%),linear-gradient(135deg,transparent 45%,rgba(255,255,255,.10) 45%,transparent 72%);pointer-events:none}',
+  '.ph-hero-copy{position:relative;z-index:2;max-width:650px}.ph-hero .ph-crumb{color:rgba(255,255,255,.74);margin-bottom:22px}.ph-hero .ph-crumb a{color:#fff}.ph-hero h1{color:#fff;margin:0 0 12px;font-size:clamp(34px,5.5vw,64px)}.ph-hero .ph-lede{color:rgba(255,255,255,.86);font-size:17px;max-width:58ch;margin:0}.ph-hero-art{position:absolute;right:0;top:0;width:47%;height:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:24px;transform:rotate(4deg) translate(4%, -3%);opacity:.92}.ph-hero-art img{width:100%;height:150px;object-fit:cover;border-radius:18px;box-shadow:0 18px 30px rgba(3,28,61,.24)}.ph-hero-art img:nth-child(2){margin-top:58px}.ph-hero-art img:nth-child(3){margin-top:-30px}.ph-hero-art img:nth-child(4){margin-top:28px}@media(max-width:700px){.ph-hero{min-height:0}.ph-hero-art{position:relative;width:calc(100% + 30px);height:150px;margin:24px -15px -24px;padding:12px;transform:none}.ph-hero-art img{height:120px}.ph-hero-art img:nth-child(n){margin:0}}',
   '.ph-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:12.5px;color:var(--mut);margin-bottom:16px}',
   '.ph-crumb a{color:var(--mut);text-decoration:none}.ph-crumb a:hover{color:var(--tx);text-decoration:underline}',
   '.ph-crumb i{font-style:normal;opacity:.5}',
@@ -114,6 +117,8 @@ const CSS = [
   '.ph-chips a:hover{color:var(--tx);border-color:var(--line2);transform:translateY(-1px)}',
   '.ph-chips b{font-weight:500;font-size:11.5px;opacity:.7;font-variant-numeric:tabular-nums}',
   '.ph-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));margin:14px 0 0}',
+  '.ph-featured{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin:0 0 30px}@media(max-width:820px){.ph-featured{grid-template-columns:1fr 1fr}}@media(max-width:560px){.ph-featured{grid-template-columns:1fr}}',
+  '.ph-feature{position:relative;min-height:260px;border-radius:18px;overflow:hidden;border:1px solid var(--line2);background:var(--card);display:flex;align-items:flex-end;transition:.2s var(--ease)}.ph-feature:hover{transform:translateY(-3px);box-shadow:var(--shadow)}.ph-feature img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.ph-feature:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(2,23,45,.9),transparent 70%)}.ph-feature .pf-copy{position:relative;z-index:1;padding:18px;color:#fff}.ph-feature b{display:block;font-size:18px}.ph-feature span{display:block;color:rgba(255,255,255,.76);font-size:12.5px;margin-top:4px}',
   '.ph-card{display:flex;gap:12px;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--card);',
   'text-decoration:none;color:inherit;transition:.18s var(--ease)}',
   '.ph-card:hover{border-color:var(--line2);transform:translateY(-2px);box-shadow:var(--shadow)}',
@@ -137,8 +142,9 @@ function card(l) {
   const href = '/' + typeSlug(l.entity_type || 'business') + '/' + encodeURIComponent(l.slug);
   const where = [l.city, l.region].filter(Boolean).join(', ');
   const initial = (l.name || '?').trim().charAt(0).toUpperCase();
-  const media = (l.photo && /^https:\/\//.test(l.photo))
-    ? '<img src="' + attr(l.photo) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">'
+  const photo = l.photo || l.photo_url || l.logo_url || '';
+  const media = (photo && /^https:\/\//.test(photo))
+    ? '<img src="' + attr(photo) + '" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer">'
     : '<span class="ph-mono" aria-hidden="true">' + esc(initial) + '</span>';
   return '<a class="ph-card" href="' + attr(href) + '">' + media
     + '<span class="m"><span class="nm">' + esc(l.name) + '</span>'
@@ -236,6 +242,8 @@ export default async function handler(req, res) {
       : n(total) + ' Greek businesses, parishes, schools, associations and places'
         + (hasPlace ? ' in ' + placeName : ' across ' + countries.length + ' countries') + '.';
 
+      const heroPhotos = rows.map((r) => r.photo || r.photo_url || r.logo_url).filter((v) => typeof v === 'string' && /^https:\/\//.test(v)).slice(0, 4);
+
     /* ---- breadcrumb ---- */
     const crumbs = [{ name: 'Directory', item: '/explore' }];
     if (country) crumbs.push({ name: country, item: '/in/' + slug(country) });
@@ -243,15 +251,25 @@ export default async function handler(req, res) {
     if (city) crumbs.push({ name: city, item: '/in/' + slug(country) + '/' + slug(region) + '/' + slug(city) });
     if (catLabel) crumbs.push({ name: catLabel, item: url.pathname });
 
-    let body = '<nav class="ph-crumb" aria-label="Breadcrumb">'
+    let body = '<section class="ph-hero"><div class="ph-hero-copy"><nav class="ph-crumb" aria-label="Breadcrumb">'
       + crumbs.map((c, i) => (i ? '<i>/</i>' : '')
         + (i === crumbs.length - 1 ? '<span>' + esc(c.name) + '</span>'
           : '<a href="' + attr(c.item) + '">' + esc(c.name) + '</a>')).join('')
       + '</nav>'
       + '<h1>' + esc(heading) + '</h1>'
-      + '<p class="ph-lede">' + esc(lede) + '</p>';
+      + '<p class="ph-lede">' + esc(lede) + '</p></div>'
+      + (heroPhotos.length ? '<div class="ph-hero-art" aria-hidden="true">' + heroPhotos.map((u) => '<img src="' + attr(u) + '" alt="" loading="eager" referrerpolicy="no-referrer">').join('') + '</div>' : '')
+      + '</section>';
 
     /* ---- the listings ---- */
+    if (cat && rows.length) {
+      body += '<section aria-labelledby="featured-title"><div class="ph-sec" style="margin-top:0"><h2 id="featured-title">Featured from this directory</h2></div><div class="ph-featured">'
+        + rows.slice(0, 3).map((l) => {
+          const href = '/' + typeSlug(l.entity_type || 'business') + '/' + encodeURIComponent(l.slug);
+          const photo = l.photo || l.photo_url || l.logo_url || '';
+          return '<a class="ph-feature" href="' + attr(href) + '">' + (photo && /^https:\/\//.test(photo) ? '<img src="' + attr(photo) + '" alt="" loading="eager" referrerpolicy="no-referrer">' : '') + '<span class="pf-copy"><b>' + esc(l.name) + '</b><span>' + esc([l.city, l.region].filter(Boolean).join(', ')) + '</span></span></a>';
+        }).join('') + '</div></section>';
+    }
     body += '<div class="ph-grid">' + rows.map(card).join('') + '</div>';
 
     const pages = Math.ceil(total / PER);

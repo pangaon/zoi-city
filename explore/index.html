@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -242,7 +242,7 @@ footer a:hover{color:var(--tx)}
     <div class="skel"></div><div class="skel"></div><div class="skel"></div>
     <div class="skel"></div><div class="skel"></div><div class="skel"></div>
   </div>
-  <p class="zb-hint" style="text-align:center;font-size:12.5px;color:var(--dim);margin:6px 0 0">Use the filters above, or open the map to browse places spatially.</p>
+  <p class="zb-hint" style="text-align:center;font-size:12.5px;color:var(--dim);margin:6px 0 0">Use the filters above to narrow the directory, then open the map to browse places spatially.</p>
   <div class="loadmore"><button class="btn g" id="more-btn" style="display:none" onclick="loadMore()">Show more</button></div>
 </div></section>
 
@@ -278,7 +278,7 @@ footer a:hover{color:var(--tx)}
 
 <footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
   <span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
-  <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="https://buygreek.shop" target="_blank" rel="noopener">Marketplace</a><a href="/apps/">Advanced tools</a></nav>
+  <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="https://buygreek.shop" target="_blank" rel="noopener">Marketplace</a></nav>
 </div></footer>
 
 <div class="qv" id="qv" hidden><div class="qv-box" role="dialog" aria-modal="true" aria-labelledby="qv-name">
@@ -611,7 +611,7 @@ function renderRows(){
   const rows=sortedRows();
   ST.view=rows;
   if(!rows.length){
-    el.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Nothing yet for that</h3><p>Try a broader word \u2014 or the classic directory has deeper filters.</p></div>';
+    el.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Nothing yet for that</h3><p>Try a broader word or switch to a nearby category to widen the search.</p></div>';
     return;
   }
   el.innerHTML=rows.map((r,i)=>card(r,i)).join('');
