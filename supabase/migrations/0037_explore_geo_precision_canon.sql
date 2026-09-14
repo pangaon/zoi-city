@@ -89,7 +89,9 @@ set search_path = public, zoi, pg_temp as $function$
            coalesce(nullif(l.geo_precision::text, 'none'),
                     l.profile->'_geo'->>'precision')
          )::text as geo_precision,
-         e.address::text
+         -- from the base table: v_public_listings does not carry address, and
+         -- the listing pages already publish it in their JSON-LD.
+         l.address::text
     from zoi.v_public_listings e
     left join zoi.listings l on l.id = e.id
    where e.latitude is not null and e.longitude is not null
