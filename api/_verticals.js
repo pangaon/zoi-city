@@ -535,7 +535,7 @@ const RESTAURANT = {
     h += panel('Photos & Ambiance', IC.camera, gallery(p.photos));
     h += panel('In-Seat QR Ordering & Table Tabs', IC.cart, 
       '<p class="secp">Guests seated at this venue can scan their table QR code to order food, wine, and split the bill directly from their phone.</p>' +
-      '<a class="btn btn-primary btn-sm" href="/apps/tickets-studio/">Open Live Table Tab &rarr;</a>');
+      '<a class="btn btn-primary btn-sm" href="/tickets">Open Zoi Tickets &rarr;</a>');
     h += panel('Catering & Private Dining', IC.users, prose(p.catering));
     h += panel('Good to know', IC.star, chipList(p.payment));
     return h;

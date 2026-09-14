@@ -266,15 +266,12 @@ footer a:hover{color:var(--tx)}
   <div class="composer" id="composer" style="display:none">
     <div class="composer-tabs">
       <button class="ctab on" id="ctab-text" onclick="setComposerType('text')">💬 Post / Story</button>
-      <button class="ctab" id="ctab-photo" onclick="setComposerType('photo')">📸 Photo Gallery</button>
-      <button class="ctab" id="ctab-reel" onclick="setComposerType('reel')">🎥 Reel / Video</button>
-      <button class="ctab" id="ctab-event" onclick="setComposerType('event')">🎭 Event / Gala</button>
-      <button class="ctab" id="ctab-rec" onclick="setComposerType('rec')">🌟 Recommendation</button>
+      <button class="ctab" id="ctab-photo" type="button" disabled title="Photo posts are coming soon">📸 Photo · soon</button>
+      <button class="ctab" id="ctab-reel" type="button" disabled title="Reels are coming soon">🎥 Reel · soon</button>
+      <button class="ctab" id="ctab-event" type="button" disabled title="Event posts are coming soon">🎭 Event · soon</button>
+      <button class="ctab" id="ctab-rec" type="button" onclick="setComposerType('rec')">🌟 Recommendation</button>
     </div>
     <textarea id="c-body" maxlength="1000" placeholder="What's happening in your Greek world?"></textarea>
-    <div id="c-media-box" style="display:none;margin-top:10px">
-      <input id="c-media-url" placeholder="Paste Photo / Video / Reel URL (e.g. MP4, JPG, PNG)..." style="width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 12px;font-size:13px;color:var(--tx);outline:none"/>
-    </div>
     <div class="crow">
       <div class="tagbox">
         <button class="tagbtn" id="tag-btn" onclick="toggleTag()">
@@ -464,7 +461,7 @@ async function postNow(){
     document.getElementById('c-body').value=''; document.getElementById('c-n').textContent='0';
     TAG=null; document.getElementById('tag-lab').textContent='Tag a place'; document.getElementById('tag-btn').classList.remove('set');
     refreshFeed();
-  }catch(e){ toast(e.message); }
+  }catch(e){ toast('We could not publish this post. Please try again.'); }
   b.disabled=false; b.textContent='Post';
 }
 
@@ -485,8 +482,6 @@ function setComposerType(type){
       else btn.classList.remove('on');
     }
   });
-  const mBox = document.getElementById('c-media-box');
-  if(mBox) mBox.style.display = (type === 'photo' || type === 'reel') ? 'block' : 'none';
   const ta = document.getElementById('c-body');
   if(ta){
     if(type === 'reel') ta.placeholder = "Share a Reel caption (e.g. Traditional Crete dances or Greek cooking clip)...";
@@ -866,12 +861,12 @@ async function likePost(id,btn){
     // keep POSTS in step so the sidebar ranking reflects the real count
     POSTS.forEach(p=>{ if(String(p.id)===String(id)){ p.likes=r.likes; p.liked=r.liked; } });
     renderSide();
-  }catch(e){ toast(e.message); }
+  }catch(e){ toast('We could not update this post. Please try again.'); }
 }
 async function delPost(id){
   if(!confirm('Delete this post?')) return;
   try{ await rpc('feed_delete',{p_id:id},true); POSTS=POSTS.filter(p=>String(p.id)!==String(id)); const el=document.getElementById('post-'+id); if(el) el.remove(); renderSide(); }
-  catch(e){ toast(e.message); }
+  catch(e){ toast('We could not delete this post. Please try again.'); }
 }
 async function toggleCmts(id){
   const box=document.getElementById('cmts-'+id);
@@ -901,7 +896,7 @@ async function sendCmt(id){
       if(cmtBtnSpan) cmtBtnSpan.textContent=String(rows.length);
     }
     renderSide();
-  }catch(e){ toast(e.message); }
+  }catch(e){ toast('We could not post this reply. Please try again.'); }
 }
 async function nameday(){
   try{
