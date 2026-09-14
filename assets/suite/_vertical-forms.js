@@ -36,6 +36,16 @@
   /* Fields every vertical gets. `bi:true` means the value may carry a Greek
      sibling (key + '_el'); we never machine-translate, so both are typed. */
   var SHARED = [
+    { k: 'hero_url', label: 'Hero image URL', type: T.URL,
+      hint: 'Wide image recommended, at least 1600 × 900. It is cropped responsively on the public page.' },
+    { k: 'logo_url', label: 'Logo or portrait URL', type: T.URL,
+      hint: 'Square image recommended, at least 600 × 600.' },
+    { k: 'hero_position', label: 'Hero image focus', type: T.SELECT,
+      opts: [['center','Center'],['top','Top'],['bottom','Bottom'],['left','Left'],['right','Right']] },
+    { k: 'logo_fit', label: 'Logo or portrait fit', type: T.SELECT,
+      opts: [['contain','Show the whole image'],['cover','Fill the frame']] },
+    { k: 'photo_urls', label: 'Gallery image URLs', type: T.TAGS,
+      hint: 'Paste one full image URL at a time. Reorder and upload support follows the media pipeline.' },
     { k: 'tagline', label: 'One line about you', type: T.TEXT, bi: true, max: 120,
       hint: 'Shown under your name. Say what you are, not that you are the best.' },
     { k: 'about', label: 'About', type: T.AREA, bi: true, max: 1200 },
@@ -140,6 +150,21 @@
       title: 'Your work',
       note: 'Follower counts are never typed in. They only ever come from a connected account.',
       fields: [
+        { k: 'message', label: 'A message to your community', type: T.AREA, max: 800 },
+        { k: 'embeds', label: 'YouTube and Spotify embeds', type: T.REPEAT, of: [
+          { k: 'title', label: 'Title', type: T.TEXT },
+          { k: 'url', label: 'YouTube or Spotify URL', type: T.URL }
+        ], hint: 'Only explicit YouTube and Spotify URLs are embedded. Other social channels remain direct links.' },
+        { k: 'featured_content', label: 'Featured now', type: T.REPEAT, of: [
+          { k: 'title', label: 'Title', type: T.TEXT },
+          { k: 'url', label: 'Link', type: T.URL },
+          { k: 'type', label: 'Type', type: T.TEXT, ph: 'Video / episode / article' }
+        ]},
+        { k: 'upcoming', label: 'Upcoming appearances and events', type: T.REPEAT, of: [
+          { k: 'title', label: 'Title', type: T.TEXT },
+          { k: 'date', label: 'Date', type: T.TEXT, ph: '2026-10-24' },
+          { k: 'url', label: 'Details link', type: T.URL }
+        ]},
         { k: 'work', label: 'Selected work', type: T.REPEAT, of: [
             { k: 'title', label: 'Title', type: T.TEXT },
             { k: 'url', label: 'Link', type: T.URL },

@@ -343,7 +343,7 @@ function datesBlock(list, ctaLabel) {
   if (!list.length) return '';
   return '<div class="dates">' + list.map((d) => {
     const t = esc(str(d.title) || str(d.name)); if (!t) return '';
-    const when = esc(str(d.date) || str(d.when));
+    const when = esc(str(d.date) || str(d.when) || str(d.year) || str(d.type));
     const href = httpish(d.url);
     return '<div class="drow"><span class="dwhen">' + when + '</span>' +
       '<span class="dwhat"><b>' + t + '</b>' + (str(d.note) ? '<em>' + esc(str(d.note)) + '</em>' : '') + '</span>' +
@@ -371,6 +371,28 @@ function gallery(list) {
     const h = httpish(typeof u === 'string' ? u : u.url);
     return h ? '<img src="' + A(h) + '" alt="" loading="lazy" decoding="async">' : '';
   }).join('') + '</div>';
+}
+
+function embedBlock(list) {
+  const out = [];
+  for (const item of arr(list).slice(0, 6)) {
+    const raw = httpish(typeof item === 'string' ? item : item.url);
+    if (!raw) continue;
+    let src = '', title = str(item && item.title) || 'Featured content';
+    try {
+      const u = new URL(raw);
+      if (u.hostname === 'youtu.be') src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(u.pathname.slice(1));
+      else if (/^(www\.)?youtube\.com$/.test(u.hostname)) {
+        const id = u.searchParams.get('v') || (/^\/(shorts|embed)\/([^/]+)/.exec(u.pathname) || [])[2];
+        if (id) src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id);
+      } else if (u.hostname === 'open.spotify.com') {
+        const m = /^\/(track|episode|show|artist)\/([^/]+)/.exec(u.pathname);
+        if (m) src = 'https://open.spotify.com/embed/' + m[1] + '/' + encodeURIComponent(m[2]);
+      }
+    } catch (e) { src = ''; }
+    if (src) out.push('<article class="embed"><iframe src="' + A(src) + '" title="' + A(title) + '" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; picture-in-picture" allowfullscreen></iframe></article>');
+  }
+  return out.length ? '<div class="embeds">' + out.join('') + '</div>' : '';
 }
 
 function prose(text, cls) {
@@ -648,16 +670,22 @@ const CREATOR = {
   /* profile: {platforms{}, work[], collab{email}, rate_card, press, media_kit_url} */
   actions(e, p) {
     const out = [];
-    if (p.collab && str(p.collab.email)) out.push({ label: 'Work with me / Sponsor', href: 'mailto:' + str(p.collab.email) + '?subject=' + encodeURIComponent('Diaspora Sponsorship Inquiry via Zoi'), icon: IC.mail, primary: true });
-    if (p.media_kit_url && str(p.media_kit_url)) out.push({ label: 'Download Media Kit', href: httpish(p.media_kit_url), icon: IC.book, external: true });
+    const collabEmail = str(p.collab_email) || str(p.collab && p.collab.email);
+    if (collabEmail) out.push({ label: 'Work with me / Sponsor', href: 'mailto:' + collabEmail + '?subject=' + encodeURIComponent('Diaspora Sponsorship Inquiry via Zoi'), icon: IC.mail, primary: true });
+    const kit = str(p.media_kit_url) || str(p.press_kit_url);
+    if (kit) out.push({ label: 'Open media kit', href: httpish(kit), icon: IC.book, external: true });
     return out;
   },
   sections(e, p) {
     let h = '';
+    h += panel('A message from ' + str(e.name), IC.heart, prose(p.message));
+    h += panel('Watch & listen', IC.play, embedBlock(p.embeds));
+    h += panel('Featured now', IC.spark, datesBlock(p.featured_content, 'Open'));
+    h += panel('Upcoming', IC.cal, datesBlock(p.upcoming, 'Details'));
     h += panel('Recent Work & Episodes', IC.camera, datesBlock(p.work, 'View'));
     h += panel('Diaspora Brand Collaborations', IC.spark, 
-      (p.rate_card ? prose(p.rate_card) : '<p class="secp">Available for cultural partnerships, podcast appearances, and diaspora brand sponsorships across Greek communities worldwide.</p>') +
-      '<div style="margin-top:12px"><a class="btn btn-ghost btn-sm" href="/explore?c=creators">Browse Creator Network &rarr;</a></div>');
+      (p.rate_card ? prose(p.rate_card) : '') +
+      '<div style="margin-top:12px"><a class="btn btn-ghost btn-sm" href="/c/media-creators">Browse Creator Network &rarr;</a></div>');
     h += panel('Press & Bio', IC.book, prose(p.press));
     return h;
   },

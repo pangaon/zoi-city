@@ -17,6 +17,15 @@ async function rpc(fn, body) {
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function attr(s){return esc(s);}
 function pretty(slug){return (slug||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function cleanPublicText(value) {
+  var text = String(value == null ? '' : value)
+    .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+    .replace(/&#0*39;|&apos;/gi, "'").replace(/&middot;|&#183;|&bull;/gi, '·')
+    .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/^https?:\/\/\S+$/i.test(text)) return '';
+  if (/^(home|welcome|website|official website|visit the post for more|cargo\.site)$/i.test(text)) return '';
+  return text;
+}
 /* schema.org type per vertical. Collapsing five entity types into
  * LocalBusiness was throwing away the structured data that makes these pages
  * eligible for rich results at all. Refined by entity_type first, then by
@@ -82,7 +91,9 @@ function socialArr(e){
 }
 function jsonld(e,url){
   var o={ '@context':'https://schema.org', '@type':schemaType(e), name:e.name, url:url };
-  if(e.description) o.description=e.description;
+  var profile = profileOf(e);
+  var description = cleanPublicText(e.description || profile.about || profile.description);
+  if(description) o.description=description;
   if(e.address||e.city){
     o.address={ '@type':'PostalAddress' };
     if(e.address) o.address.streetAddress=e.address;
@@ -119,7 +130,8 @@ function page(e, related){
   var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
   var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
-  var desc = e.meta_description || e.description || (e.name + (e.city?(' in '+e.city):'') + ' — on Zoi, the directory of the Greek world.');
+  var publicDescription = cleanPublicText(e.description || p.about || p.description);
+  var desc = cleanPublicText(e.meta_description) || publicDescription || (e.name + (e.city?(' in '+e.city):'') + ' — on Zoi, the directory of the Greek world.');
   var mapHref = (e.latitude!=null&&e.longitude!=null)
       ? ('https://www.google.com/maps/search/?api=1&query='+e.latitude+','+e.longitude)
       : (e.address? ('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(e.address)) : null);
@@ -188,6 +200,8 @@ function socialIcon(k){
   if (typeof candidate === 'string' && /^https:\/\//.test(candidate)) coverImg = candidate;
   var logoImg = e.logo_url || (p && p.logo_url) || '';
   if (typeof logoImg !== 'string' || !/^https:\/\//.test(logoImg)) logoImg = '';
+  var heroPosition = ({top:'top',bottom:'bottom',left:'left',right:'right',center:'center'})[p && p.hero_position] || 'center';
+  var logoFit = p && p.logo_fit === 'cover' ? 'cover' : 'contain';
   var galleryImgs = [];
   var gallerySource = (p && (p.photo_urls || p.photos)) || [];
   if (Array.isArray(gallerySource)) galleryImgs = gallerySource.filter(function(v){ return typeof v === 'string' && /^https:\/\//.test(v); }).slice(0, 8);
@@ -280,13 +294,14 @@ function socialIcon(k){
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
    +'<div class="ep-cover" id="epCover"'
      + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
+     + ' data-position="'+heroPosition+'"'
      + '><div class="ep-brand">'
-     + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
+     + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer" style="object-fit:'+logoFit+'">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
      + '</div></div>'
    +'<span class="ep-type">'+esc(eyebrow)+'</span>'
    +'<h1>'+esc(e.name)+'</h1>'
    +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
-   +(e.description?('<p class="desc">'+esc(e.description)+'</p>'):'')
+  +(publicDescription?('<p class="desc">'+esc(publicDescription)+'</p>'):'')
    +actHtml
    +socHtml
    +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
@@ -310,6 +325,7 @@ function socialIcon(k){
        +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}}'
      +'if(src){var im=new Image();im.alt=h.getAttribute("data-alt")||"";'
        +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
+       +'im.style.objectPosition=h.getAttribute("data-position")||"center";'
       +'im.onload=function(){h.insertBefore(im,h.firstChild);h.className+=" has-img";};'
        +'im.onerror=emblem;im.src=src;}else{emblem();}'
      +'})();</script>'
@@ -390,6 +406,7 @@ var PAGE_CSS = [
   '@media(max-width:560px){.drow{grid-template-columns:1fr}}',
   '.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}',
   '.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line)}',
+  '.embeds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.embed{margin:0;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--line)}.embed iframe{display:block;width:100%;aspect-ratio:16/9;border:0}',
   '.lit{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
   '.litrow{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:baseline}',
   '.litrow:last-child{border-bottom:0}',

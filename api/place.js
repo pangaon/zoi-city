@@ -46,6 +46,13 @@ const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
   (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 const attr = esc;
 const n = (x) => Number(x || 0).toLocaleString('en');
+function cleanText(value) {
+  return String(value == null ? '' : value)
+    .replace(/&middot;|&#183;|&bull;/gi, '·').replace(/&amp;/gi, '&')
+    .replace(/&quot;/gi, '"').replace(/&#0*39;|&apos;/gi, "'")
+    .replace(/&nbsp;/gi, ' ').replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+}
 
 /** Slug <-> display. Kept reversible so a URL round-trips to the same query. */
 function slug(s) {
@@ -148,14 +155,15 @@ function card(l) {
     : '<span class="ph-mono" aria-hidden="true">' + esc(initial) + '</span>';
   return '<a class="ph-card" href="' + attr(href) + '">' + media
     + '<span class="m"><span class="nm">' + esc(l.name) + '</span>'
-    + '<span class="ct">' + esc([l.category, where].filter(Boolean).join(' &middot; ').replace(/&amp;middot;/g, '·')) + '</span>'
-    + (l.description ? '<span class="ds">' + esc(l.description) + '</span>' : '')
+    + '<span class="ct">' + esc([cleanText(l.category), cleanText(where)].filter(Boolean).join(' · ')) + '</span>'
+    + (cleanText(l.description) ? '<span class="ds">' + esc(cleanText(l.description)) + '</span>' : '')
     + '</span></a>';
 }
 
 function chips(items) {
   return '<div class="ph-chips">' + items.map((i) =>
-    '<a href="' + attr(i.href) + '">' + esc(i.label) + ' <b>' + n(i.count) + '</b></a>').join('') + '</div>';
+    '<a href="' + attr(i.href) + '">' + esc(i.label)
+      + (i.count === '' || i.count == null ? '' : ' <b>' + n(i.count) + '</b>') + '</a>').join('') + '</div>';
 }
 
 export default async function handler(req, res) {
@@ -269,6 +277,16 @@ export default async function handler(req, res) {
           const photo = l.photo || l.photo_url || l.logo_url || '';
           return '<a class="ph-feature" href="' + attr(href) + '">' + (photo && /^https:\/\//.test(photo) ? '<img src="' + attr(photo) + '" alt="" loading="eager" referrerpolicy="no-referrer">' : '') + '<span class="pf-copy"><b>' + esc(l.name) + '</b><span>' + esc([l.city, l.region].filter(Boolean).join(', ')) + '</span></span></a>';
         }).join('') + '</div></section>';
+    }
+    if (cat === 'media-creators') {
+      body += '<section class="ph-sec"><h2>Explore creator worlds</h2>' + chips([
+        { label: 'Influencers', count: '', href: '/c/influencers' },
+        { label: 'Podcasters', count: '', href: '/c/podcasters' },
+        { label: 'Musicians & DJs', count: '', href: '/c/musicians-djs' },
+        { label: 'Radio', count: '', href: '/c/radio-stations' },
+        { label: 'Theatre & comedy', count: '', href: '/c/theatre-comedy' },
+        { label: 'Chefs', count: '', href: '/c/chefs' }
+      ]) + '</section>';
     }
     body += '<div class="ph-grid">' + rows.map(card).join('') + '</div>';
 

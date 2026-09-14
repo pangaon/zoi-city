@@ -400,8 +400,11 @@ function extract(doc: string, finalUrl: string) {
     }
     let img = biz.image ?? biz.logo;
     if (Array.isArray(img)) {
-      if (typeof img[0] === "string") put("photo_url", img[0], "jsonld");
-      if (img.length > 1 && typeof img[1] === "string") put("hero_url", img[1], "jsonld");
+      const urls = img.map((value) => typeof value === "string" ? value : value && typeof value === "object" ? String((value as Record<string, unknown>).url || "") : "")
+        .filter((value) => value.startsWith("https://")).slice(0, 8);
+      if (urls[0]) put("photo_url", urls[0], "jsonld");
+      if (urls[1]) put("hero_url", urls[1], "jsonld");
+      if (urls.length > 1) put("photo_urls", urls, "jsonld");
     } else if (img && typeof img === "object") {
       const u = (img as Record<string, unknown>).url;
       if (typeof u === "string" && u.startsWith("https://")) put("photo_url", u, "jsonld");
