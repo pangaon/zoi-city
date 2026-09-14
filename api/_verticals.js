@@ -518,7 +518,7 @@ const RESTAURANT = {
     const out = [];
     if (str(p.reserve)) out.push({ label: 'Reserve a table', href: httpish(p.reserve), icon: IC.cal, primary: true, external: true });
     if (p.table_tab_enabled || p.in_seat_ordering) {
-      out.push({ label: 'Table Tab & Order In-Seat', href: '/apps/tickets-studio/', icon: IC.cart, primary: true });
+      out.push({ label: 'Table Tab & Order In-Seat', href: '/tickets', icon: IC.cart, primary: true });
     }
     arr(p.order).forEach((o) => {
       const u = httpish(typeof o === 'string' ? o : o.url);
