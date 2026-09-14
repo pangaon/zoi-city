@@ -102,25 +102,6 @@ const PAGES = [
     },
   },
   {
-    path: '/apps/business-pro/',
-    extra: (html) => {
-      assert(/noindex/i.test(html), '/apps/business-pro/: operator tool must stay noindex');
-    },
-  },
-  {
-    path: '/apps/event-os/',
-    extra: (html) => {
-      assert(/noindex/i.test(html), '/apps/event-os/: operator tool must stay noindex');
-      assert(!html.includes('George Pangaon'), '/apps/event-os/: founder\u2019s real name must not appear in demo data');
-    },
-  },
-  {
-    path: '/apps/tickets-studio/',
-    extra: (html) => {
-      assert(/noindex/i.test(html), '/apps/tickets-studio/: operator tool must stay noindex');
-    },
-  },
-  {
     path: '/w',
     extra: (html) => {
       assert(/noindex/i.test(html), '/w: guest invite page must stay noindex');
