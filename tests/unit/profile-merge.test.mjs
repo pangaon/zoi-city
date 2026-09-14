@@ -93,7 +93,7 @@ test('the note is honest, specific, and absent when nothing was scraped', () => 
   assert.match(note, /read from example\.gr/, 'it names the source host');
   assert.match(note, /23 Aug 2026/, 'it gives the date it was read');
   assert.match(note, /not confirmed by them/, 'it must not imply verification');
-  assert.match(note, /Claim this listing/, 'it offers the correction path');
+  assert.match(note, /Find and claim this listing/, 'it offers the correction path');
   assert.ok(!/verified|confirmed by|official/i.test(note.replace('not confirmed by them', '')),
     'it must not claim verification anywhere');
   // nothing machine-derived -> no note at all
