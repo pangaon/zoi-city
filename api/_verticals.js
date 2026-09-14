@@ -137,7 +137,7 @@ export function provenanceNote(p) {
     (host ? esc(host) : 'the business\u2019s own website') +
     (when ? ' on ' + esc(when) : '') +
     ', not confirmed by them. ' +
-    '<a href="/social">Claim this listing</a> to correct anything.</p>';
+    '<a href="/explore">Find and claim this listing</a> to correct anything.</p>';
 }
 
 function niceDay(iso) {
