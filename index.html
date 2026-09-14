@@ -351,9 +351,9 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
             <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Orthodox Calendar &amp; Fast</span>
             <span id="fasting-badge" style="background:rgba(91,196,154,.15);color:var(--green);border:1px solid rgba(91,196,154,.3);border-radius:12px;padding:2px 8px;font-size:10.5px;font-weight:700">Fast Free</span>
           </div>
-          <div style="font-size:18px;font-weight:700;color:var(--tx);margin-bottom:4px" id="brief-feast-title">Feast of St. Nicholas the Wonderworker</div>
-          <div style="font-size:13px;color:var(--gold);font-weight:600;margin-bottom:8px" id="brief-nameday-names">Namedays: Νικόλαος, Νίκη, Νικολέττα</div>
-          <p style="font-size:13px;color:var(--mut);margin:0 0 14px;line-height:1.45" id="brief-feast-desc">Patron saint of seafarers, merchants and Greece. A day of celebration and generous giving across the diaspora.</p>
+          <div style="font-size:18px;font-weight:700;color:var(--tx);margin-bottom:4px" id="brief-feast-title">Reading today’s calendar…</div>
+          <div style="font-size:13px;color:var(--gold);font-weight:600;margin-bottom:8px" id="brief-nameday-names"></div>
+          <p style="font-size:13px;color:var(--mut);margin:0 0 14px;line-height:1.45" id="brief-feast-desc">Live Orthodox calendar, namedays, and fasting status.</p>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" style="padding:8px 12px;font-size:12px;flex:1" onclick="openFeastModal()">📖 Deep Dive &amp; Bio</button>
@@ -365,9 +365,9 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div style="background:var(--bg2);padding:20px;border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between">
         <div>
           <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--acc);margin-bottom:8px">Greek Word of the Day</div>
-          <div style="font-size:22px;font-family:'Fraunces';font-weight:600;color:var(--tx);margin-bottom:2px">Φιλοξενία <span style="font-size:14px;color:var(--mut);font-family:'Hanken Grotesk';font-weight:500">· [fee-loh-kseh-NEE-ah]</span></div>
-          <div style="font-size:13px;color:var(--acc);font-weight:700;margin-bottom:8px">Literal: "Love of the stranger" / Sacred Hospitality</div>
-          <p style="font-size:13px;color:var(--mut);margin:0 0 14px;line-height:1.45">The timeless Greek virtue that strangers become honored guests. The heartbeat of our tavernas, family homes, and communities worldwide.</p>
+          <div style="font-size:22px;font-family:'Fraunces';font-weight:600;color:var(--tx);margin-bottom:2px"><span id="home-wotd-word">Reading today’s word…</span> <span id="home-wotd-pronunciation" style="font-size:14px;color:var(--mut);font-family:'Hanken Grotesk';font-weight:500"></span></div>
+          <div id="home-wotd-gloss" style="font-size:13px;color:var(--acc);font-weight:700;margin-bottom:8px"></div>
+          <p id="home-wotd-copy" style="font-size:13px;color:var(--mut);margin:0 0 14px;line-height:1.45">A daily Greek word with a meaning worth carrying into the world.</p>
         </div>
         <div style="display:flex;gap:8px">
           <button class="btn btn-ghost" style="padding:8px 12px;font-size:12px;width:100%" onclick="playWordAudio()">🔊 Listen to Pronunciation</button>
@@ -384,19 +384,19 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
             <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
               <div style="font-size:11px;color:var(--mut)">🏛 Athens</div>
-              <div style="font-size:16px;font-weight:800;color:var(--tx)">28°C <span style="font-size:12px;color:var(--gold)">☀️</span></div>
+              <div id="home-wx-athens" style="font-size:16px;font-weight:800;color:var(--tx)">Checking…</div>
             </div>
             <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
               <div style="font-size:11px;color:var(--mut)">🏰 Thessaloniki</div>
-              <div style="font-size:16px;font-weight:800;color:var(--tx)">26°C <span style="font-size:12px;color:var(--acc)">🌤️</span></div>
+              <div id="home-wx-thess" style="font-size:16px;font-weight:800;color:var(--tx)">Checking…</div>
             </div>
             <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
               <div style="font-size:11px;color:var(--mut)">🏖 Chania, Crete</div>
-              <div style="font-size:16px;font-weight:800;color:var(--tx)">27°C <span style="font-size:12px;color:var(--gold)">☀️</span></div>
+              <div id="home-wx-chania" style="font-size:16px;font-weight:800;color:var(--tx)">Checking…</div>
             </div>
             <div style="background:var(--bg);padding:8px 10px;border-radius:8px;border:1px solid var(--line)">
               <div style="font-size:11px;color:var(--mut)">⛵ Santorini</div>
-              <div style="font-size:16px;font-weight:800;color:var(--tx)">25°C <span style="font-size:12px;color:var(--acc)">🌊</span></div>
+              <div id="home-wx-santorini" style="font-size:16px;font-weight:800;color:var(--tx)">Checking…</div>
             </div>
           </div>
         </div>
@@ -447,7 +447,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
           <div style="font-size:24px;margin-bottom:4px">🐙</div>
           <b style="color:var(--tx);font-size:15px;display:block">Taverna In-Seat Ordering</b>
           <p style="font-size:12.5px;color:var(--mut);margin:4px 0 10px">Scan your table QR code, browse the grill menu, and split the bill 3 ways with Apple Pay.</p>
-          <a href="/apps/tickets-studio/" style="color:var(--acc);font-weight:700;font-size:12px">Launch Table Tab Demo &rarr;</a>
+          <a href="/tickets" style="color:var(--acc);font-weight:700;font-size:12px">Open live Tickets &rarr;</a>
         </div>
         <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
           <div style="font-size:24px;margin-bottom:4px">🥐</div>
@@ -465,20 +465,20 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
           <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--sea)">Live Travel &amp; Heritage Guide</span>
           <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0">Greece &amp; Cyprus Travel Portal</h3>
         </div>
-        <a class="btn btn-primary btn-sm" href="/in/greece">View Greece Destinations &rarr;</a>
+        <a class="btn btn-primary btn-sm" href="/explore?q=Greece">Explore Greece Destinations &rarr;</a>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
         <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--line)">
           <b style="color:var(--tx);display:block">🏛 Athens &amp; Attica</b>
-          <span style="font-size:12px;color:var(--mut)">Acropolis, Plaka tavernas, coastal Riviera (28°C)</span>
+              <span style="font-size:12px;color:var(--mut)">Acropolis, Plaka tavernas, coastal Riviera · live reading above</span>
         </div>
         <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--line)">
           <b style="color:var(--tx);display:block">🏖 Crete &amp; Chania</b>
-          <span style="font-size:12px;color:var(--mut)">Venetian harbor, Balos lagoon, mountain villages (27°C)</span>
+          <span style="font-size:12px;color:var(--mut)">Venetian harbor, Balos lagoon, mountain villages · live reading above</span>
         </div>
         <div style="background:var(--bg);padding:14px;border-radius:10px;border:1px solid var(--line)">
           <b style="color:var(--tx);display:block">⛵ Cyclades Islands</b>
-          <span style="font-size:12px;color:var(--mut)">Santorini sunsets, Naxos gastronomy, Paros beaches (25°C)</span>
+          <span style="font-size:12px;color:var(--mut)">Santorini sunsets, Naxos gastronomy, Paros beaches · live reading above</span>
         </div>
       </div>
     </div>
@@ -644,7 +644,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       </p>
     </div>
     <div style="display:flex;gap:10px">
-      <button class="btn btn-primary btn-sm" onclick="openPromoteModal()">★ Sponsor &amp; Feature Your Business</button>
+      <button class="btn btn-primary btn-sm" onclick="openPromoteModal()">★ Add your business</button>
       <button class="btn btn-ghost btn-sm" onclick="togglePrefPanel()">⚙️ My Interest Controls</button>
     </div>
   </div>
@@ -676,19 +676,19 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     </div>
   </div>
 
-  <!-- Active Sponsored Spotlight Cards -->
+  <!-- Editorial discovery cards; paid promotion is not wired until inventory exists. -->
   <div class="zoi-spotlight-grid">
     <div class="zoi-spotlight-card">
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)">FEATURED GREEK PRODUCER</span>
-          <span style="font-size:10px;color:var(--dim)">Verified Partner</span>
+          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)">DISCOVER A GREEK PRODUCER</span>
+          <span style="font-size:10px;color:var(--dim)">Directory result</span>
         </div>
         <div class="zoi-spotlight-title">Krinos Foods · Mediterranean Heritage Harvest</div>
         <div class="zoi-spotlight-sub">Pure Greek extra virgin olive oil, barrel-aged feta &amp; traditional Greek honey delivered to your doorstep.</div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
-        <span style="font-size:12px;color:var(--gold);font-weight:700">Official Sponsor</span>
+        <span style="font-size:12px;color:var(--gold);font-weight:700">Directory discovery</span>
         <a class="btn btn-ghost btn-sm" href="/explore?q=krinos">View Products &rarr;</a>
       </div>
     </div>
@@ -696,15 +696,15 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <div class="zoi-spotlight-card">
       <div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sea)">GASTRONOMY SPOTLIGHT</span>
+          <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--sea)">DISCOVER GREEK GASTRONOMY</span>
           <span style="font-size:10px;color:var(--dim)">Astoria, New York</span>
         </div>
         <div class="zoi-spotlight-title">Mythos Taverna · Aegean Seafood Night</div>
         <div class="zoi-spotlight-sub">Charred octopus, whole grilled lavraki, and chilled Assyrtiko with live bouzouki every Friday &amp; Saturday.</div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
-        <span style="font-size:12px;color:var(--green);font-weight:700">Table Tabs Live</span>
-        <a class="btn btn-ghost btn-sm" href="/apps/tickets-studio/">Reserve / Table Tab &rarr;</a>
+        <span style="font-size:12px;color:var(--green);font-weight:700">Explore the live route</span>
+        <a class="btn btn-ghost btn-sm" href="/tickets">Reserve / Table Tab &rarr;</a>
       </div>
     </div>
 
@@ -714,12 +714,12 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
           <span style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">ANNUAL CULTURAL GALA</span>
           <span style="font-size:10px;color:var(--dim)">Toronto, ON</span>
         </div>
-        <div class="zoi-spotlight-title">Hellenic Gala 2025 · 3D Seat Map On Sale</div>
-        <div class="zoi-spotlight-sub">Celebrate Greek culture, heritage awards, and live music at the Grand Ballroom with 3D seat booking.</div>
+        <div class="zoi-spotlight-title">Find the next Hellenic gala</div>
+        <div class="zoi-spotlight-sub">Discover Greek festivals, galas, concerts, and community gatherings in the live directory.</div>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
-        <span style="font-size:12px;color:var(--acc);font-weight:700">Tickets Available</span>
-        <a class="btn btn-ghost btn-sm" href="/apps/tickets-studio/">Get Tickets &rarr;</a>
+        <span style="font-size:12px;color:var(--acc);font-weight:700">Live event directory</span>
+        <a class="btn btn-ghost btn-sm" href="/tickets">Get Tickets &rarr;</a>
       </div>
     </div>
   </div>
@@ -817,13 +817,13 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div class="trow"><span class="tno">Playbook 02</span><span class="tst live">Festivals &amp; Events</span></div>
       <h3>Run 3D Festivals &amp; Galas</h3>
       <p>Upload hall blueprints, design 3D sponsor table plaques, project logos on stage LED walls, and scan tickets with offline Door mode.</p>
-      <a class="go" href="/apps/tickets-studio/" style="color:var(--acc)">Open 3D Studio &rarr;</a>
+      <a class="go" href="/tickets" style="color:var(--acc)">Open Tickets &rarr;</a>
     </div>
     <div class="tool" style="cursor:default">
       <div class="trow"><span class="tno">Playbook 03</span><span class="tst live">Weddings &amp; Baptisms</span></div>
       <h3>Private Event Invitation Suite</h3>
       <p>Private PIN access, RSVP with multi-guest entrée selections (Lamb, Sea Bass, Gemista), family table seating, and digital Shakoula gifts.</p>
-      <a class="go" href="/apps/tickets-studio/" style="color:var(--acc)">Explore Wedding Suite &rarr;</a>
+      <a class="go" href="/tickets" style="color:var(--acc)">Explore Private Events &rarr;</a>
     </div>
     <div class="tool" style="cursor:default">
       <div class="trow"><span class="tno">Playbook 04</span><span class="tst live">Creators &amp; Media</span></div>
@@ -904,6 +904,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   </div>
 </div>
 
+<script src="/assets/suite/_orthocal.js"></script>
 <script>
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -943,20 +944,71 @@ function saveUserPrefs(){
   if(pnl) pnl.style.display = 'none';
   alert('✓ Cultural interest preferences saved! Zoi now customizes your daily discovery feed accordingly.');
 }
-function openPromoteModal(){
-  const biz = prompt('Enter your Greek business or event name to feature in the Pan-Hellenic Spotlight:', 'Mythos Taverna');
-  if(biz){
-    alert('✓ Spotlight Request Initiated for ' + biz + '!\nOur team will review your verified listing and connect your high-conversion spotlight card.');
+function openPromoteModal(){ window.location.href='/add'; }
+
+const HOME_WOTD=[
+  ['Φιλοξενία','[fee-loh-kseh-NEE-ah]','Love of the stranger — the duty to treat a guest as sacred'],
+  ['Μεράκι','[me-RA-kee]','Doing something with your soul in it'],
+  ['Κέφι','[KEH-fee]','The high spirit that takes over a room'],
+  ['Παρέα','[pa-REH-ah]','The company you keep — the point of the evening'],
+  ['Νόστος','[NOH-stos]','The homecoming; the root of nostalgia'],
+  ['Φιλότιμο','[fee-LOH-tee-moh]','Love of honour — doing right without being asked'],
+  ['Ελευθερία','[eh-lef-theh-REE-ah]','Freedom']
+];
+let HOME_WORD=HOME_WOTD[0];
+function homeISO(){
+  const d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+function renderHomeRitual(){
+  const iso=homeISO();
+  const index=Math.floor(Date.UTC(+iso.slice(0,4),+iso.slice(5,7)-1,+iso.slice(8,10))/86400000);
+  HOME_WORD=HOME_WOTD[((index%HOME_WOTD.length)+HOME_WOTD.length)%HOME_WOTD.length];
+  const word=document.getElementById('home-wotd-word');
+  const pron=document.getElementById('home-wotd-pronunciation');
+  const gloss=document.getElementById('home-wotd-gloss');
+  if(word) word.textContent=HOME_WORD[0];
+  if(pron) pron.textContent='· '+HOME_WORD[1];
+  if(gloss) gloss.textContent=HOME_WORD[2];
+
+  const O=window.ZoiOrthocal;
+  if(!O) return;
+  const info=O.dayInfo(iso);
+  const title=document.getElementById('brief-feast-title');
+  const names=document.getElementById('brief-nameday-names');
+  const desc=document.getElementById('brief-feast-desc');
+  const badge=document.getElementById('fasting-badge');
+  const feast=info.feasts&&info.feasts.length?info.feasts.map(f=>f.name).join(' · '):'';
+  const next=(O.upcomingFeasts(iso,60)||[])[0];
+  if(title) title.textContent=feast||('No feast today · next: '+(next?next.name:'not recorded'));
+  if(names) names.textContent=info.namedays&&info.namedays.length?'Χρόνια πολλά: '+info.namedays.join(', '):'No namedays today';
+  if(desc) desc.textContent=info.fast?info.fast.label:(feast?'A day to mark across the diaspora.':next?'The next Great moment is '+next.name+'.':'No liturgical observance recorded today.');
+  if(badge){
+    badge.textContent=info.fast?info.fast.label:'Not a fast day';
+    badge.style.color=info.fast?'var(--gold)':'var(--green)';
   }
 }
-
+async function loadHomeWeather(){
+  const cities=[['home-wx-athens',37.98,23.73],['home-wx-thess',40.64,22.94],['home-wx-chania',35.51,24.02],['home-wx-santorini',36.39,25.46]];
+  try{
+    const url='https://api.open-meteo.com/v1/forecast?latitude='+cities.map(c=>c[1]).join(',')+'&longitude='+cities.map(c=>c[2]).join(',')+'&current=temperature_2m&timezone=Europe%2FAthens';
+    const r=await fetch(url); if(!r.ok) throw new Error('weather');
+    const rows=await r.json();
+    (Array.isArray(rows)?rows:[rows]).forEach((row,i)=>{
+      const t=row&&row.current&&row.current.temperature_2m;
+      const el=document.getElementById(cities[i][0]); if(el&&t!=null) el.textContent=Math.round(t)+'°C';
+    });
+  }catch(e){
+    cities.forEach(c=>{const el=document.getElementById(c[0]);if(el)el.textContent='Unavailable';});
+  }
+}
 function playWordAudio(){
   if('speechSynthesis' in window){
-    const u = new SpeechSynthesisUtterance('Φιλοξενία');
+    const u = new SpeechSynthesisUtterance(HOME_WORD[0]);
     u.lang = 'el-GR';
     window.speechSynthesis.speak(u);
   } else {
-    alert('Φιλοξενία (Fee-loh-kseh-NEE-ah) — The Greek sacred tradition of hospitality.');
+    alert(HOME_WORD[0]+' '+HOME_WORD[1]+' — '+HOME_WORD[2]);
   }
 }
 
@@ -994,6 +1046,8 @@ async function joinWL(){
 }
 document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='Enter') joinWL(); });
 (async function(){
+  renderHomeRitual();
+  loadHomeWeather();
   try{
     const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
     const calEl = document.getElementById('live-calendar-date');
