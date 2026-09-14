@@ -115,7 +115,7 @@ test('every highlight resolves to a real destination', () => {
   const body = lift('function openStoryModal(kind)', 'function showRitualDetail');
   assert.ok(/showRitualDetail\(\)/.test(body), 'ritual highlight opens nothing');
   assert.ok(/FEED_FILTER = 'reels'/.test(body), 'reels highlight does not filter the feed');
-  for (const dest of ['/explore?c=events', '/explore?c=restaurants', '/explore?c=creators']) {
+  for (const dest of ['/c/festivals', '/c/restaurants', '/c/media-creators']) {
     assert.ok(body.includes(dest), `no destination for ${dest}`);
   }
 });
