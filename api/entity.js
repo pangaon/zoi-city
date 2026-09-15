@@ -1,4 +1,4 @@
-import { verticalFor, profileOf, provenanceNote, icon, IC } from './_verticals.js';
+import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
 const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
@@ -91,7 +91,7 @@ function socialArr(e){
 }
 function jsonld(e,url){
   var o={ '@context':'https://schema.org', '@type':schemaType(e), name:e.name, url:url };
-  var profile = profileOf(e);
+  var picked = verticalFor(e), profile = profileForVertical(picked.v, profileOf(e));
   var description = cleanPublicText(e.description || profile.about || profile.description);
   if(description) o.description=description;
   if(e.address||e.city){
@@ -108,14 +108,14 @@ function jsonld(e,url){
   }
   // Languages are the diaspora conversion mechanism — a Greek-speaking lawyer is
   // *why* someone picks this listing. First-class, not a chip.
-  var langs=(e.profile&&Array.isArray(e.profile.languages))?e.profile.languages:[];
+  var langs=Array.isArray(profile.languages)?profile.languages:[];
   if(langs.length){
     o.knowsLanguage=langs.map(function(l){
       if(typeof l==='string') return { '@type':'Language', name:l };
       return { '@type':'Language', name:String(l.name||l.code||''), alternateName:String(l.code||'') };
     }).filter(function(l){ return l.name; });
   }
-  var areas=(e.profile&&Array.isArray(e.profile.service_areas))?e.profile.service_areas:[];
+  var areas=Array.isArray(profile.service_areas)?profile.service_areas:[];
   if(areas.length){
     o.areaServed=areas.map(function(a){ return { '@type':'Place', name:String(a) }; });
   }
@@ -126,7 +126,7 @@ function page(e, related){
   var slug = e.canonical_slug || e.slug;
   var url = SITE + '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' + encodeURIComponent(slug);
   var picked = verticalFor(e), V = picked.v, sub = picked.sub;
-  var p = profileOf(e);
+  var p = profileForVertical(V, profileOf(e));
   var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
   var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');

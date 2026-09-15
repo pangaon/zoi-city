@@ -400,6 +400,116 @@ function prose(text, cls) {
   return t ? '<p class="' + (cls || 'secp') + '">' + esc(t) + '</p>' : '';
 }
 
+function splitList(v) {
+  if (Array.isArray(v)) return v.filter(Boolean);
+  if (!str(v)) return [];
+  return String(v).split(/\r?\n|,|;/).map((x) => x.trim()).filter(Boolean);
+}
+
+function firstText(obj, keys) {
+  if (!obj || typeof obj !== 'object') return '';
+  for (const k of keys) {
+    const v = str(obj[k]);
+    if (v) return v;
+  }
+  return '';
+}
+
+function registrationLabel(r) {
+  if (!r || typeof r !== 'object') return '';
+  const bits = [str(r.body), str(r.number), str(r.jurisdiction)].filter(Boolean);
+  return bits.join(' · ');
+}
+
+export function profileForVertical(vertical, profile) {
+  const p = (profile && typeof profile === 'object' && !Array.isArray(profile)) ? { ...profile } : {};
+  const key = str(vertical && vertical.key).toLowerCase();
+
+  if (key === 'church') {
+    if (!arr(p.schedule).length && arr(p.services).length) {
+      p.schedule = p.services.map((s) => ({
+        day: str(s.day) || str(s.when),
+        label: str(s.name),
+        time: str(s.time),
+        note: str(s.language),
+      })).filter((r) => r.day || r.label || r.time);
+    }
+    if (!arr(p.sacraments).length && str(p.sacraments)) p.sacraments = splitList(p.sacraments);
+    if ((!p.giving || !str(p.giving.url)) && str(p.stewardship_url)) {
+      p.giving = Object.assign({}, (p.giving && typeof p.giving === 'object') ? p.giving : {}, { url: str(p.stewardship_url) });
+    }
+    if ((!p.festival || typeof p.festival !== 'object') && str(p.festival)) p.festival = { name: str(p.festival) };
+    if ((!p.patronal_feast || typeof p.patronal_feast !== 'object') && str(p.patronal_feast)) {
+      p.patronal_feast = { saint: str(p.patronal_feast) };
+    }
+  }
+
+  if (key === 'restaurant') {
+    if (!str(p.reserve)) p.reserve = firstText(p, ['reserve_url', 'booking_url']);
+    if (!arr(p.order).length) {
+      const orderUrl = firstText(p, ['order_url']);
+      if (orderUrl) p.order = [{ label: 'Order online', url: orderUrl }];
+    }
+    if (!arr(p.menu).length) {
+      const menuUrl = firstText(p, ['menu_url']);
+      if (menuUrl) {
+        p.menu = [{ section: 'Full menu', items: [{ name: 'Open full menu', note: menuUrl }] }];
+      }
+    }
+    if (!arr(p.payment).length && str(p.price_range)) p.payment = ['Price range ' + str(p.price_range)];
+  }
+
+  if (key === 'professional') {
+    if (!arr(p.services).length && arr(p.practice_areas).length) p.services = arr(p.practice_areas);
+    if (!arr(p.credentials).length && arr(p.registrations).length) {
+      p.credentials = p.registrations.map((r) => registrationLabel(r)).filter(Boolean);
+    }
+    if (!str(p.consult)) p.consult = firstText(p, ['booking_url']);
+    if (!str(p.fees)) {
+      const fee = str(p.consult_fee);
+      if (fee) p.fees = 'Consultation fee: ' + fee;
+    }
+  }
+
+  if (key === 'school') {
+    if ((!p.enrol || typeof p.enrol !== 'object') && (str(p.enrolment) || str(p.enrol_url))) {
+      p.enrol = { note: str(p.enrolment), url: str(p.enrol_url) };
+    }
+    if (!arr(p.calendar).length && str(p.enrolment)) p.calendar = [{ title: 'Enrolment', note: str(p.enrolment) }];
+  }
+
+  if (key === 'organization') {
+    if ((!p.join || typeof p.join !== 'object') && (str(p.membership) || str(p.membership_url))) {
+      p.join = { note: str(p.membership), url: str(p.membership_url) };
+    }
+    if ((!p.giving || typeof p.giving !== 'object') && str(p.give_url)) p.giving = { url: str(p.give_url) };
+    if (!arr(p.events).length && str(p.meetings)) p.events = [{ title: 'Meetings', note: str(p.meetings) }];
+  }
+
+  if (key === 'creator') {
+    if (!str(p.media_kit_url)) p.media_kit_url = firstText(p, ['press_kit_url']);
+    if (!str(p.rate_card) && str(p.rate_card_url)) p.rate_card = 'Rate card: ' + str(p.rate_card_url);
+  }
+
+  if (key === 'venue') {
+    if ((!p.rental || typeof p.rental !== 'object') && str(p.hire_enquiry_url)) {
+      p.rental = { url: str(p.hire_enquiry_url) };
+    }
+  }
+
+  if (key === 'event') {
+    if (!str(p.venue)) p.venue = firstText(p, ['venue_name']);
+    if (!str(p.tickets)) p.tickets = firstText(p, ['tickets_url']);
+  }
+
+  if (key === 'business') {
+    if (!str(p.booking)) p.booking = firstText(p, ['booking_url']);
+    if (!arr(p.services).length && arr(p.highlights).length) p.services = arr(p.highlights);
+  }
+
+  return p;
+}
+
 /* ---------------- the liturgical day ----------------
  * This is the one section on a parish page that is useful before the parish has
  * typed a single character: today's commemoration, the name days to greet, the
@@ -674,6 +784,8 @@ const CREATOR = {
     if (collabEmail) out.push({ label: 'Work with me / Sponsor', href: 'mailto:' + collabEmail + '?subject=' + encodeURIComponent('Diaspora Sponsorship Inquiry via Zoi'), icon: IC.mail, primary: true });
     const kit = str(p.media_kit_url) || str(p.press_kit_url);
     if (kit) out.push({ label: 'Open media kit', href: httpish(kit), icon: IC.book, external: true });
+    const rateCardUrl = str(p.rate_card_url);
+    if (rateCardUrl) out.push({ label: 'View rate card', href: httpish(rateCardUrl), icon: IC.star, external: true });
     return out;
   },
   sections(e, p) {
@@ -683,8 +795,9 @@ const CREATOR = {
     h += panel('Featured now', IC.spark, datesBlock(p.featured_content, 'Open'));
     h += panel('Upcoming', IC.cal, datesBlock(p.upcoming, 'Details'));
     h += panel('Recent Work & Episodes', IC.camera, datesBlock(p.work, 'View'));
-    h += panel('Diaspora Brand Collaborations', IC.spark, 
+    h += panel('Diaspora Brand Collaborations', IC.spark,
       (p.rate_card ? prose(p.rate_card) : '') +
+      (str(p.rate_card_url) ? '<p class="secp"><a href="' + A(httpish(p.rate_card_url)) + '" rel="noopener" target="_blank">Open rate card</a></p>' : '') +
       '<div style="margin-top:12px"><a class="btn btn-ghost btn-sm" href="/c/media-creators">Browse Creator Network &rarr;</a></div>');
     h += panel('Press & Bio', IC.book, prose(p.press));
     return h;
