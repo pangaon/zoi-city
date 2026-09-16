@@ -58,5 +58,5 @@ test('enrichment reads direct machine fields and schedules guarded hourly work',
   assert.match(schedule, /name = 'enrich_token'/);
   assert.match(schedule, /timeout_milliseconds := 120000/);
   assert.match(schedule, /zoi-enrich-hourly/);
-  assert.doesNotMatch(control, /make_interval\(minutes\s*=>/i);
+  assert.doesNotMatch(control, /make_interval/i);
 });

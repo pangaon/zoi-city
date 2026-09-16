@@ -24,7 +24,7 @@ begin
        and (
             l.profile -> '_enrich' ->> 'checked_at' is null
          or (l.profile -> '_enrich' ->> 'checked_at')::date
-              < (current_date - make_interval(days => greatest(p_max_age_days, 1)))
+              < (current_date - greatest(p_max_age_days, 1))
          or (
               coalesce(l.profile -> '_enrich' ->> 'crawl_status', '') = 'error'
           and (l.profile -> '_enrich' ->> 'checked_at')::date <= (current_date - 1)
@@ -45,7 +45,7 @@ begin
          '_enrich', coalesce(l.profile -> '_enrich', '{}'::jsonb) || jsonb_build_object(
            'lease', jsonb_build_object(
              'id', v_lease,
-             'expires_at', to_char(clock_timestamp() + make_interval(mins => greatest(coalesce(p_lease_minutes, 15), 1)), 'YYYY-MM-DD"T"HH24:MI:SSOF')
+             'expires_at', to_char(clock_timestamp() + (greatest(coalesce(p_lease_minutes, 15), 1) || ' minutes')::interval, 'YYYY-MM-DD"T"HH24:MI:SSOF')
            )
          )
        )
