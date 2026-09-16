@@ -312,6 +312,35 @@ function metaTag(doc: string, key: string, attr = "property"): string | null {
   return null;
 }
 
+function imageUrl(raw: string, base: string): string | null {
+  const value = unent(String(raw || "")).trim();
+  if (!value || /^data:|^javascript:|^blob:/i.test(value)) return null;
+  try {
+    const url = new URL(value, base);
+    return url.protocol === "https:" ? url.toString() : null;
+  } catch { return null; }
+}
+
+function pageImages(doc: string, finalUrl: string): string[] {
+  const found: string[] = [];
+  const add = (raw: string) => {
+    const url = imageUrl(raw, finalUrl);
+    if (!url || found.includes(url) || /logo|icon|avatar|sprite|pixel|tracking|favicon/i.test(url)) return;
+    found.push(url);
+  };
+  for (const m of doc.matchAll(/<(?:img|source)\b[^>]*>/gi)) {
+    const tag = m[0];
+    const size = tag.match(/\b(?:width|height)=["'](\d+)["']/gi) || [];
+    if (size.some((v) => Number(v.match(/\d+/)?.[0]) <= 1)) continue;
+    const srcset = tag.match(/\b(?:srcset|data-srcset)=["']([^"']+)/i)?.[1];
+    const src = tag.match(/\b(?:data-src|data-lazy-src|data-original|src)=["']([^"']+)/i)?.[1];
+    if (srcset) add(srcset.split(",").pop()?.trim().split(/\s+/)[0] || "");
+    if (src) add(src);
+    if (found.length >= 8) break;
+  }
+  return found;
+}
+
 function ldNodes(doc: string): Record<string, unknown>[] {
   const out: Record<string, unknown>[] = [];
   const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
@@ -433,6 +462,9 @@ function extract(doc: string, finalUrl: string) {
     }
     const logo = metaTag(doc, "og:logo") || metaTag(doc, "logo");
     if (logo && logo.startsWith("https://")) put("logo_url", logo, "og");
+    const images = pageImages(doc, finalUrl);
+    if (images[0]) put("photo_url", images[0], "page-image");
+    if (images.length > 1) put("photo_urls", images, "page-image");
   }
 
   const tel = [...doc.matchAll(/tel:([+\d][\d().\s\-\/]{6,24})/gi)]
@@ -473,6 +505,13 @@ function extract(doc: string, finalUrl: string) {
       if (re.test(label)) put(key, abs.slice(0, 240), "page-link");
     }
   }
+
+  const embeds: string[] = [];
+  for (const m of doc.matchAll(/(?:src|href)=["'](https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com)\/[^"']+)/gi)) {
+    const u = m[1].split(/[?#]/)[0];
+    if (!embeds.includes(u)) embeds.push(u);
+  }
+  if (embeds.length) put("video_urls", embeds.slice(0, 4), "video-link");
 
   const lang = doc.match(/<html[^>]+lang=["']([a-zA-Z\-]{2,8})["']/);
   if (lang) put("site_lang", lang[1].toLowerCase(), "html-lang");

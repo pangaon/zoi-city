@@ -152,14 +152,14 @@ begin
 
   foreach field in array required loop
     v_present := case
-      when field = 'description' then nullif(coalesce(p ->> 'description', e -> 'fields' ->> 'description', l.description), '') is not null
-      when field = 'image' then nullif(coalesce(p ->> 'photo_url', l.photo_url, e -> 'fields' ->> 'logo'), '') is not null
+      when field = 'description' then nullif(coalesce(p ->> 'description', e ->> 'description', e -> 'fields' ->> 'description', l.description), '') is not null
+      when field = 'image' then nullif(coalesce(p ->> 'photo_url', l.photo_url, e ->> 'photo_url', e ->> 'logo_url', e -> 'fields' ->> 'logo'), '') is not null
       when field = 'contact' then nullif(coalesce(p ->> 'phone', l.phone, p ->> 'email', l.email, l.website), '') is not null
       when field = 'location' then nullif(coalesce(p ->> 'address', l.city), '') is not null
-      when field = 'hours' then nullif(coalesce(p ->> 'hours', e -> 'fields' ->> 'hours'), '') is not null
-      when field = 'menu' then (p ? 'menu' or p ? 'menu_url' or e ? 'menu')
+      when field = 'hours' then nullif(coalesce(p ->> 'hours', e ->> 'hours', e -> 'fields' ->> 'hours'), '') is not null
+      when field = 'menu' then (p ? 'menu' or p ? 'menu_url' or e ? 'menu' or e ? 'menu_url')
       when field = 'services' then (p ? 'services' or p ? 'service_list' or e ? 'services')
-      when field = 'booking' then (p ? 'booking' or p ? 'booking_url' or p ? 'reservation_url' or e ? 'booking')
+      when field = 'booking' then (p ? 'booking' or p ? 'booking_url' or p ? 'reservation_url' or e ? 'booking' or e ? 'booking_url')
       else false
     end;
     if v_present then

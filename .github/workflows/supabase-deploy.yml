@@ -33,12 +33,14 @@ jobs:
           # contracts instead of attempting to replay unknown migrations.
           supabase db query --linked --file supabase/migrations/0039_canonical_geography_contract.sql
           supabase db query --linked --file supabase/migrations/0040_enrichment_control_plane.sql
+          supabase db query --linked --file supabase/migrations/0041_enrichment_schedule.sql
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Deploy enrichment worker to production
         run: |
           cd /home/runner/work/zoi-city/zoi-city
+          supabase secrets set --linked ENRICH_ENABLED=on REQUIRE_DNS_GUARD=true ENRICH_BATCH=40
           supabase functions deploy zoi-enrich --use-api --project-ref csebihpaychdkanjjsmz
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

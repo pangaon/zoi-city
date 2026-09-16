@@ -48,3 +48,13 @@ test('enrichment control plane leases work and exposes completeness without inve
   assert.match(control, /status.*coalesce\(r -> 'profile' ->> 'crawl_status', 'ok'\)/s);
   assert.match(control, /provenance.*l\.profile -> '_enrich' -> 'provenance'/s);
 });
+
+test('enrichment reads direct machine fields and schedules guarded hourly work', () => {
+  const control = readFileSync(new URL('../../supabase/migrations/0040_enrichment_control_plane.sql', import.meta.url), 'utf8');
+  const schedule = readFileSync(new URL('../../supabase/migrations/0041_enrichment_schedule.sql', import.meta.url), 'utf8');
+  assert.match(control, /e ->> 'photo_url'/);
+  assert.match(control, /e ->> 'hours'/);
+  assert.match(schedule, /vault\.decrypted_secrets/);
+  assert.match(schedule, /timeout_milliseconds := 120000/);
+  assert.match(schedule, /zoi-enrich-hourly/);
+});
