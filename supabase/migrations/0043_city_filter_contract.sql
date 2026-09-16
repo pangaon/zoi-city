@@ -1,4 +1,6 @@
 -- Compatibility contract for the directory city selector.
+drop function if exists public.explore_cities(integer);
+
 create or replace function public.explore_cities(p_limit integer default 24)
 returns table(city text, country text, n bigint)
 language sql stable security definer set search_path to 'zoi','public'
