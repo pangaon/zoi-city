@@ -61,6 +61,18 @@ function slug(s) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 }
 const typeSlug = (t) => (t === 'travel_place' ? 'travel-place' : t);
+const CURATED_LABELS = {
+  'media-creators': 'Media and Creators',
+  restaurants: 'Restaurants',
+  'orthodox-churches': 'Greek Orthodox Churches',
+  festivals: 'Festivals', influencers: 'Influencers', podcasters: 'Podcasters',
+  'musicians-djs': 'Musicians & DJs', 'radio-stations': 'Greek Radio',
+  'theatre-comedy': 'Theatre & Comedy', chefs: 'Chefs',
+};
+function labelFromSlug(value) {
+  return CURATED_LABELS[value] || String(value || '').split('-').filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join(' ');
+}
 
 /* ---------- the page ---------- */
 
@@ -221,11 +233,17 @@ export default async function handler(req, res) {
 
     let cat = '', catLabel = '';
     if (wantCat) {
-      const cats = await rpc('explore_categories', {
-        p_country: country || null, p_region: region || null, p_city: city || null });
-      const hit = cats.find((c) => c.category_slug === wantCat);
-      if (!hit) return notFound('Nothing in that category here yet.');
-      cat = hit.category_slug; catLabel = hit.label;
+      // Resolve the requested category from its own listing query. A global
+      // category aggregate can time out on large datasets and should never
+      // make a valid category URL return a 500.
+      cat = wantCat;
+      catLabel = labelFromSlug(wantCat);
+      if (country || region || city) {
+        const cats = await rpc('explore_categories', {
+          p_country: country || null, p_region: region || null, p_city: city || null });
+        const hit = cats.find((c) => c.category_slug === wantCat);
+        if (hit) catLabel = hit.label;
+      }
     }
 
     const data = await rpc('explore_place_listings', {
@@ -233,7 +251,9 @@ export default async function handler(req, res) {
       p_category: cat || null, p_limit: PER, p_offset: (page - 1) * PER });
     const rows = data.rows || [];
     const total = Number(data.total || 0);
-    if (!total) return notFound();
+    if (!total) return notFound(catLabel
+      ? 'There are no published ' + catLabel.toLowerCase() + ' listings in this location yet.'
+      : 'There are no published listings in this location yet.');
 
     /* ---- names and copy, from real values only ---- */
     const hasPlace = !!(city || region || country);

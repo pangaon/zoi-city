@@ -99,3 +99,11 @@ test('entity pages expose evidence-based profile progress without backend langua
   assert.match(src, /an interactive menu/);
   assert.doesNotMatch(src, /profile\.completeness|RPC|jsonb|zoi\.listings/);
 });
+
+test('category hubs resolve curated links without requiring a global category aggregate', () => {
+  const src = readFileSync(join(ROOT, 'api/place.js'), 'utf8');
+  assert.match(src, /CURATED_LABELS/);
+  assert.match(src, /const data = await rpc\('explore_place_listings'/);
+  assert.match(src, /if \(country \|\| region \|\| city\)/);
+  assert.match(src, /There are no published/);
+});
