@@ -205,7 +205,12 @@ export default async function handler(req, res) {
 
     // Resolve slugs back to the real values by matching against the database,
     // so a URL never has to be a guess about capitalisation or accents.
-    const countries = await rpc('explore_countries', {});
+    let countries = [];
+    try { countries = await rpc('explore_countries', {}); } catch (err) {
+      // Category and location pages can still render from their scoped query if
+      // the global aggregate is temporarily slow.
+      countries = [];
+    }
     const site = countries.reduce((a, c) => a + Number(c.listings || 0), 0);
 
     let country = '';

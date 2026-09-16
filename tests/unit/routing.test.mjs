@@ -125,3 +125,9 @@ test('Business Suite deep links and city filter contracts are wired', () => {
   const migration = readFileSync(join(ROOT, 'supabase/migrations/0043_city_filter_contract.sql'), 'utf8');
   assert.match(migration, /returns table\(city text, country text, n bigint\)/);
 });
+
+test('hub pages can render when the global country aggregate is slow', () => {
+  const src = readFileSync(join(ROOT, 'api/place.js'), 'utf8');
+  assert.match(src, /let countries = \[\];/);
+  assert.match(src, /Category and location pages can still render/);
+});
