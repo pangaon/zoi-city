@@ -127,6 +127,7 @@ declare
   present text[] := array[]::text[];
   missing text[] := array[]::text[];
   field text;
+  v_present boolean;
 begin
     select entity_type, profile, description, photo_url, website,
       phone, email, city
@@ -150,17 +151,18 @@ begin
   end if;
 
   foreach field in array required loop
-    if case field
-       when 'description' then nullif(coalesce(p ->> 'description', e -> 'fields' ->> 'description', l.description), '') is not null
-       when 'image' then nullif(coalesce(p ->> 'photo_url', l.photo_url, e -> 'fields' ->> 'logo'), '') is not null
-       when 'contact' then nullif(coalesce(p ->> 'phone', l.phone, p ->> 'email', l.email, l.website), '') is not null
-       when 'location' then nullif(coalesce(p ->> 'address', l.city), '') is not null
-      when 'hours' then nullif(coalesce(p ->> 'hours', e -> 'fields' ->> 'hours'), '') is not null
-       when 'menu' then (p ? 'menu' or p ? 'menu_url' or e ? 'menu')
-       when 'services' then (p ? 'services' or p ? 'service_list' or e ? 'services')
-       when 'booking' then (p ? 'booking' or p ? 'booking_url' or p ? 'reservation_url' or e ? 'booking')
-       else false
-    end then
+    v_present := case
+      when field = 'description' then nullif(coalesce(p ->> 'description', e -> 'fields' ->> 'description', l.description), '') is not null
+      when field = 'image' then nullif(coalesce(p ->> 'photo_url', l.photo_url, e -> 'fields' ->> 'logo'), '') is not null
+      when field = 'contact' then nullif(coalesce(p ->> 'phone', l.phone, p ->> 'email', l.email, l.website), '') is not null
+      when field = 'location' then nullif(coalesce(p ->> 'address', l.city), '') is not null
+      when field = 'hours' then nullif(coalesce(p ->> 'hours', e -> 'fields' ->> 'hours'), '') is not null
+      when field = 'menu' then (p ? 'menu' or p ? 'menu_url' or e ? 'menu')
+      when field = 'services' then (p ? 'services' or p ? 'service_list' or e ? 'services')
+      when field = 'booking' then (p ? 'booking' or p ? 'booking_url' or p ? 'reservation_url' or e ? 'booking')
+      else false
+    end;
+    if v_present then
       present := array_append(present, field);
     else
       missing := array_append(missing, field);
