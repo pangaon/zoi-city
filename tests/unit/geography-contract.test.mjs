@@ -61,3 +61,11 @@ test('enrichment reads direct machine fields and schedules guarded hourly work',
   assert.match(schedule, /zoi-enrich-hourly/);
   assert.doesNotMatch(control, /make_interval/i);
 });
+
+test('enrichment integrity guards malformed metadata and replaces stale machine fields', () => {
+  const sql = readFileSync(new URL('../../supabase/migrations/0046_enrichment_data_integrity.sql', import.meta.url), 'utf8');
+  assert.match(sql, /checked_at.*~ '\^\\d\{4\}/s);
+  assert.match(sql, /expires_at.*~ '\^\\d\{4\}/s);
+  assert.match(sql, /v_machine := zoi\.profile_strip/);
+  assert.match(sql, /jsonb_build_object\('_enrich', v_machine\)/);
+});
