@@ -147,3 +147,10 @@ test('public Intelligence offers a truthful free preview and registration handof
   assert.match(html, /intelligence_url/);
   assert.doesNotMatch(html, /External customer websites will be supported through the paid scanner/);
 });
+
+test('Intelligence never renders a hardcoded ecosystem issue claim', () => {
+  const html = readFileSync(join(ROOT, 'apps/intelligence/index.html'), 'utf8');
+  assert.doesNotMatch(html, /unpopulated on ~99% of published listings/);
+  assert.match(html, /Live issue evidence is unavailable/);
+  assert.match(html, /persisted Intelligence scan data/);
+});

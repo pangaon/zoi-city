@@ -274,7 +274,7 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
               <div class="stat"><b id="cMed" style="color:var(--warn)">—</b><span>medium</span></div>
               <div class="stat"><b id="cLow" style="color:var(--ink-3)">—</b><span>low</span></div>
             </div>
-            <div class="note amber" style="margin-top:18px"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><span>Top gap: <b>title / meta / canonical / schema_type</b> are unpopulated on ~99% of published listings. The DB infra to fix this already exists (views + <code style="font-size:.75rem">zoi.schema_type()</code>) — this is a population task, not a rebuild.</span></div>
+            <div class="note amber" id="issueEvidenceNote" style="margin-top:18px"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><span>Loading live issue evidence…</span></div>
           </div>
         </div>
 
@@ -479,6 +479,12 @@ function render(){
   document.getElementById('cMed').textContent=ic?(ic.medium||0):'—';
   document.getElementById('cLow').textContent=ic?(ic.low||0):'—';
   document.getElementById('issTotal').textContent=ic?(crit+(ic.medium||0)+(ic.low||0))+' open':'unavailable';
+  const evidence=document.getElementById('issueEvidenceNote');
+  if(evidence){
+    evidence.innerHTML=d.error
+      ? '<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 001.7 3h16.6a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg><span>Live issue evidence is unavailable. No issue claim is being shown.</span>'
+      : '<svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg><span>Issue counts below come from the persisted Intelligence scan data.</span>';
+  }
   // reuse / new lists
   const reuse=['v_listing_jsonld — entity JSON-LD','v_seo_sitemap — sitemap source (4,158 URLs)','v_seo_city_category — hub gating','zoi.schema_type() — @type mapper','listings: meta_title / meta_description / canonical_path / schema_type / og_image / hreflang_alt'];
   const neu=['seo_scans / seo_issues / citation_checks tables (RLS deny-by-default)','zoi.seo_scan_entity() — 12-check scan engine','zoi.gen_entity_jsonld() — valid @type generator','zoi.gen_llms_txt() — AI-crawler summary','public.seo_dashboard() — read RPC'];
