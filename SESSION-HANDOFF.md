@@ -27,9 +27,10 @@
   because that migration is not deployed.
 - `npm run check`, `npm run lint:html`, and `git diff --check` passed.
 - The migration has not been executed against Supabase in this environment.
-- This change is being published through the production deployment workflow;
-  verify the workflow run and live cron/Vault state before calling enrichment
-  fully operational.
+- Commit `e7a818a` was pushed to `main`, but the production workflow stopped
+  before deployment because the GitHub Actions secret `SUPABASE_ACCESS_TOKEN`
+  is not configured. Add that secret, then rerun workflow run `35097566560`.
+  Verify live cron/Vault state before calling enrichment fully operational.
 
 ## Next Agent
 
