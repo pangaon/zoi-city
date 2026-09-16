@@ -5,14 +5,29 @@ const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
 const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const SITE = 'https://www.zoi.city';
 
-async function rpc(fn, body) {
-  const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
-    method: 'POST',
-    headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify(body || {})
-  });
-  if (!r.ok) throw new Error('rpc ' + fn + ' ' + r.status);
-  return r.json();
+async function rpc(fn, body, attempts = 3) {
+  let last;
+  for (let attempt = 0; attempt < attempts; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 7000);
+    try {
+      const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
+        method: 'POST',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body || {}),
+        signal: controller.signal,
+      });
+      if (r.ok) return r.json();
+      last = new Error('rpc ' + fn + ' ' + r.status);
+      if (r.status < 500 && r.status !== 429) throw last;
+    } catch (err) {
+      last = err;
+    } finally {
+      clearTimeout(timer);
+    }
+    if (attempt + 1 < attempts) await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
+  }
+  throw last || new Error('rpc ' + fn + ' failed');
 }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function attr(s){return esc(s);}
@@ -492,7 +507,7 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
     res.end(page(e, related, completeness));
   } catch (err) {
-    res.statusCode=500; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex');
-    res.end('<!doctype html><title>Zoi</title><h1>Temporarily unavailable</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>');
+    res.statusCode=503; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
+    res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi Directory</p><h1>We are refreshing this profile</h1><p style="color:var(--mut);line-height:1.6">The listing is still safe and published. Its latest details are temporarily unavailable. Please try again in a moment.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to the directory</a></p></main></body></html>');
   }
 }

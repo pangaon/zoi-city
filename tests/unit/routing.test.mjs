@@ -107,3 +107,12 @@ test('category hubs resolve curated links without requiring a global category ag
   assert.match(src, /if \(country \|\| region \|\| city\)/);
   assert.match(src, /There are no published/);
 });
+
+test('entity RPC reads retry transient failures and renders a branded recovery state', () => {
+  const src = readFileSync(join(ROOT, 'api/entity.js'), 'utf8');
+  assert.match(src, /attempts = 3/);
+  assert.match(src, /AbortController/);
+  assert.match(src, /Retry-After/);
+  assert.match(src, /We are refreshing this profile/);
+  assert.doesNotMatch(src, /<h1>Temporarily unavailable<\/h1>/);
+});
