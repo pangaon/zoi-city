@@ -24,11 +24,15 @@ jobs:
       - name: Install Supabase CLI
         run: npm install -g supabase
 
-      - name: Deploy migrations to production
+      - name: Deploy audited SQL to production
         run: |
           cd /home/runner/work/zoi-city/zoi-city
           supabase link --project-ref csebihpaychdkanjjsmz || true
-          supabase db push
+          # The production migration ledger contains historical versions that
+          # are not present in this checkout. Apply only the audited additive
+          # contracts instead of attempting to replay unknown migrations.
+          supabase db query --project-ref csebihpaychdkanjjsmz --file supabase/migrations/0039_canonical_geography_contract.sql
+          supabase db query --project-ref csebihpaychdkanjjsmz --file supabase/migrations/0040_enrichment_control_plane.sql
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
