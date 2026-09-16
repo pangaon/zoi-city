@@ -14,6 +14,7 @@ begin
           url := 'https://csebihpaychdkanjjsmz.supabase.co/functions/v1/zoi-enrich',
           headers := jsonb_build_object(
             'Content-Type', 'application/json',
+            'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
             'x-enrich-token', (select decrypted_secret from vault.decrypted_secrets where name = 'enrich_token')
           ),
           body := '{"limit":40}'::jsonb,

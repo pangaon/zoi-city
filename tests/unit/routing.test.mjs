@@ -116,3 +116,12 @@ test('entity RPC reads retry transient failures and renders a branded recovery s
   assert.match(src, /We are refreshing this profile/);
   assert.doesNotMatch(src, /<h1>Temporarily unavailable<\/h1>/);
 });
+
+test('Business Suite deep links and city filter contracts are wired', () => {
+  const cfg = readJson('vercel.json');
+  assert.ok(cfg.rewrites.some((r) => r.source === '/social/:path*' && r.destination === '/social/index.html'));
+  const social = readFileSync(join(ROOT, 'social/index.html'), 'utf8');
+  assert.match(social, /location\.pathname\.replace\(\/\^\\\/social/);
+  const migration = readFileSync(join(ROOT, 'supabase/migrations/0043_city_filter_contract.sql'), 'utf8');
+  assert.match(migration, /returns table\(city text, country text, n bigint\)/);
+});

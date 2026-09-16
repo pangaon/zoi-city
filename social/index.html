@@ -297,7 +297,11 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 
     // mount initial
     var start = null;
-    try{ start=localStorage.getItem('zoi_suite_tab'); }catch(e){}
+    try {
+      var routeModule = location.pathname.replace(/^\/social\/?/, '').split('/')[0];
+      if (routeModule && mods.some(function(m){ return m.id === routeModule; })) start = routeModule;
+    }catch(e){}
+    if(!start) try{ start=localStorage.getItem('zoi_suite_tab'); }catch(e){}
     if(!start || !mods.some(function(m){return m.id===start;})) start = (mods[0]&&mods[0].id);
     if(start) selectModule(start);
   }
