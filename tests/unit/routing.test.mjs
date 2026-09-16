@@ -139,3 +139,11 @@ test('city options preserve country identity for unambiguous filtering', () => {
   const sql = readFileSync(join(ROOT, 'supabase/migrations/0045_city_country_contract.sql'), 'utf8');
   assert.match(sql, /group by l\.city, zoi\.geo_country_canon\(l\.country\)/);
 });
+
+test('public Intelligence offers a truthful free preview and registration handoff', () => {
+  const html = readFileSync(join(ROOT, 'apps/intelligence/index.html'), 'utf8');
+  assert.match(html, /Test any public website now/);
+  assert.match(html, /Register and save this report/);
+  assert.match(html, /intelligence_url/);
+  assert.doesNotMatch(html, /External customer websites will be supported through the paid scanner/);
+});

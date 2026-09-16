@@ -235,7 +235,7 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
 
         <div class="card raised" style="margin-bottom:18px">
           <div class="sec-head"><h2>Run a live website check</h2><span class="badge-live"><span class="d"></span>Real scan</span></div>
-          <p class="mut" style="margin-bottom:14px">Test a public Zoi page now. This checks the actual HTML for title, description, canonical URL, headings, Open Graph, JSON-LD, links, and page speed. External customer websites will be supported through the paid scanner after the safety and billing layer is connected.</p>
+          <p class="mut" style="margin-bottom:14px">Test any public website now. We read the homepage that is actually available, show the checks we can prove, and label this as a free preview. Register to save the report, compare scans, create issues, and monitor changes over time.</p>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <input id="liveScanUrl" class="btn-ghost" style="flex:1;min-width:260px;padding:11px 13px;border:1px solid var(--line);border-radius:var(--r-in);font:inherit;color:var(--ink);background:var(--surface)" value="https://www.zoi.city/" aria-label="Website URL to scan" />
             <button class="btn btn-primary" id="liveScanBtn" type="button">Scan this page</button>
@@ -380,11 +380,12 @@ async function runLiveScan(){
       if(!res.ok||!data.ok) throw new Error(data.message||data.error||'scan failed');
       const checksData=data.checks||[];
       const checks=checksData.map(function(c){return liveCheck(c.label,c.ok,c.detail);}).join('');
-      out.innerHTML='<div class="card" style="padding:14px;background:var(--surface-2)"><div class="sec-head" style="margin-bottom:8px"><b>'+esc(data.url)+'</b><span class="pill ok">Free test evidence</span></div>'+checks+'</div>';
+      out.innerHTML='<div class="card" style="padding:14px;background:var(--surface-2)"><div class="sec-head" style="margin-bottom:8px"><b>'+esc(data.url)+'</b><span class="pill ok">Free preview · evidence from this page</span></div>'+checks+'</div>';
       const failed=checksData.filter(function(c){return !c.ok;});
       document.getElementById('liveActionPlan').innerHTML=failed.length
         ? '<div class="card" style="margin-top:12px;padding:14px"><div class="label">Recommended next actions</div><div class="action-plan">'+failed.map(function(c,i){return '<div class="action-item"><span class="num">'+(i+1)+'</span><span><b>Fix '+esc(c.label)+'</b><br><span class="cap">'+esc(c.detail)+' · open Social or Command Center to continue the work.</span></span></div>';}).join('')+'</div></div>'
-        : '<div class="note" style="margin-top:12px">All checks passed for this homepage. This free test is not saved yet; saved history and scheduled monitoring are part of the paid Intelligence plan.</div>';
+        : '<div class="note" style="margin-top:12px">All checks passed for this homepage. This preview is not saved yet.</div>';
+      document.getElementById('liveActionPlan').innerHTML += '<div class="card" style="margin-top:12px;padding:14px"><div class="label">Keep this report</div><p class="cap" style="margin:6px 0 12px">Register to save this real evidence, revisit it, compare future scans, and turn findings into tracked work.</p><a class="btn btn-primary btn-sm" href="/social?intelligence_url='+encodeURIComponent(data.url)+'">Register and save this report</a></div>';
     }catch(e){out.innerHTML='<div class="note amber">The external site could not be scanned: '+esc(e.message||'request failed')+'</div>';}
     btn.disabled=false;btn.textContent='Scan this page';return;
   }
