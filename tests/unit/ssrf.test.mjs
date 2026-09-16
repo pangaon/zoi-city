@@ -129,7 +129,7 @@ test('the worker authenticates its caller rather than trusting a deploy flag', (
   assert.match(worker, /timingSafeEqual/, 'the token compare must not short-circuit');
   // The check must come before the queue is ever read. Compare against the
   // actual call site, not the mention of enrich_queue in the header comment.
-  const call = worker.indexOf('sbRpc("enrich_queue"');
+  const call = worker.indexOf('sbRpc("enrich_queue_lease"');
   const check = worker.indexOf('if (!authorised(req))');
   assert.ok(call > 0 && check > 0, 'both the check and the call must exist');
   assert.ok(check < call, 'authentication must precede any work');
