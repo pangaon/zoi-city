@@ -59,6 +59,18 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
+      - name: Report enrichment control-plane state
+        run: |
+          cd /home/runner/work/zoi-city/zoi-city
+          supabase db query --linked "select jsonb_build_object(
+            'due', (select count(*) from zoi.listings l where l.website is not null and l.website <> '' and l.website ~* '^https?://' and coalesce(l.profile -> '_enrich' ->> 'blocked', '') <> 'true' and (l.profile -> '_enrich' ->> 'checked_at' is null or (l.profile -> '_enrich' ->> 'checked_at')::date < current_date - 30)),
+            'enriched', (select count(*) from zoi.listings where profile ? '_enrich'),
+            'with_media', (select count(*) from zoi.listings where coalesce(profile ->> 'photo_url', profile -> '_enrich' ->> 'photo_url', profile -> '_enrich' ->> 'logo_url') is not null),
+            'latest_http', (select jsonb_build_object('status', status_code, 'body', left(content::text, 300)) from net._http_response order by created desc limit 1)
+          );"
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       - name: Verify public contract and security checks
         run: node tests/contract/run.mjs
 
