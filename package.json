@@ -11,7 +11,9 @@
     "check": "node scripts/check-inline-js.mjs .",
     "lint:html": "node scripts/lint-html.mjs .",
     "test": "node scripts/run-tests.mjs tests",
-    "verify": "npm run check && npm run lint:html && npm test"
+    "smoke:live": "node scripts/smoke-live.mjs",
+    "verify": "npm run check && npm run lint:html && npm test",
+    "verify:live": "npm run verify && npm run smoke:live"
   },
   "devDependencies": {}
 }

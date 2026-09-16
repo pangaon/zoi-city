@@ -359,6 +359,17 @@
       </div>
       <p class="note">Live tools are clearly labeled. Preview and retired preview tiles point to the canonical product instead of pretending to be live.</p>
     </section>
+
+    <section class="wrap" aria-labelledby="listing-types-heading" style="padding-top:10px; padding-bottom:20px;">
+      <div style="display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:26px 0 18px;">
+        <div>
+          <div class="mono" style="margin-bottom:8px">Directory listing types</div>
+          <h2 id="listing-types-heading" style="margin:0;font-size:clamp(24px,3vw,36px);letter-spacing:-.03em;line-height:1.06;">Built as real enterprise listing families.</h2>
+        </div>
+        <a class="btn btn-ghost" href="/explore" style="padding:10px 16px; border-radius:999px;">Open the directory</a>
+      </div>
+      <div id="listing-type-grid" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin:0; gap:14px;" aria-live="polite"></div>
+    </section>
   </main>
 
   <footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
@@ -408,6 +419,24 @@
     if (yr) yr.textContent = String(new Date().getFullYear());
   } catch(e){}
 })();
+</script>
+<script type="module">
+  import { ZOI_LISTING_TYPES } from '/assets/zoi-listing-types.js';
+
+  const container = document.getElementById('listing-type-grid');
+  if (container) {
+    container.innerHTML = ZOI_LISTING_TYPES.map((type) => `
+      <article class="card" style="grid-column:auto; min-height:220px; padding:20px; background:var(--card); border-color:var(--line); border-radius:18px; box-shadow:none;">
+        <div class="chip" style="position:relative; top:auto; right:auto; display:inline-flex; width:max-content; margin-bottom:14px; background:color-mix(in srgb,var(--gold) 10%, transparent); color:var(--gold); border-color:color-mix(in srgb,var(--gold) 35%, transparent);">${type.label}</div>
+        <h3 style="margin:0 0 8px; font-size:20px;">${type.label}</h3>
+        <p style="margin:0 0 12px; color:var(--mut); font-size:14px; line-height:1.5;">${type.summary}</p>
+        <ul style="margin:0 0 14px; padding-left:18px; color:var(--mut); font-size:13px; line-height:1.45; display:grid; gap:5px; flex:1;">
+          ${type.capabilities.map((cap) => `<li>${cap}</li>`).join('')}
+        </ul>
+        <a class="go" href="${type.route}" style="padding-top:0;">Open ${type.label}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+      </article>
+    `).join('');
+  }
 </script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
