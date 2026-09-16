@@ -34,6 +34,11 @@ test('search keeps ranking metadata out of the public JSON shape', () => {
   assert.doesNotMatch(sql, /select \*\s*\n\s*from \(/);
 });
 
+test('search exposes verified profile and enrichment media when the listing column is empty', () => {
+  assert.match(sql, /coalesce\(\s*\n\s*nullif\(l\.photo_url, ''\)/);
+  assert.match(sql, /l\.profile -> '_enrich' -> 'fields' ->> 'logo'/);
+});
+
 test('enrichment control plane leases work and exposes completeness without inventing data', () => {
   const control = readFileSync(new URL('../../supabase/migrations/0040_enrichment_control_plane.sql', import.meta.url), 'utf8');
   assert.match(control, /FOR UPDATE SKIP LOCKED/i);

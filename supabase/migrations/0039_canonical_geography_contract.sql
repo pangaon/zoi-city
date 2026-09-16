@@ -98,7 +98,16 @@ as $function$
         l.region, l.region_code, l.region_native,
         coalesce(l.canonical_path,
           '/' || replace(l.entity_type,'travel_place','travel-place') || '/' || l.slug) as path,
-        l.verification_status, l.rating, l.photo_url,
+        l.verification_status, l.rating,
+        coalesce(
+          nullif(l.photo_url, ''),
+          nullif(l.profile ->> 'photo_url', ''),
+          nullif(l.profile ->> 'logo_url', ''),
+          nullif(l.profile -> '_enrich' ->> 'photo_url', ''),
+          nullif(l.profile -> '_enrich' ->> 'logo_url', ''),
+          nullif(l.profile -> '_enrich' -> 'fields' ->> 'photo_url', ''),
+          nullif(l.profile -> '_enrich' -> 'fields' ->> 'logo', '')
+        ) as photo_url,
         (l.owner_workspace_id is null and coalesce(l.claim_status,'unclaimed') not in ('claimed','approved')) as claimable,
         l.trust_score,
         row_number() over (
