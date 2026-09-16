@@ -423,6 +423,13 @@ function registrationLabel(r) {
 
 export function profileForVertical(vertical, profile) {
   const p = (profile && typeof profile === 'object' && !Array.isArray(profile)) ? { ...profile } : {};
+  // safeProfile keeps provenance non-enumerable; preserve it through vertical
+  // normalization so the disclosure note remains truthful.
+  for (const key of ['_from', '_checked', '_source']) {
+    if (profile && Object.prototype.hasOwnProperty.call(profile, key)) {
+      Object.defineProperty(p, key, { value: profile[key], enumerable: false });
+    }
+  }
   const key = str(vertical && vertical.key).toLowerCase();
 
   if (key === 'church') {
@@ -665,9 +672,11 @@ const RESTAURANT = {
     h += panel('Menu & Gastronomy', IC.menu, menuBlock(p.menu), { id: 'menu' });
     h += panel("Today's Namedays & Specials", IC.spark, chipList(p.specials));
     h += panel('Photos & Ambiance', IC.camera, gallery(p.photos));
-    h += panel('In-Seat QR Ordering & Table Tabs', IC.cart, 
-      '<p class="secp">Guests seated at this venue can scan their table QR code to order food, wine, and split the bill directly from their phone.</p>' +
-      '<a class="btn btn-primary btn-sm" href="/tickets">Open Zoi Tickets &rarr;</a>');
+    if (p.table_tab_enabled || p.in_seat_ordering) {
+      h += panel('In-Seat QR Ordering & Table Tabs', IC.cart,
+        '<p class="secp">Guests seated at this venue can scan their table QR code to order food, wine, and split the bill directly from their phone.</p>' +
+        '<a class="btn btn-primary btn-sm" href="/tickets">Open Zoi Tickets &rarr;</a>');
+    }
     h += panel('Catering & Private Dining', IC.users, prose(p.catering));
     h += panel('Good to know', IC.star, chipList(p.payment));
     return h;

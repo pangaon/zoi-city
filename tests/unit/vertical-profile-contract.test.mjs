@@ -76,3 +76,22 @@ test('professional, organization, event and generic aliases normalize cleanly', 
   assert.equal(generic.booking, 'https://biz.example/book');
   assert.deepEqual(generic.services, ['Late hours', 'Family owned']);
 });
+
+test('vertical normalization preserves enrichment provenance metadata', () => {
+  const profile = { description: 'From source' };
+  Object.defineProperty(profile, '_from', { value: { description: 'website' }, enumerable: false });
+  Object.defineProperty(profile, '_checked', { value: '2026-09-16', enumerable: false });
+  Object.defineProperty(profile, '_source', { value: 'https://example.com', enumerable: false });
+  const normalized = normalize('business', 'restaurants', profile);
+  assert.deepEqual(normalized._from, { description: 'website' });
+  assert.equal(normalized._checked, '2026-09-16');
+  assert.equal(normalized._source, 'https://example.com');
+});
+
+test('restaurant table ordering is not advertised without configuration', () => {
+  const picked = verticalFor({ entity_type: 'business', category_slug: 'restaurants' });
+  const empty = picked.v.sections({}, {});
+  const enabled = picked.v.sections({}, { table_tab_enabled: true });
+  assert.doesNotMatch(empty, /In-Seat QR Ordering/);
+  assert.match(enabled, /In-Seat QR Ordering/);
+});
