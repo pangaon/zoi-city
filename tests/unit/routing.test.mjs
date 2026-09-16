@@ -154,3 +154,11 @@ test('Intelligence never renders a hardcoded ecosystem issue claim', () => {
   assert.match(html, /Live issue evidence is unavailable/);
   assert.match(html, /persisted Intelligence scan data/);
 });
+
+test('Intelligence never presents hardcoded schema or llms artifacts as live', () => {
+  const html = readFileSync(join(ROOT, 'apps/intelligence/index.html'), 'utf8');
+  assert.doesNotMatch(html, /Saint Demetrios Greek Orthodox Church/);
+  assert.doesNotMatch(html, /Zoi maintains 2652 published/);
+  assert.match(html, /No site-wide llms\.txt artifact is currently published/);
+  assert.match(html, /Open live listing pages/);
+});

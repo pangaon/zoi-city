@@ -332,17 +332,17 @@ pre.code{background:var(--ink);color:#E8E8E3;padding:16px;border-radius:var(--r-
       <!-- ============ GENERATE ============ -->
       <section class="view" id="v-generate">
         <div class="sec-head" style="margin-bottom:6px"><h2 style="font-size:1.5rem">Generate schema / llms.txt</h2><span class="pill">Build, not deploy</span></div>
-        <p class="mut" style="margin-bottom:18px">Preview generators that reuse <code style="font:600 .8125rem ui-monospace,monospace">zoi.schema_type()</code> and <code style="font:600 .8125rem ui-monospace,monospace">v_listing_jsonld</code>. Output is a sample for review — nothing is deployed live.</p>
+        <p class="mut" style="margin-bottom:18px">This area only shows artifacts that are actually generated and published. A canonical listing page emits live JSON-LD. No site-wide llms.txt artifact is currently published.</p>
         <div class="grid g-2">
           <div class="card">
             <div class="label" style="margin-bottom:6px">schema.org JSON-LD (per entity)</div>
             <p class="cap" style="margin-bottom:14px">Forces a valid <code style="font:600 .72rem ui-monospace,monospace">@type</code> from the entity type even where the column is NULL — fixing the validity gap the scanner found.</p>
-            <button class="btn btn-primary btn-sm" onclick="showJsonld()"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>Preview sample JSON-LD</button>
+            <a class="btn btn-primary btn-sm" href="/explore"><svg viewBox="0 0 24 24"><path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>Open live listing pages</a>
           </div>
           <div class="card">
             <div class="label" style="margin-bottom:6px">llms.txt (site-wide)</div>
             <p class="cap" style="margin-bottom:14px">Machine-readable ecosystem summary for AI crawlers: scope, entity-type counts, structured-data conventions, attribution terms.</p>
-            <button class="btn btn-primary btn-sm" onclick="showLlms()"><svg viewBox="0 0 24 24"><path d="M4 4h16v16H4z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Preview llms.txt</button>
+            <span class="pill warn"><span class="d"></span>Not published</span>
           </div>
         </div>
       </section>
@@ -553,19 +553,6 @@ async function openScan(i){
       <div class="top"><code>${esc(x.check_key)}</code><span class="pill ${x.severity==='critical'||x.severity==='high'?'crit':x.severity==='medium'?'warn':''}" style="font-size:.6875rem">${esc(x.severity)}</span>${x.approval_required?'<span class="pill crit" style="font-size:.6875rem">Approval</span>':''}</div>
       <div class="meta"><div><b>Risk</b>${esc(x.risk)}</div><div><b>Benefit</b>${esc(x.expected_benefit)}</div><div><b>Rollback</b>${esc(x.rollback)}</div></div>
       <div class="ev">${esc(JSON.stringify(x.evidence))}</div></div></div>`).join('')||'<p class="cap">No open issues.</p>';
-  openModal();
-}
-
-function showJsonld(){
-  const sample={"@context":"https://schema.org","@type":"Church",name:"Saint Demetrios Greek Orthodox Church (Chicago)",url:"https://www.stdemetrioschicago.org/",telephone:"(773) 561-5992",address:{"@type":"PostalAddress",streetAddress:"2727 W. Winona Street, Chicago, IL 60625",addressLocality:"Chicago",addressRegion:"Illinois",addressCountry:"United States"},geo:{"@type":"GeoCoordinates",latitude:41.8781,longitude:-87.6298},description:"Greek Orthodox parish (Lincoln Square) of the Metropolis of Chicago."};
-  document.getElementById('mTitle').textContent='Sample JSON-LD · zoi.gen_entity_jsonld()';
-  document.getElementById('mBody').innerHTML=`<p class="cap" style="margin-bottom:12px">Live output for a real church listing. Valid <code style="font:600 .72rem ui-monospace,monospace">@type</code> from the entity-type mapper. Build-only — not deployed.</p><pre class="code">${esc(JSON.stringify(sample,null,2))}</pre>`;
-  openModal();
-}
-function showLlms(){
-  const txt=`# Zoi\n\n> Zoi is the Greek-ecosystem directory and knowledge graph: Greek businesses, professionals, churches, schools, organizations, events, vendors, products and creators across Greece, Cyprus and the diaspora.\n\n## About\nZoi maintains 2652 published, source-verified entities. Data is first-party and structured (schema.org JSON-LD per entity).\n\n## Entity types\n- business (1082)\n- church (568)\n- organization (274)\n- creator (198)\n- professional (126)\n- event (107)\n- vendor (107)\n- travel_place (97)\n- school (64)\n- venue (22)\n\n## Structured data\n- Each entity page emits schema.org JSON-LD.\n- Canonical URLs: /{entity_type}/{slug}\n- City x category hubs: /{country}/{city}/{category}\n\n## Usage\nCitations welcome with attribution to Zoi. Data reflects verification status and last-verified dates.`;
-  document.getElementById('mTitle').textContent='Sample llms.txt · zoi.gen_llms_txt()';
-  document.getElementById('mBody').innerHTML=`<p class="cap" style="margin-bottom:12px">Live output. Counts pulled from published listings. Build-only.</p><pre class="code">${esc(txt)}</pre>`;
   openModal();
 }
 
