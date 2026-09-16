@@ -41,6 +41,8 @@ jobs:
         run: |
           cd /home/runner/work/zoi-city/zoi-city
           supabase functions deploy zoi-enrich --use-api --project-ref csebihpaychdkanjjsmz
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
       - name: Kick one protected enrichment batch
         run: |
