@@ -37,6 +37,7 @@ test('search keeps ranking metadata out of the public JSON shape', () => {
 test('search exposes verified profile and enrichment media when the listing column is empty', () => {
   assert.match(sql, /coalesce\(\s*\n\s*nullif\(l\.photo_url, ''\)/);
   assert.match(sql, /l\.profile -> '_enrich' -> 'fields' ->> 'logo'/);
+  assert.match(sql, /nullif\(l\.profile -> '_enrich' ->> 'description', ''\)/);
 });
 
 test('enrichment control plane leases work and exposes completeness without inventing data', () => {

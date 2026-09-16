@@ -92,7 +92,12 @@ as $function$
       photo_url, claimable
     from (
       select l.id, l.slug, l.name,
-        left(coalesce(l.description,''),170) as description,
+        left(coalesce(
+          nullif(l.description, ''),
+          nullif(l.profile ->> 'description', ''),
+          nullif(l.profile -> '_enrich' ->> 'description', ''),
+          ''
+        ),170) as description,
         c.label_en as category, l.entity_type, l.city,
         zoi.geo_country_canon(l.country) as country,
         l.region, l.region_code, l.region_native,
