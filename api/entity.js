@@ -122,7 +122,35 @@ function jsonld(e,url){
   var sa=socialArr(e); if(sa.length) o.sameAs=sa;
   return JSON.stringify(o);
 }
-function page(e, related){
+function completionLabel(key, e) {
+  var c = String(e.category_slug || '').toLowerCase();
+  var labels = {
+    description: 'a clear introduction',
+    image: 'a real image or logo',
+    contact: 'a direct contact method',
+    location: 'a complete location',
+    hours: 'current opening hours',
+    menu: /restaurant|bakery|cafe|food|grocery/.test(c) ? 'an interactive menu' : 'service details',
+    services: 'a service list',
+    booking: /event|venue|hotel|travel/.test(c) ? 'booking or reservation details' : 'an enquiry path',
+  };
+  return labels[key] || key;
+}
+
+function completionPanel(e, completeness) {
+  if (!completeness || completeness.complete || !Array.isArray(completeness.missing) || !completeness.missing.length) return '';
+  var missing = completeness.missing.slice(0, 5).map(function(k){ return '<li>'+esc(completionLabel(k, e))+'</li>'; }).join('');
+  var checked = completeness.checked_at ? ' Last checked '+esc(String(completeness.checked_at)) + '.' : '';
+  return '<section class="profile-progress" aria-label="Profile progress">'
+    + '<div class="progress-head"><div><span class="ctag">In progress</span>'
+    + '<h2>Building this '+esc((e.entity_type === 'artist' || e.entity_type === 'creator') ? 'creator profile' : 'profile')+'</h2>'
+    + '<p>We only publish details that can be supported by the listing or its own source.'+checked+'</p></div>'
+    + '<strong>'+esc(String(completeness.score || 0))+'%</strong></div>'
+    + '<p class="progress-next">Still needed</p><ul class="progress-list">'+missing+'</ul>'
+    + '<a class="btn btn-ghost btn-xs" href="/explore?q='+encodeURIComponent(e.name || '')+'">Help improve this profile</a></section>';
+}
+
+function page(e, related, completeness){
   var slug = e.canonical_slug || e.slug;
   var url = SITE + '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' + encodeURIComponent(slug);
   var picked = verticalFor(e), V = picked.v, sub = picked.sub;
@@ -236,6 +264,7 @@ function socialIcon(k){
 
   /* ---- the vertical's own content, real data only ---- */
   var verticalHtml = V.sections ? V.sections(e, p) : '';
+  var progressHtml = completionPanel(e, completeness);
   /* If anything on this page was read from their website rather than typed by
      them, say so plainly, once, and offer the fix. */
   var provHtml = provenanceNote(p);
@@ -307,6 +336,7 @@ function socialIcon(k){
    +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
   + (galleryImgs.length ? '<section class="sec ep-gallery"><h2>'+icon(IC.camera,'sech')+'More to explore</h2><div class="gal">'+galleryImgs.map(function(u){ return '<img src="'+attr(u)+'" alt="'+attr(e.name||'')+'" loading="lazy" referrerpolicy="no-referrer">'; }).join('')+'</div></section>' : '')
   +verticalHtml
+    +progressHtml
    +provHtml
    +claim
    +rel
@@ -424,6 +454,12 @@ var PAGE_CSS = [
   '.unlock b{display:block;font-size:14px;font-weight:700;margin-bottom:3px}',
   '.unlock span{font-size:12.5px;color:var(--mut);line-height:1.5}',
   '.claimfoot{margin:18px 0 0;font-size:12px;color:var(--dim)}',
+  '.profile-progress{margin:34px 0 0;padding:20px 22px;border:1px solid var(--line);border-radius:var(--r);background:var(--card2)}',
+  '.progress-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}',
+  '.progress-head h2{font-size:20px;margin:9px 0 4px}.progress-head p{margin:0;color:var(--mut);font-size:13px;line-height:1.5}',
+  '.progress-head strong{font-size:24px;color:var(--gold);white-space:nowrap}',
+  '.progress-next{margin:18px 0 7px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}',
+  '.progress-list{margin:0 0 16px;padding-left:20px;color:var(--mut);line-height:1.8;font-size:14px}',
   '.relgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}',
   '.relcard{display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px;transition:.25s var(--ease)}',
   '.relcard:hover{border-color:var(--acc);transform:translateY(-2px)}',
@@ -450,10 +486,11 @@ export default async function handler(req, res) {
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Listing not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
     var related=[]; try { related = await rpc('seo_related', { p_slug: slug, p_limit: 8 }); if(!Array.isArray(related)) related=[]; } catch(e2) { related=[]; }
+    var completeness=null; try { completeness = await rpc('listing_completeness', { p_slug: slug }); } catch(e3) { completeness=null; }
     res.statusCode=200;
     res.setHeader('Content-Type','text/html; charset=utf-8');
     res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
-    res.end(page(e, related));
+    res.end(page(e, related, completeness));
   } catch (err) {
     res.statusCode=500; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex');
     res.end('<!doctype html><title>Zoi</title><h1>Temporarily unavailable</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>');

@@ -90,3 +90,12 @@ test('the directory links listings by slug, not by path', () => {
     'explore must not link listings straight from r.path — use hrefFor(r)',
   );
 });
+
+test('entity pages expose evidence-based profile progress without backend language', () => {
+  const src = readFileSync(join(ROOT, 'api/entity.js'), 'utf8');
+  assert.match(src, /listing_completeness/);
+  assert.match(src, /profile-progress/);
+  assert.match(src, /a real image or logo/);
+  assert.match(src, /an interactive menu/);
+  assert.doesNotMatch(src, /profile\.completeness|RPC|jsonb|zoi\.listings/);
+});
