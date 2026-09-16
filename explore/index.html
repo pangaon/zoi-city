@@ -341,8 +341,8 @@ async function boot(){
   try{
     const cities=await rpc('explore_cities',{p_limit:14},true);
     const sel=document.getElementById('city-sel');
-    (cities||[]).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.textContent=c.city+' ('+Number(c.n).toLocaleString()+')'; sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ ST.city=sel.value; runSearch(true); });
+    (cities||[]).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country||''; o.textContent=c.city+(c.country?' · '+c.country:'')+' ('+Number(c.n).toLocaleString()+')'; sel.appendChild(o); });
+    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||ST.country; runSearch(true); });
   }catch(e){}
   try{
     const fresh=await rpc('explore_fresh',{p_limit:8},true);

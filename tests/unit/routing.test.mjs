@@ -131,3 +131,11 @@ test('hub pages can render when the global country aggregate is slow', () => {
   assert.match(src, /let countries = \[\];/);
   assert.match(src, /Category and location pages can still render/);
 });
+
+test('city options preserve country identity for unambiguous filtering', () => {
+  const explore = readFileSync(join(ROOT, 'explore/index.html'), 'utf8');
+  assert.match(explore, /o\.dataset\.country=c\.country/);
+  assert.match(explore, /ST\.country=o&&o\.dataset\.country/);
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/0045_city_country_contract.sql'), 'utf8');
+  assert.match(sql, /group by l\.city, zoi\.geo_country_canon\(l\.country\)/);
+});
