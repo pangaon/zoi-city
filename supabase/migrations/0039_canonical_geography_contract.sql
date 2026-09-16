@@ -87,27 +87,50 @@ create or replace function public.explore_search(
 language sql stable security definer set search_path to 'zoi','public'
 as $function$
   select coalesce(jsonb_agg(to_jsonb(r)), '[]'::jsonb) from (
-    select l.id, l.slug, l.name,
-      left(coalesce(l.description,''),170) as description,
-      c.label_en as category, l.entity_type, l.city,
-      zoi.geo_country_canon(l.country) as country,
-      l.region, l.region_code, l.region_native,
-      coalesce(l.canonical_path,
-        '/' || replace(l.entity_type,'travel_place','travel-place') || '/' || l.slug) as path,
-      l.verification_status, l.rating, l.photo_url,
-      (l.owner_workspace_id is null and coalesce(l.claim_status,'unclaimed') not in ('claimed','approved')) as claimable
-    from zoi.listings l
-    left join zoi.categories c on c.id=l.primary_category_id
-    where l.publish_status='published'
-      and (p_q is null or p_q='' or l.search_tsv @@ plainto_tsquery('simple',p_q)
-           or l.name ilike '%'||p_q||'%' or l.region ilike '%'||p_q||'%'
-           or l.region_native ilike '%'||p_q||'%')
-      and (p_type is null or p_type='' or l.entity_type=p_type)
-      and (p_city is null or p_city='' or l.city ilike p_city)
-      and (p_country is null or p_country='' or zoi.geo_country_canon(l.country) ilike p_country)
-      and (p_region is null or p_region='' or l.region ilike p_region
-           or l.region_native ilike p_region or upper(l.region_code)=upper(p_region))
-    order by (l.verification_status='verified') desc, l.trust_score desc nulls last, l.name
+    select id, slug, name, description, category, entity_type, city, country,
+      region, region_code, region_native, path, verification_status, rating,
+      photo_url, claimable
+    from (
+      select l.id, l.slug, l.name,
+        left(coalesce(l.description,''),170) as description,
+        c.label_en as category, l.entity_type, l.city,
+        zoi.geo_country_canon(l.country) as country,
+        l.region, l.region_code, l.region_native,
+        coalesce(l.canonical_path,
+          '/' || replace(l.entity_type,'travel_place','travel-place') || '/' || l.slug) as path,
+        l.verification_status, l.rating, l.photo_url,
+        (l.owner_workspace_id is null and coalesce(l.claim_status,'unclaimed') not in ('claimed','approved')) as claimable,
+        l.trust_score,
+        row_number() over (
+          partition by lower(trim(coalesce(l.name,''))),
+                       lower(trim(coalesce(l.city,''))),
+                       lower(trim(coalesce(zoi.geo_country_canon(l.country), '')))
+          order by
+            (l.verification_status='verified') desc,
+            l.trust_score desc nulls last,
+            case l.entity_type
+              when 'creator' then 0
+              when 'artist' then 1
+              when 'business' then 2
+              else 3
+            end,
+            l.name,
+            l.id
+        ) as dedupe_rank
+      from zoi.listings l
+      left join zoi.categories c on c.id=l.primary_category_id
+      where l.publish_status='published'
+        and (p_q is null or p_q='' or l.search_tsv @@ plainto_tsquery('simple',p_q)
+             or l.name ilike '%'||p_q||'%' or l.region ilike '%'||p_q||'%'
+             or l.region_native ilike '%'||p_q||'%')
+        and (p_type is null or p_type='' or l.entity_type=p_type)
+        and (p_city is null or p_city='' or l.city ilike p_city)
+        and (p_country is null or p_country='' or zoi.geo_country_canon(l.country) ilike p_country)
+        and (p_region is null or p_region='' or l.region ilike p_region
+             or l.region_native ilike p_region or upper(l.region_code)=upper(p_region))
+    ) ranked
+    where dedupe_rank = 1
+    order by (verification_status='verified') desc, trust_score desc nulls last, name, id
     limit least(greatest(p_limit,1),48) offset greatest(p_offset,0)
   ) r;
 $function$;

@@ -31,6 +31,13 @@ jobs:
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
 
+      - name: Deploy enrichment worker to production
+        run: |
+          cd /home/runner/work/zoi-city/zoi-city
+          supabase functions deploy zoi-enrich --use-api --project-ref csebihpaychdkanjjsmz
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       - name: Verify Event OS RLS after migration
         run: STRICT_EVENT_OS=1 node tests/contract/run.mjs
 

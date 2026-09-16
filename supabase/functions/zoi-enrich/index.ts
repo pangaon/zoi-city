@@ -540,12 +540,12 @@ Deno.serve(async (req) => {
   const bump = (k: string) => (stats[k] = (stats[k] || 0) + 1);
   const batch: Record<string, unknown>[] = [];
 
-  let queue: { slug: string; website: string }[] = [];
+  let queue: { slug: string; website: string; lease_id: string }[] = [];
   try {
-    queue = (await sbRpc("enrich_queue", { p_limit: limit })) ?? [];
+    queue = (await sbRpc("enrich_queue_lease", { p_limit: limit })) ?? [];
   } catch (e) {
     return new Response(
-      JSON.stringify({ ok: false, error: `enrich_queue: ${String(e).slice(0, 200)}` }),
+      JSON.stringify({ ok: false, error: `enrich_queue_lease: ${String(e).slice(0, 200)}` }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
@@ -557,14 +557,14 @@ Deno.serve(async (req) => {
     if (!v.url) {
       bump("refused:" + v.why);
       // Record the refusal so the queue stops returning it every hour.
-      batch.push({ slug: row.slug, website: row.website,
+      batch.push({ slug: row.slug, website: row.website, lease_id: row.lease_id,
                    profile: { blocked: "true", blocked_reason: v.why } , provenance: {} });
       continue;
     }
     try {
       if (!(await robotsAllows(v.url))) {
         bump("robots-disallow");
-        batch.push({ slug: row.slug, website: v.url.toString(),
+        batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
                      profile: { blocked: "true", blocked_reason: "robots" }, provenance: {} });
         continue;
       }
@@ -573,7 +573,7 @@ Deno.serve(async (req) => {
         bump(got.error);
         // 403/404 mean this host will not talk to a declared bot. Stop asking.
         const permanent = /^http(40[134]|41[0-9]|45[0-9])$/.test(got.error);
-        batch.push({ slug: row.slug, website: v.url.toString(),
+        batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
                      profile: permanent
                        ? { blocked: "true", blocked_reason: got.error }
             : { crawl_status: "error", last_error: got.error },
@@ -588,17 +588,17 @@ Deno.serve(async (req) => {
       }
       if (!Object.keys(profile).length) {
         bump("nothing-usable");
-        batch.push({ slug: row.slug, website: got.finalUrl,
+        batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id,
           profile: { crawl_status: "checked_no_data" }, provenance: {} });
         continue;
       }
       for (const k of Object.keys(profile)) bump("field:" + k);
       bump("ok");
-      batch.push({ slug: row.slug, website: got.finalUrl, profile, provenance });
+      batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile, provenance });
     } catch (e) {
       const error = String(e).slice(0, 160);
       bump("error:" + error.slice(0, 40));
-      batch.push({ slug: row.slug, website: v.url.toString(),
+      batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
         profile: { crawl_status: "error", last_error: error }, provenance: {} });
     }
   }

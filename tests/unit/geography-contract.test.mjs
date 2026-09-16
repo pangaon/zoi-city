@@ -26,3 +26,20 @@ test('search and map return canonical country labels', () => {
 test('geography migration does not mutate or delete listings', () => {
   assert.doesNotMatch(sql, /\b(update|delete|insert)\s+zoi\.listings\b/i);
 });
+
+test('search keeps ranking metadata out of the public JSON shape', () => {
+  assert.match(sql, /select id, slug, name, description, category, entity_type, city, country,/);
+  assert.match(sql, /l\.trust_score,\s*\n\s*row_number\(\)/);
+  assert.match(sql, /order by \(verification_status='verified'\) desc, trust_score desc nulls last, name, id/);
+  assert.doesNotMatch(sql, /select \*\s*\n\s*from \(/);
+});
+
+test('enrichment control plane leases work and exposes completeness without inventing data', () => {
+  const control = readFileSync(new URL('../../supabase/migrations/0040_enrichment_control_plane.sql', import.meta.url), 'utf8');
+  assert.match(control, /FOR UPDATE SKIP LOCKED/i);
+  assert.match(control, /enrich_queue_lease/);
+  assert.match(control, /profile_completeness/);
+  assert.match(control, /listing_completeness/);
+  assert.match(control, /status.*coalesce\(r -> 'profile' ->> 'crawl_status', 'ok'\)/s);
+  assert.match(control, /provenance.*l\.profile -> '_enrich' -> 'provenance'/s);
+});
