@@ -162,3 +162,11 @@ test('Intelligence never presents hardcoded schema or llms artifacts as live', (
   assert.match(html, /No site-wide llms\.txt artifact is currently published/);
   assert.match(html, /Open live listing pages/);
 });
+
+test('Intelligence dashboard read is bounded and detail-first', () => {
+  const sql = readFileSync(join(ROOT, 'supabase/migrations/0048_intelligence_dashboard_bound.sql'), 'utf8');
+  assert.match(sql, /limit 25/);
+  assert.match(sql, /top_issues.*\[\]/s);
+  assert.match(sql, /issue_counts.*\{\}/s);
+  assert.match(sql, /citations.*\[\]/s);
+});
