@@ -1,5 +1,6 @@
 -- Bounded Intelligence dashboard read. The overview must stay responsive even
 -- when historical issue/citation volume is large; details remain on demand.
+-- Deployment retry marker: 2026-09-17.
 create index if not exists seo_scans_entity_time_idx
   on zoi.seo_scans (target_type, scanned_at desc, id desc);
 
