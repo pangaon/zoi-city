@@ -1,6 +1,10 @@
 name: Production Database Recovery
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ops/database-recovery-request.json
   workflow_dispatch:
     inputs:
       action:
@@ -33,5 +37,5 @@ jobs:
       - name: Inspect or recover database
         run: node scripts/database-recovery.mjs "$RECOVERY_ACTION"
         env:
-          RECOVERY_ACTION: ${{ inputs.action }}
+          RECOVERY_ACTION: ${{ github.event_name == 'push' && 'request' || inputs.action }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}

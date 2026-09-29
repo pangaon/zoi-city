@@ -3,7 +3,15 @@
 // inspect/recover are read-only. restart submits at most ONE restart request.
 // Official contract: supabase/supabase apps/docs/spec/api_v1_openapi.json.
 const ref = 'csebihpaychdkanjjsmz';
-const mode = process.argv[2] || 'inspect';
+let mode = process.argv[2] || 'inspect';
+if (mode === 'request') {
+  const { readFileSync } = await import('node:fs');
+  const request = JSON.parse(readFileSync('ops/database-recovery-request.json', 'utf8'));
+  const expires = Date.parse(request.expires_at);
+  if (!Number.isFinite(expires) || expires < Date.now() || expires > Date.now() + 3600000) throw new Error('Recovery request is expired or outside its one-hour execution window');
+  if (process.env.GITHUB_RUN_ATTEMPT && process.env.GITHUB_RUN_ATTEMPT !== '1') throw new Error('Committed recovery requests cannot be automatically replayed');
+  mode = request.action;
+}
 if (!['inspect', 'restart', 'recover'].includes(mode)) throw new Error('Invalid recovery mode');
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 if (!token) throw new Error('SUPABASE_ACCESS_TOKEN is required');
