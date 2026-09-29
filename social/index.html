@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
 <style>
 :root{
   /* bridged onto the shared design system — /assets/zoi-theme.css */
@@ -299,6 +299,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     var start = null;
     try {
       var routeModule = location.pathname.replace(/^\/social\/?/, '').split('/')[0];
+      if (routeModule === 'page') routeModule = 'bizpage';
       if (routeModule && mods.some(function(m){ return m.id === routeModule; })) start = routeModule;
     }catch(e){}
     if(!start) try{ start=localStorage.getItem('zoi_suite_tab'); }catch(e){}
@@ -327,7 +328,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   /* ---------- boot ---------- */
   function boot(){
     if(!C){ root.innerHTML='<div class="center"><div class="card"><h1>Loading failed</h1><p class="sub">Core script did not load. Please refresh.</p></div></div>'; return; }
-    C.theme.init('dark');
+    C.theme.init('light');
     var tok = C.auth.token();
     if(!tok){
       // maybe a stored session we can refresh
@@ -372,7 +373,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 </script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
-<script src="/assets/zoi-theme.js"></script>
+<script src="/assets/zoi-theme.js?v=20260930"></script>
 <script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body>
 </html>

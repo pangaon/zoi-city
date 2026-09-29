@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
 <style>
 :root{
   /* bridged onto the shared design system — /assets/zoi-theme.css */
@@ -380,14 +380,14 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     </div>
 
     <!-- Tab 1 & Default: Main Daily Matrix -->
-    <div id="panelRitualAll" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px">
+    <div id="panelRitualAll" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px">
       
       <!-- Card 1: Orthodox Feasts & Namedays Deep Dive -->
       <div style="background:var(--bg2);padding:20px;border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between">
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Orthodox Calendar &amp; Fast</span>
-            <span id="fasting-badge" style="background:rgba(91,196,154,.15);color:var(--green);border:1px solid rgba(91,196,154,.3);border-radius:12px;padding:2px 8px;font-size:10.5px;font-weight:700">Fast Free</span>
+            <span id="fasting-badge" style="background:rgba(91,196,154,.15);color:var(--green);border:1px solid rgba(91,196,154,.3);border-radius:12px;padding:2px 8px;font-size:10.5px;font-weight:700">Checking calendar…</span>
           </div>
           <div style="font-size:18px;font-weight:700;color:var(--tx);margin-bottom:4px" id="brief-feast-title">Reading today’s calendar…</div>
           <div style="font-size:13px;color:var(--gold);font-weight:600;margin-bottom:8px" id="brief-nameday-names"></div>
@@ -452,19 +452,19 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
         </div>
         <a class="btn btn-primary btn-sm" href="/c/orthodox-churches">Find an Orthodox Church &rarr;</a>
       </div>
-      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:20px">
         <div>
           <p style="font-size:14px;color:var(--tx);line-height:1.6;margin-bottom:14px" id="detail-feast-bio">
-            According to the holy Paschalion and Eastern Orthodox synaxarion, today is celebrated with spiritual thanksgiving. Parishes around the globe commemorate the venerable saints who defended the faith and tended to the needy with tireless love.
+            Calendar details will appear here when available.
           </p>
           <div style="background:var(--bg);padding:14px;border-radius:10px;border-left:3px solid var(--gold);font-style:italic;font-size:13.5px;color:var(--tx)">
-            "A model of faith and the image of gentleness, the teacher of abstinence, the truth of your things has revealed you to your flock as a rule of faith."
+            Calendar observances can differ by parish and tradition. Consult your parish for local services and fasting guidance.
           </div>
         </div>
         <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
           <div style="font-size:12px;font-weight:800;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Fasting &amp; Table Guidance</div>
-          <div style="font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:12px">
-            Today is a <b>Wine &amp; Oil Permitted</b> day. Enjoy traditional Mediterranean legumes, fresh grilled vegetables, and olives.
+          <div id="detail-fast-guidance" style="font-size:13px;color:var(--mut);line-height:1.5;margin-bottom:12px">
+            Checking the calendar…
           </div>
           <a class="btn btn-ghost btn-sm" style="width:100%;text-align:center" href="/social">Draft Parish Nameday Notice</a>
         </div>
@@ -599,7 +599,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div class="trow"><span class="tno">01</span><span class="tst live">Live</span></div>
       <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H5.5L4 18z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div>
       <h3>Zoi Social</h3>
-      <p>Write once, publish everywhere. Scheduling, drafts and nameday-aware captions — your whole social presence from one desk.</p>
+      <p>Plan campaigns, write drafts and manage your Zoi community posts. External publishing requires a supported connected account.</p>
       <span class="go">Open Social <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool" href="/tickets">
@@ -614,27 +614,27 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div class="ic" style="color:var(--dim)"><svg viewBox="0 0 24 24"><path d="M4 7h16l-1.2 4.5H5.2z"/><path d="M5.2 11.5V19h13.6v-7.5"/><path d="M10 19v-4.5h4V19"/></svg></div>
       <h3>Zoi Storefront</h3>
       <p>Your store on BuyGreek.Shop — the worldwide Greek marketplace. List once, sell to every Greek on earth.</p>
-      <span class="go">Get early access <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+      <span class="go">Request access <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
-    <a class="tool" href="/social/page">
+    <a class="tool" href="/social/bizpage">
       <div class="trow"><span class="tno">04</span><span class="tst live">Live</span></div>
       <div class="ic" style="color:var(--dim)"><svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M3.5 9h17M7.5 13.5h9M7.5 16h6"/></svg></div>
       <h3>Zoi Business Page</h3>
-      <p>Your business, verified and online today — no website, no developer, no excuses.</p>
+      <p>Manage your business details, links and public presence from your workspace.</p>
       <span class="go">Edit your page <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool" href="/social/email">
-      <div class="trow"><span class="tno">05</span><span class="tst live">Live</span></div>
+      <div class="trow"><span class="tno">05</span><span class="tst soon">Provider required</span></div>
       <div class="ic" style="color:var(--dim)"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></div>
       <h3>Zoi Email</h3>
       <p>Newsletters, offers and nameday campaigns — the one channel no algorithm owns, run from the same desk.</p>
       <span class="go">Open Email <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool" href="/social/ai">
-      <div class="trow"><span class="tno">06</span><span class="tst live">Live</span></div>
+      <div class="trow"><span class="tno">06</span><span class="tst soon">Provider required</span></div>
       <div class="ic" style="color:var(--dim)"><svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/><path d="M18 15l.9 2.4L21.3 18l-2.4.9L18 21.3l-.9-2.4-2.4-.9 2.4-.9z"/></svg></div>
       <h3>Zoi AI Studio</h3>
-      <p>An agency that never sleeps — agentic AI drafts your posts, writes in your voice, and acts on the Greek calendar.</p>
+      <p>Draft content with your business context and review it before publishing. AI generation requires an available provider.</p>
       <span class="go">Open AI Studio <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
   </div>
@@ -663,10 +663,10 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div class="mono">02 — the marketplace</div>
       <h2>Commerce for a nation without <span class="serif">borders.</span></h2>
     </div>
-    <p>BuyGreek.Shop is where the Greek world trades — one marketplace, thousands of vendors, every continent Greeks call home. Sell on it and the network sells with you.</p>
+    <p>Discover Greek products and businesses on BuyGreek.Shop, our connected marketplace for the global Greek community.</p>
     <a class="btn g" href="https://buygreek.shop">Visit BuyGreek.Shop</a>
   </div>
-  <div class="tgrid" style="grid-template-columns:repeat(3,1fr)">
+  <div class="tgrid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))">
     <div class="tool" style="min-height:170px;cursor:default">
       <span class="tno">Sell</span>
       <h3 style="margin-top:16px">One storefront</h3>
@@ -918,6 +918,9 @@ function renderHomeRitual(){
   const badge=document.getElementById('fasting-badge');
   const feast=info.feasts&&info.feasts.length?info.feasts.map(f=>f.name).join(' · '):'';
   const next=(O.upcomingFeasts(iso,60)||[])[0];
+  document.getElementById('detail-feast-title').textContent=feast||'Today’s Orthodox calendar';
+  document.getElementById('detail-feast-bio').textContent=feast?'Commemorations in Zoi’s calendar: '+feast+'.':'No feast is recorded in Zoi’s calendar for this date.';
+  document.getElementById('detail-fast-guidance').textContent=info.fast?info.fast.label:'No fast is recorded in this calendar for today.';
   if(title) title.textContent=feast||('No feast today · next: '+(next?next.name:'not recorded'));
   if(names) names.textContent=info.namedays&&info.namedays.length?'Χρόνια πολλά: '+info.namedays.join(', '):'No namedays today';
   if(desc) desc.textContent=info.fast?info.fast.label:(feast?'A day to mark across the diaspora.':next?'The next Great moment is '+next.name+'.':'No liturgical observance recorded today.');
@@ -1036,21 +1039,6 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
     const calEl = document.getElementById('live-calendar-date');
     if(calEl) calEl.textContent = todayStr;
 
-    const dow = new Date().getDay(); // 3=Wed, 5=Fri
-    const fastBadge = document.getElementById('fasting-badge');
-    if(fastBadge){
-      if(dow === 3 || dow === 5){
-        fastBadge.textContent = 'Wine & Oil Permitted (Fast Day)';
-        fastBadge.style.color = 'var(--gold)';
-        fastBadge.style.background = 'rgba(212,175,95,.15)';
-        fastBadge.style.borderColor = 'rgba(212,175,95,.35)';
-      } else {
-        fastBadge.textContent = 'Fast Free';
-        fastBadge.style.color = 'var(--green)';
-        fastBadge.style.background = 'rgba(91,196,154,.15)';
-        fastBadge.style.borderColor = 'rgba(91,196,154,.35)';
-      }
-    }
   }catch(e){}
 
   try{
@@ -1087,7 +1075,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
-<script src="/assets/zoi-theme.js"></script>
+<script src="/assets/zoi-theme.js?v=20260930"></script>
 
 <script src="/assets/zoi-globe.js" defer></script>
 <script>

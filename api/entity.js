@@ -100,8 +100,8 @@ function reviewsAllowed(e){
 }
 
 function socialArr(e){
-  var sl=e.social_links||{}, a=[]; if(e.website) a.push(e.website);
-  ['instagram','facebook','tiktok','youtube','twitter','linkedin','spotify'].forEach(function(k){ if(sl[k]){ var v=sl[k]; if(/^https?:/.test(v)) a.push(v); } });
+  var sl=Object.assign({}, profileOf(e).social || {}, e.social_links || {}), a=[]; if(e.website) a.push(e.website);
+  ['instagram','facebook','tiktok','youtube','twitter','x','linkedin','spotify','soundcloud','telegram','whatsapp'].forEach(function(k){ if(sl[k]){ var v=sl[k]; if(/^https?:/.test(v)) a.push(v); } });
   return a;
 }
 function jsonld(e,url){

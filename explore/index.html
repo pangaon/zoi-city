@@ -299,7 +299,7 @@ function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.
 function authToken(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at*1000>Date.now()+5000) return a.access_token; }catch(e){} return null; }
 async function rpc(fn,params,forceAnon){
   const tk=forceAnon?null:authToken();
-  const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+(tk||PUB),'Content-Type':'application/json'},body:JSON.stringify(params||{})});
+  const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+(tk||PUB),'Content-Type':'application/json'},body:JSON.stringify(params||{}),signal:AbortSignal.timeout(15000)});
   const t=await r.text(); if(!r.ok){ let m=t; try{ m=(JSON.parse(t).message)||t; }catch(e){} throw new Error(m); }
   return t?JSON.parse(t):null;
 }
@@ -323,6 +323,9 @@ function buildTypes(rows){
 function setType(v){ ST.type=v; pillsRender(); runSearch(true); }
 
 async function boot(){
+  readUrl();
+  applyExploreLang();
+  runSearch(true);
   try{
     const counts=await rpc('dir_counts',{},true);
     ST.raw_counts = counts || [];
@@ -341,8 +344,8 @@ async function boot(){
   try{
     const cities=await rpc('explore_cities',{p_limit:14},true);
     const sel=document.getElementById('city-sel');
-    (cities||[]).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country||''; o.textContent=c.city+(c.country?' · '+c.country:'')+' ('+Number(c.n).toLocaleString()+')'; sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||ST.country; runSearch(true); });
+    cityOptions(cities).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country; o.textContent=c.label; sel.appendChild(o); });
+    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; harvestCountries([]); runSearch(true); });
   }catch(e){}
   try{
     const fresh=await rpc('explore_fresh',{p_limit:8},true);
@@ -350,9 +353,8 @@ async function boot(){
     document.getElementById('fresh').innerHTML=(fresh||[]).map(f=>
       '<a class="fcard" href="'+esc(hrefFor(f))+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
   }catch(e){}
-  readUrl();
-  applyExploreLang();
-  runSearch(true);
+  const selectedCity=document.getElementById('city-sel');
+  if(selectedCity) selectedCity.value=ST.city;
 }
 
 
@@ -396,7 +398,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   q.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(()=>{ ST.q=q.value.trim(); runSearch(true); },350); });
   q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ ST.q=q.value.trim(); runSearch(true); } });
   const cs=document.getElementById('country-sel');
-  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; runSearch(true); });
+  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; document.getElementById('city-sel').value=''; runSearch(true); });
   const ss=document.getElementById('sort-sel');
   if(ss) ss.addEventListener('change',()=>{ ST.sort=ss.value; renderRows(); });
   const qv=document.getElementById('qv');
@@ -440,7 +442,7 @@ function applyExploreLang(){
   }
   const hsub = document.querySelector('.hsub');
   if (hsub) {
-    hsub.textContent = LANG === 'el' ? 'Ταβέρνες, εκκλησίες, δικηγόροι, φούρνοι, φεστιβάλ, δημιουργοί — η ζωντανή βάση του Ελληνισμού.' : 'Tavernas, churches, lawyers, bakeries, festivals, creators — the living record of the Greek world, verified and searchable.';
+    hsub.textContent = LANG === 'el' ? 'Ταβέρνες, εκκλησίες, δικηγόροι, φούρνοι, φεστιβάλ, δημιουργοί — η ζωντανή βάση του Ελληνισμού.' : 'Tavernas, churches, lawyers, bakeries, festivals, creators — discover the people and places of the Greek world.';
   }
   const qi = document.getElementById('q');
   if (qi) {
@@ -515,6 +517,24 @@ function normCountry(v){
   return a || t;
 }
 
+/* One option per city. Missing country data stays missing: a city with
+   incomplete or multiple country groups searches across countries. */
+function cityOptions(rows){
+  const groups=new Map();
+  (Array.isArray(rows)?rows:[]).forEach(row=>{
+    const city=String(row&&row.city||'').trim();
+    if(!city) return;
+    const key=city.toLocaleLowerCase();
+    if(!groups.has(key)) groups.set(key,{city,countries:new Set(),unknown:false});
+    const group=groups.get(key),country=normCountry(row.country);
+    if(country) group.countries.add(country); else group.unknown=true;
+  });
+  return Array.from(groups.values()).map(group=>{
+    const country=!group.unknown&&group.countries.size===1?Array.from(group.countries)[0]:'';
+    return {city:group.city,country,label:group.city+(country?' · '+country:' · All countries')};
+  });
+}
+
 /* Build listing links from `slug`, never from `path`.
    explore_search derives `path` from the name, dropping the de-duplication
    suffix real slugs carry, so ~14% of paths point at nothing (measured across
@@ -558,8 +578,11 @@ function card(r,idx){
     '</div></article>';
 }
 
+let searchVersion=0;
 async function runSearch(reset){
-  if(ST.busy) return; ST.busy=true;
+  if(ST.busy&&!reset) return;
+  const version=++searchVersion;
+  ST.busy=true;
   if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML=new Array(6).fill('<div class="skel"></div>').join(''); }
   document.getElementById('res-mode').textContent=ST.q?('\u201c'+ST.q+'\u201d'):'';
   const hasFilters = !!(ST.q || ST.type || ST.city || ST.country || ST.sort);
@@ -568,6 +591,7 @@ async function runSearch(reset){
   if(reset) writeUrl(true);
   try{
     const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:ST.city||null,p_country:ST.country||null,p_limit:24,p_offset:ST.offset},true);
+    if(version!==searchVersion) return;
     const batch=rows||[];
     ST.rows = reset ? batch.slice() : ST.rows.concat(batch);
     harvestCountries(ST.rows);
@@ -579,6 +603,7 @@ async function runSearch(reset){
       ? (LANG === 'el' ? ('Προβολή ' + n + ' αποτελεσμάτων' + (ST.done ? '' : '+')) : ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+')))
       : (LANG === 'el' ? 'Χωρίς αποτελέσματα' : 'No results');
   }catch(e){
+    if(version!==searchVersion) return;
     // Never print database/schema details into the public UI. Besides being an
     // information leak, the old full-width toast made the mobile page unusable.
     console.error('Directory search failed', e);
@@ -592,7 +617,7 @@ async function runSearch(reset){
     document.getElementById('more-btn').style.display='none';
     toast('The directory could not load. Please try again.');
   }
-  ST.busy=false;
+  if(version===searchVersion) ST.busy=false;
 }
 
 /* Sorting re-orders the results already loaded on this page. The search RPC has
@@ -754,18 +779,13 @@ async function claim(slug,btn){
 </script>
 <script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 
-<!-- Crawlable index. /explore renders its results with JavaScript, so to a
-     crawler the page was blank and the 8,787 listing pages had no internal
-     links pointing at them at all. These are real links to server-rendered
-     hubs, in the HTML, which is what gives the directory a link graph.
-     Countries and regions do not change; counts are refreshed when this
-     block is regenerated (tools/gen-explore-index.py). -->
+<!-- Crawlable browse links. Counts are shown only where fetched live. -->
 <section class="ph-index"><div class="wrap">
   <h2>Browse the Greek world</h2>
-  <div class="pi-grp"><h3>By country</h3><a href="/in/greece">Greece <b>2,874</b></a><a href="/in/united-states">United States <b>2,086</b></a><a href="/in/australia">Australia <b>577</b></a><a href="/in/canada">Canada <b>562</b></a><a href="/in/united-kingdom">United Kingdom <b>276</b></a><a href="/in/germany">Germany <b>159</b></a><a href="/in/cyprus">Cyprus <b>140</b></a><a href="/in/south-africa">South Africa <b>120</b></a><a href="/in/us">US <b>53</b></a><a href="/in/new-zealand">New Zealand <b>45</b></a><a href="/in/sweden">Sweden <b>18</b></a><a href="/in/netherlands">Netherlands <b>15</b></a><a href="/in/switzerland">Switzerland <b>13</b></a><a href="/in/belgium">Belgium <b>12</b></a><a href="/in/usa">USA <b>10</b></a><a href="/in/ireland">Ireland <b>4</b></a><a href="/in/france">France <b>2</b></a><a href="/in/zimbabwe">Zimbabwe <b>1</b></a><a href="/in/norway">Norway <b>1</b></a><a href="/in/iceland">Iceland <b>1</b></a><a href="/in/egypt">Egypt <b>1</b></a><a href="/in/denmark">Denmark <b>1</b></a></div>
-  <div class="pi-grp"><h3>By region</h3><a href="/in/greece/attica">Attica <b>940</b></a><a href="/in/greece/central-macedonia">Central Macedonia <b>357</b></a><a href="/in/greece/south-aegean">South Aegean <b>274</b></a><a href="/in/canada/ontario">Ontario <b>258</b></a><a href="/in/united-kingdom/england">England <b>250</b></a><a href="/in/greece/crete">Crete <b>246</b></a><a href="/in//attica">Attica <b>233</b></a><a href="/in/united-states/illinois">Illinois <b>193</b></a><a href="/in/united-states/california">California <b>191</b></a><a href="/in/greece/thessaly">Thessaly <b>182</b></a><a href="/in/united-states/massachusetts">Massachusetts <b>172</b></a><a href="/in/australia/victoria">Victoria <b>165</b></a><a href="/in/greece/peloponnese">Peloponnese <b>162</b></a><a href="/in/united-states/new-york">New York <b>153</b></a><a href="/in/greece/western-greece">Western Greece <b>151</b></a><a href="/in/united-states/florida">Florida <b>148</b></a><a href="/in/greece/eastern-macedonia-and-thrace">Eastern Macedonia and Thrace <b>147</b></a><a href="/in/cyprus/">Κύπρος <b>137</b></a><a href="/in/australia/new-south-wales">New South Wales <b>135</b></a><a href="/in/canada/quebec">Québec <b>123</b></a><a href="/in/united-states/michigan">Michigan <b>113</b></a><a href="/in/greece/central-greece">Central Greece <b>110</b></a><a href="/in/united-states/pennsylvania">Pennsylvania <b>100</b></a><a href="/in/greece/ionian-islands">Ionian Islands <b>99</b></a><a href="/in/australia/queensland">Queensland <b>90</b></a><a href="/in/australia/south-australia">South Australia <b>90</b></a><a href="/in/canada/british-columbia">British Columbia <b>89</b></a><a href="/in/greece/epirus">Epirus <b>89</b></a><a href="/in/south-africa/gauteng">Gauteng <b>84</b></a><a href="/in//texas">Texas <b>75</b></a><a href="/in/united-states/texas">Texas <b>75</b></a><a href="/in/united-states/ohio">Ohio <b>72</b></a><a href="/in/australia/western-australia">Western Australia <b>71</b></a><a href="/in/united-states/district-of-columbia">District of Columbia <b>63</b></a><a href="/in/greece/north-aegean">North Aegean <b>61</b></a><a href="/in/united-states/new-jersey">New Jersey <b>57</b></a><a href="/in/canada/alberta">Alberta <b>54</b></a><a href="/in/united-states/virginia">Virginia <b>54</b></a><a href="/in//pennsylvania">Pennsylvania <b>51</b></a><a href="/in/united-states/maryland">Maryland <b>44</b></a><a href="/in/united-states/georgia">Georgia <b>44</b></a><a href="/in//florida">Florida <b>41</b></a><a href="/in//california">California <b>41</b></a><a href="/in/greece/western-macedonia">Western Macedonia <b>31</b></a><a href="/in/united-states/arizona">Arizona <b>31</b></a><a href="/in//new-york">New York <b>28</b></a><a href="/in/united-states/north-carolina">North Carolina <b>28</b></a><a href="/in/united-states/washington">Washington <b>28</b></a><a href="/in//central-greece">Central Greece <b>27</b></a><a href="/in/united-states/alabama">Alabama <b>26</b></a><a href="/in/germany/nordrhein-westfalen">Nordrhein-Westfalen <b>25</b></a><a href="/in/united-states/colorado">Colorado <b>23</b></a><a href="/in//illinois">Illinois <b>23</b></a><a href="/in//england">England <b>23</b></a><a href="/in/south-africa/western-cape">Western Cape <b>23</b></a><a href="/in/united-states/indiana">Indiana <b>22</b></a><a href="/in//georgia">Georgia <b>21</b></a><a href="/in/united-kingdom/alba-scotland">Alba / Scotland <b>20</b></a><a href="/in/germany/hessen">Hessen <b>20</b></a><a href="/in/united-states/south-carolina">South Carolina <b>20</b></a></div>
-  <div class="pi-grp"><h3>By category</h3><a href="/c/restaurants">Restaurants <b>1,151</b></a><a href="/c/orthodox-churches">Greek Orthodox Churches <b>1,107</b></a><a href="/c/cafes">Cafes &amp; Coffee <b>488</b></a><a href="/c/lawyers">Lawyers <b>440</b></a><a href="/c/dentists">Dentists <b>409</b></a><a href="/c/tavernas">Tavernas <b>319</b></a><a href="/c/festivals">Festivals <b>317</b></a><a href="/c/media-creators">Media and Creators <b>309</b></a><a href="/c/bakeries">Bakeries <b>293</b></a><a href="/c/hellenic-associations">Hellenic Associations <b>268</b></a><a href="/c/desserts-sweets">Dessert &amp; Sweet Shops <b>246</b></a><a href="/c/business-commerce">Business and Commerce <b>209</b></a><a href="/c/pharmacies">Pharmacies <b>181</b></a><a href="/c/greek-schools">Greek Language Schools <b>157</b></a><a href="/c/shopping-products">Shopping and Products <b>129</b></a><a href="/c/professional-services">Professional Services <b>127</b></a><a href="/c/monasteries">Monasteries <b>90</b></a><a href="/c/cultural-centres">Cultural Centres &amp; Museums <b>82</b></a><a href="/c/groceries">Groceries &amp; Importers <b>76</b></a><a href="/c/regional-societies">Regional Societies <b>75</b></a><a href="/c/radio-stations">Greek Radio <b>75</b></a><a href="/c/cathedrals">Cathedrals <b>67</b></a><a href="/c/travel-tourism">Travel and Tourism <b>66</b></a><a href="/c/organizations-community">Organizations and Community <b>64</b></a><a href="/c/doctors">Doctors <b>63</b></a><a href="/c/hellenic-studies">Hellenic Studies <b>57</b></a><a href="/c/sports-youth">Sports and Youth <b>56</b></a><a href="/c/musicians-djs">Musicians &amp; DJs <b>48</b></a><a href="/c/wine-spirits">Greek Wine &amp; Spirits <b>46</b></a><a href="/c/hotels">Hotels &amp; Resorts <b>46</b></a><a href="/c/greek-products">Greek Products <b>43</b></a><a href="/c/community-services">Community Services <b>43</b></a><a href="/c/delis">Delis <b>42</b></a><a href="/c/press">Greek Press &amp; Media <b>41</b></a><a href="/c/heritage-pilgrimage">Heritage &amp; Pilgrimage <b>40</b></a><a href="/c/community-leaders">Community Leaders <b>39</b></a><a href="/c/events-entertainment">Events and Entertainment <b>34</b></a><a href="/c/greece-travel">Greece Travel <b>32</b></a><a href="/c/realtors">Realtors <b>30</b></a><a href="/c/charities">Charities &amp; Philanthropy <b>29</b></a><a href="/c/soccer">Soccer Clubs <b>29</b></a><a href="/c/accountants">Accountants <b>27</b></a><a href="/c/dance-schools">Dance Schools <b>27</b></a><a href="/c/theatre-comedy">Theatre &amp; Comedy <b>27</b></a><a href="/c/olive-oil-honey">Olive Oil &amp; Honey <b>26</b></a><a href="/c/influencers">Influencers <b>25</b></a><a href="/c/specialty-food">Specialty Food <b>24</b></a><a href="/c/podcasters">Podcasters <b>23</b></a><a href="/c/banquet-halls">Banquet &amp; Wedding Venues <b>23</b></a><a href="/c/import-export">Import / Export <b>23</b></a><a href="/c/tours-agencies">Tours &amp; Agencies <b>22</b></a><a href="/c/medical-clinics">Medical Clinics <b>21</b></a><a href="/c/concerts">Concerts <b>20</b></a><a href="/c/meze-ouzo-bars">Meze &amp; Ouzo Bars <b>19</b></a><a href="/c/clothing">Clothing &amp; Apparel <b>18</b></a><a href="/c/architects-engineers">Architects &amp; Engineers <b>17</b></a><a href="/c/chapels">Chapels <b>17</b></a><a href="/c/consulates">Consulates &amp; Embassies <b>17</b></a><a href="/c/chefs">Chefs <b>16</b></a><a href="/c/chambers">Chambers of Commerce <b>15</b></a><a href="/c/cyprus-travel">Cyprus Travel <b>15</b></a><a href="/c/dance-troupes">Dance Troupes <b>13</b></a><a href="/c/food-products">Food Products <b>13</b></a><a href="/c/catering">Catering <b>13</b></a><a href="/c/education-culture">Education and Culture <b>11</b></a><a href="/c/jewelers">Jewelers <b>10</b></a><a href="/c/butchers">Greek Butchers <b>10</b></a><a href="/c/gift-shops">Greek Gift Shops <b>9</b></a><a href="/c/food-trucks">Food Trucks <b>9</b></a><a href="/c/religious-goods">Religious Goods <b>8</b></a></div>
-  <p class="pi-note">Every link above is a page of real listings. <a href="/in">Browse the whole directory</a> &mdash; server-rendered, always current.</p>
+  <div class="pi-grp"><h3>By country</h3><a href="/in/greece">Greece</a><a href="/in/united-states">United States</a><a href="/in/australia">Australia</a><a href="/in/canada">Canada</a><a href="/in/united-kingdom">United Kingdom</a><a href="/in/germany">Germany</a><a href="/in/cyprus">Cyprus</a><a href="/in/south-africa">South Africa</a><a href="/in/new-zealand">New Zealand</a><a href="/in/sweden">Sweden</a><a href="/in/netherlands">Netherlands</a><a href="/in/switzerland">Switzerland</a><a href="/in/belgium">Belgium</a><a href="/in/ireland">Ireland</a><a href="/in/france">France</a><a href="/in/zimbabwe">Zimbabwe</a><a href="/in/norway">Norway</a><a href="/in/iceland">Iceland</a><a href="/in/egypt">Egypt</a><a href="/in/denmark">Denmark</a></div>
+  <div class="pi-grp"><h3>By region</h3><a href="/in/greece/attica">Attica</a><a href="/in/greece/central-macedonia">Central Macedonia</a><a href="/in/greece/south-aegean">South Aegean</a><a href="/in/canada/ontario">Ontario</a><a href="/in/united-kingdom/england">England</a><a href="/in/greece/crete">Crete</a><a href="/in/united-states/illinois">Illinois</a><a href="/in/united-states/california">California</a><a href="/in/greece/thessaly">Thessaly</a><a href="/in/united-states/massachusetts">Massachusetts</a><a href="/in/australia/victoria">Victoria</a><a href="/in/greece/peloponnese">Peloponnese</a><a href="/in/united-states/new-york">New York</a><a href="/in/greece/western-greece">Western Greece</a><a href="/in/united-states/florida">Florida</a><a href="/in/greece/eastern-macedonia-and-thrace">Eastern Macedonia and Thrace</a><a href="/in/australia/new-south-wales">New South Wales</a><a href="/in/canada/quebec">Québec</a><a href="/in/united-states/michigan">Michigan</a><a href="/in/greece/central-greece">Central Greece</a><a href="/in/united-states/pennsylvania">Pennsylvania</a><a href="/in/greece/ionian-islands">Ionian Islands</a><a href="/in/australia/queensland">Queensland</a><a href="/in/australia/south-australia">South Australia</a><a href="/in/canada/british-columbia">British Columbia</a><a href="/in/greece/epirus">Epirus</a><a href="/in/south-africa/gauteng">Gauteng</a><a href="/in/united-states/texas">Texas</a><a href="/in/united-states/ohio">Ohio</a><a href="/in/australia/western-australia">Western Australia</a><a href="/in/united-states/district-of-columbia">District of Columbia</a><a href="/in/greece/north-aegean">North Aegean</a><a href="/in/united-states/new-jersey">New Jersey</a><a href="/in/canada/alberta">Alberta</a><a href="/in/united-states/virginia">Virginia</a><a href="/in/united-states/maryland">Maryland</a><a href="/in/united-states/georgia">Georgia</a><a href="/in/greece/western-macedonia">Western Macedonia</a><a href="/in/united-states/arizona">Arizona</a><a href="/in/united-states/north-carolina">North Carolina</a><a href="/in/united-states/washington">Washington</a><a href="/in/united-states/alabama">Alabama</a><a href="/in/germany/nordrhein-westfalen">Nordrhein-Westfalen</a><a href="/in/united-states/colorado">Colorado</a><a href="/in/south-africa/western-cape">Western Cape</a><a href="/in/united-states/indiana">Indiana</a><a href="/in/united-kingdom/alba-scotland">Alba / Scotland</a><a href="/in/germany/hessen">Hessen</a><a href="/in/united-states/south-carolina">South Carolina</a></div>
+  <div class="pi-grp"><h3>By category</h3><a href="/c/restaurants">Restaurants</a><a href="/c/orthodox-churches">Greek Orthodox Churches</a><a href="/c/cafes">Cafes &amp; Coffee</a><a href="/c/lawyers">Lawyers</a><a href="/c/dentists">Dentists</a><a href="/c/tavernas">Tavernas</a><a href="/c/festivals">Festivals</a><a href="/c/media-creators">Media and Creators</a><a href="/c/bakeries">Bakeries</a><a href="/c/hellenic-associations">Hellenic Associations</a><a href="/c/desserts-sweets">Dessert &amp; Sweet Shops</a><a href="/c/business-commerce">Business and Commerce</a><a href="/c/pharmacies">Pharmacies</a><a href="/c/greek-schools">Greek Language Schools</a><a href="/c/shopping-products">Shopping and Products</a><a href="/c/professional-services">Professional Services</a><a href="/c/monasteries">Monasteries</a><a href="/c/cultural-centres">Cultural Centres &amp; Museums</a><a href="/c/groceries">Groceries &amp; Importers</a><a href="/c/regional-societies">Regional Societies</a><a href="/c/radio-stations">Greek Radio</a><a href="/c/cathedrals">Cathedrals</a><a href="/c/travel-tourism">Travel and Tourism</a><a href="/c/organizations-community">Organizations and Community</a><a href="/c/doctors">Doctors</a><a href="/c/hellenic-studies">Hellenic Studies</a><a href="/c/sports-youth">Sports and Youth</a><a href="/c/musicians-djs">Musicians &amp; DJs</a><a href="/c/wine-spirits">Greek Wine &amp; Spirits</a><a href="/c/hotels">Hotels &amp; Resorts</a><a href="/c/greek-products">Greek Products</a><a href="/c/community-services">Community Services</a><a href="/c/delis">Delis</a><a href="/c/press">Greek Press &amp; Media</a><a href="/c/heritage-pilgrimage">Heritage &amp; Pilgrimage</a><a href="/c/community-leaders">Community Leaders</a><a href="/c/events-entertainment">Events and Entertainment</a><a href="/c/greece-travel">Greece Travel</a><a href="/c/realtors">Realtors</a><a href="/c/charities">Charities &amp; Philanthropy</a><a href="/c/soccer">Soccer Clubs</a><a href="/c/accountants">Accountants</a><a href="/c/dance-schools">Dance Schools</a><a href="/c/theatre-comedy">Theatre &amp; Comedy</a><a href="/c/olive-oil-honey">Olive Oil &amp; Honey</a><a href="/c/influencers">Influencers</a><a href="/c/specialty-food">Specialty Food</a><a href="/c/podcasters">Podcasters</a><a href="/c/banquet-halls">Banquet &amp; Wedding Venues</a><a href="/c/import-export">Import / Export</a><a href="/c/tours-agencies">Tours &amp; Agencies</a><a href="/c/medical-clinics">Medical Clinics</a><a href="/c/concerts">Concerts</a><a href="/c/meze-ouzo-bars">Meze &amp; Ouzo Bars</a><a href="/c/clothing">Clothing &amp; Apparel</a><a href="/c/architects-engineers">Architects &amp; Engineers</a><a href="/c/chapels">Chapels</a><a href="/c/consulates">Consulates &amp; Embassies</a><a href="/c/chefs">Chefs</a><a href="/c/chambers">Chambers of Commerce</a><a href="/c/cyprus-travel">Cyprus Travel</a><a href="/c/dance-troupes">Dance Troupes</a><a href="/c/food-products">Food Products</a><a href="/c/catering">Catering</a><a href="/c/education-culture">Education and Culture</a><a href="/c/jewelers">Jewelers</a><a href="/c/butchers">Greek Butchers</a><a href="/c/gift-shops">Greek Gift Shops</a><a href="/c/food-trucks">Food Trucks</a><a href="/c/religious-goods">Religious Goods</a></div>
+  <p class="pi-note">Explore listings by location or category. <a href="/in">Browse the whole directory</a>.</p>
 </div></section>
 </body>
 </html>

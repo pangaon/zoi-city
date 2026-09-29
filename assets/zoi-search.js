@@ -22,16 +22,12 @@
 
   /* Jumps that are always available, so the palette is useful before you type. */
   var ACTIONS = [
-    { label: 'Directory Explorer', hint: 'Browse 8,000+ verified Greek places', href: '/explore', ic: 'pin' },
-    { label: 'Weddings & Private Events', hint: 'Create and manage private events in Zoi Tickets', href: '/tickets', ic: 'heart' },
-    { label: 'In-Seat Table Tab & Split', hint: 'Tickets and reservations are live; table ordering is being connected', href: '/tickets', ic: 'ticket' },
-    { label: 'Kitchen & Bar KDS', hint: 'Event operations are live in Zoi Tickets; KDS is coming next', href: '/tickets', ic: 'spark' },
-    { label: '3D Venue & Blueprint Studio', hint: 'Research preview; create live events in Zoi Tickets', href: '/tickets', ic: 'spark' },
-    { label: 'Community Agora', hint: 'The Greek world social feed', href: '/community', ic: 'chat' },
-    { label: 'Business Suite', hint: 'Publish, schedule, audience & analytics', href: '/social', ic: 'spark' },
-    { label: 'Tickets & Door Scanner', hint: 'Public events & QR check-in', href: '/tickets', ic: 'ticket' },
-    { label: 'Website Intelligence', hint: 'SEO, GEO and AI-citation audits', href: '/apps/intelligence/', ic: 'search' },
-    { label: 'Founder Command Center', hint: 'Directory health & crawler operations', href: '/apps/command-center/', ic: 'pin' }
+    { label: 'Discover Greek businesses', hint: 'Search places, professionals and creators', href: '/explore', ic: 'pin' },
+    { label: 'Community', hint: 'Connect with the Greek world', href: '/community', ic: 'chat' },
+    { label: 'Business workspace', hint: 'Manage your business profile and content', href: '/social', ic: 'spark' },
+    { label: 'Events & Tickets', hint: 'Find events and manage reservations', href: '/tickets', ic: 'ticket' },
+    { label: 'Website Intelligence', hint: 'Review your website', href: '/apps/intelligence/', ic: 'search' },
+    { label: 'BuyGreek', hint: 'Explore the Greek marketplace', href: 'https://buygreek.shop', ic: 'cart' }
   ];
 
   /* ── Greeklish / Phonetic dual-script transliteration engine ── */

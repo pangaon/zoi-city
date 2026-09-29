@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;letter-spacing:-.01em}
@@ -61,7 +61,7 @@ footer{border-top:1px solid var(--line);margin-top:60px;padding:26px 0 40px}
 footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 footer span,footer a{font-size:13px;color:var(--dim)}
 </style>
-<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
+<script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');}catch(e){}})()</script>
 </head>
 <body>
 <header class="zoi-header"><div class="wrap zoi-bar">
@@ -72,7 +72,7 @@ footer span,footer a{font-size:13px;color:var(--dim)}
 
 <main class="wrap">
   <section class="hero">
-    <div class="mono">Free · takes about a minute</div>
+    <div class="mono">Add your business</div>
     <h1>Your website already says it. <span class="serif">Let it do the typing.</span></h1>
     <p class="lead">Paste your address and we read what you have published — name, phone, hours, address, photo. You check it and it goes live. Nothing is guessed, and you can change every field.</p>
 
@@ -83,7 +83,7 @@ footer span,footer a{font-size:13px;color:var(--dim)}
         <button type="submit" id="go">Read my site</button>
       </div>
       <div class="err" id="err" role="alert" aria-live="polite"></div>
-      <p class="note">We fetch the page once, honour your robots.txt, and identify ourselves as ZoiDirectoryBot.</p>
+      <p class="note">Use your public business website. You can review the information before submitting.</p>
     </form>
   </section>
 
@@ -95,8 +95,8 @@ footer span,footer a{font-size:13px;color:var(--dim)}
   </section>
 
   <section class="steps">
-    <div class="step"><div class="n">01</div><h3>You paste the address</h3><p>Only a real website. We will not accept an internal or private address, and we check again the moment before we connect.</p></div>
-    <div class="step"><div class="n">02</div><h3>We read the page</h3><p>Structured data and the tags your site already publishes. One request, eight second limit, your robots.txt respected.</p></div>
+    <div class="step"><div class="n">01</div><h3>You paste the address</h3><p>Start with the public website your customers use.</p></div>
+    <div class="step"><div class="n">02</div><h3>We read the page</h3><p>We look for the business details your website publishes. Missing information stays empty for you to complete.</p></div>
     <div class="step"><div class="n">03</div><h3>You confirm</h3><p>Everything we found is shown with where it came from. Nothing publishes until you say so.</p></div>
     <div class="step"><div class="n">04</div><h3>You prove it is yours</h3><p>A separate step, because a page loading does not prove you own the business. That is what makes a verified mark worth anything.</p></div>
   </section>
@@ -105,17 +105,17 @@ footer span,footer a{font-size:13px;color:var(--dim)}
     <h4>What we will not do</h4>
     <p>We will not invent a field. If your site does not publish a phone number, the field stays empty rather than being filled with a guess.</p>
     <p>We will not mark you verified because your site loaded. A successful fetch proves the site exists — not that it is yours.</p>
-    <p>We will not overwrite anything you type. Machine-read values live in their own namespace and yours always win.</p>
+    <p>We will not overwrite anything you type. Your edits take priority over information imported from your website.</p>
   </div>
 </main>
 
 <footer><div class="wrap">
   <span>© 2026 Zoi</span>
-  <span><a href="/explore">Directory</a> · <a href="/community">Community</a> · <a href="/social">Business</a></span>
+  <span><a href="/explore">Discover</a> · <a href="/community">Community</a> · <a href="/business">For Business</a></span>
 </div></footer>
 
 <script src="/assets/zoi-core.js"></script>
-<script src="/assets/zoi-theme.js"></script>
+<script src="/assets/zoi-theme.js?v=20260930"></script>
 <script>
 (function(){
   'use strict';

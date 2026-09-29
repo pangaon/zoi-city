@@ -2,6 +2,11 @@
 // zoi.city Wave 1 — page invariant tests (zero deps, node >= 18, built-in fetch).
 // Needs network. Run: node pages/run.mjs   (override host with SITE env var)
 
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+const LOCAL = process.argv.includes('--local');
+const ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const SITE = (process.env.SITE || 'https://www.zoi.city').replace(/\/$/, '');
 
 function count(html, re) {
@@ -105,8 +110,13 @@ const PAGES = [
 ];
 
 async function fetchPage(path) {
+  if (LOCAL) {
+    const file = resolve(ROOT, '.' + path, 'index.html');
+    return { status: 200, html: await readFile(file, 'utf8') };
+  }
   const res = await fetch(SITE + path, {
     redirect: 'follow',
+    signal: AbortSignal.timeout(15000),
     headers: { 'User-Agent': 'zoi-wave1-page-tests/1.0 (+node)' },
   });
   const html = await res.text();
@@ -114,7 +124,7 @@ async function fetchPage(path) {
 }
 
 (async () => {
-  console.log(`# zoi.city page invariants — SITE=${SITE}`);
+  console.log(`# zoi.city page invariants — ${LOCAL ? 'LOCAL source files (no HTTP/runtime verification)' : `SITE=${SITE}`}`);
   const tests = [];
   for (const p of PAGES) {
     tests.push({ name: `${p.path} common invariants (200, one head/title, viewport)`, page: p, kind: 'common' });
@@ -128,8 +138,8 @@ async function fetchPage(path) {
   for (let i = 0; i < tests.length; i++) {
     const { name, page, kind } = tests[i];
     try {
-      if (!cache.has(page.path)) cache.set(page.path, await fetchPage(page.path));
-      const { status, html } = cache.get(page.path);
+      if (!cache.has(page.path)) cache.set(page.path, fetchPage(page.path));
+      const { status, html } = await cache.get(page.path);
       if (kind === 'common') commonChecks(page.path, status, html);
       else page.extra(html);
       console.log(`ok ${i + 1} - ${name}`);
