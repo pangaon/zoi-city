@@ -17,9 +17,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
+<script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');}catch(e){}})()</script>
 <link rel="stylesheet" href="/assets/vendor/maplibre-gl.css">
-<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
 
 <style>
   html,body{height:100%}
@@ -292,7 +292,7 @@
 </main>
 
 <script src="/assets/zoi-core.js"></script>
-<script src="/assets/zoi-theme.js"></script>
+<script src="/assets/zoi-theme.js?v=20260930"></script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-basemap.js"></script>
 <script src="/assets/vendor/maplibre-gl.js"></script>
@@ -441,7 +441,7 @@
   var statusT;
   function status(msg, spin, ms) {
     var el = $('status');
-    if (!msg) { el.classList.remove('m-show'); return; }
+    if (!msg) { clearTimeout(statusT); el.classList.remove('m-show'); el.textContent=''; return; }
     el.innerHTML = (spin ? '<span class="m-spin"></span>' : '') + esc(msg);
     el.classList.add('m-show');
     clearTimeout(statusT);
@@ -1396,6 +1396,7 @@
 
     try { await loadData(); }
     catch (err) {
+      status('');
       $('ptitle').innerHTML = 'Could not load the map<span class="m-sub">the directory did not answer</span>';
       $('pbody').innerHTML = '<div class="m-empty">Try again in a moment, or browse <a href="/explore">Explore</a>.<br><button type="button" class="m-linkish" id="retrymap">Try again</button></div>';
       $('retrymap').addEventListener('click', function () { location.reload(); });

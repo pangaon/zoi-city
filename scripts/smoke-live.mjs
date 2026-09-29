@@ -16,6 +16,8 @@ const results = await Promise.all(paths.map(async path => {
     const html = await res.text();
     const structural = html.replace(/<script\b[\s\S]*?<\/script>/gi, '').replace(/<style\b[\s\S]*?<\/style>/gi, '');
     const errors = [];
+    if (new URL(res.url).origin !== new URL(SITE).origin) errors.push('redirected outside requested deployment');
+    if (!html.includes('/assets/zoi-theme.css')) errors.push('missing Zoi application shell');
     if (res.status !== 200) errors.push(`HTTP ${res.status}`);
     if (!(res.headers.get('content-type') || '').includes('text/html')) errors.push('not HTML');
     if ((structural.match(/<title\b/gi) || []).length !== 1) errors.push('expected one title');
