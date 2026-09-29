@@ -1,0 +1,150 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "candidate-not-device-verified",
+  "features": [
+    {
+      "id": "discovery",
+      "ios": "native-read-candidate",
+      "android": "native-read-candidate",
+      "required": [
+        "live RPC validation",
+        "device acceptance"
+      ]
+    },
+    {
+      "id": "community-read",
+      "ios": "native-read-candidate",
+      "android": "native-read-candidate",
+      "required": [
+        "live RPC validation",
+        "device acceptance"
+      ]
+    },
+    {
+      "id": "business-profile",
+      "ios": "browser-handoff",
+      "android": "browser-handoff",
+      "required": [
+        "native profile screen"
+      ]
+    },
+    {
+      "id": "auth-and-session",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "required": [
+        "live auth acceptance",
+        "device secure storage validation",
+        "OAuth PKCE flow"
+      ],
+      "implemented": [
+        "email/password",
+        "email code verification",
+        "secure native refresh credential storage",
+        "foreground and expiry refresh",
+        "local sign-out and server revocation",
+        "session restoration"
+      ]
+    },
+    {
+      "id": "community-write",
+      "ios": "native-text-candidate",
+      "android": "native-text-candidate",
+      "required": [
+        "live isolated test post",
+        "media permissions and uploads",
+        "replies",
+        "device validation"
+      ],
+      "implemented": [
+        "authenticated text publishing",
+        "user-scoped local drafts",
+        "duplicate-submit prevention",
+        "publication confirmation"
+      ]
+    },
+    {
+      "id": "business-workspace",
+      "ios": "browser-handoff",
+      "android": "browser-handoff",
+      "required": [
+        "native equivalent for each shipped web workflow"
+      ]
+    },
+    {
+      "id": "tickets-and-commerce",
+      "ios": "browser-handoff",
+      "android": "browser-handoff",
+      "required": [
+        "native checkout lifecycle",
+        "provider return links",
+        "receipts",
+        "refund state",
+        "store policy review"
+      ]
+    },
+    {
+      "id": "notifications",
+      "ios": "not-implemented",
+      "android": "not-implemented",
+      "required": [
+        "permission flow",
+        "token registration",
+        "delivery",
+        "deep link handling"
+      ]
+    },
+    {
+      "id": "navigation-deep-links",
+      "ios": "custom-scheme-candidate",
+      "android": "custom-scheme-candidate",
+      "required": [
+        "device validation",
+        "universal links",
+        "Android app links"
+      ]
+    },
+    {
+      "id": "workspace-selection",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "zoi_me workspace list",
+        "per-user persisted selection"
+      ],
+      "required": [
+        "live authenticated acceptance",
+        "native business modules"
+      ]
+    }
+  ],
+  "architecture": {
+    "backend": "Shared Supabase contracts and authorization across web/iOS/Android",
+    "nativeUI": "React Native screens with real data and no simulated transaction state",
+    "parityRule": "Browser handoff is not native completion. Each web feature requires iOS and Android acceptance coverage."
+  },
+  "supportedSchemeRoutes": [
+    "zoi://home",
+    "zoi://discover",
+    "zoi://community",
+    "zoi://grow"
+  ],
+  "releaseGates": [
+    "TypeScript",
+    "web export",
+    "iOS build and device/simulator acceptance",
+    "Android build and device/emulator acceptance",
+    "large text and screen reader checks",
+    "offline/retry checks",
+    "auth and transaction lifecycle checks"
+  ],
+  "distribution": {
+    "easProjectId": "59352b1c-50c5-4717-a22d-53188fa500c7",
+    "observedBuildCount": 0,
+    "checkedAt": "2026-09-29",
+    "storeReleaseVerified": false,
+    "includedBuildCreditUsed": 1000,
+    "includedBuildCreditLimit": 22500,
+    "overageCostCents": 0
+  }
+}
