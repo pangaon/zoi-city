@@ -60,7 +60,17 @@ export class SessionClient {
   async sendCode(email: string) { return this.request('/auth/v1/otp', { email, create_user: true }); }
   async verifyCode(email: string, code: string) { const generation = this.generation; return this.accept(await this.request('/auth/v1/verify', { type: 'email', email, token: code }), generation); }
   async password(email: string, password: string) { const generation = this.generation; return this.accept(await this.request('/auth/v1/token?grant_type=password', { email, password }), generation); }
-  async rpc(name: string, body: unknown) { return this.request('/rest/v1/rpc/' + name, body, await this.token()); }
+  async rpc(name: string, body: unknown) {
+    const token = await this.token();
+    try { return await this.request('/rest/v1/rpc/' + name, body, token); }
+    catch (error) {
+      if (error instanceof ApiError && error.status === 401 && this.session?.access_token === token) {
+        this.generation++; this.session = null; this.onChange(null); await this.vault.clear();
+        throw new ApiError('Your session ended. Please sign in again.', 401);
+      }
+      throw error;
+    }
+  }
   async signOut() {
     const token = this.session?.access_token;
     this.generation++;
