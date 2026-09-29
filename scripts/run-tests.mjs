@@ -16,38 +16,45 @@ function* testFiles(dir) {
   }
 }
 
-const dir = resolve(process.argv[2] || 'tests');
+const args = process.argv.slice(2);
+const mode = args.includes('--local') ? 'local' : args.includes('--live') ? 'live' : 'all';
+if (args.includes('--local') && args.includes('--live')) {
+  console.error('run-tests: choose --local or --live, not both');
+  process.exit(2);
+}
+const dir = resolve(args.find(arg => !arg.startsWith('--')) || 'tests');
+const timeout = Number(process.env.TEST_SUITE_TIMEOUT_MS || 120000);
+if (!Number.isSafeInteger(timeout) || timeout <= 0) {
+  console.error('run-tests: TEST_SUITE_TIMEOUT_MS must be a positive integer');
+  process.exit(2);
+}
+console.log(`# verification mode: ${mode}; timeouts and unavailable services FAIL`);
 const files = [...testFiles(dir)];
 if (files.length === 0) {
   console.error(`run-tests: no *.test.mjs files found under ${dir}`);
   process.exit(2);
 }
-const r = spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit' });
+const r = mode === 'live' ? { status: 0 } : spawnSync(process.execPath, ['--test', ...files], { stdio: 'inherit', timeout });
 let failed = (r.status ?? 1) !== 0;
+if (r.error) console.error(`# node:test: ${r.error.message}`);
 
-/* Standalone suites.
- *
- * tests/{contract,pages,unit}/run.mjs predate node:test and carry their own
- * TAP-style harness, so they do not match *.test.mjs and were never collected —
- * 81 assertions, including the contract tests that check zoi tables are not
- * exposed through the anon REST API, silently not running. tests/pages was
- * failing four of nine at the time this was noticed.
- *
- * Rather than rewrite three working suites, run them as scripts and require a
- * zero exit. They are network-dependent (they fetch the live site), so a network
- * failure is reported as a skip rather than turning CI red for the wrong reason. */
+// Standalone suites are required checks. A timeout is a failure, never a skip.
 function* runners(d) {
   for (const e of readdirSync(d, { withFileTypes: true })) {
     if (e.isDirectory()) yield* runners(join(d, e.name));
     else if (e.name === 'run.mjs') yield join(d, e.name);
   }
 }
-const standalone = [...runners(dir)];
+const standalone = [...runners(dir)].filter(file => {
+  const network = /[\\/]tests[\\/](contract|pages)[\\/]/.test(file);
+  return mode === 'all' || (mode === 'live' ? network : !file.includes('/contract/'));
+});
 for (const f of standalone) {
   console.log(`\n# standalone suite: ${f}`);
-  const out = spawnSync(process.execPath, [f], { stdio: 'inherit', timeout: 120000 });
+  const out = spawnSync(process.execPath, [f, ...(mode === 'local' && f.includes('/pages/') ? ['--local'] : [])], { stdio: 'inherit', timeout });
   if (out.error && out.error.code === 'ETIMEDOUT') {
-    console.log(`# ${f}: timed out — treated as skipped, not a failure`);
+    console.log(`# ${f}: FAILED: timed out`);
+    failed = true;
     continue;
   }
   if ((out.status ?? 1) !== 0) {
@@ -56,6 +63,6 @@ for (const f of standalone) {
   }
 }
 if (standalone.length) {
-  console.log(`\n# ran ${files.length} node:test file(s) + ${standalone.length} standalone suite(s)`);
+  console.log(`\n# ran ${mode === 'live' ? 0 : files.length} node:test file(s) + ${standalone.length} standalone suite(s)`);
 }
 process.exit(failed ? 1 : 0);

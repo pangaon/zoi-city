@@ -27,6 +27,7 @@
     }
     var yr = document.getElementById("yr");
     if (yr) { try { yr.textContent = String(new Date().getFullYear()); } catch (e) {} }
+    mobileNavigation();
     markCurrent();
     reflectSession();
     motion();
@@ -316,19 +317,47 @@
     }
   }
 
-  function bind() {
-    var btns = document.querySelectorAll("#themeBtn,[data-theme-toggle]");
-    for (var i = 0; i < btns.length; i++) {
-      btns[i].addEventListener("click", function () {
-        var cur = root.getAttribute("data-theme") || "dark";
-        var next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
-        apply(next); save(next);
-      });
-    }
-    var yr = document.getElementById("yr");
-    if (yr) { try { yr.textContent = String(new Date().getFullYear()); } catch (e) {} }
-    markCurrent();
-    reflectSession();
-    motion();
-  }
 
+  function mobileNavigation() {
+    var header = document.querySelector('.zoi-header');
+    var nav = header && header.querySelector('.zoi-nav');
+    if (!nav || header.querySelector('.zoi-menu-toggle')) return;
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'zoi-menu-toggle';
+    button.textContent = 'Menu';
+    nav.id = nav.id || 'zoi-primary-navigation';
+    button.setAttribute('aria-controls', nav.id);
+    button.setAttribute('aria-expanded', 'false');
+    button.setAttribute('aria-label', 'Open navigation menu');
+    var actions = header.querySelector('.zoi-actions');
+    (actions || nav.parentNode).appendChild(button);
+    header.classList.add('zoi-menu-ready');
+    function close(restoreFocus) {
+      header.classList.remove('zoi-menu-open');
+      button.setAttribute('aria-expanded', 'false');
+      button.setAttribute('aria-label', 'Open navigation menu');
+      button.textContent = 'Menu';
+      if (restoreFocus) button.focus();
+    }
+    button.addEventListener('click', function () {
+      var open = button.getAttribute('aria-expanded') !== 'true';
+      header.classList.toggle('zoi-menu-open', open);
+      button.setAttribute('aria-expanded', String(open));
+      button.setAttribute('aria-label', open ? 'Close navigation menu' : 'Open navigation menu');
+      button.textContent = open ? 'Close' : 'Menu';
+    });
+    nav.addEventListener('click', function (event) {
+      if (event.target.closest('a')) close(false);
+    });
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && button.getAttribute('aria-expanded') === 'true') close(true);
+    });
+    document.addEventListener('click', function (event) {
+      if (!header.contains(event.target)) close(false);
+    });
+    if (window.matchMedia) {
+      var query = window.matchMedia('(max-width: 720px)');
+      query.addEventListener('change', function () { close(false); });
+    }
+  }
