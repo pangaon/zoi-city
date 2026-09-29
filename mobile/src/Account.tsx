@@ -51,7 +51,7 @@ export function CommunityComposer({ onPublished }: { onPublished: () => void }) 
     if (inFlight.current || !body.trim() || body.trim().length > 1000 || !hydrated) return;
     const publishingUser = session.user.id;
     inFlight.current = true; setPosting(true); setMessage('');
-    try { const result = await client.rpc('feed_post', { p_body: body.trim(), p_listing: null, p_nameday: null }); if (!validPostReceipt(result)) throw new Error(); await drafts.clear(publishingUser); if (!alive.current || activeUser.current !== publishingUser || client.session?.user.id !== publishingUser) return; setBody(''); setMessage('Your post was published.'); onPublished();  }
+    try { const result = await client.rpc('feed_post', { p_body: body.trim(), p_listing: null, p_nameday: null }); if (!validPostReceipt(result)) throw new Error(); let draftRemoved = true; await drafts.clear(publishingUser).catch(() => { draftRemoved = false; }); if (!alive.current || activeUser.current !== publishingUser || client.session?.user.id !== publishingUser) return; setBody(''); setMessage(draftRemoved ? 'Your post was published.' : 'Your post was published. The old saved draft could not be removed.'); onPublished();  }
     catch { if (alive.current && activeUser.current === publishingUser && client.session?.user.id === publishingUser) setMessage('We could not confirm publication. Your draft is preserved. Refresh the feed before trying again to avoid a duplicate.'); }
     finally { inFlight.current = false; if (alive.current && activeUser.current === publishingUser) setPosting(false); }
   };
