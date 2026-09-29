@@ -1,0 +1,7 @@
+select jsonb_build_object(
+'columns',(select jsonb_agg(to_jsonb(c)) from (select table_name,column_name,data_type,is_nullable,column_default from information_schema.columns where table_schema='zoi' and table_name in ('email_campaigns','workspaces','social_posts','feed_posts','user_profiles') order by table_name,ordinal_position)c),
+'constraints',(select jsonb_agg(jsonb_build_object('table',conrelid::regclass::text,'definition',pg_get_constraintdef(oid))) from pg_constraint where conrelid in ('zoi.email_campaigns'::regclass,'zoi.feed_posts'::regclass,'zoi.social_posts'::regclass)),
+'indexes',(select jsonb_agg(jsonb_build_object('table',tablename,'definition',indexdef)) from pg_indexes where schemaname='zoi' and tablename in ('feed_posts','social_posts','email_campaigns')),
+'functions',(select jsonb_agg(jsonb_build_object('name',n.nspname||'.'||p.proname,'definition',pg_get_functiondef(p.oid))) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in ('zoi','public') and p.proname in ('run_maintenance','is_ws_member','email_mark_sending','email_due_campaigns','email_campaign_save','email_campaign_schedule','email_campaign_unschedule','email_campaign_delete','audience_list','audience_upsert','venue_layout_save','venue_layout_get','tickets_reserve','feed_post')),
+'listing_triggers',(select jsonb_agg(jsonb_build_object('name',tgname,'enabled',tgenabled,'definition',pg_get_triggerdef(oid))) from pg_trigger where tgrelid='zoi.listings'::regclass and not tgisinternal)
+) as metadata;

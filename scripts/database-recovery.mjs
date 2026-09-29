@@ -12,7 +12,7 @@ if (mode === 'request') {
   if (process.env.GITHUB_RUN_ATTEMPT && process.env.GITHUB_RUN_ATTEMPT !== '1') throw new Error('Committed recovery requests cannot be automatically replayed');
   mode = request.action;
 }
-if (!['inspect', 'restart', 'recover'].includes(mode)) throw new Error('Invalid recovery mode');
+if (!['inspect', 'restart', 'recover', 'review'].includes(mode)) throw new Error('Invalid recovery mode');
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 if (!token) throw new Error('SUPABASE_ACCESS_TOKEN is required');
 if (process.env.GITHUB_ACTIONS) console.log(`::add-mask::${token}`);
@@ -62,7 +62,7 @@ if (mode==='restart') {
     console.log('One restart request accepted. Run recover separately after the service has restarted.');
   }
 } else {
-  const query = `select jsonb_build_object(
+  const query = mode === 'review' ? (await import('node:fs')).readFileSync('ops/database-review.sql','utf8') : `select jsonb_build_object(
     'checked_at',now(),
     'connections',(select jsonb_agg(x) from (select usename,state,wait_event_type,wait_event,count(*) as connections from pg_stat_activity where datname=current_database() group by usename,state,wait_event_type,wait_event) x),
     'active',(select jsonb_agg(x) from (select pid,usename,state,wait_event_type,wait_event,extract(epoch from now()-query_start)::int as seconds,pg_blocking_pids(pid) as blockers,case when query ilike '%run_maintenance%' then 'maintenance' when query ilike '%enrich_%' then 'enrichment' when query ilike '%seo_entity%' then 'entity' when query ilike '%explore_%' then 'explore' else 'other' end as kind from pg_stat_activity where datname=current_database() and state <> 'idle' and pid<>pg_backend_pid() order by query_start limit 25) x),
