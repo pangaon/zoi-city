@@ -57,3 +57,18 @@ test('restaurant public HTML and photo count exclude stored machine rating icons
  assert.ok(html.includes(food));
  const sparse=restaurantHomeContent({...e,profile:{_enrich:{photo_urls:stars}}});assert.deepEqual(sparse.photos,[]);assert.equal(sparse.hero,null);
 });
+test('all reviewed Tasty source candidates retain food and exclude decorative UI with owner precedence',async()=>{
+ const base='https://www.tastygreekcorner.co.uk/',food=base+'assets/images/gyro.jpeg';
+ const auxiliary=['imgs/star.png','imgs/star_half.png','imgs/divider_large.png','imgs/divider_small.png','/img/dropdownarrow.png','imgs/add-button.png','imgs/back-to-top.png'].map(p=>base+p);
+ for(const url of auxiliary)assert.equal(auxiliaryImage(url),true,url);
+ for(const url of ['https://other.example/imgs/divider_small.png','https://other.example/ui/back-to-top.svg','https://other.example/icons/dropdown-arrow.webp'])assert.equal(auxiliaryImage(url),true,url);
+ for(const url of [food,'https://other.example/photos/divider_large.png','https://other.example/imgs/room-divider.png','https://other.example/photos/add-button.png','https://other.example/imgs/divider_large.jpg','https://other.example/imgs/star.png'])assert.equal(auxiliaryImage(url),false,url);
+ const p={hero_url:auxiliary[2],photo_urls:[...auxiliary,food]},before=JSON.stringify(p);
+ assert.deepEqual(profileMedia({profile:{_enrich:p}},p),{hero:food,logo:null,gallery:[food],heroGallery:[food]});assert.equal(JSON.stringify(p),before);
+ assert.deepEqual(profileMedia({profile:{_enrich:p},owner_content:{photo_url:auxiliary[2],profile:{photos:auxiliary}}},p).gallery,auxiliary);
+ assert.equal(profileMedia({profile:{_enrich:p},owner_content:{photo_url:auxiliary[2]}},p).hero,auxiliary[2]);
+ const result=extractSiteImages([...auxiliary,food].map(url=>`<img src="${url}">`).join(''),base);assert.deepEqual(result.photos.map(x=>x.url),[food]);
+ const {restaurantHomeContent,renderRestaurantHome}=await import('../../api/_restaurant-home.js');
+ const e={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',slug:'tasty-greek-corner-coventry',name:'Tasty Greek Corner',entity_type:'business',category_slug:'greek-restaurants',website:base,profile:{_enrich:{...p,source_url:base}}};
+ assert.deepEqual(restaurantHomeContent(e).photos,[food]);const html=renderRestaurantHome(e);for(const url of auxiliary)assert.equal(html.includes(url),false,url);assert.ok(html.includes(food));
+});

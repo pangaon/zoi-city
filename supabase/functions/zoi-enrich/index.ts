@@ -593,7 +593,15 @@ Deno.serve(async (req) => {
       }
       // Preserve existing machine evidence on a JS-only shell. Generic title/meta
       // text does not prove a successful crawl and must not clear a prior gallery.
-      if (inspectSourceDocument(got.doc!).requires_rendering) {
+      const documentState = inspectSourceDocument(got.doc!);
+      if (documentState.source_state === "source_challenge") {
+        bump("source-challenge");
+        batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id,
+          profile: { ...identityStatus, crawl_status: "error", last_error: "source_challenge" },
+          provenance: {} });
+        continue;
+      }
+      if (documentState.requires_rendering) {
         bump("javascript-render-required");
         batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id,
           profile: { ...identityStatus, crawl_status: "error", last_error: "javascript_render_required" },

@@ -15,6 +15,10 @@ export function auxiliaryImage(value,hint=''){
   // Reviewed 27×24 full/half rating stars from the published restaurant source.
   // Exact source path avoids excluding a Star Hotel's genuine photography.
   if(['tastygreekcorner.co.uk','www.tastygreekcorner.co.uk'].includes(host)&&/^\/imgs\/star(?:_half)?\.png$/i.test(path))return true;
+  // Reviewed source UI: one-pixel divider rules, dropdown chevrons, add and
+  // back-to-top buttons. Require both an interface folder and precise asset
+  // basename; room-divider photographs and arbitrary artist images stay eligible.
+  if(/\/(?:imgs?|ui|interface|icons)\/(?:divider[-_](?:large|small)|dropdown[-_]?arrow|add[-_]button|back[-_]to[-_]top)\.(?:png|svg|webp)$/i.test(path))return true;
   // Other sites require explicit rating-widget context, not merely "star" in a name.
   const ratingStar=/(?:^|\/)star(?:[-_](?:half|full|empty|filled))?\.(?:png|svg|webp)$/i.test(path);
   if(ratingStar&&(/\/(?:ratings?|rating[-_]widgets?|review[-_]widgets?)\//i.test(path)||/\b(?:rating[-_ ]+(?:star|icon)|(?:full|half|empty|filled)[-_ ]+rating[-_ ]+star)\b/i.test(String(hint).slice(0,1000))))return true;

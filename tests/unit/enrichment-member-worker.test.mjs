@@ -16,3 +16,14 @@ test('association subdomains and legacy HTTP sources cannot leak organization br
 test('ordinary restaurant refusal, robots and unsafe-host paths preserve prior machine data and stop retries',async()=>{const item={...row,slug:'ordinary-bakery',entity_type:'business',website:'https://bakery.example/',existing_enrich:{photo_urls:['https://bakery.example/room.jpg'],hours:[{day:'mon',open:'09:00',close:'17:00'}]}};for(const [got,overrides,reason]of [[{error:'http403'},{},'http403'],[{}, {robotsAllows:async()=>false},'robots'],[{}, {vet:async()=>({why:'private-ip'})},'private-ip']]){const r=await run(item,got,overrides),p=r.batch[0].profile;assert.equal(p.crawl_status,'error');assert.equal(p.blocked,'true');assert.equal(p.blocked_reason,reason);assert.ok(p.last_error);assert.equal(r.generic,0);assert.equal(r.supplements,0);assert(!Object.hasOwn(p,'photo_urls'));assert(!Object.hasOwn(p,'hours'));}});
 
 test('actual worker prevents institution homepage media and contacts becoming a parish',async()=>{const parish={...row,name:'Parrocchia della Protezione della Madre di Dio',entity_type:'church',website:'https://ortodossia.it',existing_enrich:{phone:'old imported contact'}};const r=await run(parish,{doc:'<head><meta property="og:description" content="Sacra Arcidiocesi Ortodossa Italia"></head><h1>Ortodossia</h1><img src="institution.jpg"><a href="tel:12345">Call diocese</a>',finalUrl:parish.website});assert.equal(r.generic,0);assert.equal(r.supplements,0);assert.equal(r.batch[0].profile.blocked_reason,'source_scope_mismatch');assert.equal(r.batch[0].profile.scope_review_required,true);assert.equal(r.result.stats['source-scope-mismatch'],1);assert.equal(r.result.stats.ok,undefined);assert.equal(Object.hasOwn(r.batch[0].profile,'phone'),false);});
+
+test('ordinary business challenge enters preservation branch with original lease and no useful extraction',async()=>{
+ const item={...row,slug:'nostos',entity_type:'business',website:'https://www.nostos-kythera.gr/',name:'Nostos',existing_enrich:{phone:'reviewed contact',photo_urls:['https://www.nostos-kythera.gr/reviewed-room.jpg']}};
+ const challenge='<html><head><title>One moment, please...</title></head><body>Please wait while your request is being verified...</body></html>';
+ const result=await run(item,{doc:challenge,finalUrl:item.website});
+ assert.equal(result.generic,0);assert.equal(result.supplements,0);assert.equal(result.batch.length,1);
+ const payload=result.batch[0];assert.equal(payload.lease_id,item.lease_id);assert.equal(payload.website,item.website);assert.equal(payload.slug,item.slug);
+ assert.deepEqual(payload.profile,{crawl_status:'error',last_error:'source_challenge'});assert.deepEqual(payload.provenance,{});
+ assert.equal(result.result.stats['source-challenge'],1);assert.equal(result.result.stats.ok,undefined);
+ assert.equal({...item.existing_enrich,...payload.profile}.phone,'reviewed contact');
+});

@@ -52,3 +52,29 @@ test('missing adapter fingerprint refuses entire batch before capture or apply; 
   for(const row of [{},{source_fingerprint:'new'}])assert.throws(()=>automaticRenderedPayload(row,{source_fingerprint:'old'},'hash'),/source_capture_fingerprint_mismatch/);
  }finally{await rm(directory,{recursive:true,force:true});}
 });
+test('verification challenge stops before browser launch and capture report remains fingerprint-bound repair evidence',async()=>{
+ const {renderOfficialSource}=await import('../../scripts/enrichment/render-source.mjs');
+ const {canonical,sha256}=await import('../../scripts/quality/evidence.mjs');
+ const row={listing_id:'11111111-1111-4111-8111-111111111111',website:'https://www.nostos-kythera.gr/',source_fingerprint:'original-lease-fingerprint'};
+ const html='<title>One moment, please...</title><body>Please wait while your request is being verified...</body>';let fetched=0,launched=0;
+ const render=r=>renderOfficialSource(r,{session:{stats:{bytes:0},sourceFetch:async()=>{fetched++;return{status:200,text:html,url:r.website}}},launch:async()=>{launched++;throw Error('must_not_launch')}});
+ const directory=await mkdtemp(path.join(tmpdir(),'zoi-challenge-'));
+ try{const receipts=await captureRows([row],{directory,render});assert.equal(fetched,1);assert.equal(launched,0);assert.equal(receipts[0].status,'repair_required');const report=JSON.parse(await readFile(path.join(directory,receipts[0].hash+'.json'),'utf8'));assert.equal(report.reason,'source_challenge');assert.equal(report.source_fingerprint,row.source_fingerprint);assert.equal(sha256(canonical(report)),receipts[0].hash);assert.equal(report.profile,undefined);}finally{await rm(directory,{recursive:true,force:true});}
+});
+test('challenge appearing after browser rendering is refused and browser/context are closed',async()=>{
+ const {renderOfficialSource}=await import('../../scripts/enrichment/render-source.mjs');let closed=0,contextClosed=0,requests=0;
+ const url='https://www.nostos-kythera.gr/',html='<title>One moment, please...</title><body>Please wait while your request is being verified...</body>';
+ const page={goto:async()=>{},waitForFunction:async()=>{},waitForTimeout:async()=>{},evaluate:async()=>({html,url,title:'One moment, please...',text:'Please wait while your request is being verified...'})};
+ const context={routeWebSocket:async()=>{},route:async()=>{},newPage:async()=>page,close:async()=>{contextClosed++}};
+ await assert.rejects(renderOfficialSource({listing_id:'id',website:url},{session:{stats:{bytes:0},sourceFetch:async()=>{requests++;return{status:200,text:'<title>Nostos</title><body>Loading</body>',url}}},launch:async()=>({newContext:async()=>context,close:async()=>{closed++}})}),/source_challenge/);
+ assert.equal(requests,1);assert.equal(contextClosed,1);assert.equal(closed,1);
+});
+
+test('substantive hydrated business page with contact CAPTCHA remains available source content',async()=>{
+ const {renderOfficialSource}=await import('../../scripts/enrichment/render-source.mjs');
+ const url='https://restaurant.org/',html='<html><head><title>Actual Restaurant</title></head><body><h1>Actual Restaurant</h1><p>Greek dining and our seasonal menu.</p><a href="tel:+442012345678">Call our restaurant</a><form><p>Verify you are human before sending this contact form.</p></form></body></html>';
+ const page={goto:async()=>{},waitForFunction:async()=>{},waitForTimeout:async()=>{},evaluate:async()=>({html,url,title:'Actual Restaurant',text:'Actual Restaurant Greek dining and our seasonal menu. Verify you are human before sending this contact form.'})};
+ const context={routeWebSocket:async()=>{},route:async()=>{},newPage:async()=>page,close:async()=>{}};
+ const report=await renderOfficialSource({listing_id:'id',website:url},{session:{stats:{bytes:0},sourceFetch:async()=>({status:200,text:'<title>Actual Restaurant</title><body>Loading restaurant</body>',url})},launch:async()=>({newContext:async()=>context,close:async()=>{}})});
+ assert.equal(report.profile.phone,'+442012345678');assert.equal(report.render.title,'Actual Restaurant');assert.equal(report.source.source_state,'html_available');assert.equal(report.review_required,true);
+});

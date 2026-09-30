@@ -17,7 +17,7 @@ export async function renderOfficialSource(row,{executablePath=process.env.CHROM
  session ||=createSourceSession({maxRequests:80,maxBytes:15000000,deadline,request:(url,limits)=>requestPage(url,{maxBytes:Math.min(/\.(?:png|jpe?g|webp|avif|gif|svg)$/i.test(new URL(url).pathname)?8000000:1500000,limits.maxBytes),timeout:limits.timeout,onBytes:limits.onBytes})});
  const source=await session.sourceFetch(url.href);
  if(source.status!==200)throw Error('source_http_'+source.status);
- if(/cf-chl-|checking your browser|verify you are human/i.test(source.text))throw Error('source_challenge');
+ if(inspectSourceDocument(source.text).source_state==='source_challenge'||/cf-chl-|checking your browser|verify you are human/i.test(source.text))throw Error('source_challenge');
  const browser=await launchSourceBrowser({executablePath,launch});
  let context;let pending=0;const blocked=[];const requested=[];
  try{
@@ -41,6 +41,7 @@ export async function renderOfficialSource(row,{executablePath=process.env.CHROM
   await page.waitForTimeout(Math.min(750,Math.max(0,deadline-Date.now())));
   const snapshot=await page.evaluate(()=>({html:document.documentElement.outerHTML,url:location.href,title:document.title,text:document.body.innerText.slice(0,24000)}));
   if(Buffer.byteLength(snapshot.html)>1500000)throw Error('rendered_document_too_large');
+  if(inspectSourceDocument(snapshot.html).source_state==='source_challenge')throw Error('source_challenge');
   if(inspectSourceDocument(snapshot.html).requires_rendering)throw Error('javascript_render_unresolved');
   const result=extractRenderedSource(snapshot.html,snapshot.url);
   // Only promote images whose actual public bytes loaded successfully. Broken CSS
