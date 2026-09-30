@@ -32,15 +32,17 @@ const KEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const SITE = 'https://www.zoi.city';
 const PER = 60;
 
-async function rpc(fn, args) {
+async function rpc(fn, args, timeoutMs=4500) {
   const r = await fetch(BASE + '/rest/v1/rpc/' + fn, {
     method: 'POST',
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-    body: JSON.stringify(args || {}),
+    body: JSON.stringify(args || {}), signal:AbortSignal.timeout(timeoutMs),
   });
   if (!r.ok) throw new Error(fn + ': ' + r.status);
   return r.json();
 }
+
+const optionalRpc=(fn,args)=>rpc(fn,args,1200).catch(()=>[]);
 
 const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g,
   (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
@@ -112,8 +114,8 @@ function shell(o) {
     + '</div></header>'
     + '<main class="wrap ph">' + o.body + '</main>'
     + '<footer class="ph-foot"><div class="wrap">'
-    + '<p>' + n(o.totalSite || 0) + ' Greek places across ' + n(o.countries || 0) + ' countries. '
-    + '<a href="/explore">Search the whole directory</a> &middot; <a href="/explore/map">See it on the map</a></p>'
+    + '<p>' + (o.totalSite&&o.countries?n(o.totalSite)+' places across '+n(o.countries)+' countries. ':'')
+    + '<a href="/explore">Explore the Greek world</a> &middot; <a href="/explore/map">See it on the map</a></p>'
     + '</div></footer>'
     + '<script src="/assets/zoi-theme.js"></script></body></html>';
 }
@@ -182,15 +184,15 @@ export default async function handler(req, res) {
   const send = (code, html, cache) => {
     res.statusCode = code;
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    if (code === 404) res.setHeader('X-Robots-Tag', 'noindex');
-    else res.setHeader('Cache-Control', cache || 'public, max-age=300, s-maxage=3600, stale-while-revalidate=86400');
+    if(code>=400){res.setHeader('X-Robots-Tag','noindex');res.setHeader('Cache-Control','no-store');if(code===503)res.setHeader('Retry-After','15');}
+    else res.setHeader('Cache-Control', cache || 'public, max-age=60, s-maxage=300, stale-while-revalidate=600');
     res.end(html);
   };
   const notFound = (what) => send(404,
     '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Not found &mdash; Zoi</title>'
     + '<link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main class="wrap" style="padding:70px 0">'
     + '<h1>Nothing here yet</h1><p class="muted">' + esc(what || 'That place has no listings on Zoi.') + '</p>'
-    + '<p><a href="/explore">Search the directory</a></p></main></body></html>');
+    + '<p><a href="/explore">Explore the Greek world</a></p></main></body></html>');
 
   try {
     const url = new URL(req.url, SITE);
@@ -205,10 +207,12 @@ export default async function handler(req, res) {
 
     // Resolve slugs back to the real values by matching against the database,
     // so a URL never has to be a guess about capitalisation or accents.
+    const primaryEarly=wantCat&&!wantCountry&&!wantRegion&&!wantCity?rpc('explore_place_listings',{p_country:null,p_region:null,p_city:null,p_category:wantCat,p_limit:PER,p_offset:(page-1)*PER}).then(data=>({data}),error=>({error})):null;
     let countries = [];
-    try { countries = await rpc('explore_countries', {}); } catch (err) {
+    try { countries = await rpc('explore_countries', {},wantCountry?4500:1200); } catch (err) {
       // Category and location pages can still render from their scoped query if
       // the global aggregate is temporarily slow.
+      if(wantCountry)throw err;
       countries = [];
     }
     const site = countries.reduce((a, c) => a + Number(c.listings || 0), 0);
@@ -244,45 +248,48 @@ export default async function handler(req, res) {
       cat = wantCat;
       catLabel = labelFromSlug(wantCat);
       if (country || region || city) {
-        const cats = await rpc('explore_categories', {
+        const cats = await optionalRpc('explore_categories', {
           p_country: country || null, p_region: region || null, p_city: city || null });
         const hit = cats.find((c) => c.category_slug === wantCat);
         if (hit) catLabel = hit.label;
       }
     }
 
-    const data = await rpc('explore_place_listings', {
+    const early=primaryEarly?await primaryEarly:null;if(early?.error)throw early.error;
+    const data = early?.data || await rpc('explore_place_listings', {
       p_country: country || null, p_region: region || null, p_city: city || null,
       p_category: cat || null, p_limit: PER, p_offset: (page - 1) * PER });
-    const rows = data.rows || [];
+    if(!data||!Array.isArray(data.rows)||!Number.isFinite(Number(data.total)))throw Error('invalid_collection');
+    const rows = data.rows;
     const total = Number(data.total || 0);
     if (!total) return notFound(catLabel
       ? 'There are no published ' + catLabel.toLowerCase() + ' listings in this location yet.'
       : 'There are no published listings in this location yet.');
 
+    const publicPath=(cat?'/categories/'+encodeURIComponent(cat):'')+(country?'/in/'+wantCountry+(region?'/'+wantRegion:'')+(city?'/'+wantCity:''):'')||'/explore/';
     /* ---- names and copy, from real values only ---- */
     const hasPlace = !!(city || region || country);
     const placeName = city || region || country || 'the Greek world';
     // Headings read as English rather than as a template: "Greek North Carolina"
     // and "Greek the Greek world" were both coming out of one naive concatenation.
     const heading = catLabel
-      ? (hasPlace ? catLabel + ' in ' + placeName : 'Greek ' + catLabel.toLowerCase() + ', worldwide')
+      ? (hasPlace ? catLabel + ' in ' + placeName : catLabel + ', worldwide')
       : (hasPlace ? 'Greek life in ' + placeName : 'The Greek world');
     const title = heading + ' — ' + n(total) + ' on Zoi';
     const lede = catLabel
-      ? n(total) + ' Greek ' + catLabel.toLowerCase()
-        + (hasPlace ? ' in ' + placeName : ' across ' + countries.length + ' countries') + ', verified and searchable on Zoi.'
+      ? n(total) + ' ' + catLabel.toLowerCase()
+        + (hasPlace ? ' in ' + placeName : (countries.length?' across ' + countries.length + ' countries':' worldwide')) + '. Find a community near you.'
       : n(total) + ' Greek businesses, parishes, schools, associations and places'
         + (hasPlace ? ' in ' + placeName : ' across ' + countries.length + ' countries') + '.';
 
       const heroPhotos = rows.map((r) => r.photo || r.photo_url || r.logo_url).filter((v) => typeof v === 'string' && /^https:\/\//.test(v)).slice(0, 4);
 
     /* ---- breadcrumb ---- */
-    const crumbs = [{ name: 'Directory', item: '/explore' }];
+    const crumbs = [{ name: 'Discover', item: '/explore' }];
     if (country) crumbs.push({ name: country, item: '/in/' + slug(country) });
     if (region) crumbs.push({ name: region, item: '/in/' + slug(country) + '/' + slug(region) });
     if (city) crumbs.push({ name: city, item: '/in/' + slug(country) + '/' + slug(region) + '/' + slug(city) });
-    if (catLabel) crumbs.push({ name: catLabel, item: url.pathname });
+    if (catLabel) crumbs.push({ name: catLabel, item: publicPath });
 
     let body = '<section class="ph-hero"><div class="ph-hero-copy"><nav class="ph-crumb" aria-label="Breadcrumb">'
       + crumbs.map((c, i) => (i ? '<i>/</i>' : '')
@@ -296,7 +303,7 @@ export default async function handler(req, res) {
 
     /* ---- the listings ---- */
     if (cat && rows.length) {
-      body += '<section aria-labelledby="featured-title"><div class="ph-sec" style="margin-top:0"><h2 id="featured-title">Featured from this directory</h2></div><div class="ph-featured">'
+      body += '<section aria-labelledby="featured-title"><div class="ph-sec" style="margin-top:0"><h2 id="featured-title">Explore these communities</h2></div><div class="ph-featured">'
         + rows.slice(0, 3).map((l) => {
           const href = '/' + typeSlug(l.entity_type || 'business') + '/' + encodeURIComponent(l.slug);
           const photo = l.photo || l.photo_url || l.logo_url || '';
@@ -305,18 +312,18 @@ export default async function handler(req, res) {
     }
     if (cat === 'media-creators') {
       body += '<section class="ph-sec"><h2>Explore creator worlds</h2>' + chips([
-        { label: 'Influencers', count: '', href: '/c/influencers' },
-        { label: 'Podcasters', count: '', href: '/c/podcasters' },
-        { label: 'Musicians & DJs', count: '', href: '/c/musicians-djs' },
-        { label: 'Radio', count: '', href: '/c/radio-stations' },
-        { label: 'Theatre & comedy', count: '', href: '/c/theatre-comedy' },
-        { label: 'Chefs', count: '', href: '/c/chefs' }
+        { label: 'Influencers', count: '', href: '/categories/influencers' },
+        { label: 'Podcasters', count: '', href: '/categories/podcasters' },
+        { label: 'Musicians & DJs', count: '', href: '/categories/musicians-djs' },
+        { label: 'Radio', count: '', href: '/categories/radio-stations' },
+        { label: 'Theatre & comedy', count: '', href: '/categories/theatre-comedy' },
+        { label: 'Chefs', count: '', href: '/categories/chefs' }
       ]) + '</section>';
     }
     body += '<div class="ph-grid">' + rows.map(card).join('') + '</div>';
 
     const pages = Math.ceil(total / PER);
-    const base = url.pathname;
+    const base = publicPath;
     let prev = null, next = null;
     if (pages > 1) {
       if (page > 1) prev = base + (page - 1 > 1 ? '?page=' + (page - 1) : '');
@@ -330,10 +337,10 @@ export default async function handler(req, res) {
 
     /* ---- the link graph: down to children, sideways to siblings ---- */
     if (!cat) {
-      const cats = await rpc('explore_categories', {
+      const cats = await optionalRpc('explore_categories', {
         p_country: country || null, p_region: region || null, p_city: city || null });
       if (cats.length > 1) {
-        const prefix = '/c/'; const place = country
+        const prefix = '/categories/'; const place = country
           ? '/in/' + slug(country) + (region ? '/' + slug(region) : '') + (city ? '/' + slug(city) : '')
           : '';
         body += '<section class="ph-sec"><h2>By category' + (placeName !== 'the Greek world' ? ' in ' + esc(placeName) : '') + '</h2>'
@@ -343,7 +350,7 @@ export default async function handler(req, res) {
       }
     }
     if (country && region && !city) {
-      const cities = await rpc('explore_region_cities', { p_country: country, p_region: region });
+      const cities = await optionalRpc('explore_region_cities', { p_country: country, p_region: region });
       if (cities.length > 1) {
         body += '<section class="ph-sec"><h2>Cities in ' + esc(region) + '</h2>'
           + chips(cities.slice(0, 60).map((c) => ({
@@ -353,7 +360,7 @@ export default async function handler(req, res) {
       }
     }
     if (country && !region) {
-      const regions = await rpc('explore_regions', { p_country: country });
+      const regions = await optionalRpc('explore_regions', { p_country: country });
       if (regions.length) {
         body += '<section class="ph-sec"><h2>Regions of ' + esc(country) + '</h2>'
           + chips(regions.filter((r) => r && r.region && country).slice(0, 60).map((r) => ({
@@ -373,13 +380,13 @@ export default async function handler(req, res) {
     if (cat && (region || country)) {
       const scope = region ? { p_country: country } : {};
       const siblings = region
-          ? (await rpc('explore_regions', scope)).slice(0, 30)
+          ? (await optionalRpc('explore_regions', scope)).slice(0, 30)
             .filter((r) => r && r.country && r.region && r.region !== region)
             .map((r) => ({ label: catLabel + ' in ' + r.region, count: r.listings,
-              href: '/c/' + cat + '/in/' + slug(country) + '/' + slug(r.region) }))
+              href: '/categories/' + cat + '/in/' + slug(country) + '/' + slug(r.region) }))
         : countries.slice(0, 20).filter((c) => c && c.country && c.country !== country)
             .map((c) => ({ label: catLabel + ' in ' + c.country, count: c.listings,
-              href: '/c/' + cat + '/in/' + slug(c.country) }));
+              href: '/categories/' + cat + '/in/' + slug(c.country) }));
       if (siblings.length) {
         body += '<section class="ph-sec"><h2>' + esc(catLabel) + ' elsewhere</h2>'
           + chips(siblings.slice(0, 24)) + '</section>';
@@ -391,7 +398,7 @@ export default async function handler(req, res) {
       '@type': 'CollectionPage',
       name: title,
       description: lede,
-      url: SITE + url.pathname,
+      url: SITE + publicPath,
       isPartOf: { '@type': 'WebSite', name: 'Zoi', url: SITE },
       breadcrumb: {
         '@type': 'BreadcrumbList',
@@ -409,10 +416,10 @@ export default async function handler(req, res) {
     };
 
     return send(200, shell({
-      title, desc: lede, path: url.pathname + (page > 1 ? '?page=' + page : ''),
+      title, desc: lede, path: publicPath + (page > 1 ? '?page=' + page : ''),
       prev, next, body, jsonld, totalSite: site, countries: countries.length }));
   } catch (e) {
-    return send(500, '<!doctype html><title>Zoi</title><h1>Something went wrong</h1>'
-      + '<p><a href="/explore">Back to the directory</a></p>');
+    console.error('place_hub_unavailable',{kind:e?.name==='TimeoutError'?'timeout':'upstream'});
+    return send(503,shell({title:'Please try again · Zoi',desc:'This collection is temporarily unavailable.',path:'/explore/',body:'<section class="ph-hero"><div class="ph-hero-copy"><p>Discover your Greek world</p><h1>We couldn’t load this collection.</h1><p class="ph-lede">Please try again in a moment, or keep exploring.</p><p><button class="btn btn-primary" onclick="location.reload()">Try again</button> <a class="btn" href="/explore/">Open Discover</a></p></div></section>'}),'no-store');
   }
 }
