@@ -1,0 +1,22 @@
+{
+  "stage": "candidate; not deployed",
+  "checked_at": "2026-09-30T02:30:01.242877+00:00",
+  "source": "Actual BuyGreek Shopify Storefront API2026-07 tokenless public catalogue",
+  "journeys": [
+    "GET catalogue returned12 actual products with cursor",
+    "GET greeting-card returned actual variant42632691122361 CAD8.00",
+    "Search Greek returned1 actual product",
+    "390px browser opened actual product, added option, persistent local basket, current-price server review",
+    "Actual checkout handoff displayed BuyGreek Checkout with matching CAD8.00 amount; no personal details entered and no order or payment submitted"
+  ],
+  "checks": [
+    "4 unit tests: injectedcheckoutURLs, cartbounds, actualfixedendpoint requests, soldout/missing/substitutedvariants, changedprices, exactreceiptcontents, separatecurrency totals, boundedstorage"
+  ],
+  "limitations": [
+    "Catalogue and checkout are BuyGreek; no seller administration API credentials available",
+    "Local basket does not reserve stock",
+    "Final tax/shipping/discount and price confirmed at BuyGreek",
+    "No order-status synchronization or Zoi fulfillment claims",
+    "Shoppable post/image tag authoring not implemented by this collection view"
+  ]
+}

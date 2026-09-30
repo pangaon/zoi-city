@@ -1,0 +1,19 @@
+import {planAvailability} from '../bookings/planner.mjs';
+import {UUID} from '../bookings/model.mjs';
+export const CALENDAR_KINDS=['service','rehearsal','class','meeting','festival'];
+export function calendarOccurrences(data,now=Date.now()){
+ if(!CALENDAR_KINDS.includes(data.kind)||!['draft','published'].includes(data.status)||!UUID.test(data.listing_id)||!String(data.title||'').trim())throw Error('Choose an owned page, event type, title and visibility.');
+ const pattern=data.pattern||{},minute=x=>Number(x?.slice(0,2))*60+Number(x?.slice(3));
+ const duration=minute(pattern.closes)-minute(pattern.opens);
+ if(!Number.isInteger(duration)||duration<5||duration>480)throw Error('Each occurrence must last 5 minutes to 8 hours on the same day.');
+ const rows=planAvailability({...pattern,timezone:data.timezone,durationMinutes:duration,bufferMinutes:0,now}).map(({starts_at,ends_at})=>({starts_at,ends_at}));
+ if(rows.length>60)throw Error('Plan at most 60 dates at once. Narrow the date range.');return rows;
+}
+export function calendarPreview(result,workspace,data,expected){
+ if(result?.ok!==true||result.workspace_id!==workspace||result.listing_id!==data.listing_id||result.timezone!==data.timezone||!Array.isArray(result.occurrences)||result.occurrences.length!==expected.length||result.occurrences.some((r,i)=>Date.parse(r.starts_at)!==Date.parse(expected[i].starts_at)||Date.parse(r.ends_at)!==Date.parse(expected[i].ends_at)||!Array.isArray(r.conflicts)||r.conflicts.some(id=>!UUID.test(id))))throw Error('The calendar preview could not be verified. Refresh before saving.');return result;
+}
+export function calendarReceipt(result,workspace,data,expected){
+ if(result?.ok!==true||!UUID.test(result.batch_id)||result.workspace_id!==workspace||!Array.isArray(result.events)||result.events.length!==expected.length||new Set(result.events.map(e=>e.id)).size!==expected.length||result.events.some((e,i)=>!UUID.test(e.id)||e.workspace_id!==workspace||e.listing_id!==data.listing_id||e.kind!==data.kind||e.status!==data.status||e.version!==(data.status==='published'?2:1)||Date.parse(e.starts_at)!==Date.parse(expected[i].starts_at)||Date.parse(e.ends_at)!==Date.parse(expected[i].ends_at)||(data.program_id&&data.status==='published'&&!UUID.test(e.shift_id))))throw Error('The server has not confirmed every calendar date. Retry this same request to retrieve its receipt.');return result;
+}
+export function calendarEventReceipt(result,workspace,event,status){const e=result?.event;if(result?.ok!==true||e?.id!==event.id||e.workspace_id!==workspace||e.version!==event.version+1||e.status!==status)throw Error('The event change was not confirmed. Refresh before retrying.');return e;}
+export function calendarError(error){return ({not_authorized:'Only workspace owners, admins and editors can manage calendar dates.',owned_listing_required:'This page is no longer owned by your workspace.',public_owned_listing_required:'Publish a visible page owned by this workspace before publishing calendar dates.',publish_volunteer_program_first:'Publish the linked volunteer program before publishing these dates.',version_conflict:'The program or calendar date changed. Refresh before trying again.',calendar_occurrence_exists:'A date with this title already exists. No new dates were saved.',calendar_preview_changed:'Timezone rules or dates changed. Preview again.',booking_dst_wall_time:'A time is missing or repeated when clocks change. Choose another window.',booking_dst_crossing:'A service or rehearsal crosses a clock change. Choose another window.',calendar_start_must_be_future:'Choose future dates within the next 365 days.',cancelled_event_cannot_reopen:'Cancelled dates stay cancelled. Create a replacement date.',calendar_plan_too_large:'Choose at most 60 dates in a 90-day range.'})[error?.message]||error?.message||'The calendar is unavailable.';}

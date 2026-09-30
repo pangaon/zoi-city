@@ -1,0 +1,45 @@
+{
+  "migration": "20260930015525",
+  "deployment": "not applied; pending review",
+  "postgres_behavior_checks_passed": 15,
+  "unit_checks_passed": 3,
+  "browser": {
+    "mode": "explicit isolated RPC fixtures; no live persistence claim",
+    "widths": [
+      390,
+      1440
+    ],
+    "horizontal_overflow": false,
+    "stylesheet_loaded": true,
+    "manual_entry_form_one_rpc_and_receipt": true,
+    "hourly_rate_125_50_to12550cents": true
+  },
+  "available_after_deployment": [
+    "start/restore/stop server timer on matter/task",
+    "record manual time with overlap prevention",
+    "snapshot rate/currency/billable flag",
+    "submit and withdraw own time",
+    "administrator approve/return/void with audit",
+    "export approved CSV with separate currency totals"
+  ],
+  "permissions": "owner/admin team review; editor own records only; viewer denied; private narratives never copied into Operations notes",
+  "limits": {
+    "one_running_timer_per_profile": true,
+    "max_entry_seconds": 86400,
+    "max_range_days": 93,
+    "dashboard_rows": 1000,
+    "export_rows": 5000
+  },
+  "not_implemented": [
+    "invoices or payment collection",
+    "trust accounting",
+    "tax calculations",
+    "court deadline calculations",
+    "automatic legal determinations"
+  ],
+  "production_verification_required": [
+    "review and apply migration",
+    "tests/database/timekeeping-production-rollback.sql",
+    "real private owner/editor HTTP workflow and native acceptance"
+  ]
+}

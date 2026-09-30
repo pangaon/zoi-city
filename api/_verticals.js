@@ -22,6 +22,8 @@
 import { orthodoxPascha, iso, feastsOn, seasonsFor, isFastDay, nameDaysOn,
   upcomingFeasts, resolveFeastDate, shiftForOldCalendar } from './_orthocal.js';
 
+import {parishDay,upcomingParishFeasts,patronalDate} from './_parish-calendar-reference.js';
+
 /* ---------------- tiny helpers ---------------- */
 export function esc(s) {
   return (s == null ? '' : String(s)).replace(/[&<>"']/g, (c) =>
@@ -560,13 +562,8 @@ export function liturgicalBlock(e, p) {
     }).format(new Date());
   } catch (err) { today = new Date().toISOString().slice(0, 10); }
 
-  // A Julian-calendar parish keeps fixed feasts 13 days later, so we look up the
-  // civil date shifted back to find what they are commemorating today.
-  const lookup = style === 'old' ? shiftForOldCalendar(today, 'old') : today;
-  const feasts = feastsOn(lookup).filter((f) => !f.civic);
-  const names = nameDaysOn(lookup);
-  const fast = isFastDay(lookup);
-  const seasons = seasonsFor(lookup);
+  const reference=parishDay(today,style);
+  const feasts=reference.feasts,names=reference.namedays,fast=reference.fast,seasons=reference.seasons;
 
   const season = seasons.includes('holy_week') ? 'Holy Week'
     : seasons.includes('great_lent') ? 'Great Lent'
@@ -586,7 +583,7 @@ export function liturgicalBlock(e, p) {
       '<b>\u03a7\u03c1\u03cc\u03bd\u03b9\u03b1 \u03c0\u03bf\u03bb\u03bb\u03ac</b> to ' +
       names.map((n) => esc(n)).join(', ') + '</span></div>';
   }
-  rows += '<div class="litrow"><span class="litk">Fasting</span><span class="litv">' +
+  rows += '<div class="litrow"><span class="litk">Fasting reference</span><span class="litv">' +
     (fast ? 'Today is a fast day' : 'No fast today') +
     (season ? ' &middot; we are in ' + esc(season) : '') + '</span></div>';
 
@@ -598,20 +595,20 @@ export function liturgicalBlock(e, p) {
     esc(fmtDate(paschaShown, today)) + '</span></div>';
 
   // the patronal feast, if the parish named one
-  const pf = p.patronal_feast;
+  const pf = typeof p.patronal_feast==='string'?{saint:p.patronal_feast}:p.patronal_feast;
   if (pf && (str(pf.saint) || str(pf.date))) {
-    const d = resolveFeastDate(pf, y) || resolveFeastDate(pf, y + 1);
-    const when = d && d >= today ? d : resolveFeastDate(pf, y + 1);
+    const d = patronalDate(pf,y,style) || patronalDate(pf,y+1,style);
+    const when = d && d >= today ? d : patronalDate(pf,y+1,style);
     rows += '<div class="litrow"><span class="litk">Patronal feast</span><span class="litv">' +
       (str(pf.saint) ? esc(str(pf.saint)) : '') +
       (str(pf.saint_el) ? ' <span lang="el">' + esc(str(pf.saint_el)) + '</span>' : '') +
       (when ? ' &middot; ' + esc(fmtDate(when, today)) : '') + '</span></div>';
   }
 
-  let html = '<div class="lit">' + rows + '</div>';
+  let html = '<div class="lit">' + rows + '</div><p class="muted">Calendar reference only; confirm service times and fasting guidance with the parish. <a href="https://www.oca.org/liturgics/outlines/fasting-fast-free-seasons-of-the-church" target="_blank" rel="noopener">Orthodox fasting reference</a></p>';
 
   // what is coming, from the calendar not from the blob
-  const up = upcomingFeasts(today, 75).filter((f) => !f.civic).slice(0, 6);
+  const up = upcomingParishFeasts(today,75,style).slice(0,6);
   if (up.length) {
     html += '<div class="dates" style="margin-top:14px">' + up.map((f) =>
       '<div class="drow"><span class="dwhen">' + esc(fmtDate(f.date, today).replace(/^\w+,\s*/, '')) +

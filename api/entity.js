@@ -179,6 +179,9 @@ function page(e, related, completeness){
   var acts = [];
   if (/^\/book\/\?listing=[0-9a-f-]{36}$/i.test(e.booking_url||'')) acts.push({label:'Book on Zoi',href:e.booking_url,icon:IC.cal,primary:true});
   if (/^\/inquiries\/\?listing=[0-9a-f-]{36}$/i.test(e.inquiry_url||'')) acts.push({label:'Send an enquiry',href:e.inquiry_url,icon:IC.mail});
+  if (/^\/organization-calendar\/\?listing=[0-9a-f-]{36}$/i.test(e.calendar_url||'')) acts.push({label:'Organization calendar',href:e.calendar_url,icon:IC.cal});
+  if (/^\/festival\/\?event=[0-9a-f-]{36}$/i.test(e.offer_url||'')) acts.push({label:'Sponsorships & vendor places',href:e.offer_url,icon:IC.cal});
+  if (/^\/groups\/\?listing=[0-9a-f-]{36}$/i.test(e.group_url||'')) acts.push({label:'Join this group',href:e.group_url,icon:IC.people||IC.cal});
   if (/^\/volunteer\/\?workspace=[0-9a-f-]{36}$/i.test(e.volunteer_url||'')) acts.push({label:'Volunteer opportunities',href:e.volunteer_url,icon:IC.cal});
   (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
   if(e.phone)   acts.push({ label:'Call', href: 'tel:'+String(e.phone).replace(/[^0-9+]/g,''), icon: IC.phone });
@@ -308,7 +311,7 @@ function socialIcon(k){
     rel+='</div></section>';
   }
 
-  var NAV = [['/explore','Discover'],['/community','Community'],['/tickets','Events'],['https://buygreek.shop','Marketplace'],['/business','For Business']];
+  var NAV = [['/explore','Discover'],['/community','Community'],['/tickets','Events'],['/shop/','Marketplace'],['/business','For Business']];
   var nav = NAV.map(function(n){ return '<a href="'+n[0]+'">'+n[1]+'</a>'; }).join('');
   var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
 

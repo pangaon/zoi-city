@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-09-30T02:11:23.154855+00:00",
+  "updated_at": "2026-09-30T02:39:25.321820+00:00",
   "production_web": {
-    "commit": "5315361f688c9356a93601747cf5ee8400d1afee",
-    "deployment": "dpl_J2NbNddJdbRVNM57WF7s4K7P5rkW",
+    "commit": "10ce0f107c83f54af3acfeadc67e997d943cfde6",
+    "deployment": "dpl_FHs9Drk56BQjXgiGLbtKe8LQErEi",
     "status": "READY",
-    "checks": "Actual authenticated enquiry inbox and customer list returned200. Actual public 1000mods home renders Listen and Spotify iframe; desktop no overflow."
+    "checks": "Actual authenticated Creator operator/customer lists200; public creator screen390 no overflow and actual theme assets loaded. Production transactional creator approval/rescheduling/privacy checks passed with0persistedtestlistings."
   },
   "database": {
     "controlled_restart": "2026-09-29T23:54:42Z",
@@ -33,7 +33,9 @@
       "20260930013518_booking_recurring_availability",
       "20260930014346_private_business_inquiries",
       "20260930014347_public_home_inquiry_action",
-      "20260930015254_preserve_explicit_listing_drafts"
+      "20260930015254_preserve_explicit_listing_drafts",
+      "20260930021400_booking_atomic_rescheduling",
+      "20260930021401_creator_briefs_and_deliverables"
     ]
   },
   "workers": {
@@ -102,8 +104,8 @@
     "deleted": "Exact reviewed hidden planner fixture, three plans and two slots; inquiry rollback test left no committed test records."
   },
   "candidate": {
-    "name": "Creator Studio, booking rescheduling and shared customer brand",
-    "status": "locally tested; production pending",
-    "checks": "18 isolated PostgreSQL Creator checks; rescheduling authorization, atomicity, races, replay and price-review checks; native75 tests and typecheck/web export reported by specialist. No physical device validation."
+    "name": "Real BuyGreek shopping, organization calendars, adult groups, sponsorship and booth offers, private matter timekeeping",
+    "status": "local and isolated database verified; deployment pending",
+    "checks": "489 local tests passed with13 database-dependent skips. Separate real PostgreSQL18festival,15timekeeping, calendar and12group/home-action checks passed. Actual candidate browser selectedBuyGreek greetingcard\u2192basket\u2192freshquote\u2192realBuyGreek checkoutCAD8; no payment submitted. Native source parity being verified."
   }
 }

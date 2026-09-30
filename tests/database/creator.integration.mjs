@@ -22,7 +22,7 @@ try{
  execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-l',join(dir,'server.log'),'-o',`-k ${dir} -p ${port} -c listen_addresses=''`,'-w','start'],{stdio:'ignore'});started=true;
  await query(readFileSync(new URL('./venue-fixture.sql',import.meta.url),'utf8'));
  await query(`alter table zoi.user_profiles add column display_name text;alter table zoi.listings add column name text default 'QA business';update zoi.workspace_members set role='viewer' where profile_id='${member}';`);
- for(const file of ['20260930001738_business_operations_foundation.sql','20260930014346_private_business_inquiries.sql','20260930013535_creator_briefs_and_deliverables.sql'])await query(readFileSync(new URL('../../supabase/migrations/'+file,import.meta.url),'utf8'));
+ for(const file of ['20260930001738_business_operations_foundation.sql','20260930014346_private_business_inquiries.sql','20260930021401_creator_briefs_and_deliverables.sql'])await query(readFileSync(new URL('../../supabase/migrations/'+file,import.meta.url),'utf8'));
  const call=(fn,args,user=actor)=>query(`select public.${fn}(${args});`,user).then(JSON.parse);
  const req=n=>`80000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
  const j=x=>literal(JSON.stringify(x))+'::jsonb';
