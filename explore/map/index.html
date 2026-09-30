@@ -232,16 +232,18 @@
   <div id="map" tabindex="0" role="application" aria-label="Map of the Greek world"></div>
 
   <section class="m-pane m-controls" aria-label="Map filters">
-    <div class="m-searchrow">
+    <div class="m-intro"><div><span>Discover, on the map</span><h1>Your Greek world.</h1></div><button type="button" class="m-near-label" id="nearLabel">Near me ↗</button></div>
+    <form class="m-searchrow" id="mapsearch" role="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
       <input id="q" type="search" placeholder="Search name, city or category…" autocomplete="off" aria-label="Filter places on the map">
-      <button class="m-clearq" id="clearq" hidden aria-label="Clear search">&times;</button>
-    </div>
+      <button type="button" class="m-clearq" id="clearq" hidden aria-label="Clear search">&times;</button><button type="submit" class="m-find" aria-label="Show matching places on the map">Go</button>
+    </form>
+    <div class="m-starts" aria-label="Start with a city"><span>Start in</span><button type="button" data-start-city="Athens">Athens</button><button type="button" data-start-city="Toronto">Toronto</button><button type="button" data-start-city="Melbourne">Melbourne</button></div><p class="m-location-help" id="locationHelp" role="status" hidden></p><details class="m-filter-drawer"><summary>Filter the map <span aria-hidden="true">＋</span></summary>
     <div class="m-chiprow">
       <span class="m-lbl" id="chipcount">Categories</span>
       <button class="m-linkish" id="allon">All</button>
     </div>
-    <div class="m-chips" id="chips" role="group" aria-label="Filter by category"></div>
+    <div class="m-chips" id="chips" role="group" aria-label="Filter by category"></div></details>
   </section>
 
   <aside class="m-pane m-panel" id="panel" aria-label="Places">
@@ -294,7 +296,7 @@
   </div>
 </main>
 
-<link rel="stylesheet" href="/assets/map-data/preview.css">
+<link rel="stylesheet" href="/assets/map-data/preview.css?v=20260930-orientation"><link rel="stylesheet" href="/assets/map-data/discovery.css?v=20260930-orientation">
 <script src="/assets/zoi-core.js"></script>
 <script src="/assets/zoi-theme.js?v=20260930"></script>
 <script src="/assets/zoi-emblem.js"></script>
@@ -527,8 +529,8 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    mapTools = await import('/assets/map-data/loader.mjs');
-    previewModule = await import('/assets/map-data/preview.mjs');
+    mapTools = await import('/assets/map-data/loader.mjs?v=20260930-orientation');
+    previewModule = await import('/assets/map-data/preview.mjs?v=20260930-orientation');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
     }, { concurrency: 4, onProgress: function (progress) { status('Loaded ' + fmtN(progress.loaded) + ' places…', true); } });
@@ -964,7 +966,7 @@
   $('pbody').addEventListener('focusout',hideTip);
   $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=ALL[+a.dataset.i];if(p){e.preventDefault();choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
   function updateSavedLabel(){if(previewModule)$('tSaved').textContent='Saved ('+previewModule.readSavedPlaces().length+')';}
-  $('tSaved').addEventListener('click',function(){if(!previewModule)return;selected=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Only currently available mapped places are shown.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
+  $('tSaved').addEventListener('click',function(){if(!previewModule)return;setSheet(false);$('stage').classList.remove('m-selected-view');selected=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Only currently available mapped places are shown.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
 
   function showList(items, title, sub, lngLat) {
     if(selected&&!items.some(function(p){return p.s===selected.s;}))selected=null;
@@ -989,6 +991,7 @@
   }
 
   function showAll() {
+    $('stage').classList.remove('m-selected-view');
     clearSpider();
     selected = null;
     document.querySelectorAll('.m-pin.m-selected').forEach(function(pin){pin.classList.remove('m-selected');});
@@ -1000,7 +1003,7 @@
       return haversine(o.lat, o.lng, a.lat, a.lng) - haversine(o.lat, o.lng, b.lat, b.lng);
     });
     listState = { items: vis, shown: 0, mode: 'all' };
-    $('ptitle').innerHTML = (here ? (here.coarse ? 'Near your area' : 'Nearest to you') : 'On the map') +
+    $('ptitle').innerHTML = (here ? (here.coarse ? 'Near your area' : 'Nearest to you') : (query ? 'Search results' : 'Explore places')) +
       '<span class="m-sub">' + (vis.length === ALL.length
         ? fmtN(vis.length) + ' places'
         : fmtN(vis.length) + ' of ' + fmtN(ALL.length) + ' shown') + '</span>';
@@ -1033,6 +1036,7 @@
   function animateMap(options) { if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)map.jumpTo(options);else map.easeTo(options); }
 
   function choose(p, keepSpider) {
+    setSheet(false);$('stage').classList.add('m-selected-view');
     selected = p;
     document.querySelectorAll('.m-pin').forEach(function(pin){pin.classList.toggle('m-selected',pin.dataset.slug===p.s);});
     if (!keepSpider) clearSpider();
@@ -1041,7 +1045,7 @@
     if (group.length > 1) {
       showList(group, group.length + ' here', groupWhere(group), [p.lng, p.lat]);
     } else {
-      showList([p], p.n, [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
+      showList([p], 'Selected place', [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
     }
     var stage=$('map').getBoundingClientRect(), controls=document.querySelector('.m-controls').getBoundingClientRect(), panel=$('panel').getBoundingClientRect();
     var mobile=window.matchMedia('(max-width:860px)').matches;
@@ -1062,12 +1066,8 @@
 
   // Collapse the bottom sheet on small screens. Everything else is positioned
   // from --sheet, so the tool rail and attribution follow it up and down.
-  $('psheet').addEventListener('click', function () {
-    var shut = $('stage').classList.toggle('m-shut');
-    this.setAttribute('aria-expanded', shut ? 'false' : 'true');
-    this.setAttribute('aria-label', shut ? 'Show the list' : 'Collapse the list');
-    if (map) setTimeout(function () { map.resize(); }, 220);
-  });
+  function setSheet(shut){$('stage').classList.toggle('m-shut',shut);$('psheet').setAttribute('aria-expanded',String(!shut));$('psheet').setAttribute('aria-label',shut?'Show places':'Collapse places');if(map)map.resize();}
+  $('psheet').addEventListener('click',function(){setSheet(!$('stage').classList.contains('m-shut'));});
 
   /* ---------- filtering ---------- */
   var refreshT;
@@ -1085,16 +1085,27 @@
 
   $('q').addEventListener('input', function () {
     query = this.value.trim();
+    if(ready)showAll();
     $('clearq').hidden = !query;
     refresh(); writeUrl();
   });
   $('clearq').addEventListener('click', function () {
-    query = ''; $('q').value = ''; this.hidden = true; refresh(); writeUrl(); $('q').focus();
+    query = ''; $('q').value = ''; this.hidden = true; if(ready)showAll(); refresh(); writeUrl(); $('q').focus();
   });
   $('allon').addEventListener('click', function () {
     TYPES.forEach(function (t) { on[t.k] = true; });
     syncChips(); refresh(); writeUrl();
   });
+
+  function showMatches(){
+    if(!ready){status('The map is still loading. Try your search in a moment.',false,3500);return;}
+    query=$('q').value.trim();$('clearq').hidden=!query;showAll();refresh();setSheet(false);
+    var found=ALL.filter(matches),bounds=mapTools.matchBounds(found);
+    if(bounds){var mobile=matchMedia('(max-width:860px)').matches;map.fitBounds(bounds,{padding:mobile?{top:document.querySelector('.m-controls').offsetHeight+30,bottom:Math.min(innerHeight*.29,220),left:25,right:25}:{top:35,bottom:35,left:410,right:410},maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else status('No mapped places match. Try another city or clear the category filters.',false,5000);writeUrl();
+  }
+  $('mapsearch').addEventListener('submit',function(e){e.preventDefault();showMatches();});
+  document.querySelectorAll('[data-start-city]').forEach(function(b){b.addEventListener('click',function(){if(!ready){status('The map is still loading.',false,2500);return;}$('q').value=b.dataset.startCity;showMatches();});});
+  $('nearLabel').addEventListener('click',function(){$('tNear').click();});
 
   /* ---------- style / theme ---------- */
   var pref = { greek: false, terrain: false };
@@ -1305,6 +1316,8 @@
   var COARSE_FIX_M = 25000;
 
   $('tNear').addEventListener('click', function () {
+    if(!ready){status('The map is still loading. Try location in a moment.',false,3500);return;}
+    $('locationHelp').hidden=true;
     if (!navigator.geolocation) { status('Your browser will not share a location', false, 3000); return; }
     if (!window.isSecureContext) {
       status('Location needs a secure connection (https)', false, 4000);
@@ -1329,7 +1342,7 @@
         : code === 2 ? 'Your location is unavailable right now'
         : code === 3 ? 'Finding you took too long — try again'
         : 'Could not get your location';
-      status(msg, false, 4800);
+      status(msg, false, 4800);$('locationHelp').hidden=false;$('locationHelp').textContent='Location was not shared. Type your city above and choose Go, or choose a city shortcut.';$('q').focus();
     }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
   });
 
@@ -1405,6 +1418,7 @@
   /* ---------- go ---------- */
   (async function () {
     var initial = readUrl();
+    if(matchMedia('(max-width:860px)').matches&&!initial.place&&!query)setSheet(true);
 
     // header height drives the stage inset; measure rather than assume
     var h = document.getElementById('hdr');

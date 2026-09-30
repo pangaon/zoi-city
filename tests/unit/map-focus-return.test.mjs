@@ -8,3 +8,8 @@ test('actual Escape and close handlers return keyboard focus after selected prev
  context.listState.mode='all';focused='map';key({key:'Escape'});assert.equal(focused,'map');assert.equal(removed,2);
  assert.match(html,/\$\('pclose'\)\.addEventListener\('click', closeSelection\)/);
 });
+test('actual search input clears the prior selected view before refreshing and keeps the new query',()=>{
+ const handler=html.match(/\$\('q'\)\.addEventListener\('input', function \(\) \{[\s\S]*?\n  \}\);/)?.[0];assert.ok(handler);
+ let input;const order=[],clear={hidden:true},context={query:'old',ready:true,showAll(){order.push('clear-selection')},refresh(){order.push('refresh')},writeUrl(){order.push('url')},$:id=>id==='q'?{addEventListener(_,fn){input=fn}}:clear};vm.createContext(context);vm.runInContext(handler,context);input.call({value:' Toronto '});assert.equal(context.query,'Toronto');assert.equal(clear.hidden,false);assert.deepEqual(order,['clear-selection','refresh','url']);
+ order.length=0;context.ready=false;input.call({value:''});assert.equal(context.query,'');assert.equal(clear.hidden,true);assert.deepEqual(order,['refresh','url']);
+});

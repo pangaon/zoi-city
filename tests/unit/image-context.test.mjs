@@ -21,3 +21,16 @@ test('actual Olympic Hall and Calgary adapter projections show honest missing ph
   const owner=eventHomeContent({...entity,owner_content:{photo_url:urls[0],profile:{photos:urls}}});assert.equal(owner.hero,urls[0]);assert.deepEqual(owner.photos,urls);
  }
 });
+test('AGFG publisher interface icons never become machine gallery photos; listing and artist imagery remains eligible',()=>{
+ const icons=['https://www.agfg.com.au/images/layout/tb-facebook.png','https://www.agfg.com.au/images/layout/tb-instagram.png'];
+ const venue='https://media1.agfg.com.au/images/listing/55968/hero-300.jpg?v=638253209320110211';
+ const source={photo_url:icons[0],photo_urls:[...icons,venue]},before=JSON.stringify(source);
+ for(const url of icons)assert.equal(auxiliaryImage(url),true);
+ assert.deepEqual(profileMedia({profile:{_enrich:source}},source),{hero:venue,logo:null,gallery:[venue]});
+ assert.equal(JSON.stringify(source),before);
+ assert.deepEqual(profileMedia({profile:{_enrich:source},owner_content:{profile:{photos:icons}}},source).gallery,icons);
+ assert.equal(profileMedia({profile:{_enrich:source},owner_content:{photo_url:null}},source).hero,null);
+ for(const url of [venue,'https://www.agfg.com.au/images/listing/55968/tb-facebook.png','https://artist.example/images/layout/tb-facebook.png','https://i.scdn.co/image/ab6761610000e5ebartist','https://www.agfg.com.au/images/layout/chef-portrait.jpg'])assert.equal(auxiliaryImage(url),false,url);
+ const extracted=extractSiteImages(`<meta property="og:image" content="${icons[0]}"><img src="${icons[1]}"><img src="${venue}">`,'https://www.agfg.com.au/restaurant/litanis-greek-mediterranean-restaurant-55968');
+ assert.equal(extracted.hero.url,venue);assert.equal(extracted.photos.length,1);
+});

@@ -19,3 +19,6 @@ export function focusOptions(point,{width=1200,height=800,left=0,right=0,top=0,b
 }
 
 export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&row.lat!=null&&row.lng!=null&&Number.isFinite(+row.lat)&&Number.isFinite(+row.lng)&&Math.abs(+row.lat)<=90&&Math.abs(+row.lng)<=180);}
+
+/** Bounds use loaded public coordinates only; they do not improve their accuracy. */
+export function matchBounds(points){const valid=points.filter(p=>p.lat!=null&&p.lng!=null&&Number.isFinite(+p.lat)&&Number.isFinite(+p.lng)&&Math.abs(+p.lat)<=90&&Math.abs(+p.lng)<=180);if(!valid.length)return null;let west=180,east=-180,south=90,north=-90;for(const p of valid){west=Math.min(west,+p.lng);east=Math.max(east,+p.lng);south=Math.min(south,+p.lat);north=Math.max(north,+p.lat);}return[[west,south],[east,north]];}

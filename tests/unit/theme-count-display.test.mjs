@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';import vm from'node:vm';
+const src=readFileSync(new URL('../../assets/zoi-theme.js',import.meta.url),'utf8');const fn=src.slice(src.indexOf('  function countUp(el) {'),src.indexOf('  /* Highlight the pillar'));
+function harness(value){let queue=[];const el={textContent:value,style:{}};const ctx={requestAnimationFrame:f=>queue.push(f)};vm.createContext(ctx);vm.runInContext(fn,ctx);ctx.countUp(el);return{el,tick:t=>{const q=queue;queue=[];q.forEach(f=>f(t));}};}
+for(const value of ['28,929','7,068','$1,234.50','84 countries','− 50%'])test('count animation preserves numeric boundaries: '+value,()=>{const h=harness(value);h.tick(1);h.tick(601);assert.doesNotMatch(h.el.textContent,/28,92\d/, 'no duplicate original numeric suffix');h.tick(2001);assert.equal(h.el.textContent,value);});
+test('new API statistic supersedes an in-flight animation',()=>{const h=harness('28,929');h.tick(1);h.el.textContent='28,930';h.tick(500);h.tick(2001);assert.equal(h.el.textContent,'28,930');});

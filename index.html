@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Zoi — The Greek world runs on Zoi</title>
-<meta name="description" content="Zoi is the platform of the Greek diaspora: free tools for Greek businesses — social publishing, ticketing, storefronts — plus the definitive map of Greek life worldwide."/>
+<title>Zoi — Your Greek world, closer</title>
+<meta name="description" content="Discover Greek places, music, communities and business homes across Greece, Cyprus and the diaspora. Find your people and make yourself at home on Zoi."/>
 <link rel="canonical" href="https://www.zoi.city/"/>
-<meta property="og:title" content="Zoi — The Greek world runs on Zoi"/>
-<meta property="og:description" content="Free tools for Greek businesses. The definitive map of Greek life worldwide. One platform."/>
+<meta property="og:title" content="Zoi — Your Greek world, closer"/>
+<meta property="og:description" content="Greek places, people and voices. Discover your next table, follow the music, and find a place to belong."/>
 <meta property="og:url" content="https://www.zoi.city/"/>
 <meta property="og:type" content="website"/>
 <meta name="theme-color" content="#080a0e"/>
@@ -241,12 +241,12 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 </style>
 <script>(function(){document.documentElement.setAttribute("data-theme",localStorage.getItem("zoi_theme")||"light");})()</script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"Zoi","url":"https://www.zoi.city","logo":"https://www.zoi.city/favicon.ico","description":"The platform of the Greek diaspora: free business tools, a worldwide Greek marketplace, and the definitive map of Greek life.","sameAs":["https://buygreek.shop"]}
+{"@context":"https://schema.org","@type":"Organization","name":"Zoi","url":"https://www.zoi.city","logo":"https://www.zoi.city/assets/icons/icon-512.png","description":"Greek places, people and communities across Greece, Cyprus and the diaspora.","sameAs":["https://buygreek.shop"]}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
-{"@type":"Question","name":"What is Zoi?","acceptedAnswer":{"@type":"Answer","text":"Zoi is one platform for the Greek world: free software for Greek businesses (social publishing, ticketing, email, AI), a worldwide Greek marketplace through BuyGreek.Shop, and the definitive directory of Greek life across the diaspora."}},
-{"@type":"Question","name":"Is Zoi free?","acceptedAnswer":{"@type":"Answer","text":"Yes. Signing up, claiming your business page, and the core tools are free to start. Paid features like ticket sales use standard payment processing."}},
+{"@type":"Question","name":"What is Zoi?","acceptedAnswer":{"@type":"Answer","text":"Zoi brings Greek places, communities, music and business homes together, with workspaces for owners and organizers."}},
+{"@type":"Question","name":"Is Zoi free?","acceptedAnswer":{"@type":"Answer","text":"Signing up and starting a business profile are free. Ownership approval and individual service setup may be needed before some tools can be used."}},
 {"@type":"Question","name":"How do I claim my business?","acceptedAnswer":{"@type":"Answer","text":"Find your business in the Zoi directory, tap claim, and verify ownership. Once approved, the page is yours to run — description, hours, links and photos."}},
 {"@type":"Question","name":"What is BuyGreek.Shop?","acceptedAnswer":{"@type":"Answer","text":"BuyGreek.Shop is the Greek marketplace — a multi-vendor commerce platform where Greek businesses sell products, tickets and services to the diaspora worldwide."}},
 {"@type":"Question","name":"Who is Zoi for?","acceptedAnswer":{"@type":"Answer","text":"Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places."}}
@@ -256,6 +256,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Zoi">
+<link rel="stylesheet" href="/assets/home/arrival.css?v=20260930-arrival">
 </head>
 <body>
 <div class="glow"></div>
@@ -265,49 +266,42 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
 
-<header class="hero">
-  <span class="hero-mark" aria-hidden="true">&#918;&#937;&#919;</span>
-  <div class="wrap hero-grid">
-    <div class="hero-copy">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:18px">
-        <div class="htag"><span class="d"></span><span>Pan-Hellenic Platform &middot; Greece &middot; Cyprus &middot; Diaspora</span></div>
-        <div class="htag" id="nameday-chip" style="display:none"><span class="d" style="background:var(--gold);box-shadow:0 0 10px var(--gold)"></span><span id="nameday-txt"></span></div>
-      </div>
-      <h1>The Greek world <span class="serif">runs</span> on Zoi.</h1>
-      <p class="hlead">The unified platform for the global Hellenic community: free business software, a worldwide marketplace, and the living map of Greek life.</p>
-      
-      <!-- Unified Single Search Bar Above The Fold -->
-      <form class="dbar" action="/explore" method="get" style="margin:22px 0 20px;max-width:620px">
-        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <input name="q" placeholder="Find your people, place, parish, or event…" aria-label="Search the Greek world"/>
-        <button class="btn btn-primary" style="padding:10px 22px" type="submit">Find it</button>
-      </form>
-
-      <div class="hcta">
-        <a class="btn btn-primary" href="/community">Enter the community <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btn btn-ghost" href="/tickets">See what’s happening</a>
-        <a class="btn btn-ghost" href="/explore/map">Explore places</a>
-      </div>
-      <p style="font-size:13px;color:var(--dim);margin-top:10px">Come back for today’s namedays, local voices, Greek events, and places worth knowing.</p>
-      <div class="hstats">
-        <div class="s"><b id="st-listings" data-count>&mdash;</b><span>Greek places</span></div>
-        <div class="s"><b id="st-cities" data-count>&mdash;</b><span>cities</span></div>
-        <div class="s"><b id="st-countries" data-count>&mdash;</b><span>countries</span></div>
-      </div>
-      <div class="hprops">
-        <i>See what your people are sharing</i>
-        <i>Find the next Greek gathering</i>
-        <i>Help your place become part of the network</i>
-      </div>
-      <div class="hero-rule"><svg class="zoi-meander" viewBox="0 0 1200 14" preserveAspectRatio="xMinYMid slice" aria-hidden="true"><path d="M0,13 L0,3 L19,3 L19,9 L7,9 L7,13 L26,13 L26,3 L45,3 L45,9 L33,9 L33,13 L52,13 L52,3 L71,3 L71,9 L59,9 L59,13 L78,13 L78,3 L97,3 L97,9 L85,9 L85,13 L104,13 L104,3 L123,3 L123,9 L111,9 L111,13 L130,13 L130,3 L149,3 L149,9 L137,9 L137,13 L156,13 L156,3 L175,3 L175,9 L163,9 L163,13 L182,13 L182,3 L201,3 L201,9 L189,9 L189,13 L208,13 L208,3 L227,3 L227,9 L215,9 L215,13 L234,13 L234,3 L253,3 L253,9 L241,9 L241,13 L260,13 L260,3 L279,3 L279,9 L267,9 L267,13 L286,13 L286,3 L305,3 L305,9 L293,9 L293,13 L312,13 L312,3 L331,3 L331,9 L319,9 L319,13 L338,13 L338,3 L357,3 L357,9 L345,9 L345,13 L364,13 L364,3 L383,3 L383,9 L371,9 L371,13 L390,13 L390,3 L409,3 L409,9 L397,9 L397,13 L416,13 L416,3 L435,3 L435,9 L423,9 L423,13 L442,13 L442,3 L461,3 L461,9 L449,9 L449,13 L468,13 L468,3 L487,3 L487,9 L475,9 L475,13 L494,13 L494,3 L513,3 L513,9 L501,9 L501,13 L520,13 L520,3 L539,3 L539,9 L527,9 L527,13 L546,13 L546,3 L565,3 L565,9 L553,9 L553,13 L572,13 L572,3 L591,3 L591,9 L579,9 L579,13 L598,13 L598,3 L617,3 L617,9 L605,9 L605,13 L624,13 L624,3 L643,3 L643,9 L631,9 L631,13 L650,13 L650,3 L669,3 L669,9 L657,9 L657,13 L676,13 L676,3 L695,3 L695,9 L683,9 L683,13 L702,13 L702,3 L721,3 L721,9 L709,9 L709,13 L728,13 L728,3 L747,3 L747,9 L735,9 L735,13 L754,13 L754,3 L773,3 L773,9 L761,9 L761,13 L780,13 L780,3 L799,3 L799,9 L787,9 L787,13 L806,13 L806,3 L825,3 L825,9 L813,9 L813,13 L832,13 L832,3 L851,3 L851,9 L839,9 L839,13 L858,13 L858,3 L877,3 L877,9 L865,9 L865,13 L884,13 L884,3 L903,3 L903,9 L891,9 L891,13 L910,13 L910,3 L929,3 L929,9 L917,9 L917,13 L936,13 L936,3 L955,3 L955,9 L943,9 L943,13 L962,13 L962,3 L981,3 L981,9 L969,9 L969,13 L988,13 L988,3 L1007,3 L1007,9 L995,9 L995,13 L1014,13 L1014,3 L1033,3 L1033,9 L1021,9 L1021,13 L1040,13 L1040,3 L1059,3 L1059,9 L1047,9 L1047,13 L1066,13 L1066,3 L1085,3 L1085,9 L1073,9 L1073,13 L1092,13 L1092,3 L1111,3 L1111,9 L1099,9 L1099,13 L1118,13 L1118,3 L1137,3 L1137,9 L1125,9 L1125,13 L1144,13 L1144,3 L1163,3 L1163,9 L1151,9 L1151,13 L1170,13 L1170,3 L1189,3 L1189,9 L1177,9 L1177,13 L1196,13"/></svg></div>
-    </div>
-
-    <!-- Real entries from the directory. Hidden until it has something real to
-         show, so it can never render as an empty frame or invent a name. -->
-    <div class="hero-live" id="heroLive" hidden aria-label="Recent entries in the Zoi directory">
-      <div class="cols"><div class="col a"></div><div class="col b"></div></div>
-    </div>
+<header class="hero arrival" aria-labelledby="arrival-title">
+ <div class="wrap arrival-grid">
+  <div class="arrival-copy">
+   <p class="arrival-eyebrow"><span></span> Greece. Cyprus. Everywhere we belong.</p>
+   <h1 id="arrival-title">A little Greece.<br><span class="serif">Your whole world.</span></h1>
+   <p class="arrival-lead">The people, places and voices that make us feel at home. Find your next table, follow the music, and build something of your own.</p>
+   <form class="arrival-search" action="/explore/" method="get" role="search">
+    <label class="arrival-sr" for="arrival-query">Search places, people and communities</label>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
+    <input id="arrival-query" name="q" placeholder="Where will you find your Greece?" maxlength="160" type="search">
+    <button type="submit" aria-label="Search the Greek world">Explore <span aria-hidden="true">↗</span></button>
+   </form>
+   <div class="arrival-actions"><a href="/community/" class="arrival-primary">Meet your people <span aria-hidden="true">→</span></a><a href="/social/#bizpage" class="arrival-owner">Make a home for your business <span aria-hidden="true">↗</span></a></div>
+   <div class="arrival-note"><span lang="el">Παρέα.</span> Better, together.</div>
+   <div class="htag" id="nameday-chip" style="display:none"><span class="d"></span><span id="nameday-txt"></span></div>
   </div>
+  <div class="arrival-scenes" aria-label="People and places to discover on Zoi">
+   <a class="arrival-scene arrival-table" href="/business/12-islands-greek-taverna-stirling">
+    <img src="https://d1w7312wesee68.cloudfront.net/Qa9Y-vwj53SZMZa8L9griBTvdlPh3GmxK6g0LKHPZRw/ext%3Awebp/quality%3A85/plain/s3%3A//toast-sites-resources-prod/restaurantImages/cfab5ebd-16f3-4fb8-bafa-bc430c7ed244/12Islands0049.jpg" alt="Greek salad at Twelve Islands Greek Taverna" width="3000" height="2000" fetchpriority="high">
+    <span class="arrival-scene-top">AT THE TABLE <span aria-hidden="true">↗</span></span>
+    <span class="arrival-scene-caption"><small>Stirling, New Jersey</small><strong>A taste<br>of home.</strong><span>Twelve Islands Greek Taverna</span></span>
+   </a>
+   <a class="arrival-scene arrival-artist" href="/artist/thanos-petrelis-athens-78ee3f">
+    <img src="https://i.scdn.co/image/ab6761610000e5eb481a334c11aa611a96841bc6" alt="Thanos Petrelis, artist portrait" width="640" height="640">
+    <span class="arrival-scene-top">THE SOUND OF HOME <span aria-hidden="true">↗</span></span>
+    <span class="arrival-scene-caption"><strong>Thanos Petrelis</strong><span>Music, moments & appearances</span></span>
+   </a>
+   <a class="arrival-scene arrival-parish" href="/church/st-nicholas-greek-orthodox-cathedral-toronto">
+    <img src="https://www.saintnicholasgochurch.org/wp-content/uploads/2026/02/Saint-Nicholas-Web-3.jpg" alt="Saint Nicholas Cathedral, Toronto" width="1920" height="1080" loading="lazy">
+    <span class="arrival-scene-caption"><small>Faith & belonging</small><strong>Our place. Our people.</strong><span>Saint Nicholas · Toronto <span aria-hidden="true">↗</span></span></span>
+   </a>
+   <span class="arrival-stamp" aria-hidden="true">ΖΩΗ<br><small>A WORLD TO BELONG TO</small></span>
+  </div>
+ </div>
+ <div class="wrap arrival-discover"><div class="arrival-paths" aria-label="Explore your Greek world"><a href="/categories/restaurants"><span>01</span> Eat & gather <b aria-hidden="true">↗</b></a><a href="/community/#music"><span>02</span> Music & culture <b aria-hidden="true">↗</b></a><a href="/categories/orthodox-churches"><span>03</span> Faith & community <b aria-hidden="true">↗</b></a><a href="/explore/map/"><span>04</span> Around the world <b aria-hidden="true">↗</b></a></div>
+ <div class="arrival-reach"><span>Across the Greek world</span><span><b id="st-listings">—</b> places</span><span><b id="st-cities">—</b> cities</span><span><b id="st-countries">—</b> countries</span></div></div>
 </header>
 
 <section class="pulse-section"><div class="wrap">
@@ -606,14 +600,14 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div class="trow"><span class="tno">02</span><span class="tst live">Live</span></div>
       <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4 2 2 0 000-4z"/><path d="M14 6v12"/></svg></div>
       <h3>Zoi Tickets</h3>
-      <p>Your event, on sale in minutes. Reservations, instant confirmation codes, a share link that just works.</p>
+      <p>Create an event page, share it with your community, and manage reservations in one place.</p>
       <span class="go">Open Tickets <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool soon" onclick="openWL('storefront');return false" href="#">
       <div class="trow"><span class="tno">03</span><span class="tst soon">Next</span></div>
       <div class="ic" style="color:var(--dim)"><svg viewBox="0 0 24 24"><path d="M4 7h16l-1.2 4.5H5.2z"/><path d="M5.2 11.5V19h13.6v-7.5"/><path d="M10 19v-4.5h4V19"/></svg></div>
       <h3>Zoi Storefront</h3>
-      <p>Your store on BuyGreek.Shop — the worldwide Greek marketplace. List once, sell to every Greek on earth.</p>
+      <p>Bring your products to the BuyGreek.Shop marketplace. Explore the seller setup and start your storefront journey.</p>
       <span class="go">Request access <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool" href="/social/bizpage">
@@ -680,7 +674,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <a class="tool" style="min-height:170px" onclick="openWL('storefront');return false" href="#">
       <span class="tno">Join</span>
       <h3 style="margin-top:16px">Become a vendor</h3>
-      <p>Early vendors get founding placement across the network.</p>
+      <p>Introduce your products to people who want to shop Greek.</p>
       <span class="go">Request access <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
   </div>
@@ -719,7 +713,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <a class="cc f" href="/social">
       <div class="mono" style="color:var(--acc)">Today — nameday</div>
       <h3>Today's nameday is tomorrow's best post.</h3>
-      <p>Zoi reads the Greek calendar and drafts the caption for you. One click from celebration to published.</p>
+      <p>Discover the names and traditions we celebrate. Prepare a personal wish and choose how to share it.</p>
     </a>
     <a class="cc" href="/c/media-creators">
       <div class="mono" style="color:var(--gold)">Creators &amp; Voices</div>
@@ -747,7 +741,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     </div>
     <div class="tool" style="cursor:default">
       <div class="trow"><span class="tno">Playbook 02</span><span class="tst live">Festivals &amp; Events</span></div>
-      <h3>Run 3D Festivals &amp; Galas</h3>
+      <h3>Bring your next gathering together</h3>
       <p>Upload hall blueprints, design 3D sponsor table plaques, project logos on stage LED walls, and scan tickets with offline Door mode.</p>
       <a class="go" href="/tickets" style="color:var(--acc)">Open Tickets &rarr;</a>
     </div>
@@ -774,8 +768,8 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     </div>
   </div>
   <div style="max-width:760px">
-    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">What is Zoi?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">One platform for the Greek world: free software for Greek businesses, a worldwide marketplace through BuyGreek.Shop, and the definitive map of Greek life across the diaspora.</p></details>
-    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Is it free?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Yes — signing up, claiming your page, and the core tools are free to start. Paid features like ticket sales use standard payment processing.</p></details>
+    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">What is Zoi?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Zoi brings Greek places, communities, music and business homes together, with workspaces for owners and organizers.</p></details>
+    <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Is it free?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Signing up and starting a business profile are free. Ownership approval and individual service setup may be needed before some tools can be used.</p></details>
     <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">How do I claim my business?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Find it in the directory, tap claim, verify ownership. Once approved, the page is yours — description, hours, links, photos.</p></details>
     <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">What is BuyGreek.Shop?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">The Greek marketplace — multi-vendor commerce where Greek businesses sell products, tickets and services to the diaspora worldwide.</p></details>
     <details style="border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Who is it for?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places.</p></details>
@@ -1075,7 +1069,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>
-<script src="/assets/zoi-theme.js?v=20260930"></script>
+<script src="/assets/zoi-theme.js?v=20260930-arrival"></script>
 
 <script src="/assets/zoi-globe.js" defer></script>
 <script>
@@ -1130,75 +1124,7 @@ document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 })();
 </script>
 
-<script>
-/* The living column.
-   Fills the right side of the hero with real directory entries. Everything here
-   is real: the names come from explore_geo, each card links to that listing's
-   actual page, and if the request fails the column stays hidden rather than
-   showing placeholders. Nothing is invented and nothing is a stand-in. */
-(function(){
-  var TYPES=['business','vendor','event','artist','creator','venue',
-             'church','school','professional','travel_place','sports','organization'];
-  var WHEEL=['--gold','--red','--acc','--green'];
-  function colourFor(type){
-    // Same twelve-slot wheel the map and the emblems use, so a category is the
-    // same colour everywhere on the site.
-    var slot=TYPES.indexOf(type); if(slot<0) slot=0;
-    var seg=Math.floor(slot/3)%4, step=slot%3;
-    var a='var('+WHEEL[seg]+')', b='var('+WHEEL[(seg+1)%4]+')';
-    if(step===0) return a;
-    return 'color-mix(in oklab, '+a+' '+(step===1?67:33)+'%, '+b+')';
-  }
-  function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(m){
-    return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];});}
-  function nice(x){return String(x||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
-  function typeSlug(t){return t==='travel_place'?'travel-place':t;}
 
-  var box=document.getElementById('heroLive');
-  if(!box) return;
-  var cols=box.querySelectorAll('.col');
-  if(!cols.length) return;
-
-  fetch(BASE+'/rest/v1/rpc/explore_geo',{method:'POST',
-    headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},
-    body:JSON.stringify({p_limit:220,p_offset:0})})
-  .then(function(r){return r.ok?r.json():null;})
-  .then(function(rows){
-    if(!rows||!rows.length) return;
-    // Spread across categories so the column reads as the whole directory
-    // rather than forty consecutive lawyers.
-    var byType={}, order=[];
-    rows.forEach(function(r){
-      if(!r||!r.name||!r.slug) return;
-      var t=r.entity_type||'business';
-      (byType[t]||(byType[t]=[])).push(r);
-    });
-    var keys=Object.keys(byType), i=0, guard=0;
-    while(order.length<28 && guard++<900){
-      var k=keys[i%keys.length]; i++;
-      if(byType[k] && byType[k].length) order.push(byType[k].shift());
-    }
-    if(order.length<8) return;
-
-    function card(r){
-      var href='/'+typeSlug(r.entity_type||'business')+'/'+encodeURIComponent(r.slug);
-      var where=[nice(r.category_slug), r.city].filter(Boolean).join(' \u00b7 ');
-      return '<a class="lv" href="'+href+'" tabindex="-1">'+
-        '<span class="bar" style="background:'+colourFor(r.entity_type||'business')+'"></span>'+
-        '<span class="n">'+esc(r.name)+'</span>'+
-        '<span class="c">'+esc(where)+'</span></a>';
-    }
-    var half=Math.ceil(order.length/2);
-    var a=order.slice(0,half), b=order.slice(half);
-    // Each column holds its list twice so the loop is seamless: the animation
-    // travels exactly -50%, landing on an identical frame.
-    cols[0].innerHTML=(a.map(card).join(''))+(a.map(card).join(''));
-    cols[1].innerHTML=(b.map(card).join(''))+(b.map(card).join(''));
-    box.hidden=false;
-  })
-  .catch(function(){ /* leave it hidden — an empty frame is worse than none */ });
-})();
-</script>
 <script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
 </body>
 </html>

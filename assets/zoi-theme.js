@@ -263,21 +263,23 @@
    */
   function countUp(el) {
     var text = (el.textContent || '').trim();
-    var m = text.replace(/,/g, '').match(/-?\d+(\.\d+)?/);
+    var m = text.match(/[-+]?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?/);
     if (!m) return;
-    var target = parseFloat(m[0]);
+    var target = Number(m[0].replace(/,/g, ''));
     if (!isFinite(target) || target === 0) return;
-    var prefix = text.slice(0, text.indexOf(m[0])), suffix = text.slice(text.indexOf(m[0]) + m[0].length);
+    var prefix = text.slice(0, m.index), suffix = text.slice(m.index + m[0].length);
     var dec = (m[0].split('.')[1] || '').length;
     var dur = Math.min(1500, 420 + Math.log10(Math.abs(target) + 1) * 380);
-    var t0 = 0;
+    var t0 = 0, lastRendered = text;
     el.style.fontVariantNumeric = 'tabular-nums';
     function frame(t) {
+      if (el.textContent !== lastRendered) return; // A fresher API result owns this element.
       if (!t0) t0 = t;
       var p = Math.min(1, (t - t0) / dur);
       // ease-out cubic: fast, then settles, so the final number is readable
       var v = target * (1 - Math.pow(1 - p, 3));
-      el.textContent = prefix + v.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + suffix;
+      lastRendered = prefix + v.toFixed(dec).replace(/\B(?=(\d{3})+(?!\d))/g, ',') + suffix;
+      el.textContent = lastRendered;
       if (p < 1) requestAnimationFrame(frame);
       else el.textContent = text;   // land exactly on the real string
     }

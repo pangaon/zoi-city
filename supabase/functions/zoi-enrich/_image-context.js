@@ -7,6 +7,7 @@ export function auxiliaryImage(value,hint=''){
  // rate documents, not photographs of a venue. Keep other OG images eligible.
  try{
   const u=new URL(decoded),host=u.hostname.toLowerCase(),path=u.pathname;
+  if(['agfg.com.au','www.agfg.com.au'].includes(host)&&/^\/images\/layout\/tb-(?:facebook|instagram)\.png$/i.test(path))return true;
   if(host==='cdn.trustindex.io'&&/^\/assets\/platform\/Google\/star\/[^/]+\.svg$/i.test(path))return true;
   if(['gocsa.org.au','www.gocsa.org.au'].includes(host)&&/^\/wp-content\/uploads\/\d{4}\/\d{2}\/GOCSA_Default-Social-Share(?:-\d+x\d+)?\.png$/i.test(path))return true;
   if(['calgaryhellenic.ca','www.calgaryhellenic.ca'].includes(host)&&/^\/wp-content\/uploads\/2026\/05\/(?:Lower_Hall_)?rental_rates_2026(?:-\d+x\d+)?\.jpg$/i.test(path))return true;
