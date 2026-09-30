@@ -1,0 +1,9 @@
+# Native contact parity and guest ticket history
+
+Candidate only: existing Android/iOS build snapshot7592a43 does not include these changes. No paid build or device verification was performed.
+
+Native public profiles render their own contact/social buttons; a canonical web handoff alone did not protect them. The candidate imports the same pure phone target, social-profile syntax classifier and exact publisher identity classifier used by web. Invalid +0 telephone values remain selectable text, without a Call action. Valid local/international numbers and explicit extensions remain dialable. Machine sharing links and exact AGFG publisher accounts are omitted; explicit owner social values/clears and phone values/clears take precedence. This does not claim full native business-home design/editor parity.
+
+Native general-admission history already stores at most five device-only references per actor/event, retained up to365days, without name/email. It fetches current tickets_reserve_receipt status rather than treating immutable creation receipts as current validity. Guests use the public RPC; authenticated users use their scoped session. A pending guest attempt blocks a new authenticated attempt until recovered signed out. Unknown outcomes preserve the same nonce; old non-idempotent attempts cannot be upgraded. Account and event guards prevent stale updates. This is not an account-wide or cross-device ticket history, nor email-based recovery. No actual reservation was made in this review.
+
+Focused profile/general-reservation suite:19 passing tests. TypeScript check passed. Local export for web/iOS/Android verifies bundling only, not installed-device behavior. Shared dependency CI gate should include assets/homes/phone.mjs, assets/enrichment/publisher-social.mjs and supabase/functions/zoi-enrich/_social.js. Existing installed apps require a future reviewed release to receive this change.

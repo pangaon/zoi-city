@@ -11,3 +11,16 @@ test('private enquiry entry requires server invitation for this same listing',()
 test('profile photos preserve wide logos, portraits and small artwork',()=>{assert.equal(profileImageMode(1200,800),'cover');for(const [width,height] of [[1600,300],[500,1000],[120,120],[0,0]])assert.equal(profileImageMode(width,height),'center');});
 import {profileImageEventMode} from '../src/profile.ts';
 test('image loading supports native source dimensions and web natural dimensions',()=>{assert.equal(profileImageEventMode({nativeEvent:{source:{width:1200,height:800}}}),'cover');assert.equal(profileImageEventMode({nativeEvent:{target:{naturalWidth:1200,naturalHeight:800}}}),'cover');assert.equal(profileImageEventMode({nativeEvent:{target:{naturalWidth:150,naturalHeight:150}}}),'center');assert.equal(profileImageEventMode({nativeEvent:{}}),'center');});
+
+test('native uses shared phone validity and authoritative owner clear',()=>{
+ const e={name:'Aphrodite',profile:{_enrich:{phone:'+0221 493331'}}};const p=normalizeProfile(e);assert.equal(p.phone,'+0221 493331');assert.equal(p.phoneHref,null);
+ assert.equal(normalizeProfile({...e,owner_content:{phone:'+49 221 493331 ext. 42'}}).phoneHref,'tel:+49221493331;ext=42');
+ assert.equal(normalizeProfile({...e,owner_content:{phone:null}}).phone,'');
+});
+test('native machine social syntax and exact publisher identity match web while owner links survive',()=>{
+ const social={linkedin:'https://www.linkedin.com/shareArticle',facebook:'https://www.facebook.com/ausgoodfoodguide',instagram:'https://www.instagram.com/litanis'};
+ const e={name:'Litani',profile:{_enrich:{source_url:'https://www.agfg.com.au/restaurant/litanis-greek-mediterranean-restaurant-55968',social}}};
+ assert.deepEqual(normalizeProfile(e).socials.map(x=>x.url),['https://www.instagram.com/litanis']);
+ assert.equal(normalizeProfile({...e,owner_content:{social_links:{facebook:social.facebook}}}).socials[0].url,social.facebook);
+ assert.deepEqual(normalizeProfile({...e,owner_content:{social_links:null}}).socials,[]);
+});
