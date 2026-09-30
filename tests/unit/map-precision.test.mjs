@@ -255,3 +255,5 @@ test('folding does not collapse distinct words', () => {
   assert.notEqual(fold('Meláni'), fold('Melissa'));
   assert.notEqual(fold('Αθήνα'), fold('Πάτρα'));
 });
+
+test('conflicting street metadata never routes to rejected centroid coordinates',()=>{const p={n:'Community',city:'Brantford',country:'Canada',lat:43.6532,lng:-79.3832,precision:'street',position_conflict:true};assert.equal(directionsBasis(p),'name');assert.ok(!directionsUrl(p).includes('43.6532'));assert.match(decodeURIComponent(directionsUrl(p)),/Community, Brantford, Canada/);});

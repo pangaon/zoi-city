@@ -194,7 +194,7 @@
 
   /**
    * mount(el, opts) -> { setData, destroy, map }
-   * opts: { spin:true, spinSpeed:0.9 (deg/sec), zoom:1.55, interactive:true,
+   * opts: { animate:false, spin:true, spinSpeed:0.9 (deg/sec), zoom:1.55, interactive:true,
    *         onPick(cityOrNull) }
    */
   function mount(el, opts) {
@@ -224,11 +224,14 @@
       });
     } catch (e) { return null; }
 
-    var dead = false, raf = 0, spinning = opts.spin !== false && !reduce, dash = 0;
+    // Decorative globes are static unless motion was explicitly requested.
+    var animate = opts.animate === true && !reduce;
+    var inView = !global.IntersectionObserver;
+    var dead = false, raf = 0, spinning = animate && opts.spin !== false, dash = 0;
     var lastT = 0, dashT = 0;
 
     function frame(t) {
-      if (dead) return;
+      if (dead || !animate || !inView || global.document.hidden) { raf = 0; return; }
       raf = global.requestAnimationFrame(frame);
       if (!lastT) lastT = t;
       var dt = Math.min(80, t - lastT); lastT = t;
@@ -251,7 +254,7 @@
 
     map.on('load', function () {
       if (dead) return;
-      raf = global.requestAnimationFrame(frame);
+      if(animate && inView && !global.document.hidden && !raf) raf = global.requestAnimationFrame(frame);
       el.setAttribute('data-ready', '1');
     });
 
@@ -260,15 +263,16 @@
     if (global.IntersectionObserver) {
       io = new global.IntersectionObserver(function (es) {
         var vis = es.some(function (e) { return e.isIntersecting; });
-        spinning = vis && opts.spin !== false && !reduce;
-        if (vis && !raf && !dead) { lastT = 0; raf = global.requestAnimationFrame(frame); }
+        inView = vis;
+        spinning = animate && vis && opts.spin !== false;
+        if (animate && vis && !global.document.hidden && !raf && !dead) { lastT = 0; raf = global.requestAnimationFrame(frame); }
         if (!vis && raf) { global.cancelAnimationFrame(raf); raf = 0; }
       }, { threshold: 0.05 });
       io.observe(el);
     }
     function onVis() {
       if (global.document.hidden) { if (raf) { global.cancelAnimationFrame(raf); raf = 0; } }
-      else if (!raf && !dead) { lastT = 0; raf = global.requestAnimationFrame(frame); }
+      else if (animate && inView && !raf && !dead) { lastT = 0; raf = global.requestAnimationFrame(frame); }
     }
     global.document.addEventListener('visibilitychange', onVis);
 
@@ -279,7 +283,7 @@
     map.on('touchstart', function () { spinning = false; });
     map.on('dragend', function () {
       clearTimeout(resumeT);
-      resumeT = setTimeout(function () { spinning = opts.spin !== false && !reduce; }, 2600);
+      resumeT = setTimeout(function () { spinning = animate && inView && opts.spin !== false; }, 2600);
     });
 
     /**

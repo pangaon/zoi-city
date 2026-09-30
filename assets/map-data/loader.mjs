@@ -37,5 +37,17 @@ export function focusOptions(point,{width=1200,height=800,left=0,right=0,top=0,b
 
 export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&row.lat!=null&&row.lng!=null&&Number.isFinite(+row.lat)&&Number.isFinite(+row.lng)&&Math.abs(+row.lat)<=90&&Math.abs(+row.lng)<=180);}
 
-/** Bounds use loaded public coordinates only; they do not improve their accuracy. */
-export function matchBounds(points){const valid=points.filter(p=>p.lat!=null&&p.lng!=null&&Number.isFinite(+p.lat)&&Number.isFinite(+p.lng)&&Math.abs(+p.lat)<=90&&Math.abs(+p.lng)<=180);if(!valid.length)return null;let west=180,east=-180,south=90,north=-90;for(const p of valid){west=Math.min(west,+p.lng);east=Math.max(east,+p.lng);south=Math.min(south,+p.lat);north=Math.max(north,+p.lat);}return[[west,south],[east,north]];}
+// Only address/street evidence may place an individual listing on the map.
+// City/region/unknown values stay searchable; their centroids are not premises.
+export function hasStreetPosition(point){return !!point&&!point.position_conflict&&['street','address','rooftop'].includes(String(point.precision||point.geo_precision||'').toLowerCase())&&point.lat!=null&&point.lng!=null&&Number.isFinite(+point.lat)&&Number.isFinite(+point.lng)&&Math.abs(+point.lat)<=90&&Math.abs(+point.lng)<=180;}
+
+/** Bounds never imply premises from coarse or unverified coordinates. */
+export function matchBounds(points){const valid=points.filter(hasStreetPosition);if(!valid.length)return null;let west=180,east=-180,south=90,north=-90;for(const p of valid){west=Math.min(west,+p.lng);east=Math.max(east,+p.lng);south=Math.min(south,+p.lat);north=Math.max(north,+p.lat);}return[[west,south],[east,north]];}
+
+/** Reused geocoder fallback coordinates are not street evidence, even if labelled so. */
+export function validatePositionCohorts(points){
+ const groups=new Map(),key=p=>Number(p.lat).toFixed(5)+','+Number(p.lng).toFixed(5),fold=v=>String(v||'').normalize('NFKC').toLocaleLowerCase().trim().replace(/\s+/g,' ');
+ for(const point of points){const k=key(point);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(point);}
+ const conflicts=new Set();for(const [k,group] of groups){const cities=new Set(group.filter(p=>p.city&&p.country).map(p=>fold(p.city)+'|'+fold(p.country))),addresses=new Set(group.map(p=>fold(p.addr||p.address)).filter(Boolean));if(cities.size>1||addresses.size>8)conflicts.add(k);}
+ return points.map(point=>({...point,position_conflict:conflicts.has(key(point))}));
+}

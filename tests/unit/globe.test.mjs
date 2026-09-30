@@ -166,3 +166,8 @@ test('cityData() shapes the gazetteer for the renderer without inventing numbers
   }
   assert.ok(G.cityData(0).length > 10, 'no limit means the whole gazetteer');
 });
+
+test('static globe becomes ready without scheduling frames; explicit motion respects reduced motion',()=>{
+ function mountCase(options,reduced=false){let frames=0;const attrs={},events={};g.document.hidden=false;g.document.addEventListener=()=>{};g.document.removeEventListener=()=>{};g.matchMedia=()=>({matches:reduced});g.requestAnimationFrame=()=>++frames;g.cancelAnimationFrame=()=>{};g.MutationObserver=class{observe(){}disconnect(){}};g.maplibregl={Map:class{on(name,fn){events[name]=fn;}remove(){}}};const instance=G.mount({setAttribute:(k,v)=>attrs[k]=v},options);events.load();instance.destroy();return{frames,attrs};}
+ assert.deepEqual(mountCase({}),{frames:0,attrs:{'data-ready':'1'}});assert.equal(mountCase({animate:true}).frames,1);assert.equal(mountCase({animate:true},true).frames,0);
+});
