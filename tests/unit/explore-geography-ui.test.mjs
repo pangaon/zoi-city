@@ -69,3 +69,16 @@ test('search failures leave an actionable retry and clear busy state', async () 
   assert.match(node('results').innerHTML,/Try again/);
   assert.equal(state.q,'taverna');
 });
+
+
+test('failed category counts preserve selected filter and a successful explicit retry restores facets',async()=>{
+ const node={innerHTML:''};let calls=0;
+ const ctx=vm.createContext({ST:{type:'travel_place',counts:{}},TYPES:[['','All']],LANG:'en',
+ document:{getElementById:()=>node},esc:x=>String(x),typeLabel:x=>x,
+ rpc:async()=>{if(++calls===1)throw Error('timeout');return [{entity_type:'travel_place',n:787},{entity_type:'business',n:6233}];}});
+ vm.runInContext(html.slice(html.indexOf('let typeFiltersLoading='),html.indexOf('async function boot()')),ctx);
+ await ctx.loadTypeFilters();
+ assert.equal(calls,1);assert.match(node.innerHTML,/Retry loading categories/);assert.match(node.innerHTML,/aria-pressed="true"[^>]*>travel_place/);
+ await ctx.loadTypeFilters();
+ assert.equal(calls,2);assert.doesNotMatch(node.innerHTML,/Retry loading categories/);assert.match(node.innerHTML,/business/);assert.match(node.innerHTML,/787/);
+});

@@ -305,13 +305,28 @@ async function rpc(fn,params,forceAnon){
   return t?JSON.parse(t):null;
 }
 
+let typeFiltersLoading=false,typeFiltersFailed=false;
 function pillsRender(){
   const el=document.getElementById('type-pills');
-  el.innerHTML=TYPES.map(([v,l])=>{
+  const shown=TYPES.slice();
+  if(ST.type&&!shown.some(([v])=>v===ST.type))shown.push([ST.type,typeLabel(ST.type)]);
+  el.innerHTML=shown.map(([v,l])=>{
     const n=v?(ST.counts[v]||''):'';
     return '<button class="fpill'+(ST.type===v?' on':'')+'" aria-pressed="'+String(ST.type===v)+'" onclick="setType(\''+v+'\')">'+esc(l)+
       (n?'<b>'+Number(n).toLocaleString()+'</b>':'')+'</button>';
-  }).join('');
+  }).join('')+(typeFiltersFailed?'<button class="fpill" type="button" onclick="loadTypeFilters()">Retry loading categories</button>':'');
+}
+async function loadTypeFilters(){
+  if(typeFiltersLoading)return;
+  typeFiltersLoading=true;
+  try{
+    const counts=await rpc('dir_counts',{},true);
+    if(!Array.isArray(counts))throw Error('category_response_unavailable');
+    ST.raw_counts=counts;ST.counts={};
+    counts.forEach(c=>{if(c.entity_type)ST.counts[c.entity_type]=c.n??c.count;});
+    buildTypes(counts);typeFiltersFailed=false;
+  }catch{typeFiltersFailed=true;}
+  finally{typeFiltersLoading=false;pillsRender();}
 }
 /* Categories come from dir_counts, so every category in the data gets a filter —
    nothing is stranded because the UI forgot to list it. */
@@ -327,13 +342,7 @@ async function boot(){
   readUrl();
   applyExploreLang();
   runSearch(true);
-  try{
-    const counts=await rpc('dir_counts',{},true);
-    ST.raw_counts = counts || [];
-    (counts||[]).forEach(c=>{ if(c.entity_type) ST.counts[c.entity_type]=c.n||c.count; });
-    buildTypes(counts);
-  }catch(e){ try{ const rows=await rpc('dir_counts',{},true); }catch(e2){} }
-  pillsRender();
+  await loadTypeFilters();
   try{
     const hs=await rpc('home_stats',{},true);
     if(hs&&hs.listings){
