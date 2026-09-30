@@ -87,3 +87,7 @@ interaction flows. Preserve approved venue-specific furniture and category treat
 Toronto keeps white lounge couches and prominent pink sponsor-lounge bases/coffee
 tables; Montréal follows its published black-cloth seating. Do not homogenize
 approved furniture to achieve interface consistency.
+
+Toronto room wall imagery carries only Signature Productions branding. Do not use
+“Concert Archive” in Toronto room copy. Keep historical-photo context and source
+explanations only in About this room, not printed across the photographs.

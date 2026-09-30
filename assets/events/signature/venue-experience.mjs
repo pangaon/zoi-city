@@ -1,6 +1,6 @@
 import {mountSponsorPreview} from './sponsor-preview.mjs';
 import{mountLoungeScene}from'./lounge-scene.mjs';
-import{mountFurnishedConcert as mountConcertScene}from'./furnished-concert.mjs?v=20260930-room-art';
+import{mountFurnishedConcert as mountConcertScene}from'./furnished-concert.mjs?v=20260930-labels';
 import{imageReference}from'../../tickets/venue-reference.mjs';
 import{SIGNATURE_EVENT}from'./source-facts.mjs';
 export const SOURCE_ID=SIGNATURE_EVENT.id;
