@@ -5,6 +5,7 @@ import {canonical,sha256} from '../quality/evidence.mjs';
 export function reviewedEnrichmentBatch(report,review,lease){
  if(!report||!review||!lease||review.report_sha256!==sha256(canonical(report)))throw Error('review_artifact_mismatch');
  if(review.listing_id!==report.listing_id||lease.listing_id!==report.listing_id||lease.website!==report.website||!lease.lease_id||!lease.slug)throw Error('review_lease_mismatch');
+ if(typeof lease.source_fingerprint!=='string'||!lease.source_fingerprint.trim()||report.source_fingerprint!==lease.source_fingerprint)throw Error('review_lease_fingerprint_mismatch');
  if(review.source_fingerprint!==report.source_fingerprint||review.identity_confirmed!==true||review.images_confirmed!==true||!review.reviewer||!review.reviewed_at)throw Error('source_review_required');
  if(report.aggregator||report.status==='repair_required'||report.source?.http_status!==200||new URL(report.render.url).hostname.replace(/^www\./,'')!==new URL(report.website).hostname.replace(/^www\./,''))throw Error('source_not_approved');
  const allowed=new Set(['description','tagline','address_parts','brand_palette']);
