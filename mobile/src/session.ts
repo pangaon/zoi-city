@@ -17,7 +17,12 @@ export class SessionClient {
     try {
       const response = await this.transport(BASE + path, { method, signal: controller.signal, headers: { apikey: PUBLIC_KEY, 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
       const data = await response.json().catch(() => null);
-      if (!response.ok) throw new ApiError(response.status === 429 ? 'Too many attempts. Please wait before trying again.' : response.status === 400 || response.status === 401 || response.status === 403 ? 'Your sign-in details were not accepted. Please check them and try again.' : 'The service is unavailable. Please try again.', response.status);
+      if (!response.ok) {
+        const known = String(data?.message || data?.error_description || '');
+        const operationsError = /version_conflict/.test(known) ? 'This record changed elsewhere. Reload records and reopen it before saving.' : /cross_workspace_link/.test(known) ? 'Linked records must belong to this workspace.' : /insufficient_permission|not_authorized/.test(known) ? 'Your workspace role does not allow this action.' : /invalid_record/.test(known) ? 'Check the record fields and try again.' : '';
+        if (operationsError) throw new ApiError(operationsError, response.status);
+        throw new ApiError(response.status === 429 ? 'Too many attempts. Please wait before trying again.' : response.status === 400 || response.status === 401 || response.status === 403 ? 'Your sign-in details were not accepted. Please check them and try again.' : 'The service is unavailable. Please try again.', response.status);
+      }
       if (data && typeof data === 'object' && (data.error || data.ok === false)) throw new ApiError('The request could not be completed. Please try again.', 400);
       return data;
     } catch (error) {

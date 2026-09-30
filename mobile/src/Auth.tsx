@@ -11,12 +11,14 @@ const client = new SessionClient({
   clear: async () => { if (Platform.OS === 'web') globalThis.sessionStorage?.removeItem(KEY); else await SecureStore.deleteItemAsync(KEY); },
 });
 export const drafts = new DraftStore(AsyncStorage, () => client.session?.user.id);
-type AuthState = { client: SessionClient; session: Session | null; booting: boolean; notice: string; setNotice: (text: string) => void; signOut: () => Promise<void> };
+type AuthState = { workspaceId: string; setWorkspaceId: (id: string) => void; client: SessionClient; session: Session | null; booting: boolean; notice: string; setNotice: (text: string) => void; signOut: () => Promise<void> };
 const Context = createContext<AuthState | null>(null);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [booting, setBooting] = useState(true);
   const [notice, setNotice] = useState('');
+  const [workspaceId, setWorkspaceId] = useState('');
+  useEffect(() => setWorkspaceId(''), [session?.user.id]);
   useEffect(() => {
     let active = true;
     client.onChange = value => { if (active) setSession(value); };
@@ -29,12 +31,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const timer = setTimeout(() => client.refresh().catch(error => setNotice(error.message)), Math.max(1000, session.expires_at * 1000 - Date.now() - 60000));
     return () => clearTimeout(timer);
   }, [session]);
-  const value = useMemo(() => ({ client, session, booting, notice, setNotice, signOut: async () => {
+  const value = useMemo(() => ({ client, session, booting, notice, setNotice, workspaceId, setWorkspaceId, signOut: async () => {
     const userId = client.session?.user.id;
     try { await client.signOut(); setNotice('You are signed out.'); }
     catch { setNotice('Signed out on this device. The server could not confirm revocation; retry when connected.'); }
     finally { if (userId) await Promise.all([drafts.clear(userId), AsyncStorage.removeItem('zoi.workspace.' + userId)]).catch(() => setNotice('Signed out, but device drafts could not be removed.'));  }
-  } }), [session, booting, notice]);
+  } }), [session, booting, notice, workspaceId]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }
 export function useAuth() { const value = useContext(Context); if (!value) throw new Error('AuthProvider required'); return value; }

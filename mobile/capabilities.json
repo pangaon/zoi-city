@@ -22,10 +22,19 @@
     },
     {
       "id": "business-profile",
-      "ios": "browser-handoff",
-      "android": "browser-handoff",
+      "ios": "native-candidate",
+      "android": "native-candidate",
       "required": [
-        "native profile screen"
+        "live representative profile acceptance",
+        "device link checks"
+      ],
+      "implemented": [
+        "seo_entity detail",
+        "canonical profile navigation",
+        "owner/enrichment precedence",
+        "real contact and social links",
+        "provenance labels",
+        "image fallback"
       ]
     },
     {
@@ -140,6 +149,28 @@
         "real atomic seat holds",
         "ticket checkout"
       ]
+    },
+    {
+      "id": "company-operations",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "company/contact/project/task CRUD",
+        "workspace membership selection",
+        "editor/viewer/owner permissions",
+        "linked records",
+        "due dates",
+        "task assignees",
+        "optimistic version checks",
+        "soft archive confirmation",
+        "audit history",
+        "verified mutation receipts"
+      ],
+      "required": [
+        "operations migration deployment",
+        "isolated live CRUD and tenancy acceptance",
+        "device validation"
+      ]
     }
   ],
   "architecture": {
@@ -151,7 +182,8 @@
     "zoi://home",
     "zoi://discover",
     "zoi://community",
-    "zoi://grow"
+    "zoi://grow",
+    "zoi://business/:slug"
   ],
   "releaseGates": [
     "TypeScript",

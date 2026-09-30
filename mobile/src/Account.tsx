@@ -5,10 +5,10 @@ import { validPostReceipt } from './drafts';
 const color = { navy: '#132F46', blue: '#116CBA', muted: '#60717E' };
 function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) { return <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.action, disabled && { opacity: 0.55 }]}><Text style={styles.actionText}>{label}</Text></Pressable>; }
 export function AccountPanel() {
-  const { client, session, booting, notice, setNotice, signOut } = useAuth();
+  const { client, session, booting, notice, setNotice, signOut, workspaceId: selected, setWorkspaceId: setSelected } = useAuth();
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [code, setCode] = useState('');
   const [mode, setMode] = useState<'password' | 'email'>('password'); const [sent, setSent] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
-  const [workspaces, setWorkspaces] = useState<{ id: string; name: string; role?: string }[]>([]); const [selected, setSelected] = useState(''); const [workspaceError, setWorkspaceError] = useState(''); const [workspaceLoading, setWorkspaceLoading] = useState(false); const [reload, setReload] = useState(0);
+  const [workspaces, setWorkspaces] = useState<{ id: string; name: string; role?: string }[]>([]); const [workspaceError, setWorkspaceError] = useState(''); const [workspaceLoading, setWorkspaceLoading] = useState(false); const [reload, setReload] = useState(0);
   useEffect(() => {
     let current = true; setWorkspaces([]); setSelected(''); setWorkspaceError('');
     if (!session) return;
