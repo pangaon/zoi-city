@@ -1,6 +1,6 @@
 # Organizer-approved host table allocations
 
-Candidate `20260930144328_event_host_table_allocations.sql`; not deployed. No Signature rows, invitations, payments or tickets are created by deployment.
+Production RPC definitions and public host UI inspected on 2026-09-30: table allocations, guest quantities, authenticated claim preview and claim acceptance are deployed. This is not evidence of a completed real-organizer browser journey. No operational Signature event/table inventory was found in the bounded production lookup; its illustrated room is not connected to these allocations. No payments or admission tickets are created by these operations.
 
 ## Actual boundary
 
@@ -28,7 +28,7 @@ Configured email/SMS delivery, verified contact binding, payment provider, admis
 
 ## Tests
 
-`node tests/database/event-host-allocations.integration.mjs`:15 isolated PostgreSQL groups including real3/1/5 quantities, concurrent competing allocations, existing hold exclusion, expiry reclaim, role/ownership/privacy and token-hash-only storage. Includes the exact `ops/verify-event-host-allocations.sql` BEGIN/ROLLBACK fixture with zero retained allocations. No production execution.
+`node tests/database/event-host-allocations.integration.mjs`:15 isolated PostgreSQL groups including real3/1/5 quantities, concurrent competing allocations, existing hold exclusion, expiry reclaim, role/ownership/privacy and token-hash-only storage. Includes the exact `ops/verify-event-host-allocations.sql` BEGIN/ROLLBACK fixture with zero retained allocations. The test command is isolated evidence; do not infer a production customer booking from it.
 
 Mutation budget:300 new allocation/guest/claim receipts per actor per24hours, serialized request → actor → event settings. Exact retries do not consume the budget; organizer release remains available. `invited` is an internal link-created state, displayed as “Link ready”, never proof a message was sent.
 
@@ -39,3 +39,7 @@ Mutation budget:300 new allocation/guest/claim receipts per actor per24hours, se
 `event_host_claim_preview(p_token text)` is authenticated and read-only. It checks the same currentvalidallocation, ownership, tokenhash and claimant boundaries as acceptance; returns only eventname/tablelabel/quantity/unitprice/currency/expiry/status plus explicit unpaid/noadmission flags. It returns neither otherguests nor hostcontacts/private guestlabel. Invalid, revoked, expired or otherclaimant capabilities fail generically. Preview does not reserve new stock, write a requestledger, or guarantee acceptance against a concurrent claim. The256-bit capability is required; acceptance revalidates atomically under the existing lock.
 
 Recipient UI validates that receipt and shows exact quantity/total before enabling Accept; unavailable preview cannot be bypassed by normal UI. Existing acceptedself preview is displayed without a newaccept action. Provider settlement/delivery remains a separate incomplete domain.
+
+## Device contact sharing
+
+The contact composer uses a user-selected phone contact only when the browser exposes a supported picker. Otherwise names, email and phone are entered manually. Contact details stay in the open composer; they are not uploaded to Zoi or bound to the claim. The host reviews and sends through their own messaging app. A generated link, opened composer, copied message or native share completion is not a delivery receipt. Actual iOS/Android messaging-app delivery is separate from browser testing.
