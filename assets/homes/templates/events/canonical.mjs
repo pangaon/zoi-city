@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20260930-room-entry';
+import {mountEventActions} from './client.mjs?v=20260930-room-art';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');

@@ -69,3 +69,21 @@ exact staged release checks. Verify the production deployment before saying live
 Avoid waste: do not build per-record copies, repeatedly buy builds or call paid AI
 for deterministic checks. Batch a coherent release and preserve evidence. Maintain
 an explicit remaining-work list; never convert an untested item into a pass.
+
+## Immersive venue imagery
+
+For interactive event rooms, use visually inspected original organizer/artist assets
+at their available native resolution. Record dimensions and source provenance;
+large canvas dimensions do not create photographic detail. Compose imagery for
+the physical wall proportions and continue crops/texture coordinates through
+corners rather than repeating enlarged posters on independent boards. Keep artist
+faces undistorted, tables unobstructed, every source ID accessible, and category
+colours faithful. Inspect the actual desktop, portrait phone, close-up and seated
+views before accepting visual work. Past-event photography remains identified as
+archive material; an illustrated production wall is not confirmed venue equipment.
+
+Shared Zoi room consistency applies to controls, typography, selection panels and
+interaction flows. Preserve approved venue-specific furniture and category treatments:
+Toronto keeps white lounge couches and prominent pink sponsor-lounge bases/coffee
+tables; Montréal follows its published black-cloth seating. Do not homogenize
+approved furniture to achieve interface consistency.

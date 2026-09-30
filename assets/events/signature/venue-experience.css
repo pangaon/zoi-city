@@ -141,3 +141,25 @@
  .signature-venue[data-fullscreen=true][data-sheet=true] .sv-inspector{max-height:calc(100dvh - 230px)}
  .signature-venue[data-fullscreen=true][data-sheet=true] .fc-viewport>.sv-demo-tools{visibility:visible;top:153px;bottom:auto;max-height:calc(100dvh - 310px)}
 }
+
+/* Give the ordinary 3D room the same open canvas as the full-screen journey. */
+.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-layout{display:block;position:relative}
+.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-inspector{position:absolute;z-index:10;inset:auto 18px 70px auto;width:310px;box-sizing:border-box;max-height:calc(100% - 160px);padding:14px;overflow:auto}
+.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-selection-summary{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;padding:0 0 12px;text-align:left;gap:12px}
+.signature-venue[data-view=concert]:not([data-fullscreen=true]):not([data-sheet=true]) .sv-inspector>.sv-find,.signature-venue[data-view=concert]:not([data-fullscreen=true]):not([data-sheet=true]) .sv-inspector>[data-details],.signature-venue[data-view=concert]:not([data-fullscreen=true]):not([data-sheet=true]) .sv-inspector>.sv-preferences{display:none}
+.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-inspector>[data-request]{margin:0;min-height:44px;font-size:12px}
+.signature-venue[data-view=concert]:not([data-fullscreen=true])[data-sheet=true] .sv-inspector>[data-request]{margin-bottom:14px}
+.signature-venue[data-view=concert] .sv-map-area{border-color:#bddbff30;border-radius:24px}
+@media(max-width:700px){
+ .signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-inspector{inset:auto 10px 60px;width:calc(100% - 20px);max-height:calc(100% - 140px);border-radius:18px}
+ .signature-venue[data-view=concert]:not([data-fullscreen=true]):not([data-sheet=true]) .sv-inspector{display:grid;grid-template-columns:minmax(0,1fr) 120px;gap:10px;align-items:center}
+ .signature-venue[data-view=concert]:not([data-fullscreen=true]):not([data-sheet=true]) .sv-selection-summary{padding:0;gap:5px}.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-selection-summary strong{font-size:16px}.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-selection-summary small{font-size:7px}
+ .signature-venue[data-view=concert]:not([data-fullscreen=true]) .fc-viewport>.sv-demo-tools{bottom:170px}
+ .signature-venue[data-view=concert]:not([data-fullscreen=true])[data-sheet=true] .fc-viewport>.sv-demo-tools{top:76px;bottom:auto;max-height:calc(100% - 230px)}
+}
+/* Keep enlarged room sections within the document at every browser zoom level. */
+.signature-venue[data-view=concert]:not([data-fullscreen=true]){width:100%;margin-inline:0}
+.signature-venue[data-view=concert]:not([data-fullscreen=true]) .sv-selection-summary:hover{background:#ffffff08;box-shadow:none}
+@media(max-width:700px){.signature-venue[data-view=concert]:not([data-fullscreen=true]) .fc-viewport>.sv-demo-tools:not([open]){bottom:12px}.signature-venue[data-view=concert]:not([data-fullscreen=true]) .fc-stage-label{bottom:65px}}
+/* One compact view rail, not a stack of full-width phone buttons. */
+@media(max-width:700px){.signature-venue:not([data-fullscreen=true]) .sv-tabs{display:flex;flex-wrap:nowrap;width:100%;max-width:100%;overflow-x:auto;scrollbar-width:thin;padding:3px}.signature-venue:not([data-fullscreen=true]) .sv-tabs button{flex:0 0 auto;white-space:nowrap;min-height:42px;padding:9px 13px;border-radius:13px}.signature-venue:not([data-fullscreen=true]) .sv-toolbar{gap:8px;padding-block:10px}}
