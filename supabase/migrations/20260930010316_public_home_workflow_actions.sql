@@ -1,6 +1,6 @@
 BEGIN;
 SET LOCAL lock_timeout='5s';
-CREATE FUNCTION zoi.public_home_actions(p_listing uuid) RETURNS jsonb
+CREATE OR REPLACE FUNCTION zoi.public_home_actions(p_listing uuid) RETURNS jsonb
 LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$
  SELECT jsonb_strip_nulls(jsonb_build_object(
  'booking_url',CASE WHEN EXISTS(SELECT 1 FROM zoi.booking_settings b WHERE b.listing_id=l.id AND b.workspace_id=l.owner_workspace_id AND b.enabled) THEN '/book/?listing='||l.id::text END,
