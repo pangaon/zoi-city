@@ -1,3 +1,4 @@
+import {readEntityWithRecovery} from './_public-entity-read.js';
 import {renderHospitalityHome} from './_hospitality-home.js';
 import {withMonasteryNetwork} from './_monastery-network.js';
 import {withPublicOwnerMedia} from './_owner-media.js';
@@ -28,8 +29,20 @@ async function rpc(fn, body, timeoutMs = 7000) {
       method: 'POST', headers: {apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},
       body: JSON.stringify(body || {}), signal:controller.signal,
     });
-    if (!r.ok) throw new Error('rpc '+fn+' '+r.status);
+    if (!r.ok) {
+      const error = new Error('Public data is temporarily unavailable');
+      error.transientPublicRead = r.status === 502;
+      error.publicReadReason = 'http_' + r.status;
+      throw error;
+    }
     return await r.json();
+  } catch (error) {
+    if (error?.name === 'TypeError') {
+      error.transientPublicRead = true;
+      error.publicReadReason = 'network';
+    }
+    if (error?.name === 'AbortError') error.publicReadReason = 'timeout';
+    throw error;
   } finally { clearTimeout(timer); }
 }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
@@ -496,7 +509,7 @@ export default async function handler(req, res) {
   var slug = (req.query && req.query.slug ? String(req.query.slug) : '').trim();
   try {
     if (!slug) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
-    var e = await rpc('home_entity', { p_slug: slug });
+    var e = await readEntityWithRecovery(() => rpc('home_entity', { p_slug: slug }, 3400));
     if (Array.isArray(e)) e = e[0];
     // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
     // live duplicates of every listing. Send the crawler to the one canonical URL.
@@ -527,6 +540,7 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
     res.end(withMonasteryNetwork(withPublicOwnerMedia(page(e, related, completeness),e,design),e));
   } catch (err) {
+    console.error(JSON.stringify({event:'public_home_unavailable', reason:/^(?:http_[0-9]{3}|network|timeout)$/.test(err?.publicReadReason || '') ? err.publicReadReason : 'response_or_render'}));
     res.statusCode=503; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
     res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi</p><h1>We are refreshing this profile</h1><p style="color:var(--mut);line-height:1.6">The latest details are temporarily unavailable. Please try again in a moment.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to Explore</a></p></main></body></html>');
   }

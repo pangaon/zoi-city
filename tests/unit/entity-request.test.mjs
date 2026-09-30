@@ -69,3 +69,5 @@ test('artist hometown without a venue address does not become a directions desti
  const artist=await run(async fn=>response(fn==='home_entity'?{...entity,entity_type:'artist'}:null));assert.doesNotMatch(artist.body,/maps\/dir\//);
  const venue=await run(async fn=>response(fn==='home_entity'?{...entity,entity_type:'artist',address:'12 Main St'}:null));assert.match(venue.body,/maps\/dir\//);
 });
+
+test('a transient gateway failure retries only the primary public read once',async()=>{let attempts=0;const r=await run(async fn=>{if(fn==='home_entity'&&++attempts===1)return new Response('gateway',{status:502});return response(fn==='home_entity'?entity:[])});assert.equal(r.status,200);assert.equal(attempts,2);assert.deepEqual(r.calls.slice(0,2),['home_entity','home_entity']);});
