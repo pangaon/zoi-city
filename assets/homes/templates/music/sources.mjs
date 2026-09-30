@@ -9,7 +9,7 @@ export const ARTIST_SOURCES={
     "website": "https://www.georgedalaras.com/",
     "checked_at": "2026-09-30",
     "source_method": "Official website indexed text reviewed; direct fetch currently presents a verification page. Spotify oEmbed responses fetched successfully.",
-    "portrait": "https://image-cdn-fa.spotifycdn.com/image/ab676161000051749d2ed250f66fb0f5cfb34a83",
+    "portrait": "https://i.scdn.co/image/ab6761610000e5eb9d2ed250f66fb0f5cfb34a83",
     "portrait_credit": "Artist image from the official-linked Spotify profile",
     "spotify": "https://open.spotify.com/artist/0eLU3EgFDZOFgd2Dwalfwo",
     "youtube": "https://www.youtube.com/user/GeorgeDalarasTv",
@@ -111,7 +111,33 @@ export const ARTIST_SOURCES={
         "time_precision": "date_only",
         "status": "official_website_listing"
       }
-    ]
+    ],
+    "gallery": [
+      {
+        "url": "https://i.scdn.co/image/ab6761610000e5eb9d2ed250f66fb0f5cfb34a83",
+        "caption": "George Dalaras · artist portrait",
+        "credit": "Spotify artist profile",
+        "source": "https://open.spotify.com/artist/0eLU3EgFDZOFgd2Dwalfwo"
+      }
+    ],
+    "portrait_sources": [
+      {
+        "height": 160,
+        "url": "https://i.scdn.co/image/ab6761610000f1789d2ed250f66fb0f5cfb34a83",
+        "width": 160
+      },
+      {
+        "height": 320,
+        "url": "https://i.scdn.co/image/ab676161000051749d2ed250f66fb0f5cfb34a83",
+        "width": 320
+      },
+      {
+        "height": 640,
+        "url": "https://i.scdn.co/image/ab6761610000e5eb9d2ed250f66fb0f5cfb34a83",
+        "width": 640
+      }
+    ],
+    "portrait_position": "50% 30%"
   },
   "78ee3fac-5a97-4e87-88af-57f1eb6a638d": {
     "schema_version": 1,
@@ -124,7 +150,7 @@ export const ARTIST_SOURCES={
     "story": "Explore the recordings of Thanos Petrelis, a Greek laiko singer whose career is documented by Heaven Music. Start with a release, then follow the source for his story.",
     "checked_at": "2026-09-30",
     "source_method": "Heaven Music artist biography and Spotify catalogue reviewed. The historical artist website presents a verification page; no current tour dates or professional booking contact have been verified.",
-    "portrait": "https://image-cdn-ak.spotifycdn.com/image/ab67616100005174481a334c11aa611a96841bc6",
+    "portrait": "https://i.scdn.co/image/ab6761610000e5eb481a334c11aa611a96841bc6",
     "portrait_credit": "Artist portrait from Spotify",
     "spotify": "https://open.spotify.com/artist/14UUPeNxbwhi11v0iVSTR0",
     "youtube": null,
@@ -162,6 +188,32 @@ export const ARTIST_SOURCES={
         "source": "https://open.spotify.com/album/4gcg2JBuvvFBYde5OHgQ5R"
       }
     ],
-    "shows": []
+    "shows": [],
+    "gallery": [
+      {
+        "url": "https://i.scdn.co/image/ab6761610000e5eb481a334c11aa611a96841bc6",
+        "caption": "Thanos Petrelis · artist portrait",
+        "credit": "Spotify artist profile",
+        "source": "https://open.spotify.com/artist/14UUPeNxbwhi11v0iVSTR0"
+      }
+    ],
+    "portrait_sources": [
+      {
+        "height": 160,
+        "url": "https://i.scdn.co/image/ab6761610000f178481a334c11aa611a96841bc6",
+        "width": 160
+      },
+      {
+        "height": 320,
+        "url": "https://i.scdn.co/image/ab67616100005174481a334c11aa611a96841bc6",
+        "width": 320
+      },
+      {
+        "height": 640,
+        "url": "https://i.scdn.co/image/ab6761610000e5eb481a334c11aa611a96841bc6",
+        "width": 640
+      }
+    ],
+    "portrait_position": "50% 30%"
   }
 };

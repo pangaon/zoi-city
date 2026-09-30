@@ -25,3 +25,14 @@ Working owner entry:
 Production read evidence 2026-09-30: Dalaras artist listing `a558f28d-6c8f-4079-9730-838f483867fc`; `artist_shows` empty; `inquiry_availability.available=false`. Therefore no production booking, ticket or enquiry submission was attempted. Real provider music images loaded 4/4 at 390/1440 across all four routes. Local isolated browser fixture tested trip lost-response retry, wrong-owner denial and authorized operator mounting with zero automatic mutations. Existing trip/appearance PostgreSQL authorization tests remain backend authority; no new schema introduced here.
 
 Native may reuse `calendarReminder`, `visibleShows`, `confirmedShow`, `spotifyEmbed` and `youtubePlaylistEmbed` from `model.mjs`; native trip/appearance contracts are unchanged. Native four-layout visual parity is not yet claimed.
+
+## Four revised experiences (2026-09-30)
+
+- `atelier`: cinematic portrait and editorial artist story.
+- `table`: record-wall hero and open, device-only listening queue.
+- `concierge`: full portrait, upcoming city/date itinerary and live planning.
+- `parea`: song conversation invitations into real Community music.
+
+All keep the sourced gallery, videos (or explicit unavailable state), social links, date-only reminders, real confirmation lookup, owner checks, and city-interest control. `layouts.mjs` renders distinct structures; `queue.mjs` persists only reviewed recording IDs on this device and never starts playback automatically. Provider playback remains explicit. New `gallery` items are `{url,caption,credit,source}`. `portrait_sources` contains dimensions/URLs observed in the actual Spotify artist page; currently the largest verified portrait is 640×640, not a native high-resolution full-screen press photograph. Official archive image responses currently return anti-bot HTML and are not presented as working image assets.
+
+Demand: `mountArtistDemand({root,artist:data,C})` from `/assets/music/demand.mjs`; shared root-owned module, deploy only with its reviewed backend. Community links `/community/?music_artist=<uuid>&music_release=<reviewed-id>#music` select content, never automatically post or play.
