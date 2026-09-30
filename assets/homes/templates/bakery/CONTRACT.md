@@ -9,3 +9,9 @@ Exact Artion Astoria identity (`86b73cdc-d59a-433d-8efe-2271628929d5`) plus offi
 A request draft stores only in this browser under `zoi.bakery.request.v1.<listing-id>`: occasion, details (1–600 chars), quantity (1–1000), preferred date, questions. It is not a business message, preorder, stock reservation or payment. Copy/edit/clear and storage receipt checks are implemented. Private enquiry navigation appears only after valid `inquiry_availability` success with available true. Provider ordering is explicitly labeled as an external handoff.
 
 Browser acceptance: three real records at 390/1440, no overflow, proper identity, draft saved/read back, Escape and focus restoration; all five displayed Artion source images loaded. No production records created.
+
+## Four owner-selectable layouts
+
+`renderBakeryHome(entity, publishedDesign)` now respects `design.template`: Concierge remains default; Atelier uses an editorial title/photograph/story composition; Table puts published menu sections and prices into a counter board; Parea starts with occasion selection. All share real source-guarded data and the existing menu/gallery/request/enquiry actions. No stock/cart/payment claims added. Parea's occasion buttons prefill the local request, preserving the rest of the existing draft. Owner section order, hidden sections and approved copy remain active; hidden offerings do not appear on Table's counter board. Shared source assets are not borrowed between bakeries.
+
+Acceptance: three actual public businesses (Artopolis Chicago, Pâtisserie Artopolis Chomedey, Artion Astoria), all four layouts at 390/1440px; no overflow; per-business stored request and explicit no-order confirmation; Escape restores focus. Missing-photo businesses use typography, never unrelated product photography. Evidence `.recovery/logs/bakery-four-browser-results.json` and `bakery-four-<slug>-<template>-<width>.png`.
