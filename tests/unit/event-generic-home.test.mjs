@@ -4,11 +4,11 @@ test('table discovery belongs only to real event pages and honours hidden offeri
  const event={...venue,entity_type:'event'};
  for(const template of ['atelier','concierge','table','parea']){
   const html=renderEventCanonicalHome(event,{template});
-  assert.match(html,/data-event-reservations/);
+  assert.match(html,/data-event-reservations/);assert.match(html,/data-event-artists/);
   assert.ok(html.includes('"id":"'+event.id+'"'));
   assert.ok(!html.includes('Reserve table'));
-  assert.ok(!renderEventCanonicalHome(venue,{template}).includes('data-event-reservations'));
-  assert.ok(!renderEventCanonicalHome(event,{template,hidden_sections:['offerings']}).includes('data-event-reservations'));
+  assert.ok(!renderEventCanonicalHome(venue,{template}).includes('data-event-reservations'));assert.ok(!renderEventCanonicalHome(venue,{template}).includes('data-event-artists'));
+  assert.ok(!renderEventCanonicalHome(event,{template,hidden_sections:['offerings']}).includes('data-event-reservations'));assert.ok(!renderEventCanonicalHome(event,{template,hidden_sections:['offerings']}).includes('data-event-artists'));
  }
 });
 test('generic venue inherits four designs using only its own spaces and capacity',()=>{const d=eventHomeContent(venue);assert.equal(d.spaces[0].capacity,'80');for(const template of['atelier','concierge','table','parea']){const h=renderEventCanonicalHome(venue,{template});assert.match(h,/Main room/);assert.match(h,/Published capacity: 120/);for(const wrong of['Parkview','Three ballrooms','Matterport','Giannis','data-table=','src=""'])assert.ok(!h.includes(wrong),wrong);}});

@@ -6,6 +6,14 @@ if (root && data) {
   try {
     const {entity} = JSON.parse(data.textContent);
     mountEventActions(entity, root);
+    const artists = root.querySelector('[data-event-artists]');
+    if (artists && entity.generic === true && entity.family === 'event') {
+      import('/assets/trips/event-artists.mjs?v=20260930-connections')
+        .then(({mountEventArtists}) => {
+          if (artists.isConnected) mountEventArtists(artists, {eventId: entity.id, core: window.ZoiCore});
+        })
+        .catch(() => { artists.hidden = true; });
+    }
     const reservations = root.querySelector('[data-event-reservations]');
     if (reservations && entity.generic === true && entity.family === 'event') {
       let loading = false;

@@ -1,0 +1,8 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {artistAnnouncements,announcementCards} from '../../assets/homes/templates/music/announcements.mjs';
+import {renderMusic} from '../../assets/homes/templates/music/render.mjs';
+const id='98a3cc20-0369-469a-b885-9e1d6f070f92';
+test('only reviewed artist identities receive dated source announcements, never confirmed inventory',()=>{for(const artist of[id,'6c125478-7978-4168-b405-625cfa29c22c']){const rows=artistAnnouncements(artist,{today:'2027-03-20'});assert.equal(rows.length,1);assert.equal(rows[0].eventPath,'/events/giannis-ploutarchos-andromache-toronto-2027/');assert.ok(!('event_id'in rows[0]));}assert.deepEqual(artistAnnouncements('other',{today:'2026-09-30'}),[]);assert.deepEqual(artistAnnouncements(id,{today:'2027-03-21'}),[]);assert.match(announcementCards(id,{today:'2026-09-30'}),/About this date/);});
+test('four artist layouts show reciprocal source links but owner calendar hiding removes them',()=>{const data={id,name:'Artist',slug:'artist',generic:true,shows:[],releases:[],gallery:[]};for(const template of['atelier','concierge','table','parea']){const html=renderMusic(data,template);assert.match(html,/href="\/business\/signatureproductions-6aa61d"/);assert.match(html,/Explore the concert on Zoi/);assert.doesNotMatch(renderMusic(data,template,{hidden_sections:['calendar']}),/Explore the concert on Zoi/);}});
+
+test("announcement remains through Toronto event day, not UTC midnight",()=>{assert.equal(artistAnnouncements(id,{now:new Date("2027-03-21T03:59:59Z")}).length,1);assert.equal(artistAnnouncements(id,{now:new Date("2027-03-21T04:00:00Z")}).length,0);});
