@@ -1,7 +1,7 @@
 import {mountSavedGroups} from '../saved-groups.mjs';
 import {openPosterDialog} from '../../sharing/poster-dialog.mjs';
 import {mountSignatureCustomer} from './customer-a.mjs';
-import {mountVenueExperience} from './venue-experience.mjs';
+import {mountVenueExperience} from './venue-experience.mjs?v=20260930-display-focus';
 import {createPrivatePlan} from './private-plan.mjs';
 const C=window.ZoiCore,customerRoot=document.querySelector('#signature-customer'),venueRoot=document.querySelector('#signature-room'),saveRoot=document.querySelector('#signature-save');
 let customer,venue,adapter,shareDialog,savedGroups,disposed=false;

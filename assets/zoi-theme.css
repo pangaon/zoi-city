@@ -333,6 +333,7 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
    brand mark are named, so they persist across the navigation instead of
    flickering out and back in. */
 @view-transition{ navigation:auto; }
+@media (prefers-reduced-motion: reduce){ @view-transition{ navigation:none; } }
 
 @media (prefers-reduced-motion: no-preference){
   ::view-transition-old(root){

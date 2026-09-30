@@ -1,0 +1,7 @@
+import{mediaSelection}from'../community/media-provider.mjs';
+const data=JSON.parse(document.getElementById('widget-data').textContent),button=document.getElementById('play'),root=document.getElementById('player'),status=document.getElementById('status');
+document.querySelector('.portrait')?.addEventListener('error',e=>e.target.hidden=true);
+function closePlayer(){root?.replaceChildren();if(button){button.textContent='Open music player';button.setAttribute('aria-expanded','false');}}
+if(button){button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls','player');}
+button?.addEventListener('click',()=>{if(root.firstChild){closePlayer();return;}try{const m=mediaSelection(data.media),frame=document.createElement('iframe');frame.src=m.embed;frame.title=data.name+' music player';frame.allow='encrypted-media; fullscreen';frame.referrerPolicy='no-referrer';frame.height=m.provider==='spotify'?'152':'200';frame.addEventListener('error',()=>status.textContent='Player unavailable. Use the direct provider link below.');root.append(frame);button.textContent='Close music player';button.setAttribute('aria-expanded','true');status.textContent='Playback and sign-in depend on the provider. You can also use the direct link below.';}catch{status.textContent='Player unavailable. Use the direct provider link below.'}});
+addEventListener('pagehide',closePlayer);document.addEventListener('visibilitychange',()=>{if(document.hidden)closePlayer();});

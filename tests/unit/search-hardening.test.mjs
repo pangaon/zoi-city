@@ -40,19 +40,31 @@ test('community feed migration removes the ambiguous scoped overload', () => {
   assert.match(sql, /DROP FUNCTION IF EXISTS public\.feed_list\(integer, integer, text, uuid, text\)/);
 });
 
-test('Vercel applies baseline browser security headers globally', () => {
+test('Vercel preserves browser protections with only the public widget frame exception', () => {
   const cfg = JSON.parse(read('vercel.json'));
   const global = cfg.headers.find((entry) => entry.source === '/(.*)');
   assert.ok(global, 'global security header rule missing');
   const headers = Object.fromEntries(global.headers.map((h) => [h.key.toLowerCase(), h.value]));
   assert.equal(headers['x-content-type-options'], 'nosniff');
-  assert.equal(headers['x-frame-options'], 'DENY');
   assert.equal(headers['referrer-policy'], 'strict-origin-when-cross-origin');
   assert.match(headers['permissions-policy'], /camera=\(\)/);
   assert.equal(headers['cross-origin-opener-policy'], 'same-origin-allow-popups');
-  assert.equal(headers['cross-origin-resource-policy'], 'same-site');
-  assert.match(headers['content-security-policy-report-only'], /default-src 'self'/);
-  assert.match(headers['content-security-policy-report-only'], /frame-ancestors 'none'/);
+  const effective = path => Object.fromEntries(cfg.headers
+    .filter(rule => new RegExp('^' + rule.source + '$').test(path))
+    .flatMap(rule => rule.headers.map(h => [h.key.toLowerCase(), h.value])));
+  for (const path of ['/', '/social/', '/tickets/', '/api/entity', '/event/concert', '/artist/artist', '/widgets/', '/api/widget-other']) {
+    const actual = effective(path);
+    assert.equal(actual['x-frame-options'], 'DENY', path);
+    assert.equal(actual['cross-origin-resource-policy'], 'same-site', path);
+    assert.match(actual['content-security-policy-report-only'], /default-src 'self'/);
+    assert.match(actual['content-security-policy-report-only'], /frame-ancestors 'none'/);
+  }
+  for (const path of ['/api/widget', '/api/widget/']) {
+    const actual = effective(path);
+    assert.equal(actual['x-frame-options'], undefined);
+    assert.equal(actual['content-security-policy-report-only'], undefined);
+    assert.equal(actual['x-content-type-options'], 'nosniff');
+  }
 });
 
 test('Event OS SECURITY DEFINER functions pin an empty search_path', () => {
