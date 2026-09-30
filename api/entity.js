@@ -1,6 +1,7 @@
 import {profileMedia} from './_profile-media.js';
 import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
 import {renderChurchHome} from './_church-home.js';
+import {renderRestaurantHome} from './_restaurant-home.js';
 import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
@@ -498,7 +499,7 @@ export default async function handler(req, res) {
       return;
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
-    const designedHome = renderAvliHome(e) || renderChurchHome(e);
+    const designedHome = renderAvliHome(e) || renderChurchHome(e) || renderRestaurantHome(e);
     if (designedHome) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');
