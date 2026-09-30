@@ -8,3 +8,9 @@ test('map deep links use the real web map and preserve only public search/place/
  assert.equal(nativeWebHandoff('zoi://explore/map/#NaN/999/999'),'https://www.zoi.city/explore/map/');
  assert.equal(nativeWebHandoff('https://evil.test/explore/map/'),null);
 });
+
+test('explicit guardian links hand off only public listing context, adult groups stay native',()=>{
+ const id='2ba5b8e3-4fe9-4ec7-a3bf-7f616fcf07fd',expected='https://www.zoi.city/groups/?listing='+id+'&family=1#guardian-programmes';
+ for(const path of ['/groups/?listing='+id+'&family=1&child=PRIVATE&token=SECRET','zoi://groups/?listing='+id+'&family=1','https://www.zoi.city/groups/?listing='+id+'#guardian-programmes'])assert.equal(nativeWebHandoff(path),expected);
+ for(const path of ['/groups/?listing='+id,'/groups/?listing='+id+'&family=0','/groups/?family=1','/groups/?listing=bad&family=1','/groups/?listing='+id+'&listing='+id+'&family=1','https://evil.test/groups/?listing='+id+'&family=1','https://attacker@www.zoi.city/groups/?listing='+id+'&family=1'])assert.equal(nativeWebHandoff(path),null);
+});

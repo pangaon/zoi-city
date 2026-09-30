@@ -605,8 +605,8 @@
     },
     {
       "id": "guardian-youth-programmes",
-      "ios": "implemented-gated-backend-unavailable",
-      "android": "implemented-gated-backend-unavailable",
+      "ios": "web-handoff-native-forms-gated",
+      "android": "web-handoff-native-forms-gated",
       "implemented": [
         "private guardian child records and age-band consent",
         "versioned enrolment, renewal and withdrawal",
@@ -614,11 +614,11 @@
         "actual linked calendar classes and attendance"
       ],
       "required": [
-        "reviewed migration deployment",
-        "production HTTP acceptance with private rollback fixtures",
-        "physical device accessibility and lifecycle acceptance"
+        "persistent native nonce-only uncertain-write guard across remount/reload before enabling forms",
+        "physical device accessibility and account/workspace lifecycle acceptance"
       ],
-      "release_gate": "guardianProgrammes=false; no child form or RPC request while gated"
+      "release_gate": "Backend guardianProgrammes=true; independent nativeYouthReady=false prevents private form mounting/RPCs until persistent uncertain-write recovery and lifecycle acceptance.",
+      "web_handoff": "Family enrolment and organizer controls open Zoi web. Browser sign-in is separate and organizers must select their workspace. Source candidate only; existing binary not updated."
     },
     {
       "id": "artist-music-and-city-demand",

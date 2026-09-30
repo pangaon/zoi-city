@@ -1,4 +1,5 @@
--- PROPOSAL ONLY: reviewed source first telephone belongs to Fourways The View.
+-- COMPLETED ONCE 2026-09-30: all14 reviewed phones quarantined; DO NOT REPLAY.
+-- Reviewed source first telephone belongs to Fourways The View.
 -- Exactly14 other records; The View ce057240 is deliberately retained.
 BEGIN;
 SET LOCAL statement_timeout='15s';

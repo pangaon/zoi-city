@@ -6,12 +6,15 @@ Coordinator: record the live web deployment and native build used before assigni
 
 ## Install the right native build
 
-Both preview builds for commit **7592a434e757fa9a85c8dc42013e0c70539f8ea9** are FINISHED, confirmed by the release lead. This source passed 167 tests, TypeScript and Android/iOS/web exports. Finished builds are not physical-device acceptance.
+Both preview builds for commit **9cf735458b2046a79e23e643e55449c6d47b4228** are FINISHED, confirmed by the release lead. This source passed 169 tests, TypeScript and Android/iOS/web exports. Finished builds are not physical-device acceptance.
 
-- Android: [download the APK](https://expo.dev/artifacts/eas/UHg3xRbLLsbJVlp1GmQVLuNTKeWFtH3T_wN4mdLIum4.apk). Build `ed7b5d2e-b251-4855-ae97-9efea756df05`. Install on an assigned Android device; record OS/version and whether installation succeeds. This is an internal preview, not a Play Store release.
-- iOS: [download the simulator archive](https://expo.dev/artifacts/eas/prgi-XW4YVoZykWOOLQo1re5EeGD9weJ7saS4W8neSQ.tar.gz). Build `d53afae5-2168-4679-b26c-2c8b8780aeeb`. Requires a Mac with an iOS Simulator. **This archive cannot be installed on a physical iPhone and is not TestFlight.** Physical iPhone testers should use Safari for the web tests and report native installation as blocked, not failed.
+- Android: [download the APK](https://expo.dev/artifacts/eas/Sk2ZFXlxntGKvK3WwBR1dVwjACuCiQS2Ayp4XIhQccw.apk). Build `801800c6-b8a7-4176-91a0-97110c10f64c`. Install on an assigned Android device; record OS/version and whether installation succeeds. This is an internal preview, not a Play Store release.
+- iOS: [download the simulator archive](https://expo.dev/artifacts/eas/MSlodbu1f0_aprtH7KIBwLm3Frp5xSQaFNwQE75SbAA.tar.gz). Build `a440a0a7-170b-4ac9-8cd8-1d440e8b428d`. Requires a Mac with an iOS Simulator. **This archive cannot be installed on a physical iPhone and is not TestFlight.** Physical iPhone testers should use Safari for the web tests and report native installation as blocked, not failed.
 - These replace the older 5ec7d1d preview builds for this session. Do not request another cloud build just to repeat a browser/export test.
 - Web ticket-history assets are verified deployed in the 2be7785/d231df7 release: downloaded HTML/JS match the candidate bytes. The native build has its own bounded reference-history implementation. Deployed bytes plus mocked receipt checks do not prove a real customer reservation.
+
+
+**Guardian enrolment limitation in these preview binaries:** the existing native youth editor does not retain an unresolved write marker across app restarts and still exposes a local retry discard action. Do not run child-record or enrolment mutations in the downloadable preview. Use the reviewed web guardian flow once its production release is verified. A source-only update routes these tools to the web; it is not included in the 9cf7354 artifacts above.
 
 ## Session setup and write boundaries
 

@@ -4,11 +4,14 @@ This is a source inventory and bounded acceptance record, not a claim of full na
 
 ## Current preview build status — supersedes the earlier 5ec7d1d baseline
 
-The release lead confirmed both preview builds for `7592a434e757fa9a85c8dc42013e0c70539f8ea9` **FINISHED** on 30 September 2026. The exact source passed 167 tests, TypeScript and all three platform exports. Physical-device acceptance remains pending.
+The release lead confirmed both preview builds for `9cf735458b2046a79e23e643e55449c6d47b4228` **FINISHED** on 30 September 2026. The exact source passed 169 tests, TypeScript and all three platform exports. Physical-device acceptance remains pending.
 
-- Android build `ed7b5d2e-b251-4855-ae97-9efea756df05`: [APK](https://expo.dev/artifacts/eas/UHg3xRbLLsbJVlp1GmQVLuNTKeWFtH3T_wN4mdLIum4.apk), internal preview rather than a store release.
-- iOS build `d53afae5-2168-4679-b26c-2c8b8780aeeb`: [simulator archive](https://expo.dev/artifacts/eas/prgi-XW4YVoZykWOOLQo1re5EeGD9weJ7saS4W8neSQ.tar.gz). Requires an iOS Simulator on Mac; this is not a physical-iPhone/TestFlight artifact.
+- Android build `801800c6-b8a7-4176-91a0-97110c10f64c`: [APK](https://expo.dev/artifacts/eas/Sk2ZFXlxntGKvK3WwBR1dVwjACuCiQS2Ayp4XIhQccw.apk), internal preview rather than a store release.
+- iOS build `a440a0a7-170b-4ac9-8cd8-1d440e8b428d`: [simulator archive](https://expo.dev/artifacts/eas/MSlodbu1f0_aprtH7KIBwLm3Frp5xSQaFNwQE75SbAA.tar.gz). Requires an iOS Simulator on Mac; this is not a physical-iPhone/TestFlight artifact.
 - [Twenty-tester runbook](../docs/audits/tester-readiness-2026-09-30.md) distinguishes production reads, mocked interaction evidence and still-blocked transactions. No new cloud build was requested for this documentation update.
+
+
+**Guardian enrolment limitation in these preview binaries:** the existing native youth editor does not retain an unresolved write marker across app restarts and still exposes a local retry discard action. Do not run child-record or enrolment mutations in the downloadable preview. Use the reviewed web guardian flow once its production release is verified. A source-only update routes these tools to the web; it is not included in the 9cf7354 artifacts above.
 
 ## Included navigation and recovery fixes; device acceptance still pending
 
