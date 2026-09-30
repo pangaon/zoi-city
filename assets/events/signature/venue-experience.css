@@ -135,3 +135,9 @@
  .signature-venue[data-fullscreen=true][data-sheet=false] .sv-selection-summary{padding:0;min-height:58px;gap:5px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-selection-summary strong{font-size:16px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-selection-summary small{font-size:7px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-sheet-chevron{width:22px;height:22px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-inspector>[data-request]{padding:10px;font-size:11px;min-height:48px}
  .signature-venue[data-fullscreen=true] .sv-truth{bottom:108px}.signature-venue[data-fullscreen=true] .fc-viewport>.sv-demo-tools{bottom:153px}
 }
+
+/* Keep the sponsor opener reachable above an expanded selection sheet. Opening either drawer closes the other. */
+@media(max-width:700px){
+ .signature-venue[data-fullscreen=true][data-sheet=true] .sv-inspector{max-height:calc(100dvh - 230px)}
+ .signature-venue[data-fullscreen=true][data-sheet=true] .fc-viewport>.sv-demo-tools{visibility:visible;top:153px;bottom:auto;max-height:calc(100dvh - 310px)}
+}

@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20260930-publicity-room';
+import {mountEventActions} from './client.mjs?v=20260930-montreal-room';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');

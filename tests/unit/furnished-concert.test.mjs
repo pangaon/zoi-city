@@ -29,3 +29,6 @@ test('mobile fullscreen stage fits below controls without altering desktop or ta
 import {validatedPreviewPlacement} from '../../assets/events/signature/furnished-concert.mjs';
 import {TORONTO_PREVIEW_BUSINESSES} from '../../assets/events/signature/sponsor-preview-model.mjs';
 test('test placement only accepts source tables and reviewed matching businesses',()=>{const ids=TABLES.map(r=>r.id),business=TORONTO_PREVIEW_BUSINESSES[0];assert.deepEqual(validatedPreviewPlacement({tableId:'17',business},ids),{tableId:'17',business});assert.equal(validatedPreviewPlacement(null,ids),null);for(const value of [{tableId:'999',business},{tableId:'17',business:{...business,image:'https://evil.test/image.png'}},{tableId:'17',business:{...business,url:'javascript:alert(1)'}},{tableId:'17',business:{...business,name:'Pretend sponsor'}}])assert.throws(()=>validatedPreviewPlacement(value,ids));});
+
+import{placementRoomView}from'../../assets/events/signature/furnished-concert.mjs';
+test('preview camera keeps phone branding readable and desktop placement in room context',()=>{assert.deepEqual(placementRoomView(390),{distance:3.5,phi:.7});assert.deepEqual(placementRoomView(1440),{distance:5.8,phi:.7});assert.ok(placementRoomView(1440).distance>placementRoomView(390).distance);});

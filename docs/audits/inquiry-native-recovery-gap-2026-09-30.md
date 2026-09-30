@@ -1,3 +1,18 @@
+# Native enquiry durable recovery — candidate status
+
+2026-09-30: the earlier memory-only gap below now has an implemented native source candidate, not a distributed app release. Read `mobile/AGENTS.md` and fetched the exact Expo SDK 57 SecureStore documentation before editing. Existing SecureStore adapter semantics and `PrivateRequestStore` are reused.
+
+- Dedicated `inquiryRequests` namespace is scoped to the authenticated user and stores only user/kind/request nonce/target UUID. Message bodies, names, and tokens are excluded. Its unresolved nonce intentionally survives sign-out, with A→B→A isolation; existing event-plan and other request cleanup behavior is unchanged.
+- Customer start and customer/operator reply persist and read back the recovery marker before dispatch. Failed or silently ineffective storage prevents sending. New sends are blocked while a marker remains. Same-instance retry keeps the exact original body/request in memory; restart never reconstructs or automatically resends discarded text.
+- Explicit receipt check and cancel-if-unsaved call the real recovery RPCs. Matching kind, nonce and target plus valid returned thread are required. Not-found alone never clears uncertainty. A raced committed send opens its existing conversation; authoritative cancellation clears the marker. The unsafe local “discard pending reply” action has been removed.
+- Existing keyed auth/workspace component lifetime checks remain. Operator Enable is disabled with a verification explanation for `eligible:false` listings. Versioned setting/update and full send receipt validation stay intact.
+
+Validation: 18 focused native inquiry/recovery/private-store tests passed, including restart, A→B→A, storage failure, strict read-back proof, corrupt body-bearing marker rejection, wrong receipt identities and cancellation semantics. `mobile/node_modules/.bin/tsc --noEmit` passed. No iOS/Android simulator or physical-device acceptance, signing, distribution or production message was performed. SecureStore unlock/reinstall behavior must still be device-tested; Android uninstall can remove device-local recovery. Already sent messages remain accessible through authenticated conversations.
+
+Files: `mobile/src/Inquiries.tsx`, narrow `mobile/src/Auth.tsx` new export, `mobile/src/inquiryRecovery.ts`, `mobile/tests/inquiryRecovery.test.mjs`, plus approved strict manifest validation in `mobile/src/privateRequests.ts` and its tests. Malformed non-null manifests now fail closed; valid interrupted-save formats remain recognized. No frozen web enquiry files were changed.
+
+## Historical gap assessment before this candidate
+
 # Native enquiry recovery assessment — 2026-09-30
 
 The native implementation was assessed alongside the web account-lifecycle repair. `mobile/src/Inquiries.tsx` keys Customer by authenticated user/listing/thread and Inbox by user/workspace, unmounts stale components, and checks the current actor after asynchronous reads. This differs from the independently reproduced web mount leak. No claim is made that physical-device testing has accepted every native lifecycle.
