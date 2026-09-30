@@ -28,7 +28,8 @@ function requestContact(data){
  name.focus({preventScroll:true});
 }
 function mount(){adapter=createPrivatePlan({C,onState:state});customer=mountSignatureCustomer({root:customerRoot,onPlanSave:async data=>{requestContact(data);saveRoot.scrollIntoView({block:'center'});}});venue=mountVenueExperience({root:venueRoot,onSelection:selection=>customer.setTableSelection(selection.table_ids),onRequest:selection=>{customer.setTableSelection(selection.table_ids);customer.showGroupSetup();document.querySelector('#sig-request').scrollIntoView({block:'start'});}});
- const explore=customerRoot.querySelector('[data-floor]');explore.textContent='Explore tables & lounges ↓';explore.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();venueRoot.scrollIntoView({block:'start'});venueRoot.querySelector('h2')?.setAttribute('tabindex','-1');venueRoot.querySelector('h2')?.focus({preventScroll:true});});
+ customerRoot.querySelectorAll('.sig-a-nav a[href="#sig-request"],.sig-a-title a[href="#sig-request"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();venue.enterFullscreen();}));
+ const explore=customerRoot.querySelector('[data-floor]');explore.textContent='Explore tables & lounges ↓';explore.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();venue.enterFullscreen();venueRoot.querySelector('h2')?.setAttribute('tabindex','-1');venueRoot.querySelector('[data-theater]')?.focus({preventScroll:true});});
  // Put the interactive room between the event hero and the planning form.
  customerRoot.querySelector('.sig-a-plan').before(venueRoot);
 }

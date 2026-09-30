@@ -51,3 +51,41 @@
 @media(max-width:900px){.signature-venue[data-view=lounge] .sv-layout{grid-template-columns:minmax(0,1fr)}}
 .signature-venue .sv-inspector>[data-request]{width:100%;min-height:44px;margin:0 0 18px}
 .signature-venue[data-fullscreen="true"] .sv-inspector>[data-request]{position:sticky;top:0;z-index:2;box-shadow:0 6px 18px #06172955}
+/* Signature's concert poster: electric blue, violet light, white type, champagne accents. */
+.signature-venue{--sv-bg:#080d21;--sv-card:#151d36;--sv-line:#b9caff35;--sv-blue:#badbff;--sv-muted:#c0c7dd;background:radial-gradient(ellipse at 80% 0,#8454db23,transparent 48%),radial-gradient(ellipse at 5% 40%,#1373ff21,transparent 60%),var(--sv-bg)}
+.signature-venue .sv-shell{max-width:none}
+.signature-venue .sv-heading{margin-bottom:20px;align-items:center}
+.signature-venue .sv-heading h2{font-size:clamp(28px,3.4vw,48px);line-height:1.08;letter-spacing:-.035em;margin:8px 0}
+.signature-venue .sv-heading p:not(.sv-eyebrow){font-size:14px;margin:10px 0}
+.signature-venue .sv-eyebrow{color:#e6c897;letter-spacing:.16em}
+.signature-venue .sv-inspector{background:linear-gradient(145deg,#293555ac,#11192bde);border:1px solid #d5e4ff36;border-radius:26px;box-shadow:inset 0 1px 0 #ffffff19,0 24px 70px #0005;backdrop-filter:blur(24px) saturate(125%);-webkit-backdrop-filter:blur(24px) saturate(125%)}
+.signature-venue button,.signature-venue select{border-color:#d5e4ff38;background:#15233cd9;border-radius:14px;transition:background .18s,border-color .18s,box-shadow .18s}
+.signature-venue button:hover{background:#29477be0;border-color:#9dbfff90;box-shadow:0 4px 18px #0002}
+.signature-venue button[aria-pressed=true]{background:linear-gradient(120deg,#237aee,#7660ce);color:#fff;border-color:#a4c9ff85}
+.signature-venue .sv-primary{background:linear-gradient(120deg,#dbeeff,#cad4ff);color:#0c1833;border-color:#e7edff;font-size:14px;letter-spacing:0;box-shadow:0 6px 24px #849bff20}
+.signature-venue .sv-tabs{gap:6px}
+.signature-venue .sv-toolbar{border-bottom-color:#b9caff22}
+.signature-venue [data-concert] .fc-selection{display:none}
+.signature-venue .sv-stamp{background:#19213b8c;border-color:#b9caff35;border-radius:18px}
+.signature-venue .sv-truth{color:#bac5dc}
+.signature-venue:not([data-fullscreen=true]) .fc-viewport{height:clamp(540px,76dvh,1000px)}
+.signature-venue[data-fullscreen=true]{background:radial-gradient(ellipse at 75% 0,#36274d44,transparent 55%),#080d21}
+@media(min-width:1100px){.signature-venue .sv-layout{grid-template-columns:minmax(0,1fr) 320px;gap:20px}}
+@media(max-width:700px){.signature-venue .sv-heading h2{font-size:30px}.signature-venue:not([data-fullscreen=true]) .fc-viewport{height:66dvh;min-height:390px}.signature-venue .sv-toolbar{gap:8px}.signature-venue .sv-inspector{border-radius:20px}}
+/* The room is the full-screen canvas; desktop controls float above its edge. */
+@media(min-width:901px){
+ .signature-venue[data-fullscreen=true] .sv-layout{display:block;position:relative;isolation:isolate}
+ .signature-venue[data-fullscreen=true] .sv-map-area{position:absolute;inset:0;display:flex;border-radius:24px;overflow:hidden}
+ .signature-venue[data-fullscreen=true] .sv-inspector{position:absolute;right:18px;top:86px;bottom:20px;width:282px;max-height:calc(100% - 106px);z-index:5;background:linear-gradient(145deg,#273656b8,#0c142bd9);backdrop-filter:blur(28px) saturate(135%);-webkit-backdrop-filter:blur(28px) saturate(135%)}
+ .signature-venue[data-fullscreen=true] .fc-viewport{padding-right:0}
+ .signature-venue[data-fullscreen=true] .fc-viewport canvas{width:calc(100% - 300px)}
+ .signature-venue[data-fullscreen=true] .fc-markers{right:300px}
+ .signature-venue[data-fullscreen=true] .fc-stage-label{left:calc((100% - 300px)/2)}
+}
+@media(max-width:700px){
+ .signature-venue[data-fullscreen=true] .sv-layout{grid-template-rows:minmax(180px,1fr) minmax(150px,24dvh)}
+ .signature-venue[data-fullscreen=true] .sv-inspector{background:linear-gradient(145deg,#293858bc,#0e172ddc);box-shadow:inset 0 1px 0 #ffffff20,0 -12px 35px #0003}
+ .signature-venue[data-fullscreen=true] .fc-controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));overflow:visible;flex-wrap:wrap}
+ .signature-venue[data-fullscreen=true] .fc-controls button{min-width:0;padding:8px 5px;white-space:normal;font-size:11px}
+ .signature-venue[data-fullscreen=true] .fc-controls [data-camera]{grid-column:span 2}
+}
