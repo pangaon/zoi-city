@@ -1,10 +1,11 @@
+import{auxiliaryImage}from'../supabase/functions/zoi-enrich/_image-context.js';
 // Display selection for existing profile media. Owner selections retain priority;
 // crawler fallback rejects interface artwork and duplicate resized derivatives.
 export function httpsImage(value){
  if(typeof value!=='string'||value.length>3000)return null;
  try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}
 }
-export function machineImage(value){const url=httpsImage(value);if(!url)return null;const u=new URL(url);return u.pathname==='/'&&!u.search?null:url;}
+export function machineImage(value){const url=httpsImage(value);if(!url||auxiliaryImage(url))return null;const u=new URL(url);return u.pathname==='/'&&!u.search?null:url;}
 export function imageIdentity(value){
  const url=httpsImage(value);if(!url)return null;const u=new URL(url);
  u.pathname=u.pathname.replace(/\.(jpe?g|png)\.webp$/i,'.$1').replace(/-(?:\d{2,5}x\d{2,5}|\d{2,5}w)(?=\.[a-z]+$)/i,'');
