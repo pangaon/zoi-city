@@ -336,11 +336,16 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;'
 function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
 
 function authToken(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at*1000>Date.now()+5000) return a.access_token; }catch(e){} return null; }
-async function rpc(fn,params,forceAnon){
+async function rpc(fn,params,forceAnon,signal){
   const tk=forceAnon?null:authToken();
-  const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+(tk||PUB),'Content-Type':'application/json'},body:JSON.stringify(params||{}),signal:AbortSignal.timeout(15000)});
-  const t=await r.text(); if(!r.ok){ let m=t; try{ m=(JSON.parse(t).message)||t; }catch(e){} throw new Error(m); }
-  return t?JSON.parse(t):null;
+  const controller=new AbortController(),abort=()=>controller.abort();
+  if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+  const timeout=setTimeout(abort,15000);
+  try{
+    const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+(tk||PUB),'Content-Type':'application/json'},body:JSON.stringify(params||{}),signal:controller.signal});
+    const t=await r.text(); if(!r.ok){ let m=t; try{ m=(JSON.parse(t).message)||t; }catch(e){} throw new Error(m); }
+    return t?JSON.parse(t):null;
+  }finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
 }
 
 let typeFiltersLoading=false,typeFiltersFailed=false;
@@ -648,11 +653,13 @@ function card(r,idx){
     '</div></article>';
 }
 
-let searchVersion=0;
+let searchVersion=0,searchRequest=null;
 async function runSearch(reset){
   exploreAutocomplete?.refresh();
   if(ST.busy&&!reset) return;
   const version=++searchVersion;
+  searchRequest?.abort();
+  const request=searchRequest=new AbortController();
   ST.busy=true;
   if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML=new Array(6).fill('<div class="skel"></div>').join(''); }
   document.getElementById('res-mode').textContent=ST.q?('\u201c'+ST.q+'\u201d'):'';
@@ -663,7 +670,7 @@ async function runSearch(reset){
   exploreLocality?.refresh();
   const locality=effectiveExploreLocation();
   try{
-    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:locality.city||null,p_country:locality.country||null,p_limit:24,p_offset:ST.offset},true);
+    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:locality.city||null,p_country:locality.country||null,p_limit:24,p_offset:ST.offset},true,request.signal);
     await listingImageReady;
     if(version!==searchVersion) return;
     const batch=rows||[];

@@ -39,15 +39,17 @@ test('latest search wins when older network responses arrive afterward', async (
   const pending=[];
   const state={busy:false,q:'first',rows:[],offset:0};
   const ctx=vm.createContext({
-    exploreLocality:null,effectiveExploreLocation:()=>({city:'',country:''}),listingImageReady:Promise.resolve(),exploreAutocomplete:{close(){},refresh(){}}, ST:state, LANG:'en', document:{getElementById:node},
-    rpc:()=>new Promise((resolve,reject)=>pending.push({resolve,reject})),
+    AbortController,exploreLocality:null,effectiveExploreLocation:()=>({city:'',country:''}),listingImageReady:Promise.resolve(),exploreAutocomplete:{close(){},refresh(){}}, ST:state, LANG:'en', document:{getElementById:node},
+    rpc:(fn,params,anon,signal)=>new Promise((resolve,reject)=>pending.push({resolve,reject,signal})),
     writeUrl:()=>{},harvestCountries:()=>{},renderRows:()=>{},toast:()=>{},console,
   });
-  const code=html.slice(html.indexOf('let searchVersion=0;'),html.indexOf('/* Sorting re-orders'));
+  const code=html.slice(html.indexOf('let searchVersion=0'),html.indexOf('/* Sorting re-orders'));
   vm.runInContext(code,ctx);
   const old=ctx.runSearch(true);
   state.q='second';
   const current=ctx.runSearch(true);
+  assert.equal(pending[0].signal.aborted,true);
+  assert.equal(pending[1].signal.aborted,false);
   pending[1].resolve([{name:'Current'}]);
   await current;
   pending[0].resolve([{name:'Stale'}]);
@@ -61,9 +63,9 @@ test('search failures leave an actionable retry and clear busy state', async () 
   const nodes=new Map();
   const node=id=>{if(!nodes.has(id)) nodes.set(id,{innerHTML:'',textContent:'',style:{}});return nodes.get(id);};
   const state={busy:false,q:'taverna',rows:[],offset:0};
-  const ctx=vm.createContext({exploreLocality:null,effectiveExploreLocation:()=>({city:'',country:''}),listingImageReady:Promise.resolve(),exploreAutocomplete:{close(){},refresh(){}},ST:state,LANG:'en',document:{getElementById:node},
+  const ctx=vm.createContext({AbortController,exploreLocality:null,effectiveExploreLocation:()=>({city:'',country:''}),listingImageReady:Promise.resolve(),exploreAutocomplete:{close(){},refresh(){}},ST:state,LANG:'en',document:{getElementById:node},
     rpc:async()=>{throw new Error('timeout');},writeUrl:()=>{},toast:()=>{},console:{error:()=>{}}});
-  vm.runInContext(html.slice(html.indexOf('let searchVersion=0;'),html.indexOf('/* Sorting re-orders')),ctx);
+  vm.runInContext(html.slice(html.indexOf('let searchVersion=0'),html.indexOf('/* Sorting re-orders')),ctx);
   await ctx.runSearch(true);
   assert.equal(state.busy,false);
   assert.match(node('results').innerHTML,/Try again/);
