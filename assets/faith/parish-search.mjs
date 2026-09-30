@@ -1,3 +1,9 @@
+// Prefer the current record slug over a potentially stale stored path.
+export function parishPath(row){
+ for(const value of [row?.canonical_slug,row?.slug])if(typeof value==='string'&&/^[\p{L}\p{N}][\p{L}\p{M}\p{N}_-]*$/u.test(value))return '/church/'+encodeURIComponent(value);
+ if(typeof row?.path!=='string'||!row.path.startsWith('/church/'))return '';
+ try{const slug=decodeURIComponent(row.path.slice(8));return /^[\p{L}\p{N}][\p{L}\p{M}\p{N}_-]*$/u.test(slug)?'/church/'+encodeURIComponent(slug):'';}catch{return '';}
+}
 const enoughName=value=>(value.match(/\p{L}/gu)||[]).length>=3;
 export function createParishSearch({rpc,onState,setTimer=setTimeout,clearTimer=clearTimeout,delay=350}){
  let generation=0,timer=null,composing=false,values={name:'',city:'',country:''};

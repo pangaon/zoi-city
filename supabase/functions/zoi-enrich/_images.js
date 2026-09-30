@@ -1,4 +1,4 @@
-import{auxiliaryImage}from'./_image-context.js';
+import { auxiliaryImage } from './_image-context.js';
 // Source evidence only: never generate missing pictures or infer a photographed subject.
 const decode=s=>String(s||'').replace(/&amp;|&#38;|&#x26;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/g,"'");
 export function sourceImage(raw,base){
