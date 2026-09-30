@@ -116,6 +116,8 @@ async function sbRpc(fn: string, args: Record<string, unknown> = {}) {
 import { vet, dnsState } from "./_ssrf.ts";
 import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
+import { memberLeaseGuard } from "./_member.js";
+import { extractStructuredMenu } from "./_menus.js";
 import { extractSiteImages, supplementaryPages, imageIdentity } from "./_images.js";
 import { confirmedEnrichmentReceipts, enrichmentSample } from "./_receipts.js";
 
@@ -353,6 +355,11 @@ function extract(doc: string, finalUrl: string) {
     provenance[k] = src;
   };
 
+  if (!isAgg) {
+    const structuredMenu = extractStructuredMenu(doc, finalUrl);
+    if (structuredMenu) for (const [key, value] of Object.entries(structuredMenu)) put(key, value, "jsonld-menu:" + finalUrl);
+  }
+
   const biz = ldNodes(doc).find((n) => {
     const t = Array.isArray(n["@type"]) ? (n["@type"] as string[]).join(" ") : String(n["@type"] ?? "");
     return /LocalBusiness|Restaurant|Store|Hotel|Church|Organization|Dentist|Physician|Attorney|School|Cafe|Bakery|FoodEstablishment|ProfessionalService|TouristAttraction|MusicGroup|SportsTeam|NGO/i.test(t);
@@ -521,7 +528,7 @@ Deno.serve(async (req) => {
   const bump = (k: string) => (stats[k] = (stats[k] || 0) + 1);
   const batch: Record<string, unknown>[] = [];
 
-  let queue: { slug: string; website: string; lease_id: string }[] = [];
+  let queue: { slug: string; website: string; lease_id: string; name?: string; entity_type?: string; existing_enrich?: Record<string, unknown> }[] = [];
   try {
     queue = (sample ? await sbRpc("enrich_sample_lease", {p_ids:sample}) : await sbRpc("enrich_queue_lease", { p_limit: limit })) ?? [];
   } catch (e) {
@@ -534,19 +541,21 @@ Deno.serve(async (req) => {
   for (const row of queue) {
     if (Date.now() - started > 110_000) { bump("stopped-time-budget"); break; }
 
+    const identity = memberLeaseGuard(row);
+    const identityStatus = identity.handled ? identity.profile : {};
     const v = await vet(row.website);
     if (!v.url) {
       bump("refused:" + v.why);
       // Record the refusal so the queue stops returning it every hour.
       batch.push({ slug: row.slug, website: row.website, lease_id: row.lease_id,
-                   profile: { blocked: "true", blocked_reason: v.why } , provenance: {} });
+                   profile: { ...identityStatus, blocked: "true", blocked_reason: v.why } , provenance: {} });
       continue;
     }
     try {
       if (!(await robotsAllows(v.url))) {
         bump("robots-disallow");
         batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
-                     profile: { blocked: "true", blocked_reason: "robots" }, provenance: {} });
+                     profile: { ...identityStatus, blocked: "true", blocked_reason: "robots" }, provenance: {} });
         continue;
       }
       const got = await fetchDoc(v.url);
@@ -556,10 +565,16 @@ Deno.serve(async (req) => {
         const permanent = /^http(40[134]|41[0-9]|45[0-9])$/.test(got.error);
         batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
                      profile: permanent
-                       ? { blocked: "true", blocked_reason: got.error }
-            : { crawl_status: "error", last_error: got.error },
+                       ? { ...identityStatus, blocked: "true", blocked_reason: got.error }
+            : { ...identityStatus, crawl_status: "error", last_error: got.error },
                      provenance: {} });
         continue;
+      }
+      const member = memberLeaseGuard(row, got.doc!, got.finalUrl!);
+      if (member.handled) {
+        bump(member.profile && "member" in member.profile ? "member-identity-matched" : "member-review-required");
+        batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile: member.profile, provenance: member.provenance });
+        continue; // Never run generic metadata or supplementary crawls for a person on a member source.
       }
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
       if (!aggregator) {
@@ -576,7 +591,7 @@ Deno.serve(async (req) => {
           const extra = await fetchDoc(pageUrl);
           if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { bump("supplement-unavailable"); continue; }
           const next = extract(extra.doc, extra.finalUrl);
-          for (const key of ["phone", "email", "logo_url", "photo_url", "hero_url", "menu_url", "booking_url"]) {
+          for (const key of ["phone", "email", "logo_url", "photo_url", "hero_url", "menu_url", "booking_url", "menu", "menu_source", "menu_source_format"]) {
             if (!profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
           }
           profile.social = { ...(next.profile.social || {}) as object, ...(profile.social || {}) as object };
@@ -605,7 +620,7 @@ Deno.serve(async (req) => {
       const error = String(e).slice(0, 160);
       bump("error:" + error.slice(0, 40));
       batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
-        profile: { crawl_status: "error", last_error: error }, provenance: {} });
+        profile: { ...identityStatus, crawl_status: "error", last_error: error }, provenance: {} });
     }
   }
 
