@@ -1,0 +1,8 @@
+const enoughName=value=>(value.match(/\p{L}/gu)||[]).length>=3;
+export function createParishSearch({rpc,onState,setTimer=setTimeout,clearTimer=clearTimeout,delay=350}){
+ let generation=0,timer=null,composing=false,values={name:'',city:'',country:''};
+ const emit=(state,extra={})=>onState({state,...extra});
+ const invalidate=()=>{generation++;if(timer!==null)clearTimer(timer);timer=null;emit('idle');};
+ async function run(explicit=false){if(composing)return;const q=values.name.trim(),city=values.city.trim(),country=values.country.trim();if(!explicit&&!enoughName(q))return;if(explicit&&!enoughName(q)&&city.length<2&&country.length<2){emit('hint');return;}const own=++generation;emit('loading');try{const response=await rpc({p_q:q||null,p_type:'church',p_city:city||null,p_country:country||null,p_limit:8,p_offset:0});if(own!==generation)return;const rows=Array.isArray(response)?response:response?.data;if(!Array.isArray(rows))throw Error('Parish search could not load. Please try again.');emit('ready',{rows:rows.filter(r=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(r?.id||'')).slice(0,8)});}catch(error){if(own===generation)emit('error',{message:error?.message||'Search could not load. Please try again.'});}}
+ return{update(next){values={name:String(next.name||'').slice(0,100),city:String(next.city||'').slice(0,80),country:String(next.country||'').slice(0,80)};invalidate();if(!composing&&enoughName(values.name.trim()))timer=setTimer(()=>{timer=null;void run();},delay);},composition(active){composing=active;invalidate();},submit(){if(timer!==null)clearTimer(timer);timer=null;return run(true);},dismiss:invalidate,destroy:invalidate};
+}
