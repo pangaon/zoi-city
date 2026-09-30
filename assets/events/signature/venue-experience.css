@@ -98,3 +98,40 @@
 .signature-venue .sv-map-area{min-height:0}
 .signature-venue .fc-viewport>.sv-demo-tools{bottom:16px;left:16px;max-height:calc(100% - 84px)}
 @media(max-width:700px){.signature-venue[data-fullscreen=true] .fc-controls{display:flex;flex-wrap:nowrap;overflow-x:auto;overflow-y:hidden;max-width:calc(100% - 20px)}.signature-venue[data-fullscreen=true] .fc-controls button{flex:0 0 auto;white-space:nowrap;min-height:40px;padding:8px 12px}.signature-venue .fc-viewport>.sv-demo-tools{bottom:12px;left:10px;max-height:calc(100% - 74px)}}
+
+/* Immersive room: the venue owns the screen, selection is a compact glass sheet. */
+.sv-selection-summary{display:none}
+.signature-venue[data-fullscreen=true]{padding:0!important}
+.signature-venue[data-fullscreen=true] .sv-shell{position:relative;display:block;height:100%;isolation:isolate}
+.signature-venue[data-fullscreen=true] .sv-layout{position:absolute;inset:0;display:block;max-height:none;margin:0}
+.signature-venue[data-fullscreen=true] .sv-map-area{position:absolute;inset:0;border:0;border-radius:0;max-height:none}
+.signature-venue[data-fullscreen=true] .sv-toolbar{position:absolute;z-index:12;top:max(10px,env(safe-area-inset-top));left:12px;right:12px;margin:0;padding:7px;gap:6px;border:1px solid #bcd6ef30;border-radius:20px;background:#111d32c9;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);box-shadow:0 10px 35px #0003}
+.signature-venue[data-fullscreen=true] .sv-truth{position:absolute;z-index:6;bottom:max(10px,env(safe-area-inset-bottom));left:20px;max-width:min(500px,calc(100% - 400px));color:#c0d0e3;font-size:10px;line-height:1.4;pointer-events:none}
+.signature-venue[data-fullscreen=true] .sv-status{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+.signature-venue[data-fullscreen=true] .fc-viewport{height:100%;min-height:0}
+.signature-venue[data-fullscreen=true] .fc-viewport canvas{width:100%}
+.signature-venue[data-fullscreen=true] .fc-markers{right:0}
+.signature-venue[data-fullscreen=true] .fc-stage-label{left:50%}
+.signature-venue[data-fullscreen=true] .fc-controls{top:84px;max-width:calc(100% - 32px)}
+.signature-venue[data-fullscreen=true] .sv-inspector{position:absolute;inset:auto 20px max(24px,env(safe-area-inset-bottom)) auto;z-index:10;width:340px;max-height:calc(100% - 170px);padding:16px;overflow:auto;border:1px solid #c2d7f14d;border-radius:26px;background:linear-gradient(140deg,#243756e8,#0c172de8);box-shadow:inset 0 1px 0 #fff2,0 20px 60px #0006;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);transition:max-height .25s ease,box-shadow .25s ease}
+.signature-venue[data-fullscreen=true] .sv-selection-summary{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;padding:0 2px 12px;margin:0;text-align:left;min-height:58px;gap:14px;color:#f5faff}
+.sv-selection-summary>span:first-child{display:grid;gap:5px}.sv-selection-summary small{font-size:9px;letter-spacing:.13em;color:#bcd3ed}.sv-selection-summary strong{font-size:20px;line-height:1.2}.sv-selection-summary [data-selection-price]{font-size:11px;color:#c8daeb}.sv-sheet-chevron{border:1px solid #9bc4e343;border-radius:50%;width:32px;height:32px;display:grid;place-items:center;flex:none}
+.signature-venue[data-fullscreen=true][data-sheet=false] .sv-inspector>.sv-find,.signature-venue[data-fullscreen=true][data-sheet=false] .sv-inspector>[data-details],.signature-venue[data-fullscreen=true][data-sheet=false] .sv-inspector>.sv-preferences{display:none}
+.signature-venue[data-fullscreen=true] .sv-inspector>[data-request]{position:static;margin:0;min-height:46px;font-size:12px;box-shadow:none}
+.signature-venue[data-fullscreen=true][data-sheet=true] .sv-inspector>[data-request]{margin-bottom:16px}
+.signature-venue[data-fullscreen=true] .fc-viewport>.sv-demo-tools{bottom:70px;left:20px;max-height:calc(100% - 220px)}
+@media(max-width:700px){
+ .signature-venue[data-fullscreen=true] .sv-toolbar{left:8px;right:8px;padding:5px;border-radius:17px}.signature-venue[data-fullscreen=true] .sv-tabs{gap:4px}
+ .signature-venue[data-fullscreen=true] .sv-inspector{inset:auto 10px max(12px,env(safe-area-inset-bottom));width:auto;max-height:65dvh;padding:12px 14px;border-radius:22px}
+ .signature-venue[data-fullscreen=true] .sv-selection-summary strong{font-size:18px}.signature-venue[data-fullscreen=true] .sv-selection-summary small{font-size:8px}
+ .signature-venue[data-fullscreen=true] .sv-truth{bottom:160px;left:18px;max-width:calc(100% - 36px);font-size:9px;text-shadow:0 1px 4px #000}
+ .signature-venue[data-fullscreen=true] .fc-viewport>.sv-demo-tools{bottom:208px;left:12px;max-height:calc(100% - 360px)}
+ .signature-venue[data-fullscreen=true][data-sheet=true] .fc-viewport>.sv-demo-tools,.signature-venue[data-fullscreen=true][data-sheet=true] .sv-truth{visibility:hidden}
+}
+@media(prefers-reduced-motion:reduce){.signature-venue[data-fullscreen=true] .sv-inspector{transition:none}}
+.signature-venue[data-fullscreen=true] .fc-number-tray{position:absolute;z-index:20;top:148px;left:16px;width:min(360px,calc(100% - 32px));max-height:calc(100% - 340px);margin:0;border:1px solid #c3daf14d;border-radius:20px;background:#102139f5;box-shadow:0 18px 50px #0008;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+@media(max-width:700px){
+ .signature-venue[data-fullscreen=true][data-sheet=false] .sv-inspector{display:grid;grid-template-columns:minmax(0,1fr) 122px;gap:12px;align-items:center}
+ .signature-venue[data-fullscreen=true][data-sheet=false] .sv-selection-summary{padding:0;min-height:58px;gap:5px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-selection-summary strong{font-size:16px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-selection-summary small{font-size:7px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-sheet-chevron{width:22px;height:22px}.signature-venue[data-fullscreen=true][data-sheet=false] .sv-inspector>[data-request]{padding:10px;font-size:11px;min-height:48px}
+ .signature-venue[data-fullscreen=true] .sv-truth{bottom:108px}.signature-venue[data-fullscreen=true] .fc-viewport>.sv-demo-tools{bottom:153px}
+}
