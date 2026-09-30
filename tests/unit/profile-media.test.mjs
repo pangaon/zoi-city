@@ -15,3 +15,16 @@ test('untrusted protocols rejected and ordinary photographs retained',()=>{
  for(const name of ['apple.png','google.png','food_rating.png','blue-left-1920w.png'])assert.equal(interfaceArtwork('https://site.test/'+name),true);
  assert.equal(interfaceArtwork('https://site.test/greek-dancing.jpg'),false);
 });
+test('machine logo directories and advertisements cannot become heroes; owner choices remain authoritative',()=>{
+ const p={hero_url:'https://cdn.example.com/logos/23131.png',logo_url:'https://example.com/',photo_urls:['https://cdn.example.com/logos/23131.png','https://example.com/food_rating.png','https://example.com/gyro.jpeg']};
+ assert.deepEqual(profileMedia({profile:{_enrich:p}},p),{hero:'https://example.com/gyro.jpeg',logo:p.hero_url,gallery:['https://example.com/gyro.jpeg']});
+ assert.equal(profileMedia({profile:{_enrich:p},photo_url:p.hero_url},p).hero,'https://example.com/gyro.jpeg');
+ const ad='https://example.com/Melodia_Anzeige.jpeg';assert.equal(interfaceArtwork(ad),true);
+ assert.equal(profileMedia({owner_content:{photo_url:ad},profile:{_enrich:p}},p).hero,ad);
+ assert.equal(profileMedia({owner_content:{photo_url:null},profile:{_enrich:p}},p).hero,null);
+});
+
+test('explicit owner image endpoints and signed query-root image providers stay supported',()=>{
+ for(const image of ['https://images.example.com/?url=photo','https://example.com/photo.php?id=2','https://example.com/'])assert.equal(profileMedia({owner_content:{photo_url:image},profile:{}},{}).hero,image);
+ assert.equal(profileMedia({profile:{_enrich:{}}},{photo_url:'https://images.example.com/?url=photo'}).hero,'https://images.example.com/?url=photo');
+});

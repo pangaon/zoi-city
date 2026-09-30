@@ -203,7 +203,7 @@ body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--paper);backgr
 .divider-lbl{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--muted2);margin:6px 0 14px;display:flex;align-items:center;gap:10px}
 .divider-lbl::after{content:"";flex:1;height:1px;background:var(--line)}
 /* confirm */
-.confirm-box{background:linear-gradient(160deg,#0d2536,#091827);border:1px solid color-mix(in srgb, var(--green) 25%, transparent);border-radius:var(--r);max-width:480px;width:100%;margin:auto;box-shadow:0 40px 80px rgba(0,0,0,.7);overflow:hidden}
+.confirm-box{background:var(--card);color:var(--tx);border:1px solid color-mix(in srgb, var(--green) 25%, transparent);border-radius:var(--r);max-width:480px;width:100%;margin:auto;box-shadow:0 40px 80px rgba(0,0,0,.7);overflow:hidden}
 .confirm-header{background:linear-gradient(135deg,color-mix(in srgb, var(--green) 15%, transparent),color-mix(in srgb, var(--acc) 10%, transparent));border-bottom:1px solid color-mix(in srgb, var(--green) 20%, transparent);padding:30px 32px;text-align:center}
 .confirm-icon{font-size:50px;margin-bottom:10px}
 .confirm-title{font-family:'Fraunces';font-size:23px;font-weight:500;color:var(--paper);margin-bottom:6px}
@@ -552,10 +552,7 @@ if(!LIB || !QR || !window.ZoiDoor){
   document.getElementById('app').innerHTML =
     '<div style="max-width:520px;margin:60px auto;padding:22px;border:1px solid var(--line);border-radius:18px;'
     + 'background:var(--card);color:var(--tx);font:15px/1.6 system-ui,sans-serif">'
-    + '<b>Tickets could not start.</b><br>These files did not load: '
-    + missing.map(m=>'<code>'+m+'</code>').join(', ')
-    + '.<br><br>Reload the page. If it keeps happening the deploy is incomplete — nothing you do here can'
-    + ' create or lose a reservation while this message is showing.</div>';
+    + '<b>Tickets could not load.</b><br>Please reload the page to try again. Your existing reservations are unchanged.</div>';
   throw new Error('tickets: missing '+missing.join(', '));
 }
 
@@ -627,9 +624,19 @@ function getAuth(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'n
 function clearAuth(){ localStorage.removeItem('zoi_auth'); }
 function bearer(){ const a=getAuth(); return a?a.access_token:PUBKEY; }
 
+/* General-admission recovery stores scope/nonce only, never contact details. */
+let GA=null,gaPending=null,gaError='',gaBusy=false;
+function gaIdentity(){let raw=null;try{raw=JSON.parse(localStorage.getItem('zoi_auth')||'null');}catch{throw Error('Stored sign-in details could not be read. Sign in again.');}if(!raw?.access_token)return{actor:'guest',token:PUBKEY};let actor;try{const part=raw.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');actor=JSON.parse(atob(part)).sub;}catch{throw Error('Your sign-in could not be verified. Sign in again.');}const fresh=getAuth();if(!actor||!fresh)throw Error('Your session expired. Sign in to recover the original reservation; it has not been discarded.');return{actor,token:fresh.access_token};}
+const gaReady=import('/assets/tickets/general-reservation.js?v=20260930-once').then(m=>{GA=m.createGeneralReservations({storage:localStorage,identity:gaIdentity,call:rpc});return GA;});
+function gaPanel(){if(!gaPending&&!gaError)return '';return '<section class="order-box" aria-label="Saved reservation request"><div class="order-header">Recover your reservation</div><div class="order-body"><p role="status">'+esc(gaError||'A request may have completed. Check its receipt or re-enter the original details to retry the same request.')+'</p>'+(gaPending?'<p>'+esc(gaPending.qty||'Original quantity')+' tickets · '+(gaPending.protocol==='once'?'Same saved request; no new reservation ID will be created.':'Older request: contact the organizer before booking again.')+'</p>':'')+(!gaPending?'<button class="tkx-btn" data-act="gareload">Reload event and saved requests</button>':'')+(gaPending?.protocol==='once'?'<button class="tkx-btn" data-act="garecover">Check saved receipt</button><div class="field"><label for="gaName">Original full name</label><input id="gaName" maxlength="120" autocomplete="name"></div><div class="field"><label for="gaEmail">Original email</label><input id="gaEmail" maxlength="160" type="email" autocomplete="email"></div><button class="reserve-btn" data-act="garetry">Retry this same request</button>':'')+'<p class="field-hint">Names and emails are not saved on this device. A missing receipt does not prove the first request failed. Opening another page does not resolve it.</p></div></section>';}
+async function gaRecover(show=true){await gaReady;const event=PUB.eventId,actor=GA.actor();gaPending=GA.read(event);gaError='';if(!gaPending)return null;try{const result=await GA.recover(gaPending);if(event!==PUB.eventId||actor!==GA.actor())return null;if(!result){gaError='No confirmed receipt is available yet. Retry only this same saved request with the original details.';return null;}if(show)showConfirm(result.receipt,PUB.types.find(t=>String(t.id)===gaPending.tier),result);GA.complete(gaPending,result);gaPending=null;return result;}catch(e){gaError=e.message||'Recovery is unavailable. Your request is preserved.';return null;}}
+async function doGaRecover(){if(gaBusy)return;gaBusy=true;try{await gaRecover();repaintPanel();}catch(e){gaError=e.message;repaintPanel();}finally{gaBusy=false;}}
+async function doGaRetry(){if(gaBusy||!gaPending)return;const name=$('#gaName')?.value||'',email=$('#gaEmail')?.value||'';gaBusy=true;const a=gaPending;try{const result=await GA.submit(a,name,email);if(!result){gaError='No confirmed receipt yet. Your same request is retained.';return;}showConfirm(result.receipt,PUB.types.find(t=>String(t.id)===a.tier),result);GA.complete(a,result);gaPending=null;gaError='';}catch(e){gaError=e.message||'The outcome is unknown. The same request is preserved.';}finally{gaBusy=false;repaintPanel();}}
+window.addEventListener('storage',e=>{if(e.key!=='zoi_auth')return;gaPending=null;gaError='Your account changed. Reload this event to check requests belonging to the current account.';LAST_CONFIRM=null;closeConfirm();if(PUB.eventId)repaintPanel();});
+
 /* ---- RPC ----
-   A thrown error carries .transport = true when the request never reached the
-   server. Door mode relies on that distinction: only a transport failure may be
+   A thrown error carries .transport = true when no complete response arrived.
+   The server may still have completed the request. Door mode relies on that distinction: only a transport failure may be
    queued offline. An HTTP error IS an answer and gets shown. */
 async function rpc(fn, params, token){
   let res;
@@ -654,7 +661,7 @@ async function rpc(fn, params, token){
   if(res.ok && unparseable){
     // A 200 whose body will not parse is not an empty result. Falling through
     // rendered "No events yet" for a workspace that has plenty.
-    throw new Error('The ticket server sent a reply Zoi could not read. Nothing has been changed.');
+    throw new Error('The ticket server sent a reply Zoi could not read. A request may have completed; check its saved status before retrying.');
   }
   if(!res.ok){
     const e=new Error((data&&(data.message||data.error_description||data.error||data.hint))||('Request failed ('+res.status+')'));
@@ -700,14 +707,8 @@ async function loadSvc(){
 }
 /* The exact, checkable list. Sourced from STATUS-TRUTH.md, not guessed. */
 const PAY_GATE_HTML =
-  '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>Card payments are switched off for this workspace.</b>'
-  + ' This is not a UI placeholder: <code>suite_config</code> reports <code>payments:false</code>, and'
-  + ' <code>tickets_reserve</code> refuses priced ticket types server-side, so a paid tier cannot even be held.'
-  + '<ol><li><code>STRIPE_SECRET_KEY</code> in the <code>tickets-checkout</code> / <code>tickets-confirm</code> edge functions.</li>'
-  + '<li><code>payments_live</code> flipped to true in <code>zoi.app_config</code> (it defaults to off, and it is enforced in the database, not the browser).</li>'
-  + '<li>Stripe webhook signature verification proven before that flag moves.</li></ol>'
-  + 'Until all three land, price your tiers at 0 and take money another way — free tiers work end to end today,'
-  + ' including the door.</div></div>';
+  '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>Online card payments are not available yet.</b>'
+  + ' You can offer free reservations. Keep paid tickets unavailable until payment setup is complete.</div></div>';
 
 function repaintForSvc(){
   try{
@@ -795,18 +796,19 @@ function ticketEventAvailability(available){
 function paintEventUnavailable(){
   ticketEventAvailability(false);
   document.title='Event unavailable · Tickets · Zoi';
-  app.innerHTML='<section class="hero"><h1 class="hero-title">Event unavailable</h1><p class="tkx-sub">This event link is invalid, unpublished, or no longer available.</p><a class="tkx-btn" href="/events/">Browse events</a></section>';
+  app.innerHTML='<section class="hero"><h1 class="hero-title">Event unavailable</h1><p class="tkx-sub">This event link is invalid, unpublished, or no longer available.</p><a class="tkx-btn" href="/explore/?type=event">Browse events</a></section>';
 }
 async function renderPublic(eventId){
   PUB.eventId = eventId;
-  PUB.ev=null;PUB.types=[];ticketEventAvailability(false);
+  PUB.ev=null;PUB.types=[];gaPending=null;gaError='';ticketEventAvailability(false);
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId)){paintEventUnavailable();return;}
+  try{await gaReady;gaPending=GA.read(eventId);}catch(e){gaError=e.message;}
   const code = qs('c');
   app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading tickets…</div>';
   try{ PUB.ev = await rpc('tickets_event_public', {p_event:eventId}, PUBKEY); }catch(e){
     app.innerHTML=errBlock('Could not load this event','Please try again when the connection is available.','renderPublic');return;
   }
-  if(!PUB.ev||!PUB.ev.id||PUB.ev.error){paintEventUnavailable();return;}
+  if(!PUB.ev||!PUB.ev.id||PUB.ev.error){paintEventUnavailable();if(gaPending){await gaRecover();app.insertAdjacentHTML('beforeend',gaPanel());}return;}
   let types;
   try{ types = await rpc('tickets_types_list', {p_event:eventId}, PUBKEY); }
   catch(err){
@@ -816,8 +818,9 @@ async function renderPublic(eventId){
   PUB.types = Array.isArray(types)?types:[];
   ticketEventAvailability(true);
   paintHead(PUB.ev, PUB.types, PUBLIC_BASE+'?e='+encodeURIComponent(eventId));
-  if(code){ paintTicketView(code); return; }
+  if(code){paintTicketView(code);if(gaPending){await gaRecover();app.insertAdjacentHTML('beforeend',gaPanel());}return;}
   paintPublic();
+  if(gaPending){await gaRecover();repaintPanel();}
 }
 
 /* A guest reopening their own QR link. This renders the code that is in the
@@ -937,13 +940,14 @@ function paintPublic(){
 }
 
 function renderReservePanel(anyLeft){
+  if(gaPending||gaError)return gaPanel();
   const t = PUB.types.find(x=>x.id===PUB.selected);
   if(t&&window.zoiSeating&&String(window.zoiSeating.ticket_type_id)===String(t.id)) return '<div class="order-box"><div class="order-header">Choose your seats</div><div class="order-body"><a href="#seat-booking">Open this event’s seating plan</a></div></div>';
   if(!t){
     return '<div class="order-box"><div class="order-header">Your reservation</div>'
       + '<div class="order-body"><div class="empty-cart">'
       + '<svg viewBox="0 0 24 24">'+ICONS.ticket+'</svg>'
-      + (anyLeft?'Pick a ticket type and your seat is held instantly.':'Nothing is available to reserve right now.')
+      + (anyLeft?'Pick a ticket type to prepare a reservation. Capacity is checked when you confirm.':'Nothing is available to reserve right now.')
       + '</div></div></div>';
   }
   const m = LIB.tierMath(t);
@@ -964,20 +968,19 @@ function renderReservePanel(anyLeft){
     +   '<div class="field-hint" style="margin:-8px 0 14px">'
     +     (m.unlimited ? 'The organiser set no capacity limit. Up to 10 per reservation.'
                       : m.left+' '+plural(m.left,'ticket')+' left · up to '+maxQty+' per reservation')+'</div>'
-    +   '<div class="field"><label for="rName">Full name</label><input id="rName" placeholder="Your name" autocomplete="name"/></div>'
-    +   '<div class="field"><label for="rEmail">Email</label><input id="rEmail" type="email" placeholder="you@email.com" autocomplete="email"/>'
-    +     '<div class="field-hint">Your confirmation code goes on screen straight away. Zoi cannot email it yet —'
-    +     ' the email sender needs a provider key that is not installed, so save the code or the QR.</div></div>'
+    +   '<div class="field"><label for="rName">Full name</label><input id="rName" maxlength="120" placeholder="Your name" autocomplete="name"/></div>'
+    +   '<div class="field"><label for="rEmail">Email</label><input id="rEmail" maxlength="160" type="email" placeholder="you@email.com" autocomplete="email"/>'
+    +     '<div class="field-hint">Save the confirmation code or QR shown after a successful reservation.'
+    +     ' Confirmation emails are not sent automatically.</div></div>'
     +   '<div class="tkx-inline-err" id="rErr" role="alert"></div>'
     +   '<div class="order-divider"></div>'
     +   '<div class="order-row total"><span class="label">Total</span><span>'+(m.free?'Free':fmtMoney(total,m.currency))+'</span></div>'
     +   (m.free
-        ? '<div class="tkx-note" data-tone="info" style="margin:12px 0">'+ico('info')+'<div>Free RSVP — your seat is held the moment you press the button.</div></div>'
+        ? '<div class="tkx-note" data-tone="info" style="margin:12px 0">'+ico('info')+'<div>Your free reservation is confirmed when you receive a confirmation code.</div></div>'
         : (SVC.payments
             ? '<div class="tkx-note" data-tone="info" style="margin:12px 0">'+ico('info')+'<div>You will be taken to Stripe to pay. Zoi never sees your card.</div></div>'
-            : '<div class="tkx-note" data-tone="stop" style="margin:12px 0">'+ico('info')+'<div><b>This tier cannot be sold yet.</b>'
-              + ' Card payments are off and <code>tickets_reserve</code> rejects priced tiers server-side, so pressing'
-              + ' the button will be refused by the database rather than quietly holding a seat.</div></div>'))
+            : '<div class="tkx-note" data-tone="stop" style="margin:12px 0">'+ico('info')+'<div><b>Online booking is unavailable for this ticket.</b>'
+              + ' Contact the organizer for current ticket options. No payment or reservation will be made here.</div></div>'))
     +   '<button class="reserve-btn" id="reserveBtn" data-act="reserve"'
     +     ((!m.free && !SVC.payments)?' disabled':'')+'>'
     +     (m.free?'Confirm RSVP':(SVC.payments?('Pay for '+PUB.qty+' '+plural(PUB.qty,'ticket')):'Unavailable — payments off'))+'</button>'
@@ -993,8 +996,9 @@ function repaintPanel(){
   if($('#rName')) $('#rName').value=nv;
   if($('#rEmail')) $('#rEmail').value=ev;
 }
-function selectType(id){ PUB.selected=id; PUB.qty=1; paintPublic(); const p=$('#rName'); if(p) p.focus(); }
+function selectType(id){ if(gaBusy||gaPending||gaError){repaintPanel();return;} PUB.selected=id; PUB.qty=1; paintPublic(); const p=$('#rName'); if(p) p.focus(); }
 function chQty(d){
+  if(gaBusy||gaPending||gaError)return;
   const t=PUB.types.find(x=>x.id===PUB.selected); if(!t) return;
   const m=LIB.tierMath(t);
   const max = m.unlimited ? 10 : Math.max(1, Math.min(10, m.left));
@@ -1003,6 +1007,7 @@ function chQty(d){
 }
 
 async function doReserve(){
+  if(gaBusy||gaPending||gaError)return;
   const t=PUB.types.find(x=>x.id===PUB.selected); if(!t) return;
   const m=LIB.tierMath(t);
   const name=($('#rName').value||'').trim(), email=($('#rEmail').value||'').trim();
@@ -1023,23 +1028,24 @@ async function doReserve(){
     }catch(err2){ errEl.textContent='Checkout failed: '+err2.message; }
     btn.disabled=false; btn.textContent=orig; return;
   }
-  btn.textContent='Reserving…';
+  btn.textContent='Reserving…';gaBusy=true;
   try{
-    const res = await rpc('tickets_reserve', {p_event:PUB.eventId, p_type:t.id, p_name:name, p_email:email, p_qty:PUB.qty}, PUBKEY);
-    showConfirm(res, t);
-    try{ PUB.types = await rpc('tickets_types_list', {p_event:PUB.eventId}, PUBKEY); }catch(e){}
-    PUB.selected=null; PUB.qty=1; paintPublic();
-  }catch(err){
-    btn.disabled=false; btn.textContent=orig;
-    errEl.textContent = err.transport
-      ? 'No connection to the ticket server, so nothing was reserved. Check your signal and try again.'
-      : (err.message || 'Could not reserve. Please try again.');
-  }
+    await gaReady;gaPending=await GA.prepare(PUB.eventId,String(t.id),PUB.qty);
+    const result=await GA.submit(gaPending,name,email);
+    if(!result){gaError='No confirmed receipt yet. Your same request is retained.';return;}
+    showConfirm(result.receipt,t,result);GA.complete(gaPending,result);gaPending=null;gaError='';
+    try{PUB.types=await rpc('tickets_types_list',{p_event:PUB.eventId},PUBKEY);}catch{}
+    PUB.selected=null;PUB.qty=1;paintPublic();
+  }catch(err){gaError=err.transport?'The outcome is unknown. The request may have completed; check its saved receipt before retrying.':err.message||'The outcome could not be confirmed. Recover the saved request before retrying.';}
+  finally{gaBusy=false;repaintPanel();}
+
 }
 
 let LAST_CONFIRM = null;
-function showConfirm(res, t){
+function showConfirm(res, t, currentStatus=null){
   const code = (res && res.code) || '';
+  $('#confirmModal .confirm-icon').hidden=currentStatus?.status==='cancelled';
+  $('#confirmModal .confirm-title').textContent=currentStatus?.status==='cancelled'?'Reservation cancelled':currentStatus?'Reservation recorded':'Reservation confirmed';
   LAST_CONFIRM = { code:code, qty:(res&&res.qty)||PUB.qty, paid:!!(res&&res.paid),
     amount_cents:(res&&res.amount_cents)||0, currency:(res&&res.currency)||'USD', tier:t?t.name:'' };
   const free = Number((res&&res.amount_cents)||0)===0;
@@ -1050,6 +1056,7 @@ function showConfirm(res, t){
   $('#cfNote').style.display = (free||LAST_CONFIRM.paid) ? 'none' : 'flex';
   $('#confirmSub').textContent = LAST_CONFIRM.paid ? 'Payment received. Keep this code.'
     : (free ? 'Your RSVP is confirmed. Keep this code — it is how you get in.' : 'Your seats are held. Keep this code.');
+  if(currentStatus){$('#cfStatus').textContent=currentStatus.status+(currentStatus.checkedIn?' · Checked in':'');$('#confirmSub').textContent=currentStatus.status==='cancelled'?'This reservation was cancelled. The original code is shown for your records.':'Reservation recorded. Current status: '+currentStatus.status+(currentStatus.eventAvailable?'':'. The current event or ticket offering is unavailable.');}
   const qrBox = document.getElementById('cfQr');
   if(qrBox){
     if(code){
@@ -1061,8 +1068,8 @@ function showConfirm(res, t){
   const cfActs = document.getElementById('cfActs');
   if(cfActs){
     cfActs.innerHTML = (code?'<button class="tkx-btn" data-act="copycode" data-code="'+esc(code)+'">'+ico('copy')+' Copy code</button>':'')
-      + (code?'<button class="tkx-btn" data-act="printticket" data-code="'+esc(code)+'">Print / save ticket</button>':'')
-      + ((PUB.ev&&PUB.ev.event_at)?'<button class="tkx-btn" data-act="pubics">'+ico('cal')+' Add to calendar</button>':'');
+      + (code&&currentStatus?.status!=='cancelled'?'<button class="tkx-btn" data-act="printticket" data-code="'+esc(code)+'">Print / save ticket</button>':'')
+      + ((PUB.ev&&PUB.ev.event_at&&currentStatus?.status!=='cancelled')?'<button class="tkx-btn" data-act="pubics">'+ico('cal')+' Add to calendar</button>':'');
   }
   $('#confirmModal').classList.add('open');
   const done=document.getElementById('cfDone'); if(done) done.focus();
@@ -1679,9 +1686,8 @@ function paintDetail(){
     +   (r.email?'<a class="tkx-btn" href="'+esc(mail)+'">Email this guest</a>':'')
     + '</div>'
     + '<div class="tkx-note" data-tone="warn" style="margin-top:14px">'+ico('info')
-    + '<div><b>Zoi cannot send this email for you.</b> The transactional email sender is credential-gated'
-    + ' (<code>RESEND_API_KEY</code> is not installed), so "resend confirmation" would be a button that does nothing.'
-    + ' The link above opens your own mail app with the details filled in, which actually works.'
+    + '<div><b>Email this guest opens your mail app.</b> Review the ticket details and recipient before sending.'
+    + ' Messages are not sent automatically by Zoi.'
     + '<br><br>Confirmed check-ins cannot be undone here. Check the ticket carefully before confirming admission.</div></div>';
 }
 
@@ -1691,8 +1697,7 @@ function paintBulk(){
   tools.innerHTML = b.running?'':'<button class="tkx-btn" data-act="attback">← Back to list</button>';
   if(!b.started){
     body.innerHTML = '<div class="tkx-note" data-tone="warn">'+ico('info')
-      + '<div><b>Check in '+b.codes.length+' '+plural(b.codes.length,'guest')+' at once?</b> This calls'
-      + ' <code>tickets_checkin</code> once per reservation, for exactly the '+b.codes.length+' currently shown and'
+      + '<div><b>Check in '+b.codes.length+' '+plural(b.codes.length,'guest')+' at once?</b> This admits the '+b.codes.length+' guests currently shown and'
       + ' not yet checked in. A confirmed check-in cannot be undone here.</div></div>'
       + '<div class="tkx-acts"><button class="tkx-btn" data-tone="door" data-act="bulkgo">Check in '+b.codes.length+' now</button>'
       + '<button class="tkx-btn" data-act="attback">Cancel</button></div>';
@@ -2012,6 +2017,9 @@ const ACTIONS = {
   pick: t => selectType(coerceId(t.dataset.tier)),
   qty: t => chQty(Number(t.dataset.d)),
   reserve: () => doReserve(),
+  garecover:()=>doGaRecover(),
+  gareload:()=>renderPublic(PUB.eventId),
+  garetry:()=>doGaRetry(),
   watch: t => toggleWatch(coerceId(t.dataset.tier)),
   share: t => shareUrl(t.dataset.url),
   pubics: () => publicIcs(),

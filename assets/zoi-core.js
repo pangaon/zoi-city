@@ -119,6 +119,8 @@
     _authVersion++;
     _auth = a || null; _loaded = true;
     if (a) lsSet(K_AUTH, JSON.stringify(a)); else lsDel(K_AUTH);
+    // Identity-only notification; never expose session tokens in event detail.
+    try { global.dispatchEvent(new global.CustomEvent('zoi:auth-change')); } catch (_) {}
     return _auth;
   }
   function authClear(){ authSave(null); }
