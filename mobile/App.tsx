@@ -1,3 +1,4 @@
+import { profileImageMode } from './src/profile';
 import { InquiriesScreen, InquiryInbox } from './src/Inquiries';
 import { inquiryId } from './src/inquiries';
 import { StatusBar } from 'expo-status-bar';
@@ -66,9 +67,10 @@ function RemoteState({ loading, error, empty, onRetry }: { loading: boolean; err
 }
 function Photo({ uri, name }: { uri?: string; name: string }) {
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [uri]);
+  const [fit,setFit]=useState<'center'|'cover'>('center');
+  useEffect(() => {setFailed(false);setFit('center');}, [uri]);
   if (!uri || !/^https:\/\//i.test(uri) || failed) return <View style={s.photoFallback}><Text style={s.monogram}>{name.slice(0, 1).toLocaleUpperCase()}</Text><Text style={s.photoLabel}>ZOI · DISCOVER</Text></View>;
-  return <Image accessibilityLabel={name} source={{ uri }} resizeMode="cover" style={s.photo} onError={() => setFailed(true)} />;
+  return <Image accessibilityLabel={name} source={{ uri }} resizeMode={fit} onLoad={event=>setFit(profileImageMode(event.nativeEvent.source.width,event.nativeEvent.source.height))} style={s.photo} onError={() => setFailed(true)} />;
 }
 function PlaceCard({ place, open }: { place: Place; open: (path: string) => void }) {
   const path = place.path && /^\/(?!\/)/.test(place.path) ? place.path : '/p/' + encodeURIComponent(place.slug);
