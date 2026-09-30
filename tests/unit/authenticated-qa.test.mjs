@@ -19,3 +19,17 @@ test('browser guard denies writes, outside scopes, other hosts and arbitrary lis
 
 import{closeBrowser}from'../../scripts/auth-qa/browser.mjs';
 test('browser cleanup failure prevents a successful result and hides process errors',async()=>{await closeBrowser(async args=>assert.deepEqual(args,['close']));await assert.rejects(closeBrowser(async()=>{throw Error('private process failure detail');}),error=>error.message==='qa_browser_cleanup_failed');});
+
+import {validateQaRun} from '../../scripts/auth-qa/ci.mjs';
+test('push request binds first attempt, exact parent, changed file, code and dedicated identity',()=>{
+ const before='8'.repeat(40),after='a'.repeat(40),hashes=Object.fromEntries(['session','browser','ci'].map(x=>['scripts/auth-qa/'+x+'.mjs','b'.repeat(64)]));
+ const env={GITHUB_REPOSITORY:'pangaon/zoi-city',GITHUB_REF:'refs/heads/main',GITHUB_RUN_ATTEMPT:'1',GITHUB_EVENT_NAME:'push',GITHUB_SHA:after},now=Date.now();
+ const request={id:'00000000-0000-4000-8000-000000000001',purpose:'dedicated-qa-readonly',issued_at:new Date(now).toISOString(),expires_at:new Date(now+1800000).toISOString(),base_sha:before,user_id:QA.user,profile_id:QA.profile,workspace_id:QA.workspace,code_sha256:hashes};
+ const evidence={parent:before,head:after,diff:'A\tops/authenticated-qa-request.json',hashes,event:{before,after,ref:'refs/heads/main',repository:{full_name:'pangaon/zoi-city'},forced:false,deleted:false,created:false}};
+ assert.doesNotThrow(()=>validateQaRun(env,request,now,evidence));
+ for(const patch of[{GITHUB_REF:'refs/heads/other'},{GITHUB_RUN_ATTEMPT:'2'},{GITHUB_EVENT_NAME:'pull_request'},{GITHUB_REPOSITORY:'other/repo'}])assert.throws(()=>validateQaRun({...env,...patch},request,now,evidence));
+ for(const patch of[{id:'other'},{expires_at:new Date(now-1).toISOString()},{expires_at:new Date(now+1800001).toISOString()},{workspace_id:'other'},{profile_id:QA.user},{base_sha:'f'.repeat(40)},{code_sha256:{}}])assert.throws(()=>validateQaRun(env,{...request,...patch},now,evidence));
+ for(const patch of[{diff:''},{parent:'f'.repeat(40)},{hashes:{}}])assert.throws(()=>validateQaRun(env,request,now,{...evidence,...patch}));
+ for(const patch of[{forced:true},{deleted:true},{created:true},{before:'f'.repeat(40)},{after:'f'.repeat(40)},{forced:undefined}])assert.throws(()=>validateQaRun(env,request,now,{...evidence,event:{...evidence.event,...patch}}));
+ assert.doesNotThrow(()=>validateQaRun({...env,GITHUB_EVENT_NAME:'workflow_dispatch'},null,now));
+});

@@ -9,3 +9,31 @@ test('new request recovery accepts only exact nonce/event/tier/quantity receipt,
 test('legacy saved requests cannot be upgraded to once protocol, and malformed recovery never clears warning',async()=>{const {generalRecovery,generalSubmission}=await import('../src/generalReservation.ts');assert.throws(()=>generalSubmission(attempt,'Guest','guest@example.com'));const a={...attempt,protocol:'once',qty:2};for(const response of[null,{ok:false,found:false},{ok:true,found:'false'},{ok:true,found:true,receipt}])assert.throws(()=>generalRecovery(response,a));});
 
 test('recovered creation receipt cannot imply active ticket after cancellation or closed event',async()=>{const {generalRecovery}=await import('../src/generalReservation.ts');const a={...attempt,protocol:'once',qty:2},r={...receipt,currency:'EUR',request_id:a.id,event_id:a.event,ticket_type_id:a.tier};assert.throws(()=>generalRecovery({ok:true,found:true,receipt:r},a));const v=generalRecovery({ok:true,found:true,receipt:r,current_status:'cancelled',checked_in:false,event_available:false},a);assert.equal(v.status,'cancelled');assert.equal(v.eventAvailable,false);assert.equal(v.receipt.code,'real');});
+
+test('signing in cannot bypass an unresolved guest reservation or reuse its nonce as an account request',async()=>{
+ const storage=store(),g=new GeneralReservationGuard(storage),guest={...attempt,actor:'guest',protocol:'once',qty:1};
+ await g.begin(guest,()=>true);
+ assert.equal(await g.hasGuestPending('actor-a',guest.event),true);
+ assert.equal(await g.hasGuestPending('guest',guest.event),false);
+ assert.equal(await g.hasGuestPending('actor-a','different-event'),false);
+ await assert.rejects(g.begin({...guest,actor:'actor-a',id:'fresh-request'},()=>true),/guest request/);
+ assert.deepEqual(await g.read('guest',guest.event),guest);
+ assert.equal(await g.read('actor-a',guest.event),null);
+});
+
+test('confirmed nonce reference survives reopening without contacts and never claims cached ticket status',async()=>{
+ const storage=store(),g=new GeneralReservationGuard(storage),a={...attempt,protocol:'once',qty:2,created_at:new Date().toISOString()},r={...receipt,currency:'EUR',request_id:a.id,event_id:a.event,ticket_type_id:a.tier};
+ await g.begin(a,()=>true);await g.confirmed(a,r,2);
+ assert.equal(await g.read(a.actor,a.event),null);
+ assert.deepEqual(await new GeneralReservationGuard(storage).references(a.actor,a.event),[a]);
+ assert.deepEqual(await g.references('other-account',a.event),[]);
+ assert.deepEqual(await g.references(a.actor,'other-event'),[]);
+ assert.equal('code' in (await g.references(a.actor,a.event))[0],false);
+});
+test('confirmed references cap at five, expire after one year, and storage failure preserves unresolved warning',async()=>{
+ const storage=store(),g=new GeneralReservationGuard(storage);
+ for(let i=0;i<7;i++){const a={...attempt,id:'ref-'+i,protocol:'once',qty:2,created_at:new Date().toISOString()};await g.begin(a,()=>true);await g.confirmed(a,{...receipt,currency:'EUR',request_id:a.id,event_id:a.event,ticket_type_id:a.tier},2);}
+ assert.equal((await g.references(attempt.actor,attempt.event)).length,5);
+ const a={...attempt,id:'old',protocol:'once',qty:2,created_at:'2020-01-01T00:00:00Z'};await g.begin(a,()=>true);await g.confirmed(a,{...receipt,currency:'EUR',request_id:a.id,event_id:a.event,ticket_type_id:a.tier},2);assert.equal((await g.references(a.actor,a.event)).some(r=>r.id==='old'),false);
+ const fail=new GeneralReservationGuard({...storage,setItem:async(k,v)=>{if(k.includes('.references.'))throw Error('disk full');await storage.setItem(k,v);}}),b={...a,id:'unresolved',created_at:new Date().toISOString()};await fail.begin(b,()=>true);await assert.rejects(fail.confirmed(b,{...receipt,currency:'EUR',request_id:b.id,event_id:b.event,ticket_type_id:b.tier},2));assert.equal((await fail.read(b.actor,b.event)).id,b.id);
+});

@@ -4,7 +4,7 @@ import { AsyncStorage, drafts, useAuth } from './Auth';
 import { validPostReceipt } from './drafts';
 const color = { navy: '#132F46', blue: '#116CBA', muted: '#60717E' };
 function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) { return <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.action, disabled && { opacity: 0.55 }]}><Text style={styles.actionText}>{label}</Text></Pressable>; }
-export function AccountPanel() {
+export function AccountPanel({onAuthenticationError}:{onAuthenticationError?:()=>void}={}) {
   const { client, session, booting, notice, setNotice, signOut, workspaceId: selected, setWorkspaceId: setSelected } = useAuth();
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [code, setCode] = useState('');
   const [mode, setMode] = useState<'password' | 'email'>('password'); const [sent, setSent] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
@@ -30,7 +30,7 @@ export function AccountPanel() {
       else if (sent) await client.verifyCode(email.trim(), code.trim());
       else { await client.sendCode(email.trim()); setSent(true); }
       setPassword(''); setCode('');
-    } catch (e) { setError(e instanceof Error ? e.message : 'Could not sign in. Please try again.'); }
+    } catch (e) { setError(e instanceof Error ? e.message : 'Could not sign in. Please try again.'); onAuthenticationError?.(); }
     finally { setBusy(false); }
   };
   return <View style={styles.panel}><Text style={styles.title}>Your Zoi account</Text>{notice ? <Text accessibilityRole="alert" style={styles.message}>{notice}</Text> : null}{booting ? <ActivityIndicator color={color.blue} /> : session ? <>

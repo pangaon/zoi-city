@@ -1,5 +1,8 @@
 name: Dedicated QA authenticated read-only checks
 on:
+  push:
+    branches: [main]
+    paths: ['ops/authenticated-qa-request.json']
   workflow_dispatch:
 permissions:
   contents: read
@@ -13,11 +16,15 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
       - name: Verify identity and read-only guards without credentials
         run: node --test tests/unit/authenticated-qa.test.mjs
+      - name: Validate the reviewed request before installing or loading credentials
+        run: node scripts/auth-qa/ci.mjs --check-request
       - name: Install pinned browser
         run: |
           npm install --global agent-browser@0.38.1
