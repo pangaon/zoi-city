@@ -1,5 +1,6 @@
 import {profileMedia} from './_profile-media.js';
 import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
+import {renderChurchHome} from './_church-home.js';
 import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
@@ -497,12 +498,12 @@ export default async function handler(req, res) {
       return;
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
-    const restaurantHome = renderAvliHome(e);
-    if (restaurantHome) {
+    const designedHome = renderAvliHome(e) || renderChurchHome(e);
+    if (designedHome) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');
       res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
-      res.end(restaurantHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/business/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'));
+      res.end(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/business/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'));
       return;
     }
     const optional = await Promise.allSettled([rpc('seo_related',{p_slug:slug,p_limit:8},2000),rpc('listing_completeness',{p_slug:slug},2000)]);

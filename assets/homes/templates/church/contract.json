@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "stage": "tested local candidate; parent integrates canonical publication",
+  "renderer": "renderChurch(parish, template, publishedDesign, {preview:false}) returns escaped HTML",
+  "mount": "mountChurch(root, parish, template, publishedDesign, {preview:false}); requires window.ZoiCore and church.css; sets body[data-template]",
+  "content": "PARISH from data.mjs plus ministries:MINISTRIES is the verified Saint Sophia fixture. Other parish content must provide its OWN id/name/slug/city/address/phone/phoneDisplay/site/calendar/communityCalendar/giving/stream/contact/photos and optional ministries. Never substitute Saint Sophia's sources for another parish.",
+  "design": ["template", "section_order", "hidden_sections", "copy.headline", "copy.intro", "copy.offerings_title", "copy.gallery_title", "copy.calendar_title", "copy.media_title", "copy.contact_title"],
+  "section_ids": ["intro", "offerings", "gallery", "calendar", "media", "contact"],
+  "additional_section": "visit contains an explicitly personal device-local plan; currently appended according to template and not part of shared owner section schema",
+  "operational_sources": {
+    "calendar": "org_calendar_public(p_listing,p_from,p_to); actual published/cancelled records only",
+    "inquiries": "inquiry_availability(p_listing), then existing authenticated /inquiries/?listing=ID flow only when available",
+    "giving_and_registration": "Verified official parish website handoff, no platform payment or enrolment claim",
+    "owner": "/social#home-design with existing authenticated calendar, program/volunteer and enquiry tools"
+  },
+  "privacy": "No child records, contact details or religious notes collected. Personal date/interest stays on device until cleared. Calendar download explicitly says personal plan, not parish reservation.",
+  "future_work": ["Native implementation of presentation and personal plan", "Configured claimed-parish workflow acceptance", "Canonical published owner design integration by parent", "Additional parish content adapter for missing sources/photos instead of using fixture fallbacks"]
+}
