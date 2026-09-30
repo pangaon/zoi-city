@@ -53,3 +53,23 @@ The live mobile promoter concert link was exercised again through the normal eve
 Remaining material gaps: this is a published organizer home and concert announcement/contact journey, not an operational ticket sale. No owner has claimed/configured this event, no approved ticket prices or table inventory exist, and no reservation/payment is offered. Seating remains the official image reference rather than a selectable reconstructed room. The source 2026/2027 disagreement must be resolved before sales activation. Gallery thumbnail crops are decorative previews; full artwork is available in the enlarged viewer. Official source HTTP is retained rather than rewriting to a failing HTTPS hostname.
 
 Evidence: `.qa-opa/production-results.json`, `.qa-opa/released-search.json`, `.qa-opa/latest-live-journey.json`; screenshots `/tmp/opa-live-{promoter,event}-{390,1440}.png` and `/tmp/opa-released-quicklook-{390,1440}.png`.
+
+
+## Current production acceptance — 2026-09-30 20:15–20:20 UTC
+
+Rechecked after production release `b9fe5bbbbab2c8227ff0de1904fe366dda03b612`. The organizer and concert are both live on their ordinary canonical routes; no duplicate records or new writes were made in this pass.
+
+- **Source:** official floor-plan HTML returned 200 and still contains 2026, while the official poster visibly states March 26, 2027. Fresh poster, plan and logo bytes all match the previously reviewed SHA-256 originals. The year disagreement remains disclosed and unresolved.
+- **Public data:** fresh anonymous `home_entity` reads return the same two published/clean canonical identities. Both have current poster URLs and explicit `event_poster` metadata. Concert source fields retain March 26, 2027, Palace Convention Centre, organizer linkage and `ticketing_status: contact_organizer`. No invented prices or sellable seat inventory were added.
+- **Rendered and exercised, 390 and 1440:** exact Explore search lists OPA Productions first and the concert second. Quick Look decodes the full 1000px poster with contain. Open full page reaches `/business/opa-productions`; its concert action reaches `/event/giannis-ploutarchos-andromache-montreal-2027`. Contact links resolve to `tel:+15149697375` and `mailto:info@opaproductions.com`. The year notice is visible. Floor-plan dialog decodes the original 1548×903 image; Escape restores focus. A three-person group enquiry preserves date, venue and question and explicitly remains prepared, not sent. No page overflow or uncaught browser error occurred.
+- **Visual inspection:** phone organizer home displays the approved Zoi mark, real OPA identity, full poster, concert card, contact actions and source-based announcement sections. No fabricated venue rendering or Toronto couch layout was substituted.
+
+Evidence: `.qa-opa/current-source.json`, `current-public-source.json`, `current-journey.json`, and `current-{company,event}-{390,1440}.png`. One browser was used and closed. No external email, call, payment or booking was submitted.
+
+No new blocker was found in the published announcement/contact journey. Remaining sales prerequisites are unchanged: organizer ownership/setup, confirmed year and sales terms, actual inventory and payment configuration. Private group notes are not reservations or delivered enquiries. The room is a published seating image, not a selectable 3D reconstruction. Minor presentation follow-up: promoter concert-card dates still use ISO formatting; this is a shared family formatting polish item, not a wrong date or failed route.
+
+## Shared promoter date polish — local candidate
+
+`assets/homes/templates/events/promoter.mjs` now displays valid date-only concert values as “26 March 2027”, using UTC calendar formatting so viewers in Honolulu or Kiritimati see the same source day. Strict round-trip validation avoids silently converting invalid calendar dates. Non-date source wording and timestamps remain unchanged; no missing date/time is invented. Owner-supplied dates still come through the existing authoritative projection, including clears.
+
+Eleven focused promoter/generic-event tests passed, including both timezone extremes, leap day, invalid date, prose source date, timestamp preservation, owner replacement and sparse/cleared shows. This formatting change applies to every shared promoter home, not only OPA. It has not yet been released; the production screenshots above precede this polish.

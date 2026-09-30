@@ -7,3 +7,12 @@ test('owner event clear and sparse promoter cannot invent performances',()=>{con
 test('unsafe event links are omitted; event source notice and original floor plan remain available',()=>{assert.equal(eventHomeContent({...e,profile:{...e.profile,events:[{name:'Bad',url:'javascript:alert(1)'}]}}).shows.length,0);const html=renderEventCanonicalHome({...e,entity_type:'event',profile:{starts:'2027-03-26',source_notice:'Confirm conflicting source year.',floor_plan_url:'https://official.example/plan.jpg',organizer_name:'Promoter',organizer_url:'/business/test-promoter'}});assert.match(html,/Confirm conflicting source year/);assert.match(html,/Open the official floor plan/);assert.match(html,/href="\/business\/test-promoter"/);});
 
 test('owner official website clear and replacement win; sparse null arrays never crash',()=>{const clear=eventHomeContent({...e,owner_content:{website:null},profile:{...e.profile,spaces:[null],lineup:[null]}});assert.equal(clear.source_website,'');assert.equal(clear.website,'');assert.deepEqual(clear.spaces,[]);assert.deepEqual(clear.lineup,[]);assert.equal(eventHomeContent({...e,owner_content:{website:'https://new.example/'}}).source_website,'https://new.example/');assert.doesNotMatch(renderEventCanonicalHome({...e,profile:{...e.profile,events:[{name:'Old show',date:'2025-01-01',url:'/event/old-show'}]}}),/Coming to the stage/);});
+
+
+test('promoter calendar dates display clearly without timezone shifts or invented dates',()=>{
+ const original=process.env.TZ;
+ try{for(const zone of ['Pacific/Honolulu','Pacific/Kiritimati']){process.env.TZ=zone;const html=renderEventCanonicalHome(e);assert.match(html,/26 March 2027/);assert.doesNotMatch(html,/2027-03-26 ·/);}
+ for(const date of ['2027-02-29','Coming this autumn','2027-03-26T00:30:00+02:00']){const html=renderEventCanonicalHome({...e,profile:{...e.profile,events:[{...e.profile.events[0],date}]}});assert.ok(html.includes(date));}
+ const owner=renderEventCanonicalHome({...e,owner_content:{profile:{events:[{...e.profile.events[0],date:'2028-02-29'}]}}});assert.match(owner,/29 February 2028/);assert.doesNotMatch(owner,/26 March 2027/);
+ }finally{if(original===undefined)delete process.env.TZ;else process.env.TZ=original;}
+});
