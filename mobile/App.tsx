@@ -7,6 +7,7 @@ import { VenueStudio } from './src/Venue';
 import { BusinessProfile } from './src/Profile';
 import { OperationsPanel } from './src/Operations';
 import { TicketsScreen } from './src/Tickets';
+import { CreatorPanel } from './src/Creator';
 
 const WEB = 'https://www.zoi.city';
 const API = 'https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/';
@@ -113,7 +114,7 @@ function Grow({ open }: { open: (path: string) => void }) {
     { label: 'BuyGreek', text: 'Connect with Greek products and merchants.', path: 'https://buygreek.shop', tag: 'COMMERCE' },
     { label: 'Your account', text: 'Sign in to your existing Zoi account securely.', path: '/social', tag: 'YOUR ZOI' },
   ];
-  return <ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>MADE FOR YOUR NEXT CHAPTER</Text><Text style={s.pageTitle}>Greek roots.{ '\n' }Global ambition.</Text><Text style={s.body}>Your work deserves a home in the Greek world.</Text><AccountPanel /><OperationsPanel /><VenueStudio /><View style={s.note}><Text style={s.body}>These workspaces open in your browser. Availability of connected services is shown inside each workspace.</Text></View>{links.map(link => <View key={link.path} style={s.workspace}><Text style={s.eyebrow}>{link.tag}</Text><Text style={s.sectionTitle}>{link.label}</Text><Text style={s.body}>{link.text}</Text><Button label="Open workspace ↗" onPress={() => open(link.path)} subtle /></View>)}<Text style={s.meta}>Native discovery, sign-in, workspace selection and text community posts are available here. Transactions and business management currently use the website.</Text></ScrollView>;
+  return <ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>MADE FOR YOUR NEXT CHAPTER</Text><Text style={s.pageTitle}>Greek roots.{ '\n' }Global ambition.</Text><Text style={s.body}>Your work deserves a home in the Greek world.</Text><AccountPanel /><CreatorPanel /><OperationsPanel /><VenueStudio /><View style={s.note}><Text style={s.body}>Explore additional services below. Connected provider availability is shown inside each workspace.</Text></View>{links.map(link => <View key={link.tag} style={s.workspace}><Text style={s.eyebrow}>{link.tag}</Text><Text style={s.sectionTitle}>{link.label}</Text><Text style={s.body}>{link.text}</Text><Button label="Open workspace ↗" onPress={() => open(link.path)} subtle /></View>)}<Text style={s.meta}>Manage your bio, operations and venue drafts here. Paid checkout and additional connected services open on the website.</Text></ScrollView>;
 }
 function ZoiApp() {
   const [profileSlug, setProfileSlug] = useState<string | null>(null);
