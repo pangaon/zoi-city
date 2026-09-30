@@ -1,3 +1,4 @@
+import { sourceRepairIssue } from '../../supabase/functions/zoi-enrich/_document-quality.js';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
 import {extractMemberSource,memberEnrichmentGuard,memberTextFromHTML} from '../../assets/enrichment/member-source.mjs';
@@ -12,6 +13,7 @@ export function classifySource(row,response){
  const basis={subject_name:row.name,source_url:response.url,http_status:response.status,source_fingerprint:row.source_fingerprint,source_sha256:sha256(response.text),identity_match:false,passed:false};
  if(response.status!==200)return{status:'retry',evidence:{...basis,reason:'source_http_'+response.status}};
  if(/one moment, please|request (?:is )?being verified|checking your browser|verify you are human|cf-chl-/i.test(response.text))return{status:'retry',evidence:{...basis,reason:'source_challenge'}};
+ const repair=sourceRepairIssue(response.text);if(repair)return{status:'retry',evidence:{...basis,reason:repair.reason,repair}};
  const member=extractMemberSource({url:response.url,html:response.text,expectedName:row.name})||extractAssociationCard({url:response.url,html:response.text,expectedName:row.name});
  if(member)return{status:'verified',evidence:{...basis,passed:true,identity_match:true,source_role:'individual',method:member.provenance.method,source_fields:{name:member.name,profession:member.profession,role:member.affiliation?.role||null,portrait_url:member.portrait_url}}};
  const guarded=memberEnrichmentGuard({listing:{name:row.name,entity_type:row.entity_type,website:row.website,profile:{_enrich:row.existing_enrich||{}}},html:response.text,url:response.url});

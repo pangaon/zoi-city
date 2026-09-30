@@ -411,7 +411,7 @@
   function precisionOf(p) {
     return PRECISION[String((p && p.precision) || '').toLowerCase()] || UNKNOWN_PRECISION;
   }
-  function precisionLabel(p) { return precisionOf(p).label; }
+  function precisionLabel(p) { return p&&p.unmapped?'Map position not available':precisionOf(p).label; }
 
   /* Directions route by postal address whenever we hold one, and only fall back
    * to the pin when the pin is the better evidence. A city-centroid or
@@ -461,6 +461,7 @@
   var query = '';
   var here = null;                    // {lat,lng} once geolocated
   var selected = null;
+  var selectionVersion = 0, pendingPlace = null;
   var mapTools = null, previewModule=null, previewController=null;
   var truncated = false;              // true when the page cap, not the data, ended the walk
   var failedPages = 0;                // pages the directory did not return
@@ -501,6 +502,7 @@
       if (query) p.set('q', query);
       // A shared link should reopen the place that was open, not just the view.
       if (selected && selected.s) p.set('place', selected.s);
+      else if(pendingPlace)p.set('place',pendingPlace);
       var offCount = TYPES.filter(function (t) { return !on[t.k]; }).length;
       if (offCount) p.set('t', TYPES.filter(function (t) { return on[t.k]; }).map(function (t) { return t.k; }).join(','));
       var qs = p.toString();
@@ -529,7 +531,7 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    mapTools = await import('/assets/map-data/loader.mjs?v=20260930-preserve-zoom');
+    mapTools = await import('/assets/map-data/loader.mjs?v=20260930-resilient-place');
     previewModule = await import('/assets/map-data/preview.mjs?v=20260930-profile-details');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
@@ -937,7 +939,7 @@
   var listState = { items: [], shown: 0, mode: 'all' };
   function paint(reset) {
     var body = $('pbody');
-    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),loadDetails:function(slug){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),loadDetails:function(slug){return selected&&selected.unmapped?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
     var slice = listState.items.slice(listState.shown, listState.shown + 60);
     var advance=slice.length;
     if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});
@@ -966,7 +968,7 @@
   $('pbody').addEventListener('focusout',hideTip);
   $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=ALL[+a.dataset.i];if(p){e.preventDefault();choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
   function updateSavedLabel(){if(previewModule)$('tSaved').textContent='Saved ('+previewModule.readSavedPlaces().length+')';}
-  $('tSaved').addEventListener('click',function(){if(!previewModule)return;setSheet(false);$('stage').classList.remove('m-selected-view');selected=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Only currently available mapped places are shown.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
+  $('tSaved').addEventListener('click',function(){if(!previewModule)return;setSheet(false);$('stage').classList.remove('m-selected-view');selected=null;selectionVersion++;pendingPlace=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Only currently available mapped places are shown.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
 
   function showList(items, title, sub, lngLat) {
     if(selected&&!items.some(function(p){return p.s===selected.s;}))selected=null;
@@ -991,6 +993,7 @@
   }
 
   function showAll() {
+    selectionVersion++;pendingPlace=null;
     $('stage').classList.remove('m-selected-view');
     clearSpider();
     selected = null;
@@ -1036,6 +1039,7 @@
   function animateMap(options) { if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)map.jumpTo(options);else map.easeTo(options); }
 
   function choose(p, keepSpider) {
+    selectionVersion++;pendingPlace=null;
     setSheet(false);$('stage').classList.add('m-selected-view');
     selected = p;
     document.querySelectorAll('.m-pin').forEach(function(pin){pin.classList.toggle('m-selected',pin.dataset.slug===p.s);});
@@ -1055,6 +1059,31 @@
     if(focus.duration===0)map.jumpTo(focus);else map.easeTo(focus);
     status(precisionLabel(p) + (p.unknown ? ' — confirm the address before travelling' : ''),false,5000);
     writeUrl();
+  }
+
+  async function openUnmappedPlace(slug) {
+    var version=++selectionVersion;pendingPlace=slug;selected=null;
+    // Establish group mode before resize can emit moveend and rebuild all results.
+    showList([], 'Opening this place', 'Checking its published profile', null);
+    setSheet(false);$('stage').classList.add('m-selected-view');
+    writeUrl();
+    $('pbody').innerHTML='<div class="m-empty" role="status">Loading this place’s details…</div>';
+    try{
+      var entity=await mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});});
+      if(version!==selectionVersion)return;
+      var place=mapTools.unmappedPlace(entity,slug);
+      if(!place)throw Error('place_not_available');
+      selected=place;pendingPlace=null;
+      showList([place], 'Selected place', [nice(place.cat),place.city,place.country].filter(Boolean).join(' · '), null);
+      $('pfoot').textContent='This profile is available. Its map position has not been added; the map view has not moved.';
+      writeUrl();
+    }catch(error){
+      if(version!==selectionVersion)return;
+      $('ptitle').textContent='This place could not be opened';
+      $('pbody').innerHTML='<div class="m-empty">'+(error.message==='place_not_available'?'The requested profile is not currently available.':'The profile service is temporarily unavailable.')+'</div>';
+      var retry=document.createElement('button');retry.type='button';retry.className='m-linkish';retry.textContent='Try this place again';retry.addEventListener('click',function(){openUnmappedPlace(slug);});$('pbody').appendChild(retry);
+      $('pfoot').textContent='We have kept the requested place in this link. Close this panel to browse other places.';
+    }
   }
 
   function closeSelection() { showAll(); writeUrl(); $('q').focus(); }
@@ -1229,7 +1258,7 @@
         var hit = null;
         for (var i = 0; i < ALL.length; i++) { if (ALL[i].s === want) { hit = ALL[i]; break; } }
         if (hit) choose(hit);
-        else status('That place is not on the map', false, 3600);
+        else openUnmappedPlace(want);
       }
       status('', false);
     });

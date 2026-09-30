@@ -86,13 +86,13 @@
 #restaurant-home [hidden]{display:none!important}
 /* Individual restaurant art direction: colours come from reviewed source imagery,
    or a validated owner palette; never from another restaurant's identity. */
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]){background:var(--cream);color:var(--ink)}
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .topbar{background:var(--paper);color:var(--ink);border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .top-action,#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .button.green{background:var(--forest);color:var(--paper);border-radius:8px 22px 8px 22px}
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .visit{background:var(--ink);color:var(--paper)}
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .menu-group{background:var(--paper);color:var(--ink);border-radius:6px 42px 6px 6px;box-shadow:0 18px 55px #173b5210}
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .menu-source-card{background:var(--paper);color:var(--ink);border-color:var(--gold);border-radius:30px 4px 30px 4px}
-#restaurant-home .restaurant-brand-skin[data-restaurant-brand]:not([data-restaurant-brand=""]) .contact-section aside{background:var(--paper);color:var(--ink);border-radius:30px 4px 30px 4px}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand]{background:var(--cream);color:var(--ink)}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .topbar{background:var(--paper);color:var(--ink);border-bottom:1px solid color-mix(in srgb,var(--ink) 18%,transparent)}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .top-action,#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .button.green{background:var(--forest);color:var(--paper);border-radius:8px 22px 8px 22px}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .visit{background:var(--ink);color:var(--paper)}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .menu-group{background:var(--paper);color:var(--ink);border-radius:6px 42px 6px 6px;box-shadow:0 18px 55px #173b5210}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .menu-source-card{background:var(--paper);color:var(--ink);border-color:var(--gold);border-radius:30px 4px 30px 4px}
+#restaurant-home .restaurant-brand-skin[data-restaurant-brand] .contact-section aside{background:var(--paper);color:var(--ink);border-radius:30px 4px 30px 4px}
 #restaurant-home .restaurant-brand-skin[data-restaurant-brand=twelve-islands] .restaurant-brand>span{font-size:27px;letter-spacing:-.04em;max-width:230px}
 #restaurant-home .restaurant-brand-skin[data-restaurant-brand=twelve-islands] .hero{min-height:730px;background:var(--ink);color:var(--paper)}
 #restaurant-home .restaurant-brand-skin[data-restaurant-brand=twelve-islands] .hero-shade{background:linear-gradient(90deg,#102b43ed,#102b438c 65%,#102b4355)}
@@ -144,3 +144,7 @@
 #restaurant-home .hero.image-unavailable{background:var(--ink)}
 #restaurant-home .menu-empty,#restaurant-home .contact-section aside,#restaurant-home .restaurant-gallery button,#restaurant-home .image-unavailable{background:var(--cream)}
 #restaurant-home :is(button,a,input,select,summary):focus-visible{outline-color:var(--forest)}
+
+.restaurant-logo{display:block}.restaurant-logo.content-fit{position:relative;overflow:hidden;height:62px;width:auto;aspect-ratio:var(--logo-ratio);max-width:150px}.restaurant-brand .restaurant-logo.content-fit img{position:absolute;width:var(--logo-width);height:var(--logo-height);max-width:none;max-height:none;left:var(--logo-left);top:var(--logo-top);object-fit:fill}
+
+#restaurant-home .restaurant-brand-skin{background:var(--cream);color:var(--ink)}

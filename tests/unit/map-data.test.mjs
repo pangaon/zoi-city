@@ -11,3 +11,28 @@ test('invalid coordinates never enter MapLibre while valid zero coordinates rema
 test('search bounds use only finite loaded coordinates, keep zero and never invent an empty destination',async()=>{const {matchBounds}=await import('../../assets/map-data/loader.mjs');assert.equal(matchBounds([]),null);assert.equal(matchBounds([{lat:null,lng:12},{lat:91,lng:2}]),null);assert.deepEqual(matchBounds([{lat:0,lng:0},{lat:43.6,lng:-79.4},{lat:Infinity,lng:2}]),[[-79.4,0],[0,43.6]]);assert.deepEqual(matchBounds([{lat:38,lng:23}]),[[23,38],[23,38]]);});
 
 test('selecting a city-positioned place preserves a closer manual zoom instead of jumping back out',()=>{const p={lng:-79.4,lat:43.7,precision:'city'};assert.equal(focusOptions(p,{currentZoom:16}).zoom,16);assert.equal(focusOptions(p,{currentZoom:4}).zoom,10);assert.equal(focusOptions(p,{currentZoom:NaN}).zoom,10);assert.equal(focusOptions(p,{currentZoom:'16'}).zoom,10);assert.equal(focusOptions(p,{currentZoom:25}).zoom,18.5);assert.equal(focusOptions(p,{currentZoom:16,reducedMotion:true}).duration,0);});
+
+test('transient page failures retry at most twice inside the four worker slots',async()=>{
+ const calls=new Map();let active=0,peak=0;
+ const result=await loadMapPages(async(offset,size)=>{calls.set(offset,(calls.get(offset)||0)+1);peak=Math.max(peak,++active);try{await Promise.resolve();if(offset===0&&calls.get(offset)<3)throw Object.assign(Error('canceling statement due to statement timeout'),{status:500});return offset===0?Array(size).fill({id:'a'}):[];}finally{active--; }},{pageSize:2,maxRows:8,wait:async()=>{}});
+ assert.equal(calls.get(0),3);assert.ok(peak<=4);assert.equal(result.complete,true);assert.equal(result.requests,6);assert.deepEqual(result.failedOffsets,[]);
+});
+test('exhausted network retries remain explicit partial coverage and invalid responses are not retried',async()=>{
+ let count=0;const result=await loadMapPages(async(offset,size)=>{if(offset===0)return Array(size).fill({});if(offset===2){count++;throw new TypeError('Failed to fetch');}return[];},{pageSize:2,maxRows:8,wait:async()=>{}});
+ assert.equal(count,3);assert.equal(result.complete,false);assert.deepEqual(result.failedOffsets,[2]);
+ const {retryMapRead}=await import('../../assets/map-data/loader.mjs');let auth=0;await assert.rejects(retryMapRead(async()=>{auth++;throw Object.assign(Error('Forbidden'),{status:403});},{wait:async()=>{}}));assert.equal(auth,1);
+});
+test('unmapped deep links preserve exact identity without inventing any coordinates',async()=>{
+ const {unmappedPlace}=await import('../../assets/map-data/loader.mjs');const entity={id:'84bdafb9-966b-489a-a4d3-0dc3dc92acf9',slug:'yamas-nairobi',name:'Yamas',city:'Nairobi',country:'Kenya',entity_type:'business',lat:-1,lng:36};
+ const p=unmappedPlace(entity,'yamas-nairobi');assert.equal(p.s,'yamas-nairobi');assert.equal(p.city,'Nairobi');assert.equal(p.lat,null);assert.equal(p.lng,null);assert.equal(p.unmapped,true);assert.equal(isMappableRow(p),false);
+ assert.equal(unmappedPlace({...entity,slug:'yamas-cardiff'},'yamas-nairobi'),null);assert.equal(unmappedPlace({...entity,marketplace_status:'hidden'},'yamas-nairobi'),null);assert.equal(unmappedPlace({...entity,publish_status:'draft'},'yamas-nairobi'),null);assert.equal(unmappedPlace(null,'yamas-nairobi'),null);
+});
+
+test('unmapped identity survives resize moveend and late response cannot replace a new selection',async()=>{
+ const fs=await import('node:fs'),vm=await import('node:vm');const html=fs.readFileSync(new URL('../../explore/map/index.html',import.meta.url),'utf8');
+ const fn=html.match(/async function openUnmappedPlace\(slug\) \{[\s\S]*?\n  \}\n\n  function closeSelection/)?.[0].replace(/\n\n  function closeSelection$/,'');assert.ok(fn);
+ const elements=new Map(),node=()=>({classList:{add(){}},innerHTML:'',textContent:'',appendChild(){}});let resolve;
+ const context={selectionVersion:0,pendingPlace:null,selected:null,listState:{mode:'all'},mapTools:{retryMapRead:()=>new Promise(r=>{resolve=r}),unmappedPlace:(e,s)=>e.slug===s?{s,n:e.name,city:'Nairobi',country:'Kenya'}:null},C:{},$:id=>{if(!elements.has(id))elements.set(id,node());return elements.get(id)},setSheet(){if(context.listState.mode==='all'){context.selectionVersion++;context.pendingPlace=null;}},showList(){context.listState.mode='group'},writeUrl(){},nice:()=>'',document:{createElement:node}};
+ vm.createContext(context);vm.runInContext(fn,context);const first=context.openUnmappedPlace('nairobi');assert.equal(context.pendingPlace,'nairobi');resolve({slug:'nairobi',name:'Yamas'});await first;assert.equal(context.selected.s,'nairobi');
+ const late=context.openUnmappedPlace('nairobi');context.selectionVersion++;context.selected={s:'another-place'};resolve({slug:'nairobi',name:'Yamas'});await late;assert.equal(context.selected.s,'another-place');
+});

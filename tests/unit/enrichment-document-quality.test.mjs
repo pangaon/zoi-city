@@ -1,0 +1,8 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {inspectSourceDocument,sourceRepairIssue} from '../../supabase/functions/zoi-enrich/_document-quality.js';
+const shell='<html><head><meta name="description" content="Authentic dining experience"><script defer src="/static/main.js"></script></head><body><noscript>You need to enable JavaScript to run this app.</noscript><div id="root"></div></body></html>';
+test('metadata-only React source is routed to rendered-source repair, not successful empty enrichment',()=>{assert.equal(inspectSourceDocument(shell).requires_rendering,true);assert.equal(sourceRepairIssue(shell).reason,'javascript_render_required');});
+test('same gate applies to restaurant, church, school and creator shells',()=>{for(const id of ['root','app','__next','__nuxt'])assert.equal(inspectSourceDocument(shell.replace('id="root"',`id="${id}"`)).requires_rendering,true);});
+test('SSR pages with source content and hydration are not shells',()=>{assert.equal(inspectSourceDocument(shell.replace('<div id="root"></div>','<div id="root"><h1>Our community</h1><p>'+('Verified source content. '.repeat(10))+'</p></div>')).requires_rendering,false);});
+test('sparse server rendered contact and photo pages retain useful source evidence',()=>{for(const content of ['<a href="tel:+123456789">Call</a>','<img src="/real.jpg">','<video src="/tour.mp4"></video>'])assert.equal(inspectSourceDocument(shell.replace('<div id="root"></div>',content)).requires_rendering,false);});
+test('empty static document is not misrepresented as a renderable app',()=>assert.equal(inspectSourceDocument('<html><body></body></html>').requires_rendering,false));

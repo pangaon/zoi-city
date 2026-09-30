@@ -1,5 +1,10 @@
 name: Bounded listing quality audit
 on:
+  push:
+    branches: [main]
+    paths: [ops/quality-audit-request.json]
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
     inputs:
       execute:
@@ -18,6 +23,10 @@ on:
         description: Prior workflow run ID containing immutable evidence (empty for new leases)
         type: string
         default: ''
+      resume_artifact:
+        description: Exact artifact name for an automatic matrix run (empty preserves legacy manual name)
+        type: string
+        default: ''
       resume_attempt:
         description: Prior run attempt containing the artifact
         type: number
@@ -29,8 +38,37 @@ concurrency:
   group: listing-quality-production
   cancel-in-progress: false
 jobs:
-  audit:
+  preflight:
     if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      enabled: ${{ steps.plan.outputs.enabled }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      limit: ${{ steps.plan.outputs.limit }}
+      execute: ${{ steps.plan.outputs.execute }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - id: plan
+        name: Validate authorization before credentials or browser installation
+        env:
+          QUALITY_AUTOMATIC: ${{ github.event_name != 'workflow_dispatch' }}
+          QUALITY_TASK: ${{ inputs.task }}
+          QUALITY_LIMIT: ${{ inputs.limit }}
+          QUALITY_EXECUTE: ${{ inputs.execute }}
+          RESUME_RUN: ${{ inputs.resume_run }}
+          RESUME_ATTEMPT: ${{ inputs.resume_attempt }}
+        run: |
+          node --input-type=module -e "import {auditPlan} from './scripts/quality/ci.mjs'; import {appendFile} from 'node:fs/promises'; const p=await auditPlan(); for(const [k,v] of Object.entries(p))await appendFile(process.env.GITHUB_OUTPUT,k+'='+JSON.stringify(v)+'\n');"
+  audit:
+    needs: preflight
+    if: needs.preflight.outputs.enabled == 'true'
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.preflight.outputs.matrix) }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -38,42 +76,45 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Validate bounded inputs and collector
-        env:
-          QUALITY_TASK: ${{ inputs.task }}
-          QUALITY_LIMIT: ${{ inputs.limit }}
-          RESUME_RUN: ${{ inputs.resume_run }}
-          RESUME_ATTEMPT: ${{ inputs.resume_attempt }}
-        run: |
-          node --input-type=module -e "import {options} from './scripts/quality-collector.mjs'; options(['--task',process.env.QUALITY_TASK,'--limit',process.env.QUALITY_LIMIT]); if(process.env.RESUME_RUN&&!/^[1-9][0-9]*$/.test(process.env.RESUME_RUN))throw Error('invalid_resume_run'); if(!/^[1-9][0-9]*$/.test(process.env.RESUME_ATTEMPT))throw Error('invalid_resume_attempt')"
-          node --test tests/unit/quality-collector.test.mjs tests/unit/member-source.test.mjs tests/unit/association-cards.test.mjs
+      - name: Verify bounded collector contracts
+        run: node --test tests/unit/quality-ci.test.mjs tests/unit/quality-collector.test.mjs tests/unit/member-source.test.mjs tests/unit/association-cards.test.mjs
       - name: Restore exact prior evidence
-        if: inputs.execute && inputs.resume_run != ''
+        if: github.event_name == 'workflow_dispatch' && inputs.execute && inputs.resume_run != ''
         uses: actions/download-artifact@v4
         with:
           github-token: ${{ github.token }}
           run-id: ${{ inputs.resume_run }}
-          name: quality-evidence-${{ inputs.resume_run }}-${{ inputs.resume_attempt }}
+          name: ${{ inputs.resume_artifact || format('quality-evidence-{0}-{1}', inputs.resume_run, inputs.resume_attempt) }}
           path: quality-evidence
+      - id: active
+        name: Recheck automatic expiry immediately before browser installation
+        env:
+          QUALITY_AUTOMATIC: ${{ github.event_name != 'workflow_dispatch' }}
+          QUALITY_TASK: ${{ matrix.task }}
+          QUALITY_LIMIT: ${{ needs.preflight.outputs.limit }}
+          QUALITY_EXECUTE: ${{ needs.preflight.outputs.execute }}
+        run: |
+          node --input-type=module -e "import {auditPlan} from './scripts/quality/ci.mjs'; import {appendFile} from 'node:fs/promises';const p=await auditPlan();await appendFile(process.env.GITHUB_OUTPUT,'execute='+(p.enabled&&p.execute)+'\n');"
       - name: Install pinned browser for rendered verification
-        if: inputs.execute && inputs.task == 'verification' && inputs.resume_run == ''
+        if: steps.active.outputs.execute == 'true' && matrix.task == 'verification' && inputs.resume_run == ''
         run: |
           npm install --global agent-browser@0.38.1
           agent-browser install --with-deps
       - name: Collect bounded evidence or resume exact receipts
         env:
-          QUALITY_EXECUTE: ${{ inputs.execute }}
-          QUALITY_TASK: ${{ inputs.task }}
-          QUALITY_LIMIT: ${{ inputs.limit }}
-          QUALITY_RESUME: ${{ inputs.resume_run != '' }}
+          QUALITY_AUTOMATIC: ${{ github.event_name != 'workflow_dispatch' }}
+          QUALITY_EXECUTE: ${{ needs.preflight.outputs.execute }}
+          QUALITY_TASK: ${{ matrix.task }}
+          QUALITY_LIMIT: ${{ needs.preflight.outputs.limit }}
+          QUALITY_RESUME: ${{ github.event_name == 'workflow_dispatch' && inputs.resume_run != '' }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
         run: node scripts/quality/ci.mjs
-      - name: Preserve immutable evidence even when a receipt is lost
-        if: always() && inputs.execute
+      - name: Preserve immutable evidence and specialist repair report
+        if: always() && needs.preflight.outputs.execute == 'true'
         uses: actions/upload-artifact@v4
         with:
-          name: quality-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          name: ${{ github.event_name == 'workflow_dispatch' && format('quality-evidence-{0}-{1}', github.run_id, github.run_attempt) || format('quality-evidence-{0}-{1}-{2}', github.run_id, github.run_attempt, matrix.task) }}
           path: quality-evidence/*.json
           if-no-files-found: warn
           retention-days: 90

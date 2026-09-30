@@ -3,15 +3,15 @@ import { auxiliaryImage } from './_image-context.js';
 const decode=s=>String(s||'').replace(/&amp;|&#38;|&#x26;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/g,"'");
 export function sourceImage(raw,base){
  if(typeof raw!=='string'||!raw.trim()||raw.length>3000||/[\u0000-\u001f\\]/.test(raw))return null;
- try{const u=new URL(decode(raw).trim(),base);if(u.protocol!=='https:'||u.username||u.password||u.port||!u.hostname.includes('.')||/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)||u.hostname.includes(':')||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/.test(u.hostname))return null;if(u.pathname==='/'&&!u.search)return null;u.hash='';return u.href;}catch{return null;}
+ try{const u=new URL(decode(raw).trim(),base);if(u.protocol!=='https:'||u.username||u.password||u.port||!u.hostname.includes('.')||/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)||u.hostname.includes(':')||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/.test(u.hostname))return null;if(u.pathname==='/'&&!u.search)return null;if(/\.(?:mp4|m4v|webm|mov|mp3|wav|ogg|pdf)(?:$)/i.test(u.pathname)||/%22|%27/i.test(u.pathname))return null;u.hash='';return u.href;}catch{return null;}
 }
 export function imageIdentity(raw){const u=new URL(raw);u.pathname=u.pathname.replace(/\.(jpe?g|png)\.webp$/i,'.$1').replace(/-(?:\d{2,5}x\d{2,5}|\d{2,5}w)(?=\.[a-z]+$)/i,'');for(const k of ['w','h','width','height','q','quality','fit','format','auto'])u.searchParams.delete(k);return u.href;}
 const attr=(tag,name)=>{const m=tag.match(new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|([^\\s>]+))','i'));return decode(m?.[1]??m?.[2]??m?.[3]??'');};
 const artwork=/(?:^|[\s/_.-])(?:logos?|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_ ]?rating|advert(?:isement)?|anzeige|flyer|poster|app[-_ ]?store|google[-_ ]?play|payment|placeholder|spinner|loader)(?:[\s/_.-]|$)/i;
-const leaf=u=>{try{return decodeURIComponent(new URL(u).pathname.split('/').pop()||'');}catch{return u;}};
+const leaf=u=>{try{return decodeURIComponent(new URL(u).pathname).split('/').pop()||'';}catch{return u;}};
 export function extractSiteImages(doc,base,business={}){
- const candidates=[],logos=[],seen=new Map();const clean=String(doc).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
- const add=(raw,kind,source,score=10,hint='')=>{const url=sourceImage(raw,base);if(!url||auxiliaryImage(url,hint))return;const name=leaf(url);if(/(?:pexels|unsplash|shutterstock|istockphoto|depositphotos)/i.test(url))return;let context=new URL(url).pathname;try{context=decodeURIComponent(context);}catch{}context+=' '+hint;const logo=/(?:^|[\s/_.-])logos?(?:[\s/_.-]|$)/i.test(context),ui=artwork.test(context)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(name);if(kind==='logo'||logo){logos.push({url,source,score});return;}if(ui||/\.svg(?:\?|$)/i.test(url))return;const key=imageIdentity(url),prior=seen.get(key);if(prior){if(score>prior.score){prior.url=url;prior.source=source;prior.score=score;}return;}const record={url,source,score};seen.set(key,record);candidates.push(record);};
+ const candidates=[],logos=[],menuImages=[],seen=new Map();const clean=String(doc).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|video|audio)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
+ const add=(raw,kind,source,score=10,hint='')=>{const url=sourceImage(raw,base);if(!url||auxiliaryImage(url,hint))return;const name=leaf(url);if(/(?:pexels|unsplash|shutterstock|istockphoto|depositphotos)/i.test(url))return;let context=new URL(url).pathname;try{context=decodeURIComponent(context);}catch{}context+=' '+hint;if(/(?:^|[\s/_.-])(?:quotation[-_ ]?mark|quote[-_ ]?icon|pattern|texture|divider)(?:[\s/_.-]|$)/i.test(context))return;if(/(?:^|[\s/_.-])(?:menu|speisekarte|μενού)(?:[\s/_.-]|$)/i.test(name+' '+hint)){if(!menuImages.some(x=>x.url===url))menuImages.push({url,source});return;}const logo=/(?:^|[\s/_.-])logos?(?:[\s/_.-]|$)/i.test(context),ui=artwork.test(context)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(name);if(kind==='logo'||logo){logos.push({url,source,score});return;}if(ui||/\.svg(?:\?|$)/i.test(url))return;const key=imageIdentity(url),prior=seen.get(key);if(prior){if(score>prior.score){prior.url=url;prior.source=source;prior.score=score;}return;}const record={url,source,score};seen.set(key,record);candidates.push(record);};
  const values=v=>Array.isArray(v)?v.flatMap(values):typeof v==='string'?[v]:v&&typeof v==='object'?values(v.contentUrl||v.url||[]):[];
  for(const u of values(business.logo))add(u,'logo','jsonld-logo',100);
  for(const u of values(business.image))add(u,'photo','jsonld-image',70);
@@ -22,9 +22,9 @@ export function extractSiteImages(doc,base,business={}){
   const selected=options[0]?.url||attr(tag,'data-src')||attr(tag,'data-lazy-src')||attr(tag,'data-original')||attr(tag,'src');add(selected,'photo','page-image',40+Math.min(width,2000)/1000,hint);
  }
  // Inline/CSS background declarations only; do not crawl arbitrary URL functions/scripts.
- for(const match of clean.matchAll(/background(?:-image)?\s*:[^;{}<>]{0,1800}?url\(\s*["']?([^\s"')]+)["']?\s*\)/gi))add(match[1],'photo','page-background',30);
+ for(const match of decode(clean).matchAll(/background(?:-image)?\s*:[^;{}<>]{0,1800}?url\(\s*["']?([^\s"')]+)["']?\s*\)/gi))add(match[1],'photo','page-background',30);
  const logo=logos.sort((a,b)=>b.score-a.score)[0];const photos=candidates.filter(c=>!logo||imageIdentity(c.url)!==imageIdentity(logo.url)).sort((a,b)=>b.score-a.score).slice(0,12);
- return{logo:logo||null,photos,hero:photos[0]||null};
+ return{logo:logo||null,photos,hero:photos[0]||null,menuImages:menuImages.slice(0,12)};
 }
 export function supplementaryPages(doc,base){
  const origin=new URL(base).origin,result=[];for(const match of String(doc).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'').matchAll(/<a\b([^>]*)>([\s\S]{0,300}?)<\/a>/gi)){

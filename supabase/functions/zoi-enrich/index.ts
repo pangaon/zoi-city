@@ -73,6 +73,7 @@
 // zoi.enrich_queue orders by least-recently-checked, so repeated runs spread
 // coverage instead of re-fetching the same hosts.
 
+import { inspectSourceDocument } from './_document-quality.js';
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -425,6 +426,7 @@ function extract(doc: string, finalUrl: string) {
       provenance.photo_url = imagery.hero.source; provenance.hero_url = imagery.hero.source;
     }
     if (imagery.photos.length) { profile.photo_urls = imagery.photos.map(p => p.url); provenance.photo_urls = "deduplicated-site-images"; }
+    if (imagery.menuImages.length) { profile.menu_image_urls = imagery.menuImages.map(p => p.url); provenance.menu_image_urls = "source-menu-images"; }
 
   }
 
@@ -568,6 +570,15 @@ Deno.serve(async (req) => {
                        ? { ...identityStatus, crawl_status: "error", last_error: got.error, blocked: "true", blocked_reason: got.error }
             : { ...identityStatus, crawl_status: "error", last_error: got.error },
                      provenance: {} });
+        continue;
+      }
+      // Preserve existing machine evidence on a JS-only shell. Generic title/meta
+      // text does not prove a successful crawl and must not clear a prior gallery.
+      if (inspectSourceDocument(got.doc!).requires_rendering) {
+        bump("javascript-render-required");
+        batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id,
+          profile: { ...identityStatus, crawl_status: "error", last_error: "javascript_render_required" },
+          provenance: {} });
         continue;
       }
       const member = memberLeaseGuard(row, got.doc!, got.finalUrl!);

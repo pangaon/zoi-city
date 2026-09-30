@@ -1,4 +1,5 @@
 import {normalizeDesign,UUID} from '../assets/homes/editor-model.mjs';
+import {renderHospitalityHome} from './_hospitality-home.js';
 import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
 import {renderChurchHome} from './_church-home.js';
 import {renderRestaurantHome} from './_restaurant-home.js';
@@ -25,7 +26,7 @@ export default async function handler(req,res){
   if(!r.ok)return finish(r.status===401||r.status===403?403:409,'home_preview_unavailable');
   const reply=await r.json();if(reply?.ok!==true||reply.listing!==data.listing||reply.workspace!==data.workspace||reply.entity?.id!==data.listing)return finish(409,'home_preview_unconfirmed');
   const design=normalizeDesign(reply.design),entity=reply.entity;
-  const html=renderAvliHome(entity,design)||renderChurchHome(entity,design)||renderCreatorCanonicalHome(entity,design)||renderEventCanonicalHome(entity,design)||renderMusicHome(entity,design)||renderHealthHome(entity,design)||renderProfessionalHome(entity,design)||renderBakeryHome(entity,design)||renderRestaurantHome(entity,design);
+  const html=renderHospitalityHome(entity,design)||renderAvliHome(entity,design)||renderChurchHome(entity,design)||renderCreatorCanonicalHome(entity,design)||renderEventCanonicalHome(entity,design)||renderMusicHome(entity,design)||renderHealthHome(entity,design)||renderProfessionalHome(entity,design)||renderBakeryHome(entity,design)||renderRestaurantHome(entity,design);
   if(!html)return finish(409,'home_preview_not_supported');
   return finish(200,null,{listing:data.listing,html:inertPreview(html)});
  }catch{return finish(503,'home_preview_unavailable');}

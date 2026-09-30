@@ -13,3 +13,9 @@ test('empty or page logo values do not resolve into image URLs and logo director
  assert.equal(extractSiteImages('','https://example.com/',{logo:'https://example.com/'}).logo,null);
 });
 test('explicit same-origin menu takes priority within the unchanged two-page budget',()=>{const html='<a href="/contact">Contact</a><a href="/gallery">Gallery</a><a href="/speisen-getraenke/">Speisen & Getränke</a><a href="https://outside.example/menu">Menu</a>';assert.deepEqual(supplementaryPages(html,'https://restaurant.example/'),[{url:'https://restaurant.example/speisen-getraenke/',purpose:'menu'},{url:'https://restaurant.example/contact',purpose:'contact'}]);});
+
+test('video sources cannot become heroes in any family and CSS entity quotes are decoded',()=>{const r=extractSiteImages('<video><source src="/hero.mp4" type="video/mp4"></video><img src="/community.jpg"><div style="background-image: url(&quot;/inside.jpg&quot;)"></div>',base);assert.equal(r.hero.url,base+'community.jpg');assert.deepEqual(r.photos.map(x=>x.url),[base+'community.jpg',base+'inside.jpg']);for(const path of ['/movie.mp4','/sound.mp3','/menu.pdf','/%22/bad.jpg%22'])assert.equal(sourceImage(path,base),null);});
+test('menu scans and decorative quotes are separated from real venue photography',()=>{const r=extractSiteImages('<img src="/uploads/123.jpg" alt="Final menu.jpg"><img src="/quotation-mark.png"><div style="background-image:url(/yamas-pattern.png)"></div><img src="/dining.jpg">',base);assert.deepEqual(r.photos.map(x=>x.url),[base+'dining.jpg']);assert.deepEqual(r.menuImages.map(x=>x.url),[base+'uploads/123.jpg']);});
+
+
+test('a photographed dish inside a menu items folder remains food photography, not a menu scan',()=>{const url='https://restaurant.org/menu/items/grilled-fish.jpg';const result=extractSiteImages(`<img src="${url}" alt="Grilled fish">`,'https://restaurant.org/');assert.equal(result.hero.url,url);assert.deepEqual(result.menuImages,[])});
