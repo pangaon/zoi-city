@@ -66,7 +66,6 @@ const KNOWN = new Set([
   'apps/intelligence/index.html restyles .stat',
   'apps/tickets-studio/index.html restyles .dot',
   'apps/tickets-studio/index.html restyles .field',
-  'community/index.html restyles .dot',
   'explore/app/index.html restyles .chip',
   'explore/app/index.html restyles .dim',
   'explore/app/index.html restyles .field',

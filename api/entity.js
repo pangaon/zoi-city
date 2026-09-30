@@ -1,3 +1,4 @@
+import {profileMedia} from './_profile-media.js';
 import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
@@ -184,7 +185,8 @@ function page(e, related, completeness){
   if (/^\/groups\/\?listing=[0-9a-f-]{36}$/i.test(e.group_url||'')) acts.push({label:'Join this group',href:e.group_url,icon:IC.people||IC.cal});
   if (/^\/volunteer\/\?workspace=[0-9a-f-]{36}$/i.test(e.volunteer_url||'')) acts.push({label:'Volunteer opportunities',href:e.volunteer_url,icon:IC.cal});
   (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
-  if(e.phone)   acts.push({ label:'Call', href: 'tel:'+String(e.phone).replace(/[^0-9+]/g,''), icon: IC.phone });
+  var contactPhone = e.phone || p.phone;
+  if(contactPhone) acts.push({ label:'Call', href: 'tel:'+String(contactPhone).replace(/[^0-9+]/g,''), icon: IC.phone });
   if(e.website) acts.push({ label:'Website', href: e.website, icon: IC.globe, external:true });
   if(mapHref)   acts.push({ label:'Directions', href: mapHref, icon: IC.pin, external:true });
   /* Contact was simply absent. An email is the one action a visitor wants that
@@ -234,23 +236,19 @@ function socialIcon(k){
      Website does NOT: there is a Website button directly above, and repeating a
      URL in a table row is the 2006 pattern that made this page look like a spec
      sheet. Category is already the eyebrow above the title. */
-  if(e.phone) row('Phone', '<a href="tel:'+attr((e.phone+'').replace(/[^0-9+]/g,''))+'">'+esc(e.phone)+'</a>');
+  if(contactPhone) row('Phone', '<a href="tel:'+attr((contactPhone+'').replace(/[^0-9+]/g,''))+'">'+esc(contactPhone)+'</a>');
   if(e.price_range) row('Price', esc(e.price_range));
   /* social_links is empty on every listing in the directory today, so fall back
      to whatever the business links to from its own site. Owner-set values still
      win: the column is merged over the enriched set, not under it. */
   /* Owner photo first, then whatever the business publishes on its own site.
      https only — a mixed-content image would be blocked and leave a hole. */
-  var coverImg = '';
-  var candidate = e.hero_url || e.photo_url || e.photo || (p && (p.hero_url || p.photo_url)) || '';
-  if (typeof candidate === 'string' && /^https:\/\//.test(candidate)) coverImg = candidate;
-  var logoImg = e.logo_url || (p && p.logo_url) || '';
-  if (typeof logoImg !== 'string' || !/^https:\/\//.test(logoImg)) logoImg = '';
+  var media = profileMedia(e,p);
+  var coverImg = media.hero || '';
+  var logoImg = media.logo || '';
   var heroPosition = ({top:'top',bottom:'bottom',left:'left',right:'right',center:'center'})[p && p.hero_position] || 'center';
   var logoFit = p && p.logo_fit === 'cover' ? 'cover' : 'contain';
-  var galleryImgs = [];
-  var gallerySource = (p && (p.photo_urls || p.photos)) || [];
-  if (Array.isArray(gallerySource)) galleryImgs = gallerySource.filter(function(v){ return typeof v === 'string' && /^https:\/\//.test(v); }).slice(0, 8);
+  var galleryImgs = media.gallery;
 
   var sl = Object.assign({}, (p && p.social) || {}, e.social_links || {});
   var socLinks=[], seenSoc={};
@@ -291,13 +289,8 @@ function socialIcon(k){
   var unlock = (V.unlock||[]).map(function(u){
     return '<li><b>'+esc(u[0])+'</b><span>'+esc(u[1])+'</span></li>';
   }).join('');
-  var claim = '<section class="claim"><div class="claimhead">'+
-      '<div><span class="ctag">Unclaimed</span><h2>Own '+esc(e.name)+'?</h2>'+
-      '<p>Claim it and this page becomes a full '+esc(V.noun||'business')+' page — free.</p></div>'+
-      '<a class="btn btn-primary" href="/explore?q='+encodeURIComponent(e.name||'')+'">Claim this listing</a></div>'+
-      (unlock?'<ul class="unlock">'+unlock+'</ul>':'')+
-      '<p class="claimfoot">Everything above is what a claimed '+esc(V.noun||'listing')+' can publish here. '+
-      'Nothing on this page is invented \u2014 we only show what has actually been provided.</p></section>';
+  var claim = '<details class="home-manage"><summary>Manage '+esc(e.name)+' on Zoi</summary><p>Bring your services, updates and customer connections together in your own home on Zoi.</p><a class="btn btn-primary" href="/explore?q='+encodeURIComponent(e.name||'')+'">Find your page to claim or manage it</a></details>';
+
 
   /* ---- related, linked by slug ---- */
   var rel='';
@@ -327,7 +320,7 @@ function socialIcon(k){
    +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
    +'<link rel="stylesheet" href="/assets/zoi-theme.css">'
    +'<script type="application/ld+json">'+jsonld(e,url).replace(/</g,'\\u003c')+'</script>'
-   +'<style>'+PAGE_CSS+'</style></head><body>'
+   +'<style>'+PAGE_CSS+'</style><link rel="stylesheet" href="/assets/homes/experience.css"></head><body class="home-page">'
    +'<header class="zoi-header"><div class="wrap zoi-bar">'
      +'<a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>'
      +'<nav class="zoi-nav" aria-label="Zoi">'+nav+'</nav>'
@@ -336,29 +329,28 @@ function socialIcon(k){
        +'<a class="btn btn-primary" id="zoiCta" href="/social">Start free</a>'
      +'</div>'
    +'</div></header>'
-   +'<div class="wrap">'
+   +'<main class="wrap home-main">'
    +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Discover</a> &rsaquo; '
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
-   +'<div class="ep-cover" id="epCover"'
+   +'<div class="ep-cover '+(coverImg?'has-img':'no-photo')+'" id="epCover"'
      + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
      + ' data-position="'+heroPosition+'"'
      + '>' + (coverImg ? '<img id="epCoverImage" src="'+attr(coverImg)+'" alt="'+attr(e.name||'')+'" width="1600" height="600" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" style="object-position:'+heroPosition+'">' : '') + '<div class="ep-brand">'
      + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer" style="object-fit:'+logoFit+'">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
      + '</div></div>'
-   +'<span class="ep-type">'+esc(eyebrow)+'</span>'
+   +'<section class="home-intro" id="about"><div class="home-heading"><span class="ep-type">'+esc(eyebrow)+'</span>'
    +'<h1>'+esc(e.name)+'</h1>'
    +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
-  +(publicDescription?('<p class="desc">'+esc(publicDescription)+'</p>'):'')
-   +actHtml
-   +socHtml
-   +(rows.length?('<div class="card">'+rows.join('')+'</div>'):'')
-  + (galleryImgs.length ? '<section class="sec ep-gallery"><h2>'+icon(IC.camera,'sech')+'More to explore</h2><div class="gal">'+galleryImgs.map(function(u){ return '<img src="'+attr(u)+'" alt="'+attr(e.name||'')+'" loading="lazy" referrerpolicy="no-referrer">'; }).join('')+'</div></section>' : '')
-  +verticalHtml
-    +progressHtml
-   +provHtml
-   +claim
+   +socHtml+'</div><div class="home-connect"><p class="home-connect-label">Connect with '+esc(e.name)+'</p>'+actHtml+'</div></section>'
+   +'<nav class="home-section-nav" aria-label="Explore this home"><a href="#about">Overview</a>'+(galleryImgs.length?'<a href="#gallery">Photos</a>':'')+(verticalHtml?'<a href="#offerings">Explore more</a>':'')+(rows.length?'<a href="#contact">Contact & details</a>':'')+'</nav>'
+   +'<div class="home-content"><div class="home-story">'
+   +(publicDescription?('<section class="home-about"><h2>A little about us</h2><p class="desc">'+esc(publicDescription)+'</p></section>'):'')
+  + (galleryImgs.length ? '<section class="sec ep-gallery" id="gallery"><div class="home-section-heading"><h2>Inside '+esc(e.name)+'</h2><span>'+galleryImgs.length+' photos</span></div><div class="gal">'+galleryImgs.map(function(u,i){ return '<a href="'+attr(u)+'" data-home-photo="'+i+'" aria-label="Open photo '+(i+1)+' of '+attr(e.name)+'"><img src="'+attr(u)+'" alt="Photo from '+attr(e.name||'')+'" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>'; }).join('')+'</div></section>' : '')
+  +'<div id="offerings">'+verticalHtml+'</div></div>'
+   +'<aside class="home-details" id="contact">'+(rows.length?'<section class="card"><h2>Good to know</h2>'+rows.join('')+'</section>':'')+provHtml+claim+'</aside></div>'
    +rel
-   +'</div>'
+   +'</main>'
+   +'<script type="module" src="/assets/homes/experience.mjs"></script>'
    +'<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">'
      +'<span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>'
      +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'</nav>'

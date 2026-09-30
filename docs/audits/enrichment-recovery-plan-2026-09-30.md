@@ -8,7 +8,7 @@ The additive resilience migration retains previous successful fields, provenance
 
 ## Bounded release and catch-up
 
-1. Apply `20260930040222_enrichment_resilient_leases.sql`; review the rollback-only fixture result (zero persisted fixtures).
+1. Apply `20260930042432_enrichment_resilient_leases.sql`; review the rollback-only fixture result (zero persisted fixtures).
 2. Deploy `zoi-enrich` with `_images.js`, `_receipts.js`, existing `_social.js`, `_media.js`, and `_ssrf.ts`. Existing authorization and enabled flag remain required. The new worker needs the new sample-lease RPC before sample requests.
 3. Invoke **one** authorized canary with `sample_ids` containing at most three reviewed listing UUIDs. The server looks up their stored websites; callers cannot provide URLs. Proposed sample: Oniro `faa6b189-2187-4ae4-9934-202ed129b7dd`, Aphrodite `a4f60b0d-ad6b-4dc8-8432-8d81744dade6`, Pandosia `d266800d-cd9b-4a63-afe4-ade1984d43a5`.
 4. Check exact `sample_requested`, `queued`, `applied`, `unprocessed`, `lease-rejected`, and field statistics. A missing/leased/blocked sample is not reported as complete. Read those three profiles and verify owner fields and actual image/social links; inspect their rendered homes.

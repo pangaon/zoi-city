@@ -20,7 +20,7 @@ try{
  execFileSync(join(bin,'initdb'),['-D',join(dir,'data'),'-A','trust','--no-locale'],{stdio:'ignore'});
  execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-l',join(dir,'server.log'),'-o',`-k ${dir} -p ${port} -c listen_addresses=''`,'-w','start'],{stdio:'ignore'});started=true;
  await query(readFileSync(new URL('./community-fixture.sql',import.meta.url),'utf8'));
- let migration=readFileSync(new URL('../../supabase/migrations/20260930032516_community_profiles_graph_and_personal_feeds.sql',import.meta.url),'utf8');
+ let migration=readFileSync(new URL('../../supabase/migrations/20260930042430_community_profiles_graph_and_personal_feeds.sql',import.meta.url),'utf8');
  await query(migration);
  const call=(fn,args='',user=actor)=>query(`select public.${fn}(${args});`,user).then(JSON.parse),j=x=>literal(JSON.stringify(x))+'::jsonb',req=n=>`80000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
  await query(`insert into zoi.user_profiles(id,auth_user_id,display_name,city) values('${req(1)}','${actor}','PRIVATE ACCOUNT NAME','PRIVATE CITY'),('${req(2)}','${other}','PRIVATE OTHER','PRIVATE CITY'),('${req(3)}','${member}','PRIVATE THIRD','PRIVATE CITY');`);
