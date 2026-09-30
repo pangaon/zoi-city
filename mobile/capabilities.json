@@ -391,10 +391,11 @@
       ],
       "verified": [
         "66 native tests and TypeScript",
-        "browser fixture full customer/operator flow with interrupted reply retry and distinct auth/profile IDs"
+        "browser fixture full customer/operator flow with interrupted reply retry and distinct auth/profile IDs",
+        "actual production owner inbox and customer list HTTP acceptance"
       ],
       "required": [
-        "production enquiry API acceptance",
+        "production two-party enquiry write acceptance",
         "device conversation and keyboard acceptance"
       ]
     },
@@ -417,6 +418,29 @@
         "backend migration and production rollback QA",
         "physical device acceptance"
       ]
+    },
+    {
+      "id": "creator-studio",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "private sponsorship and performance briefs",
+        "stable-ID deliverables linked to Operations tasks",
+        "explicit version-bound sharing with source customer",
+        "customer brief and delivered-work decisions",
+        "unverified HTTPS proof submissions",
+        "customer-safe shared history and private operator audit"
+      ],
+      "verified": [
+        "75 native tests and TypeScript",
+        "isolated browser operator/customer journey with distinct auth/profile IDs",
+        "interrupted deliverable creation retried with identical ID and payload",
+        "customer rendering excluded private draft and workspace audit"
+      ],
+      "required": [
+        "production Creator Studio API acceptance",
+        "physical device form and link acceptance"
+      ]
     }
   ],
   "architecture": {
@@ -432,7 +456,8 @@
     "zoi://business/:slug",
     "zoi://tickets/:eventUUID",
     "zoi://volunteer/:workspaceUUID",
-    "zoi://inquiries?listing=:listingUUID or thread=:threadUUID"
+    "zoi://inquiries?listing=:listingUUID or thread=:threadUUID",
+    "zoi://creator?campaign=:campaignUUID"
   ],
   "releaseGates": [
     "TypeScript",
