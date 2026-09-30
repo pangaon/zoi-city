@@ -96,19 +96,33 @@ const MAX_BYTES = 1_500_000;
 const MAX_HOPS = 3;
 
 /* ── supabase ───────────────────────────────────────────────────────────── */
-async function sbRpc(fn: string, args: Record<string, unknown> = {}) {
-  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method: "POST",
-    headers: {
-      apikey: SERVICE,
-      Authorization: `Bearer ${SERVICE}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(args),
+const INVOCATION_MS = 110_000;
+const RPC_MS = 15_000;
+function assertDeadline(deadline: number) {
+  if (Date.now() >= deadline) throw new Error("invocation_deadline_exceeded");
+}
+async function boundedIO<T>(deadline: number, maximumMs: number, work: (signal: AbortSignal) => Promise<T>): Promise<T> {
+  assertDeadline(deadline);
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout>;
+  const expiry = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => { controller.abort(); reject(new Error("operation_deadline_exceeded")); }, Math.min(maximumMs, deadline - Date.now()));
   });
-  const t = await r.text();
-  if (!r.ok) throw new Error(`${fn}: ${r.status} ${t.slice(0, 200)}`);
-  return t ? JSON.parse(t) : null;
+  try { return await Promise.race([expiry, work(controller.signal)]); }
+  finally { clearTimeout(timer!); controller.abort(); }
+}
+async function sbRpc(fn: string, args: Record<string, unknown> = {}, deadline = Date.now() + RPC_MS) {
+  return await boundedIO(deadline, RPC_MS, async signal => {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+      method: "POST", signal,
+      headers: { apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json" },
+      body: JSON.stringify(args),
+    });
+    // Body consumption shares the same deadline as connection/headers.
+    const t = await r.text();
+    if (!r.ok) throw new Error(`${fn}: ${r.status} ${t.slice(0, 200)}`);
+    return t ? JSON.parse(t) : null;
+  });
 }
 
 /* ── SSRF guard ─────────────────────────────────────────────────────────────
@@ -133,32 +147,34 @@ async function globalGap(ms = 120) {
 }
 
 /** Serialise per host: never two sockets open to the same server. */
-async function perHost<T>(host: string, fn: () => Promise<T>): Promise<T> {
+async function perHost<T>(host: string, fn: () => Promise<T>, deadline = Infinity): Promise<T> {
   const prev = hostBusy.get(host) ?? Promise.resolve();
   let release!: () => void;
   const mine = new Promise<void>((r) => (release = r));
-  hostBusy.set(host, prev.then(() => mine));
-  await prev;
+  const tail = prev.then(() => mine);
+  hostBusy.set(host, tail);
+  void tail.then(() => { if (hostBusy.get(host) === tail) hostBusy.delete(host); });
   try {
+    await boundedIO(deadline, INVOCATION_MS, () => prev);
+    assertDeadline(deadline);
     return await fn();
   } finally {
     release();
-    if (hostBusy.get(host) === mine) hostBusy.delete(host);
   }
 }
 
 /* ── fetching ───────────────────────────────────────────────────────────── */
 
 /** GET with a hard timeout and a byte cap enforced while streaming. */
-async function getCapped(url: URL, accept: string) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), TIMEOUT_MS);
-  try {
+async function getCapped(url: URL, accept: string, deadline = Infinity) {
+  return await boundedIO(deadline, TIMEOUT_MS, async signal => {
     await globalGap();
+    assertDeadline(deadline);
+    signal.throwIfAborted();
     const res = await fetch(url.toString(), {
       method: "GET",
       redirect: "manual",                 // every hop is re-vetted by hand
-      signal: ctrl.signal,
+      signal,
       headers: {
         "User-Agent": UA,
         Accept: accept,
@@ -211,17 +227,15 @@ async function getCapped(url: URL, accept: string) {
       text = new TextDecoder("utf-8", { fatal: false }).decode(buf);
     }
     return { status: res.status, body: text, ct } as const;
-  } finally {
-    clearTimeout(timer);
-  }
+  });
 }
 
 /** Follow up to MAX_HOPS redirects, re-vetting each destination. */
-async function fetchDoc(start: URL) {
+async function fetchDoc(start: URL, deadline = Infinity) {
   let url = start;
   for (let hop = 0; hop <= MAX_HOPS; hop++) {
     const r = await perHost(url.hostname, () =>
-      getCapped(url, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.1"));
+      getCapped(url, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.1", deadline), deadline);
     if ("redirect" in r && r.redirect) {
       if (hop === MAX_HOPS) return { error: "too-many-redirects" };
       let next: URL;
@@ -231,7 +245,7 @@ async function fetchDoc(start: URL) {
         return { error: "bad-redirect" };
       }
       // A redirect is a fresh, untrusted URL. Vet it exactly like the first.
-      const v = await vet(next.toString());
+      const v = await boundedIO(deadline, TIMEOUT_MS, () => vet(next.toString(), Math.min(deadline, Date.now() + TIMEOUT_MS)));
       if (!v.url) return { error: `redirect-refused:${v.why}` };
       url = v.url;
       continue;
@@ -248,14 +262,15 @@ async function fetchDoc(start: URL) {
 /* ── robots.txt ─────────────────────────────────────────────────────────── */
 const robotsCache = new Map<string, string[]>();
 
-async function robotsAllows(u: URL): Promise<boolean> {
+async function robotsAllows(u: URL, deadline = Infinity): Promise<boolean> {
+  assertDeadline(deadline);
   const key = u.origin;
   let rules = robotsCache.get(key);
   if (!rules) {
     rules = [];
     try {
       const r = await perHost(u.hostname, () =>
-        getCapped(new URL("/robots.txt", u.origin), "text/plain"));
+        getCapped(new URL("/robots.txt", u.origin), "text/plain", deadline), deadline);
       if ("body" in r && r.body) {
         // Only the groups that apply to us: our token, then the wildcard.
         let applies = false;
@@ -273,6 +288,7 @@ async function robotsAllows(u: URL): Promise<boolean> {
         }
       }
     } catch {
+      assertDeadline(deadline);
       rules = [];                                    // unreachable robots = allowed
     }
     robotsCache.set(key, rules);
@@ -500,6 +516,8 @@ function authorised(req: Request): boolean {
 
 /* ── the run ────────────────────────────────────────────────────────────── */
 Deno.serve(async (req) => {
+  const started = Date.now();
+  const deadline = started + INVOCATION_MS;
   if (!authorised(req)) {
     return new Response(
       JSON.stringify({ ok: false, error: "unauthorised" }),
@@ -517,7 +535,7 @@ Deno.serve(async (req) => {
   let limit = BATCH;
   let sample: string[] | null = null;
   try {
-    const b = await req.json();
+    const b = await boundedIO(deadline, RPC_MS, () => req.json());
     // Caller can bound the batch or select max3 existing listing IDs. Never a URL.
     if (b?.sample_ids !== undefined) sample = enrichmentSample(b.sample_ids);
     if (b && typeof b.limit === "number") limit = Math.max(1, Math.min(200, Math.floor(b.limit)));
@@ -525,27 +543,28 @@ Deno.serve(async (req) => {
     if (req.body !== null) return new Response(JSON.stringify({ok:false,error:e instanceof Error && e.message === "invalid_enrichment_sample" ? e.message : "invalid_enrichment_request"}), {status:400,headers:{"Content-Type":"application/json"}});
   }
 
-  const started = Date.now();
   const stats: Record<string, number> = {};
   const bump = (k: string) => (stats[k] = (stats[k] || 0) + 1);
   const batch: Record<string, unknown>[] = [];
 
   let queue: { slug: string; website: string; lease_id: string; name?: string; entity_type?: string; existing_enrich?: Record<string, unknown> }[] = [];
   try {
-    queue = (sample ? await sbRpc("enrich_sample_lease", {p_ids:sample}) : await sbRpc("enrich_queue_lease", { p_limit: limit })) ?? [];
+    queue = (sample ? await sbRpc("enrich_sample_lease", {p_ids:sample}, deadline) : await sbRpc("enrich_queue_lease", { p_limit: limit }, deadline)) ?? [];
   } catch (e) {
     return new Response(
-      JSON.stringify({ ok: false, error: `enrich_queue_lease: ${String(e).slice(0, 200)}` }),
+      JSON.stringify({ ok: false, error: `enrich_queue_lease: ${String(e).slice(0, 200)}`, outcome: "unknown", reconciliation_required: true }),
       { status: 500, headers: { "Content-Type": "application/json" } },
     );
   }
 
   for (const row of queue) {
-    if (Date.now() - started > 110_000) { bump("stopped-time-budget"); break; }
+    if (Date.now() >= deadline - RPC_MS) { bump("stopped-time-budget"); break; }
 
     const identity = memberLeaseGuard(row);
     const identityStatus = identity.handled ? identity.profile : {};
-    const v = await vet(row.website);
+    let v;
+    try { v = await boundedIO(deadline - RPC_MS, TIMEOUT_MS, () => vet(row.website, Math.min(deadline - RPC_MS, Date.now() + TIMEOUT_MS))); }
+    catch { bump("stopped-time-budget"); break; }
     if (!v.url) {
       bump("refused:" + v.why);
       // Record the refusal so the queue stops returning it every hour.
@@ -554,13 +573,13 @@ Deno.serve(async (req) => {
       continue;
     }
     try {
-      if (!(await robotsAllows(v.url))) {
+      if (!(await robotsAllows(v.url, deadline - RPC_MS))) {
         bump("robots-disallow");
         batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
                      profile: { ...identityStatus, crawl_status: "error", last_error: "robots", blocked: "true", blocked_reason: "robots" }, provenance: {} });
         continue;
       }
-      const got = await fetchDoc(v.url);
+      const got = await fetchDoc(v.url, deadline - RPC_MS);
       if ("error" in got && got.error) {
         bump(got.error);
         // 403/404 mean this host will not talk to a declared bot. Stop asking.
@@ -596,11 +615,11 @@ Deno.serve(async (req) => {
           if (page.purpose === "menu" && Array.isArray(profile.menu) && profile.menu.length) continue;
           if (page.purpose === "gallery" && Array.isArray(profile.photo_urls) && profile.photo_urls.length >= 6) continue;
           if (page.purpose === "contact" && profile.phone && profile.email && Object.keys((profile.social || {}) as object).length >= 2) continue;
-          const pageVet = await vet(page.url);
+          const pageVet = await boundedIO(deadline - RPC_MS, TIMEOUT_MS, () => vet(page.url, Math.min(deadline - RPC_MS, Date.now() + TIMEOUT_MS)));
           if (!pageVet.url) { bump("supplement-refused"); continue; }
           const pageUrl = pageVet.url;
-          if (!(await robotsAllows(pageUrl))) continue;
-          const extra = await fetchDoc(pageUrl);
+          if (!(await robotsAllows(pageUrl, deadline - RPC_MS))) continue;
+          const extra = await fetchDoc(pageUrl, deadline - RPC_MS);
           if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { bump("supplement-unavailable"); continue; }
           const next = extract(extra.doc, extra.finalUrl);
           for (const key of ["phone", "email", "logo_url", "photo_url", "hero_url", "menu_url", "booking_url", "menu", "menu_source", "menu_source_format"]) {
@@ -638,16 +657,22 @@ Deno.serve(async (req) => {
 
   let applied = 0;
   if (batch.length) {
+    if (Date.now() >= deadline) return new Response(JSON.stringify({
+      ok: false, error: "invocation_deadline_exceeded", outcome: "not_attempted",
+      queued: queue.length, reconciliation_required: true,
+      leases: batch.map(row => ({slug: row.slug, lease_id: row.lease_id})),
+    }), {status: 503, headers: {"Content-Type": "application/json"}});
     try {
-      const res = await sbRpc("enrich_apply", { p_batch: batch });
+      const res = await sbRpc("enrich_apply", { p_batch: batch }, deadline);
       const receipt = confirmedEnrichmentReceipts(batch, res);
       applied = receipt.applied;
       if (receipt.rejected) stats["lease-rejected"] = receipt.rejected;
     } catch (e) {
       return new Response(JSON.stringify({
         ok: false, error: `enrich_apply: ${String(e).slice(0, 200)}`,
-        queued: queue.length, stats,
-      }), { status: 500, headers: { "Content-Type": "application/json" } });
+        queued: queue.length, stats, outcome: "unknown", reconciliation_required: true,
+        leases: batch.map(row => ({slug: row.slug, lease_id: row.lease_id})),
+      }), { status: 503, headers: { "Content-Type": "application/json" } });
     }
   }
 

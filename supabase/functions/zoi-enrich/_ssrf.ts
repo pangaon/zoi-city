@@ -83,7 +83,7 @@ export let dnsUsable: boolean | null = null;
 export const dnsState = () => dnsUsable;
 
 /** Resolve a hostname and refuse the host if ANY address is blocked. */
-export async function hostAddressesSafe(host: string): Promise<{ ok: boolean; why?: string }> {
+export async function hostAddressesSafe(host: string, deadline = Infinity): Promise<{ ok: boolean; why?: string }> {
   if (typeof (Deno as { resolveDns?: unknown }).resolveDns !== "function") {
     dnsUsable = false;
     return REQUIRE_DNS
@@ -94,7 +94,9 @@ export async function hostAddressesSafe(host: string): Promise<{ ok: boolean; wh
   for (const type of ["A", "AAAA"] as const) {
     let addrs: string[] = [];
     try {
+      if (Date.now() >= deadline) return { ok: false, why: "dns-deadline-exceeded" };
       addrs = await Deno.resolveDns(host, type);
+      if (Date.now() >= deadline) return { ok: false, why: "dns-deadline-exceeded" };
     } catch {
       continue;                                       // no record of this type
     }
@@ -111,7 +113,7 @@ export async function hostAddressesSafe(host: string): Promise<{ ok: boolean; wh
 }
 
 /** Full pre-flight on a URL. Returns a normalised URL or a refusal reason. */
-export async function vet(raw: string): Promise<{ url?: URL; why?: string }> {
+export async function vet(raw: string, deadline = Infinity): Promise<{ url?: URL; why?: string }> {
   let u: URL;
   try {
     u = new URL(raw);
@@ -131,7 +133,7 @@ export async function vet(raw: string): Promise<{ url?: URL; why?: string }> {
   if (host.includes(":") || u.hostname.startsWith("[")) return { why: "ip-literal-v6" };
   if (!host.includes(".")) return { why: "no-dot-in-host" };
 
-  const dns = await hostAddressesSafe(host);
+  const dns = await hostAddressesSafe(host, deadline);
   if (!dns.ok) return { why: dns.why };
   return { url: u };
 }

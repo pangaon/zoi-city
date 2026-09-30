@@ -64,7 +64,7 @@ test('redirects are followed by hand and every hop is re-vetted', () => {
   // Following redirects automatically is how a guarded fetcher still ends up at
   // the metadata service.
   assert.match(worker, /redirect: "manual"/, 'fetch must not auto-follow redirects');
-  assert.match(worker, /const v = await vet\(next\.toString\(\)\)/,
+  assert.match(worker, /const v = await boundedIO\(deadline, TIMEOUT_MS, \(\) => vet\(next\.toString\(\), Math\.min\(deadline,/,
     'each redirect hop must be re-vetted');
   assert.match(worker, /MAX_HOPS/, 'redirect depth must be bounded');
 });
@@ -74,7 +74,7 @@ test('the worker can never be handed a URL by a caller', () => {
   // was not. URLs come from zoi.enrich_queue, which returns each listing's own
   // registered website.
   assert.match(worker, /enrich_queue/, 'the queue must be the source of URLs');
-  const body = worker.slice(worker.indexOf('await req.json()'), worker.indexOf('const started'));
+  const body = worker.slice(worker.indexOf('const b = await boundedIO'), worker.indexOf('const stats:'));
   assert.ok(/b\.limit/.test(body), 'the body should be read for a limit');
   for (const forbidden of ['url', 'website', 'href', 'target', 'host']) {
     assert.ok(!new RegExp(`b\\.${forbidden}\\b`).test(body),
