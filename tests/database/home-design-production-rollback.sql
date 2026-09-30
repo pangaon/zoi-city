@@ -1,0 +1,50 @@
+begin;
+set local statement_timeout='20s';
+set local lock_timeout='3s';
+do $qa$
+declare ws uuid:='053a5656-b19b-48a4-8721-65c4674f647c';qa_auth uuid:='2ba5b8e3-4fe9-4ec7-a3bf-7f616fcf07fd';actor uuid;lid uuid:=gen_random_uuid();slug text:='rollback-home-design-'||lid;d jsonb;e jsonb;r jsonb;saved jsonb;req uuid:=gen_random_uuid();denied boolean:=false;cat bigint;
+begin
+ select p.id into actor from zoi.user_profiles p join zoi.workspace_members m on m.profile_id=p.id where p.auth_user_id=qa_auth and m.workspace_id=ws and m.role in('owner','admin');
+ if actor is null then raise exception 'home_fixture_dedicated_qa_owner_required';end if;
+ perform set_config('request.jwt.claim.sub',qa_auth::text,true);
+ select id into cat from zoi.categories order by id limit 1;
+ insert into zoi.listings(id,entity_type,name,slug,owner_workspace_id,primary_category_id,city,country,profile,publish_status,moderation_status,marketplace_status)
+ values(lid,'business','Rollback design fixture',slug,ws,cat,'Athens','Greece','{}','draft','clean','hidden');
+ -- Production BEFORE triggers must preserve explicit private draft intent.
+ if not exists(select 1 from zoi.listings where id=lid and publish_status='draft' and marketplace_status='hidden')then raise exception 'home_fixture_listing_privacy_changed';end if;
+ e:=public.home_design_editor(ws,lid);d:=e->'draft';
+ if e->>'workspace' is distinct from ws::text or e->>'listing' is distinct from lid::text or e->>'version'<>'0' or d->>'template'<>'concierge' then raise exception 'home_fixture_editor_contract_failed';end if;
+ d:=jsonb_set(jsonb_set(d,'{template}','"parea"'),'{copy}','{"headline":"Private QA headline"}');
+ r:=public.home_design_preview_data(ws,lid,d);
+ if r->>'workspace' is distinct from ws::text or r->'entity'->>'id' is distinct from lid::text or r->'design'<>d or exists(select 1 from zoi.home_designs where listing_id=lid)then raise exception 'home_fixture_preview_mutated_or_wrong_scope';end if;
+ saved:=public.home_design_change(ws,lid,req,0,'save',d);
+ if saved->>'version'<>'1' or public.home_design_change(ws,lid,req,0,'save',d)<>saved or public.home_design_public(lid)is not null then raise exception 'home_fixture_private_save_failed';end if;
+ begin perform public.home_design_change(ws,lid,gen_random_uuid(),0,'publish');exception when others then if sqlerrm='home_design_version_conflict' then denied:=true;else raise;end if;end;
+ if not denied then raise exception 'home_fixture_stale_write_accepted';end if;
+ perform public.home_design_change(ws,lid,gen_random_uuid(),1,'publish');
+ if public.home_design_public(lid)is not null then raise exception 'home_fixture_hidden_design_leaked';end if;
+ update zoi.listings set publish_status='published',marketplace_status='none',moderation_status='clean'where id=lid;
+ if public.home_design_public(lid)->'design' is distinct from d then raise exception 'home_fixture_public_design_failed';end if;
+ r:=public.home_entity(slug);
+ if r->>'id' is distinct from lid::text or r->'published_design'->'design' is distinct from d or r?'draft' or r?'history' or r?'workspace' then raise exception 'home_fixture_public_entity_leak_or_missing';end if;
+ perform public.home_design_change(ws,lid,gen_random_uuid(),2,'save',jsonb_set(d,'{template}','"table"'));
+ if public.home_design_public(lid)->'design' is distinct from d then raise exception 'home_fixture_draft_overwrote_publication';end if;
+ perform public.home_design_change(ws,lid,gen_random_uuid(),3,'restore',null,2);
+ e:=public.home_design_editor(ws,lid);
+ if e->>'version'<>'4' or e->'draft' is distinct from d or jsonb_array_length(e->'history')<>1 then raise exception 'home_fixture_restore_failed';end if;
+ update zoi.listings set moderation_status='flagged'where id=lid;
+ if public.home_design_public(lid)is not null or public.home_entity(slug)is not null then raise exception 'home_fixture_flagged_public_leak';end if;
+ update zoi.listings set moderation_status='cleared'where id=lid;
+ if public.home_design_public(lid)is null then raise exception 'home_fixture_cleared_not_public';end if;
+ update zoi.listings set owner_workspace_id=null where id=lid;
+ if public.home_design_public(lid)is not null then raise exception 'home_fixture_transfer_public_leak';end if;
+ denied:=false;begin perform public.home_design_editor(ws,lid);exception when insufficient_privilege then denied:=true;end;
+ if not denied then raise exception 'home_fixture_former_owner_read_allowed';end if;
+ denied:=false;begin perform public.home_design_preview_data(ws,lid,d);exception when insufficient_privilege then denied:=true;end;
+ if not denied then raise exception 'home_fixture_former_owner_preview_allowed';end if;
+ denied:=false;begin perform public.home_design_change(ws,lid,req,0,'save',d);exception when insufficient_privilege then denied:=true;end;
+ if not denied then raise exception 'home_fixture_former_owner_retry_allowed';end if;
+ if has_table_privilege('authenticated','zoi.home_designs','select') or has_table_privilege('anon','zoi.home_design_history','select') or has_function_privilege('anon','public.home_design_preview_data(uuid,uuid,jsonb)','execute')then raise exception 'home_fixture_private_acl_failed';end if;
+end $qa$;
+rollback;
+select jsonb_build_object('ok',true,'checks',13,'persisted_test_listings',(select count(*)from zoi.listings where slug like 'rollback-home-design-%'),'external_messages',0)as home_design_rollback_verified;
