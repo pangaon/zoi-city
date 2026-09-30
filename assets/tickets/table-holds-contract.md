@@ -1,12 +1,14 @@
-# Versioned event table holds — candidate API
+# Versioned event table holds — deployed API
 
-Candidate migration20260930125216. Not deployed; no Signature/Parkview table inventory or ownership is created. Use actual event UUID and actual `venue_tables_zones.id`, never a source drawing label as an inventory UUID.
+Deployed in release `136f5c4a2c7137332ae6c9299bb5883eeb33e412`: source migration `20260930125216` is live ledger version `20260930132820`; configuration receipt source `20260930130840` is live version `20260930132822`. Both corrected production rollback fixtures passed with zero retained rows. See [production acceptance](../../docs/audits/event-table-holds-production-acceptance-2026-09-30.md). No Signature/Parkview table inventory or ownership is created. Use actual event UUID and actual `venue_tables_zones.id`, never a source drawing label as an inventory UUID.
 
 ## Operator setup
 
 `table_inventory_operator(p_workspace UUID,p_event UUID)` requires current owner/admin membership and actual event ownership. Returns `{ok,event_id,version:0 when absent,enabled,starts_at,tables,available_tables,payment_enabled:false}`. `available_tables` contains at most201 actual venue tables `{table_id,label,capacity}`; more than200 must be handled by a future paginated operator UI, not silently configured. `tables` contains stored per-event config rows. No public exposure of operator results.
 
 `table_inventory_configure(p_workspace,p_event,p_expected_version,p_request UUID,p_data)` requires the same current role/ownership on every call, including retry. Stable actor/request plus exact payload replay returns the original receipt; changed retry payload raises `request_conflict`. New expected0; edits use exact current version. Returns `{ok:true,event_id,version,enabled,payment_enabled:false}`. Fetch operator state after historical receipt recovery rather than assuming it is still current.
+
+`table_inventory_configure_receipt(p_workspace,p_event,p_request)` requires current owner/admin and event ownership; actor-bound exact workspace/event lookup returns `{ok,found,receipt?}` without private configuration payload. It uses the same request lock as configure. A missing receipt does not authorize a duplicate request; a historical successful receipt must be followed by reloading current operator settings.
 
 `p_data` exact keys:
 

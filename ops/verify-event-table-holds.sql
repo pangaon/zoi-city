@@ -4,7 +4,9 @@ DO $$
 DECLARE ws uuid:='053a5656-b19b-48a4-8721-65c4674f647c';actor uuid:='21a04e78-e3b1-448e-8517-47aad25dd5da';event uuid:=gen_random_uuid();venue uuid;tbl uuid;request uuid:=gen_random_uuid();config_request uuid:=gen_random_uuid();data jsonb;r jsonb;h jsonb;retry jsonb;
 BEGIN
  IF NOT EXISTS(SELECT 1 FROM zoi.user_profiles p JOIN zoi.workspace_members m ON m.profile_id=p.id WHERE p.id=actor AND p.auth_user_id=auth.uid() AND m.workspace_id=ws AND m.role IN('owner','admin')) THEN RAISE EXCEPTION 'qa_scope_unavailable';END IF;
- INSERT INTO zoi.listings(id,name,entity_type,owner_workspace_id,publish_status,moderation_status,marketplace_status)VALUES(event,'Private rollback table hold QA','event',ws,'published','clean','visible');
+ IF NOT EXISTS(SELECT 1 FROM zoi.categories WHERE id=6 AND slug='events-entertainment') THEN RAISE EXCEPTION 'qa_event_category_unavailable';END IF;
+ INSERT INTO zoi.listings(id,name,entity_type,owner_workspace_id,primary_category_id,publish_status,moderation_status,marketplace_status)VALUES(event,'Private rollback table hold QA','event',ws,6,'published','clean','visible');
+ IF NOT EXISTS(SELECT 1 FROM zoi.listings l WHERE l.id=event AND l.owner_workspace_id=ws AND l.publish_status='published' AND l.moderation_status='clean' AND l.marketplace_status='visible') THEN RAISE EXCEPTION 'qa_event_public_eligibility_failed';END IF;
  INSERT INTO public.event_venues(event_id,name,workspace_id)VALUES(event,'Private rollback table hold QA',ws)RETURNING id INTO venue;
  INSERT INTO public.venue_tables_zones(venue_id,name,capacity)VALUES(venue,'QA table',4)RETURNING id INTO tbl;
  data:=jsonb_build_object('starts_at',to_char(clock_timestamp()+interval '1 day','YYYY-MM-DD"T"HH24:MI:SSOF'),'enabled',true,'tables',jsonb_build_array(jsonb_build_object('table_id',tbl,'source_label','QA1','capacity',4,'min_party_size',2,'price_per_guest_cents',100,'currency','CAD','fees_included',true)));

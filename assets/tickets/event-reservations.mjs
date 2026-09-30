@@ -1,0 +1,62 @@
+import {createTableAvailabilityApi,mountTableAvailability,tableMoney,readTablePending,tableHoldState} from './table-availability.mjs';
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function reservationActor(session){
+ if(!session?.access_token)return null;
+ let sub;try{const part=session.access_token.split('.')[1];sub=JSON.parse(atob(part.replace(/-/g,'+').replace(/_/g,'/'))).sub;}catch{return null;}
+ if(!UUID.test(sub||'')||(session.user_id&&session.user_id!==sub))return null;return sub;
+}
+export function reservationMap(raw,eventId){
+ if(raw?.event_id!==eventId||typeof raw.configured!=='boolean'||!Array.isArray(raw.tables)||raw.tables.length>200)throw Error('Availability could not be verified.');
+ if(!raw.configured){if(raw.tables.length)throw Error('Unconfigured inventory cannot expose tables.');return raw;}
+ const ids=new Set();for(const t of raw.tables){if(!UUID.test(t.id||'')||ids.has(t.id)||typeof t.label!=='string'||!Number.isInteger(t.capacity)||t.capacity<1||t.capacity>100||!Number.isInteger(t.min_party_size)||t.min_party_size<1||t.min_party_size>t.capacity||!Number.isSafeInteger(t.per_guest_cents)||t.per_guest_cents<0||!['CAD','USD','EUR','GBP','AUD','NZD','CHF'].includes(t.currency)||!Number.isInteger(t.pricing_version)||t.pricing_version<1||t.fees_included!==true||!['available','held','unavailable'].includes(t.state))throw Error('Availability could not be verified.');ids.add(t.id);}
+ return raw;
+}
+// Capture the authorized token before sending. A later account switch must never
+// change which account performs an already-prepared mutation.
+export function createEventReservationRpc(core,{fetchImpl=globalThis.fetch,timeoutMs=12000}={}){
+ const names=new Set(['table_inventory_map','table_hold_create','table_hold_status','table_hold_release']);
+ return async(fn,params,anonymous=false)=>{
+  if(!names.has(fn))throw Error('Unknown table action.');
+  let token=null,actor=null;
+  if(!anonymous){actor=reservationActor(core.auth.load());if(!actor)throw Error('Sign in to request a hold.');const fresh=await core.auth.ensureFresh();const session=core.auth.load();if(reservationActor(session)!==actor)throw Error('Your account changed.');if(fresh!==true){if(Number(session?.expires_at)*1000<=Date.now())core.auth.clear?.();const error=new Error('Sign in again before requesting a hold.');error.definitive=true;throw error;}token=session.access_token;}
+  const response=await fetchImpl(`${core.BASE}/rest/v1/rpc/${fn}`,{method:'POST',headers:{apikey:core.KEY,Authorization:`Bearer ${token||core.KEY}`,'Content-Type':'application/json'},body:JSON.stringify(params),signal:AbortSignal.timeout(timeoutMs)});
+  const result=await response.json();if(actor&&reservationActor(core.auth.load())!==actor)throw Error('Your account changed.');
+  if(!response.ok||result?.ok===false||result?.error){const error=new Error(typeof result?.message==='string'?result.message:'The table request was not confirmed.');error.status=response.status;if(result?.code==='P0001')error.code='P0001';throw error;}return result;
+ };
+}
+export function mountEventReservations(root,{eventId,core=globalThis.ZoiCore,storage=globalThis.sessionStorage,fetchImpl=globalThis.fetch}={}){
+ if(!root||!UUID.test(eventId||'')||!core?.auth||!core?.otp)throw Error('An event and sign-in client are required.');
+ for(const name of ['table-availability','event-reservations']){if(!document.querySelector(`link[data-ticket-style="${name}"]`)){const link=document.createElement('link');link.rel='stylesheet';link.href=`/assets/tickets/${name}.css?v=20260930-1`;link.dataset.ticketStyle=name;document.head.append(link);}}
+ const api=createTableAvailabilityApi(createEventReservationRpc(core,{fetchImpl})),abort=new AbortController();let dead=false,generation=0,card=null,selected=null,actor=reservationActor(core.auth.load()),authBusy=false,authAttempt=0,email='',authOpener=null,lastLoad=0,loading=false;
+ root.classList.add('event-reservations');root.innerHTML='<div data-er-content></div><dialog data-er-auth aria-labelledby="er-auth-title"><button type="button" data-er-close aria-label="Close sign-in">×</button><h3 id="er-auth-title">Keep your table choice</h3><p>Sign in with an email code. Then select Reserve to request a timed hold. Signing in does not reserve anything.</p><form data-er-send><label>Email<input name="email" type="email" autocomplete="email" maxlength="254" required></label><button>Send sign-in code</button></form><form data-er-verify hidden><label>Sign-in code<input name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,8}" maxlength="8" required></label><button>Verify code</button></form><p data-er-auth-status role="status" aria-live="polite"></p></dialog>';
+ const q=s=>root.querySelector(s),content=q('[data-er-content]'),dialog=q('[data-er-auth]');
+ const readMap=api.map.bind(api);api.map=async id=>{const turn=generation,result=reservationMap(await readMap(id),eventId);if(!dead&&turn===generation)for(const t of result.tables){const button=content.querySelector(`[data-er-table="${t.id}"]`);if(button)button.querySelector('small').textContent=t.state==='available'?'Available to request':t.state==='held'?'Temporarily held':'Unavailable';}return result;};
+ const recoverHold=api.recover.bind(api);api.recover=async args=>{const turn=generation,a=reservationActor(core.auth.load()),result=await recoverHold(args);if(!dead&&turn===generation&&a===reservationActor(core.auth.load())&&result.found&&result.hold.status==='active'){const button=content.querySelector(`[data-er-table="${result.hold.table_id}"]`);if(button)button.querySelector('small').textContent='Temporarily held';}return result;};
+ function authMessage(text){q('[data-er-auth-status]').textContent=text;}
+ function closeAuth(){if(authBusy)return;authAttempt++;email='';q('[data-er-send]').reset();q('[data-er-verify]').reset();dialog.close();authOpener?.isConnected&&authOpener.focus();}
+ function startAuth(intent){q('[data-er-send] button').disabled=false;q('[data-er-verify] button').disabled=false;selected=intent.tableId;authOpener=document.activeElement;q('[data-er-verify]').hidden=true;q('[data-er-send]').hidden=false;authMessage('');dialog.showModal();q('[name=email]').focus();}
+ async function load(){lastLoad=Date.now();loading=true;const turn=++generation;card?.destroy();card=null;content.innerHTML='<p role="status">Checking table availability…</p>';
+  try{const map=reservationMap(await api.map(eventId),eventId);if(dead||turn!==generation)return;
+   if(!map.configured||!map.tables.length){content.innerHTML='<p class="er-quiet">Table reservations on Zoi are not configured for this event. Use the organiser’s published contact or ticket options.</p>'+(actor?'<button type="button" data-er-history>Check my previous table request</button><p data-er-history-status role="status"></p>':'<button type="button" data-er-signin-history>Sign in to check an existing hold</button>');return;}
+   content.innerHTML=`<h3>Choose a table</h3><p>These are the organiser’s configured tables. A timed hold is temporary, exclusive to your party and is not a ticket or payment.</p><button type="button" data-er-refresh>Refresh availability</button><div class="er-layout"><div class="er-tables" role="group" aria-label="Event tables">${map.tables.map(t=>`<button type="button" data-er-table="${esc(t.id)}"><strong>${esc(t.label)}</strong><span>${t.capacity} guests · ${esc(tableMoney(t.per_guest_cents,t.currency))} per guest</span><small>${t.state==='available'?'Available to request':t.state==='held'?'Temporarily held':'Unavailable'}</small></button>`).join('')}</div><div data-er-card></div></div>`;
+   card=mountTableAvailability({root:q('[data-er-card]'),eventId,configured:true,tables:map.tables,api,getActor:()=>reservationActor(core.auth.load()),onSignIn:startAuth,storage});
+   content.querySelectorAll('[data-er-table]').forEach(b=>card.bind(b,b.dataset.erTable));
+   if(actor&&!selected)selected=map.tables[0].id;
+   if(selected&&map.tables.some(t=>t.id===selected)){card.show(selected);if(actor)await card.refresh();}
+  }catch{if(dead||turn!==generation)return;content.innerHTML='<p role="status">Table availability could not be checked. No reservation is confirmed.</p><button type="button" data-er-refresh>Try again</button>';}finally{if(turn===generation)loading=false;}
+ }
+ async function history(){const before=generation,a=actor,node=q('[data-er-history-status]');if(!a||!node)return;node.textContent='Checking your private request…';try{const p=readTablePending(storage,a,eventId),result=await api.recover({eventId,requestId:p?.request_id,tableId:p?.table_id});if(dead||before!==generation||a!==reservationActor(core.auth.load()))return;if(!result.found){node.textContent=p?'No completed result was found yet. Keep your pending request; no new reservation has been made.':'No active hold was found for your account.';return;}const h=tableHoldState(result.hold,{eventId,tableId:p?.table_id||result.hold.table_id});if(!h)throw Error();node.textContent=`Previous table request: ${h.status}. ${h.party_size||'Unknown'} guests. No payment has been collected.`;if(h.status==='active'){const b=document.createElement('button');b.type='button';b.textContent='Release this hold';b.addEventListener('click',async()=>{b.disabled=true;try{await api.release({eventId,holdId:h.hold_id});if(!dead&&before===generation)await history();}catch{if(!dead&&before===generation)node.textContent='Release could not be confirmed. Check the request again.';}},{signal:abort.signal});node.append(b);}}catch{if(!dead&&before===generation)node.textContent='Your previous request could not be checked. Keep its reference and try again.';}}
+ function account(){const next=reservationActor(core.auth.load());if(next===actor)return;actor=next;authAttempt++;authBusy=false;email='';q('[data-er-send]').reset();q('[data-er-verify]').reset();dialog.close();card?.destroy();card=null;content.replaceChildren();load();}
+ root.addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-er-refresh'))load();else if(b.hasAttribute('data-er-history'))history();else if(b.hasAttribute('data-er-signin-history'))startAuth({tableId:null});else if(b.hasAttribute('data-er-close'))closeAuth();else if(b.dataset.erTable)selected=b.dataset.erTable;},{signal:abort.signal});
+ dialog.addEventListener('cancel',e=>{e.preventDefault();closeAuth();},{signal:abort.signal});
+ q('[data-er-send]').addEventListener('submit',async e=>{e.preventDefault();if(authBusy)return;authBusy=true;const attempt=++authAttempt;email=q('[name=email]').value.trim();authMessage('Sending a sign-in code…');q('[data-er-send] button').disabled=true;
+  try{await core.otp.send(email);if(dead||attempt!==authAttempt)return;q('[data-er-send]').hidden=true;q('[data-er-verify]').hidden=false;authMessage('Enter the code sent to your email.');q('[name=code]').focus();}catch{if(!dead&&attempt===authAttempt)authMessage('The code could not be sent. Check your email address and try again.');}finally{if(!dead&&attempt===authAttempt){authBusy=false;q('[data-er-send] button').disabled=false;}}
+ },{signal:abort.signal});
+ q('[data-er-verify]').addEventListener('submit',async e=>{e.preventDefault();if(authBusy)return;authBusy=true;const attempt=++authAttempt;authMessage('Checking your code…');q('[data-er-verify] button').disabled=true;
+  try{await core.otp.verify(email,q('[name=code]').value.trim());if(dead||attempt!==authAttempt)return;authBusy=false;account();}catch{if(!dead&&attempt===authAttempt)authMessage('The code was not verified. Check it and try again.');}finally{if(!dead){authBusy=false;q('[data-er-verify] button').disabled=false;}}
+ },{signal:abort.signal});
+ globalThis.addEventListener?.('zoi:auth-change',account,{signal:abort.signal});globalThis.addEventListener?.('storage',e=>{if(e.key===core.keys?.auth||e.key===null)account();},{signal:abort.signal});
+ const foreground=()=>{if(!dead&&!document.hidden&&!loading&&!authBusy&&!dialog.open&&Date.now()-lastLoad>15000)load();};document.addEventListener('visibilitychange',foreground,{signal:abort.signal});globalThis.addEventListener?.('pageshow',foreground,{signal:abort.signal});
+ load();return {refresh:load,destroy(){dead=true;generation++;authAttempt++;abort.abort();card?.destroy();dialog.close();root.replaceChildren();email='';}};
+}
