@@ -1,5 +1,5 @@
-// Self-serve intake accepts a URL typed by a member of the public and causes a
-// server to fetch it. That is the exact shape that got intake-audit stubbed, so
+// Historical intake accepted a URL for later crawling; the current guided flow
+// saves an authenticated private draft without scheduling extraction. That is the exact shape that got intake-audit stubbed, so
 // these tests exist to hold the line that makes it safe: the URL is written to
 // the database first, and the crawler still reads its targets from the database.
 //
@@ -8,9 +8,12 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import vm from 'node:vm';
+import { website, draftReceipt } from '../../assets/intake/model.mjs';
 
 const sql = readFileSync(new URL('../../supabase/migrations/0038_self_serve_intake.sql', import.meta.url), 'utf8');
 const page = readFileSync(new URL('../../add/index.html', import.meta.url), 'utf8');
+const app = readFileSync(new URL('../../assets/intake/app.mjs', import.meta.url), 'utf8');
 const worker = readFileSync(new URL('../../supabase/functions/zoi-enrich/index.ts', import.meta.url), 'utf8');
 const queue = readFileSync(new URL('../../supabase/migrations/0005_enrich_queue_and_noop_guard.sql', import.meta.url), 'utf8');
 
@@ -51,7 +54,7 @@ test('submissions are rate limited per account', () => {
   assert.ok(/v_recent >= 5/.test(sql), 'the five-a-day cap is gone');
 });
 
-test('one listing per domain, so intake cannot shadow an existing business', () => {
+test('historical intake domain guard remains documented (current drafts permit distinct branches)', () => {
   assert.ok(/already_listed/.test(sql), 'duplicate domains are not detected');
   assert.ok(/registrable_host\(l\.website\) = v_reg/.test(sql), 'no domain comparison');
 });
@@ -76,10 +79,10 @@ test('the reserved-host pattern covers the names that resolve inward', () => {
   }
 });
 
-test('the page refuses the same shapes before spending a round trip', () => {
-  const body = page.slice(page.indexOf('function localRefusal'), page.indexOf('function panel'));
-  assert.ok(/\\d\{1,3\}/.test(body) || /IP address/.test(body), 'no IP literal check client-side');
-  assert.ok(/localhost/.test(body), 'no reserved host check client-side');
+test('the current URL model refuses private targets before an RPC', () => {
+  for (const value of ['http://127.0.0.1','https://localhost','https://a.internal','https://user:pass@taverna.gr','https://taverna.gr:8080']) assert.throws(()=>website(value));
+  assert.equal(website('taverna.gr'), 'https://taverna.gr/');
+  assert.equal(website('HTTPS://Taverna.gr/Member/A'), 'https://taverna.gr/Member/A');
 });
 
 /* ---------- nothing is published or verified by a successful crawl ---------- */
@@ -92,11 +95,11 @@ test('an intake row is a draft and is unverified', () => {
     'intake grants a verification state it has not earned');
 });
 
-test('the page does not promise verification for a fetch', () => {
-  assert.ok(/does not prove you own the business|not that it is yours/i.test(page),
-    'the page fails to separate a successful fetch from ownership');
-  assert.ok(/Draft · unverified|Draft &middot; unverified/.test(page),
-    'the result is not labelled as an unverified draft');
+test('the current result distinguishes private draft, ownership and extraction', () => {
+  assert.match(app,/not a verified ownership claim and has not been published/);
+  assert.match(app,/Website extraction has not run/);
+  assert.match(app,/does not read your website or publish a page/);
+  assert.throws(()=>draftReceipt({ok:true,status:'published'}));
 });
 
 /* ---------- provenance ---------- */
@@ -114,14 +117,24 @@ test('machine-read values stay in their own namespace', () => {
   assert.ok(/profile -> '_enrich'/.test(sql), 'enrich data read from the wrong place');
 });
 
-test('the confirmation screen shows where each value came from', () => {
-  assert.ok(/from ' \+ esc\(via\)|class="prov"/.test(page),
-    'fields render without provenance');
+test('manual draft details are not represented as machine extracted provenance', () => {
+  assert.match(app,/Enter your own details/);
+  assert.match(app,/Details you enter appear here/);
+  assert.doesNotMatch(app,/intake_status|fetch\(/);
+  assert.match(page,/assets\/intake\/app\.mjs/);
 });
 
-test('a crawl failure is shown, not swallowed', () => {
-  assert.ok(/could not read that page/i.test(page), 'no failure state for the user');
-  assert.ok(/en\.status/.test(page), 'crawl status is never inspected');
+test('a failed draft RPC retains its request and offers status recovery', async () => {
+  const save=app.slice(app.indexOf('async function save()'),app.indexOf('function review()'));
+  const request='11111111-1111-4111-8111-111111111111', workspace='22222222-2222-4222-8222-222222222222';
+  let stored, recovery=0, successes=0; const error={textContent:''};
+  const context={args:{p_request:request,p_workspace:workspace},pending:null,sessionStorage:{},actor:()=>request,
+    keepPending:(_s,_a,value)=>(stored=value),panel:()=>{},success:()=>successes++,
+    rpc:async()=>{throw Error('network timeout');},pendingPanel:()=>recovery++,message:()=> 'Check status before retrying.',$:()=>error};
+  vm.createContext(context);vm.runInContext(save+';globalThis.run=save;',context);await context.run();
+  assert.equal(stored.request,request);assert.equal(context.pending.request,request);
+  assert.equal(recovery,1);assert.equal(successes,0);assert.match(error.textContent,/Check status/);
+  assert.match(app,/intake_draft_receipt/);assert.match(app,/p_request:pending.request/);
 });
 
 /* ---------- scoping ---------- */

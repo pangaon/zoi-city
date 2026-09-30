@@ -2,19 +2,19 @@
 
 **Use this as a bounded acceptance session, not a declaration that the whole platform is ready.** Twenty testers can assess the journeys below. Public navigation, local model/database checks, mocked browser interactions, authenticated production reads and actual device testing are different evidence. None proves that all 31,168 inventoried listings have correct content or working transactions.
 
-Coordinator: record the live web deployment and native build used before assigning tests. This document reflects the evidence available around 10:00 UTC; releases are continuing. A newer commit does not automatically have the acceptance evidence of an earlier one.
+Coordinator: record the live web deployment and native build used before assigning tests. This document reflects the evidence available around 11:02 UTC; releases are continuing. A newer commit does not automatically have the acceptance evidence of an earlier one.
 
 ## Install the right native build
 
-Both preview builds for commit **9cf735458b2046a79e23e643e55449c6d47b4228** are FINISHED, confirmed by the release lead. This source passed 169 tests, TypeScript and Android/iOS/web exports. Finished builds are not physical-device acceptance.
+Both preview builds for commit **4bb9fe5b15109c2259624fe06751baaaed1aae2f** are FINISHED, confirmed by the release lead. This source passed the complete native test suite, TypeScript and Android/iOS/web exports. Finished builds are not physical-device acceptance.
 
-- Android: [download the APK](https://expo.dev/artifacts/eas/Sk2ZFXlxntGKvK3WwBR1dVwjACuCiQS2Ayp4XIhQccw.apk). Build `801800c6-b8a7-4176-91a0-97110c10f64c`. Install on an assigned Android device; record OS/version and whether installation succeeds. This is an internal preview, not a Play Store release.
-- iOS: [download the simulator archive](https://expo.dev/artifacts/eas/MSlodbu1f0_aprtH7KIBwLm3Frp5xSQaFNwQE75SbAA.tar.gz). Build `a440a0a7-170b-4ac9-8cd8-1d440e8b428d`. Requires a Mac with an iOS Simulator. **This archive cannot be installed on a physical iPhone and is not TestFlight.** Physical iPhone testers should use Safari for the web tests and report native installation as blocked, not failed.
+- Android: [download the APK](https://expo.dev/artifacts/eas/lt24FvlYn8k8d7cm8RUTBge5L0ufdRuQh1Ih6xqmL6Q.apk). Build `c0949b3e-a71e-47b5-b786-4858486ebee7`. Install on an assigned Android device; record OS/version and whether installation succeeds. This is an internal preview, not a Play Store release.
+- iOS: [download the simulator archive](https://expo.dev/artifacts/eas/t-69AoHWZAs8ZXZDGLQW8FjMeBEOVvx-lgner1Yfd-s.tar.gz). Build `7b186a4f-0908-45b6-b856-124594f5fb62`. Requires a Mac with an iOS Simulator. **This archive cannot be installed on a physical iPhone and is not TestFlight.** Physical iPhone testers should use Safari for the web tests and report native installation as blocked, not failed.
 - These replace the older 5ec7d1d preview builds for this session. Do not request another cloud build just to repeat a browser/export test.
 - Web ticket-history assets are verified deployed in the 2be7785/d231df7 release: downloaded HTML/JS match the candidate bytes. The native build has its own bounded reference-history implementation. Deployed bytes plus mocked receipt checks do not prove a real customer reservation.
 
 
-**Guardian enrolment limitation in these preview binaries:** the existing native youth editor does not retain an unresolved write marker across app restarts and still exposes a local retry discard action. Do not run child-record or enrolment mutations in the downloadable preview. Use the reviewed web guardian flow once its production release is verified. A source-only update routes these tools to the web; it is not included in the 9cf7354 artifacts above.
+**Guardian tools in these preview binaries:** the unresolved native write editor is gated off. Family and operator actions hand off to the web flows; browser sign-in may be required. This is a deliberate handoff, not complete native parity. Do not use real child records for QA without an explicitly assigned private test fixture.
 
 ## Session setup and write boundaries
 
@@ -105,3 +105,7 @@ At the 2be7785/d231df7 release, actual signed-out Community at 390/1440 opened t
 ## Owner acceptance update — 10:14 UTC
 
 Commit `ca4a51bc7fedae0d955079d122f09d8e5196d840`, CI `36701047388`: authenticated identity/workspace matched; ordinary form saved menu and description; version readback and private preview passed at 390/1440 with no horizontal overflow. Three unrelated requests were blocked by the test fence. Cleanup and local session logout passed; an independent database read confirmed archived/hidden state, two retained immutable receipts and no public design. No customer record was edited and no public test content was published. The first run’s readback assertion had compared JSON object-key order; that assertion was corrected before the guarded follow-up.
+
+## Visible release — c68a314
+
+CI 36705743143 and Vercel succeeded. Homepage, Community, map, Orthodox landing and Cappella Romana canonical artist home returned HTTP200 with the new assets. The actual production homepage at390px loaded all three real photographs with no horizontal overflow. Local verification ran181 unit-test files plus2 standalone suites; worker Deno check passed. Shared artist source mapping, map orientation/search selection, Community Listening Room, church/faith presentation and homepage arrival changed. This is not individual acceptance of797 artists or8,990 churches. URL intake defects were discovered independently and remain under repair; do not describe URL-to-published-home as operational.

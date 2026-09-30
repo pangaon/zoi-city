@@ -79,6 +79,7 @@ section{padding:clamp(20px,3vw,36px) 0 60px}
 .cbtn.claim{color:var(--gold);border-color:var(--gold)}
 .empty{padding:60px 20px;text-align:center;color:var(--mut)}
 .empty h3{font-size:22px;font-weight:700;color:var(--tx);margin-bottom:8px}
+.empty-entry{max-width:720px;margin:12px auto;padding:34px 30px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,var(--card),var(--card2));box-shadow:0 15px 40px -30px #18271c66}.empty-entry-kicker{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);font-weight:700}.empty-entry h3{font:500 32px/1.15 Fraunces,Georgia,serif;letter-spacing:-.025em;margin:12px 0}.empty-entry>p{max-width:560px;margin:0 auto;line-height:1.65;font-size:14px}.empty-entry-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:23px 0 18px}.empty-entry-actions a{min-height:44px;padding:12px 16px;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:650;white-space:normal}.empty-entry-actions .empty-entry-primary{background:var(--btn-bg);color:var(--btn-fg);border:1px solid transparent}.empty-entry .empty-entry-note{font-size:12px;line-height:1.6;color:var(--mut)}.empty-entry a:focus-visible{outline:2px solid var(--acc);outline-offset:4px}@media(max-width:600px){.empty-entry{padding:26px 18px;margin:8px 0;border-radius:20px}.empty-entry h3{font-size:28px}.empty-entry-actions{flex-direction:column}.empty-entry-actions a{width:100%}}
 .loadmore{display:flex;justify-content:center;margin-top:26px}
 .strip{border-top:1px solid var(--line);padding:34px 0}
 .strip h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px}
@@ -668,12 +669,17 @@ function sortedRows(){
   else if(by==='verified') rows.sort((a,b)=>((b.verification_status==='verified')-(a.verification_status==='verified'))||s_(a.name).localeCompare(s_(b.name)));
   return rows;
 }
+function emptyExploreMarkup(query){
+  const context=String(query||'').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,200);
+  const add='/add/'+(context?'?query='+encodeURIComponent(context):'');
+  return '<section class="empty empty-entry" style="grid-column:1/-1" aria-labelledby="empty-entry-title"><span class="empty-entry-kicker">Make room for your Greek world</span><h3 id="empty-entry-title">Not finding your place?</h3><p>Try a broader search or fewer filters. If your business or organisation is missing, start a private draft and review its details.</p><div class="empty-entry-actions"><a class="btn empty-entry-primary" href="'+esc(add)+'">Add your business or organisation <span aria-hidden="true">↗</span></a><a class="btn g" href="/explore/">Search existing pages</a></div><p class="empty-entry-note">Already on Zoi? Find the existing page and use its claim option, rather than adding a duplicate. Adding a draft does not verify ownership or publish your page.</p></section>';
+}
 function renderRows(){
   const el=document.getElementById('results');
   const rows=sortedRows();
   ST.view=rows;
   if(!rows.length){
-    el.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Nothing yet for that</h3><p>Try a broader word or switch to a nearby category to widen the search.</p></div>';
+    el.innerHTML=emptyExploreMarkup(ST.q);
     return;
   }
   el.innerHTML=rows.map((r,i)=>card(r,i)).join('');

@@ -17,35 +17,36 @@
 [hidden]{display:none!important}
 
 :root{
-  /* Mediterranean materials: olive ink, limestone, aged brass. Blue is an accent. */
+  /* Zoi: Aegean blue, white light and midnight; client homes retain their own identity. */
   color-scheme:dark;
-  --bg:#171d1b; --bg2:#1d2521; --card:#242d28; --card2:#303a32;
-  --line:rgba(226,219,197,.14); --line2:rgba(226,219,197,.28);
-  --tx:#f4efe4; --mut:#cbc8bb; --dim:#b9bcae;
-  --acc:#c3d2b0; --aegean:#86b7b3; --med-blue:#356767; --med-deep:#223831; --sea:#86b7b3;
-  --gold:#dcc18c; --green:#abd0aa; --red:#efa397;
-  --btn-fg:#242b24; --btn-bg:#d7c398; --on-text:#171d1b; --on-gold:#242b24;
+  --bg:#061426; --bg2:#091e36; --card:#102943; --card2:#173550;
+  --line:rgba(165,208,255,.18); --line2:rgba(165,208,255,.34);
+  --tx:#f5faff; --mut:#bed1e7; --dim:#a9c2df;
+  --acc:#76c6ff; --aegean:#58dce8; --med-blue:#1684f8; --med-deep:#082e66; --sea:#58dce8;
+  --gold:#88cfff; --green:#76d6b0; --red:#ffacaf;
+  --btn-fg:#ffffff; --btn-bg:#1465d7; --on-text:#061426; --on-gold:#061426;
   --ease:cubic-bezier(.22,.61,.36,1);
   --r:16px; --r-sm:10px; --maxw:1200px;
-  --shadow:0 18px 42px -26px rgba(0,0,0,.42);
+  --shadow:0 18px 42px -26px rgba(0,20,60,.42);
 }
 [data-theme="light"]{
   color-scheme:light;
-  --bg:#f4f0e8; --bg2:#ece7dc; --card:#fffdf8; --card2:#e9e5da;
-  --line:rgba(49,58,44,.17); --line2:rgba(49,58,44,.31);
-  --tx:#26312b; --mut:#535e54; --dim:#5d6358;
-  --acc:#375d4a; --aegean:#356767; --med-blue:#356767; --med-deep:#223831; --sea:#356767;
-  --gold:#785f2a; --green:#306644; --red:#a13e32;
-  --btn-fg:#fffdf8; --btn-bg:#354c3c; --on-text:#fffdf8; --on-gold:#fffdf8;
+  --bg:#f6faff; --bg2:#eaf4ff; --card:#ffffff; --card2:#e5f0ff;
+  --line:rgba(17, 70,140,.17); --line2:rgba(17, 70,140,.31);
+  --tx:#10294d; --mut:#435c7c; --dim:#4e6683;
+  --acc:#075dcc; --aegean:#007c94; --med-blue:#075dcc; --med-deep:#092e68; --sea:#007c94;
+  --gold:#075dcc; --green:#187447; --red:#b53141;
+  --btn-fg:#ffffff; --btn-bg:#075dcc; --on-text:#ffffff; --on-gold:#ffffff;
 }
+/* Preserve existing saved theme keys while retiring the brown/gold palette. */
 [data-theme="gold"]{
   color-scheme:dark;
-  --bg:#201c16; --bg2:#28221a; --card:#30291e; --card2:#393124;
-  --line:rgba(224,197,141,.18); --line2:rgba(224,197,141,.34);
-  --tx:#f6eddb; --mut:#d1c4aa; --dim:#c7b99c;
-  --acc:#e0c58d; --aegean:#b6c6b4; --med-blue:#526c5a; --med-deep:#2c3328; --sea:#b6c6b4;
-  --gold:#e0c58d; --green:#bad3ac; --red:#ecac93;
-  --btn-fg:#241e13; --btn-bg:#e0c58d; --on-text:#201c16; --on-gold:#241e13;
+  --bg:#041c37; --bg2:#062b53; --card:#0b355b; --card2:#10436d;
+  --line:rgba(151,218,255,.2); --line2:rgba(151,218,255,.36);
+  --tx:#ffffff; --mut:#c2ddf2; --dim:#acd0eb;
+  --acc:#7adfff; --aegean:#69e1e3; --med-blue:#3299ff; --med-deep:#082e66; --sea:#69e1e3;
+  --gold:#8ddfff; --green:#76d6b0; --red:#ffacaf;
+  --btn-fg:#052645; --btn-bg:#81dfff; --on-text:#041c37; --on-gold:#052645;
 }
 
 /* ---- Base ---- */
@@ -60,7 +61,7 @@ body{
   background-attachment:fixed; min-height:100vh;
   transition:background-color .5s var(--ease), color .5s var(--ease);
 }
-[data-theme="light"] body{background-image:radial-gradient(1100px 700px at 100% 0,rgba(167,144,96,.06),transparent 70%),linear-gradient(180deg,#f7f3ea,var(--bg) 65%)}
+[data-theme="light"] body{background-image:radial-gradient(1100px 700px at 100% 0,rgba(0,112,240,.08),transparent 70%),linear-gradient(180deg,white,var(--bg) 65%)}
 a{color:inherit;text-decoration:none}
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
   outline:2px solid var(--acc)!important;
@@ -85,8 +86,8 @@ h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
 .zoi-bar{display:flex;align-items:center;justify-content:space-between;height:68px}
 .zoi-brand{display:flex;align-items:center;gap:12px}
 .zoi-seal{width:36px;height:36px;flex:0 0 36px;border-radius:10px;display:grid;place-items:center;
-  font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:21px;color:#332607;
-  background:linear-gradient(150deg,#f3d894,#fff1cc);line-height:1}
+  font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:21px;color:#fff;
+  background:linear-gradient(150deg,#0563e5,#0084df);line-height:1}
 .zoi-brand b{font-weight:800;font-size:19px;letter-spacing:-.02em}
 .zoi-nav{display:flex;gap:26px}
 .zoi-nav a{color:var(--mut);font-size:15px;transition:color .25s var(--ease)}

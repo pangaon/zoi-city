@@ -166,10 +166,9 @@ test('each theme separates land from sea the way that theme intends', () => {
   const l = BM.palette('light');
   assert.ok(lstar(l.water) < lstar(l.land) - 8, 'light: the sea is darker than the paper');
   assert.ok(bstar(l.water) < bstar(l.land) - 6, 'light: the sea is cooler than the paper');
-  // gold — warm parchment over an ink sea; it separates by lightness, not hue,
-  // because this theme has no cool token to reach for
+  // The persisted gold key is now deep-ocean blue: navy land above a darker sea.
   const gd = BM.palette('gold');
-  assert.ok(lstar(gd.land) > lstar(gd.water) + 6, 'gold: parchment land sits above an ink sea');
+  assert.ok(lstar(gd.land) > lstar(gd.water) + 6, 'saved gold key: navy land sits above the deep sea');
   // and the three really are three different maps
   assert.equal(new Set([d.land, l.land, gd.land]).size, 3, 'every theme has its own land colour');
   assert.ok(lstar(d.land) < 30, 'dark land is dark');

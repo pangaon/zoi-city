@@ -12,10 +12,11 @@ export async function loadMapPages(fetchPage,{pageSize=1000,maxRows=40000,concur
  pages.sort((a,b)=>a.index-b.index);const rows=pages.flatMap(p=>p.rows);const truncated=!endDetected&&!stoppedOnFailure&&requests>=maxPages;
  return{rows,failedOffsets,requests,endDetected,truncated,complete:endDetected&&!failedOffsets.length,stoppedOnFailure};
 }
-export function focusOptions(point,{width=1200,height=800,left=0,right=0,top=0,bottom=0,reducedMotion=false}={}){
+export function focusOptions(point,{width=1200,height=800,left=0,right=0,top=0,bottom=0,reducedMotion=false,currentZoom=null}={}){
  const precision=String(point.precision||'').toLowerCase();const zoom=({rooftop:15.5,address:15.5,street:14,neighborhood:12,neighbourhood:12,suburb:12,locality:10,town:10,city:10,region:6,country:4,approx:8,approximate:8})[precision]??6;
  const horizontal=Math.min(1,Math.max(0,width-100)/Math.max(1,left+right)),vertical=Math.min(1,Math.max(0,height-100)/Math.max(1,top+bottom));
- return{center:[point.lng,point.lat],zoom,pitch:0,bearing:0,padding:{left:Math.round(left*horizontal),right:Math.round(right*horizontal),top:Math.round(top*vertical),bottom:Math.round(bottom*vertical)},retainPadding:false,duration:reducedMotion?0:1400,essential:false};
+ const preservedZoom=typeof currentZoom==='number'&&Number.isFinite(currentZoom)?Math.min(18.5,Math.max(zoom,currentZoom)):zoom;
+ return{center:[point.lng,point.lat],zoom:preservedZoom,pitch:0,bearing:0,padding:{left:Math.round(left*horizontal),right:Math.round(right*horizontal),top:Math.round(top*vertical),bottom:Math.round(bottom*vertical)},retainPadding:false,duration:reducedMotion?0:1400,essential:false};
 }
 
 export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&row.lat!=null&&row.lng!=null&&Number.isFinite(+row.lat)&&Number.isFinite(+row.lng)&&Math.abs(+row.lat)<=90&&Math.abs(+row.lng)<=180);}

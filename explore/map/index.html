@@ -529,7 +529,7 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    mapTools = await import('/assets/map-data/loader.mjs?v=20260930-orientation');
+    mapTools = await import('/assets/map-data/loader.mjs?v=20260930-preserve-zoom');
     previewModule = await import('/assets/map-data/preview.mjs?v=20260930-orientation');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
@@ -1051,8 +1051,8 @@
     var mobile=window.matchMedia('(max-width:860px)').matches;
     var rail=document.querySelector('.m-tools').getBoundingClientRect(), attribution=$('attrib').getBoundingClientRect();
     var bottomEdge=Math.min(panel.top,rail.top,attribution.top);
-    var focus=mapTools.focusOptions(p,{width:stage.width,height:stage.height,left:mobile?16:controls.width+28,right:mobile?16:panel.width+28,top:mobile?controls.bottom-stage.top+16:28,bottom:mobile?stage.bottom-bottomEdge+24:28,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches});
-    if(focus.duration===0)map.jumpTo(focus);else map.flyTo(focus);
+    var focus=mapTools.focusOptions(p,{width:stage.width,height:stage.height,currentZoom:map.getZoom(),left:mobile?16:controls.width+28,right:mobile?16:panel.width+28,top:mobile?controls.bottom-stage.top+16:28,bottom:mobile?stage.bottom-bottomEdge+24:28,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches});
+    if(focus.duration===0)map.jumpTo(focus);else map.easeTo(focus);
     status(precisionLabel(p) + (p.unknown ? ' — confirm the address before travelling' : ''),false,5000);
     writeUrl();
   }

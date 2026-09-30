@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
 <title>Add your business · Zoi</title>
-<meta name="description" content="Put your Greek business on Zoi. Paste your website and we read what you have already published — you confirm it. Free."/>
+<meta name="description" content="Find your existing Zoi page or prepare a private business draft in your workspace."/>
 <link rel="canonical" href="https://www.zoi.city/add"/>
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,6 +62,7 @@ footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
 footer span,footer a{font-size:13px;color:var(--dim)}
 </style>
 <script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');}catch(e){}})()</script>
+<link rel="stylesheet" href="/assets/intake/style.css">
 </head>
 <body>
 <header class="zoi-header"><div class="wrap zoi-bar">
@@ -73,14 +74,14 @@ footer span,footer a{font-size:13px;color:var(--dim)}
 <main class="wrap">
   <section class="hero">
     <div class="mono">Add your business</div>
-    <h1>Your website already says it. <span class="serif">Let it do the typing.</span></h1>
-    <p class="lead">Paste your address and we read what you have published — name, phone, hours, address, photo. You check it and it goes live. Nothing is guessed, and you can change every field.</p>
+    <h1>Make a place for your work. <span class="serif">Start with your website.</span></h1>
+    <p class="lead">Find an existing page or prepare a private draft for your business, professional practice or community. You choose the details and category.</p><p id="search-context" class="note"></p>
 
     <form class="form" id="f" novalidate>
       <div class="urlrow">
-        <input id="site" type="url" inputmode="url" autocomplete="url" spellcheck="false"
+        <input id="site" type="text" inputmode="url" autocomplete="url" spellcheck="false"
                placeholder="yourtaverna.gr" aria-label="Your website address"/>
-        <button type="submit" id="go">Read my site</button>
+        <button type="submit" id="go">Find my page</button>
       </div>
       <div class="err" id="err" role="alert" aria-live="polite"></div>
       <p class="note">Use your public business website. You can review the information before submitting.</p>
@@ -88,25 +89,13 @@ footer span,footer a{font-size:13px;color:var(--dim)}
   </section>
 
   <section class="panel" id="panel" aria-live="polite">
-    <h2 id="p-title">Reading your site…</h2>
+    <h2 id="p-title">Your next step</h2>
     <p class="sub" id="p-sub"></p>
     <div id="p-body"></div>
     <div id="p-actions" style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap"></div>
   </section>
 
-  <section class="steps">
-    <div class="step"><div class="n">01</div><h3>You paste the address</h3><p>Start with the public website your customers use.</p></div>
-    <div class="step"><div class="n">02</div><h3>We read the page</h3><p>We look for the business details your website publishes. Missing information stays empty for you to complete.</p></div>
-    <div class="step"><div class="n">03</div><h3>You confirm</h3><p>Everything we found is shown with where it came from. Nothing publishes until you say so.</p></div>
-    <div class="step"><div class="n">04</div><h3>You prove it is yours</h3><p>A separate step, because a page loading does not prove you own the business. That is what makes a verified mark worth anything.</p></div>
-  </section>
-
-  <div class="honest">
-    <h4>What we will not do</h4>
-    <p>We will not invent a field. If your site does not publish a phone number, the field stays empty rather than being filled with a guess.</p>
-    <p>We will not mark you verified because your site loaded. A successful fetch proves the site exists — not that it is yours.</p>
-    <p>We will not overwrite anything you type. Your edits take priority over information imported from your website.</p>
-  </div>
+  <section class="steps"><div class="step"><div class="n">01</div><h3>Find your page</h3><p>Search by website and check existing names and locations before adding a new page.</p></div><div class="step"><div class="n">02</div><h3>Choose your workspace</h3><p>Only its owner or administrator can prepare a new draft.</p></div><div class="step"><div class="n">03</div><h3>Add your details</h3><p>Confirm your name, type and category. Continue in your existing page editor.</p></div><div class="step"><div class="n">04</div><h3>Keep it private until review</h3><p>A draft is not a verified claim or a published page. Website extraction is not yet available in this flow.</p></div></section>
 </main>
 
 <footer><div class="wrap">
@@ -116,162 +105,6 @@ footer span,footer a{font-size:13px;color:var(--dim)}
 
 <script src="/assets/zoi-core.js"></script>
 <script src="/assets/zoi-theme.js?v=20260930"></script>
-<script>
-(function(){
-  'use strict';
-  var C = window.ZoiCore;
-  var $ = function(id){ return document.getElementById(id); };
-  function esc(s){
-    return String(s==null?'':s).replace(/[&<>"']/g,function(m){
-      return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[m];
-    });
-  }
-
-  /* The same refusals the database and the crawler apply, run here so the
-     obvious mistake is answered instantly instead of after a round trip. This
-     is a courtesy, not a control — the real check is at fetch time. */
-  function localRefusal(raw){
-    var v = String(raw||'').trim();
-    if(!v) return 'Enter your website address.';
-    if(!/^https?:\/\//i.test(v)) v = 'https://' + v;
-    var host;
-    try{ host = new URL(v).hostname.toLowerCase(); }
-    catch(e){ return 'That does not look like a web address.'; }
-    if(!host || host.indexOf('.') === -1) return 'That does not look like a web address.';
-    if(/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return 'Enter a domain name, not an IP address.';
-    if(/(^|\.)(localhost|internal|intranet|lan|home|corp|private|test|example|invalid|onion|local)$/.test(host))
-      return 'That is a private or reserved address.';
-    return null;
-  }
-
-  function panel(title, sub, body, actions){
-    $('panel').classList.add('on');
-    $('p-title').textContent = title;
-    $('p-sub').textContent = sub || '';
-    $('p-body').innerHTML = body || '';
-    $('p-actions').innerHTML = actions || '';
-    $('panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'nearest'});
-  }
-
-  /* Every value carries where it came from. A field with no provenance is a
-     field we should not be showing. */
-  function fieldRows(enrich){
-    var fields = (enrich && enrich.fields) || {};
-    var keys = Object.keys(fields);
-    if(!keys.length) return '';
-    return keys.map(function(k){
-      var f = fields[k];
-      var val = (f && typeof f === 'object') ? f.value : f;
-      var via = (f && typeof f === 'object') ? f.via : '';
-      if(val == null || val === '') return '';
-      return '<div class="frow"><span class="k">' + esc(k.replace(/_/g,' ')) + '</span>' +
-             '<span class="v">' + esc(String(val).slice(0,300)) +
-             (via ? '<span class="prov">from ' + esc(via) + '</span>' : '') + '</span></div>';
-    }).join('');
-  }
-
-  var POLL_MS = 4000, POLL_MAX = 15;
-
-  async function poll(slug, tries){
-    tries = tries || 0;
-    var r;
-    try{ r = await C.api.rpc('intake_status', { p_slug: slug }, { auth: 'require' }); }
-    catch(e){ r = null; }
-    var d = Array.isArray(r) ? r[0] : r;
-    var en = (d && d.enrich) || {};
-
-    if(en.checked_at){
-      var rows = fieldRows(en);
-      if(en.status && en.status !== 'ok' && !rows){
-        // A refusal is information. Say which one it was and let them proceed by hand.
-        panel('We could not read that page',
-          'Your draft is saved either way — you can fill it in yourself.',
-          '<div class="frow"><span class="k">Reason</span><span class="v">' + esc(en.status) +
-          (en.error ? ' — ' + esc(en.error) : '') + '</span></div>',
-          '<a class="btn btn-primary" href="/social">Fill it in myself →</a>');
-        return;
-      }
-      panel('Here is what your site says',
-        'Check it. Correct anything. Nothing is published yet.',
-        rows || '<p class="sub">We reached the page but it publishes no structured details.</p>',
-        '<a class="btn btn-primary" href="/social">Confirm and continue →</a>' +
-        ' <span class="badge">Draft · unverified</span>');
-      return;
-    }
-
-    if(tries >= POLL_MAX){
-      panel('Still working',
-        'Your draft is saved. We will keep trying and you can carry on now.',
-        '<div class="statusline">Enrichment runs on a schedule — this can take a few minutes at busy times.</div>',
-        '<a class="btn btn-primary" href="/social">Continue to your page →</a>');
-      return;
-    }
-    setTimeout(function(){ poll(slug, tries + 1); }, POLL_MS);
-  }
-
-  $('f').addEventListener('submit', async function(ev){
-    ev.preventDefault();
-    $('err').textContent = '';
-    var raw = $('site').value;
-    var bad = localRefusal(raw);
-    if(bad){ $('err').textContent = bad; $('site').focus(); return; }
-    if(!C.auth.isSignedIn()){
-      panel('Sign in to continue','Create a private draft and review the information from your business website.','', '<a class="btn btn-primary" href="/social/">Sign in, then return to add your business →</a>');
-      $('p-actions').querySelector('a').focus({preventScroll:true});
-      return;
-    }
-
-    var btn = $('go');
-    btn.disabled = true; btn.textContent = 'Reading…';
-    panel('Reading your site…', 'One request, then we show you everything we found.',
-      '<div class="statusline"><span class="spin"></span>Fetching and checking the address…</div>', '');
-
-    var res;
-    try{
-      res = await C.api.rpc('intake_submit', { p_website: raw }, { auth: 'require' });
-    }catch(e){
-      // Signing in is the honest ask: an open endpoint that makes a server fetch
-      // a named host is a crawler pointed at other people's sites.
-      var m = String((e && e.message) || e);
-      if(/401|403|auth|sign[\s-]?in/i.test(m)){
-        panel('Sign in first',
-          'Sign in to save a private draft and review your business details.',
-          '', '<a class="btn btn-primary" href="/social">Sign in and come back →</a>');
-      } else {
-        panel('That did not go through', m, '', '');
-      }
-      btn.disabled = false; btn.textContent = 'Read my site';
-      return;
-    }
-
-    var d = Array.isArray(res) ? res[0] : res;
-    btn.disabled = false; btn.textContent = 'Read my site';
-
-    if(!d || d.ok === false){
-      var code = (d && d.error) || 'unknown';
-      var human = {
-        auth_required: 'Sign in first — one email code.',
-        website_required: 'Enter your website address.',
-        credentials_in_url: 'Remove the username from the address.',
-        invalid_host: 'That does not look like a web address.',
-        ip_literal: 'Enter a domain name, not an IP address.',
-        reserved_host: 'That is a private or reserved address.',
-        rate_limited: (d && d.detail) || 'You have reached today\u2019s limit.'
-      }[code] || code;
-      panel('We cannot use that address', human, '', '');
-      return;
-    }
-
-    if(d.status === 'already_listed'){
-      panel('You are already here',
-        esc(d.name || 'This business') + ' is in the directory. Claim it rather than starting a second entry.',
-        '', '<a class="btn btn-primary" href="/p/' + encodeURIComponent(d.slug) + '">Open and claim it →</a>');
-      return;
-    }
-
-    poll(d.slug, 0);
-  });
-})();
-</script>
+<script type="module" src="/assets/intake/app.mjs"></script>
 </body>
 </html>

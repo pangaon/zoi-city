@@ -78,9 +78,9 @@
 
   /* The three token sets, copied from zoi-theme.css. */
   var TOKENS = {
-    dark:  {bg: '#171d1b', card: '#242d28', tx: '#f4efe4', mut: '#cbc8bb', acc: '#c3d2b0', gold: '#dcc18c', green: '#abd0aa', red: '#efa397', aegean: '#86b7b3' },
-    light: {bg: '#f4f0e8', card: '#fffdf8', tx: '#26312b', mut: '#535e54', acc: '#375d4a', gold: '#785f2a', green: '#306644', red: '#a13e32', aegean: '#356767' },
-    gold:  {bg: '#201c16', card: '#30291e', tx: '#f6eddb', mut: '#d1c4aa', acc: '#e0c58d', gold: '#e0c58d', green: '#bad3ac', red: '#ecac93', aegean: '#b6c6b4' }
+    dark: {bg: '#061426', card: '#102943', tx: '#f5faff', mut: '#bed1e7', acc: '#76c6ff', gold: '#88cfff', green: '#76d6b0', red: '#ffacaf', aegean: '#58dce8' },
+    light: {bg: '#f6faff', card: '#ffffff', tx: '#10294d', mut: '#435c7c', acc: '#075dcc', gold: '#075dcc', green: '#187447', red: '#b53141', aegean: '#007c94' },
+    gold: {bg: '#041c37', card: '#0b355b', tx: '#ffffff', mut: '#c2ddf2', acc: '#7adfff', gold: '#8ddfff', green: '#76d6b0', red: '#ffacaf', aegean: '#69e1e3' }
   };
 
   /**
@@ -98,15 +98,12 @@
     if (dark) {
       P.void    = mix(T.bg, '#000000', 0.35);          // beyond the map edge
       // Land and sea must be perceptibly different and the sea must read AS sea.
-      // A restrained cool water pigment separates sea from warm olive land.
+      // A blue water pigment separates sea from the midnight land surface.
       // Perceptual separation and label readability are guarded by basemap tests.
       P.land    = mix(mix(mix(T.bg, T.tx, 0.08), T.gold, 0.08), '#000000', 0.15);
-      P.water   = mix(mix(T.bg, T.aegean, 0.42), '#548da5', 0.38);
-      // The gold theme has no cool token at all — its --acc IS its --gold — so
-      // a blue sea cannot be derived from it. Mixing toward --green just yields
-      // olive that reads as more land (dE 2.3, invisible). It gets lifted
-      // parchment land over an ink sea instead: separation by lightness,
-      // dE 13.7, and truer to the theme than a teal we would have invented.
+      P.water   = mix(T.bg, T.acc, 0.42);
+      // The saved gold key now selects deep-ocean blue: retain its darker sea
+      // so the existing preference remains legible without restoring brown tones.
       if (gilt) {
         P.land  = mix(T.bg, T.tx, 0.10);
         P.water = mix(T.bg, '#000000', 0.60);

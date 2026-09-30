@@ -985,7 +985,8 @@
       renderEditor();
     }
 
-    await boot();
+    var requestedListing=null;try{var requested=new URL(global.location.href).searchParams.get('listing');if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requested||''))requestedListing=requested;}catch(_){}
+    await boot(requestedListing);
     return {destroy:destroy,hasUnsavedChanges:unsaved,showView:function(view){var panel=wrap.querySelector('.zp-design-panel');if(panel){panel.open=view==='design';if(panel.open)panel.querySelector('summary').focus();}}};
   }
 
