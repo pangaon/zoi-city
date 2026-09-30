@@ -24,3 +24,8 @@ test('native machine social syntax and exact publisher identity match web while 
  assert.equal(normalizeProfile({...e,owner_content:{social_links:{facebook:social.facebook}}}).socials[0].url,social.facebook);
  assert.deepEqual(normalizeProfile({...e,owner_content:{social_links:null}}).socials,[]);
 });
+test('native Fournos chain root contacts cannot replace branch base or explicit owner values',()=>{
+ const e={name:'Fournos Bakery Benmore',entity_type:'business',phone:'+27 11 883 7194',profile:{_enrich:{source_url:'https://www.fournos.co.za/',phone:'+27100277363',hours:'Other branch hours',menu_url:'https://www.fournos.co.za/menu.pdf'}}};
+ assert.equal(normalizeProfile(e).phone,e.phone);assert.equal(normalizeProfile({...e,phone:null}).phone,'');assert.equal(normalizeProfile(e).profile.hours,undefined);assert.equal(normalizeProfile(e).profile.menu_url,e.profile._enrich.menu_url);
+ assert.equal(normalizeProfile({...e,owner_content:{phone:null}}).phone,'');assert.equal(normalizeProfile({...e,profile:{...e.profile,phone:'+27 99 1234567'},phone:null}).phone,'+27 99 1234567');
+});

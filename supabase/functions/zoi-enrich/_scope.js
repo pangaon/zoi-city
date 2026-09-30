@@ -25,3 +25,21 @@ export function churchSourceScope(row,html='',finalUrl=row?.website){
  if(!known&&!branded)return{handled:false};
  return{handled:true,skipSupplementary:true,profile:{crawl_status:'error',status:'error',blocked:'true',blocked_reason:'source_scope_mismatch',last_error:'source_scope_mismatch',source_scope:'parish_on_institution_site',scope_review_required:true},provenance:{source_scope:'institution_homepage_not_parish_identity'}};
 }
+
+/** Reviewed multi-location homepage: a named branch cannot inherit the first
+ * popup's contacts. Keep prior evidence through the existing error apply path. */
+export function chainBranchSourceScope(row,html='',finalUrl=row?.website){
+ if(!['business','vendor'].includes(row?.entity_type)||!/^fournos bakery\s+\S/i.test(plain(row?.name)))return{handled:false};
+ const source=rootPage(finalUrl);
+ if(!source||source.hostname.replace(/^www\./,'')!=='fournos.co.za')return{handled:false};
+ const document=String(html).slice(0,1500000),titles=[...document.matchAll(/<div\b[^>]*class\s*=\s*["'][^"']*\bpum-title\b[^"']*["'][^>]*>([\s\S]*?)<\/div\s*>/gi)];
+ const locations=new Set(),phones=new Set();
+ for(let i=0;i<titles.length;i++){
+  const title=plain(titles[i][1]);if(!title||title==='head office')continue;
+  const start=titles[i].index+titles[i][0].length,end=Math.min(titles[i+1]?.index??document.length,start+6000);
+  const phone=document.slice(start,end).match(/href\s*=\s*["']tel:(\+?[\d ()-]+)["']/i)?.[1]?.replace(/[^+\d]/g,'');
+  if(phone&&/^\+?\d{7,15}$/.test(phone)){locations.add(title);phones.add(phone);}
+ }
+ if(locations.size<2||phones.size<2)return{handled:false};
+ return{handled:true,skipSupplementary:true,profile:{crawl_status:'error',status:'error',blocked:'true',blocked_reason:'source_scope_mismatch',last_error:'source_scope_mismatch',source_scope:'branch_on_multilocation_homepage',scope_review_required:true},provenance:{source_scope:'multiple_branch_contact_blocks_require_exact_branch_extraction'}};
+}

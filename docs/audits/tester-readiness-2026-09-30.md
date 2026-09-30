@@ -98,3 +98,7 @@ End-of-session outcome for each row is **passed in named environment**, **failed
 ## Deployed nonmutating follow-up
 
 At the 2be7785/d231df7 release, actual signed-out Community at 390/1440 opened the sign-in modal from Ask Greeks/Share a moment without sending email; Escape returned to the initiating control. Actual Tickets dashboard loaded the history module without overflow or JS errors. An isolated page using downloaded deployed ticket HTML and history JS (all backend calls mocked) loaded stored references, fetched status again on View, displayed cancellation honestly and cleared old codes on unknown status. No real reservation, publication or email write was performed.
+
+## Owner acceptance update — 10:14 UTC
+
+Commit `ca4a51bc7fedae0d955079d122f09d8e5196d840`, CI `36701047388`: authenticated identity/workspace matched; ordinary form saved menu and description; version readback and private preview passed at 390/1440 with no horizontal overflow. Three unrelated requests were blocked by the test fence. Cleanup and local session logout passed; an independent database read confirmed archived/hidden state, two retained immutable receipts and no public design. No customer record was edited and no public test content was published. The first run’s readback assertion had compared JSON object-key order; that assertion was corrected before the guarded follow-up.

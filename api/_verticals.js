@@ -1,3 +1,4 @@
+import {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../assets/enrichment/branch-contact-scope.mjs';
 /**
  * _verticals.js — what each kind of listing actually needs.
  *
@@ -106,6 +107,7 @@ export function safeProfile(e) {
     if (BANNED_PROFILE_KEYS.test(k) || ENRICH_META_KEYS.has(k) || RESERVED_PROFILE_KEYS.has(k)) continue;
     // Legacy imports also pass the current crawler's profile-link classifier.
     // Filter machine fallbacks only; explicit owner values are applied below.
+    if(sharedBranchContactSource(e,enr.source_url)&&BRANCH_CONTACT_FIELDS.has(k))continue;
     out[k] = ['social', 'social_links'].includes(k)
       ? Object.fromEntries(Object.entries(enr[k] && typeof enr[k] === 'object' && !Array.isArray(enr[k]) ? enr[k] : {}).flatMap(([name, value]) => {
           const match = socialProfile(value);

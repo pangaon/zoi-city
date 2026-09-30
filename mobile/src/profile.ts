@@ -1,3 +1,5 @@
+// @ts-ignore Shared reviewed branch contact scope.
+import {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../../assets/enrichment/branch-contact-scope.mjs';
 // @ts-ignore Shared pure presentation contract.
 import {phoneHref} from '../../assets/homes/phone.mjs';
 // @ts-ignore Shared pure source-link classifier.
@@ -23,6 +25,7 @@ export function normalizeProfile(input: unknown) {
   const banned = /^(rating|rating_count|ratingvalue|reviewcount|aggregaterating|reviews?|stars|score|_enrich|_geo|_meta|provenance|source_url|checked_at|blocked|blocked_reason|last_error)$/i;
   const profile: RecordValue = {};
   for (const source of [enrichment, raw, ownerProfile]) for (const key of Object.keys(source)) if (!banned.test(key)) {
+    if(source===enrichment&&sharedBranchContactSource(e,enrichment.source_url)&&BRANCH_CONTACT_FIELDS.has(key))continue;
     profile[key] = source===enrichment && ['social','social_links'].includes(key) ? Object.fromEntries(Object.entries(object(source[key])).flatMap(([name,value])=>{const match=socialProfile(value);return match&&!publisherSocial(enrichment.source_url,match.url)?[[name,match.url]]:[];})) : source[key];
   }
   const names: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', linkedin: 'LinkedIn', x: 'X', twitter: 'X', spotify: 'Spotify', soundcloud: 'SoundCloud', telegram: 'Telegram', whatsapp: 'WhatsApp' };
