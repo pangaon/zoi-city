@@ -13,11 +13,17 @@
     },
     {
       "id": "community-read",
-      "ios": "native-read-candidate",
-      "android": "native-read-candidate",
+      "ios": "native-social-feed-candidate",
+      "android": "native-social-feed-candidate",
       "required": [
-        "live RPC validation",
-        "device acceptance"
+        "production API acceptance after foundation deployment",
+        "physical device and screen-reader acceptance"
+      ],
+      "implemented": [
+        "personal feeds and topic search",
+        "visible-only video playback with mute/background pause",
+        "member profiles/follows/saves",
+        "replies, useful answers, reports and in-app notifications"
       ]
     },
     {
@@ -60,19 +66,19 @@
     },
     {
       "id": "community-write",
-      "ios": "native-text-candidate",
-      "android": "native-text-candidate",
+      "ios": "native-media-candidate",
+      "android": "native-media-candidate",
       "required": [
-        "live isolated test post",
-        "media permissions and uploads",
-        "replies",
-        "device validation"
+        "production isolated publication/avatar acceptance after deployment",
+        "physical device picker/permissions/codec acceptance"
       ],
       "implemented": [
-        "authenticated text publishing",
-        "user-scoped local drafts",
-        "duplicate-submit prevention",
-        "publication confirmation"
+        "private JPEG/PNG/WebP and MP4 upload",
+        "authored media descriptions",
+        "atomic text/media publication with encrypted retry recovery",
+        "profile photo and public identity editing",
+        "private feed preferences, mute/block",
+        "actual like/save receipts and stable reply requests"
       ]
     },
     {
@@ -521,6 +527,117 @@
       "required": [
         "Production festival API acceptance after deployment",
         "Physical iOS/Android application and organizer workflow acceptance"
+      ]
+    },
+    {
+      "id": "native-presentation",
+      "ios": "native-visual-candidate",
+      "android": "native-visual-candidate",
+      "implemented": [
+        "Categorized workspace launcher with one active tool screen",
+        "Expo blur and gradient home with reduced transparency and low-power fallback",
+        "Reduced-motion-aware short navigation transitions; no continuous animation",
+        "Larger real profile imagery with logo-safe intrinsic dimensions",
+        "Published-layout consumer 3D seat projection, rotation, fit and zoom; accessible seat buttons retain server status"
+      ],
+      "required": [
+        "Physical iOS/Android blur performance and accessibility acceptance",
+        "Real published venue geometry acceptance; fixture camera/seat-state interaction verified"
+      ]
+    },
+    {
+      "id": "private-trips-and-confirmed-appearances",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "evidence": [
+        "TypeScript and focused scope/time/source tests passed",
+        "390px Expo export fixture: private trip, real-listing-contract stop, interrupted-save identical UUID retry, removal; no overflow or browser errors"
+      ],
+      "required": [
+        "production HTTP acceptance after backend deployment",
+        "physical device acceptance"
+      ]
+    },
+    {
+      "id": "connected-event-planning",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "evidence": [
+        "Actual shared provider/receipt model; capability-gated resource setup",
+        "390px Expo fixture: saved draft, lost confirmation response, reload without replay, identical request retry recovered one booking, current cancellation, no overflow/errors",
+        "Private recovery uses SecureStore native and tab-scoped sessionStorage web; account isolation and interrupted storage tests"
+      ],
+      "required": [
+        "Production HTTP acceptance after deployment",
+        "Physical-device SecureStore and lifecycle acceptance"
+      ]
+    },
+    {
+      "id": "organizer-venue-reference-images",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "evidence": [
+        "Shared reference validation preserved in local editor/export",
+        "Calibrated 2D overlay requires actual image pixel dimensions to match metadata",
+        "Selected-seat photos use seat override or section fallback; no inferred sightlines",
+        "TypeScript, 113 tests and web export passed"
+      ],
+      "required": [
+        "Reference image browser/device acceptance",
+        "Native cloud organizer layout publishing remains incomplete; web workspace handles publishing"
+      ]
+    },
+    {
+      "id": "community-social-foundation-acceptance",
+      "ios": "candidate-not-device-verified",
+      "android": "candidate-not-device-verified",
+      "evidence": [
+        "125 local tests and TypeScript pass",
+        "npm10.9.8 clean install with scripts; Expo doctor21/21; web+iOS+Android export",
+        "390px fixture full social journey and actual local H264 playback",
+        "Actual selected13341-byte MP4 traversed picker and multipart fixture upload; lost publication across reload retried sameUUID with one upload and one published post; authored alt retained",
+        "Offscreen old video paused and detached; only one video element; leaving Community removes playback"
+      ],
+      "required": [
+        "Production backend/Edge deployment and isolated acceptance",
+        "Physical iOS/Android validation"
+      ]
+    },
+    {
+      "id": "guardian-youth-programmes",
+      "ios": "implemented-gated-backend-unavailable",
+      "android": "implemented-gated-backend-unavailable",
+      "implemented": [
+        "private guardian child records and age-band consent",
+        "versioned enrolment, renewal and withdrawal",
+        "explicit instructor assignment and private roster",
+        "actual linked calendar classes and attendance"
+      ],
+      "required": [
+        "reviewed migration deployment",
+        "production HTTP acceptance with private rollback fixtures",
+        "physical device accessibility and lifecycle acceptance"
+      ],
+      "release_gate": "guardianProgrammes=false; no child form or RPC request while gated"
+    },
+    {
+      "id": "artist-music-and-city-demand",
+      "ios": "native-candidate-not-device-verified",
+      "android": "native-candidate-not-device-verified",
+      "implemented": [
+        "Reviewed source-bound artist portraits and touch photo viewer",
+        "Official provider app/browser listening; no background audio claim",
+        "Private authenticated city interest with exact persisted retry and versioned withdrawal",
+        "Canonical artist sharing and existing custom-scheme artist route"
+      ],
+      "evidence": [
+        "140 local tests and TypeScript; iOS/Android/web exports",
+        "390px/1440px isolated native-web UI: gallery, interrupted request identical retry, withdrawal, no overflow/errors"
+      ],
+      "required": [
+        "Physical-device playback/share/safe-area acceptance",
+        "Production authenticated demand HTTP acceptance before device release",
+        "Universal-link association remains unconfigured"
       ]
     }
   ],

@@ -1,0 +1,839 @@
+{
+  "production_base": "020828f0294c485b5ca9f2c720bde0b6ae1f9df2",
+  "checked_at": "2026-09-30T07:36:15.797223+00:00",
+  "scope": "Read-only function signatures/ACL metadata, not end-to-end feature verification",
+  "counts": {
+    "referenced_rpc_names": 130,
+    "present": 130,
+    "missing": 0
+  },
+  "missing": [],
+  "gates": {
+    "guardianProgrammes": {
+      "enabled": true,
+      "migration": "20260930073344",
+      "deployment_run": "36684363030",
+      "behavior": "Existing authenticated family/operator forms enabled after live backend deployment and zero-persisted-row rollback acceptance; individual requests still enforce server authorization",
+      "limitation": "Native device interaction acceptance remains separate from metadata and rollback coverage"
+    },
+    "externalSocialPublishing": {
+      "enabled": false,
+      "behavior": "No native publisher; web handoff explicitly depends on enabled integrations"
+    },
+    "artistCityDemand": {
+      "enabled": true,
+      "condition": "Live functions present; authenticated native HTTP acceptance still required"
+    }
+  },
+  "edge_functions": [
+    {
+      "name": "ops-documents",
+      "version": 3,
+      "status": "ACTIVE"
+    },
+    {
+      "name": "community-media",
+      "version": 1,
+      "status": "ACTIVE"
+    }
+  ],
+  "functions": [
+    {
+      "name": "appearance_decide",
+      "arguments": "p_id uuid, p_expected_version integer, p_action text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "appearance_operator",
+      "arguments": "p_workspace uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "appearance_propose",
+      "arguments": "p_id uuid, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "artist_demand_mine",
+      "arguments": "p_artist uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "artist_demand_set",
+      "arguments": "p_artist uuid, p_city text, p_country text, p_active boolean, p_request uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "artist_demand_summary",
+      "arguments": "p_artist uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "artist_shows",
+      "arguments": "p_artist uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "bio_save",
+      "arguments": "p_workspace uuid, p_slug text, p_title text, p_tagline text, p_theme text, p_links jsonb, p_photo text, p_published boolean",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "bio_status",
+      "arguments": "p_workspace uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "bizpage_get",
+      "arguments": "p_workspace uuid, p_listing uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "bizpage_save",
+      "arguments": "p_workspace uuid, p_listing uuid, p_description text, p_phone text, p_email text, p_website text, p_hours text, p_price_range text, p_photo_url text, p_social jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "bizpage_save_profile",
+      "arguments": "p_workspace uuid, p_listing uuid, p_profile jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "bizpage_status",
+      "arguments": "p_workspace uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_catalog",
+      "arguments": "p_listing uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "booking_create",
+      "arguments": "p_slot uuid, p_request_id uuid, p_name text, p_email text, p_party_size integer, p_expected_slot_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_item_save",
+      "arguments": "p_workspace uuid, p_kind text, p_id uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_my_list",
+      "arguments": "p_listing uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_operator_list",
+      "arguments": "p_workspace uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_plan_history",
+      "arguments": "p_workspace uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_plan_preview",
+      "arguments": "p_workspace uuid, p_service uuid, p_resource uuid, p_pattern jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_plan_save",
+      "arguments": "p_workspace uuid, p_plan uuid, p_request_id uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_reschedule",
+      "arguments": "p_booking uuid, p_expected_version integer, p_slot uuid, p_expected_slot_version integer, p_request_id uuid, p_expected_price_cents integer, p_expected_currency text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_reschedule_history",
+      "arguments": "p_booking uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_reschedule_options",
+      "arguments": "p_booking uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_settings_save",
+      "arguments": "p_workspace uuid, p_expected_version integer, p_listing uuid, p_timezone text, p_currency text, p_enabled boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_slot_save",
+      "arguments": "p_workspace uuid, p_id uuid, p_expected_version integer, p_service uuid, p_resource uuid, p_starts_at timestamp with time zone, p_active boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "booking_status_set",
+      "arguments": "p_booking uuid, p_expected_version integer, p_status text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_accept_answer",
+      "arguments": "p_post uuid, p_comment uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_block_set",
+      "arguments": "p_profile uuid, p_blocked boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_comment",
+      "arguments": "p_post uuid, p_request uuid, p_body text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_follow_set",
+      "arguments": "p_profile uuid, p_follow boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_me",
+      "arguments": "",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_mute_set",
+      "arguments": "p_profile uuid, p_muted boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_notifications",
+      "arguments": "p_limit integer, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_notifications_read",
+      "arguments": "p_ids uuid[]",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_preferences_save",
+      "arguments": "p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_profile_save",
+      "arguments": "p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_publish",
+      "arguments": "p_request uuid, p_body text, p_media uuid[], p_listing uuid, p_context jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "community_report",
+      "arguments": "p_post uuid, p_reason text, p_details text, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_brief_share",
+      "arguments": "p_campaign uuid, p_expected_version integer, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_convert",
+      "arguments": "p_workspace uuid, p_inquiry uuid, p_company uuid, p_kind text, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_customer_list",
+      "arguments": "",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_deliverable_save",
+      "arguments": "p_campaign uuid, p_id uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_draft_save",
+      "arguments": "p_campaign uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_get",
+      "arguments": "p_campaign uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_list",
+      "arguments": "p_workspace uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "creator_submission_send",
+      "arguments": "p_campaign uuid, p_deliverable uuid, p_url text, p_note text, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "document_archive",
+      "arguments": "p_workspace uuid, p_document uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "document_history",
+      "arguments": "p_workspace uuid, p_document uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "documents_list",
+      "arguments": "p_workspace uuid, p_project uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "event_plan_capabilities",
+      "arguments": "",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "event_plan_catalog",
+      "arguments": "p_listing uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "event_plan_get",
+      "arguments": "p_plan uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "event_plan_list",
+      "arguments": "p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "event_plan_provider_context",
+      "arguments": "p_booking uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "explore_search",
+      "arguments": "p_q text, p_type text, p_city text, p_country text, p_limit integer, p_offset integer, p_region text",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "feed_delete",
+      "arguments": "p_id uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "feed_post",
+      "arguments": "p_body text, p_listing uuid, p_nameday text, p_media jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_application_decide",
+      "arguments": "p_workspace uuid, p_application uuid, p_expected_version integer, p_action text, p_reason text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_application_edit",
+      "arguments": "p_application uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_application_withdraw",
+      "arguments": "p_application uuid, p_expected_version integer, p_reason text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_apply",
+      "arguments": "p_package uuid, p_expected_package_version integer, p_request uuid, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_catalog",
+      "arguments": "p_event uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "festival_my_applications",
+      "arguments": "p_event uuid, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_operator",
+      "arguments": "p_workspace uuid, p_event uuid, p_status text, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "festival_package_save",
+      "arguments": "p_workspace uuid, p_id uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_activity",
+      "arguments": "p_workspace uuid, p_listing uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_attendance_list",
+      "arguments": "p_workspace uuid, p_event uuid, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_attendance_set",
+      "arguments": "p_workspace uuid, p_event uuid, p_membership uuid, p_expected_version integer, p_status text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_member_decide",
+      "arguments": "p_workspace uuid, p_membership uuid, p_expected_version integer, p_status text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_member_state",
+      "arguments": "p_listing uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "group_membership_request",
+      "arguments": "p_listing uuid, p_expected_version integer, p_adult_confirmed boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_membership_withdraw",
+      "arguments": "p_membership uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_roster",
+      "arguments": "p_workspace uuid, p_listing uuid, p_status text, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "group_settings_save",
+      "arguments": "p_workspace uuid, p_listing uuid, p_expected_version integer, p_enabled boolean, p_title text, p_description text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_availability",
+      "arguments": "p_listing uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_inbox",
+      "arguments": "p_workspace uuid, p_status text, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_mine",
+      "arguments": "p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_reply",
+      "arguments": "p_thread uuid, p_body text, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_settings_save",
+      "arguments": "p_workspace uuid, p_listing uuid, p_enabled boolean, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_start",
+      "arguments": "p_listing uuid, p_subject text, p_body text, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_thread",
+      "arguments": "p_thread uuid, p_before uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "inquiry_update",
+      "arguments": "p_workspace uuid, p_thread uuid, p_expected_version integer, p_status text, p_assignee uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "ops_audit_list",
+      "arguments": "p_workspace uuid, p_record uuid, p_limit integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "ops_record_archive",
+      "arguments": "p_workspace uuid, p_id uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "ops_record_save",
+      "arguments": "p_workspace uuid, p_kind text, p_data jsonb, p_id uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "ops_records_list",
+      "arguments": "p_workspace uuid, p_kind text, p_include_archived boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_calendar_audit",
+      "arguments": "p_workspace uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_calendar_batch_save",
+      "arguments": "p_workspace uuid, p_request_id uuid, p_data jsonb, p_expected_occurrences jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_calendar_event_set",
+      "arguments": "p_workspace uuid, p_event uuid, p_expected_version integer, p_status text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_calendar_meta",
+      "arguments": "p_workspace uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_calendar_preview",
+      "arguments": "p_workspace uuid, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_calendar_public",
+      "arguments": "p_listing uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "org_opportunities",
+      "arguments": "p_workspace uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "org_program_save",
+      "arguments": "p_workspace uuid, p_title text, p_description text, p_status text, p_id uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_programs_list",
+      "arguments": "p_workspace uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_roster",
+      "arguments": "p_workspace uuid, p_shift uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "org_shift_save",
+      "arguments": "p_workspace uuid, p_program uuid, p_title text, p_location text, p_starts_at timestamp with time zone, p_ends_at timestamp with time zone, p_timezone text, p_capacity integer, p_status text, p_id uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "seo_entity",
+      "arguments": "p_slug text",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "tickets_seat_cancel",
+      "arguments": "p_hold_id uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "tickets_seat_hold",
+      "arguments": "p_event uuid, p_seat_ids text[], p_request_id uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "tickets_seat_release",
+      "arguments": "p_hold_id uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "tickets_seat_reserve",
+      "arguments": "p_hold_id uuid, p_name text, p_email text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "tickets_seat_status",
+      "arguments": "p_event uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "time_entry_history",
+      "arguments": "p_workspace uuid, p_entry uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "time_entry_save",
+      "arguments": "p_workspace uuid, p_id uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "time_entry_transition",
+      "arguments": "p_workspace uuid, p_entry uuid, p_expected_version integer, p_action text, p_reason text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "time_timer_discard",
+      "arguments": "p_workspace uuid, p_timer uuid, p_expected_version integer, p_reason text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "time_timer_start",
+      "arguments": "p_workspace uuid, p_request uuid, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "time_timer_stop",
+      "arguments": "p_workspace uuid, p_timer uuid, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "timekeeping_dashboard",
+      "arguments": "p_workspace uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "timekeeping_export",
+      "arguments": "p_workspace uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "trip_discover",
+      "arguments": "p_query text, p_country text, p_type text",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "trip_get",
+      "arguments": "p_trip uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "trip_item_save",
+      "arguments": "p_trip uuid, p_id uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "trip_remove",
+      "arguments": "p_trip uuid, p_item uuid, p_expected_version integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "trip_save",
+      "arguments": "p_id uuid, p_expected_version integer, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "trips_mine",
+      "arguments": "",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_attendance_set",
+      "arguments": "p_workspace uuid, p_registration uuid, p_event uuid, p_expected_version integer, p_request uuid, p_status text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_catalog",
+      "arguments": "p_listing uuid",
+      "anon": true,
+      "authenticated": true
+    },
+    {
+      "name": "youth_child_save",
+      "arguments": "p_id uuid, p_expected_version integer, p_request uuid, p_name text, p_archived boolean",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_class_link",
+      "arguments": "p_workspace uuid, p_program uuid, p_event uuid, p_enabled boolean, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_enrol",
+      "arguments": "p_program uuid, p_child uuid, p_expected_version integer, p_program_version integer, p_request uuid, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_family",
+      "arguments": "",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_operator",
+      "arguments": "p_workspace uuid, p_program uuid, p_offset integer",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_program_save",
+      "arguments": "p_workspace uuid, p_id uuid, p_expected_version integer, p_request uuid, p_data jsonb",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_registration_decide",
+      "arguments": "p_workspace uuid, p_registration uuid, p_expected_version integer, p_request uuid, p_status text",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_staff_set",
+      "arguments": "p_workspace uuid, p_program uuid, p_profile uuid, p_enabled boolean, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "youth_withdraw",
+      "arguments": "p_registration uuid, p_expected_version integer, p_request uuid",
+      "anon": false,
+      "authenticated": true
+    },
+    {
+      "name": "zoi_me",
+      "arguments": "",
+      "anon": true,
+      "authenticated": true
+    }
+  ],
+  "branding": {
+    "original_attachment_found": false,
+    "do_not_recreate": true,
+    "native": [
+      "mobile/App.tsx wordmark in global header",
+      "mobile/assets/zoi-emblem.svg and generated app icons",
+      "mobile/scripts/render-brand-icons.py",
+      "mobile/app.json icon/android adaptive icon/web favicon"
+    ],
+    "web": [
+      "shared public header markup and assets/zoi-theme.js",
+      "manifest.webmanifest and assets/icons",
+      "family home renderer headers"
+    ],
+    "rule": "Preserve original attachment bytes and checksum; derive platform sizes only from that exact supplied artwork. No substitute logo is included."
+  },
+  "production_backend_commit": "221c1c4"
+}

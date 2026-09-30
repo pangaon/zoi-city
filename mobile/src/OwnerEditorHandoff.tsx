@@ -1,0 +1,14 @@
+import { LIGHT } from './brand';
+import { useEffect, useRef, useState } from 'react';
+import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useAuth } from './Auth';
+import { openOwnerEditor } from './ownerEditorHandoff';
+export function OwnerEditorHandoff({listingId,name,disabled,onReload}:{listingId:string;name:string;disabled:boolean;onReload:()=>void}){
+  const {client,session,workspaceId}=useAuth();const actor=session?.user.id;
+  const [busy,setBusy]=useState(false),[error,setError]=useState(''),[opened,setOpened]=useState(false);
+  const alive=useRef(true),working=useRef(false),scope=useRef('');scope.current=[actor,workspaceId,listingId].join(':');
+  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
+  async function launch(){if(working.current||disabled||!actor||!workspaceId)return;const expected=scope.current;const current=()=>alive.current&&scope.current===expected&&client.session?.user.id===actor;working.current=true;setBusy(true);setError('');try{const done=await openOwnerEditor({workspace:workspaceId,listing:listingId,current,rpc:(name,args)=>client.rpc(name,args),open:url=>Linking.openURL(url)});if(done&&current())setOpened(true);}catch(e){if(current())setError(e instanceof Error?e.message:'The browser editor could not be opened. Try again.');}finally{working.current=false;if(current())setBusy(false);}}
+  return <View style={s.panel}><Text style={s.title}>Menu, promotions & full editor</Text><Text style={s.body}>Open the website editor for menus, services, photos and home design. In the browser, check your account and workspace, then choose {name}. You may need to sign in.</Text>{disabled?<Text style={s.body}>Save your changes here before opening the website editor.</Text>:null}<Pressable accessibilityRole="button" accessibilityState={{disabled:disabled||busy,busy}} disabled={disabled||busy} onPress={launch} style={[s.button,(disabled||busy)&&s.disabled]}><Text style={s.label}>{busy?'Checking access…':'Open full editor in browser'}</Text></Pressable>{error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}{opened?<><Text accessibilityLiveRegion="polite" style={s.body}>After saving on the website, reload these details to see your changes here.</Text><Pressable accessibilityRole="button" disabled={disabled||busy} accessibilityState={{disabled:disabled||busy}} onPress={onReload} style={[s.button,(disabled||busy)&&s.disabled]}><Text style={s.label}>Reload business details</Text></Pressable></>:null}</View>;
+}
+const s=StyleSheet.create({panel:{padding:16,gap:12,backgroundColor:LIGHT.surfaceRaised,borderRadius:14},title:{fontSize:17,fontWeight:'700',color:LIGHT.ink},body:{fontSize:14,lineHeight:21,color:LIGHT.muted},button:{minHeight:44,padding:12,justifyContent:'center',borderRadius:10,backgroundColor:LIGHT.button},label:{color:LIGHT.onButton,fontWeight:'700'},disabled:{opacity:.5},error:{color:LIGHT.error}});

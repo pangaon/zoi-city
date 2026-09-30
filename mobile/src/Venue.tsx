@@ -1,16 +1,18 @@
+import {VenueReferenceEditor,useMeasuredReference} from './VenueReferences';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
-import Svg, { Polygon, Rect, Text as SvgText } from 'react-native-svg';
+import Svg, { Polygon, Rect, Image as SvgImage, Text as SvgText } from 'react-native-svg';
 import { AsyncStorage, useAuth } from './Auth';
 import { createLayout, validateLayout, seatRows, updateObjects, summarize, parseLayout, projectPoint } from '../../assets/tickets/venue-model.mjs';
 type Item = { id: string; kind: 'seat' | 'table' | 'stage'; label: string; x: number; y: number; width: number; depth: number; height: number; accessible: boolean; excluded: boolean };
-type Layout = { version: number; name: string; width: number; depth: number; objects: Item[] };
+type Layout = { version: number; name: string; width: number; depth: number; objects: Item[]; reference?:any;sections?:any[] };
 const palette = { seat: '#116CBA', table: '#A77B32', stage: '#132F46' };
 function Control({ label, run }: { label: string; run: () => void }) { return <Pressable accessibilityRole="button" onPress={run} style={st.control}><Text style={st.controlText}>{label}</Text></Pressable>; }
 export function VenueStudio() {
   const { session } = useAuth();
   const [layout, setLayout] = useState<Layout>(() => createLayout('My venue', 20, 15));
   const [selected, setSelected] = useState(''); const [is3d, set3d] = useState(false); const [yaw, setYaw] = useState(0.6); const [notice, setNotice] = useState(''); const [json, setJson] = useState('');
+  const reference=useMeasuredReference(layout.reference);
   const item = layout.objects.find(object => object.id === selected); const counts = summarize(layout);
   const key = 'zoi.venue.' + (session?.user.id || 'guest');
   const activeKey = useRef(key); activeKey.current = key;
@@ -28,6 +30,7 @@ export function VenueStudio() {
     <View style={st.row}><Control label={is3d ? 'Floor plan' : '3D view'} run={() => set3d(!is3d)} /><Control label="Rotate left" run={() => setYaw(yaw - 0.3)} /><Control label="Rotate right" run={() => setYaw(yaw + 0.3)} /></View>
     <View style={st.canvas}><Svg width="100%" height={260} viewBox={is3d ? '0 0 800 440' : `-1 -1 ${layout.width + 2} ${layout.depth + 2}`} accessibilityLabel={is3d ? 'Three dimensional venue preview' : 'Venue floor plan'}>
       {is3d ? <Polygon points={points(corners({ x: 0, y: 0, width: layout.width, depth: layout.depth } as Item, 0))} fill="#E8EEF0" stroke="#B6C8D0" strokeWidth={2} /> : <Rect x={0} y={0} width={layout.width} height={layout.depth} fill="#E8EEF0" stroke="#B6C8D0" strokeWidth={0.08} />}
+      {!is3d&&reference.size?<SvgImage x={0} y={0} width={reference.size.width} height={reference.size.depth} href={{uri:reference.size.url}} opacity={.65} preserveAspectRatio="none"/>:null}
       {objects.map(object => {
         if (!is3d) return <Rect key={object.id} x={object.x} y={object.y} width={object.width} height={object.depth} rx={object.kind === 'seat' ? 0.12 : 0.05} fill={shapeColor(object)} stroke={selected === object.id ? '#132F46' : '#fff'} strokeWidth={0.06} onPress={() => setSelected(object.id)} />;
         const top = corners(object, object.height), bottom = corners(object, 0);
@@ -41,6 +44,7 @@ export function VenueStudio() {
     <Text style={st.heading}>{item ? `Selected: ${item.label}` : 'Select an object to edit'}</Text>
     <View style={st.row}>{layout.objects.map(object => <Pressable accessibilityRole="button" aria-pressed={selected === object.id} accessibilityState={{ selected: selected === object.id }} key={object.id} onPress={() => setSelected(object.id)} style={[st.seat, selected === object.id && st.selected]}><Text style={st.controlText}>{object.label}</Text></Pressable>)}</View>
     {item ? <><View style={st.row}><Control label="← 0.25 m" run={() => move(-0.25, 0)} /><Control label="→ 0.25 m" run={() => move(0.25, 0)} /><Control label="↑ 0.25 m" run={() => move(0, -0.25)} /><Control label="↓ 0.25 m" run={() => move(0, 0.25)} /></View>{item.kind === 'seat' ? <View style={st.row}><Control label={item.accessible ? 'Remove accessibility mark' : 'Mark accessible'} run={() => change(() => updateObjects(layout, [item.id], { accessible: !item.accessible }))} /><Control label={item.excluded ? 'Include seat' : 'Exclude seat'} run={() => change(() => updateObjects(layout, [item.id], { excluded: !item.excluded }))} /></View> : null}<Control label="Remove selected object" run={() => { change(() => ({ ...layout, objects: layout.objects.filter(object => object.id !== item.id) })); setSelected(''); }} /></> : null}
+    <VenueReferenceEditor layout={layout} selected={selected} change={next=>change(()=>next)}/>{reference.error?<Text style={st.notice}>{reference.error}</Text>:null}
     {notice ? <Text accessibilityLiveRegion="polite" style={st.notice}>{notice}</Text> : null}
     <View style={st.row}><Control label="Save draft" run={save} /><Control label="Load draft" run={load} /><Control label="Export JSON" run={() => { try { const text = JSON.stringify(validateLayout(layout), null, 2); setJson(text); Share.share({ message: text, title: layout.name }).catch(() => setNotice('Copy the JSON below to export your layout.')); } catch (error) { setNotice(error instanceof Error ? error.message : 'Check your layout.'); } }} /></View>
     <TextInput accessibilityLabel="Venue layout JSON import or export" multiline placeholder="Paste a venue JSON file to import, or export to see it here" value={json} onChangeText={setJson} style={[st.input, { minHeight: 100, textAlignVertical: 'top' }]} maxLength={250000} /><Control label="Import layout JSON" run={() => { try { setLayout(parseLayout(json)); setSelected(''); setNotice('Layout imported. Save a draft to keep it.'); } catch (error) { setNotice(error instanceof Error ? error.message : 'Invalid layout.'); } }} />

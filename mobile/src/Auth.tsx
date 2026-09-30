@@ -4,12 +4,16 @@ import * as SecureStore from 'expo-secure-store';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SessionClient, type Session } from './session';
 import { DraftStore } from './drafts';
+import {PrivateRequestStore} from './privateRequests';
 const KEY = 'zoi.mobile.refresh.v1';
 const client = new SessionClient({
   read: async () => Platform.OS === 'web' ? globalThis.sessionStorage?.getItem(KEY) || null : SecureStore.getItemAsync(KEY),
   write: async value => { if (Platform.OS === 'web') globalThis.sessionStorage?.setItem(KEY, value); else await SecureStore.setItemAsync(KEY, value, { keychainAccessible: SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY }); },
   clear: async () => { if (Platform.OS === 'web') globalThis.sessionStorage?.removeItem(KEY); else await SecureStore.deleteItemAsync(KEY); },
 });
+export const privateRequests=new PrivateRequestStore({getItem:async key=>Platform.OS==='web'?globalThis.sessionStorage?.getItem(key)||null:SecureStore.getItemAsync(key),setItem:async(key,value)=>{if(Platform.OS==='web')globalThis.sessionStorage?.setItem(key,value);else await SecureStore.setItemAsync(key,value,{keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY});},removeItem:async key=>{if(Platform.OS==='web')globalThis.sessionStorage?.removeItem(key);else await SecureStore.deleteItemAsync(key);}},()=>client.session?.user.id);
+export const communityRequests=new PrivateRequestStore({getItem:async key=>Platform.OS==='web'?globalThis.sessionStorage?.getItem(key)||null:SecureStore.getItemAsync(key),setItem:async(key,value)=>{if(Platform.OS==='web')globalThis.sessionStorage?.setItem(key,value);else await SecureStore.setItemAsync(key,value,{keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY});},removeItem:async key=>{if(Platform.OS==='web')globalThis.sessionStorage?.removeItem(key);else await SecureStore.deleteItemAsync(key);}},()=>client.session?.user.id,'zoi.community-request.');
+export const artistDemandRequests=new PrivateRequestStore({getItem:async key=>Platform.OS==='web'?globalThis.sessionStorage?.getItem(key)||null:SecureStore.getItemAsync(key),setItem:async(key,value)=>{if(Platform.OS==='web')globalThis.sessionStorage?.setItem(key,value);else await SecureStore.setItemAsync(key,value,{keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY});},removeItem:async key=>{if(Platform.OS==='web')globalThis.sessionStorage?.removeItem(key);else await SecureStore.deleteItemAsync(key);}},()=>client.session?.user.id,'zoi.artist-demand-request.');
 export const drafts = new DraftStore(AsyncStorage, () => client.session?.user.id);
 type AuthState = { workspaceId: string; setWorkspaceId: (id: string) => void; client: SessionClient; session: Session | null; booting: boolean; notice: string; setNotice: (text: string) => void; signOut: () => Promise<void> };
 const Context = createContext<AuthState | null>(null);
@@ -35,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const userId = client.session?.user.id;
     try { await client.signOut(); setNotice('You are signed out.'); }
     catch { setNotice('Signed out on this device. The server could not confirm revocation; retry when connected.'); }
-    finally { if (userId) await Promise.all([drafts.clear(userId), AsyncStorage.removeItem('zoi.workspace.' + userId)]).catch(() => setNotice('Signed out, but device drafts could not be removed.'));  }
+    finally { if (userId) await Promise.all([drafts.clear(userId), privateRequests.clear(userId), communityRequests.clear(userId), artistDemandRequests.clear(userId), AsyncStorage.removeItem('zoi.workspace.' + userId)]).catch(() => setNotice('Signed out, but device drafts could not be removed.'));  }
   } }), [session, booting, notice, workspaceId]);
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

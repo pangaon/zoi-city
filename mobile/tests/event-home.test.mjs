@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import{signatureTables,selectedTables,eventRequest,venueRequest}from'../../assets/homes/templates/events/model.mjs';
+test('native map labels share exact source geometry and boundedpreferences',()=>{assert.equal(signatureTables.length,118);assert.deepEqual(selectedTables([118,118,23,1,2,999]),[118,23,1])});
+test('native prepared note shares same nontransactional contract',()=>{const e={name:'Signature Productions',event_url:'https://www.signatureproductions.ca/giannisploutarchosandromache'};assert.match(eventRequest({tables:[118],quantity:2},e),/not a hold, reservation or purchase/);assert.throws(()=>venueRequest({guests:1001,date:'2027-03-20',occasion:'Wedding'},e))});

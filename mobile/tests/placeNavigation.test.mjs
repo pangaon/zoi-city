@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import{placeDestination}from'../src/placeNavigation.ts';
+test('current public slug wins over stale unhashed artist SEO path',()=>{assert.equal(placeDestination({slug:'thanos-petrelis-athens-78ee3f',path:'/artist/thanos-petrelis-athens'}),'/p/thanos-petrelis-athens-78ee3f');assert.equal(placeDestination({slug:'Αθήνα'}),'/p/%CE%91%CE%B8%CE%AE%CE%BD%CE%B1')});
+test('fallback permits only internal profile routes',()=>{assert.equal(placeDestination({path:'/artist/known'}),'/artist/known');for(const path of['//evil.test','javascript:alert(1)','https://www.zoi.city/artist/a','/social','/artist/a?token=no'])assert.equal(placeDestination({path}),null)});
