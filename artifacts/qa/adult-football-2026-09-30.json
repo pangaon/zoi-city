@@ -1,0 +1,56 @@
+{
+  "stage": "local candidate; production migration not applied",
+  "migration": "20260930043129_adult_football_league_operations.sql",
+  "dependency": "artist_appearances_and_private_trips migration for zoi.trip_window",
+  "database": {
+    "command": "node tests/database/leagues.integration.mjs",
+    "passed": 12,
+    "isolated_postgres": true,
+    "coverage": [
+      "private drafts/idempotent creation",
+      "no club impersonation",
+      "adult invitation acceptance before approval",
+      "private contacts/audit",
+      "concurrent fixture overlap",
+      "independent score confirmation",
+      "dispute/correct/reconfirm",
+      "explicit cancellation history",
+      "ownership transfer"
+    ]
+  },
+  "unit": {
+    "command": "node --test tests/unit/leagues.test.mjs",
+    "passed": 4,
+    "coverage": [
+      "confirmed-only results",
+      "goal invariants",
+      "deterministic equal ranks",
+      "invalid/duplicate fixture rejection",
+      "tie breakers"
+    ]
+  },
+  "browser": {
+    "mode": "actual modules/styles with explicit isolated RPC fixtures",
+    "operator_widths": [
+      390,
+      1440
+    ],
+    "public_widths": [
+      390
+    ],
+    "page_overflow": false,
+    "table_keyboard_scroll": true,
+    "season_save_requests": 1,
+    "draft_default": true,
+    "confirmed_home_win_points": 3
+  },
+  "production_rollback": "tests/database/leagues-production-rollback.sql",
+  "limitations": [
+    "Production rollback fixture verifies single-account journey and self-confirm denial; independent second QA principal needed for live result confirmation",
+    "No youth/player data",
+    "No federation verification or predictions",
+    "Cross-season rosters and athlete conflicts unknown",
+    "No real seasons or results seeded",
+    "Native parity pending"
+  ]
+}

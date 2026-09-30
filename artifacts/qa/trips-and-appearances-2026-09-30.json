@@ -1,0 +1,57 @@
+{
+  "stage": "frozen local candidate; not deployed",
+  "migration": "20260930043127_artist_appearances_and_private_trips.sql",
+  "database": {
+    "command": "node tests/database/trips.integration.mjs",
+    "passed": 14,
+    "isolated_postgres": true,
+    "coverage": [
+      "bilateral artist/event owner confirmation",
+      "no viewer claims",
+      "idempotent proposal and concurrent trip creation",
+      "ownership transfer",
+      "customer-only privacy and direct-table denial",
+      "server-derived appearance times",
+      "planned interval conflicts",
+      "finite explicit timezone timestamps",
+      "withdrawal visibility and saved warning",
+      "hidden listing redaction",
+      "removal and archive audit"
+    ]
+  },
+  "unit": {
+    "command": "node --test tests/unit/trips.test.mjs",
+    "passed": 3
+  },
+  "browser": {
+    "mode": "actual modules and styles; explicitly isolated RPC fixtures",
+    "customer_widths": [
+      390,
+      1440
+    ],
+    "operator_widths": [
+      390
+    ],
+    "horizontal_overflow": false,
+    "trip_save_requests": 1,
+    "stop_save_requests": 1,
+    "appearance_proposal_requests": 1,
+    "pending_confirmation_visible": true
+  },
+  "live_read_only_evidence": {
+    "rpc": "seo_entity",
+    "slug": "1000mods-chiliomodi-bc7e18",
+    "id_present": true,
+    "entity_type": "artist",
+    "name": "1000mods",
+    "tour_array_present": false
+  },
+  "production_rollback": "tests/database/trips-production-rollback.sql",
+  "limits": [
+    "Confirmation is by platform workspace operators, not independently verified artist identity or contract",
+    "No automatic artist appearance inference from profile or map",
+    "No travel time calculation, reservation or ticket purchase",
+    "Nearby exploration hands off to existing consent/manual map",
+    "Native parity and production migration/rollback verification pending"
+  ]
+}

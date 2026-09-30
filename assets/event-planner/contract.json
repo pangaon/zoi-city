@@ -1,14 +1,25 @@
 {
-  "status": "design-contract-not-implemented",
+  "status": "implemented-locally-tested-awaiting-production-review",
   "purpose": "A customer coordinates real bookable services for a wedding, funeral, festival or other gathering, with an all-or-nothing confirmation across supported business calendars.",
   "scope": {
-    "private_plan": ["event kind", "title", "timezone", "private notes", "service roles"],
+    "private_plan": [
+      "event kind",
+      "title",
+      "timezone",
+      "private notes",
+      "service roles"
+    ],
     "availability": "Only published, nonhidden businesses with enabled booking settings and actual active, unreserved slots. External calendars are unknown, never treated as free.",
     "confirmation": "Explicitly review every slot, party size, price and currency. Reserve every selected slot in one transaction or preserve all original availability. Payments remain pay-at-venue and are not collected.",
     "changes": "Individual booking rescheduling and cancellation use the existing booking contracts; the plan must reread current booking states and never describe an outdated receipt as current availability.",
     "privacy": "Customer owns the plan. Each provider can receive only the event context explicitly shared with its own confirmed booking; private notes and other providers' details are excluded."
   },
-  "limits": {"providers_per_confirmation": 8, "availability_window_days": 31, "future_horizon_days": 365, "candidate_slots_per_read": 200},
+  "limits": {
+    "providers_per_confirmation": 8,
+    "availability_window_days": 31,
+    "future_horizon_days": 365,
+    "candidate_slots_per_read": 200
+  },
   "acceptance": [
     "No partially reserved event when any provider slot conflicts",
     "Opposing concurrent confirmations cannot deadlock or double-book",
@@ -18,5 +29,23 @@
     "No external notifications, payments or public QA content",
     "Web and native equivalent review, unknown-response recovery and current-state views"
   ],
-  "not_yet_claimed": ["External calendar synchronization", "Travel-time predictions", "Paid deposits", "Provider contracts", "Universal availability for unclaimed businesses"]
+  "not_yet_claimed": [
+    "External calendar synchronization",
+    "Travel-time predictions",
+    "Paid deposits",
+    "Provider contracts",
+    "Universal availability for unclaimed businesses"
+  ],
+  "migration": "20260930022741_connected_event_plans.sql",
+  "shared_model": "assets/event-planner/model.mjs",
+  "route": "/event-plan/",
+  "resource_semantics": {
+    "staff": "1 appointment; exclusive",
+    "table": "1\u201350 guests; exclusive table",
+    "venue": "1\u201310000 guests; exclusive venue",
+    "performer": "1 performing act; audience size belongs only in explicitly shared context",
+    "equipment": "1\u201310000 units in an exclusive bundle, not pooled inventory"
+  },
+  "retry_contract": "Save and confirm each use an immutable per-profile request ID. On uncertain response retry the identical payload. Confirmation receipt is historical; event_plan_get rereads current bookings.",
+  "rescheduling": "Existing booking IDs remain; same-service and same-resource-kind moves preserve quantity semantics. Cancellation and rescheduling update current plan reads."
 }

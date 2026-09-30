@@ -1,0 +1,44 @@
+#!/usr/bin/env node
+// Real isolated PostgreSQL transactions; no Supabase/network calls.
+// Requires PostgreSQL16 server binaries installed. Run explicitly with node.
+import {mkdtempSync,readFileSync,rmSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFileSync,execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import assert from 'node:assert/strict';
+import {createLayout,seatRows} from '../../assets/tickets/venue-model.mjs';
+const run=promisify(execFile),dir=mkdtempSync(join(tmpdir(),'zoi-seats-pg-')),bin=process.env.PG_BIN||'/usr/lib/postgresql/16/bin';
+const port=15492;const env={...process.env,PGHOST:dir,PGPORT:String(port),PGDATABASE:'postgres'};
+const actor='00000000-0000-4000-8000-000000000001',other='00000000-0000-4000-8000-000000000002',member='00000000-0000-4000-8000-000000000003',ws='10000000-0000-4000-8000-000000000001',event='20000000-0000-4000-8000-000000000001';
+const literal=x=>"'"+String(x).replace(/'/g,"''")+"'";
+const sql=(query,user)=>`${user?`set role authenticated;select set_config('request.jwt.claim.sub','${user}',false);`:''}${query}`;
+async function query(q,user){const r=await run(join(bin,'psql'),['-X','-qAt','-v','ON_ERROR_STOP=1','-c',sql(q,user)],{env});return r.stdout.trim().split('\n').filter(Boolean).at(-1);}
+async function rejects(q,user,pattern){try{await query(q,user);assert.fail('Expected SQL rejection');}catch(e){assert.match(e.stderr||e.message,pattern);}}
+let started=false,checks=0;
+const pass=name=>{checks++;console.log('PASS '+name);};
+try{
+ execFileSync(join(bin,'initdb'),['-D',join(dir,'data'),'-A','trust','--no-locale'],{stdio:'ignore'});
+ execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-l',join(dir,'server.log'),'-o',`-k ${dir} -p ${port} -c listen_addresses=''`,'-w','start'],{stdio:'ignore'});started=true;
+ await query(readFileSync(new URL('./venue-fixture.sql',import.meta.url),'utf8'));
+ await query(`alter table zoi.user_profiles add column display_name text;alter table zoi.listings add column name text default 'QA host',add column slug text default 'qa-host',add column city text default 'Athens',add column country text default 'Greece';update zoi.workspace_members set role='viewer' where profile_id='${member}';`);
+ await query('create table zoi.booking_settings(listing_id uuid,workspace_id uuid,enabled boolean);');
+ for(const file of ['20260930001738_business_operations_foundation.sql','20260930014346_private_business_inquiries.sql','20260930043127_artist_appearances_and_private_trips.sql','20260930043132_property_offers_and_private_requests.sql'])await query(readFileSync(new URL('../../supabase/migrations/'+file,import.meta.url),'utf8'));
+ const call=(fn,args,user=actor)=>query(`select public.${fn}(${args});`,user).then(JSON.parse),j=x=>literal(JSON.stringify(x))+'::jsonb',req=n=>`80000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
+ await query(`update zoi.listings set entity_type='business' where id='${event}';`);
+ const pid=req(1),form={host_id:event,place_id:event,mode:'sale',timezone:'Europe/Athens',title:'Owner supplied property',description:'Factual property description',city:'Athens',country:'Greece',public_address:'',price_on_request:false,price_cents:35000000,currency:'EUR',area:100,area_unit:'sqm',bedrooms:2,photos:[],fee_terms:'Contact the agent for transaction fees.',source_url:'https://example.org/property',source_checked_on:new Date().toISOString().slice(0,10),representation:'authorized_agent',representation_confirmed:true,status:'available',published:false,source_conflict:false,conflict_reason:''};
+ await rejects(`select public.property_offer_save('${ws}','${pid}',0,${j(form)});`,member,/property_permission_denied/);pass('viewer cannot publish or edit property inventory');
+ const copies=await Promise.all([call('property_offer_save',`'${ws}','${pid}',0,${j(form)}`),call('property_offer_save',`'${ws}','${pid}',0,${j(form)}`)]);assert.equal(copies[0].offer.id,copies[1].offer.id);assert.equal((await call('property_catalog',"null,null,null,''")).offers.length,0);pass('property draft creation is idempotent and not public');
+ await rejects(`select public.property_offer_save('${ws}','${pid}',1,${j({...form,published:true,source_url:''})});`,actor,/property_publication_facts_required/);pass('missing source facts cannot be published');
+ let p=(await call('property_offer_save',`'${ws}','${pid}',1,${j({...form,published:true})}`)).offer;let pub=(await call('property_catalog',`null,'${pid}',null,''`)).offers[0];assert.equal(pub.data.price_basis,'asking_price');assert.equal(pub.booking_url,null);assert.equal(pub.initial_data,undefined);assert.equal(pub.conflict_reason,undefined);pass('public asking price basis is explicit with no fabricated availability or private fields');
+ const request={kind:'information',message:'Please provide viewing details.'};const copies2=await Promise.all([call('property_request',`'${pid}',2,'${req(2)}',${j(request)}`,other),call('property_request',`'${pid}',2,'${req(2)}',${j(request)}`,other)]);let r=copies2[0].request;assert.equal(r.id,copies2[1].request.id);assert.equal((await call('inquiry_thread',`'${r.inquiry_id}'`,other)).messages.length,1);pass('authenticated customer enquiry creates one real private thread on retry');
+ await call('property_offer_save',`'${ws}','${pid}',2,${j({...form,published:true,price_cents:36000000})}`);assert.equal((await call('property_requests_mine','',other)).requests[0].offer_snapshot.data.price_cents,35000000);assert.equal((await call('property_operator',`'${ws}'`)).requests[0].offer_snapshot.data.price_cents,35000000);pass('customer and agent retain original quoted snapshot after offer edit');
+ const dates={kind:'viewing',message:'Private preferred viewing dates',preferred_start:new Date(Date.now()+7*86400000).toISOString(),preferred_end:new Date(Date.now()+7*86400000+3600000).toISOString(),timezone:'Europe/Athens'};await rejects(`select public.property_request('${pid}',3,'${req(10)}',${j({...dates,timezone:'America/Toronto'})});`,other,/property_timezone_required/);const viewing=(await call('property_request',`'${pid}',3,'${req(10)}',${j(dates)}`,other)).request;await call('inquiry_reply',`'${viewing.inquiry_id}','We received your preferred dates; no viewing is confirmed yet.','${req(11)}'`);assert.equal((await call('inquiry_thread',`'${viewing.inquiry_id}'`,other)).messages.length,2);pass('viewing request uses property timezone and agent reply persists privately');
+ await rejects(`select public.property_offer_save('${ws}','${pid}',3,${j({...form,mode:'holiday_stay',published:true})});`,actor,/property_identity_locked/);pass('offers with enquiries cannot silently change mode or physical identity');
+ await call('property_offer_save',`'${ws}','${pid}',3,${j({...form,published:true,source_conflict:true,conflict_reason:'Source disagrees with asking price'})}`);assert.equal((await call('property_catalog',`null,'${pid}',null,''`)).offers.length,0);await rejects(`select public.property_request('${pid}',4,'${req(3)}',${j(request)});`,other,/property_unavailable/);pass('source conflict automatically pauses publication and new requests');
+ const holiday=(await call('property_offer_save',`'${ws}','${req(4)}',0,${j({...form,mode:'holiday_stay',published:true,price_cents:15000})}`)).offer;assert.equal(holiday.data.price_basis,'nightly');const monthly=(await call('property_offer_save',`'${ws}','${req(5)}',0,${j({...form,mode:'long_rent',published:true,price_cents:120000})}`)).offer;assert.equal(monthly.data.price_basis,'monthly');pass('sale, monthly rental and nightly stay prices cannot be conflated');
+ await rejects(`select public.property_request('${holiday.id}',1,'${req(6)}',${j({kind:'stay',message:'Requested dates',preferred_start:'infinity',preferred_end:'2027-01-01T00:00:00Z',timezone:'Europe/Athens'})});`,other,/property_timezone_required/);pass('requested dates reject nonfinite or implicit-timezone values');
+ await query(`insert into zoi.booking_settings values('${event}','${ws}',true);`);assert.match((await call('property_catalog',`null,'${holiday.id}',null,''`)).offers[0].booking_url,/book/);await query(`update zoi.listings set owner_workspace_id=null where id='${event}';`);assert.equal((await call('property_catalog',"null,null,null,''")).offers.length,0);pass('appointment links require real enabled calendar and ownership changes remove offers');
+ assert.equal((await call('property_requests_mine','',actor)).requests.length,0);await rejects('select * from zoi.property_requests;',other,/permission denied/);pass('private viewing messages and snapshots are isolated by customer');
+ console.log(`${checks} property database checks passed`);
+}finally{if(started)execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-m','immediate','-w','stop'],{stdio:'ignore'});rmSync(dir,{recursive:true,force:true});}

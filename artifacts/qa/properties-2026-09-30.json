@@ -1,0 +1,54 @@
+{
+  "stage": "frozen local candidate; not deployed",
+  "migration": "20260930043132_property_offers_and_private_requests.sql",
+  "inventory_audit": "docs/audits/property-inventory-2026-09-30.json",
+  "database": {
+    "command": "node tests/database/properties.integration.mjs",
+    "passed": 13,
+    "isolated_postgres": true,
+    "coverage": [
+      "owner/admin editing",
+      "private drafts and concurrent idempotency",
+      "source publication requirements",
+      "asking/monthly/nightly basis",
+      "private customer request and actual inbox reply",
+      "immutable original terms customer and agent",
+      "property timezone enforcement",
+      "source conflict pause",
+      "identity preservation after requests",
+      "actual enabled appointment link only",
+      "ownership transfer",
+      "direct-table and cross-customer privacy"
+    ]
+  },
+  "unit": {
+    "command": "node --test tests/unit/properties.test.mjs",
+    "passed": 3
+  },
+  "browser": {
+    "mode": "actual modules/styles with explicitly isolated RPC fixtures",
+    "operator_widths": [
+      390,
+      1440
+    ],
+    "customer_widths": [
+      390
+    ],
+    "horizontal_overflow": false,
+    "offer_save_requests": 1,
+    "currency_conversion": "350000.50 to 35000050 cents",
+    "customer_request_calls": 1,
+    "private_request_history_rendered": true,
+    "private_trip_save_calls": 1,
+    "trip_target": "actual supplied property place_id, never inferred agent city"
+  },
+  "production_rollback": "tests/database/properties-production-rollback.sql",
+  "limits": [
+    "Production apply and rollback verification pending",
+    "Native parity pending",
+    "Representation is advertiser attestation, not title/licence verification",
+    "Date enquiries are requests, not viewing/stay reservations",
+    "Agent appointment links require configured calendar and do not prove accommodation availability",
+    "No payment collection, automatic inventory scraping or synthetic property photos"
+  ]
+}
