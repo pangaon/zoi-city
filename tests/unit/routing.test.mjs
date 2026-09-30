@@ -5,6 +5,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { resolveWorkspaceRoute } from '../../assets/suite/workspace-navigation.mjs';
 
 const ROOT = new URL('../../', import.meta.url).pathname;
 const readJson = (p) => JSON.parse(readFileSync(join(ROOT, p), 'utf8'));
@@ -112,7 +113,12 @@ test('Business Suite deep links and city filter contracts are wired', () => {
   const cfg = readJson('vercel.json');
   assert.ok(cfg.rewrites.some((r) => r.source === '/social/:path*' && r.destination === '/social/index.html'));
   const social = readFileSync(join(ROOT, 'social/index.html'), 'utf8');
-  assert.match(social, /location\.pathname\.replace\(\/\^\\\/social/);
+  assert.match(social, /import[^;]+workspace-navigation\.mjs/);
+  const modules = ['priorities','bizpage','calendar','bookings'].map(id => ({id}));
+  assert.deepEqual(resolveWorkspaceRoute('/social#home-design', modules), {id:'bizpage',view:'design'});
+  assert.equal(resolveWorkspaceRoute('/social/calendar', modules).id, 'calendar');
+  assert.equal(resolveWorkspaceRoute('/social#bookings', modules).id, 'bookings');
+  assert.equal(resolveWorkspaceRoute('/social/page', modules).id, 'bizpage');
   const migration = readFileSync(join(ROOT, 'supabase/migrations/0043_city_filter_contract.sql'), 'utf8');
   assert.match(migration, /returns table\(city text, country text, n bigint\)/);
 });

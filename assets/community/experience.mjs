@@ -109,7 +109,7 @@ root.addEventListener('submit',event=>{const form=event.target;if(!(form instanc
    checkScope(scope);message.textContent='Publishing…';const payload=working.pending,r=await rpc('community_publish',payload);checkScope(scope);
    if(r.request_id!==payload.p_request||!UUID.test(r.id||''))throw Error('unconfirmed');
    // A verified publication is final even if the following feed read fails.
-   try{storePending(null);}catch{status('Published. Browser storage could not be cleared; retrying the stored receipt remains safe.');}
+   try{storePending(null);}catch{status('Published. Your browser could not clear the draft; if it reappears, retrying it won’t publish a duplicate.');}
    working.files.forEach(m=>URL.revokeObjectURL(m.preview));draft={body:'',intent:'moment',topics:[],files:[],pending:null,busy:false};close();
    try{await openPost(r.id);status('Your post is published.');}catch{status('Your post is published. The feed could not refresh; use Retry feed to view it.');$('[data-feed]').innerHTML='<button class="ag-primary" data-retry>Retry feed</button>';}
   }finally{working.busy=false;if(draft===working&&dialog.querySelector('[data-publish]')){const current=dialog.querySelector('[data-publish]');current.querySelectorAll('input,button,textarea,select').forEach(n=>n.disabled=!!working.pending&&n.type!=='submit');current.querySelector('button.ag-primary').textContent=working.pending?'Retry the same publication':'Publish';}}

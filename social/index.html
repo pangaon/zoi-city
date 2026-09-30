@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Business · Zoi</title>
-<meta name="description" content="Publish everywhere, schedule, grow your audience, sell — the command center for the Greek business world."/>
+<meta name="description" content="Manage your business home, customers, services, content and team from one workspace."/>
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
@@ -99,6 +99,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   padding:8px 11px;border:1px dashed var(--line2);border-radius:10px;color:var(--mut);font-size:12.5px;font-weight:600}
 .advlink:hover{color:var(--tx);border-color:var(--acc);border-style:solid}
 .advlink em{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.nav-section{border-bottom:1px solid var(--line);padding-bottom:8px}.nav-section summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between}.nav-section summary:after{content:'−'}.nav-section:not([open]) summary:after{content:'+'}.nav-badge{font-size:9px;line-height:1.2;border:1px solid var(--line2);padding:3px 5px;border-radius:4px;margin-left:auto;color:var(--mut);flex:none}.workspace-focus{font-size:11px;color:var(--mut);margin:0 12px 12px;display:block}.workspace-focus select{font-size:12px;padding:8px;margin-top:5px}.workspace-context{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:25px clamp(18px,3vw,34px) 0}.workspace-context h1{font-size:22px;line-height:1.3;margin-top:5px}.workspace-start{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--line)}.workspace-start h2{font-size:19px}.workspace-start p{color:var(--mut);font-size:14px;margin-top:5px}.setup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.setup-grid button{border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:12px;padding:20px;text-align:left;display:flex;flex-direction:column;gap:12px;font:inherit;cursor:pointer}.setup-grid strong{font-size:15px}.setup-grid span{font-size:13px;color:var(--mut)}.setup-grid b{font-size:12px;color:var(--acc);margin-top:auto}.nv .nitem>span:nth-child(2){min-width:0;white-space:normal}.nav-section .nitem{font-size:13px;gap:9px;padding:9px}.workspace-context .mono{letter-spacing:.08em}.workspace-context .btn{white-space:normal;text-align:center}@media(max-width:700px){.workspace-context{align-items:start;flex-direction:column;gap:12px}.workspace-context h1{font-size:21px}.setup-grid{grid-template-columns:1fr}.setup-grid button{padding:17px}.workspace-start{margin-bottom:20px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
 </style>
 <script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');}catch(e){}})()</script>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -152,14 +153,18 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   function esc(s){ return C? C.esc(s) : String(s==null?'':s); }
   var root = document.getElementById('root');
 
-  var STATE = { me:null, ws:null, wsName:'', workspaces:[], avail:null, channels:[], active:null, ctx:null };
+  var STATE = { me:null, ws:null, wsName:'', workspaces:[], avail:null, channels:[], active:null, ctx:null, navigation:null, focus:'all', role:null, shellAbort:null, epoch:0, handle:null, moduleEpoch:0, activeView:null, currentRoute:null, actor:null, sessionIdentity:null };
 
   function themeCurrent(){ try{ return document.documentElement.getAttribute('data-theme')||'dark'; }catch(e){ return 'dark'; } }
   var THEMES=['dark','light','gold'];
   function flipTheme(){ var i=THEMES.indexOf(themeCurrent()); var t=THEMES[(i+1)%THEMES.length]; document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('zoi_theme',t);}catch(e){} }
 
   /* ---------- sign-in gate ---------- */
+  function destroyCurrent(){STATE.moduleEpoch++;var handle=STATE.handle;STATE.handle=null;if(handle&&typeof handle.destroy==='function')handle.destroy();}
+  function mayLeave(){if(STATE.actor&&STATE.sessionIdentity&&STATE.sessionIdentity(C)!==STATE.actor){authScopeChanged();return false;}return !STATE.handle||typeof STATE.handle.hasUnsavedChanges!=='function'||!STATE.handle.hasUnsavedChanges()||confirm('Leave this tool? Unsaved changes will be lost.');}
+  function restoreCurrentUrl(){if(STATE.currentRoute)history.replaceState(null,'',STATE.currentRoute);}
   function renderGate(step, email){
+    destroyCurrent();STATE.actor=null;
     root.innerHTML =
     '<div class="center"><div class="card">'+
       '<div class="mono" style="margin-bottom:14px">The Greek business world, one desk</div>'+
@@ -234,22 +239,9 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 
   function renderShell(){
     var mods = (window.ZoiSuite.modules||[]).slice().sort(function(a,b){ return (a.order||99)-(b.order||99); });
-    function groupFor(id){
-      if(id==='priorities') return 'Overview';
-      if(['calendar','composer','ai','creator','analytics','audience','bio','email'].includes(id)) return 'Create & grow';
-      if(['bookings','inbox','bizpage'].includes(id)) return 'Customers';
-      if(['organization-calendar','groups','organizations','festival','appearances','leagues'].includes(id)) return 'Community & events';
-      if(['operations','documents','timekeeping','properties'].includes(id)) return 'Business operations';
-      return 'Settings & connections';
-    }
-    var groupOrder=['Overview','Create & grow','Customers','Community & events','Business operations','Settings & connections'];
-    mods.sort(function(a,b){return groupOrder.indexOf(groupFor(a.id))-groupOrder.indexOf(groupFor(b.id))||(a.order||99)-(b.order||99);});
-    var lastGroup='';
-    var navHtml = mods.map(function(m){
-      var group=groupFor(m.id), heading=group!==lastGroup?'<div class="navgroup" data-nav-group="'+esc(group)+'">'+esc(group)+'</div>':'';
-      lastGroup=group;
-      return heading+'<button type="button" class="nitem" data-group="'+esc(group)+'" data-id="'+esc(m.id)+'"><span class="nic">'+(m.icon||'')+'</span>'+esc(m.label||m.id)+'</button>';
-    }).join('');
+    if(STATE.shellAbort)STATE.shellAbort.abort();STATE.shellAbort=new AbortController();
+    var groups=STATE.navigation.navigationModel(mods,{focus:STATE.focus,avail:STATE.avail});
+    var navHtml=groups.map(function(group){return '<details class="nav-section" '+(['overview','home'].indexOf(group.id)!==-1||group.tools.some(function(m){return m.recommended;})?'open ':'')+'data-section="'+esc(group.id)+'"><summary class="navgroup">'+esc(group.label)+'</summary>'+group.tools.map(function(m){return '<button type="button" class="nitem" data-group="'+esc(group.id)+'" data-id="'+esc(m.id)+'" data-keywords="'+esc(m.keywords)+'"><span class="nic">'+(m.icon||'')+'</span><span>'+esc(m.label)+'</span>'+(m.recommended?'<span class="nav-badge" data-focus-badge title="Suggested for your chosen focus">For you</span>':'')+(m.setupRequired?'<span class="nav-badge">Setup</span>':'')+'</button>';}).join('')+'</details>';}).join('');
     var wsInitial = esc((STATE.wsName||'Z').trim().charAt(0).toUpperCase());
     root.innerHTML =
     '<div id="app">'+
@@ -265,10 +257,11 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
           '</div>'+
         '</div>'+
         '<label style="margin:0 12px 8px;font-size:12px;color:var(--mut)">Find a tool<input class="inp" type="search" id="tool-search" placeholder="Bookings, groups, creator…" autocomplete="off"></label>'+
-        '<nav class="nv" id="nav">'+navHtml+'<p id="tool-empty" hidden role="status" style="padding:12px">No tools match.</p></nav>'+
-        '<a class="advlink" href="/apps/command-center/">Founder Command Center <em>live</em></a>'+
-        '<a class="advlink" href="/add">Add your business <em>start here</em></a>'+ 
-        '<a class="advlink" href="/apps/intelligence/">Intelligence <em>preview</em></a>'+
+        '<label class="workspace-focus">Navigation focus<select id="workspace-focus" class="inp">'+Object.keys(STATE.navigation.FOCUS).map(function(key){return '<option value="'+key+'" '+(STATE.focus===key?'selected':'')+'>'+esc(STATE.navigation.FOCUS[key])+'</option>';}).join('')+'</select></label>'+
+        '<nav class="nv" id="nav" aria-label="Workspace tools">'+navHtml+'<p id="tool-empty" hidden role="status" style="padding:12px">No tools match.</p></nav>'+
+        '<a class="advlink" href="/apps/command-center/">Advanced operations <em>workspace tools</em></a>'+
+        '<a class="advlink" href="/add">Add your business <em>start here</em></a>'+
+
         '<div class="sfoot">'+
           '<button class="iconbtn" id="suiteThemeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">'+iconTheme()+'</button>'+
           '<button class="btn g" id="signout" style="flex:1;padding:9px">Sign out</button>'+
@@ -277,7 +270,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       '<div class="main">'+
         '<div class="topbar"><button class="hamb" id="hamb" aria-label="Open workspace navigation" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>'+
           '<div><div style="font-weight:700">Zoi suite</div><div style="font-size:11px;color:var(--dim)">Plan · create · grow · convert</div></div></div>'+
-        '<div class="mount" id="mount"></div>'+
+        '<header class="workspace-context"><div><p class="mono" id="workspace-context-name">'+esc(STATE.wsName)+'</p><h1 id="workspace-section-title">Workspace overview</h1></div><a class="btn g" href="/social#home-design" data-design-link>'+(['owner','admin','editor'].indexOf(STATE.role)!==-1?'Design your home':'Business home')+'</a></header><div class="mount" id="mount"></div>'+
       '</div>'+
     '</div>';
 
@@ -290,23 +283,25 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     });
     document.getElementById('tool-search').addEventListener('input',function(e){
       var term=e.target.value.trim().toLowerCase(),visible=0;
-      nav.querySelectorAll('.nitem').forEach(function(item){item.hidden=!item.textContent.toLowerCase().includes(term);if(!item.hidden)visible++;});
-      nav.querySelectorAll('[data-nav-group]').forEach(function(heading){heading.hidden=!Array.from(nav.querySelectorAll('.nitem')).some(function(item){return !item.hidden&&item.dataset.group===heading.dataset.navGroup;});});
+      nav.querySelectorAll('.nitem').forEach(function(item){item.hidden=!(item.textContent+' '+item.dataset.keywords).toLowerCase().includes(term);if(!item.hidden)visible++;});
+      nav.querySelectorAll('.nav-section').forEach(function(group){group.hidden=!Array.from(group.querySelectorAll('.nitem')).some(function(item){return !item.hidden;});if(term)group.open=true;});
       document.getElementById('tool-empty').hidden=visible>0;
     });
+    document.getElementById('workspace-focus').onchange=function(e){STATE.focus=e.target.value;try{localStorage.setItem('zoi_nav_focus:'+STATE.ws,STATE.focus);}catch(_){}var suggested=STATE.navigation.navigationModel(mods,{focus:STATE.focus,avail:STATE.avail}).flatMap(function(g){return g.tools;}).filter(function(m){return m.recommended;}).map(function(m){return m.id;});nav.querySelectorAll('[data-focus-badge]').forEach(function(b){b.remove();});nav.querySelectorAll('.nitem').forEach(function(item){if(suggested.indexOf(item.dataset.id)!==-1){var badge=document.createElement('span');badge.className='nav-badge';badge.dataset.focusBadge='';badge.textContent='For you';item.appendChild(badge);}});};
+    root.querySelector('[data-design-link]').onclick=function(e){e.preventDefault();selectModule('bizpage',['owner','admin','editor'].indexOf(STATE.role)!==-1?'design':null);};
     // workspace dropdown
     var wsbtn=document.getElementById('wsbtn'), wsdrop=document.getElementById('wsdrop');
     wsbtn.onclick=function(e){ e.stopPropagation(); wsdrop.classList.toggle('on'); wsbtn.setAttribute('aria-expanded',String(wsdrop.classList.contains('on'))); };
-    document.addEventListener('click',function(){ wsdrop.classList.remove('on'); wsbtn.setAttribute('aria-expanded','false'); });
+    document.addEventListener('click',function(){ wsdrop.classList.remove('on'); wsbtn.setAttribute('aria-expanded','false'); },{signal:STATE.shellAbort.signal});
     wsdrop.addEventListener('click',function(e){
       var it=e.target.closest('.wsitem'); if(!it) return;
-      if(it.id==='ws-new'){ renderCreate(); return; }
+      if(it.id==='ws-new'){if(!mayLeave())return;destroyCurrent();renderCreate();return;}
       var id=it.getAttribute('data-ws');
-      if(id && id!==STATE.ws){ try{ localStorage.setItem('zoi_ws', id); }catch(err){} location.reload(); }
+      if(id && id!==STATE.ws){if(!mayLeave())return;destroyCurrent();try{ localStorage.setItem('zoi_ws', id); }catch(err){} location.reload(); }
     });
     // theme + signout + mobile
-    document.getElementById('suiteThemeBtn').onclick=function(){ flipTheme(); document.getElementById('suiteThemeBtn').innerHTML=iconTheme(); if(STATE.active) selectModule(STATE.active); };
-    document.getElementById('signout').onclick=function(){ STATE.me=null; STATE.ws=null; var pending=C.auth.signOut(); renderGate('email'); pending.catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');}); };
+    document.getElementById('suiteThemeBtn').onclick=function(){ flipTheme(); document.getElementById('suiteThemeBtn').innerHTML=iconTheme();  };
+    document.getElementById('signout').onclick=function(){destroyCurrent();STATE.actor=null;STATE.epoch++;STATE.me=null;STATE.ws=null;STATE.ctx=null;if(STATE.shellAbort)STATE.shellAbort.abort();var pending=C.auth.signOut(); renderGate('email'); pending.catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');}); };
     var side=document.getElementById('side'), scrim=document.getElementById('scrim');
     var hamb=document.getElementById('hamb');
     var narrow=window.matchMedia('(max-width:860px)');
@@ -316,39 +311,47 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     hamb.onclick=function(){side.classList.add('open');scrim.classList.add('on');hamb.setAttribute('aria-expanded','true');syncDrawerAccess();if(C.trapFocus)C.trapFocus(side);};
     scrim.onclick=closeDrawer;
     function closeDrawerFn(){var wasOpen=side.classList.contains('open');side.classList.remove('open');scrim.classList.remove('on');hamb.setAttribute('aria-expanded','false');if(C.releaseFocus)C.releaseFocus();if(wasOpen&&narrow.matches)hamb.focus();syncDrawerAccess();}
-    side.addEventListener('keydown',function(event){if(event.key==='Escape')closeDrawerFn();});
+    document.addEventListener('keydown',function(event){if(event.key==='Escape'&&side.classList.contains('open'))closeDrawerFn();},{signal:STATE.shellAbort.signal});
     window.__closeDrawer=closeDrawerFn;
 
-    // mount initial
-    var start = null;
-    try {
-      var routeModule = location.pathname.replace(/^\/social\/?/, '').split('/')[0];
-      if (routeModule === 'page') routeModule = 'bizpage';
-      if (routeModule && mods.some(function(m){ return m.id === routeModule; })) start = routeModule;
-    }catch(e){}
-    if(!start) try{ start=localStorage.getItem('zoi_suite_tab'); }catch(e){}
-    if(!start || !mods.some(function(m){return m.id===start;})) start = (mods[0]&&mods[0].id);
-    if(start) selectModule(start);
+    // Stable path/hash routes preserve links into existing tools and design subviews.
+    var saved=null;try{saved=localStorage.getItem('zoi_suite_tab:'+STATE.ws)||localStorage.getItem('zoi_suite_tab');}catch(_){}
+    var start=STATE.navigation.resolveWorkspaceRoute(location.href,mods,saved);
+    if(start.id)selectModule(start.id,start.view,true);
   }
   function closeDrawer(){ if(window.__closeDrawer) window.__closeDrawer(); }
 
-  function selectModule(id){
+  function selectModule(id,view,replace){
     var mods = window.ZoiSuite.modules||[];
     var mod = null; for(var i=0;i<mods.length;i++){ if(mods[i].id===id){ mod=mods[i]; break; } }
-    if(!mod) return;
-    STATE.active=id; try{ history.replaceState(null,'','/social/'+encodeURIComponent(id)); }catch(e){} try{ localStorage.setItem('zoi_suite_tab', id); }catch(e){}
+    if(!mod) return false;
+    var same=STATE.active===id&&STATE.handle;
+    if(!same&&!mayLeave()){restoreCurrentUrl();return false;}
+    var keep=same&&(STATE.activeView===(view||null)||typeof STATE.handle.showView==='function');
+    if(same&&!keep&&!mayLeave()){restoreCurrentUrl();return false;}
+    if(keep&&typeof STATE.handle.showView==='function')STATE.handle.showView(view||null);
+    if(!keep)destroyCurrent();
+    STATE.activeView=view||null;
+    var search=document.getElementById('tool-search');if(search&&search.value){search.value='';document.querySelectorAll('#nav .nitem,#nav .nav-section').forEach(function(n){n.hidden=false;});document.getElementById('tool-empty').hidden=true;}
+    STATE.active=id;STATE.ctx.view=view||null;STATE.ctx.navigate=selectModule;STATE.ctx.managedNavigation=true; try{var route=STATE.navigation.moduleRoute(id,view),next=route+(route.indexOf('#')===-1?location.search:'');if(replace)history.replaceState(null,'',next);else if(location.pathname+location.search+location.hash!==next)history.pushState(null,'',next);}catch(e){}STATE.currentRoute=location.pathname+location.search+location.hash;try{localStorage.setItem('zoi_suite_tab:'+STATE.ws,id);}catch(e){}
     var items=document.querySelectorAll('.nitem');
-    for(var j=0;j<items.length;j++){ items[j].classList.toggle('active', items[j].getAttribute('data-id')===id); }
+    for(var j=0;j<items.length;j++){ var selected=items[j].getAttribute('data-id')===id;items[j].classList.toggle('active',selected);if(selected){items[j].setAttribute('aria-current','page');items[j].closest('details').open=true;}else items[j].removeAttribute('aria-current'); }
     var mount=document.getElementById('mount');
+    var entry=STATE.navigation.navigationModel(mods).flatMap(function(g){return g.tools;}).find(function(m){return m.id===id;});document.getElementById('workspace-section-title').textContent=view==='design'?'Business home · Design & layout':entry?entry.label:mod.label;document.title=(view==='design'?'Design & layout':entry?entry.label:mod.label)+' · '+STATE.wsName+' · Zoi';
+    if(keep)return true;
+    var moduleEpoch=STATE.moduleEpoch;
     mount.innerHTML='';
+    if(id==='priorities'){var setup=document.createElement('section');setup.className='workspace-start';setup.innerHTML='<div><h2>Your next steps</h2><p>Keep your public home, customer work and publishing connected.</p></div><div class="setup-grid">'+STATE.navigation.setupSteps({channels:STATE.channels,role:STATE.role}).map(function(step){return '<button type="button" data-setup="'+step.id+'"><strong>'+esc(step.label)+'</strong><span>'+esc(step.detail)+'</span><b>Open →</b></button>';}).join('')+'</div>';setup.addEventListener('click',function(e){var b=e.target.closest('[data-setup]');if(b)selectModule(b.dataset.setup);});mount.appendChild(setup);}
     var surface=document.createElement('div');surface.className='suite-surface';mount.appendChild(surface);surface.innerHTML='<div class="spin"></div>';
     try{
-      var r = mod.mount(surface, STATE.ctx);
-      if(r && typeof r.catch==='function'){ r.catch(function(e){ if(STATE.active!==id || !surface.isConnected)return; surface.innerHTML='<div style="padding:20px;color:var(--red)">This section hit an error: '+esc(e&&e.message||e)+'</div>'; }); }
+      var r = mod.mount(surface, Object.assign({},STATE.ctx,{view:view||null}));
+      Promise.resolve(r).then(function(handle){if(moduleEpoch!==STATE.moduleEpoch||!surface.isConnected){if(handle&&typeof handle.destroy==='function')handle.destroy();return;}STATE.handle=handle||null;},function(e){if(moduleEpoch!==STATE.moduleEpoch||!surface.isConnected)return;showModuleError(surface,id,view);});
     }catch(e){
-      mount.innerHTML='<div style="padding:20px;color:var(--red)">This section hit an error: '+esc(e&&e.message||e)+'</div>';
+      showModuleError(surface,id,view);
     }
   }
+
+  function showModuleError(surface,id,view){if(!surface.isConnected)return;surface.innerHTML='<section role="alert" style="padding:20px"><h2>This tool could not load</h2><p>Please retry, or choose another workspace tool.</p><button type="button" class="btn g">Retry tool</button></section>';surface.querySelector('button').onclick=function(){selectModule(id,view,true);};}
 
   /* ---------- boot ---------- */
   function boot(){
@@ -363,44 +366,57 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     loadMe();
   }
   function loadMe(){
+    var generation=++STATE.epoch,requestedToken=C.auth.token();
     root.innerHTML='<div class="center"><div class="spin"></div></div>';
     C.api.rpc('zoi_me',{},{auth:'require'}).then(function(me){
+      if(generation!==STATE.epoch)return;
+      if(C.auth.token()!==requestedToken){destroyCurrent();boot();return;}
       if(!me || !me.authenticated){ C.auth.clear(); renderGate('email'); return; }
-      STATE.me = me;
+      STATE.me = me;var globalCta=document.getElementById('zoiCta');if(globalCta){globalCta.textContent='My workspace';globalCta.href='/social/';}
       STATE.workspaces = (me.workspaces||[]);
       if(!STATE.workspaces.length){ renderCreate(); return; }
-      var saved=null; try{ saved=localStorage.getItem('zoi_ws'); }catch(e){}
+      var saved=null;try{var params=new URL(location.href).searchParams;saved=params.get('workspace')||params.get('ws')||localStorage.getItem('zoi_ws');}catch(e){}
       var chosen=null;
       for(var i=0;i<STATE.workspaces.length;i++){ if(STATE.workspaces[i].id===saved){ chosen=STATE.workspaces[i]; break; } }
       if(!chosen) chosen=STATE.workspaces[0];
-      STATE.ws=chosen.id; STATE.wsName=chosen.name||'Workspace';
+      STATE.ws=chosen.id; STATE.wsName=chosen.name||'Workspace';STATE.role=['owner','admin','editor','viewer'].indexOf(chosen.role)!==-1?chosen.role:null;try{STATE.focus=localStorage.getItem('zoi_nav_focus:'+STATE.ws)||'all';}catch(_){}
       try{ localStorage.setItem('zoi_ws', STATE.ws); }catch(e){}
       loadContext();
     }).catch(function(e){
+      if(generation!==STATE.epoch)return;
       root.innerHTML='<div class="center"><div class="card"><h1>Workspace unavailable</h1><p class="sub">We could not load your workspace. Your saved session has been kept.</p><button class="btn p" id="retry-workspace">Try again</button></div></div>';
       document.getElementById('retry-workspace').onclick=boot;
     });
   }
   function loadContext(){
+    var generation=STATE.epoch,requestedWs=STATE.ws,requestedToken=C.auth.token();
     root.innerHTML='<div class="center"><div class="spin"></div></div>';
     Promise.all([
       C.api.rpc('suite_config',{},{auth:'prefer'}).catch(function(){ return {publish:false,email:false,ai:false,payments:false,claims:false,unavailable:true}; }),
       C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; }),
       import('/assets/suite/capabilities.mjs').then(async function(cap){
         var provider=await cap.loadProviderConfig(C.BASE,C.KEY).catch(function(){return null;});
-        return {cap:cap,provider:provider};
+        var navigation=await import('/assets/suite/workspace-navigation.mjs');var session=await import('/assets/community/session-state.mjs');return {cap:cap,provider:provider,navigation:navigation,sessionIdentity:session.sessionIdentity};
       })
     ]).then(function(res){
-      STATE.avail = res[2].cap.resolveCapabilities(res[0],res[2].provider);
+      if(generation!==STATE.epoch||requestedWs!==STATE.ws)return;
+      if(C.auth.token()!==requestedToken){destroyCurrent();boot();return;}
+      STATE.navigation=res[2].navigation;STATE.avail = res[2].cap.resolveCapabilities(res[0],res[2].provider);
       STATE.channels = Array.isArray(res[1])?res[1]:[];
-      STATE.ctx = { C:C, ws:STATE.ws, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, toast:toast };
+      STATE.sessionIdentity=res[2].sessionIdentity;STATE.actor=STATE.sessionIdentity(C);
+      STATE.ctx = { C:C, ws:STATE.ws,managedNavigation:true, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, role:STATE.role, toast:toast, navigate:selectModule };
       renderShell();
     }).catch(function(){
+      if(generation!==STATE.epoch)return;
       root.innerHTML='<div class="center"><div class="card"><h1>Workspace tools unavailable</h1><p class="sub">Please retry loading your tools.</p><button class="btn p" id="retry-tools">Try again</button></div></div>';
       document.getElementById('retry-tools').onclick=loadContext;
     });
   }
 
+  function restoreRoute(){if(!STATE.ctx||!STATE.navigation||!document.getElementById('mount'))return;var route=STATE.navigation.resolveWorkspaceRoute(location.href,window.ZoiSuite.modules);if(route.id)selectModule(route.id,route.view,true);}
+  function authScopeChanged(){if(STATE.actor&&STATE.sessionIdentity&&STATE.sessionIdentity(C)!==STATE.actor){destroyCurrent();STATE.epoch++;STATE.ctx=null;STATE.me=null;STATE.ws=null;renderGate('email');boot();}}
+  window.addEventListener('storage',authScopeChanged);window.addEventListener('focus',authScopeChanged);setInterval(authScopeChanged,250);
+  window.addEventListener('popstate',restoreRoute);window.addEventListener('hashchange',restoreRoute);
   boot();
 })();
 </script>

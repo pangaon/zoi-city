@@ -1,3 +1,4 @@
+import {publishedHomeDesign} from './_home-design.js';
 import {profileMedia} from './_profile-media.js';
 import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
 import {renderChurchHome} from './_church-home.js';
@@ -161,13 +162,13 @@ function completionPanel(e, completeness) {
   if (!completeness || completeness.complete || !Array.isArray(completeness.missing) || !completeness.missing.length) return '';
   var missing = completeness.missing.slice(0, 5).map(function(k){ return '<li>'+esc(completionLabel(k, e))+'</li>'; }).join('');
   var checked = completeness.checked_at ? ' Last checked '+esc(String(completeness.checked_at)) + '.' : '';
-  return '<section class="profile-progress" aria-label="Profile progress">'
+  return '<details class="profile-progress"><summary>About this page</summary>'
     + '<div class="progress-head"><div><span class="ctag">In progress</span>'
-    + '<h2>Building this '+esc((e.entity_type === 'artist' || e.entity_type === 'creator') ? 'creator profile' : 'profile')+'</h2>'
-    + '<p>We only publish details that can be supported by the listing or its own source.'+checked+'</p></div>'
+    + '<h2>Information available</h2>'
+    + '<p>Get in touch for more information.'+checked+'</p></div>'
     + '<strong>'+esc(String(completeness.score || 0))+'%</strong></div>'
     + '<p class="progress-next">Still needed</p><ul class="progress-list">'+missing+'</ul>'
-    + '<a class="btn btn-ghost btn-xs" href="/explore?q='+encodeURIComponent(e.name || '')+'">Help improve this profile</a></section>';
+    + '<a class="btn btn-ghost btn-xs" href="/explore?q='+encodeURIComponent(e.name || '')+'">Find related places and people</a></details>';
 }
 
 function page(e, related, completeness){
@@ -492,7 +493,7 @@ export default async function handler(req, res) {
   var slug = (req.query && req.query.slug ? String(req.query.slug) : '').trim();
   try {
     if (!slug) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
-    var e = await rpc('seo_entity', { p_slug: slug });
+    var e = await rpc('home_entity', { p_slug: slug });
     if (Array.isArray(e)) e = e[0];
     // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
     // live duplicates of every listing. Send the crawler to the one canonical URL.
@@ -506,7 +507,8 @@ export default async function handler(req, res) {
       return;
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
-    const designedHome = renderSocietyHome(e) || renderAvliHome(e) || renderChurchHome(e) || renderCreatorCanonicalHome(e) || renderEventCanonicalHome(e) || renderMusicHome(e) || renderHealthHome(e) || renderProfessionalHome(e) || renderBakeryHome(e) || renderRestaurantHome(e);
+    const design = publishedHomeDesign(e);
+    const designedHome = renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
     if (designedHome) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');

@@ -1682,7 +1682,7 @@ function paintDetail(){
     + '<div><b>Zoi cannot send this email for you.</b> The transactional email sender is credential-gated'
     + ' (<code>RESEND_API_KEY</code> is not installed), so "resend confirmation" would be a button that does nothing.'
     + ' The link above opens your own mail app with the details filled in, which actually works.'
-    + '<br><br>There is also no un-check-in: no RPC reverses a confirmed check-in, so that button does not exist.</div></div>';
+    + '<br><br>Confirmed check-ins cannot be undone here. Check the ticket carefully before confirming admission.</div></div>';
 }
 
 function paintBulk(){
@@ -1693,7 +1693,7 @@ function paintBulk(){
     body.innerHTML = '<div class="tkx-note" data-tone="warn">'+ico('info')
       + '<div><b>Check in '+b.codes.length+' '+plural(b.codes.length,'guest')+' at once?</b> This calls'
       + ' <code>tickets_checkin</code> once per reservation, for exactly the '+b.codes.length+' currently shown and'
-      + ' not yet checked in. It cannot be undone — there is no reverse RPC.</div></div>'
+      + ' not yet checked in. A confirmed check-in cannot be undone here.</div></div>'
       + '<div class="tkx-acts"><button class="tkx-btn" data-tone="door" data-act="bulkgo">Check in '+b.codes.length+' now</button>'
       + '<button class="tkx-btn" data-act="attback">Cancel</button></div>';
     return;
@@ -1874,9 +1874,9 @@ async function refreshManageTickets(){
       : '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>No tiers yet.</b> Add one below — until then the public page has nothing to reserve.</div></div>');
 
   $('#genBody').innerHTML = list
-    + '<div class="tkx-note">'+ico('info')+'<div><b>Add only.</b> <code>tickets_type_save</code> takes no ticket-type id and'
-    + ' there is no delete RPC, so Zoi cannot edit or remove a tier from here. Getting the name, price and capacity'
-    + ' right first time matters.</div></div>'
+    + '<div class="tkx-note">'+ico('info')+'<div><b>Review before saving.</b>'
+    + ' Ticket tiers cannot be edited or removed here after creation. Check the name, price and capacity'
+    + ' before saving.</div></div>'
     + '<div class="divider-lbl">Add a tier</div>'
     + '<div class="field"><label for="ttName">Name *</label><input id="ttName" placeholder="e.g. General admission"/></div>'
     + '<div class="field-row">'

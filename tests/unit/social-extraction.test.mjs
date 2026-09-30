@@ -37,7 +37,7 @@ test('localized hosts and channel profile links retain identity', () => {
 
 test('public page exposes enriched socials in buttons and structured data with owner precedence', async (t) => {
   const listing = { slug: 'test-business', name: 'Test business', entity_type: 'business', social_links: { instagram: 'https://instagram.com/owner' }, profile: { _enrich: { social: { instagram: 'https://instagram.com/scraped', x: 'https://x.com/business' } } } };
-  t.mock.method(globalThis, 'fetch', async (url) => ({ ok: true, json: async () => String(url).endsWith('/seo_entity') ? listing : [] }));
+  t.mock.method(globalThis, 'fetch', async (url) => ({ ok: true, json: async () => String(url).endsWith('/home_entity') ? listing : [] }));
   let html = '';
   const res = { setHeader() {}, end(value) { html = value; } };
   await handler({ query: { slug: listing.slug } }, res);

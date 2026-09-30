@@ -1,6 +1,6 @@
 /*!
  * bizpage.js — Zoi Suite module: Business page editor
- * Classic script (NO ES modules). Self-contained IIFE. Zero external deps.
+ * Classic registration script with lazy shared session and home-design modules.
  *
  * HONESTY CONTRACT (hard requirement): this module never fabricates a claim or
  * a verification. It asks bizpage_status(ctx.ws) whether THIS workspace has a
@@ -377,6 +377,21 @@
     var esc = (C && C.esc) || fallbackEsc;
     var toast = ctx.toast || (C && C.toast) || function () {};
     var ws = ctx.ws;
+    root.__bizPageDestroy && root.__bizPageDestroy();
+    var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
+    var account = identity(C), lifecycle = new AbortController(), designHandle = null, designEpoch = 0, bootEpoch = 0, contentDirty = false;
+    function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
+    function destroyDesign(){designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
+    function unsaved(){return contentDirty || state.saving || !!(designHandle && designHandle.hasUnsavedChanges());}
+    function allowLeave(){return !unsaved() || global.confirm('Leave this business home? Unsaved content and private design changes will be lost.');}
+    function destroy(){if(lifecycle.signal.aborted)return;lifecycle.abort();bootEpoch++;destroyDesign();clearInterval(scopeTimer);observer.disconnect();root.replaceChildren();}
+    root.__bizPageDestroy=destroy;
+    function checkScope(){if(!scopeLive()){destroy();if(root.isConnected)root.textContent='Your account or workspace changed. Reopen Business home.';}}
+    var scopeTimer=setInterval(checkScope,250);
+    var observer=new MutationObserver(function(){if(!root.isConnected)destroy();});observer.observe(doc.body,{childList:true,subtree:true});
+    ['storage','focus'].forEach(function(name){global.addEventListener(name,checkScope,{signal:lifecycle.signal});});
+    global.addEventListener('beforeunload',function(e){if(scopeLive()&&unsaved()){e.preventDefault();e.returnValue='';}},{signal:lifecycle.signal});
+    doc.addEventListener('click',function(e){if(!scopeLive())return;var target=e.target.closest('a,[data-ws],.nitem[data-id],[data-tab],[data-module],#signout,#ws-new');if(!target||target.id==='signout'||(ctx.managedNavigation&&(target.matches('.nitem,[data-ws],#ws-new,[data-design-link]')))||target.target==='_blank'||(root.contains(target)&&target.tagName!=='A')||(target.getAttribute('href')||'').startsWith('#'))return;if(!allowLeave()){e.preventDefault();e.stopImmediatePropagation();}},{capture:true,signal:lifecycle.signal});
     injectStyle(doc);
 
     var state = {
@@ -397,11 +412,13 @@
     /* ---- rpc helpers ---- */
     function rpcRead(fn, params) {
       if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('RPC unavailable'));
-      return C.api.rpc(fn, params, { auth: 'require' });
+      if(!scopeLive())return Promise.reject(new Error('Your account or workspace changed.'));
+      return C.api.rpc(fn, params, { auth: 'require' }).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
     }
     function rpcWrite(fn, params) {
       if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('RPC unavailable'));
-      return C.api.rpc(fn, params, { auth: 'require' });
+      if(!scopeLive())return Promise.reject(new Error('Your account or workspace changed.'));
+      return C.api.rpc(fn, params, { auth: 'require' }).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
     }
 
     /* ---- public link ---- */
@@ -530,6 +547,7 @@
       slot.innerHTML = '<p class="zp-note">Loading your details\u2026</p>';
       try {
         var raw = state.entity || await rpcRead('seo_entity', { p_slug: slug });
+        if(!scopeLive()||!slot.isConnected)return;
         var e = Array.isArray(raw) ? raw[0] : raw;
         if (!e) { slot.innerHTML = ''; return; }
         state.entity = e;
@@ -539,9 +557,10 @@
           entityType: e.entity_type,
           categorySlug: e.category_slug,
           profile: e.profile,
-          onDirty: function () { /* the save button is always enabled here */ }
+          onDirty: function () { contentDirty=true; }
         });
       } catch (err) {
+        if(!scopeLive()||!slot.isConnected)return;
         // Never block the basics on this.
         slot.innerHTML = '<p class="zp-note">Could not load your detailed fields '
           + '(' + fallbackEsc((err && err.message) || 'unknown error') + '). '
@@ -552,11 +571,11 @@
     function renderEditor() {
       wrap.innerHTML = '';
       var s = state.status;
-      if(state.choices && state.choices.length>1){var picker=el(doc,'select','zp-select');picker.setAttribute('aria-label','Business to edit');state.choices.forEach(function(r){var opt=el(doc,'option',null,esc(r.name||r.slug));opt.value=r.id;opt.selected=r.id===s.listingId;picker.appendChild(opt);});picker.addEventListener('change',function(){if(global.confirm('Switch businesses? Unsaved changes will be discarded.'))boot(picker.value);else picker.value=s.listingId;});wrap.appendChild(picker);}
+      if(state.choices && state.choices.length>1){var picker=el(doc,'select','zp-select');picker.setAttribute('aria-label','Business to edit');state.choices.forEach(function(r){var opt=el(doc,'option',null,esc(r.name||r.slug));opt.value=r.id;opt.selected=r.id===s.listingId;picker.appendChild(opt);});picker.addEventListener('change',function(){if(state.saving){picker.value=s.listingId;return;}if(allowLeave())boot(picker.value);else picker.value=s.listingId;});wrap.appendChild(picker);}
 
       // header + tools
       var head = renderHeader('Edit how ' + (s.name ? '“' + s.name + '”' : 'your business') +
-        ' appears publicly. Changes show live in the preview; nothing is public until you save.');
+        ' appears publicly. Save profile content when ready. Design changes stay private until published.');
       var tools = el(doc, 'div', 'zp-tools');
       if (publicPath()) {
         var copyBtn = el(doc, 'button', 'zp-btn', IC.link + ' Copy public link');
@@ -571,6 +590,18 @@
       }
       head.appendChild(tools);
       wrap.appendChild(head);
+      var designPanel=el(doc,'details','zp-design-panel');designPanel.style.cssText='margin:20px 0;max-width:100%;min-width:0';
+      var designSummary=el(doc,'summary',null,'Design &amp; layout');designSummary.style.cssText='cursor:pointer;font-weight:700;padding:16px;border:1px solid var(--line2);border-radius:12px';designPanel.appendChild(designSummary);
+      var designSlot=el(doc,'div');designPanel.appendChild(designSlot);wrap.appendChild(designPanel);
+      var designLoading=false;
+      async function openDesign(){if(!designPanel.open||designHandle||designLoading||!scopeLive())return;designLoading=true;var epoch=++designEpoch;designSlot.innerHTML='<p role="status">Loading design tools…</p>';
+        try{var editor=await import('/assets/homes/editor.mjs');if(!scopeLive()||epoch!==designEpoch||!designSlot.isConnected)return;
+          var handle=await editor.mount(designSlot,ctx,{listing:s.listingId});if(!scopeLive()||epoch!==designEpoch||!designSlot.isConnected){handle.destroy();return;}designHandle=handle;
+        }catch(e){if(scopeLive()&&epoch===designEpoch){designSlot.innerHTML='<p role="alert">Design tools could not load.</p><button type="button">Retry design tools</button>';designSlot.querySelector('button').onclick=openDesign;}}
+        finally{designLoading=false;}
+      }
+      designPanel.addEventListener('toggle',openDesign);
+      if(ctx.view==='design'){designPanel.open=true;openDesign();}
 
       var grid = el(doc, 'div', 'zp-grid');
 
@@ -658,6 +689,7 @@
       var addBtn = el(doc, 'button', 'zp-btn ghost zp-addrow', IC.plus + ' Add link');
       addBtn.type = 'button';
       addBtn.addEventListener('click', function () {
+        contentDirty=true;
         d.social.push({ platform: 'website', url: '' });
         renderSocialRows();
         sync();
@@ -691,6 +723,7 @@
           rm.type = 'button';
           rm.setAttribute('aria-label', 'Remove link');
           rm.addEventListener('click', function () {
+            contentDirty=true;
             d.social.splice(idx, 1);
             renderSocialRows();
             sync();
@@ -856,6 +889,8 @@
       grid.appendChild(pvCol);
       wrap.appendChild(grid);
 
+      form.addEventListener('input',function(){contentDirty=true;});
+      form.addEventListener('change',function(){contentDirty=true;});
       // initial paint
       sync();
     }
@@ -888,6 +923,7 @@
       };
 
       rpcWrite('bizpage_save', params).then(async function (res) {
+        if(!scopeLive())return;
         var ok = res === true;
 
         /* The vertical profile goes through its own writer, because owner-typed
@@ -909,9 +945,11 @@
           }
         }
 
+        if(!scopeLive())return;
         state.saving = false;
         finishSave(saveBtn, savedNote);
         if (ok) {
+          contentDirty=!!profileNote && profileNote.includes('did not');
           toast('Business home saved.' + (profileNote ? profileNote : ''));
           savedNote.textContent = 'Saved · your public page is up to date.' + profileNote;
         } else {
@@ -919,6 +957,7 @@
           savedNote.textContent = 'Save did not complete — please try again.';
         }
       }, function (err) {
+        if(!scopeLive())return;
         state.saving = false;
         finishSave(saveBtn, savedNote);
         var msg = (err && err.message) || 'Could not save.';
@@ -935,6 +974,7 @@
 
     /* ---- controller ---- */
     async function boot(listingId) {
+      if(!scopeLive())return;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
       state.vform=null;state.entity=null;
       state.loading = true;
       state.error = null;
@@ -944,11 +984,13 @@
       try {
         statusRaw = await rpcRead('bizpage_status', { p_workspace: ws });
       } catch (e) {
+        if(!scopeLive()||loadEpoch!==bootEpoch)return;
         state.loading = false;
         renderError((e && e.message) || 'Could not check your business listing.');
         return;
       }
 
+      if(!scopeLive()||loadEpoch!==bootEpoch)return;
       state.choices=editableListings(statusRaw);
       var chosen=state.choices.find(function(r){return r.id===listingId;}) || state.choices[0];
       var status = normStatus(chosen || statusRaw);
@@ -966,12 +1008,15 @@
       try {
         contentRaw = await rpcRead('bizpage_get', { p_workspace: ws, p_listing: status.listingId });
       } catch (e2) {
+        if(!scopeLive()||loadEpoch!==bootEpoch)return;
         state.loading = false;
         renderError('Your existing page could not be loaded. Please retry before editing so saved details stay safe.');
         return;
       }
+      if(!scopeLive()||loadEpoch!==bootEpoch)return;
       if (!contentRaw || typeof contentRaw !== 'object') { state.loading=false; renderError('The server did not return your page details. Please retry.'); return; }
       try { var entityRaw=await rpcRead('seo_entity',{p_slug:status.slug});state.entity=Array.isArray(entityRaw)?entityRaw[0]:entityRaw; } catch(e) { state.entity=null; }
+      if(!scopeLive()||loadEpoch!==bootEpoch)return;
       if(state.entity && state.entity.profile) contentRaw.profile=state.entity.profile;
       state.draft = normContent(contentRaw);
       state.loading = false;
@@ -979,6 +1024,7 @@
     }
 
     await boot();
+    return {destroy:destroy,hasUnsavedChanges:unsaved,showView:function(view){var panel=wrap.querySelector('.zp-design-panel');if(panel){panel.open=view==='design';if(panel.open)panel.querySelector('summary').focus();}}};
   }
 
   /* ---------- register ---------- */

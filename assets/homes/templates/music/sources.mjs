@@ -1,3 +1,4 @@
+import {REVIEWED_ALBUM_CATALOGUE} from '../../../community/media-catalog-albums.mjs';
 // Reviewed public source snapshots. Keep in sync with each showcase source.json.
 export const ARTIST_SOURCES={
   "a558f28d-6c8f-4079-9730-838f483867fc": {
@@ -217,3 +218,6 @@ export const ARTIST_SOURCES={
     "portrait_position": "50% 30%"
   }
 };
+
+// Attach exact provider releases to their artist on every canonical home and in Community.
+for(const item of REVIEWED_ALBUM_CATALOGUE.items){const artist=ARTIST_SOURCES[item.artist_id];if(!artist||artist.releases.some(release=>release.url===item.url))continue;artist.releases.push({id:item.id,title:item.title,url:item.url,image:item.image,year:item.year,kind:item.kind,source:item.source_url});}
