@@ -6,15 +6,37 @@ export function suggestionHref(row){
 }
 // The same anonymous public search contract used by Zoi's command palette.
 export async function searchSuggestions(query,filters={},signal,fetchImpl=fetch){
- const read=async f=>{const response=await fetchImpl(BASE+'/rest/v1/rpc/explore_search',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},signal,body:JSON.stringify({p_q:query.trim().slice(0,200),p_type:f.type||null,p_city:f.city||null,p_country:f.country||null,p_limit:48,p_offset:0})});if(!response.ok)throw Error('search_unavailable');const rows=await response.json();if(!Array.isArray(rows))throw Error('search_unavailable');const term=query.trim().toLocaleLowerCase();const rank=r=>{const n=String(r.name||'').toLocaleLowerCase();return n===term?0:n.startsWith(term)?1:n.includes(term)?2:3;};return rows.filter(suggestionHref).sort((a,b)=>rank(a)-rank(b)).slice(0,6).map(r=>({name:String(r.name||'Listing'),city:String(r.city||''),country:String(r.country||''),type:String(r.entity_type),href:suggestionHref(r)}));};
+ const read=async f=>{const response=await fetchImpl(BASE+'/rest/v1/rpc/explore_search',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},signal,body:JSON.stringify({p_q:query.trim().slice(0,200),p_type:f.type||null,p_city:f.city||null,p_country:f.country||null,p_limit:8,p_offset:0})});if(!response.ok)throw Error('search_unavailable');const rows=await response.json();if(!Array.isArray(rows))throw Error('search_unavailable');const term=query.trim().toLocaleLowerCase();const rank=r=>{const n=String(r.name||'').toLocaleLowerCase();return n===term?0:n.startsWith(term)?1:n.includes(term)?2:3;};return rows.filter(suggestionHref).sort((a,b)=>rank(a)-rank(b)).slice(0,6).map(r=>({name:String(r.name||'Listing'),city:String(r.city||''),country:String(r.country||''),type:String(r.entity_type),href:suggestionHref(r)}));};
  if(query.trim().length<2)return{rows:[],outside:false};
  const rows=await read(filters);if(rows.length||!(filters.type||filters.city||filters.country))return{rows,outside:false};
  return{rows:await read({}),outside:true};
 }
-export function suggestionController({search=searchSuggestions,onState,delay=220}){
+export function suggestionController({search=searchSuggestions,onState,delay=180,timeoutMs=6000,retryDelay=160}){
  let version=0,timer,controller;
  const cancel=()=>{version++;clearTimeout(timer);controller?.abort();};
- const run=(query,filters={})=>{cancel();const current=version;if(query.trim().length<2){onState({status:'closed',rows:[]});return;}onState({status:'loading',rows:[]});timer=setTimeout(async()=>{controller=new AbortController();const request=controller;const timeout=setTimeout(()=>request.abort(),10000);try{const result=await search(query,filters,request.signal);if(current===version)onState({status:'ready',...result});}catch(error){if(current===version)onState({status:'error',rows:[]});}finally{clearTimeout(timeout);}},delay);};
+ const run=(query,filters={})=>{
+  cancel();const current=version;
+  if(query.trim().length<2){onState({status:'closed',rows:[]});return;}
+  onState({status:'loading',rows:[]});
+  const attempt=async(retried=false)=>{
+   if(current!==version)return;
+   controller=new AbortController();const request=controller;
+   let timeout;
+   try{
+    // Race as well as abort: an unresponsive transport must not trap the UI.
+    const result=await Promise.race([
+     search(query,filters,request.signal),
+     new Promise((_,reject)=>{timeout=setTimeout(()=>{request.abort();reject(Error('search_timeout'));},timeoutMs);})
+    ]);
+    if(current===version)onState({status:'ready',...result});
+   }catch(error){
+    if(current!==version)return;
+    if(!retried)timer=setTimeout(()=>attempt(true),retryDelay);
+    else onState({status:'error',rows:[]});
+   }finally{clearTimeout(timeout);}
+  };
+  timer=setTimeout(()=>attempt(),delay);
+ };
  return{run,cancel};
 }
 export function attachAutocomplete(input,{filters=()=>({}),search=searchSuggestions,onSubmit=()=>{}}={}){
