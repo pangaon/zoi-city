@@ -6,3 +6,16 @@ test('palette validates owner values and contrast without arbitrary CSS',()=>{fo
 test('branded photos do not pretend an island panorama or olive illustration is venue or logo',()=>{const h=renderRestaurant(restaurantData(e));assert.match(h,/data-restaurant-brand="twelve-islands"/);assert.match(h,/data-event-plan/);assert.match(h,/Takeout/);assert.match(h,/US\$17/);assert.ok(!h.includes('Santorini'));assert.ok(!h.includes('OliveBranch.png" alt="12 Islands Greek Taverna logo'));});
 
 test('owner menu URL and order URL clear block related source fallback',()=>{for(const p of [{menu_url:null,order_url:null},{menu_url:'https://owner.example/menu'}]){const d=restaurantData({...e,profile:p},p);assert.equal(d.menuSections.length,0);assert.equal(d.sourceMenu,'');if(p.order_url===null)assert.equal(d.order.length,0);}});
+
+test('all restaurant identities use a readable default and can inherit source brand without curated ID',()=>{
+ const base={id:'11111111-1111-4111-8111-111111111111',slug:'independent-restaurant',name:'Independent',website:'https://example.test/',profile:{}};
+ const palette={ink:'#16334f',paper:'#ffffff',cream:'#f0f6fc',accent:'#174b80',muted:'#455a70',gold:'#946d29'};
+ const d=restaurantData(base,{brand_palette:palette});assert.deepEqual(d.brandPalette,palette);
+ assert.equal(restaurantData(base).brandPalette.accent,'#075985');
+ for(const fg of['ink','muted','accent'])for(const bg of['paper','cream'])assert.ok(contrast(d.brandPalette[fg],d.brandPalette[bg])>=4.5);
+ assert.equal(restaurantData({...base,profile:{brand_palette:null}},{brand_palette:palette}).brandPalette.accent,'#075985');
+ assert.equal(restaurantData({...base,owner_content:{profile:{brand_palette:{accent:'#003366'}}}},{brand_palette:palette}).brandPalette.accent,'#003366');
+ assert.equal(brandPalette({ink:'#ffffff'},null).ink,'#133a5b');
+});
+
+test('light brand ink and action colours cannot erase fixed white hero and button text',()=>{const palette=brandPalette(null,{ink:'#ffffff',paper:'#000000',cream:'#101010',accent:'#ffffff',muted:'#eeeeee',gold:'#000000'});assert.ok(contrast(palette.ink,'#ffffff')>=4.5);assert.ok(contrast(palette.accent,'#ffffff')>=4.5);});

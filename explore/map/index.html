@@ -296,7 +296,7 @@
   </div>
 </main>
 
-<link rel="stylesheet" href="/assets/map-data/preview.css?v=20260930-orientation"><link rel="stylesheet" href="/assets/map-data/discovery.css?v=20260930-orientation">
+<link rel="stylesheet" href="/assets/map-data/preview.css?v=20260930-profile-details"><link rel="stylesheet" href="/assets/map-data/discovery.css?v=20260930-profile-details">
 <script src="/assets/zoi-core.js"></script>
 <script src="/assets/zoi-theme.js?v=20260930"></script>
 <script src="/assets/zoi-emblem.js"></script>
@@ -530,7 +530,7 @@
   async function loadData() {
     status('Reading the directory…', true);
     mapTools = await import('/assets/map-data/loader.mjs?v=20260930-preserve-zoom');
-    previewModule = await import('/assets/map-data/preview.mjs?v=20260930-orientation');
+    previewModule = await import('/assets/map-data/preview.mjs?v=20260930-profile-details');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
     }, { concurrency: 4, onProgress: function (progress) { status('Loaded ' + fmtN(progress.loaded) + ' places…', true); } });
@@ -937,7 +937,7 @@
   var listState = { items: [], shown: 0, mode: 'all' };
   function paint(reset) {
     var body = $('pbody');
-    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),loadDetails:function(slug){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
     var slice = listState.items.slice(listState.shown, listState.shown + 60);
     var advance=slice.length;
     if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});

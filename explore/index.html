@@ -114,16 +114,8 @@ footer a:hover{color:var(--tx)}
 .qv-cover .ze-alt{display:none}
 .qv-cat{font-size:12.5px;color:var(--gold);margin-top:6px}
 
-/* Listing artwork preserves logos and uses compact identity marks when imagery is absent. */
-.lcover.is-identity,.lcover.ze-fallback,.qv-cover.is-identity,.qv-cover.ze-fallback{aspect-ratio:auto;height:64px;display:flex;align-items:center;justify-content:flex-start;padding:12px 16px;background:var(--bg3)}
-.lcover.is-identity .ze,.lcover.ze-fallback .ze-alt,.qv-cover.is-identity .ze,.qv-cover.ze-fallback .ze-alt{display:block;width:40px;height:40px;flex:none}
-.lcover.ze-fallback .ze-alt .ze,.qv-cover.ze-fallback .ze-alt .ze{width:40px;height:40px}
-.lcover.is-logo,.qv-cover.is-logo{aspect-ratio:auto;height:116px;background:#fff}
-.lcover.is-logo .ze-photo,.qv-cover.is-logo .ze-photo{object-fit:contain;padding:20px;transform:none!important}
-.lcover.is-small .ze-photo,.qv-cover.is-small .ze-photo{object-fit:scale-down;padding:14px;transform:none!important}
-.lcover.is-portrait .ze-photo,.qv-cover.is-portrait .ze-photo{object-fit:contain;transform:none!important}
 /* ===== listing cards: cover art + body + actions ===== */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:18px;align-items:start}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:22px;align-items:stretch}
 .lcard{position:relative;display:flex;flex-direction:column;background:var(--bg2);
   border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:
   transform .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease)}
@@ -183,9 +175,33 @@ footer a:hover{color:var(--tx)}
 .pi-grp a:hover{color:var(--tx);border-color:var(--line2);transform:translateY(-1px)}
 .pi-grp a b{font-weight:500;font-size:11.5px;opacity:.7;font-variant-numeric:tabular-nums}
 .pi-note{font-size:12.5px;color:var(--dim);margin:4px 0 0}
-.lcover.is-identity,.lcover.ze-fallback,.qv-cover.is-identity,.qv-cover.ze-fallback{aspect-ratio:auto;height:64px}.lcover.is-logo,.qv-cover.is-logo{aspect-ratio:auto;height:116px}.lcover.is-identity .ze,.lcover.ze-fallback .ze-alt,.qv-cover.is-identity .ze,.qv-cover.ze-fallback .ze-alt{width:40px;height:40px}.lcover.is-logo .ze-photo,.qv-cover.is-logo .ze-photo{object-fit:contain}.lcover.is-small .ze-photo,.qv-cover.is-small .ze-photo{object-fit:scale-down}.lcover.is-portrait .ze-photo,.qv-cover.is-portrait .ze-photo{object-fit:contain}
-.lcover.is-square-art,.qv-cover.is-square-art{aspect-ratio:auto;height:132px}.lcover.is-square-art .ze-photo,.qv-cover.is-square-art .ze-photo{object-fit:contain;padding:14px;transform:none!important}
-.lidentity{display:grid;place-items:center;width:40px;height:40px;border-radius:12px;border:1px solid var(--line2);background:var(--bg2);color:var(--mut);font-size:15px;font-weight:700;letter-spacing:.02em;flex:none}
+
+
+/* One editorial frame across imagery, logos and sparse records: loading never changes its size. */
+.lcover,.lcover.is-identity,.lcover.ze-fallback,.lcover.is-logo,.lcover.is-square-art{aspect-ratio:16/10;height:auto;min-height:0;flex:none}
+.lcard{border-radius:24px 24px 18px 18px;background:linear-gradient(145deg,var(--card),var(--bg2))}
+.lbody{padding:18px 18px 8px;gap:9px;min-height:155px}
+.lname{font-size:19px;line-height:1.3;overflow-wrap:anywhere}
+.lfoot{padding:12px 18px 18px;gap:8px}
+.lbtn{min-height:44px;border-radius:12px;padding:9px 13px}
+.lbtn:focus-visible,.lname a:focus-visible,.qv-x:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.lcover.is-logo,.lcover.is-square-art,.qv-cover.is-logo,.qv-cover.is-square-art{background:#fff}
+.lcover.is-logo .ze-photo,.lcover.is-square-art .ze-photo,.qv-cover.is-logo .ze-photo,.qv-cover.is-square-art .ze-photo{object-fit:contain;padding:24px;transform:none!important}
+.lcover.is-small .ze-photo,.qv-cover.is-small .ze-photo{object-fit:scale-down;padding:18px;transform:none!important}
+.lcover.is-portrait .ze-photo,.qv-cover.is-portrait .ze-photo{object-fit:contain;transform:none!important}
+.lcover.is-identity,.lcover.ze-fallback,.qv-cover.is-identity,.qv-cover.ze-fallback{display:grid;place-items:center;background:radial-gradient(ellipse at 15% 10%,color-mix(in srgb,var(--acc) 15%,transparent),transparent 70%),var(--bg3)}
+.lcover.ze-fallback .ze-alt,.qv-cover.ze-fallback .ze-alt{display:grid;width:100%;height:100%;place-items:center}
+.lidentity{display:grid;place-items:center;width:76px;height:76px;border-radius:24px 24px 24px 8px;border:1px solid var(--line2);background:color-mix(in srgb,var(--card) 80%,transparent);color:var(--tx);font:500 27px/1 Georgia,serif;letter-spacing:.02em}
+.qv{background:rgb(2 12 25 / .65);backdrop-filter:blur(12px);padding:24px}
+.qv-box{padding:0;max-width:640px;max-height:calc(100dvh - 48px);border-radius:28px;box-shadow:0 30px 100px #0006;background:var(--card)}
+.qv-cover,.qv-cover.is-identity,.qv-cover.ze-fallback{aspect-ratio:16/9;height:auto;border:0;border-radius:0}
+.qv-copy{padding:22px 26px 26px}
+.qv-box h3{font-size:28px;line-height:1.15;margin:8px 0 10px;padding:0;overflow-wrap:anywhere}
+.qv-x{z-index:2;width:44px;height:44px;top:12px;right:12px;border-radius:50%;background:var(--card);color:var(--tx);box-shadow:0 4px 18px #0003}
+.qv-acts{padding-top:16px;border-top:1px solid var(--line);margin-top:20px}
+.qv-acts .pri{flex:1;justify-content:center}
+@media(max-width:600px){.grid{grid-template-columns:minmax(0,1fr)}.qv{padding:12px}.qv-box{max-height:calc(100dvh - 24px);border-radius:24px}.qv-copy{padding:18px}.qv-box h3{font-size:25px}.lbody{min-height:0}.qv-acts{gap:8px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lcard,.lcover .ze,.lcover .ze-photo{transition:none}.lcard:hover,.lcard:hover .lcover .ze-photo{transform:none}.skel{animation:none}}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -426,7 +442,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   const qv=document.getElementById('qv');
   document.getElementById('qv-x').addEventListener('click',closeQV);
   qv.addEventListener('click',e=>{ if(e.target===qv) closeQV(); });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeQV(); });
+  document.addEventListener('keydown',quickViewKeyboard);
 });
 
 let LANG = localStorage.getItem('zoi_lang') || 'en';
@@ -569,7 +585,8 @@ function hrefFor(r){
     return '/'+encodeURIComponent(t)+'/'+encodeURIComponent(r.slug);
   }
   if(r.slug) return '/p/'+encodeURIComponent(r.slug);
-  return r.path||'/explore';
+  const path=String(r.path||'');
+  return /^\/(?!\/)[^\\]*$/.test(path) ? path : '/explore';
 }
 
 /* A listing card. Every element is real data: the cover is generated art derived
@@ -591,7 +608,9 @@ function fitListingImage(img){
   box.classList.toggle('is-small',!logo&&img.naturalWidth<360&&img.naturalHeight<360);
   box.classList.toggle('is-portrait',!logo&&ratio<0.72);
 }
+function listingDescription(value){return String(value||'').replace(/<[^>]*(?:>|$)/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim();}
 function card(r,idx){
+  const description=listingDescription(r.description);
   const loc=[r.city,normCountry(r.country)].filter(Boolean).join(', ');
   const ZE=global_ZE();
   const cover = ZE
@@ -604,10 +623,10 @@ function card(r,idx){
   return '<article class="lcard">'+
     '<a class="lcover'+(r.photo_url?'':' is-identity')+'" href="'+esc(hrefFor(r))+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
     '<div class="lbody">'+
-      '<div class="ltop"><span class="ltype">'+esc(typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
+      '<div class="ltop"><span class="ltype">'+esc(r.category||typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
       '<h3 class="lname"><a href="'+esc(hrefFor(r))+'">'+esc(r.name)+'</a></h3>'+
       (loc?'<div class="lloc">'+PIN+esc(loc)+'</div>':'')+
-      (r.description?'<p class="ldesc">'+esc(r.description)+'</p>':'')+
+      (description?'<p class="ldesc">'+esc(description)+'</p>':'')+
     '</div>'+
     '<div class="lfoot">'+
       '<a class="lbtn pri" href="'+esc(hrefFor(r))+'">'+(LANG==='el'?'Προβολή':'View')+'</a>'+
@@ -703,6 +722,11 @@ function harvestCountries(rows){
 /* Quick look: rendered only from fields already returned for that row.
    No rating is shown — the backend reports none for any listing today, so a
    star row here would be decoration pretending to be data. */
+let quickViewRequest=0;
+let quickViewAccountWatch=null;
+let quickViewReturnFocus=null;
+let quickViewScroll='';
+let quickViewInert=[];
 function quickView(i){
   const r=(ST.view||[])[i]; if(!r) return;
   const loc=[r.city,normCountry(r.country)].filter(Boolean).join(', ');
@@ -714,20 +738,61 @@ function quickView(i){
 
   document.getElementById('qv-body').innerHTML=
     '<div class="qv-cover'+(r.photo_url?'':' is-identity')+'">'+cover+'</div>'+
-    '<div class="ltop" style="margin-top:16px"><span class="ltype">'+esc(typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
+    '<div class="qv-copy"><div class="ltop"><span class="ltype">'+esc(r.category||typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
     '<h3 id="qv-name">'+esc(r.name)+'</h3>'+
     (loc?'<div class="lloc" style="margin-top:2px">'+PIN+esc(loc)+'</div>':'')+
     (r.category?'<div class="qv-cat">'+esc(r.category)+'</div>':'')+
     (r.description?'<p class="qv-desc">'+esc(r.description)+'</p>'
                   :'<p class="qv-desc">No description on this listing yet.'+
                    (r.claimable?' If it is yours, claim it and you can write one.':'')+'</p>')+
+    '<div id="qv-details" aria-live="polite"><p class="qv-cat">Loading more details…</p></div>'+
     '<div class="qv-acts"><a class="lbtn pri" href="'+esc(hrefFor(r))+'">Open full page</a>'+
       (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
-    '</div>';
-  const qv=document.getElementById('qv'); qv.hidden=false;
+    '</div></div>';
+  const qv=document.getElementById('qv');
+  if(qv.hidden){
+    quickViewReturnFocus=document.activeElement;
+    quickViewScroll=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    quickViewInert=Array.from(document.body.children).filter(el=>el!==qv && !['SCRIPT','STYLE'].includes(el.tagName)).map(el=>({el,inert:el.inert}));
+    quickViewInert.forEach(({el})=>{el.inert=true;});
+  }
+  qv.hidden=false;
   document.getElementById('qv-x').focus();
+  loadQuickViewDetails(r,++quickViewRequest);
 }
-function closeQV(){ const qv=document.getElementById('qv'); if(qv) qv.hidden=true; }
+async function loadQuickViewDetails(row,version){
+  const target=document.getElementById('qv-details');
+  try{
+    const [entity,model]=await Promise.all([rpc('home_entity',{p_slug:row.slug},true),import('/assets/discovery/profile-preview.mjs')]);
+    if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
+    if(!entity||entity.id!==row.id)throw Error('unavailable');
+    const details=model.quickLookDetails(entity),desc=document.querySelector('#qv-body .qv-desc');
+    if(desc)desc.textContent=details.description||'Explore the full page for more about this place.';
+    target.innerHTML=(details.address?'<p class="qv-desc">'+esc(details.address)+'</p>':'')+(details.links.length?'<div class="qv-acts">'+details.links.map(link=>'<a class="lbtn" href="'+esc(link.href)+'"'+(link.href.startsWith('http')?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(link.label)+' ↗</a>').join('')+'</div>':'');
+    if(details.photo){const cover=document.querySelector('#qv-body .qv-cover');cover.className='qv-cover';cover.innerHTML=listingCover(global_ZE(),{name:entity.name,type:entity.entity_type,slug:entity.slug,photo:details.photo});}
+  }catch{
+    if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
+    target.innerHTML='<p class="qv-cat">More details could not load.</p><button class="lbtn" type="button" id="qv-retry">Try again</button>';
+    document.getElementById('qv-retry').onclick=()=>{target.textContent='Loading more details…';loadQuickViewDetails(row,++quickViewRequest);};
+  }
+}
+function closeQV(){
+  const qv=document.getElementById('qv'); if(!qv || qv.hidden) return;
+  ++quickViewRequest;clearInterval(quickViewAccountWatch);quickViewAccountWatch=null; qv.hidden=true; document.body.style.overflow=quickViewScroll;
+  quickViewInert.forEach(({el,inert})=>{el.inert=inert;}); quickViewInert=[];
+  if(quickViewReturnFocus?.isConnected) quickViewReturnFocus.focus({preventScroll:true});
+  quickViewReturnFocus=null;
+}
+function quickViewKeyboard(e){
+  const qv=document.getElementById('qv'); if(!qv || qv.hidden) return;
+  if(e.key==='Escape'){e.preventDefault();closeQV();return;}
+  if(e.key!=='Tab') return;
+  const controls=Array.from(qv.querySelectorAll('a[href],button:not([disabled]),select:not([disabled]),input:not([disabled]),[tabindex="0"]')).filter(el=>!el.hidden);
+  const first=controls[0],last=controls[controls.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
+}
 
 function loadMore(){ ST.offset+=24; runSearch(false); }
 
@@ -745,24 +810,40 @@ function clearExploreFilters(){
 
 function randomGreekSpot(){
   if(!ST.rows || !ST.rows.length){ toast('Loading directory spots...'); return; }
-  const idx = Math.floor(Math.random() * ST.rows.length);
+  const idx = Math.floor(Math.random() * (ST.view||ST.rows).length);
   quickView(idx);
   toast('Found a surprise Greek spot!');
 }
 
 async function claim(slug,btn){
-  const tk=authToken();
-  if(!tk){ toast('Sign in first — taking you there'); setTimeout(()=>location.href='/social',900); return; }
-  btn.disabled=true; btn.textContent='Claiming…';
+  const token=authToken();
+  if(!token){location.href='/social';return;}
+  let container=document.getElementById('qv-details');
+  if(document.getElementById('qv').hidden){const index=(ST.view||[]).findIndex(r=>r.slug===slug);if(index<0)return;quickView(index);container=document.getElementById('qv-details');}
+  const version=++quickViewRequest;container.textContent='Loading your workspaces…';
+  clearInterval(quickViewAccountWatch);quickViewAccountWatch=setInterval(()=>{if(authToken()!==token){++quickViewRequest;clearInterval(quickViewAccountWatch);quickViewAccountWatch=null;container.textContent='Your session changed. Close this window and sign in again.';}},500);
   try{
     const me=await rpc('zoi_me',{});
-    const ws=(me&&me.workspaces&&me.workspaces[0]&&me.workspaces[0].id)||null;
-    if(!ws){ toast('Create your business first in the suite'); setTimeout(()=>location.href='/social',1200); return; }
-    await rpc('zoi_claim_entity',{p_slug:slug,p_workspace:ws,p_method:'owner_request'});
-    btn.textContent='Claim submitted ✓'; btn.style.color='var(--green)'; btn.style.borderColor='var(--green)';
-    toast('Claim submitted — track it in your suite under Business page');
-  }catch(e){ btn.disabled=false; btn.textContent='This is mine'; toast('We could not submit the claim. Please try again.'); }
+    if(version!==quickViewRequest||authToken()!==token)return;
+    const workspaces=(me?.workspaces||[]).filter(w=>w.id&&w.name);
+    if(!workspaces.length){container.innerHTML='<p class="qv-desc">Create your business workspace to request ownership of this listing.</p><a class="lbtn" href="/social/bizpage">Open business tools →</a>';return;}
+    container.innerHTML='<form id="qv-claim"><p class="qv-desc">Choose the workspace that should manage this listing. Ownership must be verified before access is granted.</p><label class="qv-cat" for="qv-workspace">Your workspace</label><select id="qv-workspace" class="city" required style="display:block;width:100%;min-height:44px;margin:8px 0 12px"><option value="">Choose a workspace</option>'+workspaces.map(w=>'<option value="'+esc(w.id)+'">'+esc(w.name)+'</option>').join('')+'</select><button class="lbtn pri" type="submit">Request ownership review</button><p role="status" id="qv-claim-status"></p></form>';
+    document.getElementById('qv-workspace').focus();
+    document.getElementById('qv-claim').onsubmit=async event=>{
+      event.preventDefault();const select=document.getElementById('qv-workspace'),submit=event.target.querySelector('button'),status=document.getElementById('qv-claim-status');
+      if(authToken()!==token){status.textContent='Your account changed. Close this window and sign in again.';return;}
+      if(!workspaces.some(w=>w.id===select.value))return;
+      submit.disabled=true;select.disabled=true;status.textContent='Submitting your request…';
+      try{const result=await rpc('zoi_claim_entity',{p_slug:slug,p_workspace:select.value,p_method:'owner_request'});
+        if(version!==quickViewRequest||authToken()!==token)return;
+        if(result?.ok!==true||!['claim_pending','claimed'].includes(result.status))throw Error();
+        status.textContent=result.status==='claimed'?'Ownership verified. Open your business tools to manage this listing.':'Request submitted for ownership review. Track it in your business tools.';
+        const link=document.createElement('a');link.href='/social/bizpage';link.className='lbtn';link.textContent='Open business tools →';status.append(document.createElement('br'),link);
+      }catch{if(version!==quickViewRequest||authToken()!==token)return;status.textContent='We could not confirm the result. Check your business tools before trying again.';}
+    };
+  }catch{if(version===quickViewRequest)container.innerHTML='<p class="qv-desc">Your workspaces could not load. Please close this window and try again.</p>';}
 }
+
 </script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js"></script>

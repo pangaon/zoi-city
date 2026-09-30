@@ -323,10 +323,10 @@ function socialIcon(k){
   /* ---- related, linked by slug ---- */
   var rel='';
   if(related && related.length){
-    rel='<section class="sec"><h2>'+icon(IC.pin,'sech')+'More Greek '+esc(catLabel.toLowerCase())+(e.city?(' near '+esc(e.city)):'')+'</h2><div class="relgrid">';
+    rel='<section class="sec"><h2>'+icon(IC.pin,'sech')+'Explore more of the Greek world'+'</h2><div class="relgrid">';
     related.forEach(function(r){
       if(!r.slug) return;
-      var rh = SITE + '/' + encodeURIComponent(typeSlug(r.entity_type)) + '/' + encodeURIComponent(r.slug);
+      var rh = SITE + '/' + encodeURIComponent(typeSlug(r.entity_type)) + '/' + encodeURIComponent(r.canonical_slug || r.slug);
       rel+='<a class="relcard" href="'+attr(rh)+'"><b>'+esc(r.name)+'</b>'+(r.city?('<span>'+esc(r.city)+'</span>'):'')+'</a>';
     });
     rel+='</div></section>';
@@ -543,6 +543,6 @@ export default async function handler(req, res) {
   } catch (err) {
     console.error(JSON.stringify({event:'public_home_unavailable', reason:/^(?:http_[0-9]{3}|network|timeout)$/.test(err?.publicReadReason || '') ? err.publicReadReason : 'response_or_render'}));
     res.statusCode=503; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
-    res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi</p><h1>We are refreshing this profile</h1><p style="color:var(--mut);line-height:1.6">The latest details are temporarily unavailable. Please try again in a moment.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to Explore</a></p></main></body></html>');
+    res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi</p><h1>This profile couldn’t load</h1><p style="color:var(--mut);line-height:1.6">We couldn’t retrieve the latest details. Please try this page again.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to Explore</a></p></main></body></html>');
   }
 }
