@@ -1,5 +1,5 @@
 import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{extractAssociationCard}from'../../assets/enrichment/association-cards.mjs';
-const hcla=fs.readFileSync('tests/fixtures/member-source/hcla-about-card.html','utf8'),bar=fs.readFileSync('tests/fixtures/member-source/bar-officers-card.html','utf8');
+const hcla=fs.readFileSync('tests/fixtures/member-source/hcla-about-card.fragment','utf8'),bar=fs.readFileSync('tests/fixtures/member-source/bar-officers-card.fragment','utf8');
 const args={url:'https://www.hcla.ca/about/',html:hcla,expectedName:'Agapi Mavridis',checkedAt:'2026-09-30'};
 test('official HCLA component binds portrait and role to exact individual without guessing practice facts',()=>{const m=extractAssociationCard(args);assert.equal(m.name,'Agapi Mavridis');assert.equal(m.affiliation.role,'President');assert.match(m.portrait_url,/IMG-20210602-WA0007/);for(const k of ['phone','email','city','country','profession','credentials'])assert.equal(m[k],null);assert.equal(m.provenance.licence_verified,false)});
 test('official HBA officer row selects its own photo without crossing nested columns',()=>{const m=extractAssociationCard({url:'https://hellenicbar.org/about/officers-2/',html:bar,expectedName:'Angelo Tzivas'});assert.equal(m.affiliation.role,'Secretary');assert.match(m.portrait_url,/Tzivas-2025/)});
