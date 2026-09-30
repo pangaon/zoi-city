@@ -1,0 +1,906 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-09-30",
+  "status": "planning_and_gap_matrix_not_completion_certificate",
+  "scope_note": "Bounded synthesis of the recorded conversation and current source. This enumerates major sector journeys; it does not claim exhaustive validation of every requested tool, record, provider or edge case.",
+  "existing_scope_manifest": "docs/recovery-scope.json",
+  "evidence_policy": {
+    "source_pointer": "Code exists, not proof of live functionality",
+    "candidate": "Needs exact release/backend/device acceptance",
+    "planned": "Not delivered",
+    "pass_requirements": [
+      "source identity/content evidence",
+      "rendered UI evidence",
+      "exercised action/receipt evidence",
+      "independent reviewer",
+      "release version and date"
+    ]
+  },
+  "shared_studio_journeys": [
+    {
+      "id": "template_gallery",
+      "status": "planned_shared_studio",
+      "journey": "Filter by sector, customer task, layout and supported channels → preview actual own content in existing four home designs or A/B recipe layouts → choose → undo/reorder/hide/edit → review → save exact revision.",
+      "edge_cases": [
+        "No results and clear filters",
+        "Unsupported family/asset sizes not selectable as working",
+        "Owner overrides survive template change",
+        "Keyboard picker/focus return",
+        "Mobile preview/device sizes are previews, not native proof"
+      ]
+    },
+    {
+      "id": "speech_to_production",
+      "status": "planned_except_device_recipe_read_aloud",
+      "journey": "Explicit microphone permission → capture/transcribe through configured provider → editable transcript → extract proposed structured edits → owner checks facts, tone, language and permissions → preview → approve save/publication separately.",
+      "edge_cases": [
+        "Permission denied/offline/no provider",
+        "Greek/English code-switching and ambiguous names/amounts",
+        "Never auto-publish dictated text",
+        "Voice sample rights and deletion",
+        "No paid inference without configured budget/receipt",
+        "Speech synthesis/read-aloud differs from transcription or voice cloning"
+      ]
+    },
+    {
+      "id": "campaign_variants",
+      "status": "planned_shared_workflow",
+      "journey": "Choose actual offer/event/recipe → brief and saved brand voice → draft caption/story/reel/post/email/print variants → safe-area preview → rights/source review → approve → supported channel publish/schedule → inspect per-channel receipts.",
+      "edge_cases": [
+        "Image/video dimensions and crop",
+        "Provider not connected or scope revoked",
+        "Partial publish never all-success",
+        "Exact retries/duplicate prevention",
+        "No invented reviews, discounts, music rights or analytics",
+        "Real CTA target/QR destination tested",
+        "Email consent/unsubscribe suppression"
+      ]
+    },
+    {
+      "id": "detachable_workspace",
+      "status": "source_candidate_recipe_float_only",
+      "journey": "Detach actual live preview DOM → drag/keyboard reposition/minimize → return to origin preserving state → clear on account/workspace change.",
+      "edge_cases": [
+        "320/390/tablet/desktop",
+        "Safe area and soft keyboard",
+        "No duplicate media/audio",
+        "Reduced motion",
+        "Close/reopen and route disposal",
+        "No cross-route playback promise"
+      ]
+    },
+    {
+      "id": "analytics_and_assistant",
+      "status": "partial_existing_tools_not_universal_suite",
+      "journey": "Read actual first-party actions and connected provider metrics → show date/source/confidence → explain next action → operator approves actual tool mutation.",
+      "edge_cases": [
+        "Unavailable metrics not zero",
+        "No fake followers/engagement/predictions",
+        "Usage budgets and unknown paid-call state",
+        "Tool permissions/current workspace",
+        "Read-only suggestions do not claim completed actions"
+      ]
+    }
+  ],
+  "common_acceptance_cases": [
+    "Correct record identity/branch/association separation",
+    "Authenticated role matrix: owner/admin/editor/viewer/outsider",
+    "Current owner transfer and revoked membership",
+    "Explicit owner null/clear and source refresh precedence",
+    "Version conflict with retained form and explicit reconciliation",
+    "Stable request nonce, payload mismatch and duplicate replay",
+    "Timeout/lost receipt: no blind replacement mutation",
+    "Reload recovery; actor/workspace fences and immediate DOM clearing",
+    "Missing/empty/blocked source data and broken images",
+    "Provider unavailable/revoked/rate-limited/partial outcome",
+    "Greek/English Unicode, long names, RTL locale where supported",
+    "Translation review; source language preserved and unknown locale honest",
+    "390px plus320px/tablet/1440px; safe areas/soft keyboard",
+    "Keyboard, focus restoration, screen-reader status and touch targets",
+    "Light/dark contrast and reduced motion",
+    "Loading/error/retry/offline distinctions",
+    "Moderation/private draft/public publication boundaries",
+    "Date-only versus exact time; timezone/DST and past records",
+    "Prices/currency/tax/deposit/paid receipt distinctions",
+    "External handoff clearly labeled; no fake in-app confirmation",
+    "Source, rendered and exercised-journey evidence recorded separately",
+    "Browser/native/source-only/deployed status distinguished",
+    "No synthetic public seeds or real customer messages during QA",
+    "Stale CDN/import dependency deployment ordering",
+    "Archive/delete retention and references preserved"
+  ],
+  "sectors": [
+    {
+      "id": "restaurant",
+      "name": "Restaurants",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/restaurant",
+        "assets/suite/bizpage.js",
+        "assets/bookings",
+        "assets/inquiries"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Claim exact branch → confirm menu, prices/currency, hours and photos → preview four designs → publish",
+        "Configure real booking resources/slots or enquiry → prepare promotion → approve channel variants"
+      ],
+      "customer_journeys": [
+        "Browse actual menu → dietary questions to business → reserve configured slot or send enquiry",
+        "Save visit plan → official ordering only when a real provider destination exists"
+      ],
+      "required_data": [
+        "Branch identity/address/timezone",
+        "Menu sections/items/price/currency",
+        "Source versus owner imagery/hours",
+        "Resources, buffers and cancellation policy"
+      ],
+      "permission_rules": [
+        "Owner/admin/editor controls; viewer cannot mutate",
+        "Owner clears override imported menu/contact/media"
+      ],
+      "provider_setup": [
+        "Calendar/inventory must actually be configured",
+        "Ordering/payment links are explicit handoffs, not Zoi orders",
+        "Social OAuth/account scopes required for publishing"
+      ],
+      "sector_edge_cases": [
+        "Multiple branches share website/phone",
+        "Holiday versus ordinary hours conflict",
+        "Sold out, changed price, two diners competing for last slot",
+        "Allergens unknown; no inferred dietary safety"
+      ],
+      "open_gaps": [
+        "Shared Studio menu/campaign canvas",
+        "Provider delivery/stock integration",
+        "Branch-aware source completeness at inventory scale"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "bakery",
+      "name": "Bakeries",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/bakery",
+        "assets/suite/bizpage.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Edit real product/menu range, prices and seasonal offerings → preview → publish",
+        "Prepare celebration/custom-order enquiry and campaign variants"
+      ],
+      "customer_journeys": [
+        "Explore products → specify occasion/date/quantity → enquiry or actual checkout"
+      ],
+      "required_data": [
+        "Product names/photos/prices",
+        "Pickup/delivery policies and supported dates",
+        "Lead time when business supplies it"
+      ],
+      "permission_rules": [
+        "Workspace role/ownership checks",
+        "Do not overwrite explicit unavailable/removed products"
+      ],
+      "provider_setup": [
+        "Checkout requires actual products/variants/stock and provider",
+        "Enquiry works separately from order confirmation"
+      ],
+      "sector_edge_cases": [
+        "Sold-out versus unavailable price",
+        "Custom cake cannot be instant-priced without rules",
+        "Dietary claims require owner/source evidence"
+      ],
+      "open_gaps": [
+        "Bakery order configuration in Studio",
+        "Custom cake quotation lifecycle",
+        "No invented product availability"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "chef",
+      "name": "Chefs and recipes",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/recipes",
+        "studio/recipes/index.html",
+        "assets/community/media-catalog-sources.mjs"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Choose owned chef listing → author ingredients/steps/timers/video → A/B live preview → save private revision",
+        "Review conflicts and recover exact pending save → approve eventual publication separately"
+      ],
+      "customer_journeys": [
+        "Adjust servings → check ingredients → cook steps/timers → detach video → copy list"
+      ],
+      "required_data": [
+        "Authored/permitted recipe and chef identity",
+        "Numeric quantities versus free text",
+        "Video permission/source and optional regional citation"
+      ],
+      "permission_rules": [
+        "Private owner/admin/editor drafts; actor-bound request receipts",
+        "No public recipe publication contract currently"
+      ],
+      "provider_setup": [
+        "Validated video embedding is not availability proof",
+        "Speech capability check and explicit start/stop",
+        "Shopping purchase only with real matched product IDs"
+      ],
+      "sector_edge_cases": [
+        "Fraction/range/to-taste scaling",
+        "Timer sleep/reload, no closed-app alarm promise",
+        "Chef renamed/listing transferred",
+        "Nutrition/allergen claims not inferred"
+      ],
+      "open_gaps": [
+        "Public recipe publication",
+        "Cross-device household lists",
+        "Voice commands and regional editorial review",
+        "Native recipe acceptance"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "church",
+      "name": "Churches and parishes",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/church",
+        "assets/faith",
+        "assets/organizations",
+        "assets/suite/organization-calendar.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Verify exact parish identity → edit services/ministries/contact → publish actual calendar",
+        "Schedule volunteers or guardian programmes → roster/attendance in authorized tools",
+        "Prepare multilingual parish announcement variants"
+      ],
+      "customer_journeys": [
+        "Find correct same-name parish by city/country → view actual services/calendar → volunteer or guardian enrolment"
+      ],
+      "required_data": [
+        "Parish-specific source photos and contacts",
+        "Timezone/calendar tradition",
+        "Actual service records versus reference feasts",
+        "Programme terms and capacity"
+      ],
+      "permission_rules": [
+        "Roster restricted roles; children never public",
+        "Institution/diocese data cannot masquerade as parish-owned",
+        "Guardian and instructor scopes distinct"
+      ],
+      "provider_setup": [
+        "Giving requires actual provider flow and receipt",
+        "No inferred livestream from channel link",
+        "Reference feast calculation is not a service booking"
+      ],
+      "sector_edge_cases": [
+        "Worldwide same-name churches",
+        "Old/new calendar/Pascha distinctions",
+        "Unpublished service privacy and volunteer cancellation",
+        "Translated message reviewed before publication"
+      ],
+      "open_gaps": [
+        "Shared Studio calendar/announcement assembly",
+        "Giving integration where absent",
+        "Cross-parish event coordination UX"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "monastery",
+      "name": "Monasteries",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/faith/monastery-network.mjs",
+        "api/_monastery-network.js",
+        "assets/homes/templates/church"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Confirm exact monastery/source affiliation → edit visiting guidance/contact → publish permitted calendar",
+        "Review visitor enquiry and source attribution"
+      ],
+      "customer_journeys": [
+        "Find monastery → read supplied visiting guidance → contact or real visit request"
+      ],
+      "required_data": [
+        "Exact institution/location/affiliation evidence",
+        "Visiting rules from institution",
+        "Actual photos, accessibility and language when supplied"
+      ],
+      "permission_rules": [
+        "Only authorized institution workspace edits",
+        "No visitor/prayer-request details on public home"
+      ],
+      "provider_setup": [
+        "Do not claim room bookings or donations without configured backend",
+        "Official contact links may remain explicit handoffs"
+      ],
+      "sector_edge_cases": [
+        "17-entry North America registry is not all Greece",
+        "Same dedication does not prove affiliation",
+        "Missing profile has no fake destination",
+        "Gender/visit conditions must be source supplied"
+      ],
+      "open_gaps": [
+        "Broader sourced monastery coverage",
+        "Purpose-built visit-request administration",
+        "Reviewed duplicate/alias resolution"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "medical",
+      "name": "Medical and allied professionals",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/health",
+        "api/_health-home.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Confirm individual identity and supplied profession → edit contact/services/languages → preview → publish",
+        "Prepare factual professional introduction/campaign with review"
+      ],
+      "customer_journeys": [
+        "Understand actual discipline → save contact/vCard → prepare non-sensitive questions → configured booking or enquiry"
+      ],
+      "required_data": [
+        "Individual portrait, credentials and education as sourced",
+        "Society relationship separate from employer",
+        "Owner contact/service data"
+      ],
+      "permission_rules": [
+        "Professional source evidence does not establish current licence verification",
+        "No patient notes or medical records in general enquiries"
+      ],
+      "provider_setup": [
+        "Appointment provider requires real configuration",
+        "No diagnosis, insurance eligibility or treatment promises"
+      ],
+      "sector_edge_cases": [
+        "RN must not be labeled doctor/clinic",
+        "Association logo/socials cannot become person identity",
+        "Source portrait blocked → honest initials",
+        "Clinical/medical claims require qualified review"
+      ],
+      "open_gaps": [
+        "Specialty-specific intake with proper privacy design",
+        "Real provider/insurance integrations",
+        "Studio professional campaign approval"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "legal",
+      "name": "Lawyers and professional services",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/professional",
+        "assets/suite/operations.js",
+        "assets/suite/documents.js",
+        "assets/suite/timekeeping.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Edit actual practice areas/languages/jurisdictions → preview → publish",
+        "Manage authorized matters/tasks/documents/time entries → prepare client communication"
+      ],
+      "customer_journeys": [
+        "Review services → non-sensitive consultation checklist → actual enquiry/contact"
+      ],
+      "required_data": [
+        "Actual credentials/jurisdiction/source",
+        "Service descriptions and fee terms when supplied",
+        "Workspace-isolated matters and contact linkage"
+      ],
+      "permission_rules": [
+        "Matter/document/financial access must be scoped",
+        "No privileged details in public profile or generic campaign prompts"
+      ],
+      "provider_setup": [
+        "E-signature, filings and payments require supported provider workflows",
+        "Ownr-style recordkeeping does not mean legal formation completed"
+      ],
+      "sector_edge_cases": [
+        "Expired credentials or unsupported jurisdiction",
+        "Conflicts checks not invented",
+        "Concurrent edits and removed staff",
+        "Translation does not constitute legal advice"
+      ],
+      "open_gaps": [
+        "Full matter workflow validation",
+        "Supported business formation/filing integrations",
+        "Sensitive document review and client portal"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "creator",
+      "name": "Influencers and creators",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/creator",
+        "assets/suite/creator.js",
+        "assets/suite/analytics.js",
+        "assets/suite/connect.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Connect actual accounts → edit bio/media kit → create brief/deliverables → review campaign variants → schedule supported channels"
+      ],
+      "customer_journeys": [
+        "Explore authentic media → collaboration enquiry → real campaign agreement path"
+      ],
+      "required_data": [
+        "Owner channels/media",
+        "Sponsorship deliverables/dates",
+        "Metrics with actual provider provenance and timestamps"
+      ],
+      "permission_rules": [
+        "Account OAuth scopes and workspace roles",
+        "Sponsor/client draft visibility; no inferred paid approval"
+      ],
+      "provider_setup": [
+        "Keys/provider review/scopes needed per social platform",
+        "Channel URL ≠ connected feed; connecting ≠ all analytics available"
+      ],
+      "sector_edge_cases": [
+        "Revoked/expired tokens",
+        "Partial network publish and retry",
+        "Audience metrics unavailable",
+        "Sponsored disclosure and rights approval"
+      ],
+      "open_gaps": [
+        "Unified campaign storyboard/asset variants",
+        "Full provider coverage",
+        "Authentic live analytics and monetization workflows"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "artist",
+      "name": "Singers, musicians and performers",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/music",
+        "assets/community/music-player.mjs",
+        "assets/music/demand.mjs",
+        "assets/suite/appearances.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Edit actual artist identity/music/media → review tour/source cards → approve appearances",
+        "Review city demand → plan promotion and supported show/trip handoffs"
+      ],
+      "customer_journeys": [
+        "Listen via real provider → explore shows → request city → discuss/share → plan actual trip/event"
+      ],
+      "required_data": [
+        "Artist-specific portrait/catalogue/video",
+        "Sourced dated shows versus owner-confirmed appearances",
+        "Actual city demand receipts"
+      ],
+      "permission_rules": [
+        "Demand privacy and authenticated own requests",
+        "No source photo/label asset inherited from another artist"
+      ],
+      "provider_setup": [
+        "Spotify/YouTube playback subject to provider",
+        "Ticketing and booking require actual event/provider IDs"
+      ],
+      "sector_edge_cases": [
+        "Expired source show dates",
+        "Date-only events have no invented timezone",
+        "Broken portrait/player and region restriction",
+        "Full-page navigation does not guarantee continuous audio"
+      ],
+      "open_gaps": [
+        "All-artist source completeness",
+        "Integrated campaign/media Studio",
+        "Rights-aware release uploads and fan membership commerce"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "dance",
+      "name": "Dance companies and groups, including children",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/organizations/groups.mjs",
+        "assets/organizations/youth.mjs",
+        "assets/suite/groups.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Configure adult and guardian programmes separately → publish terms/capacity → approve enrolment",
+        "Assign current instructors → rehearsal calendar/attendance → festival participation"
+      ],
+      "customer_journeys": [
+        "Choose correct company/programme/age range → adult signup or guardian-managed child enrolment → review status/withdraw"
+      ],
+      "required_data": [
+        "Exact troupe/branch identity",
+        "Age-range programme and versioned consent",
+        "Guardian authority, instructor assignment, capacity and actual sessions"
+      ],
+      "permission_rules": [
+        "No child public profile/contact/photos by default",
+        "Guardian self-attestation is not safeguarding certification",
+        "Only authorized instructors access assigned rosters"
+      ],
+      "provider_setup": [
+        "Payment only if actual setup; registration ≠ paid enrolment",
+        "Native guardian flow currently needs explicit safe web handoff until parity accepted"
+      ],
+      "sector_edge_cases": [
+        "Same-name company/duplicate metro record",
+        "Term changes require renewed consent",
+        "Capacity races and pending approval",
+        "Unknown write cannot be discarded and repeated"
+      ],
+      "open_gaps": [
+        "Company-specific source programme extraction",
+        "Studio rehearsal/festival communications",
+        "Native persistent retry acceptance",
+        "Duplicate canonical reconciliation"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "league",
+      "name": "Sports clubs, leagues and athletes",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/suite/leagues.js"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Distinguish club from league → configure season/teams/fixtures → record authorized results",
+        "Prepare registration, sponsor and match announcement variants"
+      ],
+      "customer_journeys": [
+        "Find club/team → inspect actual fixtures/results → supported registration/contact"
+      ],
+      "required_data": [
+        "Season, team and fixture ownership",
+        "Venue/timezone and actual results",
+        "Sponsor inventory/approval"
+      ],
+      "permission_rules": [
+        "Team/league operator permissions",
+        "Youth player privacy; no inferred consent for public roster"
+      ],
+      "provider_setup": [
+        "Payments/tickets/streaming only when configured",
+        "External professional sports feeds need actual licensed/provider source"
+      ],
+      "sector_edge_cases": [
+        "Postponed fixtures and score corrections",
+        "Club such as Olympic Flame is not a league",
+        "Cross-timezone dates",
+        "National/pro athlete identity separate from amateur teams"
+      ],
+      "open_gaps": [
+        "End-to-end league registration",
+        "Global professional/national sports coverage",
+        "Athlete home source completeness",
+        "Shared sponsor campaign controls"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "venue",
+      "name": "Venues and coordinated events",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/events",
+        "assets/event-planner",
+        "assets/bookings"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Edit real spaces/capacities/layout reference → calibrate organizer plan → publish actual availability",
+        "Coordinate church/hall/band resources all-or-none → review quote/policies"
+      ],
+      "customer_journeys": [
+        "Compare spaces → select supported slots → atomic confirmation or explicit enquiry"
+      ],
+      "required_data": [
+        "Owner-authored floorplan calibration/images",
+        "Resource capacities and slot prices",
+        "Provider-specific shared context only"
+      ],
+      "permission_rules": [
+        "Private event plan scoped to organizer",
+        "Providers see only explicitly supplied relevant context"
+      ],
+      "provider_setup": [
+        "No external availability or travel-time invention",
+        "Payments/deposits separate actual receipts"
+      ],
+      "sector_edge_cases": [
+        "Resource races/buffers",
+        "Confirmed price snapshots",
+        "Layout images are organizer provided, not guaranteed sightlines",
+        "Cancel/reschedule rereads current status"
+      ],
+      "open_gaps": [
+        "Full event-production Studio",
+        "Vendor quote/contract lifecycle",
+        "External calendar integrations"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "festival",
+      "name": "Festivals and ticketed events",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/festival",
+        "assets/suite/festival.js",
+        "tickets/index.html"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Publish real event dates/packages/seat plan → manage applications/orders → campaign variants"
+      ],
+      "customer_journeys": [
+        "Explore actual event → select real package/seat → checkout/confirmation → manage eligible changes"
+      ],
+      "required_data": [
+        "Event timezone/venue",
+        "Published packages/price/capacity",
+        "Real ticket/payment and refund policies"
+      ],
+      "permission_rules": [
+        "Organizer/vendor/operator roles",
+        "Applicant and attendee details remain private"
+      ],
+      "provider_setup": [
+        "Actual checkout/webhook receipts required",
+        "A held seat is not a paid ticket"
+      ],
+      "sector_edge_cases": [
+        "Concurrent seat claims/expiry",
+        "Partial cancellation/refund state",
+        "Changed programme versus sold ticket",
+        "Accessible seating information only if supplied"
+      ],
+      "open_gaps": [
+        "Integrated media launch workflow",
+        "All payment/refund/provider edge-case acceptance",
+        "Event discovery/source freshness"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "hotel",
+      "name": "Hotels and accommodation",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/homes/templates/hospitality",
+        "assets/inquiries",
+        "assets/bookings"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Claim exact property → edit real rooms/dining/meeting offerings → configure supported provider or enquiry",
+        "Prepare seasonal campaign from supplied offers"
+      ],
+      "customer_journeys": [
+        "Choose dates/party/room interests → supported official booking destination or enquiry → confirmed outcome only from real backend"
+      ],
+      "required_data": [
+        "Property-specific room/venue images and policies",
+        "Dates/occupancy and supplied rates",
+        "Connected/request-only/unconfigured state"
+      ],
+      "permission_rules": [
+        "Owner fields and null clears beat sources",
+        "Guest enquiry access restricted"
+      ],
+      "provider_setup": [
+        "Appointment slots are not overnight hotel inventory",
+        "Provider parameters only when actually supported"
+      ],
+      "sector_edge_cases": [
+        "Nights/date boundaries/timezones",
+        "Children/occupancy policies",
+        "Room unavailable or changed rates",
+        "Email draft is not submitted booking"
+      ],
+      "open_gaps": [
+        "Real overnight inventory/rate plans",
+        "Provider connection/setup wizard",
+        "Accommodation confirmation and cancellation coverage"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "rental",
+      "name": "Car, motorcycle and equipment rentals",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/bookings",
+        "assets/homes/templates/hospitality"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Configure actual resources/locations/prices/policies where supported → preview customer journey",
+        "Create source-backed rental offer variants"
+      ],
+      "customer_journeys": [
+        "Choose collection/return dates/location → actual availability/quote → confirmation"
+      ],
+      "required_data": [
+        "Vehicle/equipment identity and inventory",
+        "Intervals, age/licence/deposit rules supplied by operator",
+        "Price/currency/extras"
+      ],
+      "permission_rules": [
+        "Operator inventory access",
+        "Do not collect licence/payment details in generic notes"
+      ],
+      "provider_setup": [
+        "Rental provider setup required for external fleet",
+        "No unsupported overnight/rental guarantees from appointment engine"
+      ],
+      "sector_edge_cases": [
+        "Cross-day return/late fees",
+        "Fleet versus exact unit",
+        "One-way location",
+        "Deposit is not captured payment until receipt"
+      ],
+      "open_gaps": [
+        "Purpose-built rental interval engine",
+        "Verified fleet provider integrations",
+        "Rental agreement lifecycle"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    },
+    {
+      "id": "property",
+      "name": "Property professionals and listings",
+      "studio_status": "planned_integration",
+      "existing_source_pointers": [
+        "assets/suite/properties.js",
+        "assets/homes/templates/professional"
+      ],
+      "source_presence_is_not_production_acceptance": true,
+      "owner_journeys": [
+        "Manage authorized property offers/photos/features → preview → publish → handle enquiries",
+        "Prepare media variants with exact offer terms"
+      ],
+      "customer_journeys": [
+        "Filter real published offers → inspect location/photos → enquiry or configured viewing"
+      ],
+      "required_data": [
+        "Property identity and source/owner permission",
+        "Actual price/currency/type/status",
+        "Approximate versus exact map position"
+      ],
+      "permission_rules": [
+        "Current host ownership and public moderation",
+        "Enquirer details private; unpublished offers excluded"
+      ],
+      "provider_setup": [
+        "MLS/portal feeds require actual integration",
+        "Mortgage/valuation tools need qualified sourced models"
+      ],
+      "sector_edge_cases": [
+        "Sold/withdrawn offer",
+        "Currency/period ambiguity",
+        "Duplicate broker listings",
+        "Neighbourhood imagery not represented as property interior"
+      ],
+      "open_gaps": [
+        "Property-specific shared Studio",
+        "Licensed feed synchronization",
+        "Viewing/offer lifecycle and document privacy"
+      ],
+      "required_acceptance": [
+        "owner_edit_preview_save_reload",
+        "customer_action_receipt_or_explicit_handoff",
+        "mobile_keyboard_light_dark",
+        "authorization_transfer_and_lost_response"
+      ]
+    }
+  ],
+  "remaining_platform_scope": [
+    "BuyGreek global marketplace/seller/product/order/payout operations",
+    "Ownr-style formation/filing and jurisdiction-specific integrations",
+    "Community social graph/media/feed quality and native parity",
+    "Global map/category editorial/sponsor inventory",
+    "All-listing enrichment, duplicate resolution and criterion-level QA",
+    "Unified personal Hootsuite-style publishing/analytics/assistant",
+    "Continuous mobile/device acceptance and deployment readiness"
+  ],
+  "prohibited_completion_shortcuts": [
+    "HTTP200 or field presence as full journey pass",
+    "One showcase as category-wide completion",
+    "Provider URL as authenticated integration",
+    "Local preview as saved/published state",
+    "Simulated sample data as real customer activity"
+  ]
+}

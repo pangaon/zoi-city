@@ -1,0 +1,35 @@
+name: Delivery scope ledger
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 6 * * *'
+  push:
+    branches: [main]
+    paths:
+      - 'docs/recovery-scope.json'
+      - 'docs/studio-journey-matrix.json'
+      - 'docs/delivery-evidence.json'
+      - 'scripts/delivery/**'
+      - 'tests/unit/delivery-ledger.test.mjs'
+      - '.github/workflows/delivery-ledger.yml'
+permissions:
+  contents: read
+concurrency:
+  group: delivery-scope-ledger
+  cancel-in-progress: true
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --test tests/unit/delivery-ledger.test.mjs
+      - run: node scripts/delivery/ledger.mjs artifacts/delivery
+      - uses: actions/upload-artifact@v4
+        with:
+          name: delivery-board-${{ github.run_id }}
+          path: artifacts/delivery/
+          retention-days: 30
