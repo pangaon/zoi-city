@@ -1,0 +1,80 @@
+name: Bounded listing quality audit
+on:
+  workflow_dispatch:
+    inputs:
+      execute:
+        description: Apply queue receipts (false is a no-network plan)
+        type: boolean
+        default: false
+      task:
+        type: choice
+        options: [classification, verification]
+        default: classification
+      limit:
+        description: Maximum leases or receipt retries (1–20; canary 3)
+        type: number
+        default: 3
+      resume_run:
+        description: Prior workflow run ID containing immutable evidence (empty for new leases)
+        type: string
+        default: ''
+      resume_attempt:
+        description: Prior run attempt containing the artifact
+        type: number
+        default: 1
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: listing-quality-production
+  cancel-in-progress: false
+jobs:
+  audit:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate bounded inputs and collector
+        env:
+          QUALITY_TASK: ${{ inputs.task }}
+          QUALITY_LIMIT: ${{ inputs.limit }}
+          RESUME_RUN: ${{ inputs.resume_run }}
+          RESUME_ATTEMPT: ${{ inputs.resume_attempt }}
+        run: |
+          node --input-type=module -e "import {options} from './scripts/quality-collector.mjs'; options(['--task',process.env.QUALITY_TASK,'--limit',process.env.QUALITY_LIMIT]); if(process.env.RESUME_RUN&&!/^[1-9][0-9]*$/.test(process.env.RESUME_RUN))throw Error('invalid_resume_run'); if(!/^[1-9][0-9]*$/.test(process.env.RESUME_ATTEMPT))throw Error('invalid_resume_attempt')"
+          node --test tests/unit/quality-collector.test.mjs tests/unit/member-source.test.mjs tests/unit/association-cards.test.mjs
+      - name: Restore exact prior evidence
+        if: inputs.execute && inputs.resume_run != ''
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.resume_run }}
+          name: quality-evidence-${{ inputs.resume_run }}-${{ inputs.resume_attempt }}
+          path: quality-evidence
+      - name: Install pinned browser for rendered verification
+        if: inputs.execute && inputs.task == 'verification' && inputs.resume_run == ''
+        run: |
+          npm install --global agent-browser@0.38.1
+          agent-browser install --with-deps
+      - name: Collect bounded evidence or resume exact receipts
+        env:
+          QUALITY_EXECUTE: ${{ inputs.execute }}
+          QUALITY_TASK: ${{ inputs.task }}
+          QUALITY_LIMIT: ${{ inputs.limit }}
+          QUALITY_RESUME: ${{ inputs.resume_run != '' }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/quality/ci.mjs
+      - name: Preserve immutable evidence even when a receipt is lost
+        if: always() && inputs.execute
+        uses: actions/upload-artifact@v4
+        with:
+          name: quality-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: quality-evidence/*.json
+          if-no-files-found: warn
+          retention-days: 90
+          overwrite: false
