@@ -547,6 +547,7 @@
       slot.innerHTML = '<p class="zp-note">Loading your details\u2026</p>';
       try {
         var raw = state.entity || await rpcRead('seo_entity', { p_slug: slug });
+        await Promise.resolve(); // The cached entity path must wait for the form to attach.
         if(!scopeLive()||!slot.isConnected)return;
         var e = Array.isArray(raw) ? raw[0] : raw;
         if (!e) { slot.innerHTML = ''; return; }
@@ -556,7 +557,7 @@
         state.vform = UI.render(slot, {
           entityType: e.entity_type,
           categorySlug: e.category_slug,
-          profile: e.profile,
+          profile: state.ownerProfile || e.profile,
           onDirty: function () { contentDirty=true; }
         });
       } catch (err) {
@@ -758,7 +759,7 @@
 
       // footer: save
       var foot = el(doc, 'div', 'zp-formfoot');
-      var savedNote = el(doc, 'span', 'zp-note', 'Saved changes update your public page.');
+      var savedNote = el(doc, 'span', 'zp-note', 'Saved changes update your public page.');savedNote.setAttribute('role','status');savedNote.setAttribute('aria-live','polite');
       var saveBtn = el(doc, 'button', 'zp-btn primary',
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> Save page');
       saveBtn.type = 'submit';
@@ -905,72 +906,27 @@
 
     /* ---- save ---- */
     function doSave(saveBtn, savedNote, sync) {
-      var s = state.status;
-      var d = state.draft;
-      for(var i=0;i<(d.social||[]).length;i++){if(d.social[i].url && !/^https?:\/\/[^\s]+$/i.test(d.social[i].url.trim())){savedNote.textContent='Social links must be complete http(s) URLs.';return;}}
-      var profileSnapshot;
-      try { profileSnapshot = state.vform ? JSON.parse(JSON.stringify(state.vform.read())) : null; } catch (e) { savedNote.textContent='Check your detailed fields: '+((e&&e.message)||'invalid value'); return; }
-      var locked=Array.from(wrap.querySelectorAll('button,input,select,textarea')).map(function(n){var old=n.disabled;n.disabled=true;return[n,old];});
-      state.unlock=function(){locked.forEach(function(item){item[0].disabled=item[1];});};
-      state.saving = true;
-      saveBtn.setAttribute('disabled', 'disabled');
-      saveBtn.innerHTML = '<span class="zp-spin"></span> Saving…';
-      savedNote.textContent = 'Saving your changes…';
-
-      var params = {
-        p_workspace: ws,
-        p_listing: s.listingId,
-        p_description: firstStr(d.description) || null,
-        p_phone: firstStr(d.phone) || null,
-        p_email: firstStr(d.email) || null,
-        p_website: firstStr(d.website) || null,
-        p_hours: firstStr(d.hours) || null,
-        p_price_range: firstStr(d.price_range) || null,
-        p_photo_url: firstStr(d.photo_url) || null,
-        p_social: assembleSocial(d.social)
-      };
-
-      rpcWrite('bizpage_save', params).then(async function (res) {
+      if(!scopeLive()||state.saving)return;
+      var s=state.status,d=state.draft;
+      if(!state.pendingContent){
+        for(var i=0;i<(d.social||[]).length;i++){if(d.social[i].url&&!/^https?:\/\/[^\s]+$/i.test(d.social[i].url.trim())){savedNote.textContent='Social links must be complete http(s) URLs.';return;}}
+        var profileSnapshot;try{profileSnapshot=state.vform?JSON.parse(JSON.stringify(state.vform.read())):{};}catch(e){savedNote.textContent='Check your detailed fields: '+(e.message||'invalid value');return;}
+        if(!state.contentVersion){savedNote.textContent='Reload your page before saving so existing changes stay safe.';return;}
+        state.pendingContent={p_workspace:ws,p_listing:s.listingId,p_expected_version:state.contentVersion,p_request:global.crypto.randomUUID(),p_base:{description:firstStr(d.description)||null,phone:firstStr(d.phone)||null,email:firstStr(d.email)||null,website:firstStr(d.website)||null,hours:firstStr(d.hours)||null,price_range:firstStr(d.price_range)||null,photo_url:firstStr(d.photo_url)||null,social_links:assembleSocial(d.social)},p_profile:profileSnapshot};
+      }
+      var payload=state.pendingContent;
+      if(!state.unlock){var locked=Array.from(wrap.querySelectorAll('button,input,select,textarea')).map(function(n){var old=n.disabled;n.disabled=true;return[n,old];});state.unlock=function(){locked.forEach(function(item){item[0].disabled=item[1];});};}
+      state.saving=true;saveBtn.disabled=true;saveBtn.textContent='Saving…';savedNote.textContent='Saving your changes…';
+      rpcWrite('home_content_save',payload).then(function(res){
         if(!scopeLive())return;
-        var ok = res === true;
-
-        /* The vertical profile goes through its own writer, because owner-typed
-           detail and machine-read detail are stored separately on purpose. A
-           failure here must not make the basics look like they failed. */
-        var profileNote = '';
-        if (ok && state.vform && state.status && state.status.listingId) {
-          try {
-            var prof = profileSnapshot || {};
-            if (Object.keys(prof).length) {
-              var profileReceipt = await rpcWrite('bizpage_save_profile', {
-                p_workspace: ctx.ws, p_listing: s.listingId, p_profile: prof });
-              if (profileReceipt !== true) throw new Error('The server did not confirm the detailed fields');
-              profileNote = ' Your ' + (state.vkind || 'details') + ' were saved too.';
-            }
-          } catch (e) {
-            profileNote = ' The basics saved, but your detailed fields did not — '
-              + ((e && e.message) || 'please try again') + '.';
-          }
-        }
-
-        if(!scopeLive())return;
-        state.saving = false;
-        finishSave(saveBtn, savedNote);
-        if (ok) {
-          contentDirty=!!profileNote && profileNote.includes('did not');
-          toast('Business home saved.' + (profileNote ? profileNote : ''));
-          savedNote.textContent = 'Saved · your public page is up to date.' + profileNote;
-        } else {
-          toast('Save did not complete.');
-          savedNote.textContent = 'Save did not complete — please try again.';
-        }
-      }, function (err) {
-        if(!scopeLive())return;
-        state.saving = false;
-        finishSave(saveBtn, savedNote);
-        var msg = (err && err.message) || 'Could not save.';
-        toast('Save failed: ' + msg);
-        savedNote.textContent = 'Save failed — ' + msg;
+        if(res?.ok!==true||res.workspace_id!==ws||res.listing_id!==s.listingId||res.request_id!==payload.p_request||!/^([a-f0-9]{32})$/.test(res.version||''))throw Error('Save confirmation was incomplete. Retry to confirm the same changes.');
+        state.contentVersion=res.version;if(state.vform?.acceptSaved)state.vform.acceptSaved(payload.p_profile);state.ownerProfile=Object.assign({},state.ownerProfile||{},payload.p_profile);state.pendingContent=null;state.saving=false;contentDirty=false;finishSave(saveBtn,savedNote);savedNote.textContent='Saved. Your page details and menu are updated.';toast('Business home saved.');
+      }).catch(function(err){
+        if(!scopeLive())return;state.saving=false;var message=String(err?.message||'The response could not be confirmed.');
+        if(/version_conflict|not_authorized|no_access_to_listing|invalid_|unsupported_|rate_limit/.test(message)){
+          state.pendingContent=null;finishSave(saveBtn,savedNote);savedNote.textContent=/version_conflict/.test(message)?'This page changed elsewhere. Reload the latest details before editing again. Your unsaved text is still here.':'Save was refused: '+message.replace(/_/g,' ');state.contentVersion=null;
+          var reload=el(doc,'button','zp-btn','Reload latest details');reload.type='button';reload.onclick=function(){if(global.confirm('Reload the latest saved details? Your unsaved changes here will be replaced.'))boot(s.listingId);};savedNote.parentNode.appendChild(reload);
+        }else{savedNote.textContent='The save result is uncertain. Retry to confirm the same changes before editing further.';saveBtn.disabled=false;saveBtn.textContent='Retry this save';}
       });
     }
     function finishSave(saveBtn, savedNote) {
@@ -983,7 +939,7 @@
     /* ---- controller ---- */
     async function boot(listingId) {
       if(!scopeLive())return;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
-      state.vform=null;state.entity=null;
+      state.vform=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
       state.loading = true;
       state.error = null;
       renderLoading();
@@ -1014,7 +970,7 @@
       // Has a claimed listing -> load its current content.
       var contentRaw = null;
       try {
-        contentRaw = await rpcRead('bizpage_get', { p_workspace: ws, p_listing: status.listingId });
+        var contentReceipt=await rpcRead('home_content_get',{p_workspace:ws,p_listing:status.listingId});if(contentReceipt?.ok!==true||contentReceipt.listing_id!==status.listingId||contentReceipt.workspace_id!==ws||!/^([a-f0-9]{32})$/.test(contentReceipt.version||''))throw Error('Current page snapshot could not be confirmed');contentRaw=contentReceipt.base;state.contentVersion=contentReceipt.version;state.ownerProfile=contentReceipt.profile;
       } catch (e2) {
         if(!scopeLive()||loadEpoch!==bootEpoch)return;
         state.loading = false;

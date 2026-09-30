@@ -250,6 +250,7 @@
       <button class="m-sheetbtn m-xbtn" id="psheet" aria-label="Collapse the list" aria-expanded="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
       </button>
+      <button class="m-saved-toggle" id="tSaved" type="button" aria-label="Show places saved on this device">Saved</button>
       <button class="m-xbtn" id="pclose" hidden aria-label="Back to all results">&times;</button>
     </header>
     <div class="m-body" id="pbody"></div>
@@ -293,6 +294,7 @@
   </div>
 </main>
 
+<link rel="stylesheet" href="/assets/map-data/preview.css">
 <script src="/assets/zoi-core.js"></script>
 <script src="/assets/zoi-theme.js?v=20260930"></script>
 <script src="/assets/zoi-emblem.js"></script>
@@ -457,7 +459,7 @@
   var query = '';
   var here = null;                    // {lat,lng} once geolocated
   var selected = null;
-  var mapTools = null;
+  var mapTools = null, previewModule=null, previewController=null;
   var truncated = false;              // true when the page cap, not the data, ended the walk
   var failedPages = 0;                // pages the directory did not return
   var map = null, ready = false;
@@ -526,6 +528,7 @@
   async function loadData() {
     status('Reading the directory…', true);
     mapTools = await import('/assets/map-data/loader.mjs');
+    previewModule = await import('/assets/map-data/preview.mjs');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
     }, { concurrency: 4, onProgress: function (progress) { status('Loaded ' + fmtN(progress.loaded) + ' places…', true); } });
@@ -551,6 +554,7 @@
       });
     });
     ALL = out;
+    updateSavedLabel();
 
     /* Exact-duplicate coordinates are the defining feature of this dataset, so
        they are indexed up front rather than discovered on every click. */
@@ -824,6 +828,8 @@
     });
     el.addEventListener('mouseenter', function () { tip(p, lngLat); });
     el.addEventListener('mouseleave', hideTip);
+    el.addEventListener('focus', function () { tip(p, lngLat); });
+    el.addEventListener('blur', hideTip);
     var opts = { element: el };
     if (offset) opts.offset = offset;
     return new MB.Marker(opts).setLngLat(lngLat).addTo(map);
@@ -874,6 +880,8 @@
           });
           el.addEventListener('mouseenter', function () { tip(pp, lngLat); });
           el.addEventListener('mouseleave', hideTip);
+          el.addEventListener('focus', function () { tip(pp,lngLat); });
+          el.addEventListener('blur',hideTip);
         })(p);
         spider.push(new MB.Marker({ element: el, offset: [Math.cos(a) * rad, Math.sin(a) * rad] })
           .setLngLat(lngLat).addTo(map));
@@ -889,7 +897,7 @@
       '<div class="m-tipwh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</div>' +
       (p.addr ? '<div class="m-tipwh">' + esc(p.addr) + '</div>' : '') +
       '<div class="m-tipwh' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) + '</div>' +
-      '<span class="m-tipgo">Open listing →</span>'
+      '<span class="m-tipgo">Select to preview this place →</span>'
     ).addTo(map);
   }
   function hideTip() { pop.remove(); }
@@ -927,9 +935,11 @@
   var listState = { items: [], shown: 0, mode: 'all' };
   function paint(reset) {
     var body = $('pbody');
-    if (reset) { body.innerHTML = ''; listState.shown = 0; }
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
     var slice = listState.items.slice(listState.shown, listState.shown + 60);
-    if (!slice.length && !listState.shown) {
+    var advance=slice.length;
+    if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});
+    if (!slice.length && !listState.shown && !selected) {
       body.innerHTML = '<div class="m-empty">Nothing here yet.<br>' +
         (query ? 'Try a different search, or ' : '') + 'zoom out to see more.</div>';
       return;
@@ -937,7 +947,7 @@
     var frag = document.createElement('div');
     frag.innerHTML = slice.map(rowHTML).join('');
     while (frag.firstChild) body.appendChild(frag.firstChild);
-    listState.shown += slice.length;
+    listState.shown += advance;
   }
   $('pbody').addEventListener('scroll', function () {
     var b = $('pbody');
@@ -950,8 +960,14 @@
     if (p) tip(p, [p.lng, p.lat]);
   });
   $('pbody').addEventListener('mouseout', hideTip);
+  $('pbody').addEventListener('focusin',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(a){var p=ALL[+a.dataset.i];if(p)tip(p,[p.lng,p.lat]);}});
+  $('pbody').addEventListener('focusout',hideTip);
+  $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=ALL[+a.dataset.i];if(p){e.preventDefault();choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
+  function updateSavedLabel(){if(previewModule)$('tSaved').textContent='Saved ('+previewModule.readSavedPlaces().length+')';}
+  $('tSaved').addEventListener('click',function(){if(!previewModule)return;selected=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Only currently available mapped places are shown.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
 
   function showList(items, title, sub, lngLat) {
+    if(selected&&!items.some(function(p){return p.s===selected.s;}))selected=null;
     listState = { items: items, shown: 0, mode: 'group' };
     $('ptitle').innerHTML = esc(title) + '<span class="m-sub">' + esc(sub) + '</span>';
     $('pclose').hidden = false;

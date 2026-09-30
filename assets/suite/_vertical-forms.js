@@ -28,7 +28,7 @@
    */
   var T = {
     TEXT: 'text', AREA: 'area', URL: 'url', TEL: 'tel', MAIL: 'mail',
-    TIME: 'time', SELECT: 'select', TAGS: 'tags', REPEAT: 'repeat', HOURS: 'hours'
+    TIME: 'time', SELECT: 'select', TAGS: 'tags', REPEAT: 'repeat', HOURS: 'hours', MONEY: 'money'
   };
 
   var DAYS = [['mon','Mon'],['tue','Tue'],['wed','Wed'],['thu','Thu'],['fri','Fri'],['sat','Sat'],['sun','Sun']];
@@ -90,12 +90,22 @@
       title: 'Your restaurant',
       fields: [
         { k: 'cuisine', label: 'Cuisine', type: T.TAGS, ph: 'Greek, Cretan, seafood' },
+        { k: 'menu', label: 'Menu sections and items', type: T.REPEAT, maxRows: 20, of: [
+          {k:'section',label:'Section name',type:T.TEXT,max:100,required:true},
+          {k:'items',label:'Items',type:T.REPEAT,required:true,maxRows:100,of:[
+            {k:'name',label:'Item name',type:T.TEXT,max:160,required:true},
+            {k:'price',label:'Price (optional)',type:T.MONEY},
+            {k:'note',label:'Description / dietary information',type:T.TEXT,max:600}
+          ]}
+        ],hint:'Add your actual dishes and prices. A blank price stays blank. Changes publish when you save this page.'},
         { k: 'menu_url', label: 'Menu link', type: T.URL },
         { k: 'menu_updated', label: 'Menu last updated', type: T.TEXT, ph: '2026-06' ,
           hint: 'So diners know it is current. A stale menu costs you a table.' },
         { k: 'specials', label: 'Regular specials', type: T.REPEAT, of: [
-            { k: 'name', label: 'Dish', type: T.TEXT },
-            { k: 'when', label: 'When', type: T.TEXT, ph: 'Fridays' }
+            { k: 'name', label: 'Promotion or dish', type: T.TEXT, max:160, required:true },
+            { k: 'when', label: 'When / validity', type: T.TEXT, ph: 'Fridays, until 30 October', max:160 },
+            { k: 'price', label: 'Offer price (optional)', type:T.MONEY },
+            { k: 'note', label: 'Terms or description', type:T.TEXT,max:600 }
         ]},
         { k: 'reserve_url', label: 'Reservations link', type: T.URL },
         { k: 'order_url', label: 'Order / delivery link', type: T.URL },
@@ -343,7 +353,17 @@
     return out;
   }
 
-  global.ZoiVerticalForms = {
+  function money(amount,currency){
+    amount=String(amount||'').trim();currency=String(currency||'').trim().toUpperCase();
+    if(!amount&&!currency)return '';
+    if(!/^(0|[1-9][0-9]{0,8})(\.[0-9]{1,3})?$/.test(amount)||!/^[A-Z]{3}$/.test(currency))throw Error('Enter a non-negative decimal price and its three-letter currency.');
+    var currencies=typeof Intl.supportedValuesOf==='function'?Intl.supportedValuesOf('currency'):['EUR','CAD','USD','GBP','AUD','NZD','CHF','JPY','KWD'];
+    if(currencies.indexOf(currency)<0)throw Error('Choose a supported currency code.');
+    var digits=new Intl.NumberFormat('en',{style:'currency',currency:currency}).resolvedOptions().maximumFractionDigits;
+    if((amount.split('.')[1]||'').length>digits)throw Error('This currency allows '+digits+' decimal places.');
+    return currency+' '+amount;
+  }
+  global.ZoiVerticalForms = {money:money,
     T: T, DAYS: DAYS, SHARED: SHARED, VERTICALS: V,
     schemaFor: schemaFor, fieldsFor: fieldsFor,
     partition: partition, clean: clean, isEmpty: isEmpty, ENRICH_ALIAS: ENRICH_ALIAS

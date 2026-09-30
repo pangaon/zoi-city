@@ -692,7 +692,7 @@ const RESTAURANT = {
     let h = '';
     h += panel('Hours & Open Status', IC.clock, scheduleBlock(p.hours));
     h += panel('Menu & Gastronomy', IC.menu, menuBlock(p.menu), { id: 'menu' });
-    h += panel("Today's Namedays & Specials", IC.spark, chipList(p.specials));
+    h += panel("Today's Namedays & Specials", IC.spark, chipList(arr(p.specials).map(v=>typeof v==='string'?v:[v?.name||v?.label,v?.when,v?.price,v?.note].map(str).filter(Boolean).join(' · '))));
     h += panel('Photos & Ambiance', IC.camera, gallery(p.photos));
     if (p.table_tab_enabled || p.in_seat_ordering) {
       h += panel('In-Seat QR Ordering & Table Tabs', IC.cart,

@@ -1,10 +1,11 @@
+import{personData,eligiblePerson,personURL}from'../assets/homes/person-data.mjs';
 import{ownerHomeContent}from'./_owner-home-content.js';
 import{ARTIST_SOURCES}from'../assets/homes/templates/music/sources.mjs';
 import{renderMusic}from'../assets/homes/templates/music/render.mjs';
 import{esc,safeHttps,TEMPLATES}from'../assets/homes/templates/music/model.mjs';
 const json=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
 function sameSource(url,source){try{const a=new URL(url),b=new URL(source);return a.protocol==='https:'&&!a.username&&!a.password&&a.hostname.replace(/^www\./,'')===b.hostname.replace(/^www\./,'')&&(b.pathname==='/'||a.pathname.replace(/\/$/,'')===b.pathname.replace(/\/$/,''));}catch{return false;}}
-export function musicHomeContent(entity){const source=ARTIST_SOURCES[entity?.id];if(!source||entity.entity_type!=='artist'||entity.marketplace_status==='hidden'||entity.publish_status&&entity.publish_status!=='published')return null;
+export function musicHomeContent(entity){if(!eligiblePerson(entity,'artist'))return null;const source=ARTIST_SOURCES[entity.id];if(!source){const d=personData(entity),p=entity.profile||{},social=Object.fromEntries(d.socials.map(s=>[s.id,s.url]));return ownerHomeContent({...d,story:d.description||'Explore this artist’s published profile and contact options.',greek_name:'',portrait_credit:d.portrait?'Published profile photograph':'',portrait_sources:[],gallery:[],releases:[],shows:[],spotify:personURL(p.spotify_url),youtube:social.youtube||'',instagram:social.instagram||'',facebook:social.facebook||'',video_playlist:'',contact:personURL(p.booking_url),programme:'',checked_at:'',source_method:'Details from the public artist profile and authorized owner edits.',source_label:'Artist website'},entity,'music');}
  if(entity.id==='a558f28d-6c8f-4079-9730-838f483867fc'&&!sameSource(entity.website,source.website))return null;
  // Petrelis is an existing sparse artist record. Label/Spotify sources were
  // independently reviewed; never invent an official website on the entity.

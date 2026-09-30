@@ -112,3 +112,29 @@
 #restaurant-home .restaurant-brand-skin[data-restaurant-brand=twelve-islands] .eyebrow{font-size:11px;letter-spacing:.13em}
 #restaurant-home .restaurant-brand-skin[data-restaurant-brand=twelve-islands] .top-action{font-size:12px;min-height:44px}
 #restaurant-home .restaurant-brand-skin[data-restaurant-brand=twelve-islands] .hero-bottom{font-size:11px}
+
+/* Shared visit dialog: explicit row direction prevents the base form-label
+   column layout from detaching checkbox controls from their labels. */
+#restaurant-home .restaurant-dialog{width:min(600px,calc(100vw - 32px));padding:26px;border-radius:28px 28px 28px 10px;border:1px solid color-mix(in srgb,var(--gold) 28%,transparent);box-shadow:0 32px 100px #081c2855,0 1px 0 #ffffff80 inset;max-height:calc(100dvh - 32px);overscroll-behavior:contain}
+#restaurant-home .restaurant-dialog::backdrop{background:#0b211bb8;backdrop-filter:blur(10px)}
+#restaurant-home .restaurant-dialog .dialog-head{padding:0 0 16px;align-items:center}
+#restaurant-home .restaurant-dialog h2{font-size:clamp(25px,4vw,32px);line-height:1.15;letter-spacing:-.025em}
+#restaurant-home .restaurant-dialog .icon-button{width:44px;height:44px}
+#restaurant-home .restaurant-dialog .visit-plan-intro{font-weight:600;font-size:15px;margin:18px 0 4px;line-height:1.4}
+#restaurant-home .restaurant-dialog .visit-plan-note{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:20px}
+#restaurant-home .restaurant-dialog [data-visit-plan]{display:grid;gap:16px}
+#restaurant-home .restaurant-dialog [data-visit-plan] label{margin:0;font-size:13px;line-height:1.4}
+#restaurant-home .restaurant-dialog [data-visit-plan] input:not([type=checkbox]),#restaurant-home .restaurant-dialog select{min-height:48px;padding:12px;border-radius:12px;font-size:16px;margin-top:7px;border-color:color-mix(in srgb,var(--ink) 25%,transparent)}
+#restaurant-home .restaurant-dialog .form-row{display:grid;grid-template-columns:.8fr 1.2fr;gap:14px}
+#restaurant-home .restaurant-dialog [data-visit-plan] .source-note{font-size:12px;line-height:1.5;margin:0;color:var(--muted)}
+#restaurant-home .restaurant-dialog .visit-questions{padding:0;border:0;margin:0}
+#restaurant-home .restaurant-dialog .visit-questions legend{font-size:13px;margin-bottom:10px}
+#restaurant-home .restaurant-dialog .visit-question-options{display:flex;flex-wrap:wrap;gap:8px}
+#restaurant-home .restaurant-dialog .visit-question-options label{display:flex;flex-direction:row;align-items:center;gap:8px;min-height:44px;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:var(--paper);cursor:pointer;font-size:12px;font-weight:500}
+#restaurant-home .restaurant-dialog .visit-question-options label:has(input:checked){border-color:var(--forest);box-shadow:0 0 0 1px var(--forest) inset}
+#restaurant-home .restaurant-dialog .visit-question-options input{display:block;flex:0 0 16px;width:16px;height:16px;margin:0;padding:0;accent-color:var(--forest)}
+#restaurant-home .restaurant-dialog [data-visit-plan]>.button{justify-content:center;min-height:48px;border-radius:14px;font-size:14px;padding:14px 20px;margin-top:2px}
+#restaurant-home .restaurant-dialog [data-dialog-status]:empty{display:none}
+#restaurant-home .restaurant-dialog pre{border-radius:16px;font-size:14px;padding:18px;line-height:1.6;margin:18px 0}
+#restaurant-home .restaurant-dialog .result-actions{gap:10px 18px}
+@media(max-width:600px){#restaurant-home .restaurant-dialog{padding:20px;width:calc(100vw - 24px);max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);border-radius:24px 24px 24px 8px}#restaurant-home .restaurant-dialog .form-row{grid-template-columns:.75fr 1.25fr;gap:10px}#restaurant-home .restaurant-dialog .visit-question-options{gap:7px}#restaurant-home .restaurant-dialog .visit-question-options label{font-size:12px;padding:9px 10px}}
