@@ -21,3 +21,13 @@ Fresh browser rerun after the scene specialist's framing change passes390/1440 a
 ## Full-screen fallback independent check
 
 Actual integrated390×844 fixture tested with Element.requestFullscreen both absent and rejecting. Both entered a room at exact viewport bounds(0,0,390,844). Escape restored focus to Full screen and cleared temporary body position/overflow styles. Reopening, choosing10A and Use table10A exited fallback and retained10A in the enquiry. No pageerrors observed. Screenshot `/tmp/opa-fullscreen-independent-absent.png` inspected; reproduction `/tmp/opa-fullscreen-independent.mjs`. Browser closed. These are browser simulation checks, not physical iPhone certification.
+
+## Production b9f2b69
+
+After confirmed Vercel success, actual www.zoi.city event passed390/1440 table10A→three-person prepared enquiry→clear. Deployed canonical/client and room-scene modules carry `?v=20260930-montreal-room`; integration/plan modules and room-scene.css were requested from production. No pageerrors/overflow observed. Logs `/tmp/opa-live-b9f2b69.log`.
+
+Cold-load visual race found: table selection is available before Three.js finishes importing. Selecting10A then correctly preserves enquiry data, but newly created scene label/mesh lacks selected highlight and finder remains open. Reported to root and scene specialist. Waiting for `.rs-loading` to hide before selection yields correct selected10A/stage display and closes finder; subsequent production rerun passes both widths. Inspected `/tmp/opa-live-ready-b9f2b69-room-390.png`. This race remains an open follow-up until fixed/deployed; no lost booking or enquiry data was observed.
+
+## Cold-load corrective candidate independent acceptance
+
+Read-reviewed ready-time reapplication using `notify:false,focus:false`: this synchronizes newly created geometry/labels without duplicating selection notification or resetting the chosen camera. Independently held the Three.js module network request, selected10A in the actual integrated form before releasing it, then released the module at390/1440. Both retained form10A, created exactly the10A pressed scene label, and closed the finder after successful WebGL initialization. Screenshot `/tmp/opa-cold-independent-390.png` inspected. Reproduction `/tmp/opa-cold-independent.mjs`. Corrective candidate passes; not yet a production-fix claim.

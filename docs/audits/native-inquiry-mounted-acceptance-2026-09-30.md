@@ -17,3 +17,7 @@ The final bounded tooling correction added explicit `extraNodeModules` package a
 At 390×844, actual mounted controls passed: fill subject/message → interrupted send (one controlled RPC write) → nonce-only stored marker without message body → full page reload → Check saved enquiry receipt → existing conversation shown with zero resend → revoke fixture read permission → Refresh conversation → private message removed and access error shown. No page errors. Browser closed after test.
 
 Evidence: `mobile/.qa-inquiry/results.json`, `recovered-390.png`, `revoked-390.png`; browser script `.qa-opa-room/native-inquiry-check.mjs`. The initial module-resolution blocker above is resolved. This is controlled-provider React Native Web mounted evidence, not production RPC, physical iOS/Android, or SecureStore device verification.
+
+## Clean CI dependency correction
+
+Release b9f2b69's clean CI export found Metro did not watch the newly imported `assets/events` room-data directory. The local bundle had succeeded with cached dependency discovery. Added that shared directory to Metro watchFolders; a local export with `--clear` then passed and the resulting bundle contains both the current recovery text and Montréal floor-plan data. No runtime authentication or enquiry logic changed. The blocked backend job did not apply the countries migration (migration ledger checked empty); a fresh bounded manifest is used for the corrective release. CI confirmation remains required.
