@@ -1,81 +1,42 @@
 {
   "project": "csebihpaychdkanjjsmz",
-  "id": "release-20260930-042355-community-enrichment",
-  "expires_at": "2026-09-30T05:13:55.990540+00:00",
+  "id": "release-20260930-043057-connected-domains",
+  "expires_at": "2026-09-30T05:20:57.359915+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930032516_community_profiles_graph_and_personal_feeds.sql",
-      "sha256": "676ee20cbfef2a5463f03e96fdc6ab47d3135b2379e46140d41a63353460badc"
+      "path": "supabase/migrations/20260930022741_connected_event_plans.sql",
+      "sha256": "d63e312dcd7032c1dc2f1d90c78a93024dde091aef8ffc928052b17748f044a9"
     },
     {
-      "path": "supabase/migrations/20260930033310_community_private_media_publish.sql",
-      "sha256": "81c27ea12f0ee988173a83cfe20d5db47675e826297df98df076898e5ec1a776"
+      "path": "supabase/migrations/20260930022857_artist_appearances_and_private_trips.sql",
+      "sha256": "4015950e85a48a0c49955ef5001cde63d1cf806128ed2c8785566019d2885d30"
     },
     {
-      "path": "supabase/migrations/20260930040222_enrichment_resilient_leases.sql",
-      "sha256": "150145dddc6bfb48c81530469e264caf479d13c578422b5474bf464a25734905"
+      "path": "supabase/migrations/20260930024135_adult_football_league_operations.sql",
+      "sha256": "7b4f8e39e8193be0bf0de6641a19cdcb644edff94482cde3a994658a1cd08fee"
+    },
+    {
+      "path": "supabase/migrations/20260930025043_venue_reference_calibration_and_views.sql",
+      "sha256": "854557ace2a6cc89d4801e624c971b8e3470cb5ec95c1af72163c7923400a719"
+    },
+    {
+      "path": "supabase/migrations/20260930025805_property_offers_and_private_requests.sql",
+      "sha256": "948ac803dd7b245f5f15b631899270ee4d4a035992ec1d5c8ddcaffeb3bc6a57"
     }
   ],
-  "workers": [
-    {
-      "name": "community-media",
-      "files": [
-        {
-          "path": "supabase/functions/community-media/index.ts",
-          "sha256": "de10dd95bb846d35fff5b386a1fde7ee81da257d9569d2f00c200861bf33a226"
-        },
-        {
-          "path": "assets/community/media-rules.mjs",
-          "sha256": "126f0378a0b8a393494bea42ade498b9e28e6e3aeffd56e77975bb601f898469"
-        },
-        {
-          "path": "assets/documents/bounded-body.mjs",
-          "sha256": "ecb212d46b99b242de2a1e49bb000607b6646e66a723f6d1458b4bfe659df1ed"
-        }
-      ]
-    },
-    {
-      "name": "zoi-enrich",
-      "files": [
-        {
-          "path": "supabase/functions/zoi-enrich/index.ts",
-          "sha256": "55c5057fccd928b545d9cf9fe314502dedac44b8b001bca191175d124ba650f5"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_ssrf.ts",
-          "sha256": "54b9c13fd5000421e2e5beee8cd85edd20d91337621b6e97252081eb309f6ee3"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_social.js",
-          "sha256": "d164d906ee8a5242d26e9c419fd6dfae9239a346712655508d8bc72f5ce81be8"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_media.js",
-          "sha256": "46d77834fce1f9842916e9f952b003118d687514c5106e55ac8ce560e45b0f8b"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_images.js",
-          "sha256": "4ce84739b3383c2797320e61f617b032f038c892c08e0ac3ac2d650a5dfddbfe"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_receipts.js",
-          "sha256": "af5749384a8f0b06dd35510599a38a269e7d0190be4e2a561f5070398fee8b0c"
-        }
-      ]
-    }
-  ],
+  "workers": [],
   "fixtures": [
     {
-      "path": "tests/database/community-production-rollback.sql",
-      "sha256": "2003a3856c99ad04ac1fefc7ada6b4a2cd34552c47ea7a90d6e05e2fe7154f1b"
+      "path": "ops/qa-planner-venue-release-rollback.sql",
+      "sha256": "8c04250329b0b54b5f303a6506589b256d069b0ec6afa5677292fcfabe6598bc"
     },
     {
-      "path": "ops/qa-community-media-rollback.sql",
-      "sha256": "5514039663ae51add7ba5c99cca0e8ec8e984a443eb7a27ae46b466c348ea31c"
+      "path": "ops/qa-trips-properties-release-rollback.sql",
+      "sha256": "0ff06236a7099de1ec8b3c80eb2a410df9a45a434b932c41cc250b81dbe8857c"
     },
     {
-      "path": "ops/qa-enrichment-resilience-rollback.sql",
-      "sha256": "3322fd19805f06770f15cf943ca4db1c69b0b42d94cf874b36825d4992efd09e"
+      "path": "tests/database/leagues-production-rollback.sql",
+      "sha256": "0b98589898bcc793cee61dee53e398cabd60dbcaf9b7fe3620208e9aea27975f"
     }
   ]
 }
