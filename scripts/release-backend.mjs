@@ -39,6 +39,21 @@ export function validateRelease(manifest,{read=readFileSync,now=Date.now(),attem
  const fixtures=(manifest.fixtures||[]).map(f=>{if(!FIXTURES.has(f.path)||fixturePaths.has(f.path))throw Error('Unreviewed or duplicate private fixture');fixturePaths.add(f.path);return {...f,query:checked(f.path,f.sha256)};});
  return {id:manifest.id,migrations,workers,fixtures};
 }
+// Never log upstream text: SQL errors can contain queries, credentials and row values.
+export async function safeBackendError(response){
+ const result={http_status:response.status,sqlstate:null,category:'details_withheld'};
+ const categories={'57014':'query_canceled','55P03':'lock_not_available','40001':'serialization_failure','40P01':'deadlock_detected','42501':'insufficient_privilege','42P01':'undefined_table','42703':'undefined_column','42883':'undefined_function','23505':'unique_violation','23503':'foreign_key_violation','P0001':'application_assertion'};
+ let text='';const reader=response.body?.getReader();if(!reader)return result;
+ try{let size=0;const decoder=new TextDecoder();for(;;){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>8192){await reader.cancel();return result;}text+=decoder.decode(part.value,{stream:true});}text+=decoder.decode();}catch{return result;}finally{reader.releaseLock();}
+ let data;try{data=JSON.parse(text);}catch{return result;}
+ const message=typeof data?.message==='string'?data.message.slice(0,512):'';
+ const code=typeof data?.code==='string'?data.code:/(?:^|ERROR:\s*)([0-9A-Z]{5}):/.exec(message)?.[1];
+ if(code&&Object.hasOwn(categories,code)){result.sqlstate=code;result.category=categories[code];
+  if(code==='57014'&&/ERROR:\s*57014:\s*canceling statement due to statement timeout(?:\r?\n|$)/.test(message))result.category='statement_timeout';
+  if(code==='55P03'&&/ERROR:\s*55P03:\s*canceling statement due to lock timeout(?:\r?\n|$)/.test(message))result.category='lock_timeout';
+ }
+ return result;
+}
 export async function runRelease(manifest,{env=process.env,read=readFileSync,fetcher=fetch,deploy=execFileSync,log=console.log}={}){
  if(env.GITHUB_ACTIONS!=='true'||env.GITHUB_REPOSITORY!=='pangaon/zoi-city'||env.GITHUB_REF!=='refs/heads/main')throw Error('Production releases run only in the authorized main CI');
  const release=validateRelease(manifest,{read,attempt:env.GITHUB_RUN_ATTEMPT||'1'});
@@ -47,7 +62,7 @@ export async function runRelease(manifest,{env=process.env,read=readFileSync,fet
  async function api(path,body,key){
   let response;
   try{response=await fetcher('https://api.supabase.com/v1/projects/'+PROJECT+path,{method:body?'POST':'GET',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json',...(key?{'Idempotency-Key':key}:{})},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(60000)});}catch{throw Error('Backend response unconfirmed; inspect before retrying');}
-  if(!response.ok)throw Error('Backend API returned '+response.status+'; no automatic retry');
+  if(!response.ok){const detail=await safeBackendError(response);log(JSON.stringify({backend_error:detail}));throw Error('Backend API returned '+response.status+' ('+detail.category+'); no automatic retry');}
   return response.json();
  }
  if(release.migrations.length){
