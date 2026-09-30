@@ -7,6 +7,8 @@ BEGIN
  -- This public-eligibility fixture exists only in this uncommitted transaction.
  INSERT INTO zoi.listings(id,slug,name,entity_type,publish_status,moderation_status,marketplace_status,rating,rating_count)
  VALUES(lid,slug,'Private rollback follow review QA','business','published','clean','visible',null,0);
+ -- Production's insert publish gate may hold new listings; this dedicated uncommitted fixture explicitly sets eligibility.
+ UPDATE zoi.listings SET publish_status='published',moderation_status='clean',marketplace_status='visible' WHERE id=lid;
  IF NOT EXISTS(SELECT 1 FROM zoi.listings WHERE id=lid AND owner_workspace_id IS NULL AND owner_user_id IS NULL AND publish_status='published' AND moderation_status='clean' AND marketplace_status<>'hidden') THEN RAISE EXCEPTION 'qa_listing_scope_failed';END IF;
  r:=public.zoi_follow_place(gen_random_uuid(),slug,'follow');IF r->>'error' IS DISTINCT FROM 'profile_mismatch' THEN RAISE EXCEPTION 'forged_follow_allowed';END IF;
  r:=public.zoi_follow_place(actor,slug,'follow');IF r->>'ok' IS DISTINCT FROM 'true' THEN RAISE EXCEPTION 'follow_failed';END IF;

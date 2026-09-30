@@ -1,0 +1,46 @@
+# Authentication and onboarding standard
+
+September30 2026 · read-only source audit and current primary documentation. No live provider configuration, SMTP/SMS delivery, codes, MFA enrollment or recovery was changed/tested. This is a bounded audit, not certification of every route. Supabase changelog index was downloaded and reviewed for relevant breaking-change notices; provider-specific documentation remains the implementation authority.
+
+## What Zoi currently has
+
+| Inspected source | Actual capability | Gap / next action |
+|---|---|---|
+| `assets/zoi-core.js` | Email OTP REST send/verify, refresh deduplication, auth-generation guard, `zoi:auth-change`; `create_user:true` combines signup and signin. Web session including refresh token lives in localStorage. | Consolidate route-specific forms; normalize provider errors rather than displaying raw upstream messages. Audit XSS/CSP and token-storage migration separately; do not abruptly break existing sessions. No Google/Apple/MFA/passkey methods in this shared client. |
+| `mobile/src/session.ts`, `Auth.tsx` | Email code and password methods; generation-fenced refresh; local signout. Native refresh credential in Expo SecureStore, access token in memory. Native web uses sessionStorage. | These are source capabilities, not proof of installed-device/provider acceptance. No social-auth, MFA, passkey or password-recovery methods found in the reviewed client. Password fallback should have an actual recovery journey before being promoted. |
+| `assets/intake/app.mjs`, `/add/` | Inline email-code auth returns to the same website intake. Uses authorized workspace options and public duplicate lookup; unknown draft mutations retain request references. | Preserve this task context in the shared auth experience; never automatically create/claim/publish after authentication. Auth is not business ownership proof. |
+| `assets/faith/hub.mjs` and existing search | Real `explore_search` suggestions and name/city/country disambiguation; intake uses `intake_lookup`. | Reuse source-backed suggestions; no invented businesses or private-account autocomplete. Cross-site coverage remains to audit. |
+
+Social account connections for publishing/analytics are a separate authorization product. A Google/Apple identity login must not request posting, contacts, calendar or channel-management access just to create a Zoi session. Existing social-connect configuration does not prove login providers are configured.
+
+## Recommended low-friction journey
+
+Offer **Continue with Google**, **Continue with Apple**, and **Continue with email** only when each route is configured and verified. Keep browsing public content anonymous. Request authentication at follow/review/save/booking actions, preserve a bounded internal return intent, and return to the same entity/form after success without automatically performing the pending action. Explain new-account creation on the combined email route; do not ask first-time visitors for business role, phone, full address or preferences merely to browse.
+
+Use a single accessible code field with `autocomplete="one-time-code"`, paste support, clear destination/change-email controls, explicit resend cooldown and expired-code recovery. Email OTP and magic links share Supabase's implementation; the email template determines which is sent, and signup is automatic unless disabled. Defaults documented by Supabase are not proof of Zoi's live settings. Verify production template, SMTP delivery and rate limits rather than promising a code that is actually a link. [Supabase email auth](https://supabase.com/docs/guides/auth/auth-email-passwordless), [SMTP](https://supabase.com/docs/guides/auth/auth-smtp).
+
+After first successful login, optional progressive setup can ask display name and city/interests/church. Business owners separately create/join a workspace and prove listing authority. Autocomplete must return stable IDs with meaningful location/category context, debounced requests, stale-response cancellation, keyboard selection, Unicode support and a truthful “not found” path. Never suggest private customers, email addresses or children to anonymous users.
+
+## Provider and security decisions
+
+| Method | Implementation prerequisite and proposed policy |
+|---|---|
+| Google | Configure actual OAuth project/client IDs, allowed origins/callbacks, consent branding and Supabase provider. Prefer authorization-code PKCE; retain state/nonce validation and safe internal redirects, including native deep links. Ask only identity scopes. Validate token issuer/audience/expiry through the provider/Supabase flow; email text alone is not identity. [Supabase Google](https://supabase.com/docs/guides/auth/social-login/auth-google), [Google OIDC](https://developers.google.com/identity/openid-connect/openid-connect). |
+| Apple | Configure app capability/Services ID, website return URLs and Supabase provider; test native and web independently. Support Hide My Email and register outbound sources for Apple's private relay. Never require disclosure of the user's underlying email or merge accounts merely because names match. [Apple setup](https://developer.apple.com/documentation/signinwithapple/configuring-your-environment-for-sign-in-with-apple), [relay configuration](https://developer.apple.com/help/account/capabilities/configure-private-email-relay-service), [Supabase Apple](https://supabase.com/docs/guides/auth/social-login/auth-apple). |
+| Optional MFA | Start with authenticator TOTP enrollment, confirm enrollment before enforcing it, list/remove factors with reauthentication, and test recovery. Supabase supports TOTP and phone factors with `aal1`/`aal2` claims. Require server-enforced step-up for sensitive owner/admin changes and private-document access according to an explicit rollout policy; hiding frontend controls is insufficient. [Supabase MFA](https://supabase.com/docs/guides/auth/auth-mfa), [TOTP](https://supabase.com/docs/guides/auth/auth-mfa/totp). |
+| Passkeys | Current Supabase docs label support **experimental** and require opt-in plus `supabase-js`≥2.105.0 (other SDK minima differ). Registration requires an existing confirmed non-anonymous user. Zoi's manual REST clients do not currently implement the ceremony. Pilot with exact RP ID/origins, device support, multiple credentials, lost-device recovery and no unsafe downgrade; do not sell it as production-ready merely because docs exist. [Supabase passkeys](https://supabase.com/docs/guides/auth/passkeys). |
+| SMS | Optional only where the use case and supported region justify it, after actual provider setup, E.164 handling, spend caps, rate limits and recovery tests. Do not use SMS as the high-assurance default for financial or confidential professional data; phone numbers can be reassigned/SIM-swapped. Email OTP itself is not automatically two-factor authentication. [Supabase phone login](https://supabase.com/docs/guides/auth/phone-login), [OWASP MFA guidance](https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html). |
+
+## Recovery, privacy and release acceptance
+
+OWASP recommends generic authentication/recovery responses, throttling and risk-based reauthentication. Recovery tokens should be unpredictable, bounded-lived and single-use; recovering access must not silently bypass stronger enrolled factors. Do not implement security questions or reveal whether an email has an account. Tell users clearly how to obtain help when they have lost both provider/email access and their enrolled factor. [Authentication guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [recovery guidance](https://cheatsheetseries.owasp.org/cheatsheets/Forgot_Password_Cheat_Sheet.html).
+
+Before calling this sitewide-ready, exercise:
+
+1. New and returning users, provider cancellation/error, expired/replayed code, resend throttling, offline interruption and same-device return intent across review/follow/intake/booking.
+2. Apple relay email, Google account switching, safely linked identities, mismatched issuer/audience/state/nonce, rejected external return URLs and native callback routing. No automatic account merge based on client claims.
+3. Session refresh races, signout/account change clearing private DOM and caches, lost-response mutation references retained within their original actor scope. Backend roles must come from authoritative membership, not editable profile metadata.
+4. MFA enrolled-but-incomplete setup, `aal1` direct-RPC denial for protected actions, successful step-up, factor removal, expired session, recovery and device loss. Verify what assurances passkey sessions actually expose rather than assuming `aal2`.
+5. Real approved QA delivery and physical-device acceptance only after configuration; fixture tests are insufficient proof of Google/Apple/SMS/passkey availability. Keep provider readiness flags fail-closed and preserve email access during rollout.
+
+Recommended sequence: unify the current email UX and intent/error handling; configure and verify Google/Apple; add security/recovery settings and server-enforced TOTP; separately pilot experimental passkeys; add SMS only to explicitly justified flows. This report changes no live authentication behavior.
