@@ -1,0 +1,22 @@
+{
+  "status": "design-contract-not-implemented",
+  "purpose": "A customer coordinates real bookable services for a wedding, funeral, festival or other gathering, with an all-or-nothing confirmation across supported business calendars.",
+  "scope": {
+    "private_plan": ["event kind", "title", "timezone", "private notes", "service roles"],
+    "availability": "Only published, nonhidden businesses with enabled booking settings and actual active, unreserved slots. External calendars are unknown, never treated as free.",
+    "confirmation": "Explicitly review every slot, party size, price and currency. Reserve every selected slot in one transaction or preserve all original availability. Payments remain pay-at-venue and are not collected.",
+    "changes": "Individual booking rescheduling and cancellation use the existing booking contracts; the plan must reread current booking states and never describe an outdated receipt as current availability.",
+    "privacy": "Customer owns the plan. Each provider can receive only the event context explicitly shared with its own confirmed booking; private notes and other providers' details are excluded."
+  },
+  "limits": {"providers_per_confirmation": 8, "availability_window_days": 31, "future_horizon_days": 365, "candidate_slots_per_read": 200},
+  "acceptance": [
+    "No partially reserved event when any provider slot conflicts",
+    "Opposing concurrent confirmations cannot deadlock or double-book",
+    "Stable retries return the same reservation receipt without duplicate bookings",
+    "Changed price, currency, slot version, ownership or publication state rejects confirmation",
+    "Customer and provider tenant boundaries are independently tested",
+    "No external notifications, payments or public QA content",
+    "Web and native equivalent review, unknown-response recovery and current-state views"
+  ],
+  "not_yet_claimed": ["External calendar synchronization", "Travel-time predictions", "Paid deposits", "Provider contracts", "Universal availability for unclaimed businesses"]
+}

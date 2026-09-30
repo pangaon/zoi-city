@@ -54,3 +54,7 @@ test('public business data cannot inject executable actions or close the structu
  assert.equal(r.status,200);assert.doesNotMatch(r.body,/<script>alert\(1\)|href="javascript:/);
  const json=r.body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];assert.ok(json);assert.equal(JSON.parse(json).name,'Greek </script><script>alert(1)</script>');
 });
+test('artist hometown without a venue address does not become a directions destination',async()=>{
+ const artist=await run(async fn=>response(fn==='seo_entity'?{...entity,entity_type:'artist'}:null));assert.doesNotMatch(artist.body,/maps\/dir\//);
+ const venue=await run(async fn=>response(fn==='seo_entity'?{...entity,entity_type:'artist',address:'12 Main St'}:null));assert.match(venue.body,/maps\/dir\//);
+});

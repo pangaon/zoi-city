@@ -1,3 +1,5 @@
+import { CreatorStudio, CreatorCustomerScreen } from './src/CreatorStudio';
+import { profileImageMode } from './src/profile';
 import { InquiriesScreen, InquiryInbox } from './src/Inquiries';
 import { inquiryId } from './src/inquiries';
 import { StatusBar } from 'expo-status-bar';
@@ -21,7 +23,7 @@ const WEB = 'https://www.zoi.city';
 const API = 'https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/';
 const KEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const C = { navy: '#132F46', blue: '#116CBA', sky: '#EAF4FB', cream: '#FAF8F3', gold: '#A77B32', muted: '#60717E', line: '#DFE6EB', white: '#FFFFFF' };
-type Tab = 'home' | 'discover' | 'community' | 'tickets' | 'volunteer' | 'inquiries' | 'grow';
+type Tab = 'home' | 'discover' | 'community' | 'tickets' | 'volunteer' | 'inquiries' | 'creator-work' | 'grow';
 type Place = { id: string; name: string; slug: string; path?: string; entity_type?: string; description?: string; city?: string; country?: string; photo_url?: string; category?: string };
 type Post = { id: string; author?: string; body?: string; created_at?: string; media_photo?: string; likes?: number; comments?: number };
 
@@ -66,9 +68,10 @@ function RemoteState({ loading, error, empty, onRetry }: { loading: boolean; err
 }
 function Photo({ uri, name }: { uri?: string; name: string }) {
   const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [uri]);
+  const [fit,setFit]=useState<'center'|'cover'>('center');
+  useEffect(() => {setFailed(false);setFit('center');}, [uri]);
   if (!uri || !/^https:\/\//i.test(uri) || failed) return <View style={s.photoFallback}><Text style={s.monogram}>{name.slice(0, 1).toLocaleUpperCase()}</Text><Text style={s.photoLabel}>ZOI · DISCOVER</Text></View>;
-  return <Image accessibilityLabel={name} source={{ uri }} resizeMode="cover" style={s.photo} onError={() => setFailed(true)} />;
+  return <Image accessibilityLabel={name} source={{ uri }} resizeMode={fit} onLoad={event=>setFit(profileImageMode(event.nativeEvent.source.width,event.nativeEvent.source.height))} style={s.photo} onError={() => setFailed(true)} />;
 }
 function PlaceCard({ place, open }: { place: Place; open: (path: string) => void }) {
   const path = place.path && /^\/(?!\/)/.test(place.path) ? place.path : '/p/' + encodeURIComponent(place.slug);
@@ -122,18 +125,20 @@ function Grow({ open }: { open: (path: string) => void }) {
     { label: 'BuyGreek', text: 'Connect with Greek products and merchants.', path: 'https://buygreek.shop', tag: 'COMMERCE' },
     { label: 'Your account', text: 'Sign in to your existing Zoi account securely.', path: '/social', tag: 'YOUR ZOI' },
   ];
-  return <ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>MADE FOR YOUR NEXT CHAPTER</Text><Text style={s.pageTitle}>Greek roots.{ '\n' }Global ambition.</Text><Text style={s.body}>Your work deserves a home in the Greek world.</Text><AccountPanel /><Button label="Your private enquiries →" onPress={() => open('/inquiries/')} /><InquiryInbox /><PrioritiesPanel /><CreatorPanel /><BusinessEditor /><OperationsPanel /><DocumentsPanel /><BookingOperator /><OrganizationOperator /><VenueStudio /><View style={s.note}><Text style={s.body}>Explore additional services below. Connected provider availability is shown inside each workspace.</Text></View>{links.map(link => <View key={link.tag} style={s.workspace}><Text style={s.eyebrow}>{link.tag}</Text><Text style={s.sectionTitle}>{link.label}</Text><Text style={s.body}>{link.text}</Text><Button label="Open workspace ↗" onPress={() => open(link.path)} subtle /></View>)}<Text style={s.meta}>Use the workspace tools above. Paid checkout and additional connected services open on the website.</Text></ScrollView>;
+  return <ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>MADE FOR YOUR NEXT CHAPTER</Text><Text style={s.pageTitle}>Greek roots.{ '\n' }Global ambition.</Text><Text style={s.body}>Your work deserves a home in the Greek world.</Text><AccountPanel /><Button label="Your private enquiries →" onPress={() => open('/inquiries/')} /><InquiryInbox /><Button label="Your shared creator work →" onPress={() => open('/creator/')} /><CreatorStudio /><PrioritiesPanel /><CreatorPanel /><BusinessEditor /><OperationsPanel /><DocumentsPanel /><BookingOperator /><OrganizationOperator /><VenueStudio /><View style={s.note}><Text style={s.body}>Explore additional services below. Connected provider availability is shown inside each workspace.</Text></View>{links.map(link => <View key={link.tag} style={s.workspace}><Text style={s.eyebrow}>{link.tag}</Text><Text style={s.sectionTitle}>{link.label}</Text><Text style={s.body}>{link.text}</Text><Button label="Open workspace ↗" onPress={() => open(link.path)} subtle /></View>)}<Text style={s.meta}>Use the workspace tools above. Paid checkout and additional connected services open on the website.</Text></ScrollView>;
 }
 function ZoiApp() {
   const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('home');
   const [volunteerWorkspace, setVolunteerWorkspace] = useState('');
   const [enquiry, setEnquiry] = useState({listing:'',thread:''});
+  const [creatorCampaign,setCreatorCampaign]=useState('');
   const [eventId, setEventId] = useState<string | null>(null);
   const [linkError, setLinkError] = useState('');
   useEffect(() => {
     const handleLink = (url: string | null) => {
       if (!url || !url.startsWith('zoi://')) return;
+      if (/^zoi:\/\/creator\/?(?:[?#]|$)/.test(url)) {setCreatorCampaign(inquiryId(new URL(url).searchParams.get('campaign')));setProfileSlug(null);setTab('creator-work');return;}
       if (/^zoi:\/\/inquiries(?:[/?#]|$)/.test(url)) { const link=new URL(url); setEnquiry({listing:inquiryId(link.searchParams.get('listing')),thread:inquiryId(link.searchParams.get('thread'))});setProfileSlug(null);setTab('inquiries');return; }
       if (url.startsWith('zoi://volunteer')) { setVolunteerWorkspace(organizationId(url)); setProfileSlug(null); setTab('volunteer'); return; }
       if (url.startsWith('zoi://tickets')) { const id = url.slice(14).replace(/^\//, '').split(/[?#]/)[0]; setEventId(/^[0-9a-f-]{36}$/i.test(id) ? id : null); setProfileSlug(null); setTab('tickets'); return; }
@@ -151,6 +156,7 @@ function ZoiApp() {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const open = async (path: string) => {
     setLinkError('');
+    if (/^\/creator\/?(?:[?#]|$)/.test(path)) {setCreatorCampaign(inquiryId(new URL(path,WEB).searchParams.get('campaign')));setProfileSlug(null);setTab('creator-work');return;}
     if (/^\/inquiries(?:[/?#]|$)/.test(path)) { const link=new URL(path,WEB);setEnquiry({listing:inquiryId(link.searchParams.get('listing')),thread:inquiryId(link.searchParams.get('thread'))});setProfileSlug(null);setTab('inquiries');return; }
     if (/^\/volunteer(?:[/?#]|$)/.test(path)) { setVolunteerWorkspace(organizationId(new URL(path, WEB).href)); setProfileSlug(null); setTab('volunteer'); return; }
     if (/^\/tickets(?:[?#]|$)/.test(path)) { setEventId(new URL(path, WEB).searchParams.get('e')); setProfileSlug(null); setTab('tickets'); return; }
@@ -160,7 +166,7 @@ function ZoiApp() {
     if (!/^https:\/\/(www\.zoi\.city|buygreek\.shop)(\/|$)/.test(url)) { setLinkError('This link is not available. Please try the Zoi website.'); return; }
     try { await Linking.openURL(url); } catch { if (mounted.current) setLinkError('We could not open your browser. Please try again.'); }
   };
-  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}><View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Zoi home" onPress={() => { setProfileSlug(null); setTab('home'); }}><Text style={s.wordmark}>zoi<Text style={s.wordmarkDot}>.</Text></Text></Pressable><Text style={s.headerTag}>GREEK ROOTS.{ '\n' }GLOBAL LIFE.</Text><Pressable accessibilityRole="link" accessibilityLabel="Your Zoi account" onPress={() => { setProfileSlug(null); setTab('grow'); }} style={s.account}><Text style={s.accountText}>Your Zoi ↗</Text></Pressable></View>{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}>{profileSlug ? <BusinessProfile enquiry={listing => { setEnquiry({listing,thread:''});setProfileSlug(null);setTab('inquiries'); }} volunteer={workspace => { setVolunteerWorkspace(workspace); setProfileSlug(null); setTab('volunteer'); }} slug={profileSlug} back={() => setProfileSlug(null)} signIn={() => { setProfileSlug(null); setTab('grow'); }} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover open={open} /> : tab === 'community' ? <Community open={open} volunteer={() => setTab('volunteer')} /> : tab === 'inquiries' ? <InquiriesScreen listing={enquiry.listing} thread={enquiry.thread} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'volunteer' ? <VolunteerScreen workspace={volunteerWorkspace} choose={setVolunteerWorkspace} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'tickets' ? <TicketsScreen eventId={eventId} chooseEvent={setEventId} signIn={() => setTab('grow')} /> : <Grow open={open} />}</View><View style={s.nav}>{([{ id: 'home', icon: '⌂', label: 'Home' }, { id: 'discover', icon: '◎', label: 'Discover' }, { id: 'community', icon: '☷', label: 'Community' }, { id: 'tickets', icon: '◇', label: 'Events' }, { id: 'grow', icon: '↗', label: 'Grow' }] as const).map(item => <Pressable key={item.id} accessibilityRole="tab" aria-selected={tab === item.id} accessibilityState={{ selected: tab === item.id }} onPress={() => { setLinkError(''); setProfileSlug(null); setTab(item.id); }} style={[s.navItem, tab === item.id && s.navSelected]}><Text style={[s.navIcon, tab === item.id && s.navActive]}>{item.icon}</Text><Text style={[s.navLabel, tab === item.id && s.navActive]}>{item.label}</Text></Pressable>)}</View></View></SafeAreaView>;
+  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}><View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Zoi home" onPress={() => { setProfileSlug(null); setTab('home'); }}><Text style={s.wordmark}>zoi<Text style={s.wordmarkDot}>.</Text></Text></Pressable><Text style={s.headerTag}>GREEK ROOTS.{ '\n' }GLOBAL LIFE.</Text><Pressable accessibilityRole="link" accessibilityLabel="Your Zoi account" onPress={() => { setProfileSlug(null); setTab('grow'); }} style={s.account}><Text style={s.accountText}>Your Zoi ↗</Text></Pressable></View>{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}>{profileSlug ? <BusinessProfile enquiry={listing => { setEnquiry({listing,thread:''});setProfileSlug(null);setTab('inquiries'); }} volunteer={workspace => { setVolunteerWorkspace(workspace); setProfileSlug(null); setTab('volunteer'); }} slug={profileSlug} back={() => setProfileSlug(null)} signIn={() => { setProfileSlug(null); setTab('grow'); }} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover open={open} /> : tab === 'community' ? <Community open={open} volunteer={() => setTab('volunteer')} /> : tab === 'creator-work' ? <CreatorCustomerScreen campaign={creatorCampaign} back={() => setTab('grow')} signIn={() => setTab('grow')} /> : tab === 'inquiries' ? <InquiriesScreen listing={enquiry.listing} thread={enquiry.thread} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'volunteer' ? <VolunteerScreen workspace={volunteerWorkspace} choose={setVolunteerWorkspace} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'tickets' ? <TicketsScreen eventId={eventId} chooseEvent={setEventId} signIn={() => setTab('grow')} /> : <Grow open={open} />}</View><View style={s.nav}>{([{ id: 'home', icon: '⌂', label: 'Home' }, { id: 'discover', icon: '◎', label: 'Discover' }, { id: 'community', icon: '☷', label: 'Community' }, { id: 'tickets', icon: '◇', label: 'Events' }, { id: 'grow', icon: '↗', label: 'Grow' }] as const).map(item => <Pressable key={item.id} accessibilityRole="tab" aria-selected={tab === item.id} accessibilityState={{ selected: tab === item.id }} onPress={() => { setLinkError(''); setProfileSlug(null); setTab(item.id); }} style={[s.navItem, tab === item.id && s.navSelected]}><Text style={[s.navIcon, tab === item.id && s.navActive]}>{item.icon}</Text><Text style={[s.navLabel, tab === item.id && s.navActive]}>{item.label}</Text></Pressable>)}</View></View></SafeAreaView>;
 }
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.cream, paddingTop: Platform.OS === 'android' ? NativeStatusBar.currentHeight || 0 : 0 }, shell: { flex: 1, width: '100%', maxWidth: 780, alignSelf: 'center' }, screen: { flex: 1 },

@@ -1,0 +1,22 @@
+{
+  "migration": "20260930013535",
+  "deployment": "not applied; pending root review",
+  "dependencies": ["20260930001738_business_operations_foundation", "20260930014346_private_business_inquiries"],
+  "postgres_behavior_checks_passed": 17,
+  "unit_checks_passed": 3,
+  "browser": {
+    "mode": "explicit isolated API fixtures; no live persistence claim",
+    "widths": [390,1440],
+    "horizontal_overflow": false,
+    "operator_edit_save_payload_receipt": "passed; one draft-save RPC",
+    "customer_shared_brief_acceptance": "passed",
+    "same_root_remount_regression": "duplicate listener found and fixed; repeated mount now sends exactly one approval RPC",
+    "customer_private_draft_controls_absent": true
+  },
+  "workflow": ["idempotent enquiry conversion creates Operations project", "stable deliverable creation creates Operations task", "drafts private by default", "explicit immutable version sharing", "source customer requests revisions or acknowledges brief", "creator submits HTTPS delivery proof", "customer delivery approval completes only linked task with actor audit"],
+  "profession_fields": {"sponsorship":["channels","planned fee/currency","usage terms","required disclosure plan"],"performance":["venue","event timestamp with explicit timezone","set duration","technical requirements"]},
+  "security": ["customer payload excludes private drafts/project/company IDs and internal audit", "viewer/staff denied", "hidden/unpublished/transferred business freezes writes", "new owner cannot inherit previous shared work", "concurrent decisions commit once", "delivery task must remain in same campaign project"],
+  "limits": {"deliverables_per_campaign":30,"shared_versions":100,"submissions":500,"list_rows":100},
+  "not_implemented": ["external email/push notifications","attachment sharing","legal signatures","payments","platform analytics verification","royalty reporting"],
+  "production_verification_required": ["review and apply migration","tests/database/creator-production-rollback.sql","actual customer/operator API and web/native flows"]
+}

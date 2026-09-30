@@ -172,6 +172,7 @@ function page(e, related, completeness){
   var destination = e.address ? [e.address,e.city,e.country].filter(Boolean).join(', ') :
     ['rooftop','entrance','building','parcel','exact'].includes(String(e.geo_precision||'').toLowerCase()) && Number.isFinite(Number(e.latitude)) && Number.isFinite(Number(e.longitude)) && e.latitude!=null && e.longitude!=null
       ? e.latitude+','+e.longitude : e.city ? [e.name,e.city,e.country].filter(Boolean).join(', ') : null;
+  if (['music','creator'].includes(V.key) && !e.address) destination=null;
   var mapHref = destination ? 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination) : null;
 
   /* ---- primary actions: the vertical's own, then the universally real ones ---- */
@@ -333,12 +334,12 @@ function socialIcon(k){
      +'</div>'
    +'</div></header>'
    +'<div class="wrap">'
-   +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Directory</a> &rsaquo; '
+   +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Discover</a> &rsaquo; '
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
    +'<div class="ep-cover" id="epCover"'
      + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
      + ' data-position="'+heroPosition+'"'
-     + '><div class="ep-brand">'
+     + '>' + (coverImg ? '<img id="epCoverImage" src="'+attr(coverImg)+'" alt="'+attr(e.name||'')+'" width="1600" height="600" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" style="object-position:'+heroPosition+'">' : '') + '<div class="ep-brand">'
      + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer" style="object-fit:'+logoFit+'">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
      + '</div></div>'
    +'<span class="ep-type">'+esc(eyebrow)+'</span>'
@@ -367,11 +368,11 @@ function socialIcon(k){
      // straight through to the generated emblem.
      +'function emblem(){if(window.ZoiEmblem){h.innerHTML=ZoiEmblem.emblem('
        +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}}'
-     +'if(src){var im=new Image();im.alt=h.getAttribute("data-alt")||"";'
+     +'if(src){var im=document.getElementById("epCoverImage")||new Image();im.alt=h.getAttribute("data-alt")||"";'
        +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
        +'im.style.objectPosition=h.getAttribute("data-position")||"center";'
-      +'im.onload=function(){h.insertBefore(im,h.firstChild);h.className+=" has-img";};'
-       +'im.onerror=emblem;im.src=src;}else{emblem();}'
+      +'im.onload=function(){var ratio=im.naturalWidth/im.naturalHeight;if(ratio>3.2||ratio<.8||im.naturalWidth<640){h.classList.add("contained-media");im.style.objectFit="scale-down";}if(!im.parentNode)h.insertBefore(im,h.firstChild);h.classList.add("has-img");};'
+       +'im.onerror=function(){im.remove();emblem();};if(im.complete){if(im.naturalWidth)im.onload();else im.onerror();}else if(!im.src)im.src=src;}else{emblem();}'
      +'})();</script>'
    +'<script src="/assets/zoi-theme.js"></script>'
    +'</body></html>';
@@ -389,6 +390,7 @@ var PAGE_CSS = [
   '.ep-cover svg{display:block;width:100%;height:100%}',
   '.ep-cover img{display:block;width:100%;height:100%;object-fit:cover}',
   '.ep-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,24,48,.78),transparent 64%),linear-gradient(0deg,rgba(5,24,48,.48),transparent 55%);pointer-events:none}',
+  '.ep-cover.contained-media>img{padding:24px;box-sizing:border-box}.ep-cover.contained-media:after{display:none}.ep-cover.contained-media .ep-brand{display:none}',
   '.ep-brand{position:absolute;z-index:2;left:24px;bottom:22px;width:94px;height:94px;border-radius:22px;padding:10px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.8);box-shadow:0 18px 36px rgba(3,32,61,.28);display:grid;place-items:center}',
   '.ep-brand img{width:100%;height:100%;object-fit:contain;border-radius:13px}',
   '.ep-monogram{font-family:Fraunces,Georgia,serif;font-size:52px;line-height:1;color:var(--med-deep);font-weight:600}',

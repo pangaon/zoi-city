@@ -78,10 +78,10 @@
 
   /* The three token sets, copied from zoi-theme.css. */
   var TOKENS = {
-    dark:  { bg: '#062f55', card: '#0b5688', tx: '#eef3fa', mut: '#93a4bd',
-             acc: '#0284c7', gold: '#d4af5f', green: '#5bc49a', red: '#e0796b' },
+    dark:  { bg: '#062f55', card: '#0b5688', tx: '#eef3fa', mut: '#c4d5e8',
+             acc: '#75d3ff', gold: '#f3d894', green: '#5bc49a', red: '#e0796b' },
     light: { bg: '#f7f9fc', card: '#ffffff', tx: '#0b2545', mut: '#4a6180',
-             acc: '#0284c7', gold: '#96701c', green: '#1b7a55', red: '#b84a38' },
+             acc: '#0369a1', gold: '#96701c', green: '#1b7a55', red: '#b84a38' },
     gold:  { bg: '#0a0906', card: '#191509', tx: '#f6f0e2', mut: '#c4b294',
              acc: '#e0be7a', gold: '#e0be7a', green: '#8fbf9f', red: '#d99a86' }
   };
@@ -104,7 +104,7 @@
       // Measured in CIELAB: dE 12.5 apart, water markedly cooler (b* -13 vs
       // land's -3). The first pass had these dE 4.9 apart and looked like one
       // flat surface. Guarded by tests/unit/basemap.test.mjs.
-      P.land    = mix(mix(T.bg, T.tx, 0.08), T.gold, 0.08);
+      P.land    = mix(mix(mix(T.bg, T.tx, 0.08), T.gold, 0.08), '#000000', 0.15);
       P.water   = mix(T.bg, T.acc, 0.72);
       // The gold theme has no cool token at all — its --acc IS its --gold — so
       // a blue sea cannot be derived from it. Mixing toward --green just yields
