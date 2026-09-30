@@ -7,7 +7,7 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const PROJECT='csebihpaychdkanjjsmz';
 const WORKERS=new Map([['ops-documents',false],['social-config',false],['ai-generate',false],['email-send',false],['email-unsubscribe',false],['social-publish',false],['zoi-feed-publish',true],['zoi-enrich',false],['delivery-charge',false],['delivery-connect-onboard',false]]);
-const FIXTURES=new Set(['ops/qa-booking-planner-setup.sql','ops/qa-booking-planner-cleanup.sql','tests/database/inquiries-production-rollback.sql']);
+const FIXTURES=new Set(['ops/qa-booking-planner-setup.sql','ops/qa-booking-planner-cleanup.sql','ops/qa-booking-planner-cleanup-reviewed-fixture.sql','tests/database/inquiries-production-rollback.sql']);
 const digest=value=>createHash('sha256').update(value).digest('hex');
 export function validateRelease(manifest,{read=readFileSync,now=Date.now(),attempt='1'}={}){
  if(attempt!=='1')throw Error('Automatic replay of a production release is not allowed');

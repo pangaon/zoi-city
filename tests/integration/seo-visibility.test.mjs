@@ -16,7 +16,7 @@ test('published search and stable sitemap contracts',{skip:!container},async t=>
  // Reconcile an applied body whose control-plane receipt was lost, without duplicating objects.
  await sql(readFileSync(new URL('../../supabase/migrations/20260930011955_public_home_workflow_actions.sql',import.meta.url),'utf8'));
  await sql('CREATE TABLE zoi.inquiry_settings(listing_id uuid,workspace_id uuid,enabled boolean);');
- await sql(readFileSync(new URL('../../supabase/migrations/20260930013900_public_home_inquiry_action.sql',import.meta.url),'utf8'));
+ await sql(readFileSync(new URL('../../supabase/migrations/20260930014347_public_home_inquiry_action.sql',import.meta.url),'utf8'));
  await t.test('draft, hidden, pending and archived entities are not public',async()=>{
   await sql(`INSERT INTO zoi.listings(slug,name,publish_status) VALUES('draft','Draft','draft'),('pending','Pending','pending_review'),('hidden','Hidden','hidden'),('archived','Archived','archived'),('public','Public','published');INSERT INTO zoi.listings(slug,name,marketplace_status)VALUES('market-hidden','Hidden marketplace','hidden');`);
   assert.equal(await sql('SELECT count(*) FROM public.seo_index();'),'1');
