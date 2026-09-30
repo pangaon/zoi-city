@@ -34,3 +34,26 @@ test('AGFG publisher interface icons never become machine gallery photos; listin
  const extracted=extractSiteImages(`<meta property="og:image" content="${icons[0]}"><img src="${icons[1]}"><img src="${venue}">`,'https://www.agfg.com.au/restaurant/litanis-greek-mediterranean-restaurant-55968');
  assert.equal(extracted.hero.url,venue);assert.equal(extracted.photos.length,1);
 });
+test('reviewed full/half rating stars are interface artwork; Star Hotel photographs remain eligible',()=>{
+ const stars=['https://www.tastygreekcorner.co.uk/imgs/star.png','https://www.tastygreekcorner.co.uk/imgs/star_half.png?v=1'];
+ for(const url of [...stars,'https://restaurant.test/ratings/star.png','https://restaurant.test/review-widget/star-half.svg'])assert.equal(auxiliaryImage(url),true,url);
+ assert.equal(auxiliaryImage('https://restaurant.test/assets/star.png','rating star icon'),true);
+ for(const url of ['https://starhotel.test/photos/star-hotel-room.jpg','https://starhotel.test/photos/star.png','https://restaurant.test/imgs/star.png','https://restaurant.test/photos/star-shaped-pastry.png','https://www.tastygreekcorner.co.uk/assets/images/star-dish.png'])assert.equal(auxiliaryImage(url),false,url);
+ const food='https://www.tastygreekcorner.co.uk/assets/images/gyro.jpeg';
+ const result=extractSiteImages(`<meta property="og:image" content="${stars[0]}"><img src="${stars[1]}"><img src="${food}">`,'https://www.tastygreekcorner.co.uk/');
+ assert.equal(result.hero.url,food);assert.deepEqual(result.photos.map(x=>x.url),[food]);
+ const p={hero_url:stars[0],photo_urls:[...stars,food]},before=JSON.stringify(p);
+ assert.deepEqual(profileMedia({profile:{_enrich:p}},p),{hero:food,logo:null,gallery:[food],heroGallery:[food]});assert.equal(JSON.stringify(p),before);
+ assert.deepEqual(profileMedia({owner_content:{profile:{photos:stars}},profile:{_enrich:p}},p).gallery,stars);
+ assert.equal(profileMedia({owner_content:{photo_url:null,profile:{photos:[]}},profile:{_enrich:p}},p).hero,null);
+});
+test('restaurant public HTML and photo count exclude stored machine rating icons without mutating evidence',async()=>{
+ const {restaurantHomeContent,renderRestaurantHome}=await import('../../api/_restaurant-home.js');
+ const food='https://www.tastygreekcorner.co.uk/assets/images/gyro.jpeg',stars=['https://www.tastygreekcorner.co.uk/imgs/star.png','https://www.tastygreekcorner.co.uk/imgs/star_half.png'];
+ const e={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',slug:'tasty-greek-corner-coventry',name:'Tasty Greek Corner',entity_type:'business',category_slug:'greek-restaurants',website:'https://www.tastygreekcorner.co.uk/',profile:{_enrich:{source_url:'https://www.tastygreekcorner.co.uk/',hero_url:food,photo_urls:[food,...stars]}}};
+ const before=JSON.stringify(e),content=restaurantHomeContent(e),html=renderRestaurantHome(e);
+ assert.deepEqual(content.photos,[food]);assert.equal(JSON.stringify(e),before);
+ for(const star of stars)assert.equal(html.includes(star),false);
+ assert.ok(html.includes(food));
+ const sparse=restaurantHomeContent({...e,profile:{_enrich:{photo_urls:stars}}});assert.deepEqual(sparse.photos,[]);assert.equal(sparse.hero,null);
+});

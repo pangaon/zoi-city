@@ -12,6 +12,12 @@ export function auxiliaryImage(value,hint=''){
   // Translation controls are interface assets, not artist or venue photographs.
   if(/\/wp-content\/plugins\/(?:qtranslate(?:-x)?|polylang|sitepress-multilingual-cms)\/(?:[^/]+\/)*flags?\//i.test(path))return true;
   if(['agfg.com.au','www.agfg.com.au'].includes(host)&&/^\/images\/layout\/tb-(?:facebook|instagram)\.png$/i.test(path))return true;
+  // Reviewed 27×24 full/half rating stars from the published restaurant source.
+  // Exact source path avoids excluding a Star Hotel's genuine photography.
+  if(['tastygreekcorner.co.uk','www.tastygreekcorner.co.uk'].includes(host)&&/^\/imgs\/star(?:_half)?\.png$/i.test(path))return true;
+  // Other sites require explicit rating-widget context, not merely "star" in a name.
+  const ratingStar=/(?:^|\/)star(?:[-_](?:half|full|empty|filled))?\.(?:png|svg|webp)$/i.test(path);
+  if(ratingStar&&(/\/(?:ratings?|rating[-_]widgets?|review[-_]widgets?)\//i.test(path)||/\b(?:rating[-_ ]+(?:star|icon)|(?:full|half|empty|filled)[-_ ]+rating[-_ ]+star)\b/i.test(String(hint).slice(0,1000))))return true;
   if(host==='cdn.trustindex.io'&&/^\/assets\/platform\/Google\/star\/[^/]+\.svg$/i.test(path))return true;
   if(['gocsa.org.au','www.gocsa.org.au'].includes(host)&&/^\/wp-content\/uploads\/\d{4}\/\d{2}\/GOCSA_Default-Social-Share(?:-\d+x\d+)?\.png$/i.test(path))return true;
   if(['calgaryhellenic.ca','www.calgaryhellenic.ca'].includes(host)&&/^\/wp-content\/uploads\/2026\/05\/(?:Lower_Hall_)?rental_rates_2026(?:-\d+x\d+)?\.jpg$/i.test(path))return true;
