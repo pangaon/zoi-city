@@ -81,7 +81,9 @@ export default async function handler(req, res) {
       out += url(SITE + '/explore/map', 'weekly', '0.8');
       out += url(SITE + '/community', 'daily', '0.8');
       out += url(SITE + '/tickets', 'weekly', '0.7');
-      out += url(SITE + '/social', 'weekly', '0.6');
+      out += url(SITE + '/shop/', 'daily', '0.8');
+      out += url(SITE + '/apps/intelligence/', 'weekly', '0.6');
+      // Workspace tools (/social) and private noindex trip plans are not public landing pages.
       out += '</urlset>\n';
       return send(out);
     }

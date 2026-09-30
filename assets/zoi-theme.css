@@ -17,35 +17,35 @@
 [hidden]{display:none!important}
 
 :root{
-  /* Aegean & Mediterranean palette. Rich deep Mediterranean blue accents,
-     Aegean sea tones, and gold highlights across all public and app shells. */
-  --bg:#062f55; --bg2:#084a7a; --card:#0b5688; --card2:#073d69;
-  --line:rgba(190,215,255,.10); --line2:rgba(190,215,255,.19);
-  --tx:#eef3fa; --mut:#c4d5e8; --dim:#b8c9de;
-  --acc:#75d3ff; --aegean:#1f9ec9; --med-blue:#0284c7; --med-deep:#073b6c; --sea:#1f9ec9;
-  --gold:#f3d894; --green:#5bc49a; --red:#e0796b;
-  --btn-fg:#ffffff; --btn-bg:#0369a1; --on-text:#062f55; --on-gold:#332607;      /* primary = Mediterranean Blue */
+  /* Mediterranean materials: olive ink, limestone, aged brass. Blue is an accent. */
+  color-scheme:dark;
+  --bg:#171d1b; --bg2:#1d2521; --card:#242d28; --card2:#303a32;
+  --line:rgba(226,219,197,.14); --line2:rgba(226,219,197,.28);
+  --tx:#f4efe4; --mut:#cbc8bb; --dim:#b9bcae;
+  --acc:#c3d2b0; --aegean:#86b7b3; --med-blue:#356767; --med-deep:#223831; --sea:#86b7b3;
+  --gold:#dcc18c; --green:#abd0aa; --red:#efa397;
+  --btn-fg:#242b24; --btn-bg:#d7c398; --on-text:#171d1b; --on-gold:#242b24;
   --ease:cubic-bezier(.22,.61,.36,1);
-  --r:18px; --r-sm:12px; --maxw:1200px;
-  --shadow:0 22px 44px -26px rgba(0,0,0,.55);
+  --r:16px; --r-sm:10px; --maxw:1200px;
+  --shadow:0 18px 42px -26px rgba(0,0,0,.42);
 }
 [data-theme="light"]{
-  /* Marble, not parchment. Greek stone is cool white with Mediterranean blue & Aegean cast. */
-  --bg:#f7f9fc; --bg2:#ffffff; --card:#ffffff; --card2:#edf2f8;
-  --line:rgba(16,42,74,.12); --line2:rgba(16,42,74,.21);
-  --tx:#0b2545; --mut:#4a6180; --dim:#526b89;
-  --acc:#0369a1; --aegean:#1f9ec9; --med-blue:#0369a1; --med-deep:#073b6c; --sea:#1f9ec9;
-  --gold:#96701c; --green:#1b7a55; --red:#b84a38;
-  --btn-fg:#ffffff; --btn-bg:#0369a1; --on-text:#ffffff; --on-gold:#ffffff;
+  color-scheme:light;
+  --bg:#f4f0e8; --bg2:#ece7dc; --card:#fffdf8; --card2:#e9e5da;
+  --line:rgba(49,58,44,.17); --line2:rgba(49,58,44,.31);
+  --tx:#26312b; --mut:#535e54; --dim:#5d6358;
+  --acc:#375d4a; --aegean:#356767; --med-blue:#356767; --med-deep:#223831; --sea:#356767;
+  --gold:#785f2a; --green:#306644; --red:#a13e32;
+  --btn-fg:#fffdf8; --btn-bg:#354c3c; --on-text:#fffdf8; --on-gold:#fffdf8;
 }
 [data-theme="gold"]{
-  /* The formal variant: gold on near-black with Mediterranean highlights. */
-  --bg:#0a0906; --bg2:#12100a; --card:#191509; --card2:#12100a;
-  --line:rgba(224,190,122,.20); --line2:rgba(224,190,122,.38);
-  --tx:#f6f0e2; --mut:#c4b294; --dim:#94856b;
-  --acc:#e0be7a; --aegean:#e0be7a; --med-blue:#c49a45; --med-deep:#22160a; --sea:#e0be7a;
-  --gold:#e0be7a; --green:#8fbf9f; --red:#d99a86;
-  --btn-fg:#0a0906; --btn-bg:#e0be7a; --on-text:#0a0906; --on-gold:#0a0906;
+  color-scheme:dark;
+  --bg:#201c16; --bg2:#28221a; --card:#30291e; --card2:#393124;
+  --line:rgba(224,197,141,.18); --line2:rgba(224,197,141,.34);
+  --tx:#f6eddb; --mut:#d1c4aa; --dim:#c7b99c;
+  --acc:#e0c58d; --aegean:#b6c6b4; --med-blue:#526c5a; --med-deep:#2c3328; --sea:#b6c6b4;
+  --gold:#e0c58d; --green:#bad3ac; --red:#ecac93;
+  --btn-fg:#241e13; --btn-bg:#e0c58d; --on-text:#201c16; --on-gold:#241e13;
 }
 
 /* ---- Base ---- */
@@ -56,11 +56,11 @@ body{
   font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
   line-height:1.55; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
   background:var(--bg);
-  background-image:radial-gradient(900px 520px at 86% -8%,color-mix(in srgb,var(--sea) 42%,transparent),transparent 66%),radial-gradient(760px 460px at 4% 8%,color-mix(in srgb,var(--med-blue) 32%,transparent),transparent 70%),linear-gradient(180deg,var(--bg2),var(--bg));
+  background-image:radial-gradient(1000px 650px at 100% 0,color-mix(in srgb,var(--gold) 5%,transparent),transparent 70%),linear-gradient(180deg,var(--bg2),var(--bg) 65%);
   background-attachment:fixed; min-height:100vh;
   transition:background-color .5s var(--ease), color .5s var(--ease);
 }
-[data-theme="light"] body{background-image:radial-gradient(900px 500px at 88% -8%,rgba(31,158,201,.22),transparent 68%),radial-gradient(700px 440px at 2% 8%,rgba(2,132,199,.13),transparent 70%),linear-gradient(180deg,#e9f8fd 0,#f7f9fc 42%,#fff 100%)}
+[data-theme="light"] body{background-image:radial-gradient(1100px 700px at 100% 0,rgba(167,144,96,.06),transparent 70%),linear-gradient(180deg,#f7f3ea,var(--bg) 65%)}
 a{color:inherit;text-decoration:none}
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
   outline:2px solid var(--acc)!important;
@@ -80,7 +80,7 @@ h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
 
 /* ---- Header / nav ---- */
 .zoi-header{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);
-  backdrop-filter:saturate(140%) blur(14px);-webkit-backdrop-filter:saturate(140%) blur(14px);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
   background:color-mix(in srgb, var(--bg) 72%, transparent);}
 .zoi-bar{display:flex;align-items:center;justify-content:space-between;height:68px}
 .zoi-brand{display:flex;align-items:center;gap:12px}
@@ -105,8 +105,8 @@ h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
   min-height:46px;transition:transform .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
 .btn svg{width:16px;height:16px}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:linear-gradient(135deg,#0369a1,#0875a4);color:#ffffff;border:none;box-shadow:0 8px 24px -8px rgba(2,132,199,.7)}
-.btn-primary:hover{background:linear-gradient(135deg,#075985,#0369a1);transform:translateY(-2px);box-shadow:0 12px 28px -8px rgba(2,132,199,.85)}
+.btn-primary{background:var(--btn-bg);color:var(--btn-fg);border:1px solid transparent;box-shadow:0 5px 14px -8px rgba(23,29,27,.3)}
+.btn-primary:hover{background:color-mix(in srgb,var(--btn-bg) 94%,var(--tx));color:var(--btn-fg);transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(23,29,27,.35)}
 .btn-ghost{background:transparent;color:var(--tx);border-color:var(--line2)}
 .btn-ghost:hover{border-color:var(--acc);transform:translateY(-2px)}
 .btn-gold{background:var(--gold);color:var(--on-gold)}
@@ -661,7 +661,7 @@ p{ text-wrap:pretty; }
 /* ═══════════════════════════════════════════════════════════════════════════
    DIASPORA MESSENGER & ETHICAL SPOTLIGHT SYSTEM
    ═══════════════════════════════════════════════════════════════════════════ */
-.zoi-msg-fab{position:fixed;bottom:24px;right:24px;z-index:900;display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:linear-gradient(135deg,#0284c7,#1f9ec9);color:#fff;border:1px solid rgba(255,255,255,.2);box-shadow:0 12px 32px -8px rgba(2,132,199,.7);cursor:pointer;font-weight:750;font-size:13.5px;transition:transform .3s var(--ease-spring),box-shadow .3s}
+.zoi-msg-fab{position:fixed;bottom:24px;right:24px;z-index:900;display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:var(--btn-bg);color:var(--btn-fg);border:1px solid rgba(255,255,255,.2);box-shadow:0 12px 32px -8px rgba(23,29,27,.3);cursor:pointer;font-weight:750;font-size:13.5px;transition:transform .3s var(--ease-spring),box-shadow .3s}
 .zoi-msg-fab:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 18px 40px -8px rgba(2,132,199,.85)}
 .zoi-msg-fab svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
 .zoi-msg-drawer{position:fixed;right:24px;bottom:84px;width:380px;max-width:calc(100vw - 32px);height:540px;max-height:calc(100vh - 120px);z-index:901;border-radius:20px;background:rgba(10,18,32,.88);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid var(--line2);box-shadow:0 30px 80px -20px rgba(0,0,0,.8);display:none;flex-direction:column;overflow:hidden;animation:zoiSlideUp .3s var(--ease-out)}
@@ -673,7 +673,7 @@ p{ text-wrap:pretty; }
 .zoi-msg-threads{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
 .zoi-msg-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);cursor:pointer;transition:all .18s}
 .zoi-msg-item:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--card2))}
-.zoi-msg-av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--acc),#073b6c);color:#fff;font-weight:800;font-size:14px;flex:none}
+.zoi-msg-av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--card2);color:var(--tx);font-weight:800;font-size:14px;flex:none}
 .zoi-msg-body{flex:1;min-width:0}
 .zoi-msg-name{font-weight:700;font-size:13px;color:var(--tx);margin-bottom:2px}
 .zoi-msg-snippet{font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -681,7 +681,7 @@ p{ text-wrap:pretty; }
 .zoi-msg-chatview.active{display:flex}
 .zoi-msg-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
 .zoi-msg-bubble{max-width:82%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.4}
-.zoi-msg-bubble.sent{align-self:flex-end;background:linear-gradient(135deg,#0284c7,#1f9ec9);color:#fff;border-bottom-right-radius:4px}
+.zoi-msg-bubble.sent{align-self:flex-end;background:var(--btn-bg);color:var(--btn-fg);border-bottom-right-radius:4px}
 .zoi-msg-bubble.recv{align-self:flex-start;background:var(--card2);border:1px solid var(--line);color:var(--tx);border-bottom-left-radius:4px}
 .zoi-msg-footer{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--card) 90%,transparent)}
 .zoi-msg-in{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--tx);font-size:13px;outline:none}
@@ -713,3 +713,10 @@ p{ text-wrap:pretty; }
   .zoi-menu-ready .zoi-nav a[aria-current="page"]{background:var(--card2)}
   .zoi-menu-ready .zoi-nav a[aria-current="page"]::after{display:none}
 }
+
+/* Quiet material depth: a light field must never compete with text or photography. */
+.zoi-light{opacity:.18}
+[data-theme="light"] .zoi-light{opacity:.12}
+.zoi-grain{opacity:.025}
+::selection{background:var(--btn-bg);color:var(--btn-fg)}
+@media(prefers-reduced-motion:reduce){body{transition:none}.btn,.card{transition:none}.zoi-light i{animation:none!important}}

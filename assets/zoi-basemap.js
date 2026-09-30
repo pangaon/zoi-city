@@ -78,12 +78,9 @@
 
   /* The three token sets, copied from zoi-theme.css. */
   var TOKENS = {
-    dark:  { bg: '#062f55', card: '#0b5688', tx: '#eef3fa', mut: '#c4d5e8',
-             acc: '#75d3ff', gold: '#f3d894', green: '#5bc49a', red: '#e0796b' },
-    light: { bg: '#f7f9fc', card: '#ffffff', tx: '#0b2545', mut: '#4a6180',
-             acc: '#0369a1', gold: '#96701c', green: '#1b7a55', red: '#b84a38' },
-    gold:  { bg: '#0a0906', card: '#191509', tx: '#f6f0e2', mut: '#c4b294',
-             acc: '#e0be7a', gold: '#e0be7a', green: '#8fbf9f', red: '#d99a86' }
+    dark:  {bg: '#171d1b', card: '#242d28', tx: '#f4efe4', mut: '#cbc8bb', acc: '#c3d2b0', gold: '#dcc18c', green: '#abd0aa', red: '#efa397', aegean: '#86b7b3' },
+    light: {bg: '#f4f0e8', card: '#fffdf8', tx: '#26312b', mut: '#535e54', acc: '#375d4a', gold: '#785f2a', green: '#306644', red: '#a13e32', aegean: '#356767' },
+    gold:  {bg: '#201c16', card: '#30291e', tx: '#f6eddb', mut: '#d1c4aa', acc: '#e0c58d', gold: '#e0c58d', green: '#bad3ac', red: '#ecac93', aegean: '#b6c6b4' }
   };
 
   /**
@@ -101,11 +98,10 @@
     if (dark) {
       P.void    = mix(T.bg, '#000000', 0.35);          // beyond the map edge
       // Land and sea must be perceptibly different and the sea must read AS sea.
-      // Measured in CIELAB: dE 12.5 apart, water markedly cooler (b* -13 vs
-      // land's -3). The first pass had these dE 4.9 apart and looked like one
-      // flat surface. Guarded by tests/unit/basemap.test.mjs.
+      // A restrained cool water pigment separates sea from warm olive land.
+      // Perceptual separation and label readability are guarded by basemap tests.
       P.land    = mix(mix(mix(T.bg, T.tx, 0.08), T.gold, 0.08), '#000000', 0.15);
-      P.water   = mix(T.bg, T.acc, 0.72);
+      P.water   = mix(mix(T.bg, T.aegean, 0.42), '#548da5', 0.38);
       // The gold theme has no cool token at all — its --acc IS its --gold — so
       // a blue sea cannot be derived from it. Mixing toward --green just yields
       // olive that reads as more land (dE 2.3, invisible). It gets lifted

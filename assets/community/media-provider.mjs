@@ -1,4 +1,4 @@
-const SPOTIFY=/^\/(?:embed\/)?(artist|album|track)\/([A-Za-z0-9]{22})$/;
+const SPOTIFY=/^\/(?:embed\/)?(artist|album|track|playlist|episode|show)\/([A-Za-z0-9]{22})$/;
 const VIDEO=/^[A-Za-z0-9_-]{11}$/;
 const PLAYLIST=/^[A-Za-z0-9_-]{10,100}$/;
 function https(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password&&!u.port?u:null;}catch{return null;}}

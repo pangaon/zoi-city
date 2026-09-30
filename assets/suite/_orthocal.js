@@ -193,6 +193,11 @@
     nativity_of_theotokos: 1, exaltation_of_the_cross: 1, entrance_of_theotokos: 1
   };
 
+  // GOARCH new-calendar reference; services and other jurisdictions are not inferred.
+  function stGeorgeDate(year) {
+    var nominal=ymdToUTC(Number(year),4,23),pascha=orthodoxPascha(year);
+    return iso(nominal<=pascha?addDays(pascha,1):nominal);
+  }
   /* ---------- resolution ---------- */
 
   /** Every feast falling on a given ISO date, moveable and fixed. */
@@ -221,16 +226,18 @@
     var md = iso(ms).slice(5);
     for (var k = 0; k < FIXED.length; k++) {
       var g = FIXED[k];
-      if (g.md === md) out.push({ key: g.key, name: g.name, md: g.md, civic: !!g.civic, kind: 'fixed', great: !!GREAT[g.key] });
+      if (g.key==='st_george' ? stGeorgeDate(y)===iso(ms) : g.md===md) out.push({ key: g.key, name: g.name, md: g.md, civic: !!g.civic, kind: 'fixed', great: !!GREAT[g.key] });
     }
     return out;
   }
 
-  /** Name days for a date (fixed feasts only — that is how they are kept). */
+  /** Selected namedays, including the GOARCH St George transfer. */
   function nameDaysOn(dateISO) {
     var ms = parseISO(dateISO);
     if (ms == null) return [];
-    return NAMEDAYS[iso(ms).slice(5)] || [];
+    var day=iso(ms),md=day.slice(5),names=md==='04-23'?[]:(NAMEDAYS[md]||[]).slice();
+    if (stGeorgeDate(new Date(ms).getUTCFullYear())===day) names=names.concat(NAMEDAYS['04-23']);
+    return names;
   }
 
   /**
@@ -610,6 +617,7 @@
   /** A patronal feast resolved to a real date in a given year. */
   function resolveFeastDate(feast, year) {
     if (!feast) return null;
+    if (feast.key==='st_george') return stGeorgeDate(year);
     if (feast.kind === 'moveable' && feast.pascha_offset != null) {
       return iso(addDays(orthodoxPascha(year), Number(feast.pascha_offset)));
     }
@@ -648,6 +656,7 @@
     opportunities: opportunities,
     suggestDraft: suggestDraft,
     resolveFeastDate: resolveFeastDate,
+    stGeorgeDate: stGeorgeDate,
     shiftForOldCalendar: shiftForOldCalendar
   };
 })(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this);

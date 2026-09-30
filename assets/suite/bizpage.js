@@ -379,10 +379,10 @@
     var ws = ctx.ws;
     root.__bizPageDestroy && root.__bizPageDestroy();
     var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
-    var account = identity(C), lifecycle = new AbortController(), designHandle = null, designEpoch = 0, bootEpoch = 0, contentDirty = false;
+    var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false;
     function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
-    function destroyDesign(){designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
-    function unsaved(){return contentDirty || state.saving || !!(designHandle && designHandle.hasUnsavedChanges());}
+    function destroyDesign(){mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
+    function unsaved(){return contentDirty || state.saving || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
     function allowLeave(){return !unsaved() || global.confirm('Leave this business home? Unsaved content and private design changes will be lost.');}
     function destroy(){if(lifecycle.signal.aborted)return;lifecycle.abort();bootEpoch++;destroyDesign();clearInterval(scopeTimer);observer.disconnect();root.replaceChildren();}
     root.__bizPageDestroy=destroy;
@@ -602,6 +602,14 @@
       }
       designPanel.addEventListener('toggle',openDesign);
       if(ctx.view==='design'){designPanel.open=true;openDesign();}
+
+      var mediaPanel=el(doc,'details','zp-media-panel');mediaPanel.style.cssText='margin:20px 0;max-width:100%;min-width:0';
+      var mediaSummary=el(doc,'summary',null,'Media &amp; channels');mediaSummary.style.cssText='cursor:pointer;font-weight:700;padding:16px;border:1px solid var(--line2);border-radius:12px';mediaPanel.appendChild(mediaSummary);
+      var mediaSlot=el(doc,'div');mediaPanel.appendChild(mediaSlot);wrap.appendChild(mediaPanel);var mediaLoading=false;
+      async function openMedia(){if(!mediaPanel.open||mediaHandle||mediaLoading||!scopeLive())return;mediaLoading=true;var epoch=++mediaEpoch;
+        try{var module=await import('/assets/homes/media-editor.mjs');if(!scopeLive()||epoch!==mediaEpoch||!mediaSlot.isConnected)return;var handle=await module.mountMediaEditor(mediaSlot,{C:C,workspace:ws,listing:s.listingId});if(!scopeLive()||epoch!==mediaEpoch||!mediaSlot.isConnected){handle.dispose();return;}mediaHandle=handle;
+        }catch(e){if(scopeLive()&&epoch===mediaEpoch){mediaSlot.innerHTML='<p role="alert">Media tools could not load.</p><button type="button">Retry media tools</button>';mediaSlot.querySelector('button').onclick=openMedia;}}finally{mediaLoading=false;}}
+      mediaPanel.addEventListener('toggle',function(){if(!mediaPanel.open&&mediaHandle)mediaHandle.stopPreview();else openMedia();});
 
       var grid = el(doc, 'div', 'zp-grid');
 

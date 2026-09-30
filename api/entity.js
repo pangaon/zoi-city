@@ -1,3 +1,6 @@
+import {renderHospitalityHome} from './_hospitality-home.js';
+import {withMonasteryNetwork} from './_monastery-network.js';
+import {withPublicOwnerMedia} from './_owner-media.js';
 import {publishedHomeDesign} from './_home-design.js';
 import {profileMedia} from './_profile-media.js';
 import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
@@ -508,12 +511,12 @@ export default async function handler(req, res) {
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
     const design = publishedHomeDesign(e);
-    const designedHome = renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
+    const designedHome = renderHospitalityHome(e, design) || renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
     if (designedHome) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');
       res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
-      res.end(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/'+encodeURIComponent(typeSlug(e.entity_type))+'/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'));
+      res.end(withMonasteryNetwork(withPublicOwnerMedia(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/'+encodeURIComponent(typeSlug(e.entity_type))+'/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'),e,design),e));
       return;
     }
     const optional = await Promise.allSettled([rpc('seo_related',{p_slug:slug,p_limit:8},2000),rpc('listing_completeness',{p_slug:slug},2000)]);
@@ -522,7 +525,7 @@ export default async function handler(req, res) {
     res.statusCode=200;
     res.setHeader('Content-Type','text/html; charset=utf-8');
     res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
-    res.end(page(e, related, completeness));
+    res.end(withMonasteryNetwork(withPublicOwnerMedia(page(e, related, completeness),e,design),e));
   } catch (err) {
     res.statusCode=503; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
     res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi</p><h1>We are refreshing this profile</h1><p style="color:var(--mut);line-height:1.6">The latest details are temporarily unavailable. Please try again in a moment.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to Explore</a></p></main></body></html>');

@@ -611,7 +611,7 @@ export function liturgicalBlock(e, p) {
       (when ? ' &middot; ' + esc(fmtDate(when, today)) : '') + '</span></div>';
   }
 
-  let html = '<div class="lit">' + rows + '</div><p class="muted">Calendar reference only; confirm service times and fasting guidance with the parish. <a href="https://www.oca.org/liturgics/outlines/fasting-fast-free-seasons-of-the-church" target="_blank" rel="noopener">Orthodox fasting reference</a></p>';
+  let html = '<div class="lit">' + rows + '</div><p class="muted">Calendar reference only; confirm service times and fasting guidance with the parish. '+(reference.calendar_note?esc(reference.calendar_note)+' ':'')+'<a href="https://www.oca.org/liturgics/outlines/fasting-fast-free-seasons-of-the-church" target="_blank" rel="noopener">Orthodox fasting reference</a></p>';
 
   // what is coming, from the calendar not from the blob
   const up = upcomingParishFeasts(today,75,style).slice(0,6);

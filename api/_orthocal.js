@@ -142,6 +142,14 @@ export const NAMEDAYS = {
   '08-29': ['Ioannis'],
 };
 
+/** GOARCH new-calendar observance: April 23 on/before Pascha moves to Bright Monday.
+ * This is a jurisdictional reference, not an inferred parish service schedule.
+ * https://www.goarch.org/chapel/saints?contentid=29 */
+export function stGeorgeDate(year) {
+  const nominal=ymdToUTC(Number(year),4,23),pascha=orthodoxPascha(year);
+  return iso(nominal<=pascha?addDays(pascha,1):nominal);
+}
+
 /* ---------- resolution ---------- */
 
 /** Every feast falling on a given ISO date, moveable and fixed. */
@@ -160,14 +168,16 @@ export function feastsOn(dateISO) {
   }
   const md = dateISO.slice(5);
   for (const f of FIXED) {
-    if (f.md === md) out.push({ ...f, kind: 'fixed' });
+    if (f.key==='st_george' ? stGeorgeDate(y)===dateISO : f.md===md) out.push({ ...f, kind:'fixed', ...(f.key==='st_george'&&md!=='04-23'?{transferred:true}: {}) });
   }
   return out;
 }
 
-/** Name days for a date (fixed feasts only — that is how they are kept). */
+/** Selected namedays, including the GOARCH St George transfer. Not an exhaustive calendar. */
 export function nameDaysOn(dateISO) {
-  return NAMEDAYS[String(dateISO || '').slice(5)] || [];
+  const day=String(dateISO||''),md=day.slice(5),names=md==='04-23'?[]:[...(NAMEDAYS[md]||[])];
+  if (/^\d{4}-\d{2}-\d{2}$/.test(day)&&stGeorgeDate(Number(day.slice(0,4)))===day) names.push(...NAMEDAYS['04-23']);
+  return names;
 }
 
 /**
@@ -241,6 +251,7 @@ export function upcomingFeasts(fromISO, days) {
 /** A parish's patronal feast resolved to a real date in a given year. */
 export function resolveFeastDate(feast, year) {
   if (!feast) return null;
+  if (feast.key==='st_george') return stGeorgeDate(year);
   if (feast.kind === 'moveable' && feast.pascha_offset != null) {
     return iso(addDays(orthodoxPascha(year), Number(feast.pascha_offset)));
   }

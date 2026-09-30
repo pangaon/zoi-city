@@ -1,3 +1,4 @@
+import {faithHubBody} from './_faith-hub.js';
 /**
  * api/place.js — server-rendered place and category hubs.
  *
@@ -204,6 +205,10 @@ export default async function handler(req, res) {
     const wantRegion = q.get('region') || '';
     const wantCity = q.get('city') || '';
     const wantCat = q.get('category') || '';
+
+    if (wantCat === 'orthodox-churches' && !wantCountry && !wantRegion && !wantCity && page === 1) {
+      return send(200, shell({title:'Greek Orthodox Life · Parishes, Feasts & Community | Zoi',desc:'Find your Greek Orthodox parish, explore service calendars, upcoming feasts, family ministries and connected monasteries.',path:'/categories/orthodox-churches',body:faithHubBody(),jsonld:{'@context':'https://schema.org','@type':'CollectionPage',name:'Greek Orthodox Life',url:SITE+'/categories/orthodox-churches'}}));
+    }
 
     // Resolve slugs back to the real values by matching against the database,
     // so a URL never has to be a guess about capitalisation or accents.

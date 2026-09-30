@@ -14,9 +14,15 @@ test('shared text and primary-button tokens meet normal-text contrast on support
  }
 });
 
-test('primary gradient labels remain readable at both color stops',()=>{
- for(const rule of [css.match(/\.btn-primary\{([^}]+)\}/)[1],css.match(/\.btn-primary:hover\{([^}]+)\}/)[1]+';color:#ffffff']){
- const colors=[...rule.matchAll(/#[0-9a-f]{6}/gi)].map(x=>x[0]);
- for(const stop of colors.slice(0,2))assert.ok(contrast(stop,colors[2])>=4.5,stop+' gradient stop');
+test('primary hover and editorial surfaces preserve readable labels',()=>{
+ assert.match(css,/\.btn-primary\{[^}]*background:var\(--btn-bg\)/);
+ const base=css.match(/:root\s*\{([^}]+)\}/)[1];
+ for(const theme of ['dark','light','gold']){
+  const block=theme==='dark'?'':css.match(new RegExp('\\[data-theme="'+theme+'"\\]\\s*\\{([^}]+)\\}'))[1];
+  const t=Object.fromEntries([...`${base}${block}`.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-f]{6})\b/gi)].map(m=>[m[1],m[2]]));
+  const mix='#'+[1,3,5].map(i=>Math.round(parseInt(t['btn-bg'].slice(i,i+2),16)*.94+parseInt(t.tx.slice(i,i+2),16)*.06).toString(16).padStart(2,'0')).join('');
+  assert.ok(contrast(t['btn-fg'],mix)>=4.5,theme+' hover');
  }
+ for(const bg of ['#263b32','#354334'])for(const fg of ['#ffffff','#e3d4b6','#e2e0d1'])assert.ok(contrast(fg,bg)>=4.5,fg+' editorial hero');
+ assert.match(css,/@media\s*\(prefers-reduced-motion:reduce\)/);
 });
