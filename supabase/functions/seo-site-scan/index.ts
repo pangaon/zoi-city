@@ -1,4 +1,5 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { storeReceipt, publicScanError } from "./receipt.ts";
 import { vet } from "../zoi-enrich/_ssrf.ts";
 
 const CORS = {
@@ -12,7 +13,7 @@ const MAX_HOPS = 3;
 const hits = new Map<string, { start: number; count: number }>();
 
 function json(value: unknown, status = 200) {
-  return new Response(JSON.stringify(value), { status, headers: { ...CORS, "Content-Type": "application/json" } });
+  return new Response(JSON.stringify(value), { status, headers: { ...CORS, "Content-Type": "application/json", "Cache-Control":"private, no-store" } });
 }
 function clean(value: string) { return value.replace(/\s+/g, " ").trim(); }
 function text(doc: string, re: RegExp) { return clean((doc.match(re) || [])[1] || ""); }
@@ -79,21 +80,32 @@ Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (request.method !== "POST") return json({ error: "POST required" }, 405);
   const ip = request.headers.get("x-forwarded-for") || "unknown";
-  const now = Date.now(); const current = hits.get(ip);
+  const now = Date.now();
+  if(hits.size>=4096){for(const [key,value] of hits){if(now-value.start>3600000)hits.delete(key);}}
+  if(hits.size>=4096&&!hits.has(ip))return json({error:'free_scan_capacity_reached'},429);
+  const current = hits.get(ip);
   if (!current || now - current.start > 3600000) hits.set(ip, { start: now, count: 1 });
   else if (current.count >= 20) return json({ error: "free_scan_limit_reached", message: "The free test limit is 20 scans per hour." }, 429);
   else current.count++;
   try {
-    const body = await request.json();
+    const inputReader=request.body?.getReader();if(!inputReader)return json({error:'url_required'},400);
+    const inputChunks:Uint8Array[]=[];let inputSize=0;
+    while(true){const part=await inputReader.read();if(part.done)break;inputSize+=part.value.byteLength;if(inputSize>4096){await inputReader.cancel();return json({error:'request_too_large'},413);}inputChunks.push(part.value);}
+    const inputBytes=new Uint8Array(inputSize);let inputOffset=0;for(const chunk of inputChunks){inputBytes.set(chunk,inputOffset);inputOffset+=chunk.byteLength;}
+    const body=JSON.parse(new TextDecoder().decode(inputBytes));
     const raw = String(body?.url || "").trim();
+    if(raw.length>2048)return json({error:'url_too_long'},400);
     if (!raw) return json({ error: "url_required" }, 400);
     const checked = await vet(raw);
-    if (!checked.url) return json({ error: "url_refused", reason: checked.why }, 400);
+    if (!checked.url) return json({ error: "url_refused", message: "Enter a publicly accessible HTTP or HTTPS website address." }, 400);
     const started = Date.now();
     const page = await fetchPage(checked.url);
     const elapsed = Date.now() - started;
-    return json({ ok: true, mode: "free_test", url: page.url, checked_at: new Date().toISOString(), checks: checks(page.html, page.url, elapsed) });
+    const report={ ok: true, mode: "free_test", url: page.url, requested_url:checked.url.toString(), checked_at: new Date().toISOString(), checks: checks(page.html, page.url, elapsed) };
+    let save_receipt=null;
+    try { save_receipt=await storeReceipt(report,ip,{base:Deno.env.get('SUPABASE_URL')||'',key:Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||''}); } catch { /* The measured free report remains available; saving is explicitly unavailable. */ }
+    return json({...report,save_receipt,save_available:save_receipt!==null});
   } catch (error) {
-    return json({ error: String(error instanceof Error ? error.message : error).slice(0, 160) }, 422);
+    return json(publicScanError(error), 422);
   }
 });

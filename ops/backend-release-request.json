@@ -1,26 +1,36 @@
 {
-  "id": "release-family-personal-calendar-20260930",
+  "id": "release-intelligence-private-receipts-20260930",
   "project": "csebihpaychdkanjjsmz",
-  "expires_at": "2026-09-30T08:15:45.999948+00:00",
+  "expires_at": "2026-09-30T08:30:50.734116+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930041000_guardian_youth_programmes.sql",
-      "sha256": "f2d1b6679a7880deff02593fb4d656d8051d30d998e92b42a390a4518f87fcd8"
-    },
-    {
-      "path": "supabase/migrations/20260930070345_private_personal_calendar_preferences.sql",
-      "sha256": "c3e06854973de797ab2194d510702a3fb5c9ac9206041cd832f1a375865720bf"
+      "path": "supabase/migrations/20260930072110_intelligence_private_report_receipts.sql",
+      "sha256": "1913401c861d4bdcc1349170141d6e6140b6cfefe44a3a371432fe68f5186519"
     }
   ],
-  "workers": [],
+  "workers": [
+    {
+      "name": "seo-site-scan",
+      "files": [
+        {
+          "path": "supabase/functions/seo-site-scan/index.ts",
+          "sha256": "8f80ad3b062a33b0e3e052441614bf8f9d5a316fcda8206638f004770507e4a1"
+        },
+        {
+          "path": "supabase/functions/seo-site-scan/receipt.ts",
+          "sha256": "ae1ee9244dc9cd85cf21aac765507902b168df537c7fdb10a09ae6d916631612"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_ssrf.ts",
+          "sha256": "54b9c13fd5000421e2e5beee8cd85edd20d91337621b6e97252081eb309f6ee3"
+        }
+      ]
+    }
+  ],
   "fixtures": [
     {
-      "path": "ops/qa-youth-rollback.sql",
-      "sha256": "77fb02d6c353407542daebaeb6f96586f3c6ae273f9508aa3654cd9fc2bcf5b0"
-    },
-    {
-      "path": "tests/database/personal-calendar-production-rollback.sql",
-      "sha256": "56d972e2563a88d28179f17818e5ff093ee89ce1419f9fd3c78c73d1d280429f"
+      "path": "ops/qa-intelligence-receipts-rollback.sql",
+      "sha256": "0206a750ff3a9657ecc89cc3198bb0231f578b8fda50e1ba948db6343041feb5"
     }
   ]
 }
