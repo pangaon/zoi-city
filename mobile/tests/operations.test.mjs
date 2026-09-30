@@ -9,3 +9,4 @@ test('projects require company and tasks require project before sending',()=>{as
 test('unicode payload byte limit is enforced before sending',()=>{assert.throws(()=>recordPayload({...toForm(),title:'Contact',notes:'字'.repeat(11000)},undefined,'contact'),/too large/);});
 
 test('unmodified deadline preserves its exact timestamp',()=>{const existing={...record,due_at:'2026-10-05T10:30:00Z'};assert.equal(recordPayload(toForm(existing),existing).due_at,existing.due_at);});
+test('new company has valid default sector and cannot submit blank sector',()=>{assert.equal(recordPayload({...toForm(),title:'Company'},undefined,'company').sector,'business');assert.throws(()=>recordPayload({...toForm(),title:'Company',sector:''},undefined,'company'),/sector/);});

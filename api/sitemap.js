@@ -6,6 +6,7 @@ const SITE = 'https://www.zoi.city';
 async function rpc(fn, body) {
   const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
     method: 'POST',
+    signal: AbortSignal.timeout(8000),
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {})
   });
@@ -13,7 +14,7 @@ async function rpc(fn, body) {
   return r.json();
 }
 function xesc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'})[c];});}
-function iso(d){ try{ return new Date(d).toISOString().slice(0,10); }catch(e){ return null; } }
+function iso(d){ if(!d)return null; try{ return new Date(d).toISOString().slice(0,10); }catch(e){ return null; } }
 
 // ESM: package.json sets "type":"module", so a CommonJS export leaves this
 // function with no handler at all — which is what made every listing page 500.
@@ -26,10 +27,10 @@ function iso(d){ try{ return new Date(d).toISOString().slice(0,10); }catch(e){ r
  *
  *   /sitemap.xml            the index
  *   /sitemap-core.xml       the handful of pages that are not generated
- *   /sitemap-listings.xml   every published listing
+ *   /sitemap-listings-N.xml  bounded pages of published organizations
  *   /sitemap-places.xml     every place and category hub
  */
-const PAGE = 1000, MAX_PAGES = 60, WINDOW = 6;
+const PAGE = 1000;
 
 function url(loc, freq, pri, lastmod) {
   return '<url><loc>' + xesc(loc) + '</loc>'
@@ -40,24 +41,6 @@ function hubSlug(v) {
   return String(v == null ? '' : v).toLowerCase().trim()
     .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
-async function allListings() {
-  var rows = [], done = false;
-  for (var w = 0; w < MAX_PAGES && !done; w += WINDOW) {
-    var offsets = [];
-    for (var k = 0; k < WINDOW && (w + k) < MAX_PAGES; k++) offsets.push((w + k) * PAGE);
-    var batches = await Promise.all(offsets.map(function (o) {
-      return rpc('seo_index', { p_limit: PAGE, p_offset: o }).catch(function () { return []; });
-    }));
-    for (var b = 0; b < batches.length; b++) {
-      var batch = batches[b];
-      if (!Array.isArray(batch) || batch.length === 0) { done = true; break; }
-      rows = rows.concat(batch);
-      if (batch.length < PAGE) { done = true; break; }
-    }
-  }
-  return rows;
 }
 
 export default async function handler(req, res) {
@@ -73,12 +56,15 @@ export default async function handler(req, res) {
 
     /* ---- the index ---- */
     if (part === 'index') {
-      const now = new Date().toISOString().slice(0, 10);
+      const stats = await rpc('seo_sitemap_stats', {});
+      if (!stats || !Number.isSafeInteger(stats.count) || stats.count < 0 || stats.count > 10000000) throw new Error('invalid sitemap statistics');
       let x = '<?xml version="1.0" encoding="UTF-8"?>\n'
             + '<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
-      for (const p of ['core', 'listings', 'places']) {
-        x += '<sitemap><loc>' + SITE + '/sitemap-' + p + '.xml</loc>'
-           + '<lastmod>' + now + '</lastmod></sitemap>\n';
+      for (const p of ['core', 'places']) {
+        x += '<sitemap><loc>' + SITE + '/sitemap-' + p + '.xml</loc></sitemap>\n';
+      }
+      for (let page = 1; page <= Math.ceil(stats.count / PAGE); page++) {
+        x += '<sitemap><loc>' + SITE + '/sitemap-listings-' + page + '.xml</loc></sitemap>\n';
       }
       x += '</sitemapindex>\n';
       return send(x);
@@ -102,7 +88,12 @@ export default async function handler(req, res) {
 
     /* ---- listings ---- */
     if (part === 'listings') {
-      const rows = await allListings();
+      const rawPage = u.searchParams.get('page') || '1';
+      if (!/^[1-9]\d{0,4}$/.test(rawPage) || Number(rawPage)>10000) {
+        res.statusCode=400;res.setHeader('Cache-Control','no-store');res.end('invalid sitemap page\n');return;
+      }
+      const rows = await rpc('seo_index', {p_limit:PAGE,p_offset:(Number(rawPage)-1)*PAGE});
+      if (!Array.isArray(rows)) throw new Error('invalid sitemap response');
       const seen = Object.create(null);
       for (const r of rows) {
         if (!r || !r.slug) continue;
@@ -119,14 +110,15 @@ export default async function handler(req, res) {
     /* ---- places and categories ---- */
     if (part === 'places') {
       const [countries, regions, cities, cats, regionCats] = await Promise.all([
-        rpc('explore_countries', {}).catch(() => []),
-        rpc('explore_regions', {}).catch(() => []),
-        rpc('explore_region_cities', {}).catch(() => []),
-        rpc('explore_categories', {}).catch(() => []),
+        rpc('explore_countries', {}),
+        rpc('explore_regions', {}),
+        rpc('explore_region_cities', {}),
+        rpc('explore_categories', {}),
         // One query instead of one per region. The N+1 this replaces is what
         // forced the old cap of 6 countries x 8 regions.
-        rpc('explore_region_categories', { p_min: 3 }).catch(() => []),
+        rpc('explore_region_categories', { p_min: 3 }),
       ]);
+      if (![countries,regions,cities,cats,regionCats].every(Array.isArray)) throw new Error('invalid places sitemap response');
       const seen = Object.create(null);
       const add = (path, pri) => {
         const loc = SITE + path;
@@ -160,11 +152,11 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end('unknown sitemap part\n');
   } catch (e) {
-    // A broken sitemap must not be a 500 that search engines remember; serve a
-    // valid empty document and let the next fetch succeed.
-    res.statusCode = 200;
-    res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+    // Never replace a valid index with an empty or partial success on outage.
+    res.statusCode = 503;
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.setHeader('Cache-Control', 'no-store');
-    res.end('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>\n');
+    res.setHeader('Retry-After', '60');
+    res.end('Sitemap temporarily unavailable. Please retry.\n');
   }
 }

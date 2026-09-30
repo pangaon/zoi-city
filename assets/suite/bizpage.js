@@ -446,7 +446,7 @@
       var head = el(doc, 'div', 'zp-head');
       var left = el(doc, 'div');
       left.appendChild(el(doc, 'h2', 'zp-title',
-        '<span style="display:inline-flex;color:var(--gold)">' + IC.store + '</span> Business page' +
+        '<span style="display:inline-flex;color:var(--gold)">' + IC.store + '</span> Business home' +
         '<small>your public listing</small>'));
       if (sub) left.appendChild(el(doc, 'p', 'zp-sub', sub));
       head.appendChild(left);
@@ -486,10 +486,10 @@
       card.appendChild(el(doc, 'div', 'zp-ic', IC.store));
       card.appendChild(el(doc, 'h3', null, 'Claim your business first'));
       card.appendChild(el(doc, 'p', null,
-        'A business page is the public face of a listing you own. This workspace ' +
-        'is not linked to a claimed listing yet, so there is nothing to edit here.'));
+        'Your business home brings your story, services and contact details together. This workspace ' +
+        'needs to be connected to your business before you can manage its public content.'));
       card.appendChild(el(doc, 'p', 'zp-note',
-        'Find your business in the directory and claim it. Once your claim is ' +
+        'Find your business on Zoi and claim it. Once your claim is ' +
         'approved, this editor unlocks and you can add your description, hours, ' +
         'contact details and photos.'));
 
@@ -912,7 +912,7 @@
         state.saving = false;
         finishSave(saveBtn, savedNote);
         if (ok) {
-          toast('Business page saved.' + (profileNote ? profileNote : ''));
+          toast('Business home saved.' + (profileNote ? profileNote : ''));
           savedNote.textContent = 'Saved · your public page is up to date.' + profileNote;
         } else {
           toast('Save did not complete.');
@@ -985,7 +985,7 @@
   global.ZoiSuite = global.ZoiSuite || { modules: [] };
   global.ZoiSuite.modules.push({
     id: 'bizpage',
-    label: 'Business page',
+    label: 'Business home',
     order: 70,
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>',
     mount: mountBizPage

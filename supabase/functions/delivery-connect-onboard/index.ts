@@ -22,6 +22,7 @@
 // Talks to Postgres directly (zoi schema is not exposed to PostgREST). Isolated.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { authenticatedUser, canAdministerListing, isUuid, safeReturnUrl } from "../_shared/delivery-auth.ts";
 import postgres from "https://deno.land/x/postgresjs@v3.4.4/mod.js";
 
 const cors = {
@@ -38,19 +39,22 @@ Deno.serve(async (req) => {
 
   // ===================== SAFETY GATE =====================
   const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-  if (!STRIPE_SECRET_KEY) {
-    return json({ ok: false, staged: true, reason: "awaiting live keys" });
+  if (!STRIPE_SECRET_KEY || Deno.env.get("DELIVERY_PAYMENTS_ENABLED") !== "on") {
+    return json({ ok: false, staged: true, reason: "delivery payments are not enabled" });
   }
   // ======================================================
 
+  const userId=await authenticatedUser(req);
+  if(!userId)return json({ok:false,error:"sign_in_required"},401);
   let body: any;
   try { body = await req.json(); } catch { return json({ ok: false, error: "invalid JSON" }, 400); }
   const { listing_id, email, country, return_url, refresh_url } = body ?? {};
-  if (!listing_id) return json({ ok: false, error: "listing_id required" }, 400);
-  if (!return_url || !refresh_url) return json({ ok: false, error: "return_url and refresh_url required" }, 400);
+  if (!isUuid(listing_id)) return json({ ok: false, error: "listing_id required" }, 400);
+  if (!safeReturnUrl(return_url) || !safeReturnUrl(refresh_url)) return json({ ok: false, error: "return_url and refresh_url required" }, 400);
 
   const sql = postgres(Deno.env.get("SUPABASE_DB_URL")!, { prepare: false });
   try {
+    if(!await canAdministerListing(sql,listing_id,userId))return json({ok:false,error:"not_authorized"},403);
     // Reuse an existing connected account if this listing already has one.
     const existing = await sql`
       select stripe_account_id from zoi.delivery_config where listing_id = ${listing_id} limit 1`;
@@ -68,6 +72,7 @@ Deno.serve(async (req) => {
 
       const acctResp = await fetch("https://api.stripe.com/v1/accounts", {
         method: "POST",
+        signal: AbortSignal.timeout(15000),
         headers: {
           "Authorization": `Bearer ${STRIPE_SECRET_KEY}`,
           "Content-Type": "application/x-www-form-urlencoded",
@@ -77,13 +82,15 @@ Deno.serve(async (req) => {
       });
       const acct = await acctResp.json();
       if (!acctResp.ok) return json({ ok: false, error: "stripe account error", detail: acct?.error?.message ?? acct }, 502);
+      if(typeof acct.id!=="string"||!acct.id.startsWith("acct_"))return json({ok:false,error:"invalid_provider_receipt"},502);
       accountId = acct.id;
 
       // Persist immediately (upsert) so a retry reuses the same account.
-      await sql`
+      const saved=await sql`
         insert into zoi.delivery_config (listing_id, stripe_account_id, status)
         values (${listing_id}, ${accountId}, 'staging')
-        on conflict (listing_id) do update set stripe_account_id = excluded.stripe_account_id`;
+        on conflict (listing_id) do update set stripe_account_id = excluded.stripe_account_id returning listing_id`;
+      if(saved.length!==1)return json({ok:false,error:"receipt_not_persisted"},503);
     }
 
     // 2) Create a single-use AccountLink onboarding URL.
@@ -95,6 +102,7 @@ Deno.serve(async (req) => {
 
     const linkResp = await fetch("https://api.stripe.com/v1/account_links", {
       method: "POST",
+      signal: AbortSignal.timeout(15000),
       headers: {
         "Authorization": `Bearer ${STRIPE_SECRET_KEY}`,
         "Content-Type": "application/x-www-form-urlencoded",
@@ -104,9 +112,10 @@ Deno.serve(async (req) => {
     const link = await linkResp.json();
     if (!linkResp.ok) return json({ ok: false, error: "stripe account_link error", detail: link?.error?.message ?? link }, 502);
 
-    return json({ ok: true, stripe_account_id: accountId, onboarding_url: link.url, expires_at: link.expires_at });
+    if(typeof link.url!=="string"||!link.url.startsWith("https://connect.stripe.com/"))return json({ok:false,error:"invalid_onboarding_url"},502);
+    return json({ ok: true, onboarding_complete:false, stripe_account_id: accountId, onboarding_url: link.url, expires_at: link.expires_at });
   } catch (e) {
-    return json({ ok: false, error: String(e?.message ?? e) }, 500);
+    return json({ ok: false, error: String(e instanceof Error ? e.message : e) }, 500);
   } finally {
     await sql.end();
   }

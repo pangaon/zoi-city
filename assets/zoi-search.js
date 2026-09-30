@@ -222,7 +222,7 @@
     if (rec.length) {
       out.push({ group: 'Recent' });
       rec.forEach(function (q) {
-        out.push({ kind: 'query', q: q, name: q, meta: 'Search the directory', ic: IC.clock });
+        out.push({ kind: 'query', q: q, name: q, meta: 'Search Zoi', ic: IC.clock });
       });
     }
     out.push({ group: 'Jump to' });
@@ -317,7 +317,7 @@
         items.push({ group: 'Everywhere' });
         items.push({
           kind: 'link', href: '/explore?q=' + encodeURIComponent(q), ic: IC.search,
-          name: 'Search the whole directory for “' + q + '”',
+          name: 'Search Zoi for “' + q + '”',
           meta: 'Filters, sorting and more results'
         });
         render(items, q);
@@ -331,7 +331,7 @@
         foot.textContent = 'search unavailable';
         render([{ group: 'Everywhere' }, {
           kind: 'link', href: '/explore?q=' + encodeURIComponent(q), ic: IC.search,
-          name: 'Open the directory', meta: 'Search there instead'
+          name: 'Open Explore', meta: 'Search there instead'
         }], q);
       });
   }

@@ -5,29 +5,17 @@ const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
 const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const SITE = 'https://www.zoi.city';
 
-async function rpc(fn, body, attempts = 3) {
-  let last;
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 7000);
-    try {
-      const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
-        method: 'POST',
-        headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body || {}),
-        signal: controller.signal,
-      });
-      if (r.ok) return r.json();
-      last = new Error('rpc ' + fn + ' ' + r.status);
-      if (r.status < 500 && r.status !== 429) throw last;
-    } catch (err) {
-      last = err;
-    } finally {
-      clearTimeout(timer);
-    }
-    if (attempt + 1 < attempts) await new Promise((resolve) => setTimeout(resolve, 150 * (attempt + 1)));
-  }
-  throw last || new Error('rpc ' + fn + ' failed');
+async function rpc(fn, body, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
+      method: 'POST', headers: {apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},
+      body: JSON.stringify(body || {}), signal:controller.signal,
+    });
+    if (!r.ok) throw new Error('rpc '+fn+' '+r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
 }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function attr(s){return esc(s);}
@@ -485,7 +473,7 @@ var PAGE_CSS = [
 export default async function handler(req, res) {
   var slug = (req.query && req.query.slug ? String(req.query.slug) : '').trim();
   try {
-    if (!slug) { res.statusCode=404; res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
+    if (!slug) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
     var e = await rpc('seo_entity', { p_slug: slug });
     if (Array.isArray(e)) e = e[0];
     // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
@@ -495,19 +483,20 @@ export default async function handler(req, res) {
         encodeURIComponent(e.canonical_slug || e.slug);
       res.statusCode = 301;
       res.setHeader('Location', target);
-      res.setHeader('Cache-Control', 'public, s-maxage=86400');
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300');
       res.end('');
       return;
     }
-    if (!e || !e.name) { res.statusCode=404; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Listing not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
-    var related=[]; try { related = await rpc('seo_related', { p_slug: slug, p_limit: 8 }); if(!Array.isArray(related)) related=[]; } catch(e2) { related=[]; }
-    var completeness=null; try { completeness = await rpc('listing_completeness', { p_slug: slug }); } catch(e3) { completeness=null; }
+    if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
+    const optional = await Promise.allSettled([rpc('seo_related',{p_slug:slug,p_limit:8},2000),rpc('listing_completeness',{p_slug:slug},2000)]);
+    var related=optional[0].status==='fulfilled'&&Array.isArray(optional[0].value)?optional[0].value:[];
+    var completeness=optional[1].status==='fulfilled'?optional[1].value:null;
     res.statusCode=200;
     res.setHeader('Content-Type','text/html; charset=utf-8');
-    res.setHeader('Cache-Control','public, s-maxage=3600, stale-while-revalidate=86400');
+    res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
     res.end(page(e, related, completeness));
   } catch (err) {
-    res.statusCode=503; res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
-    res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi Directory</p><h1>We are refreshing this profile</h1><p style="color:var(--mut);line-height:1.6">The listing is still safe and published. Its latest details are temporarily unavailable. Please try again in a moment.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to the directory</a></p></main></body></html>');
+    res.statusCode=503; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
+    res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi</p><h1>We are refreshing this profile</h1><p style="color:var(--mut);line-height:1.6">The latest details are temporarily unavailable. Please try again in a moment.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to Explore</a></p></main></body></html>');
   }
 }

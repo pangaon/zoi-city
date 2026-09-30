@@ -381,12 +381,14 @@ function embedBlock(list) {
     let src = '', title = str(item && item.title) || 'Featured content';
     try {
       const u = new URL(raw);
+      if (u.protocol !== 'https:' && u.protocol !== 'http:') continue;
+      if (u.username || u.password) continue;
       if (u.hostname === 'youtu.be') src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(u.pathname.slice(1));
       else if (/^(www\.)?youtube\.com$/.test(u.hostname)) {
         const id = u.searchParams.get('v') || (/^\/(shorts|embed)\/([^/]+)/.exec(u.pathname) || [])[2];
         if (id) src = 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(id);
       } else if (u.hostname === 'open.spotify.com') {
-        const m = /^\/(track|episode|show|artist)\/([^/]+)/.exec(u.pathname);
+        const m = /^\/(?:intl-[a-z]{2}\/)?(track|episode|show|artist|album|playlist)\/([A-Za-z0-9]+)\/?$/.exec(u.pathname);
         if (m) src = 'https://open.spotify.com/embed/' + m[1] + '/' + encodeURIComponent(m[2]);
       }
     } catch (e) { src = ''; }
@@ -491,6 +493,16 @@ export function profileForVertical(vertical, profile) {
     }
     if ((!p.giving || typeof p.giving !== 'object') && str(p.give_url)) p.giving = { url: str(p.give_url) };
     if (!arr(p.events).length && str(p.meetings)) p.events = [{ title: 'Meetings', note: str(p.meetings) }];
+  }
+
+  if (key === 'music') {
+    p.listen = Object.assign({}, p.listen && typeof p.listen === 'object' ? p.listen : {});
+    for (const [field,key] of [['spotify_url','spotify'],['apple_music_url','apple'],['youtube_url','youtube'],['bandcamp_url','bandcamp'],['soundcloud_url','soundcloud']]) {
+      if (Object.prototype.hasOwnProperty.call(p, field)) p.listen[key] = str(p[field]);
+    }
+    p.booking = Object.assign({}, p.booking && typeof p.booking === 'object' ? p.booking : {});
+    if (Object.prototype.hasOwnProperty.call(p,'booking_name')) p.booking.name=str(p.booking_name);
+    if (Object.prototype.hasOwnProperty.call(p,'booking_email')) p.booking.email=str(p.booking_email);
   }
 
   if (key === 'creator') {
@@ -763,6 +775,7 @@ const MUSIC = {
   sections(e, p) {
     let h = '';
     h += panel('Listen', IC.play, listenBlock(p.listen));
+    h += panel('Featured music & video', IC.play, embedBlock(p.embeds));
     h += panel('Releases', IC.star, datesBlock(p.releases, 'Listen'));
     h += panel('Tour dates', IC.cal, datesBlock(p.tour, 'Tickets'), { id: 'tour' });
     h += panel('Watch', IC.camera, datesBlock(p.videos, 'Watch'));
@@ -771,7 +784,7 @@ const MUSIC = {
         '<p class="secp">' + esc(str(p.booking.name)) +
         (str(p.booking.email) ? ' — <a href="mailto:' + A(str(p.booking.email)) + '">' + esc(str(p.booking.email)) + '</a>' : '') + '</p>');
     }
-    h += panel('Press kit', IC.book, prose(p.press));
+    h += panel('Press kit', IC.book, prose(p.press) + (httpish(p.press_kit_url) ? '<p class="secp"><a href="'+A(httpish(p.press_kit_url))+'" target="_blank" rel="noopener noreferrer">Open press kit / rider</a></p>' : ''));
     return h;
   },
   unlock: [
@@ -814,7 +827,7 @@ const CREATOR = {
   unlock: [
     ['Every channel in one place', 'Instagram, TikTok, YouTube, Spotify — the whole footprint.'],
     ['Your work & episodes', 'Recent podcasts, films, music releases, and cultural campaigns.'],
-    ['Brand sponsorship channel', 'A verified inbound channel for paid diaspora sponsorships.'],
+    ['Brand enquiries', 'Let brands contact your designated collaboration email.'],
     ['Media kit & rate card', 'Set your audience reach and terms before the DM.'],
     ['Link in bio', 'A Zoi bio page that connects directly with your community.'],
   ],

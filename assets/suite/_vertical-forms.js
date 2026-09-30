@@ -146,6 +146,36 @@
         { k: 'give_url', label: 'Donate link', type: T.URL }
       ]
     },
+    music: {
+      title: 'Your music and bookings',
+      note: 'Add your official listening links, releases and booking contact. Players use the linked platform; stream counts and royalties are not imported.',
+      fields: [
+        { k: 'spotify_url', label: 'Spotify artist or release', type: T.URL },
+        { k: 'apple_music_url', label: 'Apple Music', type: T.URL },
+        { k: 'youtube_url', label: 'YouTube channel', type: T.URL },
+        { k: 'bandcamp_url', label: 'Bandcamp', type: T.URL },
+        { k: 'soundcloud_url', label: 'SoundCloud', type: T.URL },
+        { k: 'embeds', label: 'Featured players', type: T.REPEAT, of: [
+          { k: 'title', label: 'Title', type: T.TEXT },
+          { k: 'url', label: 'Spotify or YouTube URL', type: T.URL }
+        ]},
+        { k: 'releases', label: 'Releases', type: T.REPEAT, of: [
+          { k: 'title', label: 'Release title', type: T.TEXT },
+          { k: 'date', label: 'Release date', type: T.TEXT, ph: '2026-10-24' },
+          { k: 'url', label: 'Listen link', type: T.URL }
+        ]},
+        { k: 'tour', label: 'Shows and tour dates', type: T.REPEAT, of: [
+          { k: 'title', label: 'Show / venue', type: T.TEXT },
+          { k: 'date', label: 'Date', type: T.TEXT, ph: '2026-10-24' },
+          { k: 'url', label: 'Ticket link', type: T.URL }
+        ]},
+        { k: 'booking_name', label: 'Booking contact name', type: T.TEXT },
+        { k: 'booking_email', label: 'Booking email', type: T.MAIL },
+        { k: 'press', label: 'Artist biography / press notes', type: T.AREA },
+        { k: 'press_kit_url', label: 'Press kit / technical rider', type: T.URL },
+        { k: 'merch', label: 'Official merchandise shop', type: T.URL }
+      ]
+    },
     creator: {
       title: 'Your work',
       note: 'Follower counts are never typed in. They only ever come from a connected account.',
@@ -220,12 +250,14 @@
     [/school|studies|language|academy/i, 'school'],
     [/church|monaster|parish|chapel|cathedral/i, 'church'],
     [/association|society|federation|charit|ngo|foundation|community/i, 'organization'],
-    [/influencer|creator|media|artist|musician|dj|podcast|radio|photograph/i, 'creator'],
+    [/music|singer|band|bouzouki|composer|\bdj\b|djs|artist/i, 'music'],
+    [/influencer|creator|media|podcast|radio|photograph/i, 'creator'],
     [/venue|hall|centre|center|theatre|theater/i, 'venue'],
     [/festival|event|concert|panigiri/i, 'event']
   ];
   function schemaFor(entityType, categorySlug) {
     var t = String(entityType || '').toLowerCase();
+    if (t === 'artist' || t === 'musician') return {key:'music',schema:V.music};
     if (V[t]) return { key: t, schema: V[t] };
     var c = String(categorySlug || '');
     for (var i = 0; i < CATMAP.length; i++) {
@@ -253,9 +285,12 @@
     var p = (profile && typeof profile === 'object') ? profile : {};
     var enr = (p._enrich && typeof p._enrich === 'object') ? p._enrich : {};
     var own = {}, found = {}, fromWebsite = [];
+    var paths={spotify_url:['listen','spotify'],apple_music_url:['listen','apple'],youtube_url:['listen','youtube'],bandcamp_url:['listen','bandcamp'],soundcloud_url:['listen','soundcloud'],booking_name:['booking','name'],booking_email:['booking','email']};
     fields.forEach(function (f) {
-      var has = Object.prototype.hasOwnProperty.call(p, f.k) && !isEmpty(p[f.k]);
+      var has = Object.prototype.hasOwnProperty.call(p, f.k);
       if (has) { own[f.k] = p[f.k]; return; }
+      var path=paths[f.k];
+      if(path && p[path[0]] && Object.prototype.hasOwnProperty.call(p[path[0]],path[1])){own[f.k]=p[path[0]][path[1]];return;}
       // enrichment uses a few different names for the same idea
       var alt = ENRICH_ALIAS[f.k] || f.k;
       if (Object.prototype.hasOwnProperty.call(enr, alt) && !isEmpty(enr[alt])) {
