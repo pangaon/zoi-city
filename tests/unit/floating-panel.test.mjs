@@ -1,0 +1,3 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{boundedPosition}from'../../assets/studio/floating-panel.mjs';
+test('floating controls remain reachable after dragging past edges or rotating',()=>{assert.deepEqual(boundedPosition(-40,-70,366,500,390,844),{x:12,y:12});assert.deepEqual(boundedPosition(1400,900,440,650,1440,1000),{x:988,y:338});assert.deepEqual(boundedPosition(900,700,366,600,390,660),{x:12,y:48});});
+test('nonfinite and undersized viewport positions fail to a reachable origin',()=>{assert.deepEqual(boundedPosition(NaN,Infinity,440,600,320,400),{x:12,y:12});});

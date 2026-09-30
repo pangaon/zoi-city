@@ -1,12 +1,26 @@
 {
-  "id": "release-private-url-intake-20260930",
+  "id": "release-private-recipe-studio-20260930",
   "project": "csebihpaychdkanjjsmz",
-  "expires_at": "2026-09-30T11:59:58.150881+00:00",
+  "expires_at": "2026-09-30T12:37:45.892709+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930105920_private_url_intake_workspace_drafts.sql",
-      "sha256": "977274d8fe482d07e723b5dbc8532c05e68d0a7519d7c272a1049c9f322f2955"
+      "path": "supabase/migrations/20260930112800_private_culinary_recipe_studio.sql",
+      "sha256": "e2488d2e9dd7fceb2d7ce7ae36eb95fe335b1ce21b68fc6807a5e3754c108d7c"
     }
   ],
-  "workers": []
+  "workers": [
+    {
+      "name": "ai-generate",
+      "files": [
+        {
+          "path": "supabase/functions/ai-generate/index.ts",
+          "sha256": "99efa380087a164eb0154809cf6285facb9a4e02f80e70cc31335ea5dd084b8f"
+        },
+        {
+          "path": "assets/ai/generation.mjs",
+          "sha256": "bdfc7db89e8b98df99db91f42b332e0216c6a3df625163bf94580040607cb9f2"
+        }
+      ]
+    }
+  ]
 }

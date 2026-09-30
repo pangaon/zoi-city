@@ -61,8 +61,10 @@
       '.zai-field{margin-top:14px}',
       '.zai-field:first-child{margin-top:0}',
       '.zai-in,.zai-sel,.zai-ta{width:100%;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--tx);font:400 14px "Hanken Grotesk",system-ui;padding:10px 12px}',
+      '@media(max-width:860px){.zai-in,.zai-sel,.zai-ta{font-size:16px;min-height:44px}}',
+      '.zai-wrap :focus-visible{outline:3px solid var(--acc);outline-offset:3px}',
       '.zai-ta{min-height:84px;resize:vertical;line-height:1.5}',
-      '.zai-in:focus,.zai-sel:focus,.zai-ta:focus{outline:none;border-color:var(--acc)}',
+      '.zai-in:focus,.zai-sel:focus,.zai-ta:focus{outline:2px solid var(--acc);outline-offset:2px;border-color:var(--acc)}',
       '.zai-in:disabled,.zai-sel:disabled,.zai-ta:disabled{opacity:.5;cursor:not-allowed}',
       '.zai-types{display:flex;flex-direction:column;gap:8px}',
       '.zai-type{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1px solid var(--line);border-radius:12px;background:var(--card2);cursor:pointer;transition:.15s}',
@@ -125,6 +127,7 @@
     var state = {
       action: 'week',
       tone: '',
+      customTone: '',
       count: 7,
       profile: null,
       loading: false,
@@ -204,6 +207,9 @@
           '</select></div>' +
       '</div>';
     panel.appendChild(fMeta);
+    var customVoice = el('div', 'zai-field');
+    customVoice.innerHTML = '<label class="zai-lab" for="zai-custom-tone">Your style for this draft</label><input id="zai-custom-tone" class="zai-in" data-role="customtone" maxlength="80" placeholder="e.g. warm, concise, like speaking to a regular customer"><p class="zai-sub">Optional. Overrides the tone above for this request. Save your usual voice and writing sample in Settings.</p>';
+    panel.appendChild(customVoice);
 
     // generate
     var fGo = el('div', 'zai-field');
@@ -292,7 +298,7 @@
     function buildInput() {
       var topic = String(q('topic').value || '').trim();
       var promo = String(q('promo').value || '').trim();
-      var tone = state.tone || '';
+      var tone = state.customTone || state.tone || '';
       var parts = [];
       if (state.action === 'reply') {
         // topic IS the review text; tone hint still helps.
@@ -545,14 +551,16 @@
 
     /* ---------- wire events ---------- */
     q('tone').addEventListener('change', function () { state.tone = this.value; });
+    q('customtone').addEventListener('input', function () { state.customTone = this.value.trim().slice(0,80); });
     q('count').addEventListener('change', function () { state.count = Number(this.value) || 7; });
     goBtn.addEventListener('click', generate);
-    // brand-voice "Settings" hint is a non-navigating pointer for the shell.
+    // Open the existing brand-voice editor through the workspace shell.
     right.parentNode.addEventListener('click', function (ev) {
       var a = ev.target;
       if (a && a.getAttribute && a.getAttribute('data-role') === 'tosettings') {
         ev.preventDefault();
-        toast('Open the Settings tab to update your brand voice.');
+        if (typeof ctx.navigate === 'function') ctx.navigate('settings');
+        else global.location.href = '/social/#settings';
       }
     });
 
@@ -563,7 +571,7 @@
     showEmpty();
     if (!aiOn) {
       goBtn.disabled = true;
-      ['topic', 'promo', 'tone', 'count'].forEach(function (r) { var n = q(r); if (n) n.disabled = true; });
+      ['topic', 'promo', 'tone', 'customtone', 'count'].forEach(function (r) { var n = q(r); if (n) n.disabled = true; });
     }
 
     /* ---------- load brand profile to prefill ---------- */
@@ -573,7 +581,7 @@
         state.profile = prof;
         if (prof.tone) {
           var tl = String(prof.tone).toLowerCase().trim();
-          if (TONES.indexOf(tl) === -1) TONES.push(tl); // honor a custom saved tone
+          // Custom saved tone belongs only to this workspace's select.
           state.tone = tl;
           var sel = q('tone');
           if (sel) {

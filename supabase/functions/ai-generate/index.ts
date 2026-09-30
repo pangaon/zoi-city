@@ -27,7 +27,11 @@ Deno.serve(async(req:Request)=>{
    const body=await readBoundedBody(response,32768,10000);provider=JSON.parse(new TextDecoder().decode(body));
    if(!response.ok){status='failed';error=response.status===429?'provider_rate_limited':'provider_request_failed';}
    else{
-    used=usage(provider);raw=Array.isArray(provider.content)?provider.content.filter((part:any)=>part.type==='text'&&typeof part.text==='string').map((part:any)=>part.text).join(''):'';
+    used=usage(provider);
+    // This text-only request enables neither tools nor extended thinking. Never
+    // discard unsupported blocks and accept a convenient text fragment as a draft.
+    if(!Array.isArray(provider.content)||provider.content.length===0||provider.content.some((part:any)=>!part||part.type!=='text'||typeof part.text!=='string'))throw Error('invalid_model_output');
+    raw=provider.content.map((part:any)=>part.text).join('');
     if(new TextEncoder().encode(raw).length>16000){raw=new TextDecoder().decode(new TextEncoder().encode(raw).slice(0,15990));throw Error('invalid_model_output');}
     if(provider.stop_reason!=='end_turn')throw Error('invalid_model_output');
     parsed=validateGenerationResult(input.action,input.count,JSON.parse(raw));status='succeeded';error='';
