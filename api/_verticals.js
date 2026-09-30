@@ -23,6 +23,7 @@ import { orthodoxPascha, iso, feastsOn, seasonsFor, isFastDay, nameDaysOn,
   upcomingFeasts, resolveFeastDate, shiftForOldCalendar } from './_orthocal.js';
 
 import {socialProfile} from '../supabase/functions/zoi-enrich/_social.js';
+import {publisherSocial} from '../assets/enrichment/publisher-social.mjs';
 
 import {parishDay,upcomingParishFeasts,patronalDate} from './_parish-calendar-reference.js';
 
@@ -108,7 +109,7 @@ export function safeProfile(e) {
     out[k] = ['social', 'social_links'].includes(k)
       ? Object.fromEntries(Object.entries(enr[k] && typeof enr[k] === 'object' && !Array.isArray(enr[k]) ? enr[k] : {}).flatMap(([name, value]) => {
           const match = socialProfile(value);
-          return match ? [[name, match.url]] : [];
+          return match && !publisherSocial(enr.source_url, match.url) ? [[name, match.url]] : [];
         }))
       : enr[k];
   }

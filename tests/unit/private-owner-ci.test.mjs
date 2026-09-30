@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {validateOwnerRequest,OWNER_CODE_FILES} from '../../scripts/auth-qa/private-owner-ci.mjs';
+import {validateOwnerRequest,OWNER_CODE_FILES,ownerQaErrorClass} from '../../scripts/auth-qa/private-owner-ci.mjs';
 import {ownerRequestFence} from '../../scripts/auth-qa/private-owner-policy.mjs';
 import {ownerSavePayload,OWNER_QA,OWNER_DESIGN} from '../../scripts/auth-qa/private-owner-flow.mjs';import {QA,permittedRequest} from '../../scripts/auth-qa/session.mjs';
 const now=Date.now(),env={GITHUB_REPOSITORY:'pangaon/zoi-city',GITHUB_REF:'refs/heads/main',GITHUB_RUN_ATTEMPT:'1',GITHUB_EVENT_NAME:'push',GITHUB_SHA:'b'.repeat(40)};
@@ -13,3 +13,10 @@ test('cannot save before version capture; rejects changed contacts, fixture, req
 test('never permits publication, intake, claim, provider calls or legacy writers',()=>{const f=ownerRequestFence();f.arm('a'.repeat(32));for(const fn of['home_design_change','bizpage_save','bizpage_save_profile','intake_submit','zoi_claim_entity'])assert.equal(f.allow(post('/rest/v1/rpc/'+fn,{p_workspace:QA.workspace,p_listing:OWNER_QA.listing})),false);assert.equal(f.allow(post('/send',{},'https://example.invalid')),false);});
 test('preview only after exact save, correct design and once',()=>{const f=ownerRequestFence(),p={workspace:QA.workspace,listing:OWNER_QA.listing,design:OWNER_DESIGN},call=b=>post('/api/home-preview',b,QA.site);assert.equal(f.allow(call(p)),false);f.arm('a'.repeat(32));f.allow(post('/rest/v1/rpc/home_content_save',ownerSavePayload('a'.repeat(32))));assert.equal(f.allow(call({...p,listing:'other'})),false);assert.equal(f.allow(call(p)),true);assert.equal(f.allow(call(p)),false);});
 test('existing readonly fence still rejects all content writes',()=>{assert.equal(permittedRequest(post('/rest/v1/rpc/home_content_save',ownerSavePayload('a'.repeat(32))),OWNER_QA.listing),false);});
+
+test('diagnostics expose only fixed known error classes, never response bodies, tokens or causes',()=>{
+ for(const key of ['qa_ci_scope_guard','qa_request_guard','qa_push_guard','qa_code_guard','qa_management_credential_missing','qa_sql_unconfirmed','qa_sql_receipt_unconfirmed','qa_stage','qa_attempt_guard'])assert.equal(ownerQaErrorClass(new Error(key)),key);
+ for(const error of [new Error('Bearer secret-token'),new Error('qa_request_guard: private payload'),new Error('select * from private_table'),new Error('qa_code_guard\nsecret'),{message:'qa_request_guard'},'qa_request_guard',null])assert.equal(ownerQaErrorClass(error),'qa_unclassified_error');
+ const hostile=new Error();Object.defineProperty(hostile,'message',{get(){throw Error('sensitive getter')}});assert.equal(ownerQaErrorClass(hostile),'qa_unclassified_error');assert.equal(ownerQaErrorClass(new Error('qa_request_guard',{cause:new Error('secret')})),'qa_request_guard');
+});
+test('exact 30-minute request passes and 30 minutes plus one millisecond remains rejected',()=>{const issued=new Date(now).toISOString();validateOwnerRequest(env,{...request,issued_at:issued,expires_at:new Date(now+1800000).toISOString()},evidence,now);assert.throws(()=>validateOwnerRequest(env,{...request,issued_at:issued,expires_at:new Date(now+1800001).toISOString()},evidence,now),/qa_request_guard/);});

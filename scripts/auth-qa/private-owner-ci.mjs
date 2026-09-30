@@ -37,4 +37,6 @@ export async function main(stage,env=process.env){
  const result=await withQaSession(key,browserPrivateOwner);
  await writeFile('qa-private-owner-evidence/result.json',JSON.stringify({commit:env.GITHUB_SHA,checked_at:new Date().toISOString(),result,session_logout:'local_completed',scope:'Private fixture edit/read/preview only; no normal creation/claim/publication proof'}),{mode:0o600});
 }
-if(process.argv[1]?.endsWith('/auth-qa/private-owner-ci.mjs'))main(process.argv[2]).catch(()=>{console.error('Private owner QA stage unconfirmed; no raw SQL/auth/browser response logged. Cleanup requires its separate guarded step.');process.exitCode=1;});
+const SAFE_QA_ERRORS=new Set(['qa_ci_scope_guard','qa_request_guard','qa_push_guard','qa_code_guard','qa_management_credential_missing','qa_sql_unconfirmed','qa_sql_receipt_unconfirmed','qa_stage','qa_attempt_guard']);
+export function ownerQaErrorClass(error){try{return error instanceof Error&&SAFE_QA_ERRORS.has(error.message)?error.message:'qa_unclassified_error';}catch{return 'qa_unclassified_error';}}
+if(process.argv[1]?.endsWith('/auth-qa/private-owner-ci.mjs'))main(process.argv[2]).catch(error=>{console.error('Private owner QA stage unconfirmed ['+ownerQaErrorClass(error)+']; no raw SQL/auth/browser response logged. Cleanup requires its separate guarded step.');process.exitCode=1;});

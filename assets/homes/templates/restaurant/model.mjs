@@ -1,3 +1,4 @@
+import {phoneHref} from '../../phone.mjs';
 import{reviewedRestaurantBrand,brandPalette}from'./brands.mjs';
 export const RESTAURANT_TEMPLATES=['atelier','concierge','table','parea'];
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -5,7 +6,7 @@ export const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[
 const text=v=>typeof v==='string'||typeof v==='number'?String(v).trim():'';
 export function safeUrl(value,base){if(typeof value!=='string'||!value.trim()||value.length>3000)return null;try{const u=new URL(value,base);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password?u.href:null;}catch{return null;}}
 export function imageUrl(value){const url=safeUrl(value);return url?.startsWith('https://')?url:null;}
-export function phoneLink(value){const clean=text(value).replace(/[^\d+]/g,'');return /^\+?\d{5,20}$/.test(clean)?'tel:'+clean:null;}
+export const phoneLink=phoneHref;
 export function emailLink(value){return /^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(text(value))?'mailto:'+encodeURIComponent(text(value)).replace(/%40/g,'@'):null;}
 const socialHosts={instagram:'https://www.instagram.com/',facebook:'https://www.facebook.com/',youtube:'https://www.youtube.com/@',tiktok:'https://www.tiktok.com/@',twitter:'https://x.com/',x:'https://x.com/'};
 export function socialLinks(entity,profile){const owner=entity.owner_content&&typeof entity.owner_content==='object'&&!Array.isArray(entity.owner_content)?entity.owner_content:{};const merged=Object.hasOwn(owner,'social_links')?(owner.social_links&&typeof owner.social_links==='object'&&!Array.isArray(owner.social_links)?owner.social_links:{}):{...(profile.social||{}),...(profile.social_links||{}),...(entity.social_links||{})};return Object.entries(merged).filter(([name])=>Object.hasOwn(socialHosts,name)).map(([name,value])=>{const v=text(value),url=safeUrl(v)||(/^[\w.@-]+$/.test(v)?safeUrl(socialHosts[name]+v.replace(/^@/,'')):null);return url?{name:name==='twitter'?'X':name[0].toUpperCase()+name.slice(1),url}:null;}).filter(Boolean);}

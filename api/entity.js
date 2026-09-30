@@ -1,3 +1,4 @@
+import {phoneHref} from '../assets/homes/phone.mjs';
 import {readEntityWithRecovery} from './_public-entity-read.js';
 import {renderHospitalityHome} from './_hospitality-home.js';
 import {withMonasteryNetwork} from './_monastery-network.js';
@@ -50,7 +51,7 @@ function attr(s){return esc(s);}
 function safeActionHref(value){
   if(typeof value!=='string'||/[\x00-\x20\\]/.test(value))return false;
   if(/^\/(?!\/)/.test(value))return true;
-  if(/^tel:\+?[0-9]+$/.test(value)||/^mailto:[^@]+@[^@]+$/i.test(value))return true;
+  if(value.startsWith('tel:')&&phoneHref(value.slice(4))===value||/^mailto:[^@]+@[^@]+$/i.test(value))return true;
   try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)&&!url.username&&!url.password;}catch{return false;}
 }
 function pretty(slug){return (slug||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
@@ -213,7 +214,7 @@ function page(e, related, completeness){
   if (/^\/volunteer\/\?workspace=[0-9a-f-]{36}$/i.test(e.volunteer_url||'')) acts.push({label:'Volunteer opportunities',href:e.volunteer_url,icon:IC.cal});
   (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
   var contactPhone = e.phone || p.phone;
-  if(contactPhone) acts.push({ label:'Call', href: 'tel:'+String(contactPhone).replace(/[^0-9+]/g,''), icon: IC.phone });
+  if(phoneHref(contactPhone)) acts.push({ label:'Call', href: phoneHref(contactPhone), icon: IC.phone });
   if(e.website) acts.push({ label:'Website', href: e.website, icon: IC.globe, external:true });
   if(mapHref)   acts.push({ label:'Directions', href: mapHref, icon: IC.pin, external:true });
   /* Contact was simply absent. An email is the one action a visitor wants that
@@ -263,7 +264,7 @@ function socialIcon(k){
      Website does NOT: there is a Website button directly above, and repeating a
      URL in a table row is the 2006 pattern that made this page look like a spec
      sheet. Category is already the eyebrow above the title. */
-  if(contactPhone) row('Phone', '<a href="tel:'+attr((contactPhone+'').replace(/[^0-9+]/g,''))+'">'+esc(contactPhone)+'</a>');
+  if(contactPhone) row('Phone', phoneHref(contactPhone)?'<a href="'+attr(phoneHref(contactPhone))+'">'+esc(contactPhone)+'</a>':esc(contactPhone));
   if(e.price_range) row('Price', esc(e.price_range));
   /* social_links is empty on every listing in the directory today, so fall back
      to whatever the business links to from its own site. Owner-set values still
