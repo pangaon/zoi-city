@@ -7,16 +7,18 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const PROJECT='csebihpaychdkanjjsmz';
 const WORKERS=new Map([['ops-documents',false],['social-config',false],['ai-generate',false],['email-send',false],['email-unsubscribe',false],['social-publish',false],['zoi-feed-publish',true],['zoi-enrich',false],['delivery-charge',false],['delivery-connect-onboard',false]]);
+const FIXTURES=new Set(['ops/qa-booking-planner-setup.sql','ops/qa-booking-planner-cleanup.sql']);
 const digest=value=>createHash('sha256').update(value).digest('hex');
 export function validateRelease(manifest,{read=readFileSync,now=Date.now(),attempt='1'}={}){
  if(attempt!=='1')throw Error('Automatic replay of a production release is not allowed');
  if(manifest?.project!==PROJECT||!/^release-[0-9a-z-]{6,80}$/.test(manifest?.id||''))throw Error('Invalid release identity');
  const expires=Date.parse(manifest.expires_at);
  if(!Number.isFinite(expires)||expires<now||expires>now+3600000)throw Error('Release must expire within one hour');
+ if(manifest.fixtures!==undefined&&(!Array.isArray(manifest.fixtures)||manifest.fixtures.length>1))throw Error('Invalid private fixture request');
  if(!Array.isArray(manifest.migrations)||!Array.isArray(manifest.workers)||manifest.migrations.length>8||manifest.workers.length>8)throw Error('Invalid bounded release');
  const seen=new Set();
  function checked(path,hash){
-  if(typeof path!=='string'||path.includes('..')||path.startsWith('/')||!/^((supabase\/functions|assets)\/[a-zA-Z0-9_./-]+\.(ts|js|mjs|json)|supabase\/migrations\/\d{14}_[a-z0-9_]+\.sql)$/.test(path))throw Error('Invalid release path');
+  if(typeof path!=='string'||path.includes('..')||path.startsWith('/')||!(FIXTURES.has(path)||/^((supabase\/functions|assets)\/[a-zA-Z0-9_./-]+\.(ts|js|mjs|json)|supabase\/migrations\/\d{14}_[a-z0-9_]+\.sql)$/.test(path)))throw Error('Invalid release path');
   if(!/^[a-f0-9]{64}$/.test(hash||''))throw Error('Missing content digest');
   const value=read(path,'utf8');if(digest(value)!==hash)throw Error('Release content changed: '+path);return value;
  }
@@ -33,7 +35,8 @@ export function validateRelease(manifest,{read=readFileSync,now=Date.now(),attem
   for(const f of w.files)checked(f.path,f.sha256);
   return {name:w.name,verifyJwt:WORKERS.get(w.name)};
  });
- return {id:manifest.id,migrations,workers};
+ const fixtures=(manifest.fixtures||[]).map(f=>{if(!FIXTURES.has(f.path))throw Error('Unreviewed private fixture');return {...f,query:checked(f.path,f.sha256)};});
+ return {id:manifest.id,migrations,workers,fixtures};
 }
 export async function runRelease(manifest,{env=process.env,read=readFileSync,fetcher=fetch,deploy=execFileSync,log=console.log}={}){
  if(env.GITHUB_ACTIONS!=='true'||env.GITHUB_REPOSITORY!=='pangaon/zoi-city'||env.GITHUB_REF!=='refs/heads/main')throw Error('Production releases run only in the authorized main CI');
@@ -57,6 +60,10 @@ export async function runRelease(manifest,{env=process.env,read=readFileSync,fet
   const args=['--yes','supabase@2.115.0','functions','deploy',worker.name,'--use-api','--project-ref',PROJECT];if(!worker.verifyJwt)args.push('--no-verify-jwt');
   try{deploy('npx',args,{env,stdio:['ignore','pipe','pipe'],timeout:120000});}catch{throw Error('Worker deployment unconfirmed: '+worker.name+'; inspect before retrying');}
   log(JSON.stringify({worker:worker.name,status:'deployed'}));
+ }
+ for(const fixture of release.fixtures){
+  const receipt=await api('/database/query',{query:fixture.query,read_only:false});
+  log(JSON.stringify({fixture:fixture.path,status:'completed',receipt}));
  }
  log(JSON.stringify({release:release.id,status:'completed'}));
 }

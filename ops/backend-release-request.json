@@ -1,12 +1,53 @@
 {
   "project": "csebihpaychdkanjjsmz",
-  "id": "release-20260930-home-ledger-reconcile",
-  "expires_at": "2026-09-30T02:04:31.182089+00:00",
+  "id": "release-20260930-ai-planner-private-qa",
+  "expires_at": "2026-09-30T02:22:35.198370+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930010316_public_home_workflow_actions.sql",
-      "sha256": "93d6b59f2a5d3e31c0f1ed71a92e8c255099c92826e444eb4fb29cbc12dd5a19"
+      "path": "supabase/migrations/20260930010702_bounded_ai_generation_ledger.sql",
+      "sha256": "6e2f7e2684f7802a7a13de5208d3d485d883e12e7f7512b6f94aeaf5f2484db8"
+    },
+    {
+      "path": "supabase/migrations/20260930011100_booking_recurring_availability.sql",
+      "sha256": "3baca9a6e9aa6d1f4a91b6d6ffe6050bddf8de6d215011d7d3fa10e6c233d70d"
     }
   ],
-  "workers": []
+  "workers": [
+    {
+      "name": "ai-generate",
+      "files": [
+        {
+          "path": "supabase/functions/ai-generate/index.ts",
+          "sha256": "b2aa34bd8d8ef3bb4de2a2d39c8d9bbdb464bcfd0cacb737f479502bf2e218ae"
+        },
+        {
+          "path": "assets/ai/generation.mjs",
+          "sha256": "bdfc7db89e8b98df99db91f42b332e0216c6a3df625163bf94580040607cb9f2"
+        },
+        {
+          "path": "assets/documents/bounded-body.mjs",
+          "sha256": "ecb212d46b99b242de2a1e49bb000607b6646e66a723f6d1458b4bfe659df1ed"
+        },
+        {
+          "path": "assets/documents/file-rules.mjs",
+          "sha256": "7680662085bee9aa4fae85ef71208831d2918cd7800e2e293d29418157f7b4c2"
+        }
+      ]
+    },
+    {
+      "name": "social-config",
+      "files": [
+        {
+          "path": "supabase/functions/social-config/index.ts",
+          "sha256": "db40d6f468163a204dc6222bd87da65661cc7eaf160b9953a59ba38eda0e6628"
+        }
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "ops/qa-booking-planner-setup.sql",
+      "sha256": "069b0ad597d208b807049d4b366ce3e23beab6726287ddbe20216d43cdc82791"
+    }
+  ]
 }

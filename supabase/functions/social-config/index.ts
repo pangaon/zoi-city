@@ -9,7 +9,11 @@ const PLATFORMS:{id:string;label:string;env:string[]}[]=[
   {id:"x",label:"X (Twitter)",env:["X_CLIENT_ID","X_CLIENT_SECRET"]},
   {id:"youtube",label:"YouTube",env:["GOOGLE_CLIENT_ID","GOOGLE_CLIENT_SECRET"]},
 ];
-Deno.serve(()=> new Response(JSON.stringify({
+async function aiAvailable(){
+ if(!Deno.env.get("ANTHROPIC_API_KEY"))return false;
+ try {const key=Deno.env.get("SUPABASE_ANON_KEY")||"";const response=await fetch(Deno.env.get("SUPABASE_URL")+"/rest/v1/rpc/ai_runtime_enabled",{method:"POST",headers:{apikey:key,"Content-Type":"application/json"},body:"{}",signal:AbortSignal.timeout(3000)});return response.ok&&(await response.json())===true;}catch{return false;}
+}
+Deno.serve(async()=> new Response(JSON.stringify({
   platforms:PLATFORMS.map(p=>({id:p.id,label:p.label,available:p.env.every(k=>!!Deno.env.get(k))})),
-  services:{email:!!Deno.env.get("RESEND_API_KEY")&&!!Deno.env.get("EMAIL_FROM")&&Deno.env.get("EMAIL_DELIVERY_ENABLED")==="on", ai:!!Deno.env.get("ANTHROPIC_API_KEY"), stripe:!!Deno.env.get("STRIPE_SECRET_KEY"), payments:!!Deno.env.get("STRIPE_SECRET_KEY")&&Deno.env.get("DELIVERY_PAYMENTS_ENABLED")==="on"}
-}),{headers:{...CORS,"Content-Type":"application/json"}}));
+  services:{email:!!Deno.env.get("RESEND_API_KEY")&&!!Deno.env.get("EMAIL_FROM")&&Deno.env.get("EMAIL_DELIVERY_ENABLED")==="on", ai:await aiAvailable(), stripe:!!Deno.env.get("STRIPE_SECRET_KEY"), payments:!!Deno.env.get("STRIPE_SECRET_KEY")&&Deno.env.get("DELIVERY_PAYMENTS_ENABLED")==="on"}
+}),{headers:{...CORS,"Content-Type":"application/json","Cache-Control":"no-store"}}));

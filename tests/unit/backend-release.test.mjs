@@ -1,6 +1,6 @@
 import test from 'node:test';import assert from 'node:assert/strict';import{createHash}from'node:crypto';
 import{validateRelease,runRelease}from'../../scripts/release-backend.mjs';
-const now=Date.now(),path='supabase/functions/ops-documents/index.ts',sqlPath='supabase/migrations/20260930010316_public_home_workflow_actions.sql';
+const now=Date.now(),path='supabase/functions/ops-documents/index.ts',sqlPath='supabase/migrations/20260930011955_public_home_workflow_actions.sql';
 const content='reviewed source',hash=createHash('sha256').update(content).digest('hex');
 const base=()=>({project:'csebihpaychdkanjjsmz',id:'release-20260930-test',expires_at:new Date(now+600000).toISOString(),migrations:[],workers:[{name:'ops-documents',files:[{path,sha256:hash}]}]});
 const options={read:()=>content,now};
@@ -29,4 +29,16 @@ test('existing migration name requires reconciliation instead of replay',async()
 test('worker deployment uses argument arrays, fixed project and reviewed JWT mode',async()=>{
  let invocation;await runRelease(base(),{env,read:()=>content,log:()=>{},deploy:(file,args)=>invocation={file,args}});
  assert.equal(invocation.file,'npx');assert.ok(invocation.args.includes('--no-verify-jwt'));assert.ok(invocation.args.includes('csebihpaychdkanjjsmz'));
+});
+test('only one reviewed, hash-bound private fixture is allowed',()=>{
+ const f={path:'ops/qa-booking-planner-setup.sql',sha256:hash};
+ assert.equal(validateRelease({...base(),fixtures:[f]},options).fixtures[0].query,content);
+ assert.throws(()=>validateRelease({...base(),fixtures:[f,f]},options),/fixture/);
+ assert.throws(()=>validateRelease({...base(),fixtures:[{...f,path:'ops/arbitrary.sql'}]},options),/Unreviewed/);
+ assert.throws(()=>validateRelease({...base(),fixtures:[f]},{...options,read:()=>content+'changed'}),/changed/);
+});
+test('private fixture runs once after workers and ambiguous response is not retried',async()=>{
+ const sequence=[];const m={...base(),fixtures:[{path:'ops/qa-booking-planner-setup.sql',sha256:hash}]};
+ await assert.rejects(runRelease(m,{env,read:()=>content,log:()=>{},deploy:()=>sequence.push('worker'),fetcher:async(url,args)=>{sequence.push('fixture');assert.ok(url.endsWith('/database/query'));assert.deepEqual(JSON.parse(args.body),{query:content,read_only:false});throw Error('timeout');}}),/unconfirmed/);
+ assert.deepEqual(sequence,['worker','fixture']);
 });
