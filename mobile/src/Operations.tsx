@@ -4,12 +4,12 @@ import { useAuth } from './Auth';
 import { assertOpsReceipt, canWrite, isOpsRecord, recordPayload, toForm, type OpsRecord, type RecordKind } from './operations';
 const sections: [RecordKind, string][] = [['company', 'Company'], ['contact', 'Contacts'], ['project', 'Projects & matters'], ['task', 'Tasks']];
 function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) { return <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[s.action, disabled && { opacity: 0.5 }]}><Text style={s.actionText}>{label}</Text></Pressable>; }
-export function OperationsPanel() {
+export function OperationsPanel({ requestedRecordId }: { requestedRecordId?: string } = {}) {
   const { session, workspaceId } = useAuth();
   if (!session || !workspaceId) return null;
-  return <WorkspaceOperations key={session.user.id + ':' + workspaceId} workspace={workspaceId} userId={session.user.id} />;
+  return <WorkspaceOperations key={session.user.id + ':' + workspaceId} workspace={workspaceId} userId={session.user.id} requestedRecordId={requestedRecordId} />;
 }
-function WorkspaceOperations({ workspace, userId }: { workspace: string; userId: string }) {
+function WorkspaceOperations({ workspace, userId, requestedRecordId }: { workspace: string; userId: string; requestedRecordId?: string }) {
   const { client, workspaceId } = useAuth();
   const [records, setRecords] = useState<OpsRecord[]>([]); const [members, setMembers] = useState<{profile_id: string; display_name?: string; role?: string}[]>([]); const [role, setRole] = useState('viewer'); const [kind, setKind] = useState<RecordKind>('company'); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [reload, setReload] = useState(0);
   const [editing, setEditing] = useState<OpsRecord | null | undefined>(undefined); const [form, setForm] = useState<Record<string, string>>(() => toForm()); const [saving, setSaving] = useState(false); const [confirmArchive, setConfirmArchive] = useState(''); const [audit, setAudit] = useState<{ id: string; action: string; version: number; created_at: string }[]>([]); const [auditLoading, setAuditLoading] = useState(false);
@@ -22,6 +22,8 @@ function WorkspaceOperations({ workspace, userId }: { workspace: string; userId:
     if (active && current()) { setRecords(result.records); setMembers(Array.isArray(result.members) ? result.members.filter((member: any) => typeof member.profile_id === 'string') : []); setRole(typeof result.role === 'string' ? result.role : 'viewer'); }
   }).catch(() => { if (active && current()) setError('Your operations workspace could not be loaded. No records have been changed.'); }).finally(() => { if (active && current()) setLoading(false); }); return () => { active = false; }; }, [workspace, reload, client]);
   const edit = (row?: OpsRecord) => { setEditing(row || null); setForm(toForm(row)); setAudit([]); setConfirmArchive(''); setError(''); setNotice(''); };
+  const handledRequest = useRef('');
+  useEffect(() => { if (!requestedRecordId || handledRequest.current === requestedRecordId || loading || saving) return; const row = records.find(record => record.id === requestedRecordId); handledRequest.current = requestedRecordId; if (row) { setKind(row.kind); edit(row); } else setError('The priority record is no longer in your active workspace records.'); }, [requestedRecordId, records, loading, saving]);
   const save = async () => {
     if (busy.current || !canWrite(role, kind) || editing === undefined) return;
     let payload; try { payload = recordPayload(form, editing || undefined, kind); } catch (e) { setError(e instanceof Error ? e.message : 'Check the form.'); return; }
