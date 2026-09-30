@@ -126,6 +126,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 <script src="/assets/suite/email.js?v=20260930"></script>
 <script src="/assets/suite/audience.js?v=20260930"></script>
 <script src="/assets/suite/operations.js?v=20260930"></script>
+<script src="/assets/suite/priorities.js?v=20260930c"></script>
 <script src="/assets/suite/bookings.js?v=20260930b"></script>
 <script src="/assets/suite/organizations.js?v=20260930b"></script>
 <!-- the per-vertical profile editor: schemas, then the renderer, then the
@@ -133,7 +134,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 <script src="/assets/suite/_vertical-forms.js?v=20260930b"></script>
 <script src="/assets/suite/_vertical-ui.js?v=20260930b"></script>
 <script src="/assets/suite/bizpage.js?v=20260930b"></script>
-<script src="/assets/suite/connect.js"></script>
+<script src="/assets/suite/connect.js?v=20260930c"></script>
 <script src="/assets/suite/settings.js"></script>
 <script src="/assets/suite/ai.js"></script>
 
@@ -370,12 +371,19 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     root.innerHTML='<div class="center"><div class="spin"></div></div>';
     Promise.all([
       C.api.rpc('suite_config',{},{auth:'prefer'}).catch(function(){ return {publish:false,email:false,ai:false,payments:false,claims:false,unavailable:true}; }),
-      C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; })
+      C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; }),
+      import('/assets/suite/capabilities.mjs').then(async function(cap){
+        var provider=await cap.loadProviderConfig(C.BASE,C.KEY).catch(function(){return null;});
+        return {cap:cap,provider:provider};
+      })
     ]).then(function(res){
-      STATE.avail = res[0]||{};
+      STATE.avail = res[2].cap.resolveCapabilities(res[0],res[2].provider);
       STATE.channels = Array.isArray(res[1])?res[1]:[];
-      STATE.ctx = { C:C, ws:STATE.ws, channels:STATE.channels, avail:STATE.avail, toast:toast };
+      STATE.ctx = { C:C, ws:STATE.ws, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, toast:toast };
       renderShell();
+    }).catch(function(){
+      root.innerHTML='<div class="center"><div class="card"><h1>Workspace tools unavailable</h1><p class="sub">Please retry loading your tools.</p><button class="btn p" id="retry-tools">Try again</button></div></div>';
+      document.getElementById('retry-tools').onclick=loadContext;
     });
   }
 

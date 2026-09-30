@@ -39,6 +39,8 @@
      planet matches the page instead of MapLibre's default grey. */
   .maplibregl-map{background:var(--bg)!important;font-family:"Hanken Grotesk",system-ui,sans-serif}
 
+  .m-pin.m-selected{outline:3px solid var(--acc);outline-offset:3px;box-shadow:0 0 0 9px color-mix(in srgb,var(--acc) 22%,transparent)}
+
   /* ---- floating panes ---- */
   .m-pane{
     position:absolute;z-index:12;background:color-mix(in srgb,var(--card) 86%,transparent);
@@ -455,6 +457,7 @@
   var query = '';
   var here = null;                    // {lat,lng} once geolocated
   var selected = null;
+  var mapTools = null;
   var truncated = false;              // true when the page cap, not the data, ended the walk
   var failedPages = 0;                // pages the directory did not return
   var map = null, ready = false;
@@ -522,27 +525,17 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    var PAGE = 1000, CAP = 40000;
-    var offsets = [];
-    for (var o = 0; o < CAP; o += PAGE) offsets.push(o);
-    var results = await Promise.all(offsets.map(function (off) {
-      return C.api.rpc('explore_geo', { p_limit: PAGE, p_offset: off }, { auth: 'anon' })
-        .then(function (rows) { return { rows: rows || [], failed: false }; })
-        .catch(function () { return { rows: [], failed: true }; });
-    }));
-    if (results.every(function (r) { return r.failed; })) throw new Error('directory unavailable');
-    /* A page that failed is a hole in the map, not an empty region. Count them:
-       rendering 80% of the directory as though it were all of it is the kind of
-       silent loss nobody reports because nothing looks broken. */
-    failedPages = results.filter(function (r) { return r.failed; }).length;
-    var pages = results.map(function (r) { return r.rows; });
-    /* A full last page means the cap, not the dataset, ended the walk. Say so
-       rather than silently dropping pins off the end of the map. */
-    truncated = pages.length && (pages[pages.length - 1] || []).length === PAGE;
+    mapTools = await import('/assets/map-data/loader.mjs');
+    var result = await mapTools.loadMapPages(function (offset, limit) {
+      return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
+    }, { concurrency: 4, onProgress: function (progress) { status('Loaded ' + fmtN(progress.loaded) + ' places…', true); } });
+    failedPages = result.failedOffsets.length;
+    truncated = result.truncated;
+    var pages = [result.rows];
     var seen = Object.create(null), out = [];
     pages.forEach(function (page) {
       (page || []).forEach(function (r) {
-        if (!r || r.lat == null || r.lng == null) return;
+        if (!mapTools.isMappableRow(r)) return;
         if (seen[r.slug]) return;
         seen[r.slug] = 1;
         var p = {
@@ -704,7 +697,7 @@
         var cur = map.getZoom();
         src.getClusterExpansionZoom(pr.cluster_id).then(function (z) {
           if (!isFinite(z) || z <= cur + 0.05 || cur > 15.5) { listLeaves(); return; }
-          map.easeTo({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
+          animateMap({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
         }, listLeaves);
       }
       el2.addEventListener('click', openCluster);
@@ -818,7 +811,8 @@
 
   function makePin(p, lngLat, offset) {
     var el = document.createElement('div');
-    el.className = 'm-pin';
+    el.className = 'm-pin' + (selected && selected.s === p.s ? ' m-selected' : '');
+        el.dataset.slug = p.s;
     el.style.background = COLOURS[IDX[p.t] || 0];
     el.title = p.n || '';
     el.setAttribute('role', 'button');
@@ -866,7 +860,8 @@
         var p = group[idx];
         var a = (j / count) * Math.PI * 2 - Math.PI / 2 + (ring * 0.4);
         var el = document.createElement('div');
-        el.className = 'm-pin';
+        el.className = 'm-pin' + (selected && selected.s === p.s ? ' m-selected' : '');
+        el.dataset.slug = p.s;
         el.style.background = COLOURS[IDX[p.t] || 0];
         el.title = p.n || '';
         el.setAttribute('role', 'button');
@@ -970,7 +965,7 @@
       var unknown = items.filter(function (x) { return x.unknown; }).length;
       var centroid = items.filter(function (x) { return !x.exact && !x.unknown; }).length;
       if (unknown === items.length) note = ' · these coordinates are unverified';
-      else if (centroid + unknown === items.length) note = ' · positioned at the city, not the street address';
+      else if (centroid + unknown === items.length) note = ' · approximate or unverified positions — confirm each address';
       else if (unknown) note = ' · ' + fmtN(unknown) + ' unverified';
     }
     $('pfoot').innerHTML = fmtN(items.length) + ' place' + (items.length === 1 ? '' : 's') + note;
@@ -980,6 +975,7 @@
   function showAll() {
     clearSpider();
     selected = null;
+    document.querySelectorAll('.m-pin.m-selected').forEach(function(pin){pin.classList.remove('m-selected');});
     var vis = ALL.filter(matches);
     // nearest-first once we know where the user is, otherwise centre-out
     var c = map ? map.getCenter() : { lat: 37.98, lng: 23.72 };
@@ -1000,7 +996,9 @@
   var totalListings = null;
   function coverageNote() {
     var parts = [];
-    if (totalListings && totalListings > ALL.length) {
+    if (failedPages || truncated) {
+      parts.push(fmtN(ALL.length) + ' places loaded.');
+    } else if (totalListings && totalListings > ALL.length) {
       parts.push(fmtN(ALL.length) + ' of ' + fmtN(totalListings) +
         ' listings have coordinates. The rest are in <a href="/explore">Explore</a>.');
     } else {
@@ -1008,7 +1006,7 @@
     }
     var unver = ALL.filter(function (p) { return p.unknown; }).length;
     if (unver) parts.push(fmtN(unver) + ' have an unverified position.');
-    if (truncated) parts.push('Showing the first ' + fmtN(ALL.length) + ' only.');
+    if (truncated) parts.push('The map reached its display limit. More places may be available in Explore.');
     if (failedPages) {
       parts.push('<strong>Part of the directory did not load</strong> — some places are missing. ' +
         '<button type="button" class="m-linkish" id="reloadmap">Reload</button>');
@@ -1016,8 +1014,11 @@
     return parts.join(' ');
   }
 
+  function animateMap(options) { if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)map.jumpTo(options);else map.easeTo(options); }
+
   function choose(p, keepSpider) {
     selected = p;
+    document.querySelectorAll('.m-pin').forEach(function(pin){pin.classList.toggle('m-selected',pin.dataset.slug===p.s);});
     if (!keepSpider) clearSpider();
     hideTip();
     var group = p.co && p.co.length > 1 ? p.co.filter(matches) : [p];
@@ -1026,7 +1027,13 @@
     } else {
       showList([p], p.n, [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
     }
-    map.easeTo({ center: [p.lng, p.lat], zoom: Math.max(map.getZoom(), 12), duration: 620 });
+    var stage=$('map').getBoundingClientRect(), controls=document.querySelector('.m-controls').getBoundingClientRect(), panel=$('panel').getBoundingClientRect();
+    var mobile=window.matchMedia('(max-width:860px)').matches;
+    var rail=document.querySelector('.m-tools').getBoundingClientRect(), attribution=$('attrib').getBoundingClientRect();
+    var bottomEdge=Math.min(panel.top,rail.top,attribution.top);
+    var focus=mapTools.focusOptions(p,{width:stage.width,height:stage.height,left:mobile?16:controls.width+28,right:mobile?16:panel.width+28,top:mobile?controls.bottom-stage.top+16:28,bottom:mobile?stage.bottom-bottomEdge+24:28,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches});
+    if(focus.duration===0)map.jumpTo(focus);else map.flyTo(focus);
+    status(precisionLabel(p) + (p.unknown ? ' — confirm the address before travelling' : ''),false,5000);
     writeUrl();
   }
 
@@ -1149,7 +1156,7 @@
           }, function () {});
           return;
         }
-        map.easeTo({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
+        animateMap({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
       }, function () {});
       return;
     }
@@ -1225,7 +1232,7 @@
     map.setProjection(globe
       ? { type: ['interpolate', ['linear'], ['zoom'], 3, 'vertical-perspective', 6, 'mercator'] }
       : { type: 'mercator' });
-    if (globe && map.getZoom() > 4) map.easeTo({ zoom: 2.2, pitch: 0, duration: 900 });
+    if (globe && map.getZoom() > 4) animateMap({ zoom: 2.2, pitch: 0, duration: 900 });
   });
 
   $('tTerrain').addEventListener('click', function () {
@@ -1239,11 +1246,11 @@
         });
       }
       map.setTerrain({ source: 'dem', exaggeration: 1.1 });
-      map.easeTo({ pitch: Math.max(map.getPitch(), 52), duration: 900 });
+      animateMap({ pitch: Math.max(map.getPitch(), 52), duration: 900 });
       status('Terrain on — drag with right button to tilt', false, 3600);
     } else {
       map.setTerrain(null);
-      map.easeTo({ pitch: 0, duration: 700 });
+      animateMap({ pitch: 0, duration: 700 });
     }
   });
 
@@ -1294,7 +1301,7 @@
         ? (here.coarse ? 'Approximate area found (±' + km(accuracy / 1000) + ')'
                        : 'Location found (±' + fmtN(accuracy) + ' m)')
         : 'Location found', false, 3600);
-      map.easeTo({ center: [here.lng, here.lat], zoom: zoomForAccuracy(accuracy), duration: 1400 });
+      animateMap({ center: [here.lng, here.lat], zoom: zoomForAccuracy(accuracy), duration: 1400 });
       drawHere();
       showAll();
     }, function (err) {
@@ -1361,7 +1368,7 @@
 
   $('tReset').addEventListener('click', function () {
     clearSpider();
-    map.easeTo({ center: [23.7275, 37.9838], zoom: 1.35, pitch: 0, bearing: 0, duration: 1500 });
+    animateMap({ center: [23.7275, 37.9838], zoom: 1.35, pitch: 0, bearing: 0, duration: 1500 });
     showAll();
   });
 
