@@ -18,7 +18,7 @@ BEGIN
    description,publish_status,moderation_status,marketplace_status,trust_score,verification_status)
   VALUES(x,'rollback-explore-'||x,prefix||' '||i,'travel_place',cat,'Athens','Greece',
    'Rollback verification address','https://example.org','Transactional visibility verification only.',
-   'published','clean','none',CASE WHEN i>2 THEN 100 ELSE 10-i END,'unverified');
+   'published','clean','none',CASE WHEN i>2 THEN 0.99 ELSE 0.9-i*0.01 END,'unverified');
   UPDATE zoi.listings SET publish_status=CASE i WHEN 7 THEN 'draft' WHEN 8 THEN 'pending_review' ELSE 'published' END,
    moderation_status=statuses[i],marketplace_status=CASE WHEN i=6 THEN 'hidden' ELSE 'none' END WHERE id=x;
  END LOOP;
