@@ -1,3 +1,4 @@
+import {hasSocialOverride,resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import{profileMedia,interfaceArtwork}from'./_profile-media.js';
 import{reviewedArtistMedia}from'../assets/homes/templates/music/reviewed-media.mjs';
 import{completeHomeMetadata}from'./_home-metadata.js';
@@ -16,13 +17,13 @@ export function musicHomeContent(entity){if(!eligiblePerson(entity,'artist'))ret
  const labelSource=sourceBound&&['label_artist_profile','label_release_article'].includes(q.source_kind);
  const sourceLabel=labelSource&&!Object.hasOwn(o,'website')?(q.source_kind==='label_release_article'?'Record label release page':'Record label artist page'):'Artist website';
  const machine=sourceBound?q:{},media=profileMedia({...safeEntity,profile:{...p,_enrich:machine}},{...machine,...p});
- const social=Object.hasOwn(o,'social_links')?(o.social_links||{}):Object.hasOwn(p,'social_links')?(p.social_links||{}):{...(sourceBound?q.social||{}:{}),...(safeEntity.social_links||{})};
- const spotify=Object.hasOwn(op,'spotify_url')?op.spotify_url:Object.hasOwn(p,'spotify_url')?p.spotify_url:social.spotify||(!Object.hasOwn(o,'social_links')?p.listen?.spotify:'');
+ const social=resolveSocialLinks(safeEntity,sourceBound?{social:q.social}: {});
+ const spotify=Object.hasOwn(op,'spotify_url')?op.spotify_url:Object.hasOwn(p,'spotify_url')?p.spotify_url:social.spotify||(!hasSocialOverride(safeEntity)?p.listen?.spotify:'');
  const reviewed=!quarantine?reviewedArtistMedia(entity):null;
  const hasPortrait=Object.hasOwn(o,'photo_url')||Object.hasOwn(p,'photo_url')||Object.hasOwn(p,'hero_url')||Object.hasOwn(p,'portrait_url');
  const portrait=(!hasPortrait?reviewed?.portrait:'')||media.hero||(d.portrait&&!interfaceArtwork(d.portrait)&&(hasPortrait||!(Array.isArray(machine.photo_roles)&&machine.photo_roles.some(r=>r?.url===d.portrait&&r.role==='gallery_only')))?d.portrait:'')||'';
- const hasSpotify=Object.hasOwn(op,'spotify_url')||Object.hasOwn(p,'spotify_url')||Object.hasOwn(o,'social_links')||Object.hasOwn(p,'social_links');
- const hasYoutube=Object.hasOwn(op,'youtube_url')||Object.hasOwn(p,'youtube_url')||Object.hasOwn(o,'social_links')||Object.hasOwn(p,'social_links');
+ const hasSpotify=Object.hasOwn(op,'spotify_url')||Object.hasOwn(p,'spotify_url')||hasSocialOverride(safeEntity);
+ const hasYoutube=Object.hasOwn(op,'youtube_url')||Object.hasOwn(p,'youtube_url')||hasSocialOverride(safeEntity);
  const gallerySource=personURL(entity.website)||'https://www.zoi.city/artist/'+encodeURIComponent(d.slug);
  const images=[media.hero,...media.gallery].filter((v,i,a)=>v&&a.indexOf(v)===i);
  return ownerHomeContent({...d,...(labelSource?{email:'',phone:'',phoneLabel:''}:{}),portrait,story:d.description|| (sourceBound?String(q.description||''):'')||'Explore this artist’s published profile and contact options.',greek_name:'',portrait_credit:portrait===reviewed?.portrait?'Spotify artist photograph':media.hero?'Published artist profile image':'',portrait_sources:[],gallery:images.map(url=>({url,caption:d.name+' · profile photograph',credit:sourceBound?'Artist website / published profile':'Published profile',source:gallerySource})),releases:[],shows:[],spotify:personURL(spotify)||(!hasSpotify?reviewed?.spotify||'':''),youtube:personURL(social.youtube||p.youtube_url)||(!hasYoutube?reviewed?.video||'':''),instagram:personURL(social.instagram),facebook:personURL(social.facebook),video_playlist:personURL(p.video_playlist),contact:personURL(p.booking_url),programme:'',checked_at:sourceBound?q.checked_at||'':'',source_method:'Details from the public artist profile, source-matched website and authorized owner edits.',source_label:sourceLabel},entity,'music');}

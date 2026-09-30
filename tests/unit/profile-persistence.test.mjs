@@ -1,10 +1,21 @@
+import {resolveSocialLinks} from '../../assets/homes/social-links.mjs';
 import {test} from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';import vm from'node:vm';
 function expose(file,names){const src=readFileSync(new URL('../../assets/suite/'+file,import.meta.url),'utf8');const context={URL};vm.runInNewContext(src.replace('  global.ZoiSuite =','  global.exposed={'+names+'};\n  global.ZoiSuite ='),context);return context.exposed;}
 const bio=expose('bio.js','channelToLink,isHttpUrl');const biz=expose('bizpage.js','editableListings,normStatus,normContent');
 test('connected bio links never manufacture handles from display names',()=>{assert.equal(bio.channelToLink({platform:'instagram',display_name:'Athens Cafe'}),null);assert.equal(bio.channelToLink({platform:'instagram',handle:'@athens'}).url,'https://instagram.com/athens');assert.equal(bio.channelToLink({platform:'linkedin',profile_url:'https://linkedin.com/company/cafe'}).url,'https://linkedin.com/company/cafe');});
 test('bio URL validation rejects executable schemes and credential URLs',()=>{for(const s of ['javascript:alert(1)','https://','https://user:pass@site.test'])assert.equal(bio.isHttpUrl(s),false);assert.equal(bio.isHttpUrl('https://example.test/path'),true);});
 test('business selection recognizes actual owned and approved claims response',()=>{const choices=biz.editableListings({owned:[{id:'a',name:'Owned'}],claims:[{listing_id:'b',status:'approved'},{listing_id:'c',status:'pending'},{listing_id:'a',status:'approved'}]});assert.deepEqual(Array.from(choices,x=>x.id),['a','b']);assert.equal(biz.normStatus(choices[0]).claimed,true);});
-test('business socials retain enrichment while owner values override matching networks',()=>{const d=biz.normContent({profile:{_enrich:{social:{facebook:'https://facebook.com/real'}},social:{instagram:'https://instagram.com/old'}},social_links:{instagram:'https://instagram.com/owner'}});assert.equal(d.social.length,2);assert.equal(d.social.find(x=>x.platform==='instagram').url,'https://instagram.com/owner');});
+test('business socials retain source suggestions before an authoritative owner edit',()=>{
+ const d=biz.normContent({profile:{_enrich:{social:{facebook:'https://facebook.com/real',instagram:'https://instagram.com/source'}}},social_links:{instagram:'https://instagram.com/base'}},resolveSocialLinks);
+ assert.equal(d.social.length,2);assert.equal(d.social.find(x=>x.platform==='instagram').url,'https://instagram.com/base');
+});
+test('business editor reopening preserves owner clear and complete replacement without source resurrection',()=>{
+ const raw={profile:{_enrich:{social:{facebook:'https://facebook.com/real'}},social:{instagram:'https://instagram.com/old'}},social_links:{instagram:'https://instagram.com/old'}};
+ for(const links of [null,{}, {youtube:'https://www.youtube.com/@owner'}]){
+  const d=biz.normContent({...raw,owner_content:{social_links:links}},resolveSocialLinks);
+  assert.deepEqual(Array.from(d.social,row=>row.url),Object.values(links||{}));
+ }
+});
 const source=readFileSync(new URL('../../assets/suite/bizpage.js',import.meta.url),'utf8');
 test('business save requires exact versioned receipt and retains immutable retry snapshot',async()=>{
  const start=source.indexOf('    function doSave('),end=source.indexOf('    function finishSave',start),version='a'.repeat(32),nextVersion='b'.repeat(32),request='10000000-0000-4000-8000-000000000001';

@@ -182,7 +182,7 @@
   }
 
   // Normalize bizpage_get content into a stable draft object.
-  function normContent(raw) {
+  function normContent(raw, socialResolver) {
     var o = (raw && typeof raw === 'object') ? raw : {};
     var draft = {
       description: firstStr(o.description, o.about, o.bio),
@@ -192,7 +192,7 @@
       hours: firstStr(o.hours, o.opening_hours, o.business_hours),
       price_range: firstStr(o.price_range, o.priceRange, o.price),
       photo_url: firstStr(o.photo_url, o.photoUrl, o.image_url, o.photo, o.image),
-      social: normSocialRows(Object.assign({}, assembleSocial(normSocialRows(o.profile && o.profile._enrich && o.profile._enrich.social)), assembleSocial(normSocialRows(o.profile && o.profile.social)), assembleSocial(normSocialRows(o.links)), assembleSocial(normSocialRows(o.socials)), assembleSocial(normSocialRows(o.social_links)), assembleSocial(normSocialRows(o.social))))
+      social: normSocialRows(socialResolver(o,{social:assembleSocial(normSocialRows(o.profile && o.profile._enrich && o.profile._enrich.social)),social_links:assembleSocial(normSocialRows(o.profile && o.profile._enrich && o.profile._enrich.social_links))}))
     };
     // Clamp price_range to a known option; unknown values fall back to ''.
     var known = false;
@@ -380,6 +380,7 @@
     root.__bizPageDestroy && root.__bizPageDestroy();
     var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
     var ownerEntity = (await import('/assets/suite/owner-entity.mjs')).ownerEntity;
+    var socialResolver = (await import('/assets/homes/social-links.mjs')).resolveSocialLinks;
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false;
     function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
     function destroyDesign(){mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
@@ -983,7 +984,8 @@
       if (!contentRaw || typeof contentRaw !== 'object') { state.loading=false; renderError('The server did not return your page details. Please retry.'); return; }
       if(!scopeLive()||loadEpoch!==bootEpoch)return;
       if(state.entity && state.entity.profile) contentRaw.profile=state.entity.profile;
-      state.draft = normContent(contentRaw);
+      contentRaw.owner_content=state.entity.owner_content;
+      state.draft = normContent(contentRaw,socialResolver);
       state.loading = false;
       renderEditor();
     }

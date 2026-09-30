@@ -75,3 +75,11 @@ test('a transient gateway failure retries only the primary public read once',asy
 test('shared gallery labels do not invent interiors and count singular/plural',async()=>{
  for(const count of [0,1,2]){const photos=Array.from({length:count},(_,i)=>'https://example.com/parade-'+i+'.jpg');const record={...entity,entity_type:'organization',profile:{photos,photo_roles:photos.map(url=>({url,role:'gallery_only'}))}};const r=await run(async fn=>response(fn==='home_entity'?record:null));assert.equal(r.status,200);assert.doesNotMatch(r.body,/Inside Greek Home|1 photos/);if(count){assert.match(r.body,/Photos from Greek Home/);assert.ok(r.body.includes('>'+count+(count===1?' photo':' photos')+'</span>'));}else assert.doesNotMatch(r.body,/id="gallery"/);}
 });
+
+test('explicit social removal clears public buttons and structured data without removing website identity',async()=>{
+ const channel='https://www.youtube.com/@ExampleOrganization';const e={...entity,entity_type:'organization',website:'https://example.org',profile:{_enrich:{social:{youtube:channel}}},social_links:{}};
+ for(const [label,extra,expected]of [['source',{},true],['owner removed',{owner_content:{social_links:{}}},false],['owner replaced',{owner_content:{social_links:{instagram:'https://www.instagram.com/owner/'}}},false],['sparse',{profile:{}},false]]){
+  const r=await run(async fn=>response(fn==='home_entity'?{...e,...extra}:null));assert.equal(r.body.includes(channel),expected,label);
+  const structured=JSON.parse(r.body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(structured.sameAs.includes(channel),expected,label);assert.ok(structured.sameAs.includes(e.website));
+ }
+});

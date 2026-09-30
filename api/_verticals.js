@@ -1,3 +1,4 @@
+import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../assets/enrichment/branch-contact-scope.mjs';
 /**
  * _verticals.js — what each kind of listing actually needs.
@@ -516,7 +517,7 @@ export function profileForVertical(vertical, profile, entity = {}) {
   }
 
   if (key === 'music') {
-    const social = Object.assign({}, p.social && typeof p.social === 'object' ? p.social : {}, entity.social_links && typeof entity.social_links === 'object' ? entity.social_links : {});
+    const social = resolveSocialLinks(entity,p);
     const hasListen=Object.prototype.hasOwnProperty.call(p,'listen');
     p.listen = Object.assign({}, p.listen && typeof p.listen === 'object' ? p.listen : {});
     for (const [platform] of LISTEN) {

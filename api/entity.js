@@ -1,3 +1,4 @@
+import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import {phoneHref} from '../assets/homes/phone.mjs';
 import {readEntityWithRecovery} from './_public-entity-read.js';
 import {renderHospitalityHome} from './_hospitality-home.js';
@@ -123,7 +124,7 @@ function reviewsAllowed(e){
 }
 
 function socialArr(e){
-  var sl=Object.assign({}, profileOf(e).social || {}, e.social_links || {}), a=[]; if(e.website) a.push(e.website);
+  var sl=resolveSocialLinks(e,profileOf(e)), a=[]; if(e.website) a.push(e.website);
   ['instagram','facebook','tiktok','youtube','twitter','x','linkedin','spotify','soundcloud','telegram','whatsapp'].forEach(function(k){ if(sl[k]){ var v=sl[k]; if(/^https?:/.test(v)) a.push(v); } });
   return a;
 }
@@ -278,7 +279,7 @@ function socialIcon(k){
   var logoFit = p && p.logo_fit === 'cover' ? 'cover' : 'contain';
   var galleryImgs = media.gallery;
 
-  var sl = Object.assign({}, (p && p.social) || {}, e.social_links || {});
+  var sl = resolveSocialLinks(e,p);
   var socLinks=[], seenSoc={};
   [['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok'],['youtube','YouTube'],
    ['twitter','X'],['x','X'],['linkedin','LinkedIn'],['spotify','Spotify'],
