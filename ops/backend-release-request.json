@@ -1,18 +1,28 @@
 {
   "project": "csebihpaychdkanjjsmz",
-  "id": "release-20260930-social-scheduler-rotation",
-  "expires_at": "2026-09-30T04:55:29.379735+00:00",
+  "id": "release-20260930-social-scheduler-repair",
+  "expires_at": "2026-09-30T05:01:33.842746+00:00",
   "migrations": [
     {
       "path": "supabase/migrations/20260930035311_rotate_social_scheduler_secret.sql",
-      "sha256": "4ce413d2453fd08477640fff46abe0ccdc6e5baeb37f091183899e841898686e"
+      "sha256": "749aed61b379267c560b9bd754db0eb4274129ce9cb2b0885228f43b2b5eeb01"
     }
   ],
-  "workers": [],
+  "workers": [
+    {
+      "name": "social-publish",
+      "files": [
+        {
+          "path": "supabase/functions/social-publish/index.ts",
+          "sha256": "f5ea7fad903fb888b929f8f6d0b6aff0b003200c7b9f84d9159765cc6e64e4e6"
+        }
+      ]
+    }
+  ],
   "fixtures": [
     {
       "path": "tests/database/social-rotation-production-rollback.sql",
-      "sha256": "3f18be1744073351fe4ac7c6a4b4603298359de01953201afc9eb1d2b8570afe"
+      "sha256": "1a7e25d5b9f023143398fc2cb8666d3449e110f6c14d10ee7d047511df6f62e8"
     }
   ]
 }
