@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20260930-playback-help';
+import {mountEventActions} from './client.mjs?v=20260930-poster-sharing';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');

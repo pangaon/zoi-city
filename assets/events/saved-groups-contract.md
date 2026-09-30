@@ -1,0 +1,11 @@
+# Private usual groups
+
+Candidate, not deployed. `mountSavedGroups({root,C,onUse,onSignIn})` from `saved-groups.mjs` returns refresh/destroy. Loads own CSS. Mount only in the personal planning flow. `onUse` gets `{members:[{id,first_name,ticket_quantity}],arrangement,ticket_quantity:sum}`; these are preferences, never actual allocations, invitations, reservations or payments. Caller must clear any applied private names on account switch too.
+
+List/get/save/receipt RPCs use authenticated current profile only. No workspace operators or organizers can read groups. Save takes stable groupUUID, expected version0/new or actual, requestUUID, strict `{label,members,arrangement}`, optional archivedfalse. Members quantity defaults1 if absent, integer1..100 if supplied. Max30 members,20 active groups,100 total,100 new requestreceipts/day. First names only; no email/phone/DOB fields. Archive is not permanent deletion.
+
+Receipts are historical actor-owned snapshots. Every save or retry validates its immutable receipt, then reads current get before exposing an editable revision; another device’s later archive/edit wins. Client stores request/group/version plus bounded member UUID and archive-state references only in sessionStorage; no guest names. Same-tab uncertain retries reuse exact payload. Reload checks receipt; unresolved absent receipt retains same request and permits original group reentry, never a new nonce. Original member UUIDs are restored into reentry fields, so exact payload reconstruction remains possible. Older markers without original member references stay blocked pending receipt recovery; they are never silently replaced. First definitive CAS/input refusal on a new request unlocks edits. Invalid stored reference blocks new writes.
+
+Account JWT sub/current user must agree; auth-change immediately clears group forms, epoch checks fence late reads,500ms watcher covers storage/account change. Server remains authority. Profile contact prefill is not implemented by this component. Current group suggestions derive solely from returned own active groups.
+
+Tests: `node tests/database/saved-guest-groups.integration.mjs`; `node --test tests/unit/saved-groups.test.mjs`. Production rollback proposal `ops/verify-saved-guest-groups.sql` uses isolated existing QA actor and rolls back all synthetic data. No production execution performed.
