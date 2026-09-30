@@ -1,4 +1,4 @@
-import {totals,receipt,addLine,productLink} from '../../assets/commerce/model.mjs';
+import {totals,receipt,addLine,productLink,initialVariant} from '../../assets/commerce/model.mjs';
 export const COMMERCE='https://www.zoi.city/api/commerce';
 const ID=/^\d{8,20}$/,HANDLE=/^[-a-zA-Z0-9]{1,200}$/;
 export type BasketItem={id:string;quantity:number;title:string;product_title:string;handle:string;price:string;currency:string;image:string|null};
@@ -10,6 +10,6 @@ export function basketRead(value:unknown):BasketItem[]{if(!Array.isArray(value)|
 const sharedBasket=(rows:BasketItem[])=>rows.map(r=>({...r,title:r.product_title,variant:r.title}));
 export function basketAdd(basket:BasketItem[],product:any,variant:any,quantity:number){commerceVariant(variant);return basketRead(addLine(sharedBasket(basket),product,variant,quantity).map((r:any)=>({...r,product_title:r.title,title:r.variant})));}
 export function basketTotals(rows:BasketItem[]){return totals(rows).map((r:any)=>({...r,amount:r.amount.split('.')[0]+'.'+r.amount.split('.')[1].replace(/0+$/,'').padEnd(2,'0')}));}
-export {productLink};
+export {productLink,initialVariant};
 export function commerceReceipt(value:any,basket:BasketItem[]){if(value?.ok!==true||value.payment_collected!==false||!Array.isArray(value.lines)||value.lines.length!==basket.length||typeof value.pricing_note!=='string')throw Error('Checkout review could not be verified.');const rows=value.lines.map((v:any)=>{commerceVariant(v);const requested=basket.find(r=>r.id===v.id);if(!requested||requested.quantity!==v.quantity||!v.available||!HANDLE.test(v.handle||'')||typeof v.product_title!=='string')throw Error('Checkout quantities or availability changed. Review the basket again.');return v;});if(new Set(rows.map((r:any)=>r.id)).size!==basket.length)throw Error('Checkout items could not be verified.');receipt(value,sharedBasket(basket));const expected='https://buygreek.shop/cart/'+basket.map(r=>r.id+':'+r.quantity).join(',');if(value.checkout_url!==expected)throw Error('The checkout address did not match your basket.');return {...value,lines:rows};}
-export function shopLink(value:string){try{const u=new URL(value,'https://www.zoi.city');const product=u.searchParams.get('product')||'',variant=u.searchParams.get('variant')||'';return {product:HANDLE.test(product)?product:'',variant:ID.test(variant)?variant:''};}catch{return {product:'',variant:''};}}
+export function shopLink(value:string){try{const u=new URL(value,'https://www.zoi.city');const product=u.searchParams.get('product')||'',variant=u.searchParams.get('variant')||'';return {product:HANDLE.test(product)?product:'',variant:ID.test(variant)?variant:variant?'unavailable-shared-option':''};}catch{return {product:'',variant:''};}}

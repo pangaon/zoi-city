@@ -71,3 +71,7 @@ test('artist hometown without a venue address does not become a directions desti
 });
 
 test('a transient gateway failure retries only the primary public read once',async()=>{let attempts=0;const r=await run(async fn=>{if(fn==='home_entity'&&++attempts===1)return new Response('gateway',{status:502});return response(fn==='home_entity'?entity:[])});assert.equal(r.status,200);assert.equal(attempts,2);assert.deepEqual(r.calls.slice(0,2),['home_entity','home_entity']);});
+
+test('shared gallery labels do not invent interiors and count singular/plural',async()=>{
+ for(const count of [0,1,2]){const photos=Array.from({length:count},(_,i)=>'https://example.com/parade-'+i+'.jpg');const record={...entity,entity_type:'organization',profile:{photos,photo_roles:photos.map(url=>({url,role:'gallery_only'}))}};const r=await run(async fn=>response(fn==='home_entity'?record:null));assert.equal(r.status,200);assert.doesNotMatch(r.body,/Inside Greek Home|1 photos/);if(count){assert.match(r.body,/Photos from Greek Home/);assert.ok(r.body.includes('>'+count+(count===1?' photo':' photos')+'</span>'));}else assert.doesNotMatch(r.body,/id="gallery"/);}
+});
