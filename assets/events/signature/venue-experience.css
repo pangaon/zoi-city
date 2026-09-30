@@ -163,3 +163,11 @@
 @media(max-width:700px){.signature-venue[data-view=concert]:not([data-fullscreen=true]) .fc-viewport>.sv-demo-tools:not([open]){bottom:12px}.signature-venue[data-view=concert]:not([data-fullscreen=true]) .fc-stage-label{bottom:65px}}
 /* One compact view rail, not a stack of full-width phone buttons. */
 @media(max-width:700px){.signature-venue:not([data-fullscreen=true]) .sv-tabs{display:flex;flex-wrap:nowrap;width:100%;max-width:100%;overflow-x:auto;scrollbar-width:thin;padding:3px}.signature-venue:not([data-fullscreen=true]) .sv-tabs button{flex:0 0 auto;white-space:nowrap;min-height:42px;padding:9px 13px;border-radius:13px}.signature-venue:not([data-fullscreen=true]) .sv-toolbar{gap:8px;padding-block:10px}}
+/* Keep the sponsor action below the room controls, independent of selection-card height. */
+@media(max-width:700px){
+ .signature-venue[data-view=concert] .fc-viewport>.sv-demo-tools,
+ .signature-venue[data-view=concert][data-fullscreen=true] .fc-viewport>.sv-demo-tools,
+ .signature-venue[data-view=concert]:not([data-fullscreen=true]) .fc-viewport>.sv-demo-tools:not([open]),
+ .signature-venue[data-view=concert][data-fullscreen=true][data-sheet=true] .fc-viewport>.sv-demo-tools{top:calc(max(10px,env(safe-area-inset-top)) + 66px);bottom:auto!important;height:fit-content;left:max(10px,env(safe-area-inset-left));max-height:calc(100% - 240px - env(safe-area-inset-bottom));visibility:visible}
+ .signature-venue[data-view=concert] .fc-viewport>.sv-demo-tools[open]{max-height:calc(100% - 240px - env(safe-area-inset-bottom));overflow:auto;overscroll-behavior:contain}
+}
