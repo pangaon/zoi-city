@@ -8,3 +8,38 @@
 .signature-venue [data-concert][hidden],.signature-venue .sv-map-scroll[hidden],.signature-venue .sv-zoom[hidden]{display:none!important}.signature-venue [data-concert] .sc-shell{padding:12px}.signature-venue [data-concert] .sc-shell>header,.signature-venue [data-concert] .sc-bottom,.signature-venue [data-concert] .sc-lounges{display:none}.signature-venue [data-concert] .sc-svg{height:480px}.signature-venue[data-view=concert] .sv-map-footer{display:none}@media(max-width:600px){.signature-venue [data-concert] .sc-shell{padding:8px}.signature-venue [data-concert] .sc-svg{height:300px}}
 
 .signature-venue [data-lounge][hidden]{display:none!important}.signature-venue[data-view=lounge] .sv-layout{grid-template-columns:1fr}.signature-venue[data-view=lounge] .sv-inspector,.signature-venue[data-view=lounge] .sv-legend,.signature-venue[data-view=lounge] .sv-source-note,.signature-venue[data-view=lounge] .sv-map-footer,.signature-venue[data-view=lounge] .sv-stamp,.signature-venue[data-view=lounge] .sv-truth{display:none}.signature-venue [data-lounge]>header{display:none}.signature-venue [data-lounge] .lg-tabs{padding-top:20px}.signature-venue [data-lounge] .lg-viewport canvas{height:570px}@media(max-width:600px){.signature-venue [data-lounge] .lg-viewport canvas{height:390px}.signature-venue [data-lounge] .lg-tabs{padding:16px 12px}.signature-venue [data-lounge] .lg-caption{padding:18px 16px}}
+
+/* Viewport theater: the room and inspector occupy separate tracks, never overlays. */
+.signature-venue[data-fullscreen="true"]{position:fixed;inset:0;z-index:10000;width:100%;height:100dvh;max-width:none!important;margin:0!important;padding:max(10px,env(safe-area-inset-top)) max(12px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left))!important;border-radius:0;overflow:hidden;overscroll-behavior:contain}
+.signature-venue[data-fullscreen="true"] .sv-shell{max-width:none;height:100%;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;gap:8px}
+.signature-venue[data-fullscreen="true"] .sv-heading,.signature-venue[data-fullscreen="true"] .sv-bottom{display:none}
+.signature-venue[data-fullscreen="true"] .sv-toolbar{padding:0 0 8px;gap:8px;flex-wrap:nowrap;min-width:0}
+.signature-venue[data-fullscreen="true"] [data-theater]{flex:none;min-height:44px}
+.signature-venue[data-fullscreen="true"] .sv-tabs{display:flex;flex-wrap:nowrap;overflow-x:auto;width:auto;min-width:0;scrollbar-width:thin}
+.signature-venue[data-fullscreen="true"] .sv-tabs button{flex:none;white-space:nowrap;min-height:44px}
+.signature-venue[data-fullscreen="true"] .sv-truth{margin:0;font-size:11px}
+.signature-venue[data-fullscreen="true"] .sv-layout{min-height:0;grid-template-columns:minmax(0,1fr) 300px;gap:12px;align-items:stretch}
+.signature-venue[data-fullscreen="true"] .sv-map-area{min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.signature-venue[data-fullscreen="true"] .sv-map-footer,.signature-venue[data-fullscreen="true"] .sv-legend,.signature-venue[data-fullscreen="true"] .sv-source-note{display:none}
+.signature-venue[data-fullscreen="true"] [data-concert]{min-height:0;flex:1;display:flex;flex-direction:column}
+.signature-venue[data-fullscreen="true"] .fc-controls{flex:none;padding:8px;gap:6px;flex-wrap:nowrap;overflow-x:auto}
+.signature-venue[data-fullscreen="true"] .fc-controls button{flex:none;white-space:nowrap;min-height:44px}
+.signature-venue[data-fullscreen="true"] .fc-viewport{flex:1;min-height:0;height:auto}
+.signature-venue[data-fullscreen="true"] .fc-selection,.signature-venue[data-fullscreen="true"] .fc-room>details{display:none}
+.signature-venue[data-fullscreen="true"] .sv-inspector{display:block;position:static;min-height:0;max-height:100%;overflow:auto;overscroll-behavior:contain;padding:16px;scroll-padding:12px}
+.signature-venue[data-fullscreen="true"] .sv-find{margin-bottom:16px}
+.signature-venue[data-fullscreen="true"] .sv-map-scroll{min-height:0;max-height:none;flex:1;aspect-ratio:auto}
+.signature-venue[data-fullscreen="true"] [data-lounge]{min-height:0;overflow:auto;flex:1}
+.signature-venue[data-fullscreen="true"] .sv-status{margin:0;min-height:18px;font-size:11px}
+@media(max-width:700px){
+ .signature-venue[data-fullscreen="true"]{padding:max(8px,env(safe-area-inset-top)) 8px max(8px,env(safe-area-inset-bottom))!important}
+ .signature-venue[data-fullscreen="true"] .sv-shell{gap:6px}
+ .signature-venue[data-fullscreen="true"] .sv-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(160px,1fr) minmax(130px,30dvh);gap:8px}
+ .signature-venue[data-fullscreen="true"] .sv-toolbar button{font-size:11px;padding:8px 10px}
+ .signature-venue[data-fullscreen="true"] .sv-truth{font-size:10px;line-height:1.35}
+ .signature-venue[data-fullscreen="true"] .sv-inspector{border-radius:16px;padding:12px}
+ .signature-venue[data-fullscreen="true"] .sv-inspector h3{font-size:20px;margin-bottom:10px}
+ .signature-venue[data-fullscreen="true"] .sv-find{margin-bottom:10px}
+ .signature-venue[data-fullscreen="true"] .fc-controls button{font-size:11px;padding:8px}
+ .signature-venue[data-fullscreen="true"] .sv-status{font-size:10px;line-height:1.3}
+}
