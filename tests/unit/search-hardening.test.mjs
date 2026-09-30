@@ -23,7 +23,7 @@ test('directory does not render raw backend errors to visitors', () => {
 });
 
 test('community feed does not render raw backend errors to visitors', () => {
-  const html = read('community/index.html');
+  const html = read('community/index.html') + read('assets/community/experience.mjs');
   assert.doesNotMatch(html, /Could not load the feed[\s\S]{0,160}esc\(e\.message\)/);
   assert.doesNotMatch(html, /color:var\(--red\)[^<]*['"]>['"]\+esc\(e\.message\)/);
   assert.match(html, /Community feed failed/);
