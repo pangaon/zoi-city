@@ -28,6 +28,7 @@ try{
  await query(readFileSync(new URL('../../supabase/migrations/20260930042432_enrichment_resilient_leases.sql',import.meta.url),'utf8'));
  await query(`alter table zoi.listings add column source_url text,add column moderation_status text default 'clean';`);
  await query(readFileSync(new URL('../../supabase/migrations/20260930053625_listing_quality_coverage.sql',import.meta.url),'utf8'));
+ await query(readFileSync(new URL('../../supabase/migrations/20260930160800_quality_lease_incremental_scan.sql',import.meta.url),'utf8'));
  const ids=Array.from({length:7},(_,i)=>`30000000-0000-4000-8000-${String(i+1).padStart(12,'0')}`),j=x=>literal(JSON.stringify(x))+'::jsonb';
  await query(`insert into zoi.listings(id,slug,name,entity_type,website,profile)select ('30000000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'fixture-'||i,'Person '||i,'professional','https://association.example/profile/'||i,'{"description":"Owner text","photo_url":"https://owner.example/photo.jpg"}'from generate_series(1,7)i;update zoi.listings set publish_status='draft'where id='${ids[1]}';update zoi.listings set marketplace_status='hidden'where id='${ids[2]}';update zoi.listings set moderation_status='flagged'where id='${ids[3]}';update zoi.listings set website=null where id='${ids[4]}';update zoi.listings set owner_workspace_id='${ws}'where id='${ids[5]}';`);
  const service=q=>query('set role service_role;'+q);
@@ -64,5 +65,17 @@ try{
  assert.deepEqual(JSON.parse(await query("select profile#>'{_enrich,member}'from zoi.listings where slug='challenge-fixture';")),reviewed);
  assert.equal(await query("select profile#>>'{_enrich,photo_url}'from zoi.listings where slug='challenge-fixture';"),reviewed.portrait_url);pass('actual worker challenge payload follows SQL error branch and preserves reviewed member/portrait');
  const beforeRollback=await query('select md5(jsonb_agg(to_jsonb(l)order by id)::text)from zoi.listings l;');await query(readFileSync(new URL('./listing-quality-production-rollback.sql',import.meta.url),'utf8'));assert.equal(await query('select md5(jsonb_agg(to_jsonb(l)order by id)::text)from zoi.listings l;'),beforeRollback);pass('production rollback fixture persists zero changes and emits only sanitized result');
+ await query(`BEGIN; UPDATE zoi.listings SET marketplace_status='hidden';
+ INSERT INTO zoi.listings(id,slug,name,entity_type,website,profile)
+ SELECT ('50000000-0000-4000-8000-'||lpad(i::text,12,'0'))::uuid,'perf-'||i,'Quality fixture '||i,'business','https://example.org/','{"description":"Preserved owner value"}'::jsonb FROM generate_series(1,30000)i;
+ UPDATE zoi.listings l SET profile=profile||jsonb_build_object('_coverage',jsonb_build_object('fingerprint',zoi.listing_quality_fingerprint(l),'tasks',jsonb_build_object('classification',jsonb_build_object('status',CASE WHEN slug IN('perf-3','perf-5') THEN 'blocked' ELSE 'verified' END,'recorded_at',now())))) WHERE slug IN('perf-1','perf-2','perf-3','perf-4','perf-5');
+ UPDATE zoi.listings SET name=name||' changed' WHERE slug IN('perf-2','perf-5');
+ UPDATE zoi.listings SET profile=jsonb_set(profile,'{_coverage,tasks,classification,recorded_at}',to_jsonb((now()-interval '8 days')::text)) WHERE slug='perf-4';
+ UPDATE zoi.listings SET profile=profile||jsonb_build_object('_enrich',jsonb_build_object('lease',jsonb_build_object('expires_at',now()+interval '5 minutes'))) WHERE slug='perf-6';
+ COMMIT; ANALYZE zoi.listings;`);
+ const startedAt=Date.now();const perfRows=JSON.parse(await service("SET statement_timeout='8s';SELECT jsonb_agg(t) FROM public.listing_quality_task_lease('classification',10)t"));const elapsed=Date.now()-startedAt;
+ assert.equal(perfRows.length,10);assert.deepEqual(perfRows.slice(0,3).map(x=>x.slug),['perf-2','perf-4','perf-5']);assert(!perfRows.some(x=>['perf-1','perf-3','perf-6'].includes(x.slug)));assert(elapsed<8000);
+ assert.equal(await query("SELECT profile->>'description' FROM zoi.listings WHERE slug='perf-2'"),'Preserved owner value');pass('30000-row queue under8seconds; stale verified/blocked fingerprints and expired verification re-enter while current results/activeleases stayexcluded ('+elapsed+'ms)');
+ const explain=(await run(join(bin,'psql'),['-X','-qAt','-v','ON_ERROR_STOP=1','-c',"EXPLAIN (ANALYZE,FORMAT JSON) SELECT * FROM public.listing_quality_task_lease('verification',10)"],{env})).stdout;const plan=JSON.parse(explain);assert(plan[0]['Execution Time']<8000);console.log('QUALITY_LEASE_EXPLAIN '+JSON.stringify({rows:plan[0].Plan['Actual Rows'],execution_ms:plan[0]['Execution Time']}));
  console.log(`Passed ${checks} PostgreSQL quality coverage checks.`);
 }finally{if(started)execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-m','immediate','stop'],{stdio:'ignore'});rmSync(dir,{recursive:true,force:true});}

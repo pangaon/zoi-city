@@ -1,8 +1,9 @@
 name: Bounded listing quality audit
 on:
-  push:
+  workflow_run:
+    workflows: [CI]
     branches: [main]
-    paths: [ops/quality-audit-request.json]
+    types: [completed]
   schedule:
     - cron: "*/15 * * * *"
   workflow_dispatch:
@@ -39,7 +40,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   preflight:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     outputs:
       enabled: ${{ steps.plan.outputs.enabled }}

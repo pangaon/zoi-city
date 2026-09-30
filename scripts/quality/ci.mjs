@@ -15,7 +15,7 @@ export async function ciMain(env=process.env,{fetchImpl=fetch,collector=runColle
  const key=await serviceCredential(env,fetchImpl,key=>console.log('::add-mask::'+key));
  try{return await collector(config,{env:{SUPABASE_SECRET_KEY:key}});}finally{const summary=await summarize(config.reportDir,config);console.log(JSON.stringify({quality_summary:summary}));if(env.GITHUB_STEP_SUMMARY)await appendFile(env.GITHUB_STEP_SUMMARY,'### Listing quality: '+task+'\n\n'+summary.observed+' observed; '+summary.confirmed+' confirmed receipts; '+summary.pending+' pending receipts.\n\n'+summary.scope+'\n');}
 }
-if(process.argv[1]?.endsWith('/quality/ci.mjs'))ciMain().catch(()=>{console.error('Quality audit failed. Preserve the evidence artifact before an exact receipt retry.');process.exitCode=1});
+if(process.argv[1]?.endsWith('/quality/ci.mjs'))ciMain().catch(e=>{console.error(JSON.stringify({status:'quality_audit_failed',error:safeAuditError(e),note:'Preserve evidence before exact receipt retry; no ambiguous write was retried.'}));process.exitCode=1});
 
 // Automatic execution is authorized only by a short-lived, fixed-cap repository request.
 export function automaticAuditRequest(request,now=Date.now()){
@@ -38,3 +38,5 @@ export async function qualitySummary(directory,config){
  for(const file of files.filter(x=>/^[a-f0-9]{64}\.json$/.test(x))){const r=JSON.parse(await readFile(path.join(directory,file),'utf8'));if(r.task!==config.task)continue;result.observed++;const stem=file.slice(0,-5);let receipt;try{receipt=JSON.parse(await readFile(path.join(directory,stem+'.receipt.json'),'utf8'))}catch{}if(receipt&&!validReceipt(receipt,{task:r.task,payload:{p_listing:r.listing?.id,p_status:r.decision?.status}}))receipt=null;if(receipt)result.confirmed++;else result.pending++;const status=receipt?.status||'unconfirmed';result.statuses[status]=(result.statuses[status]||0)+1;if(r.decision?.status!=='verified')result.repairs.push({listing_id:r.listing?.id,reason:r.decision?.evidence?.reason||'review_required',specialist:r.decision?.evidence?.repair?.specialist||(config.task==='classification'?'enrichment':'experience'),evidence_ref:'sha256:'+stem});}
  await mkdir(directory,{recursive:true});await writeFile(path.join(directory,'run-summary.json'),JSON.stringify(result,null,2)+'\n',{mode:0o600});return result;
 }
+
+export function safeAuditError(e){return /^(?:quality_rpc_listing_quality_task_(?:lease|finish)_[0-9]{3}(?:_[A-Z0-9]{5})?|management_keys_[0-9]{3}|quality_leases_unconfirmed|quality_finish_unconfirmed|pending_receipts_require_resume|invalid_lease|evidence_hash_mismatch|service_credential_unavailable)$/.test(e?.message||'')?e.message:e?.name==='TimeoutError'?'request_timeout':'quality_collection_failed';}

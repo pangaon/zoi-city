@@ -2,7 +2,9 @@
 
 Scope: workspace onboarding → existing listing claim or private intake → edit → preview → publish → public read, and integration connection. Read-only audit of the integration candidate and public deployed entry points. This is not authenticated end-to-end acceptance. No customer messages, claims, saves, publications or provider authorizations were performed.
 
-## Three release blockers
+## Findings and repair status
+
+Hospitality preview parity was repaired and deployed in `048ac1a` on 30 September. Populated/sparse rendering and publication-contract checks passed (31 targeted tests). Authenticated owner publication has not been exercised against a customer record. Website-first intake and provider configuration findings remain open.
 
 ### P1 — Website-first intake stops before the promised managed onboarding outcome
 

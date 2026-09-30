@@ -1,84 +1,18 @@
 {
-  "id": "release-profile-map-host-20260930155353",
+  "id": "release-quality-lease-20260930160847",
   "project": "csebihpaychdkanjjsmz",
-  "expires_at": "2026-09-30T16:51:53.114228+00:00",
+  "expires_at": "2026-09-30T17:06:47.624720+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930144328_event_host_table_allocations.sql",
-      "sha256": "ab52b97a42a8b2b2e303450177d6c4be33d250668d9b1e8e603c868fa3dce578"
+      "path": "supabase/migrations/20260930160800_quality_lease_incremental_scan.sql",
+      "sha256": "0f1e04cd6c16ad3171e005223c3464104e392e4b033c2ce1b4e55c5e0e5c31ec"
     }
   ],
-  "workers": [
-    {
-      "name": "zoi-enrich",
-      "files": [
-        {
-          "path": "supabase/functions/zoi-enrich/_document-quality.js",
-          "sha256": "95464062ec56790795f7200b1b39a8bd499f339248ad85089e04d2f18088c9a2"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_image-context.js",
-          "sha256": "dcec77f7ceee8d97faeab849725c17b54872ce8ace305b53e2881a1a40f25a98"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_images.js",
-          "sha256": "69e11df578f54bf7740ba914d39ad30fba1d029381478f2ed7fc09e0eebfb124"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_media.js",
-          "sha256": "46d77834fce1f9842916e9f952b003118d687514c5106e55ac8ce560e45b0f8b"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_member.js",
-          "sha256": "39af2264ba7961a6dc7987994579a198db534fdf4a6e0159258080847ccf469e"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_menus.js",
-          "sha256": "f13afc2d7a8f7ed4afca20f43aeaa17803744dc997c2cd411610a35948251948"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_receipts.js",
-          "sha256": "af5749384a8f0b06dd35510599a38a269e7d0190be4e2a561f5070398fee8b0c"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_scope.js",
-          "sha256": "5e1db816a7608230300de10312497b2625c99193cccea7dca563465705dc4c06"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_social.js",
-          "sha256": "d164d906ee8a5242d26e9c419fd6dfae9239a346712655508d8bc72f5ce81be8"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_source-identity.js",
-          "sha256": "2a9c6a0e74a6a845cc297e136bd5e55cbc2a0d2414cdc7c5aff3c54c4a446193"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_ssrf.ts",
-          "sha256": "54b9c13fd5000421e2e5beee8cd85edd20d91337621b6e97252081eb309f6ee3"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/_ssrf_test.ts",
-          "sha256": "9a6fd293041db6f7c3d79840cf2b58d88909b1dc4b2eb3875c950a7eddbae912"
-        },
-        {
-          "path": "supabase/functions/zoi-enrich/index.ts",
-          "sha256": "558ad099d2709451f766dc8449321d3b53fd970661a0fd246c71672df7e1b661"
-        },
-        {
-          "path": "assets/enrichment/member-source.mjs",
-          "sha256": "5eadd023639ff732baa32273df3d44db374a64b378624264b5479ab2c0fb3c2d"
-        },
-        {
-          "path": "assets/enrichment/association-cards.mjs",
-          "sha256": "70e9ba6789062261a62c6c88c86920eb6831b308c087fc27f52912d0327dfce6"
-        }
-      ]
-    }
-  ],
+  "workers": [],
   "fixtures": [
     {
-      "path": "ops/verify-event-host-allocations.sql",
-      "sha256": "d10d70913623b0523b6472973d05669a0986d5b0f1962eb5dbe245841670956d"
+      "path": "ops/qa-quality-lease-performance-rollback.sql",
+      "sha256": "a20045d502cfa23a4a8cd63b9c8cea33ec81323774a2b67935ebac5a9620d20f"
     }
   ]
 }
