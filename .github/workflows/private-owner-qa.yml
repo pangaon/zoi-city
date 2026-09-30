@@ -1,0 +1,53 @@
+name: Dedicated private owner content QA
+on:
+  push:
+    branches: [main]
+    paths: ['ops/private-owner-qa-request.json']
+permissions:
+  contents: read
+concurrency:
+  group: dedicated-private-owner-qa
+  cancel-in-progress: false
+jobs:
+  private-owner:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate exact expiring request and reviewed source hashes
+        run: node scripts/auth-qa/private-owner-ci.mjs check
+      - name: Test request fence before credentials
+        run: node --test tests/unit/private-owner-qa.test.mjs tests/unit/private-owner-ci.test.mjs
+      - name: Install pinned browser
+        run: |
+          npm install --global agent-browser@0.38.1
+          agent-browser install --with-deps
+      - name: Provision exact private fixture once
+        id: provision
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/auth-qa/private-owner-ci.mjs provision
+      - name: Existing owner form edit read and private preview
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/auth-qa/private-owner-ci.mjs browser
+      - name: Archive exact private fixture preserving receipts
+        if: always() && steps.provision.outcome != 'skipped'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/auth-qa/private-owner-ci.mjs cleanup
+      - name: Sanitized evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: private-owner-${{ github.run_id }}-${{ github.run_attempt }}
+          path: qa-private-owner-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 7

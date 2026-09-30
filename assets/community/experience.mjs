@@ -1,4 +1,4 @@
-import {mountMusic} from './music.mjs';
+import {mountMusic} from './music.mjs?v=20260930-focus';
 import{dailyRitual}from'./ritual.mjs';
 import{uploadCommunityMedia,discardCommunityMedia}from'./media-client.mjs';
 import{sessionIdentity,pendingPublication,scopedStore,profileMatches,assertScope}from'./session-state.mjs';

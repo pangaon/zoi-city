@@ -379,6 +379,7 @@
     var ws = ctx.ws;
     root.__bizPageDestroy && root.__bizPageDestroy();
     var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
+    var ownerEntity = (await import('/assets/suite/owner-entity.mjs')).ownerEntity;
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false;
     function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
     function destroyDesign(){mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
@@ -534,10 +535,8 @@
 
     /* ---- editor ---- */
     /**
-     * Fetch the public record for the claimed listing and mount the per-vertical
-     * form. entity_type, category and the current profile all come from
-     * seo_entity, which is the same source the public page renders from — so the
-     * editor can never offer a field the page will not show.
+     * Mount the vertical form from the authorized private content snapshot.
+     * A hidden draft is editable without exposing it through public SEO reads.
      */
     async function mountVertical(slot) {
       var UI = global.ZoiVerticalUI, FS = global.ZoiVerticalForms;
@@ -546,7 +545,7 @@
       if (!slug) return;
       slot.innerHTML = '<p class="zp-note">Loading your details\u2026</p>';
       try {
-        var raw = state.entity || await rpcRead('seo_entity', { p_slug: slug });
+        var raw = state.entity;
         await Promise.resolve(); // The cached entity path must wait for the form to attach.
         if(!scopeLive()||!slot.isConnected)return;
         var e = Array.isArray(raw) ? raw[0] : raw;
@@ -970,7 +969,7 @@
       // Has a claimed listing -> load its current content.
       var contentRaw = null;
       try {
-        var contentReceipt=await rpcRead('home_content_get',{p_workspace:ws,p_listing:status.listingId});if(contentReceipt?.ok!==true||contentReceipt.listing_id!==status.listingId||contentReceipt.workspace_id!==ws||!/^([a-f0-9]{32})$/.test(contentReceipt.version||''))throw Error('Current page snapshot could not be confirmed');contentRaw=contentReceipt.base;state.contentVersion=contentReceipt.version;state.ownerProfile=contentReceipt.profile;
+        var contentReceipt=await rpcRead('home_content_get',{p_workspace:ws,p_listing:status.listingId});if(contentReceipt?.ok!==true||contentReceipt.listing_id!==status.listingId||contentReceipt.workspace_id!==ws||!/^([a-f0-9]{32})$/.test(contentReceipt.version||''))throw Error('Current page snapshot could not be confirmed');contentRaw=contentReceipt.base;state.entity=ownerEntity(contentReceipt,{workspace:ws,listing:status.listingId,name:status.name,slug:status.slug});state.contentVersion=contentReceipt.version;state.ownerProfile=contentReceipt.profile;
       } catch (e2) {
         if(!scopeLive()||loadEpoch!==bootEpoch)return;
         state.loading = false;
@@ -979,7 +978,6 @@
       }
       if(!scopeLive()||loadEpoch!==bootEpoch)return;
       if (!contentRaw || typeof contentRaw !== 'object') { state.loading=false; renderError('The server did not return your page details. Please retry.'); return; }
-      try { var entityRaw=await rpcRead('seo_entity',{p_slug:status.slug});state.entity=Array.isArray(entityRaw)?entityRaw[0]:entityRaw; } catch(e) { state.entity=null; }
       if(!scopeLive()||loadEpoch!==bootEpoch)return;
       if(state.entity && state.entity.profile) contentRaw.profile=state.entity.profile;
       state.draft = normContent(contentRaw);

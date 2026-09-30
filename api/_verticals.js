@@ -22,6 +22,8 @@
 import { orthodoxPascha, iso, feastsOn, seasonsFor, isFastDay, nameDaysOn,
   upcomingFeasts, resolveFeastDate, shiftForOldCalendar } from './_orthocal.js';
 
+import {socialProfile} from '../supabase/functions/zoi-enrich/_social.js';
+
 import {parishDay,upcomingParishFeasts,patronalDate} from './_parish-calendar-reference.js';
 
 /* ---------------- tiny helpers ---------------- */
@@ -101,7 +103,14 @@ export function safeProfile(e) {
   // Enrichment first, so an owner key written afterwards overwrites it.
   for (const k of Object.keys(enr)) {
     if (BANNED_PROFILE_KEYS.test(k) || ENRICH_META_KEYS.has(k) || RESERVED_PROFILE_KEYS.has(k)) continue;
-    out[k] = enr[k];
+    // Legacy imports also pass the current crawler's profile-link classifier.
+    // Filter machine fallbacks only; explicit owner values are applied below.
+    out[k] = ['social', 'social_links'].includes(k)
+      ? Object.fromEntries(Object.entries(enr[k] && typeof enr[k] === 'object' && !Array.isArray(enr[k]) ? enr[k] : {}).flatMap(([name, value]) => {
+          const match = socialProfile(value);
+          return match ? [[name, match.url]] : [];
+        }))
+      : enr[k];
   }
   for (const k of Object.keys(raw)) {
     if (BANNED_PROFILE_KEYS.test(k) || RESERVED_PROFILE_KEYS.has(k)) continue;

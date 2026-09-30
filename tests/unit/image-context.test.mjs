@@ -4,3 +4,20 @@ test('actual encoded reviewer portraits and restaurant generated maps are auxili
 test('known map providers and review-avatar semantics excluded without broad host or small-image bans',()=>{for(const x of ['https://maps.googleapis.com/maps/api/staticmap?center=Athens','https://a.tile.openstreetmap.org/1/2/3.png','https://api.mapbox.com/styles/v1/acme/test/static/1,2,3/600x400','https://secure.gravatar.com/avatar/hash'])assert.equal(auxiliaryImage(x),true);for(const x of ['https://lh3.googleusercontent.com/p/real-place-photo=s75','https://images.example.org/maple-cake.jpg','https://images.example.org/75x75/food.jpg','https://images.example.org/photo.jpg?signature=keep%2Fexact','https://example.org/%broken'])assert.equal(auxiliaryImage(x),false);assert.equal(auxiliaryImage('https://cdn.example.org/123.jpg','reviewer profile photo'),true);});
 test('owner-selected gallery/hero including maps or portraits remain authoritative and null clears hold',()=>{const p={hero_url:food,photo_urls:[food]};assert.equal(profileMedia({owner_content:{photo_url:map,profile:{photos:[map,reviewer]}},profile:{_enrich:p}},p).hero,map);assert.deepEqual(profileMedia({owner_content:{profile:{photos:[map,reviewer]}},profile:{_enrich:p}},p).gallery,[map,reviewer]);assert.equal(profileMedia({owner_content:{photo_url:null},profile:{_enrich:p}},p).hero,null);});
 test('actual extractor excludes proxy avatars and map even when declared as metadata image',()=>{const result=extractSiteImages(`<meta property="og:image" content="${map}"><img src="${reviewer}"><img src="${food}">`,'https://www.artionbakery.com/');assert.equal(result.hero.url,food);assert.equal(result.photos.length,1);});
+const venueAux=[
+'https://cdn.trustindex.io/assets/platform/Google/star/f.svg',
+'https://gocsa.org.au/wp-content/uploads/2025/07/GOCSA_Default-Social-Share.png',
+'https://www.calgaryhellenic.ca/wp-content/uploads/2026/05/Lower_Hall_rental_rates_2026-600x776.jpg',
+'https://www.calgaryhellenic.ca/wp-content/uploads/2026/05/rental_rates_2026-600x489.jpg'];
+test('audited venue widget, social-share artwork and exact rate sheets are not machine photographs',()=>{
+ for(const url of venueAux){assert.equal(auxiliaryImage(url),true,url);const p={photo_url:url,photo_urls:[url]};assert.deepEqual(profileMedia({profile:{_enrich:p}},p),{hero:null,logo:null,gallery:[]});assert.equal(p.photo_url,url,'source evidence retained');assert.equal(profileMedia({owner_content:{photo_url:url,profile:{photos:[url]}},profile:{_enrich:p}},p).hero,url);assert.deepEqual(profileMedia({owner_content:{profile:{photos:[url]}},profile:{_enrich:p}},p).gallery,[url]);}
+ for(const url of ['https://gocsa.org.au/wp-content/uploads/2025/07/olympic-hall.jpg','https://www.calgaryhellenic.ca/wp-content/uploads/2026/05/Lower_Hall_interior.jpg','https://example.org/og-image.jpg','https://example.org/rental_rates_2026.jpg'])assert.equal(auxiliaryImage(url),false,url);
+});
+test('actual Olympic Hall and Calgary adapter projections show honest missing photographs',async()=>{
+ const {eventHomeContent}=await import('../../api/_event-home.js');
+ for(const [id,name,urls] of [['9ca606a8-bb17-43c4-bfce-84de3f442d39','Olympic Hall',[venueAux[1]]],['e02dc755-715b-4142-bce6-dfc6c0874c6f','Calgary Hellenic Banquet Hall',[venueAux[2],venueAux[3],venueAux[0]]]]){
+  const entity={id,name,slug:name.toLowerCase().replaceAll(' ','-'),entity_type:'venue',publish_status:'published',profile:{_enrich:{photo_url:urls[0],photo_urls:urls}}};
+  const before=JSON.stringify(entity);const rendered=eventHomeContent(entity);assert.equal(rendered.hero,'');assert.deepEqual(rendered.photos,[]);assert.equal(JSON.stringify(entity),before);
+  const owner=eventHomeContent({...entity,owner_content:{photo_url:urls[0],profile:{photos:urls}}});assert.equal(owner.hero,urls[0]);assert.deepEqual(owner.photos,urls);
+ }
+});
