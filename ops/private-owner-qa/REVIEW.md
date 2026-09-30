@@ -52,3 +52,9 @@ The authenticated browser job is followed by a separate `always()` cleanup step 
 Local browser fixture (explicit synthetic responses, zero production writes): restaurant menu section/item entry → normal Save page handler → saved feedback → private preview passed. No public SEO read occurred. Professional fixture showed practice fields and no restaurant menu. No horizontal overflow at 390/1440. The preview response in this local fixture is mocked, so it proves UI plumbing, not production rendering. Actual live preview is still pending the separately reviewed request.
 
 Focused tests now total 21 passing across private runner, owner context and existing read-only tests; local SQL checks remain 5 passing. No real publication/claim/onboarding acceptance is implied.
+
+## Controlled follow-up after the first executed run
+
+Run 36699153218 made one authorized content save and then stopped at the readback assertion: PostgreSQL jsonb returned the correct menu with a different object-key order. Cleanup succeeded; the exact fixture is archived and hidden with one immutable successful receipt. The comparator now checks exact semantic JSON content, including array order and field sets.
+
+A separately reviewed v2 uses `reactivate.sql`, a fresh static request nonce, an exact archived profile and prior-receipt fingerprint, and a one-use cleanup marker. The original create-only provision script remains unchanged. Reactivation changes only the known marker and draft status; it does not adopt another record. Cleanup preserves both known receipts and refuses unexpected current description, menu or promotion content. Only the request purpose `private-owner-reactivated-edit-read-preview-v2` is accepted. No follow-up execution has occurred at this commit.

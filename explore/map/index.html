@@ -1053,7 +1053,8 @@
     writeUrl();
   }
 
-  $('pclose').addEventListener('click', function () { showAll(); writeUrl(); });
+  function closeSelection() { showAll(); writeUrl(); $('q').focus(); }
+  $('pclose').addEventListener('click', closeSelection);
 
   $('pfoot').addEventListener('click', function (e) {
     if (e.target && e.target.id === 'reloadmap') location.reload();
@@ -1391,7 +1392,7 @@
   /* keyboard: / focuses search, Escape backs out */
   document.addEventListener('keydown', function (e) {
     if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
-    if (e.key === 'Escape') { hideTip(); clearSpider(); if (listState.mode !== 'all') { showAll(); writeUrl(); } }
+    if (e.key === 'Escape') { hideTip(); clearSpider(); if (listState.mode !== 'all') { closeSelection(); } }
   });
 
   /* theme changes must repaint the basemap, not just the chrome */

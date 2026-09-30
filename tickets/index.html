@@ -635,7 +635,7 @@ async function doGaRetry(){if(gaBusy||!gaPending)return;const name=$('#gaName')?
 function gaHistoryPanel(){return '<section class="order-box" aria-label="Saved reservations"><div class="order-header">Saved reservations on this device</div><div class="order-body"><p class="field-hint">Up to five request references per account and event, kept for one year. Each status is checked with the organizer’s system; no names, emails or ticket codes are stored here.</p>'+(gaHistoryError?'<p role="status">'+esc(gaHistoryError)+'</p>':'')+gaHistory.map(x=>'<div class="tkx-note"><div><b>'+esc(PUB.types.find(t=>String(t.id)===x.attempt.tier)?.name||'Saved ticket')+'</b><p>'+esc(String(x.attempt.qty))+' tickets · '+esc(x.result?x.result.status+(x.result.checkedIn?' · Checked in':''):'Current status unknown')+'</p><button class="tkx-btn" data-act="gahistoryview" data-request="'+esc(x.attempt.id)+'">Check and view ticket</button></div></div>').join('')+(!gaHistory.length&&!gaHistoryError?'<p>No saved reservation references for this account and event.</p>':'')+'<button class="tkx-btn" data-act="gahistoryrefresh">Refresh saved reservations</button></div></section>';}
 function gaPaintHistory(){let el=document.getElementById('gaHistory');if(!el){el=document.createElement('div');el.id='gaHistory';app.appendChild(el);}el.innerHTML=gaHistoryPanel();}
 async function gaLoadHistory(){const epoch=++gaHistoryEpoch,event=PUB.eventId;gaHistory=[];gaHistoryError='Checking saved reservation references…';gaPaintHistory();try{await gaReady;const actor=GA.actor(),refs=GA.references(event);const rows=await Promise.all(refs.map(async attempt=>{try{return{attempt,result:await GA.recover(attempt)};}catch{return{attempt,result:null};}}));if(epoch!==gaHistoryEpoch||event!==PUB.eventId||actor!==GA.actor())return;gaHistory=rows;gaHistoryError=rows.some(x=>!x.result)?'Some current statuses could not be verified. No old ticket codes are displayed.':'';}catch(e){if(epoch!==gaHistoryEpoch)return;gaHistoryError=e.message||'Saved reservations could not be checked.';}if(epoch===gaHistoryEpoch)gaPaintHistory();}
-async function gaViewHistory(id){const row=gaHistory.find(x=>x.attempt.id===id);if(!row||gaBusy)return;const epoch=gaHistoryEpoch,event=PUB.eventId;gaBusy=true;gaClearConfirmation();try{const result=await GA.recover(row.attempt);if(epoch!==gaHistoryEpoch||event!==PUB.eventId)return;row.result=result;if(!result){gaHistoryError='No current receipt is available. Contact the organizer if you need help; this does not prove a reservation never existed.';return;}showConfirm(result.receipt,PUB.types.find(t=>String(t.id)===row.attempt.tier),result);}catch(e){if(epoch!==gaHistoryEpoch)return;row.result=null;gaHistoryError=e.message||'The current reservation status could not be verified.';}finally{gaBusy=false;if(epoch===gaHistoryEpoch)gaPaintHistory();}}
+async function gaViewHistory(id){const row=gaHistory.find(x=>x.attempt.id===id);if(!row||gaBusy)return;const epoch=gaHistoryEpoch,event=PUB.eventId;gaBusy=true;gaClearConfirmation();try{const result=await GA.recover(row.attempt);if(epoch!==gaHistoryEpoch||event!==PUB.eventId)return;row.result=result;if(!result){gaHistoryError='No current receipt is available. Contact the organizer if you need help; this does not prove a reservation never existed.';return;}showConfirm(result.receipt,PUB.types.find(t=>String(t.id)===row.attempt.tier),result,{request:id});}catch(e){if(epoch!==gaHistoryEpoch)return;row.result=null;gaHistoryError=e.message||'The current reservation status could not be verified.';}finally{gaBusy=false;if(epoch===gaHistoryEpoch)gaPaintHistory();}}
 window.addEventListener('storage',e=>{if(e.key!=='zoi_auth')return;gaHistoryEpoch++;gaHistory=[];gaHistoryError='Account changed. Refresh this event to load this account’s saved reservations.';if(document.getElementById('gaHistory'))gaPaintHistory();gaPending=null;gaError='Your account changed. Reload this event to check requests belonging to the current account.';gaClearConfirmation();if(PUB.eventId)repaintPanel();});
 
 /* ---- RPC ----
@@ -1047,8 +1047,9 @@ async function doReserve(){
 
 }
 
-let LAST_CONFIRM = null;
-function showConfirm(res, t, currentStatus=null){
+let LAST_CONFIRM = null, CONFIRM_RETURN = null;
+function showConfirm(res, t, currentStatus=null, returnTarget=null){
+  if(!$('#confirmModal').classList.contains('open'))CONFIRM_RETURN=returnTarget||document.activeElement;
   const code = (res && res.code) || '';
   $('#confirmModal .confirm-icon').hidden=currentStatus?.status==='cancelled';
   $('#confirmModal .confirm-title').textContent=currentStatus?.status==='cancelled'?'Reservation cancelled':currentStatus?'Reservation recorded':'Reservation confirmed';
@@ -1080,7 +1081,7 @@ function showConfirm(res, t, currentStatus=null){
   $('#confirmModal').classList.add('open');
   const done=document.getElementById('cfDone'); if(done) done.focus();
 }
-function closeConfirm(){ $('#confirmModal').classList.remove('open'); restoreFocus(); }
+function closeConfirm(){const modal=$('#confirmModal');if(!modal.classList.contains('open'))return;modal.classList.remove('open');const saved=CONFIRM_RETURN;CONFIRM_RETURN=null;const target=saved?.request?[...app.querySelectorAll('[data-act="gahistoryview"]')].find(b=>b.dataset.request===saved.request):saved;if(target?.isConnected&&!target.disabled&&target.getClientRects().length)target.focus({preventScroll:true});else restoreFocus();}
 function gaClearConfirmation(){closeConfirm();LAST_CONFIRM=null;['confirmCode','cfQty','cfStatus','cfAmount','confirmSub','cfQr','cfActs'].forEach(id=>{const el=document.getElementById(id);if(el)el.replaceChildren();});}
 
 function publicIcs(){

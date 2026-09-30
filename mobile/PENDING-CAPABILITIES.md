@@ -1,8 +1,16 @@
 # Native acceptance and capability gaps — 30 September 2026
 
-This is a source inventory and bounded acceptance record, not a claim of full native parity. Completed preview builds at `5ec7d1d` precede the pending navigation and ticket-recovery fixes. A browser running the Expo web export is not physical iOS/Android acceptance. No additional paid build was started by this audit.
+This is a source inventory and bounded acceptance record, not a claim of full native parity. A browser running the Expo web export is not physical iOS/Android acceptance.
 
-## Pending candidate fixes
+## Current preview build status — supersedes the earlier 5ec7d1d baseline
+
+The release lead confirmed both preview builds for `7592a434e757fa9a85c8dc42013e0c70539f8ea9` **FINISHED** on 30 September 2026. The exact source passed 167 tests, TypeScript and all three platform exports. Physical-device acceptance remains pending.
+
+- Android build `ed7b5d2e-b251-4855-ae97-9efea756df05`: [APK](https://expo.dev/artifacts/eas/UHg3xRbLLsbJVlp1GmQVLuNTKeWFtH3T_wN4mdLIum4.apk), internal preview rather than a store release.
+- iOS build `d53afae5-2168-4679-b26c-2c8b8780aeeb`: [simulator archive](https://expo.dev/artifacts/eas/prgi-XW4YVoZykWOOLQo1re5EeGD9weJ7saS4W8neSQ.tar.gz). Requires an iOS Simulator on Mac; this is not a physical-iPhone/TestFlight artifact.
+- [Twenty-tester runbook](../docs/audits/tester-readiness-2026-09-30.md) distinguishes production reads, mocked interaction evidence and still-blocked transactions. No new cloud build was requested for this documentation update.
+
+## Included navigation and recovery fixes; device acceptance still pending
 
 - Community keeps the intended public screen/question composer through explicit sign-in and Continue. Cancellation/account changes clear navigation; reactions/publication are never replayed automatically.
 - Artist sign-in returns to the same public profile, without voting. Discover retains query/filter through Back and tab changes.

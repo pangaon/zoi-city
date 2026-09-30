@@ -1,7 +1,7 @@
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 import {QA} from './session.mjs';
-import {OWNER_QA,OWNER_DESIGN} from './private-owner-flow.mjs';
+import {OWNER_QA,OWNER_DESIGN,sameJsonShape} from './private-owner-flow.mjs';
 import {ownerRequestFence} from './private-owner-policy.mjs';
 const exec=promisify(execFile);
 export async function closeBrowser(cli){try{await cli(['close']);}catch{throw Error('qa_browser_cleanup_failed');}}
@@ -31,7 +31,7 @@ export async function browserPrivateOwner({session,listing},{binary='agent-brows
   await evalValue(`(()=>{const input=(selector,value)=>{const n=document.querySelector(selector);if(!n)throw Error('field');n.focus();n.value=value;n.dispatchEvent(new Event('input',{bubbles:true}));};const button=text=>{const n=[...document.querySelectorAll('#mount button')].find(x=>x.textContent.trim()===text);if(!n)throw Error('button');n.click();};input('textarea[placeholder="Tell customers what makes your business special…"]',${JSON.stringify(OWNER_QA.description)});button('+ Add section');input('input[aria-label="Section name"]','INTERNAL QA');button('+ Add item');input('input[aria-label="Item name"]',${JSON.stringify(OWNER_QA.menu[0].items[0].name)});input('input[aria-label="Description / dietary information"]','Private preview only');const form=document.querySelector('#mount form');if(!form)throw Error('form');form.requestSubmit();return true;})()`);
   async function waitFor(expression){const end=Date.now()+30000;while(Date.now()<end){if(await evalValue(expression))return;await new Promise(r=>setTimeout(r,300));}throw Error('qa_owner_ui_timeout');}
   await waitFor(`document.querySelector('#mount')?.textContent.includes('Saved. Your page details and menu are updated.')`);
-  const readback=await evalValue(`(async()=>{const r=await ZoiCore.api.rpc('home_content_get',{p_workspace:${JSON.stringify(QA.workspace)},p_listing:${JSON.stringify(listing)}},{auth:'require'});return r?.ok===true&&r.workspace_id===${JSON.stringify(QA.workspace)}&&r.listing_id===${JSON.stringify(listing)}&&/^[a-f0-9]{32}$/.test(r.version||'')&&r.version!==${JSON.stringify(before)}&&r.base?.description===${JSON.stringify(OWNER_QA.description)}&&JSON.stringify(r.profile?.menu)===${JSON.stringify(JSON.stringify(OWNER_QA.menu))};})()`);if(!readback)throw Error('qa_owner_readback');
+  const readback=await evalValue(`(async()=>{const r=await ZoiCore.api.rpc('home_content_get',{p_workspace:${JSON.stringify(QA.workspace)},p_listing:${JSON.stringify(listing)}},{auth:'require'});return r?.ok===true&&r.workspace_id===${JSON.stringify(QA.workspace)}&&r.listing_id===${JSON.stringify(listing)}&&/^[a-f0-9]{32}$/.test(r.version||'')&&r.version!==${JSON.stringify(before)}&&r.base?.description===${JSON.stringify(OWNER_QA.description)}&&(${sameJsonShape.toString()})(r.profile?.menu,${JSON.stringify(OWNER_QA.menu)});})()`);if(!readback)throw Error('qa_owner_readback');
   await evalValue(`(()=>{const panel=document.querySelector('.zp-design-panel');if(!panel)throw Error('panel');panel.open=true;return true;})()`);
   await waitFor(`!!document.querySelector('[data-preview]')`);
   // A local template choice has no server write. Preview uses the ordinary UI handler.

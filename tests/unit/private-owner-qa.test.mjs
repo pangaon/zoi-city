@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {privateOwnerFlow,OWNER_QA,ownerSavePayload} from '../../scripts/auth-qa/private-owner-flow.mjs';
+import {privateOwnerFlow,OWNER_QA,ownerSavePayload,sameJsonShape} from '../../scripts/auth-qa/private-owner-flow.mjs';
 import {QA} from '../../scripts/auth-qa/session.mjs';
 function adapters(change={}){let reads=0;const calls=[];return{calls,rpc:async(name,body)=>{calls.push({name,body});if(name==='home_content_get')return{ok:true,workspace_id:QA.workspace,listing_id:OWNER_QA.listing,version:++reads===1?'a'.repeat(32):'b'.repeat(32),base:{description:OWNER_QA.description},profile:{menu:OWNER_QA.menu},...change.snapshot};if(name==='home_content_save')return{ok:true,workspace_id:QA.workspace,listing_id:OWNER_QA.listing,request_id:OWNER_QA.request,version:'b'.repeat(32),...change.receipt};throw Error('unexpected_write');},preview:async()=>({ok:true,listing:OWNER_QA.listing,html:'ZOI INTERNAL QA private edited wording Synthetic test entry',...change.preview})};}
 test('exact fixture only: one content mutation, version read and private preview, no publication claim',async()=>{const a=adapters();const r=await privateOwnerFlow(a);assert.deepEqual(a.calls.map(c=>c.name),['home_content_get','home_content_save','home_content_get']);assert.equal(r.public_publish,false);assert.equal(r.browser_interaction,false);assert.deepEqual(a.calls[1].body,ownerSavePayload('a'.repeat(32)));});
@@ -7,3 +7,10 @@ test('wrong workspace stops before mutation',async()=>{const a=adapters({snapsho
 test('wrong receipt never proceeds to preview or retries mutation',async()=>{const a=adapters({receipt:{request_id:'wrong'}});await assert.rejects(privateOwnerFlow(a),/save_unconfirmed/);assert.equal(a.calls.length,2);});
 test('preview scope mismatch rejects without public fallback',async()=>{await assert.rejects(privateOwnerFlow(adapters({preview:{listing:'wrong'}})),/preview_unconfirmed/);});
 test('transport ambiguity is surfaced without retry',async()=>{const a=adapters();let writes=0;const rpc=a.rpc;a.rpc=async(n,b)=>{if(n==='home_content_save'){writes++;throw Error('transport');}return rpc(n,b)};await assert.rejects(privateOwnerFlow(a),/transport/);assert.equal(writes,1);});
+
+test('jsonb object-key ordering is irrelevant but every field value and array position remains exact',async()=>{
+ const menu=[{items:[{note:'Private preview only',name:OWNER_QA.menu[0].items[0].name}],section:'INTERNAL QA'}];assert.equal(sameJsonShape(menu,OWNER_QA.menu),true);await privateOwnerFlow(adapters({snapshot:{profile:{menu}}}));
+ for(const bad of [[{...menu[0],extra:true}],[{...menu[0],items:[{...menu[0].items[0],price:0}]}],[{items:menu[0].items}],[{...menu[0],items:[{name:menu[0].items[0].name,note:null}]}],null,{}]){assert.equal(sameJsonShape(bad,OWNER_QA.menu),false);await assert.rejects(privateOwnerFlow(adapters({snapshot:{profile:{menu:bad}}})),/readback_unconfirmed/);}
+ assert.equal(sameJsonShape([1,2],[2,1]),false);assert.equal(sameJsonShape({a:1},{a:'1'}),false);assert.equal(sameJsonShape({a:undefined},{a:undefined}),false);assert.equal(sameJsonShape(new Date(0),new Date(0)),false);assert.equal(sameJsonShape([,],[null]),false);
+});
+test('browser injected comparator uses identical strict comparison without module dependencies',()=>{const browserCompare=Function('return ('+sameJsonShape.toString()+')')();assert.equal(browserCompare([{b:2,a:1}],[{a:1,b:2}]),true);assert.equal(browserCompare([{b:2,a:1,c:0}],[{a:1,b:2}]),false);});
