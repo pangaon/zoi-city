@@ -171,6 +171,28 @@
         "isolated live CRUD and tenancy acceptance",
         "device validation"
       ]
+    },
+    {
+      "id": "event-seating",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "public event discovery and detail",
+        "actual ticket tiers",
+        "shared geometry seat selection",
+        "authenticated idempotent holds",
+        "server-clock hold expiry",
+        "foreground hold and receipt recovery",
+        "free reservation receipts",
+        "authorized named-seat cancellation",
+        "session isolation"
+      ],
+      "required": [
+        "seat migration deployment and runtime flag enablement after verification",
+        "isolated live acceptance",
+        "device validation",
+        "native paid checkout"
+      ]
     }
   ],
   "architecture": {
@@ -183,7 +205,8 @@
     "zoi://discover",
     "zoi://community",
     "zoi://grow",
-    "zoi://business/:slug"
+    "zoi://business/:slug",
+    "zoi://tickets/:eventUUID"
   ],
   "releaseGates": [
     "TypeScript",

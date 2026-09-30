@@ -6,12 +6,13 @@ import { AccountPanel, CommunityComposer } from './src/Account';
 import { VenueStudio } from './src/Venue';
 import { BusinessProfile } from './src/Profile';
 import { OperationsPanel } from './src/Operations';
+import { TicketsScreen } from './src/Tickets';
 
 const WEB = 'https://www.zoi.city';
 const API = 'https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/';
 const KEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const C = { navy: '#132F46', blue: '#116CBA', sky: '#EAF4FB', cream: '#FAF8F3', gold: '#A77B32', muted: '#60717E', line: '#DFE6EB', white: '#FFFFFF' };
-type Tab = 'home' | 'discover' | 'community' | 'grow';
+type Tab = 'home' | 'discover' | 'community' | 'tickets' | 'grow';
 type Place = { id: string; name: string; slug: string; path?: string; entity_type?: string; description?: string; city?: string; country?: string; photo_url?: string; category?: string };
 type Post = { id: string; author?: string; body?: string; created_at?: string; media_photo?: string; likes?: number; comments?: number };
 
@@ -117,10 +118,12 @@ function Grow({ open }: { open: (path: string) => void }) {
 function ZoiApp() {
   const [profileSlug, setProfileSlug] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('home');
+  const [eventId, setEventId] = useState<string | null>(null);
   const [linkError, setLinkError] = useState('');
   useEffect(() => {
     const handleLink = (url: string | null) => {
       if (!url || !url.startsWith('zoi://')) return;
+      if (url.startsWith('zoi://tickets')) { const id = url.slice(14).replace(/^\//, '').split(/[?#]/)[0]; setEventId(/^[0-9a-f-]{36}$/i.test(id) ? id : null); setProfileSlug(null); setTab('tickets'); return; }
       const detail = /^zoi:\/\/(?:p|business|professional|church|organization|creator|artist|school|venue|vendor|event|sports|travel-place)\/([^/?#]+)$/.exec(url);
       if (detail) { try { setProfileSlug(decodeURIComponent(detail[1])); } catch {} return; }
       setProfileSlug(null);
@@ -135,13 +138,14 @@ function ZoiApp() {
   useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
   const open = async (path: string) => {
     setLinkError('');
+    if (/^\/tickets(?:[?#]|$)/.test(path)) { setEventId(new URL(path, WEB).searchParams.get('e')); setProfileSlug(null); setTab('tickets'); return; }
     const profileMatch = /^\/(?:p|business|professional|church|organization|creator|artist|school|venue|vendor|event|sports|travel-place)\/([^/?#]+)$/.exec(path);
     if (profileMatch) { try { setProfileSlug(decodeURIComponent(profileMatch[1])); } catch { setLinkError('This profile link is not valid.'); } return; }
     const url = path.startsWith('/') && !path.startsWith('//') ? WEB + path : path;
     if (!/^https:\/\/(www\.zoi\.city|buygreek\.shop)(\/|$)/.test(url)) { setLinkError('This link is not available. Please try the Zoi website.'); return; }
     try { await Linking.openURL(url); } catch { if (mounted.current) setLinkError('We could not open your browser. Please try again.'); }
   };
-  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}><View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Zoi home" onPress={() => { setProfileSlug(null); setTab('home'); }}><Text style={s.wordmark}>zoi<Text style={s.wordmarkDot}>.</Text></Text></Pressable><Text style={s.headerTag}>GREEK ROOTS.{ '\n' }GLOBAL LIFE.</Text><Pressable accessibilityRole="link" accessibilityLabel="Your Zoi account" onPress={() => { setProfileSlug(null); setTab('grow'); }} style={s.account}><Text style={s.accountText}>Your Zoi ↗</Text></Pressable></View>{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}>{profileSlug ? <BusinessProfile slug={profileSlug} back={() => setProfileSlug(null)} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover open={open} /> : tab === 'community' ? <Community open={open} /> : <Grow open={open} />}</View><View style={s.nav}>{([{ id: 'home', icon: '⌂', label: 'Home' }, { id: 'discover', icon: '◎', label: 'Discover' }, { id: 'community', icon: '☷', label: 'Community' }, { id: 'grow', icon: '↗', label: 'Grow' }] as const).map(item => <Pressable key={item.id} accessibilityRole="tab" accessibilityState={{ selected: tab === item.id }} onPress={() => { setLinkError(''); setProfileSlug(null); setTab(item.id); }} style={[s.navItem, tab === item.id && s.navSelected]}><Text style={[s.navIcon, tab === item.id && s.navActive]}>{item.icon}</Text><Text style={[s.navLabel, tab === item.id && s.navActive]}>{item.label}</Text></Pressable>)}</View></View></SafeAreaView>;
+  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}><View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Zoi home" onPress={() => { setProfileSlug(null); setTab('home'); }}><Text style={s.wordmark}>zoi<Text style={s.wordmarkDot}>.</Text></Text></Pressable><Text style={s.headerTag}>GREEK ROOTS.{ '\n' }GLOBAL LIFE.</Text><Pressable accessibilityRole="link" accessibilityLabel="Your Zoi account" onPress={() => { setProfileSlug(null); setTab('grow'); }} style={s.account}><Text style={s.accountText}>Your Zoi ↗</Text></Pressable></View>{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}>{profileSlug ? <BusinessProfile slug={profileSlug} back={() => setProfileSlug(null)} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover open={open} /> : tab === 'community' ? <Community open={open} /> : tab === 'tickets' ? <TicketsScreen eventId={eventId} chooseEvent={setEventId} signIn={() => setTab('grow')} /> : <Grow open={open} />}</View><View style={s.nav}>{([{ id: 'home', icon: '⌂', label: 'Home' }, { id: 'discover', icon: '◎', label: 'Discover' }, { id: 'community', icon: '☷', label: 'Community' }, { id: 'tickets', icon: '◇', label: 'Events' }, { id: 'grow', icon: '↗', label: 'Grow' }] as const).map(item => <Pressable key={item.id} accessibilityRole="tab" accessibilityState={{ selected: tab === item.id }} onPress={() => { setLinkError(''); setProfileSlug(null); setTab(item.id); }} style={[s.navItem, tab === item.id && s.navSelected]}><Text style={[s.navIcon, tab === item.id && s.navActive]}>{item.icon}</Text><Text style={[s.navLabel, tab === item.id && s.navActive]}>{item.label}</Text></Pressable>)}</View></View></SafeAreaView>;
 }
 const s = StyleSheet.create({
   safe: { flex: 1, backgroundColor: C.cream, paddingTop: Platform.OS === 'android' ? NativeStatusBar.currentHeight || 0 : 0 }, shell: { flex: 1, width: '100%', maxWidth: 780, alignSelf: 'center' }, screen: { flex: 1 },

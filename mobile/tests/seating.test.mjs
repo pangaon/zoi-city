@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { seatMap, holdReceipt, freeReceipt, statusResponse, remainingSeconds } from '../src/seating.ts';
+const id='11111111-1111-4111-8111-111111111111';
+const hold={hold_id:id,seat_ids:['A1'],expires_at:'2026-09-30T12:05:00Z'};
+const receipt={ok:true,hold_id:id,seat_ids:['A1'],code:'REAL01',qty:1,amount_cents:0,currency:'EUR',paid:false};
+test('hold requires exact requested seats and confirmed receipt',()=>{assert.equal(holdReceipt({ok:true,...hold},['A1']).hold_id,id);assert.throws(()=>holdReceipt({...hold},['A1']));assert.throws(()=>holdReceipt({ok:true,...hold},['A2']));});
+test('free confirmation rejects payment, quantity, seat and hold mismatches',()=>{assert.equal(freeReceipt(receipt,1,hold).code,'REAL01');for(const patch of [{paid:true},{amount_cents:100},{qty:2},{seat_ids:['A2']},{hold_id:'other'}])assert.throws(()=>freeReceipt({...receipt,...patch},1,hold));});
+test('foreground status restores exact hold and validates cancellation',()=>{const value={active_hold:hold,reservations:[{hold_id:id,seat_ids:['A1'],status:'reserved',receipt}],server_time:'2026-09-30T12:00:00Z'};assert.deepEqual(statusResponse(value).active_hold,hold);assert.throws(()=>statusResponse({...value,reservations:[{...value.reservations[0],status:'cancelled'}]}));assert.equal(statusResponse({...value,reservations:[{...value.reservations[0],status:'cancelled',receipt:{...receipt,cancelled:true}}]}).reservations[0].status,'cancelled');});
+test('countdown accounts for server clock and clamps expired holds',()=>{assert.equal(remainingSeconds(hold,Date.parse('2026-09-30T11:59:00Z'),60000),300);assert.equal(remainingSeconds(hold,Date.parse('2026-09-30T12:06:00Z')),0);});
+test('missing inventory stays unavailable and malformed maps never invent seats',()=>{assert.equal(seatMap({available:false}),null);assert.throws(()=>seatMap({available:true,session_id:id,seats:[]}));assert.throws(()=>seatMap({}));});
