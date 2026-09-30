@@ -5,3 +5,5 @@ test('same-identity source imagery and menu hydrate while explicit media clears 
 
 import {publicText} from '../../assets/discovery/profile-preview.mjs';
 test('public descriptions remove imported markup including unfinished source fragments',()=>{assert.equal(publicText('<span class='),'');assert.equal(publicText('Fresh <b>Greek</b> food &amp; company'),'Fresh Greek food & company');});
+
+test('explicit poster role applies only to its current photo and respects owner replacement or clear',()=>{const url='https://example.com/art.jpg',e={photo_url:url,profile:{hero_url:url,hero_kind:'event_poster'}};assert.equal(quickLookDetails(e).imageKind,'event_poster');assert.equal(quickLookDetails({...e,photo_url:'https://example.com/room.jpg'}).imageKind,null);assert.equal(quickLookDetails({...e,owner_content:{profile:{hero_kind:''}}}).imageKind,null);assert.equal(quickLookDetails({...e,owner_content:{photo_url:null}}).imageKind,null);assert.equal(quickLookDetails({photo_url:'https://example.com/poster.jpg',profile:{}}).imageKind,null);});

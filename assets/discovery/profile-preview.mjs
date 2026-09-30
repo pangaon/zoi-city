@@ -23,5 +23,6 @@ export function quickLookDetails(e){
  const photo=has('photo_url')?publicURL(value('photo_url')):publicURL(e.photo_url)||((!photoKeys.some(has)&&trusted)?[q.hero_url,...(Array.isArray(q.photo_urls)?q.photo_urls:[]),...(Array.isArray(q.photos)?q.photos:[])].map(sourcePhoto).find(Boolean)||null:null);
  const links=[];if(menu)links.push({href:menu,label:'View menu'});if(website)links.push({href:website,label:'Official website'});if(phone)links.push({href:phone,label:'Call'});
  if(address)links.push({href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent([e.name,address,e.city,e.country].filter(Boolean).join(', ')),label:'Directions'});
- return {description,address,photo,links};
+ const imageKind=value('hero_kind')==='event_poster'&&photo&&photo===publicURL(value('hero_url'))?'event_poster':null;
+ return {description,address,photo,imageKind,links};
 }

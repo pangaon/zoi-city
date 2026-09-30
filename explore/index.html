@@ -10,6 +10,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <meta name="color-scheme" content="dark light">
+<script src="/assets/zoi-core.js" defer></script>
+<link rel="stylesheet" href="/assets/personalization/locality.css">
 <link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930-readable">
 <style>
 :root{
@@ -178,7 +180,8 @@ footer a:hover{color:var(--tx)}
 
 
 /* One editorial frame across imagery, logos and sparse records: loading never changes its size. */
-.lcover,.lcover.is-identity,.lcover.ze-fallback,.lcover.is-logo,.lcover.is-square-art{aspect-ratio:16/10;height:auto;min-height:0;flex:none}
+.lcover,.lcover.is-event-poster .ze-photo,.qv-cover.is-event-poster .ze-photo{object-fit:contain;padding:0;transform:none!important}
+.lcover.is-identity,.lcover.ze-fallback,.lcover.is-logo,.lcover.is-square-art{aspect-ratio:16/10;height:auto;min-height:0;flex:none}
 .lcard{border-radius:24px 24px 18px 18px;background:linear-gradient(145deg,var(--card),var(--bg2))}
 .lbody{padding:18px 18px 8px;gap:9px;min-height:155px}
 .lname{font-size:19px;line-height:1.3;overflow-wrap:anywhere}
@@ -228,6 +231,7 @@ footer a:hover{color:var(--tx)}
     <input id="q" aria-label="Search places and people" placeholder="Try “taverna”, “orthodox church”, “lawyer”…" autocomplete="off"/>
     <button class="btn p" onclick="submitExplore()">Search</button>
   </div>
+  <div id="discovery-locality"></div>
   <div class="filters" id="type-pills"></div>
   <div class="filters">
     <select class="city" id="city-sel" aria-label="City"><option value="">Every city</option></select>
@@ -323,6 +327,8 @@ const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 let listingImageContext=null;
 const listingImageReady=import('/supabase/functions/zoi-enrich/_image-context.js').then(m=>{listingImageContext=m;}).catch(()=>{});
+let exploreLocality=null,exploreHome=null;
+function effectiveExploreLocation(){return (!ST.q&&!ST.city&&!ST.country&&ST.scope!=='global'&&exploreHome)?exploreHome:{city:ST.city,country:ST.country};}
 let TYPES=[['','All']];
 let ST={q:'',type:'',city:'',country:'',sort:'',offset:0,busy:false,done:false,counts:{},rows:[],countries:[]};
 
@@ -374,6 +380,7 @@ async function boot(){
   readUrl();
   applyExploreLang();
   runSearch(true);
+  import('/assets/personalization/locality.mjs').then(({mountLocalityControl})=>{if(!window.ZoiCore)return;exploreLocality=mountLocalityControl({core:window.ZoiCore,container:document.getElementById('discovery-locality'),onChange:value=>{const before=JSON.stringify(exploreHome);exploreHome=value.home;if(before!==JSON.stringify(exploreHome))runSearch(true);},onNavigate:href=>{history.pushState({},'',href);readUrl();runSearch(true);}});}).catch(()=>{});
   await loadTypeFilters();
   try{
     const hs=await rpc('home_stats',{},true);
@@ -387,7 +394,7 @@ async function boot(){
     const cities=await rpc('explore_cities',{p_limit:14},true);
     const sel=document.getElementById('city-sel');
     cityOptions(cities).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country; o.textContent=c.label; sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; harvestCountries([]); runSearch(true); });
+    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; ST.scope=ST.city?'':'global'; harvestCountries([]); runSearch(true); });
   }catch(e){}
   try{
     const fresh=await rpc('explore_fresh',{p_limit:8},true);
@@ -405,7 +412,7 @@ async function boot(){
    and reached with the Back button — the way people expect search to behave. */
 function readUrl(){
   const u=new URL(location.href), g=k=>u.searchParams.get(k)||'';
-  ST.q=g('q'); ST.city=g('city'); ST.country=g('country'); ST.sort=g('sort');
+  ST.scope=g('scope')||((u.searchParams.has('city')&&!g('city'))||(u.searchParams.has('country')&&!g('country'))?'global':''); ST.q=g('q'); ST.city=g('city'); ST.country=g('country'); ST.sort=g('sort');
   ST.type=g('type');
   // legacy ?c= shortcuts kept working
   const c=g('c');
@@ -425,7 +432,7 @@ function writeUrl(push){
   const u=new URL(location.href);
   u.search='';
   const set=(k,v)=>{ if(v) u.searchParams.set(k,v); };
-  set('q',ST.q); set('type',ST.type); set('city',ST.city);
+  set('scope',ST.scope); set('q',ST.q); set('type',ST.type); set('city',ST.city);
   set('country',ST.country); set('sort',ST.sort);
   const next=u.pathname+(u.search?u.search:'');
   if(next===location.pathname+location.search) return;
@@ -439,10 +446,10 @@ document.addEventListener('DOMContentLoaded',()=>{
   boot();
   const q=document.getElementById('q');
   q.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(()=>{ ST.q=q.value.trim(); runSearch(true); },350); });
-  import('/assets/discovery/autocomplete.mjs').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,city:ST.city,country:ST.country}),onSubmit:submitExplore});}).catch(()=>{});
+  import('/assets/discovery/autocomplete.mjs').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation()}),onSubmit:submitExplore});}).catch(()=>{});
   q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!exploreAutocomplete){clearTimeout(debounceT);ST.q=q.value.trim();runSearch(true);}});
   const cs=document.getElementById('country-sel');
-  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; document.getElementById('city-sel').value=''; runSearch(true); });
+  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; ST.scope=ST.country?'':'global'; document.getElementById('city-sel').value=''; runSearch(true); });
   const ss=document.getElementById('sort-sel');
   if(ss) ss.addEventListener('change',()=>{ ST.sort=ss.value; renderRows(); });
   const qv=document.getElementById('qv');
@@ -627,7 +634,7 @@ function card(r,idx){
   if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>'+(LANG==='el'?'Επαληθευμένο':'Verified')+'</span>';
 
   return '<article class="lcard">'+
-    '<a class="lcover'+(r.photo_url?'':' is-identity')+'" href="'+esc(hrefFor(r))+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
+    '<a class="lcover'+(r.photo_url?'':' is-identity')+(r.image_kind==='event_poster'?' is-event-poster':'')+'" href="'+esc(hrefFor(r))+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
     '<div class="lbody">'+
       '<div class="ltop"><span class="ltype">'+esc(r.category||typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
       '<h3 class="lname"><a href="'+esc(hrefFor(r))+'">'+esc(r.name)+'</a></h3>'+
@@ -653,8 +660,10 @@ async function runSearch(reset){
   const clrBtn = document.getElementById('clear-filters-btn');
   if(clrBtn) clrBtn.style.display = hasFilters ? 'inline-flex' : 'none';
   if(reset) writeUrl(true);
+  exploreLocality?.refresh();
+  const locality=effectiveExploreLocation();
   try{
-    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:ST.city||null,p_country:ST.country||null,p_limit:24,p_offset:ST.offset},true);
+    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:locality.city||null,p_country:locality.country||null,p_limit:24,p_offset:ST.offset},true);
     await listingImageReady;
     if(version!==searchVersion) return;
     const batch=rows||[];
@@ -745,7 +754,7 @@ function quickView(i){
   if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>';
 
   document.getElementById('qv-body').innerHTML=
-    '<div class="qv-cover'+(r.photo_url?'':' is-identity')+'">'+cover+'</div>'+
+    '<div class="qv-cover'+(r.photo_url?'':' is-identity')+(r.image_kind==='event_poster'?' is-event-poster':'')+'">'+cover+'</div>'+
     '<div class="qv-copy"><div class="ltop"><span class="ltype">'+esc(r.category||typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
     '<h3 id="qv-name">'+esc(r.name)+'</h3>'+
     (loc?'<div class="lloc" style="margin-top:2px">'+PIN+esc(loc)+'</div>':'')+
@@ -772,13 +781,13 @@ function quickView(i){
 async function loadQuickViewDetails(row,version){
   const target=document.getElementById('qv-details');
   try{
-    const [entity,model]=await Promise.all([rpc('home_entity',{p_slug:row.slug},true),import('/assets/discovery/profile-preview.mjs')]);
+    const [entity,model]=await Promise.all([rpc('home_entity',{p_slug:row.slug},true),import('/assets/discovery/profile-preview.mjs?v=20260930-poster-fit')]);
     if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
     if(!entity||entity.id!==row.id)throw Error('unavailable');
     const details=model.quickLookDetails(entity),desc=document.querySelector('#qv-body .qv-desc');
     if(desc)desc.textContent=details.description||'Explore the full page for more about this place.';
     target.innerHTML=(details.address?'<p class="qv-desc">'+esc(details.address)+'</p>':'')+(details.links.length?'<div class="qv-acts">'+details.links.map(link=>'<a class="lbtn" href="'+esc(link.href)+'"'+(link.href.startsWith('http')?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(link.label)+' ↗</a>').join('')+'</div>':'');
-    if(details.photo){const cover=document.querySelector('#qv-body .qv-cover');cover.className='qv-cover';cover.innerHTML=listingCover(global_ZE(),{name:entity.name,type:entity.entity_type,slug:entity.slug,photo:details.photo});}
+    if(details.photo){const cover=document.querySelector('#qv-body .qv-cover');cover.className='qv-cover'+(details.imageKind==='event_poster'?' is-event-poster':'');cover.innerHTML=listingCover(global_ZE(),{name:entity.name,type:entity.entity_type,slug:entity.slug,photo:details.photo});}
   }catch{
     if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
     target.innerHTML='<p class="qv-cat">More details could not load.</p><button class="lbtn" type="button" id="qv-retry">Try again</button>';
@@ -805,7 +814,7 @@ function quickViewKeyboard(e){
 function loadMore(){ ST.offset+=24; runSearch(false); }
 
 function clearExploreFilters(){
-  ST.q=''; ST.type=''; ST.city=''; ST.country=''; ST.sort='';
+  ST.scope='global'; ST.q=''; ST.type=''; ST.city=''; ST.country=''; ST.sort='';
   const qEl=document.getElementById('q'); if(qEl) qEl.value='';
   const cEl=document.getElementById('city-sel'); if(cEl) cEl.value='';
   const coEl=document.getElementById('country-sel'); if(coEl) coEl.value='';
