@@ -548,14 +548,14 @@ Deno.serve(async (req) => {
       bump("refused:" + v.why);
       // Record the refusal so the queue stops returning it every hour.
       batch.push({ slug: row.slug, website: row.website, lease_id: row.lease_id,
-                   profile: { ...identityStatus, blocked: "true", blocked_reason: v.why } , provenance: {} });
+                   profile: { ...identityStatus, crawl_status: "error", last_error: "refused:" + v.why, blocked: "true", blocked_reason: v.why } , provenance: {} });
       continue;
     }
     try {
       if (!(await robotsAllows(v.url))) {
         bump("robots-disallow");
         batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
-                     profile: { ...identityStatus, blocked: "true", blocked_reason: "robots" }, provenance: {} });
+                     profile: { ...identityStatus, crawl_status: "error", last_error: "robots", blocked: "true", blocked_reason: "robots" }, provenance: {} });
         continue;
       }
       const got = await fetchDoc(v.url);
@@ -565,7 +565,7 @@ Deno.serve(async (req) => {
         const permanent = /^http(40[134]|41[0-9]|45[0-9])$/.test(got.error);
         batch.push({ slug: row.slug, website: v.url.toString(), lease_id: row.lease_id,
                      profile: permanent
-                       ? { ...identityStatus, blocked: "true", blocked_reason: got.error }
+                       ? { ...identityStatus, crawl_status: "error", last_error: got.error, blocked: "true", blocked_reason: got.error }
             : { ...identityStatus, crawl_status: "error", last_error: got.error },
                      provenance: {} });
         continue;

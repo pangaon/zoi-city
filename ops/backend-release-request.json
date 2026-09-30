@@ -1,8 +1,13 @@
 {
-  "id": "release-published-menu-enrichment-20260930",
+  "id": "release-preserve-refused-source-evidence-20260930",
   "project": "csebihpaychdkanjjsmz",
-  "expires_at": "2026-09-30T09:49:28.026330+00:00",
-  "migrations": [],
+  "expires_at": "2026-09-30T09:57:54.765323+00:00",
+  "migrations": [
+    {
+      "path": "supabase/migrations/20260930090004_preserve_blocked_enrichment_evidence.sql",
+      "sha256": "470098322e968302071940dc9907d88469ada650a905412c1b721f644f680b07"
+    }
+  ],
   "workers": [
     {
       "name": "zoi-enrich",
@@ -37,10 +42,15 @@
         },
         {
           "path": "supabase/functions/zoi-enrich/index.ts",
-          "sha256": "0102d0e2385bf3e2fddcaa13fdf53f3db0276633648b502527943ed9296e5885"
+          "sha256": "7cc26068d078e128d61a1f8d3c6adc14774a50263223c81a0e3f8dc01f54ed75"
         }
       ]
     }
   ],
-  "fixtures": []
+  "fixtures": [
+    {
+      "path": "ops/qa-enrichment-blocked-rollback.sql",
+      "sha256": "5b9f0f3dea5e7bcd9fd450c911c7983432ec343184f5c5c7ae368930cefa39ff"
+    }
+  ]
 }
