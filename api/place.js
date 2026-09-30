@@ -78,7 +78,7 @@ function labelFromSlug(value) {
 
 function shell(o) {
   const nav = ['/explore:Discover', '/community:Community', '/tickets:Events',
-    'https://buygreek.shop:Marketplace', '/business:For Business']
+    '/shop/:Marketplace', '/business:For Business']
     .map((x) => { const i = x.indexOf(':'); const h = x.slice(0, i), l = x.slice(i + 1);
       return '<a href="' + h + '"' + (h === '/explore' ? ' aria-current="page"' : '') + '>' + l + '</a>'; })
     .join('');

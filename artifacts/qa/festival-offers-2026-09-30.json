@@ -1,0 +1,46 @@
+{
+  "stage": "local candidate; migration not applied; no live booking/payment claims",
+  "migration": "20260930020814_festival_packages_and_applications.sql",
+  "database": {
+    "command": "node tests/database/festival.integration.mjs",
+    "passed": 18,
+    "isolated_postgres": true,
+    "coverage": [
+      "authorization and private RLS",
+      "atomic concurrent capacity approval",
+      "idempotent concurrent creation/application",
+      "private enquiry creation",
+      "original quote preservation",
+      "pause/withdrawal/hidden/ownership transfer",
+      "explicit finite timestamp",
+      "audit"
+    ]
+  },
+  "unit": {
+    "command": "node --test tests/unit/festival.test.mjs",
+    "passed": 3
+  },
+  "browser": {
+    "mode": "explicit isolated RPC fixtures; actual module and stylesheet files",
+    "operator": [
+      390,
+      1440
+    ],
+    "customer": [
+      390
+    ],
+    "horizontal_overflow": false,
+    "operator_create_requests": 1,
+    "price_conversion": "1250.50 to 125050 cents",
+    "customer_apply_requests": 1,
+    "receipt_history_rendered": true
+  },
+  "production_rollback": "tests/database/festival-production-rollback.sql",
+  "limitations": [
+    "No payment collection",
+    "No permit/insurance verification",
+    "No external messaging",
+    "Native/device verification pending",
+    "Production migration and transactional rollback QA pending"
+  ]
+}
