@@ -1,0 +1,16 @@
+const photos=['DSC_0249-copy','DSC_0362-copy','DSC_0368-copy'];
+const dialog=document.querySelector('#photo-dialog'), image=document.querySelector('#large-photo');
+let active=0,trigger=null;
+function showPhoto(index){active=(index+photos.length)%photos.length;image.src=`https://avli.de/wp-content/uploads/2024/05/${photos[active]}-1024x682.jpg`;image.alt=`Taverna Avli official gallery photograph ${active+1}`;document.querySelector('#photo-caption').textContent=`${active+1} / ${photos.length} · Photography by Taverna Avli`;}
+document.querySelectorAll('[data-photo]').forEach(button=>button.addEventListener('click',()=>{trigger=button;showPhoto(Number(button.dataset.photo));dialog.showModal();}));
+document.querySelector('#close-photo').addEventListener('click',()=>dialog.close());
+dialog.addEventListener('close',()=>trigger?.focus());
+dialog.addEventListener('click',event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close();}});
+document.querySelector('#previous-photo').addEventListener('click',()=>showPhoto(active-1));document.querySelector('#next-photo').addEventListener('click',()=>showPhoto(active+1));
+dialog.addEventListener('keydown',event=>{if(event.key==='ArrowRight'){event.preventDefault();showPhoto(active+1);}if(event.key==='ArrowLeft'){event.preventDefault();showPhoto(active-1);}});
+const form=document.querySelector('#occasion-form'),date=form.elements.date;
+const now=new Date();date.min=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+let note='';form.addEventListener('submit',event=>{event.preventDefault();if(!form.reportValidity())return;const values=new FormData(form);const selectedDate=new Date(`${values.get('date')}T12:00:00`);note=`Hello Taverna Avli,\n\nI'd like to ask about ${String(values.get('occasion')).toLowerCase()} for ${values.get('guests')} guests on ${selectedDate.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})}.\n\n${String(values.get('notes')).trim()}\n\nCould you please let me know your availability and any arrangements we should discuss? Thank you!`.replace(/\n{3,}/g,'\n\n');document.querySelector('#enquiry-text').textContent=note;document.querySelector('#email-enquiry').href=`mailto:avli@avli.de?subject=${encodeURIComponent('Table enquiry · Taverna Avli')}&body=${encodeURIComponent(note)}`;document.querySelector('#enquiry-result').hidden=false;document.querySelector('#copy-status').textContent='';document.querySelector('#enquiry-result').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'center'});});
+form.addEventListener('input',()=>{document.querySelector('#enquiry-result').hidden=true;note='';});
+document.querySelector('#copy-enquiry').addEventListener('click',async()=>{const status=document.querySelector('#copy-status');try{await navigator.clipboard.writeText(note);status.textContent='Copied. You can paste this into your preferred messaging app.';}catch{status.textContent='Copy is unavailable in this browser. Select the note above to copy it manually.';}});
+document.querySelectorAll('img').forEach(img=>img.addEventListener('error',()=>{img.alt='Avli photograph could not load. View the official gallery at avli.de.';}));
