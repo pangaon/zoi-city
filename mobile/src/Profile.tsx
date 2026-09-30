@@ -4,7 +4,7 @@ import { useAuth } from './Auth';
 import { normalizeProfile, publicURL, plain } from './profile';
 import { musicDraft, musicFields } from './music';
 import { BookingPanel } from './Bookings';
-export function BusinessProfile({ slug, back, signIn }: { slug: string; back: () => void; signIn: () => void }) {
+export function BusinessProfile({ slug, back, signIn, volunteer }: { slug: string; back: () => void; signIn: () => void; volunteer: (workspace: string) => void }) {
   const { client } = useAuth(); const [profile, setProfile] = useState<ReturnType<typeof normalizeProfile>>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [retry, setRetry] = useState(0); const [imageFailed, setImageFailed] = useState(false);
   useEffect(() => { let active = true; setLoading(true); setProfile(null); setError(''); setImageFailed(false); client.request('/rest/v1/rpc/seo_entity', { p_slug: slug }).then(data => { if (active) setProfile(normalizeProfile(data)); }).catch(() => { if (active) setError('This profile could not be loaded. Please try again.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [slug, retry, client]);
   const open = async (url: string) => { try { await Linking.openURL(url); } catch { setError('Your device could not open this link. Please try another contact option.'); } };
@@ -19,7 +19,8 @@ export function BusinessProfile({ slug, back, signIn }: { slug: string; back: ()
     {profile.services.length ? <View style={s.panel}><Text style={s.heading}>Services</Text>{profile.services.map((service, index) => <Text key={index} style={s.body}>• {service}</Text>)}</View> : null}
     {profile.socials.length ? <View style={s.panel}><Text style={s.heading}>Follow their story</Text><View style={s.row}>{profile.socials.map(social => action(social.label, social.url))}</View></View> : null}
     {music ? <View style={s.panel}><Text style={s.heading}>Music & bookings</Text>{music.press ? <Text style={s.body}>{plain(music.press)}</Text> : null}<View style={s.row}>{musicFields.filter(([key]) => key.endsWith('_url') || key === 'merch').map(([key,label]) => publicURL(music[key]) ? action(label,publicURL(music[key])) : null)}</View>{/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(music.booking_email) ? action('Booking contact' + (music.booking_name ? ': ' + plain(music.booking_name) : ''),'mailto:' + encodeURIComponent(music.booking_email)) : null}{[['embeds','Featured music'],['releases','Releases'],['tour','Shows & tour dates']].map(([key,label]) => music[key].length ? <View key={key}><Text style={s.heading}>{label}</Text>{music[key].map((row:any,index:number) => publicURL(row.url) ? <View key={index}>{action(plain(row.title) || label,publicURL(row.url))}{row.date ? <Text style={s.small}>{plain(row.date)}</Text> : null}</View> : null)}</View> : null)}</View> : null}
-    {profile.id ? <BookingPanel listingId={profile.id} signIn={signIn} /> : null}
+    {profile.bookingListing ? <BookingPanel listingId={profile.bookingListing} signIn={signIn} /> : null}
+    {profile.volunteerWorkspace ? <View style={s.panel}><Text style={s.heading}>Give your time</Text><Text style={s.body}>Explore this organization’s published volunteer opportunities.</Text><Pressable accessibilityRole="button" style={s.action} onPress={() => volunteer(profile.volunteerWorkspace)}><Text style={s.link}>Volunteer with this community →</Text></Pressable></View> : null}
     {profile.enrichmentNote ? <Text style={s.small}>{profile.enrichmentNote}</Text> : null}{action('Open canonical Zoi profile', 'https://www.zoi.city/p/' + encodeURIComponent(profile.slug || slug))}
   </> : null}</ScrollView>;
 }

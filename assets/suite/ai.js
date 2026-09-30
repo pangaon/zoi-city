@@ -14,23 +14,10 @@
  *    reports an honest "AI is connecting" state instead of inventing output.
  *  - All model output is escaped with C.esc before insertion (treated untrusted).
  *
- * REAL ai-generate contract (from _wave1/functions/ai-generate/index.ts):
- *   REQUEST  (POST /functions/v1/ai-generate, JSON):
- *     { workspace:<uuid>, action:'week'|'caption'|'reply', input:<string>, count:<number 1..14> }
- *     Auth: Authorization: Bearer <access token>; apikey: <anon>
- *   ACCESS: server calls ai_profile_get with the caller JWT; 403 {error:'no_access'} if not a member.
- *   RESPONSE:
- *     - not configured (no ANTHROPIC_API_KEY): { available:false, reason:'not_configured' }
- *     - error:  { error:<msg> }  (400/403/500/502)
- *     - success:{ available:true, result:<parsed> } where
- *         week    -> result = [ { day:'Mon', text:'...' }, ... ]
- *         caption -> result = { text:'...' }
- *         reply   -> result = { text:'...' }
- *         (fallback if the model didn't return JSON: result = { text:<raw> })
- *   The server derives the brand voice server-side from ai_profile_get
- *   (business_name/about/tone/languages/sample). The request body carries no
- *   tone field, so a chosen tone is passed as a plain-language hint inside
- *   `input` (which the model actually reads) — never faked into the output.
+ * Generation requests include a stable request_id UUID. The server enforces
+ * workspace roles, atomic daily budgets and structured output validation.
+ * Saved generations and usage are read through authenticated history/get RPCs.
+ * Cost amounts are token-based estimates, not provider invoice charges.
  */
 (function (global) {
   'use strict';
@@ -141,6 +128,8 @@
       count: 7,
       profile: null,
       loading: false,
+      requestId: null,
+      requestFingerprint: null,
       busySave: {}   // per-suggestion save-in-flight guard
     };
 
@@ -236,6 +225,41 @@
     results.style.marginTop = '14px';
     out.appendChild(results);
     right.appendChild(out);
+    var history = el('section', 'zai-card');
+    history.setAttribute('aria-label', 'Generation history and usage');
+    var historyTitle = el('h3', 'zai-h'); historyTitle.textContent = 'Saved generations and usage'; history.appendChild(historyTitle);
+    var historySummary = el('p', 'zai-sub'); history.appendChild(historySummary);
+    var historyRefresh = el('button', 'zai-btn'); historyRefresh.type = 'button'; historyRefresh.textContent = 'Refresh history'; history.appendChild(historyRefresh);
+    var historyRows = el('div', 'zai-results'); history.appendChild(historyRows); right.appendChild(history);
+    var newRequest = el('button', 'zai-btn'); newRequest.type = 'button'; newRequest.textContent = 'Start a new generation';
+    newRequest.addEventListener('click', function () { if (state.loading) return; state.requestId = null; state.requestFingerprint = null; toast('Your next Generate click starts a new budgeted request.'); });
+    history.appendChild(newRequest);
+    async function restoreGeneration(id) {
+      try {
+        var record = await C.api.rpc('ai_generation_get', {p_workspace:ctx.ws,p_generation:id}, {auth:'require'});
+        var g = record.generation;
+        if (g.status === 'succeeded') { state.action = g.action; renderSuggestions(normalize(g.result)); }
+        else showError(g.status === 'pending' ? 'This request is still pending. Refresh history to check again; no extra provider call is made.' : 'This generation did not complete. Its budget reservation and status remain in history.');
+      } catch (_) { showError('This saved generation is unavailable in this workspace.'); }
+    }
+    async function refreshHistory() {
+      historyRefresh.disabled = true;
+      try {
+        var data = await C.api.rpc('ai_generation_history', {p_workspace:ctx.ws}, {auth:'require'});
+        historySummary.textContent = 'Today (UTC): ' + data.today.requests + ' requests; $' + (data.today.reserved_or_estimated_micro_usd/1000000).toFixed(4) + ' reserved or estimated of $' + (data.workspace_daily_micro_usd/1000000).toFixed(2) + ' workspace budget. Token-based estimates are not provider invoice charges. ' + (data.budget_enabled ? '' : 'New generations are paused.');
+        historyRows.replaceChildren();
+        (data.generations || []).forEach(function(g) {
+          var row = el('div', 'zai-suggestion');
+          var button = el('button', 'zai-btn'); button.type = 'button'; button.textContent = g.action + ' · ' + g.status + ' · ' + new Date(g.created_at).toLocaleString();
+          button.addEventListener('click', function(){ restoreGeneration(g.id); }); row.appendChild(button);
+          var amount = el('p','zai-sub'); amount.textContent = g.estimated_micro_usd == null ? 'Usage unconfirmed; conservative budget reservation retained.' : 'Estimated $' + (g.estimated_micro_usd/1000000).toFixed(6) + ' · ' + g.provider_input_tokens + ' input / ' + g.provider_output_tokens + ' output tokens'; row.appendChild(amount);
+          var link = el('a','zai-sub'); link.href = '/social/ai?generation=' + encodeURIComponent(g.id); link.textContent = 'Open saved generation'; row.appendChild(link); historyRows.appendChild(row);
+        });
+        if (!data.generations.length) historyRows.textContent = 'No saved generations yet.';
+      } catch (_) { historySummary.textContent = 'Generation history is currently unavailable.'; }
+      finally { historyRefresh.disabled = false; }
+    }
+    historyRefresh.addEventListener('click', refreshHistory);
 
     /* ---------- query helper ---------- */
     function q(role) { return root.querySelector('[data-role="' + role + '"]'); }
@@ -461,13 +485,16 @@
       setGenBusy(true);
       showLoading();
 
-      var body = { workspace: ctx.ws, action: state.action, input: input };
+      var fingerprint = JSON.stringify([ctx.ws,state.action,input,state.count]);
+      if (state.requestFingerprint !== fingerprint || !state.requestId) { state.requestId = global.crypto.randomUUID(); state.requestFingerprint = fingerprint; }
+      var body = { workspace: ctx.ws, request_id: state.requestId, action: state.action, input: input };
       if (state.action === 'week') body.count = state.count;
 
       try {
         var token = await freshToken();
         var resp = await global.fetch(C.BASE + '/functions/v1/ai-generate', {
           method: 'POST',
+          signal: AbortSignal.timeout(60000),
           headers: {
             apikey: C.KEY,
             Authorization: 'Bearer ' + (token || ''),
@@ -500,6 +527,7 @@
       } finally {
         state.loading = false;
         setGenBusy(false);
+        await refreshHistory();
       }
     }
 
@@ -564,6 +592,9 @@
       state.tone = q('tone') ? q('tone').value : TONES[0];
     }
     if (!state.tone) state.tone = q('tone') ? q('tone').value : TONES[0];
+    await refreshHistory();
+    var savedId = new URLSearchParams(global.location.search).get('generation');
+    if (/^[0-9a-f-]{36}$/i.test(savedId || '')) await restoreGeneration(savedId);
   }
 
   /* ---------- register ---------- */

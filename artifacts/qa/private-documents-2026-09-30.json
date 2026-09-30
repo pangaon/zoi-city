@@ -1,0 +1,64 @@
+{
+  "migration": "20260930005755",
+  "deployment": "Production migration applied; ops-documents v3 verified through real authenticated HTTP",
+  "postgres_checks_passed": 15,
+  "file_stream_edge_tests_passed": 12,
+  "edge_deno_check": "passed",
+  "browser": {
+    "mode": "isolated layout fixtures only",
+    "widths": [
+      390,
+      1440
+    ],
+    "page_overflow": false
+  },
+  "access": {
+    "owner_admin": "read/upload/archive/aged incomplete cleanup",
+    "editor": "read/upload",
+    "viewer": "denied",
+    "anonymous": "denied",
+    "direct_storage_clients": "denied by restrictive RLS even with broad permissive policy"
+  },
+  "limits": {
+    "max_file_bytes": 10485760,
+    "types": [
+      "application/pdf",
+      "text/plain",
+      "image/png",
+      "image/jpeg"
+    ],
+    "cleanup_min_age_minutes": 15,
+    "history_versions": 100,
+    "history_audit": 100,
+    "legacy_signed_download_seconds": 60,
+    "primary_download": "Authenticated bounded Edge proxy: attachment, private no-store, nosniff"
+  },
+  "not_implemented": [
+    "virus scanning",
+    "DLP",
+    "Office DOCX validation",
+    "client portal intake",
+    "legal advice or filing automation"
+  ],
+  "production_verification_required": [
+    "native device share lifecycle (native agent owns acceptance)"
+  ],
+  "production_http_passed": [
+    "fresh QA password session without shared-session logout",
+    "private multipart upload v1 and v2",
+    "stable upload request idempotency",
+    "immutable version/history reads",
+    "direct authenticated Storage read/sign/write denied",
+    "anonymous public object access denied",
+    "legacy signed URL expires after60seconds",
+    "authenticated proxy exact source bytes",
+    "proxy no-store/attachment/nosniff/MIME/length/CORS expose headers",
+    "anonymous proxy401",
+    "archive denies subsequent authorized proxy downloads"
+  ],
+  "qa_cleanup": {
+    "documents": "archived, retained immutable objects require scoped service Storage deletion if full erasure requested",
+    "manifest": "/tmp/zoi-documents-qa-created.json",
+    "shared_project": "Kept active for native QA; no public fixtures"
+  }
+}
