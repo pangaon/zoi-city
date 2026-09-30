@@ -1,6 +1,8 @@
 // Documentary organizer-supplied images, never inferred views or geometry.
 export function safeVenueImage(value){
  if(typeof value!=='string'||value.length>2048||/[\u0000-\u0020<>"\\]/.test(value)||/%(?:0[0-9a-f]|1[0-9a-f]|7f)/i.test(value))throw Error('Use a public HTTPS JPG, PNG, WebP or AVIF image URL.');
+ let candidate;try{candidate=new URL(value);}catch{}
+ if(candidate?.protocol==='https:'&&!/\.(?:jpe?g|png|webp|avif)$/i.test(candidate.pathname))throw Error('This looks like a webpage link. Open the floor-plan picture on that page, copy its image address, and paste it here. Use a JPG, PNG, WebP or AVIF image.');
  if(!/^https:\/\/(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,63}(?::443)?\/[^?#]*\.(?:jpe?g|png|webp|avif)(?:\?[^#]*)?$/i.test(value))throw Error('Use a public HTTPS raster image URL.');
  let u;try{u=new URL(value);}catch{throw Error('Use a complete HTTPS image URL.');}
  if(u.protocol!=='https:'||u.username||u.password||(u.port&&u.port!=='443')||u.hash||!/^https:\/\//.test(value)||!/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,63}$/i.test(u.hostname)||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/i.test(u.hostname)||!/\.(?:jpe?g|png|webp|avif)$/i.test(u.pathname))throw Error('Use a public HTTPS JPG, PNG, WebP or AVIF image URL.');

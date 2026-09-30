@@ -8,7 +8,6 @@ export const SIGNATURE_EVENT=Object.freeze({
  source:'https://www.signatureproductions.ca/giannisploutarchosandromache',
  venueSource:'https://www.parkviewmanor.ca/',
  poster:'/assets/events/signature/poster.jpg',floorplan:'/assets/events/signature/floorplan.jpg',
- venueTour:'https://my.matterport.com/show/?m=kXAxeNYqWZ8',
  foodService:false,sourceSeatsPerTableOrBooth:10,
  priceBands:Object.freeze([100,125,150,175,200,275]),
  priceUnit:'per_guest',currency:null,taxesIncluded:null,
