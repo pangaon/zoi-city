@@ -10,7 +10,7 @@ export class SessionClient {
   private vault: Vault;
   private transport: typeof fetch;
   onChange: (session: Session | null) => void = () => {};
-  constructor(vault: Vault, transport: typeof fetch = fetch) { this.vault = vault; this.transport = transport; }
+  constructor(vault: Vault, transport: typeof fetch = fetch) { this.vault = vault; this.transport = transport.bind(globalThis); }
   async request(path: string, body?: unknown, token?: string, method = 'POST') {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
