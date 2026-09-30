@@ -7,14 +7,14 @@ import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 const PROJECT='csebihpaychdkanjjsmz';
 const WORKERS=new Map([['ops-documents',false],['social-config',false],['ai-generate',false],['email-send',false],['email-unsubscribe',false],['social-publish',false],['zoi-feed-publish',true],['zoi-enrich',false],['delivery-charge',false],['delivery-connect-onboard',false]]);
-const FIXTURES=new Set(['ops/qa-booking-planner-setup.sql','ops/qa-booking-planner-cleanup.sql']);
+const FIXTURES=new Set(['ops/qa-booking-planner-setup.sql','ops/qa-booking-planner-cleanup.sql','tests/database/inquiries-production-rollback.sql']);
 const digest=value=>createHash('sha256').update(value).digest('hex');
 export function validateRelease(manifest,{read=readFileSync,now=Date.now(),attempt='1'}={}){
  if(attempt!=='1')throw Error('Automatic replay of a production release is not allowed');
  if(manifest?.project!==PROJECT||!/^release-[0-9a-z-]{6,80}$/.test(manifest?.id||''))throw Error('Invalid release identity');
  const expires=Date.parse(manifest.expires_at);
  if(!Number.isFinite(expires)||expires<now||expires>now+3600000)throw Error('Release must expire within one hour');
- if(manifest.fixtures!==undefined&&(!Array.isArray(manifest.fixtures)||manifest.fixtures.length>1))throw Error('Invalid private fixture request');
+ if(manifest.fixtures!==undefined&&(!Array.isArray(manifest.fixtures)||manifest.fixtures.length>3))throw Error('Invalid private fixture request');
  if(!Array.isArray(manifest.migrations)||!Array.isArray(manifest.workers)||manifest.migrations.length>8||manifest.workers.length>8)throw Error('Invalid bounded release');
  const seen=new Set();
  function checked(path,hash){
@@ -35,7 +35,8 @@ export function validateRelease(manifest,{read=readFileSync,now=Date.now(),attem
   for(const f of w.files)checked(f.path,f.sha256);
   return {name:w.name,verifyJwt:WORKERS.get(w.name)};
  });
- const fixtures=(manifest.fixtures||[]).map(f=>{if(!FIXTURES.has(f.path))throw Error('Unreviewed private fixture');return {...f,query:checked(f.path,f.sha256)};});
+ const fixturePaths=new Set();
+ const fixtures=(manifest.fixtures||[]).map(f=>{if(!FIXTURES.has(f.path)||fixturePaths.has(f.path))throw Error('Unreviewed or duplicate private fixture');fixturePaths.add(f.path);return {...f,query:checked(f.path,f.sha256)};});
  return {id:manifest.id,migrations,workers,fixtures};
 }
 export async function runRelease(manifest,{env=process.env,read=readFileSync,fetcher=fetch,deploy=execFileSync,log=console.log}={}){

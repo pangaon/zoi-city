@@ -34,12 +34,12 @@ test('deadline remains active while reading a stalled response body',async()=>{
 test('legacy canonical redirect skips optional work and has a short cache',async()=>{
  const r=await run(async()=>response(entity),{slug:entity.slug,canon:'1'});assert.equal(r.status,301);assert.equal(r.headers.Location,'/business/greek-home');assert.deepEqual(r.calls,['seo_entity']);assert.equal(r.headers['Cache-Control'],'public, max-age=0, s-maxage=300');
 });
-test('verified workflow links reach real booking and volunteer entry points',async()=>{
+test('verified workflow links reach real booking, enquiry and volunteer entry points',async()=>{
  const id='00000000-0000-0000-0000-000000000001';
- const r=await run(async fn=>response(fn==='seo_entity'?{...entity,booking_url:'/book/?listing='+id,volunteer_url:'/volunteer/?workspace='+id}:null));
- assert.match(r.body,/Book on Zoi/);assert.match(r.body,/Volunteer opportunities/);assert.ok(r.body.includes('/book/?listing='+id));
- const unsafe=await run(async fn=>response(fn==='seo_entity'?{...entity,booking_url:'javascript:alert(1)',volunteer_url:'https://evil.invalid'}:null));
- assert.doesNotMatch(unsafe.body,/Book on Zoi|Volunteer opportunities|evil.invalid/);
+ const r=await run(async fn=>response(fn==='seo_entity'?{...entity,booking_url:'/book/?listing='+id,inquiry_url:'/inquiries/?listing='+id,volunteer_url:'/volunteer/?workspace='+id}:null));
+ assert.match(r.body,/Send an enquiry/);assert.ok(r.body.includes('/inquiries/?listing='+id));assert.match(r.body,/Book on Zoi/);assert.match(r.body,/Volunteer opportunities/);assert.ok(r.body.includes('/book/?listing='+id));
+ const unsafe=await run(async fn=>response(fn==='seo_entity'?{...entity,booking_url:'javascript:alert(1)',inquiry_url:'https://evil.invalid',volunteer_url:'https://evil.invalid'}:null));
+ assert.doesNotMatch(unsafe.body,/Book on Zoi|Send an enquiry|Volunteer opportunities|evil.invalid/);
 });
 test('directions prefer street address and never route to unverified centroid coordinates',async()=>{
  const render=e=>run(async fn=>response(fn==='seo_entity'?{...entity,...e}:null));

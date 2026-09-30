@@ -15,6 +15,8 @@ test('published search and stable sitemap contracts',{skip:!container},async t=>
  await sql(readFileSync(new URL('../../supabase/migrations/20260930011955_public_home_workflow_actions.sql',import.meta.url),'utf8'));
  // Reconcile an applied body whose control-plane receipt was lost, without duplicating objects.
  await sql(readFileSync(new URL('../../supabase/migrations/20260930011955_public_home_workflow_actions.sql',import.meta.url),'utf8'));
+ await sql('CREATE TABLE zoi.inquiry_settings(listing_id uuid,workspace_id uuid,enabled boolean);');
+ await sql(readFileSync(new URL('../../supabase/migrations/20260930013900_public_home_inquiry_action.sql',import.meta.url),'utf8'));
  await t.test('draft, hidden, pending and archived entities are not public',async()=>{
   await sql(`INSERT INTO zoi.listings(slug,name,publish_status) VALUES('draft','Draft','draft'),('pending','Pending','pending_review'),('hidden','Hidden','hidden'),('archived','Archived','archived'),('public','Public','published');INSERT INTO zoi.listings(slug,name,marketplace_status)VALUES('market-hidden','Hidden marketplace','hidden');`);
   assert.equal(await sql('SELECT count(*) FROM public.seo_index();'),'1');
@@ -58,6 +60,14 @@ test('published search and stable sitemap contracts',{skip:!container},async t=>
   assert.equal(await sql("SELECT public.seo_entity('workflow-home') ?| array['booking_url','volunteer_url'];"),'f');
   await sql("UPDATE zoi.listings SET publish_status='draft' WHERE slug='workflow-home';");
   assert.equal(await sql("SELECT public.seo_entity('workflow-home') IS NULL;"),'t');
+ });
+ await t.test('enquiry home action requires opt-in and current owner; hidden pages cannot advertise it',async()=>{
+  const ws='00000000-0000-0000-0000-000000000001',other='00000000-0000-0000-0000-000000000002';
+  await sql(`INSERT INTO zoi.listings(slug,name,owner_workspace_id)VALUES('inquiry-home','Enquiry Home','${ws}');INSERT INTO zoi.inquiry_settings SELECT id,'${ws}',false FROM zoi.listings WHERE slug='inquiry-home';`);
+  assert.equal(await sql("SELECT public.seo_entity('inquiry-home') ? 'inquiry_url';"),'f');
+  await sql('UPDATE zoi.inquiry_settings SET enabled=true;');assert.match(await sql("SELECT public.seo_entity('inquiry-home')->>'inquiry_url';"),/^\/inquiries\/\?listing=/);
+  await sql(`UPDATE zoi.inquiry_settings SET workspace_id='${other}';`);assert.equal(await sql("SELECT public.seo_entity('inquiry-home') ? 'inquiry_url';"),'f');
+  await sql(`UPDATE zoi.inquiry_settings SET workspace_id='${ws}';UPDATE zoi.listings SET marketplace_status='hidden' WHERE slug='inquiry-home';`);assert.equal(await sql("SELECT public.seo_entity('inquiry-home') IS NULL;"),'t');
  });
  await t.test('public grants expose only reviewed public entry points',async()=>{
   assert.equal(await sql("SELECT has_function_privilege('anon','zoi.seo_canonical_rows()','EXECUTE');"),'f');

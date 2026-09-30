@@ -423,7 +423,7 @@ function registrationLabel(r) {
   return bits.join(' · ');
 }
 
-export function profileForVertical(vertical, profile) {
+export function profileForVertical(vertical, profile, entity = {}) {
   const p = (profile && typeof profile === 'object' && !Array.isArray(profile)) ? { ...profile } : {};
   // safeProfile keeps provenance non-enumerable; preserve it through vertical
   // normalization so the disclosure note remains truthful.
@@ -496,10 +496,17 @@ export function profileForVertical(vertical, profile) {
   }
 
   if (key === 'music') {
+    const social = Object.assign({}, p.social && typeof p.social === 'object' ? p.social : {}, entity.social_links && typeof entity.social_links === 'object' ? entity.social_links : {});
+    const hasListen=Object.prototype.hasOwnProperty.call(p,'listen');
     p.listen = Object.assign({}, p.listen && typeof p.listen === 'object' ? p.listen : {});
+    for (const [platform] of LISTEN) {
+      if (!hasListen && str(social[platform])) p.listen[platform]=str(social[platform]);
+    }
     for (const [field,key] of [['spotify_url','spotify'],['apple_music_url','apple'],['youtube_url','youtube'],['bandcamp_url','bandcamp'],['soundcloud_url','soundcloud']]) {
       if (Object.prototype.hasOwnProperty.call(p, field)) p.listen[key] = str(p[field]);
     }
+    if (!Object.prototype.hasOwnProperty.call(p,'embeds')) p.embeds=[...Object.values(p.listen),...arr(p.video_urls)].filter(Boolean).slice(0,6);
+    if (!Object.prototype.hasOwnProperty.call(p,'videos') && arr(p.video_urls).length) p.videos=p.video_urls.map(url=>({title:'Watch on the original platform',url}));
     p.booking = Object.assign({}, p.booking && typeof p.booking === 'object' ? p.booking : {});
     if (Object.prototype.hasOwnProperty.call(p,'booking_name')) p.booking.name=str(p.booking_name);
     if (Object.prototype.hasOwnProperty.call(p,'booking_email')) p.booking.email=str(p.booking_email);

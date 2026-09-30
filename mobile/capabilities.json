@@ -370,9 +370,32 @@
         "saved plan history"
       ],
       "required": [
-        "backend migration deployment",
-        "live planner acceptance",
         "physical device acceptance"
+      ],
+      "verified": [
+        "actual private operator and server preview API acceptance",
+        "browser fixture interrupted atomic-save retry and history"
+      ]
+    },
+    {
+      "id": "private-business-enquiries",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "same-listing server-invited customer contact",
+        "private conversation history and paging",
+        "profile-identity verified message receipts",
+        "stable UUID send/reply retries",
+        "operator status assignment and audit",
+        "owner/admin enquiry opt-in settings"
+      ],
+      "verified": [
+        "66 native tests and TypeScript",
+        "browser fixture full customer/operator flow with interrupted reply retry and distinct auth/profile IDs"
+      ],
+      "required": [
+        "production enquiry API acceptance",
+        "device conversation and keyboard acceptance"
       ]
     }
   ],
@@ -388,7 +411,8 @@
     "zoi://grow",
     "zoi://business/:slug",
     "zoi://tickets/:eventUUID",
-    "zoi://volunteer/:workspaceUUID"
+    "zoi://volunteer/:workspaceUUID",
+    "zoi://inquiries?listing=:listingUUID or thread=:threadUUID"
   ],
   "releaseGates": [
     "TypeScript",

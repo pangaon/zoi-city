@@ -100,7 +100,7 @@ function socialArr(e){
 }
 function jsonld(e,url){
   var o={ '@context':'https://schema.org', '@type':schemaType(e), name:e.name, url:url };
-  var picked = verticalFor(e), profile = profileForVertical(picked.v, profileOf(e));
+  var picked = verticalFor(e), profile = profileForVertical(picked.v, profileOf(e), e);
   var description = cleanPublicText(e.description || profile.about || profile.description);
   if(description) o.description=description;
   if(e.address||e.city){
@@ -163,7 +163,7 @@ function page(e, related, completeness){
   var slug = e.canonical_slug || e.slug;
   var url = SITE + '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' + encodeURIComponent(slug);
   var picked = verticalFor(e), V = picked.v, sub = picked.sub;
-  var p = profileForVertical(V, profileOf(e));
+  var p = profileForVertical(V, profileOf(e), e);
   var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
   var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
@@ -177,6 +177,7 @@ function page(e, related, completeness){
   /* ---- primary actions: the vertical's own, then the universally real ones ---- */
   var acts = [];
   if (/^\/book\/\?listing=[0-9a-f-]{36}$/i.test(e.booking_url||'')) acts.push({label:'Book on Zoi',href:e.booking_url,icon:IC.cal,primary:true});
+  if (/^\/inquiries\/\?listing=[0-9a-f-]{36}$/i.test(e.inquiry_url||'')) acts.push({label:'Send an enquiry',href:e.inquiry_url,icon:IC.mail});
   if (/^\/volunteer\/\?workspace=[0-9a-f-]{36}$/i.test(e.volunteer_url||'')) acts.push({label:'Volunteer opportunities',href:e.volunteer_url,icon:IC.cal});
   (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
   if(e.phone)   acts.push({ label:'Call', href: 'tel:'+String(e.phone).replace(/[^0-9+]/g,''), icon: IC.phone });

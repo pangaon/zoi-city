@@ -114,6 +114,7 @@ async function sbRpc(fn: string, args: Record<string, unknown> = {}) {
    rather than reasoned about. See that file's header. */
 import { vet, dnsState } from "./_ssrf.ts";
 import { extractSocialLinks } from "./_social.js";
+import { extractPublicMedia } from "./_media.js";
 
 /* ── politeness ─────────────────────────────────────────────────────────── */
 const hostBusy = new Map<string, Promise<void>>();
@@ -487,12 +488,10 @@ function extract(doc: string, finalUrl: string) {
     }
   }
 
-  const embeds: string[] = [];
-  for (const m of doc.matchAll(/(?:src|href)=["'](https?:\/\/(?:www\.)?(?:youtube\.com|youtu\.be|vimeo\.com)\/[^"']+)/gi)) {
-    const u = m[1].split(/[?#]/)[0];
-    if (!embeds.includes(u)) embeds.push(u);
-  }
-  if (embeds.length) put("video_urls", embeds.slice(0, 4), "video-link");
+  const media = extractPublicMedia(doc);
+  put("listen", media.listen, "page-media-link");
+  put("embeds", media.embeds, "page-media-link");
+  put("video_urls", media.video_urls, "page-media-link");
 
   const lang = doc.match(/<html[^>]+lang=["']([a-zA-Z\-]{2,8})["']/);
   if (lang) put("site_lang", lang[1].toLowerCase(), "html-lang");
