@@ -302,3 +302,12 @@
 
   global.ZoiCore = ZoiCore;
 })(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Shared source-bound identity; an unconfigured source preserves existing marks. */
+(function(){
+ if(typeof window==='undefined'||typeof document==='undefined')return;
+ if(window.__zoiIdentityBoot)return;
+ window.__zoiIdentityBoot=true;
+ function apply(){import('/assets/brand/site-identity.mjs?v=20260930').then(function(m){return m.applySiteIdentity();}).catch(function(){});}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
+})();

@@ -3,10 +3,10 @@
    repeat visit paints instantly and a flaky connection still gets a page. It
    never caches API responses or listing HTML — directory data changes hourly and
    a stale listing is worse than a slow one. */
-const V = 'zoi-v4';
+const V = 'zoi-v5-blue-olive';
 const SHELL = [
   '/', '/explore', '/assets/zoi-theme.css', '/assets/zoi-theme.js',
-  '/assets/zoi-core.js', '/assets/icons/icon-192.png', '/manifest.webmanifest'
+  '/assets/zoi-core.js', '/assets/brand/site-identity.mjs?v=20260930', '/assets/brand/zoi-logo.png', '/assets/brand/favicon-32.png?v=blue-olive', '/assets/icons/icon-192.png', '/manifest.webmanifest'
 ];
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(V).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

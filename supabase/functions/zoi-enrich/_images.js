@@ -5,6 +5,26 @@ export function sourceImage(raw,base){
  if(typeof raw!=='string'||!raw.trim()||raw.length>3000||/[\u0000-\u001f\\]/.test(raw))return null;
  try{const u=new URL(decode(raw).trim(),base);if(u.protocol!=='https:'||u.username||u.password||u.port||!u.hostname.includes('.')||/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)||u.hostname.includes(':')||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/.test(u.hostname))return null;if(u.pathname==='/'&&!u.search)return null;if(/\.(?:mp4|m4v|webm|mov|mp3|wav|ogg|pdf)(?:$)/i.test(u.pathname)||/%22|%27/i.test(u.pathname))return null;u.hash='';return u.href;}catch{return null;}
 }
+// Commas inside image URLs (notably Wix transforms) are not candidate separators.
+// A descriptor is separated from its URL by whitespace; descriptorless URLs
+// use trailing commas. Invalid/mixed descriptors are excluded, never guessed.
+export function sourceSetCandidates(value){
+ const text=decode(value),out=[];let pos=0;
+ while(pos<text.length){
+  while(/[\s,]/.test(text[pos]||'')&&pos<text.length)pos++;
+  const start=pos;while(pos<text.length&&!/\s/.test(text[pos]))pos++;
+  let url=text.slice(start,pos);if(!url)break;
+  if(/,$/.test(url)){url=url.replace(/,+$/,'');if(url)out.push({url,size:1,unit:'x'});continue;}
+  while(pos<text.length&&/\s/.test(text[pos]))pos++;
+  const ds=pos;while(pos<text.length&&text[pos]!==',')pos++;
+  const descriptor=text.slice(ds,pos).trim();if(pos<text.length)pos++;
+  if(!descriptor){out.push({url,size:1,unit:'x'});continue;}
+  const match=descriptor.match(/^(\d+(?:\.\d+)?)(w|x)$/);
+  if(match&&Number(match[1])>0&&(match[2]!=='w'||Number.isInteger(Number(match[1]))))out.push({url,size:Number(match[1]),unit:match[2]});
+ }
+ if(new Set(out.map(x=>x.unit)).size>1)return[];
+ return out.sort((a,b)=>b.size-a.size);
+}
 export function imageIdentity(raw){const u=new URL(raw);u.pathname=u.pathname.replace(/\.(jpe?g|png)\.webp$/i,'.$1').replace(/-(?:\d{2,5}x\d{2,5}|\d{2,5}w)(?=\.[a-z]+$)/i,'');for(const k of ['w','h','width','height','q','quality','fit','format','auto'])u.searchParams.delete(k);return u.href;}
 const attr=(tag,name)=>{const m=tag.match(new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|([^\\s>]+))','i'));return decode(m?.[1]??m?.[2]??m?.[3]??'');};
 const artwork=/(?:^|[\s/_.-])(?:logos?|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_ ]?rating|advert(?:isement)?|anzeige|flyer|poster|app[-_ ]?store|google[-_ ]?play|payment|placeholder|spinner|loader)(?:[\s/_.-]|$)/i;
@@ -18,8 +38,8 @@ export function extractSiteImages(doc,base,business={}){
  for(const tag of clean.matchAll(/<meta\b[^>]*>/gi)){const key=(attr(tag[0],'property')||attr(tag[0],'name')).toLowerCase(),url=attr(tag[0],'content');if(['og:logo','logo'].includes(key))add(url,'logo','meta-logo',70);if(['og:image','og:image:url','twitter:image'].includes(key))add(url,'photo','meta-image',60);}
  for(const m of clean.matchAll(/<(img|source)\b[^>]*>/gi)){
   const tag=m[0],hint=attr(tag,'alt')+' '+attr(tag,'class')+' '+attr(tag,'id');const width=Number(attr(tag,'width')),height=Number(attr(tag,'height'));if(!/logo/i.test(hint+' '+attr(tag,'src'))&&((width>0&&width<80)||(height>0&&height<60)))continue;
-  const srcset=attr(tag,'data-srcset')||attr(tag,'srcset');const options=srcset.split(',').map(s=>s.trim().split(/\s+/)).filter(x=>x[0]).map(x=>({url:x[0],size:parseFloat(x[1])||0})).sort((a,b)=>b.size-a.size);
-  const selected=options[0]?.url||attr(tag,'data-src')||attr(tag,'data-lazy-src')||attr(tag,'data-original')||attr(tag,'src');add(selected,'photo','page-image',40+Math.min(width,2000)/1000,hint);
+  const srcset=attr(tag,'data-srcset')||attr(tag,'srcset');const options=sourceSetCandidates(srcset);
+  const fallback=attr(tag,'data-src')||attr(tag,'data-lazy-src')||attr(tag,'data-original')||attr(tag,'src');const selected=options[0]?.url||(/\s+\d+(?:\.\d+)?[wx](?:\s*,|\s*$)/.test(fallback)?sourceSetCandidates(fallback)[0]?.url:fallback);add(selected,'photo','page-image',40+Math.min(width,2000)/1000,hint);
  }
  // Inline/CSS background declarations only; do not crawl arbitrary URL functions/scripts.
  for(const match of decode(clean).matchAll(/background(?:-image)?\s*:[^;{}<>]{0,1800}?url\(\s*["']?([^\s"')]+)["']?\s*\)/gi))add(match[1],'photo','page-background',30);

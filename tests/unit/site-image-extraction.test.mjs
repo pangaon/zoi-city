@@ -19,3 +19,18 @@ test('menu scans and decorative quotes are separated from real venue photography
 
 
 test('a photographed dish inside a menu items folder remains food photography, not a menu scan',()=>{const url='https://restaurant.org/menu/items/grilled-fish.jpg';const result=extractSiteImages(`<img src="${url}" alt="Grilled fish">`,'https://restaurant.org/');assert.equal(result.hero.url,url);assert.deepEqual(result.menuImages,[])});
+
+test('Wix transform commas remain intact and highest explicit density wins',()=>{
+ const low='https://static.wixstatic.com/media/abc.jpg/v1/fill/w_427,h_654,al_c,q_80,enc_avif,quality_auto/photo.jpg';
+ const high=low.replace('w_427,h_654','w_854,h_1308');
+ const result=extractSiteImages(`<img src="${low}" srcset="${low} 1x, ${high} 2x" alt="Our dance company">`,base);
+ assert.equal(result.hero.url,high);assert.equal(result.photos.length,1);
+});
+test('publisher srcset accidentally placed in src is parsed rather than stored as a malformed URL',()=>{
+ const result=extractSiteImages('<img src="/dance-small.jpg 1x, /dance-large.jpg 2x">',base);
+ assert.equal(result.hero.url,base+'dance-large.jpg');
+});
+test('invalid responsive descriptors cannot manufacture URLs from transformation tokens',()=>{
+ const result=extractSiteImages('<img src="/fallback.jpg" srcset="/small.jpg 20h, /large.jpg 2x 300w">',base);
+ assert.equal(result.hero.url,base+'fallback.jpg');
+});

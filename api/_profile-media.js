@@ -26,10 +26,14 @@ export function profileMedia(entity,profile){
  const source=ownerPhotos?ownerProfile.photos:own('photo_urls')?raw.photo_urls:own('photos')?raw.photos:profile.photo_urls||profile.photos||[];
  const gallery=[],seen=new Set();
  for(const item of Array.isArray(source)?source:[]){const url=httpsImage(typeof item==='string'?item:item?.url);if(!url||(!ownGallery&&interfaceArtwork(url)))continue;const key=imageIdentity(url);if(seen.has(key))continue;seen.add(key);gallery.push(url);if(gallery.length===12)break;}
+ const roles=Array.isArray(derived.photo_roles)?derived.photo_roles:[];
+ const galleryOnly=new Set(roles.filter(x=>x&&x.role==='gallery_only'&&httpsImage(x.url)).map(x=>httpsImage(x.url)));
+ // Source roles bind exact URLs; they never override an explicit owner selection.
+ const heroGallery=ownGallery?gallery:gallery.filter(url=>!galleryOnly.has(url));
  const mayFallback=!ownerHero&&!own('hero_url')&&!own('photo_url');
- const candidates=[profile.hero_url,profile.photo_url,...gallery].filter(v=>httpsImage(v)&&!interfaceArtwork(v));
+ const candidates=[profile.hero_url,profile.photo_url,...heroGallery].filter(v=>httpsImage(v)&&!interfaceArtwork(v)&&(ownGallery||!galleryOnly.has(v)));
  const trustedHero=ownerHero||own('hero_url')||own('photo_url');
- const hero=(trustedHero||!interfaceArtwork(explicitHero)?httpsImage(explicitHero):null)||(mayFallback?candidates[0]||null:null);
+ const hero=(trustedHero||(!interfaceArtwork(explicitHero)&&!galleryOnly.has(explicitHero))?httpsImage(explicitHero):null)||(mayFallback?candidates[0]||null:null);
  const logo=(own('logo_url')?httpsImage(raw.logo_url):machineImage(entity.logo_url||profile.logo_url))||(!own('logo_url')&&derived.hero_url&&/logo/i.test(derived.hero_url)?httpsImage(derived.hero_url):null);
- return{hero,logo,gallery};
+ return{hero,logo,gallery,heroGallery};
 }

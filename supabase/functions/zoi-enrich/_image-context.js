@@ -7,6 +7,8 @@ export function auxiliaryImage(value,hint=''){
  // rate documents, not photographs of a venue. Keep other OG images eligible.
  try{
   const u=new URL(decoded),host=u.hostname.toLowerCase(),path=u.pathname;
+  // Visually reviewed official share image is a screenshot of the website UI.
+  if(['alexiourealtyny.com','www.alexiourealtyny.com'].includes(host)&&path==='/wp-content/uploads/2024/10/fb.jpg')return true;
   // Translation controls are interface assets, not artist or venue photographs.
   if(/\/wp-content\/plugins\/(?:qtranslate(?:-x)?|polylang|sitepress-multilingual-cms)\/(?:[^/]+\/)*flags?\//i.test(path))return true;
   if(['agfg.com.au','www.agfg.com.au'].includes(host)&&/^\/images\/layout\/tb-(?:facebook|instagram)\.png$/i.test(path))return true;

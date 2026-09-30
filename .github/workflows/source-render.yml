@@ -1,4 +1,4 @@
-name: Sandboxed source runtime probe
+name: Rendered official source repair
 on:
   push:
     branches: [main]
@@ -15,13 +15,10 @@ concurrency:
   group: rendered-official-source-repair
   cancel-in-progress: false
 jobs:
-  runtime-probe:
+  source:
     if: github.ref == 'refs/heads/main'
-    strategy:
-      fail-fast: false
-      matrix:
-        runner: [ubuntu-24.04, ubuntu-22.04]
-    runs-on: ${{ matrix.runner }}
+    # Run 36744345655 proved pinned Chromium sandbox on 22; 24 refused it.
+    runs-on: ubuntu-22.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
@@ -33,18 +30,31 @@ jobs:
         run: node --test tests/unit/rendered-source.test.mjs tests/unit/source-runtime-probe.test.mjs tests/unit/quality-collector.test.mjs
       - name: Install identical pinned Chromium runtime
         run: npx --no-install playwright-core install --with-deps chromium
-      # Deliberately no Supabase credentials and no queue/capture command here.
-      # Diagnose the runtime before another listing can be leased or mutated.
+      # This step has no credentials and must pass before the bounded queue step.
       - name: Probe sandbox without visiting a source or leasing a listing
         env:
-          SOURCE_PROBE_RUNNER: ${{ matrix.runner }}
+          SOURCE_PROBE_RUNNER: ubuntu-22.04
         run: node scripts/enrichment/preflight.mjs
+      - name: Capture and repair up to three existing leased sources
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/enrichment/render-queue.mjs
       - name: Retain safe runtime evidence on success or failure
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: source-runtime-${{ matrix.runner }}-${{ github.run_id }}-${{ github.run_attempt }}
+          name: source-runtime-ubuntu-22.04-${{ github.run_id }}-${{ github.run_attempt }}
           path: source-runtime-probe/probe.json
+          retention-days: 90
+          if-no-files-found: warn
+          overwrite: false
+      - name: Retain immutable source reports and exact apply receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rendered-source-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: rendered-source-evidence/*.json
           retention-days: 90
           if-no-files-found: warn
           overwrite: false

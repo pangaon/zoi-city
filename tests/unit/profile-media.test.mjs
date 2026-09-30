@@ -17,7 +17,7 @@ test('untrusted protocols rejected and ordinary photographs retained',()=>{
 });
 test('machine logo directories and advertisements cannot become heroes; owner choices remain authoritative',()=>{
  const p={hero_url:'https://cdn.example.com/logos/23131.png',logo_url:'https://example.com/',photo_urls:['https://cdn.example.com/logos/23131.png','https://example.com/food_rating.png','https://example.com/gyro.jpeg']};
- assert.deepEqual(profileMedia({profile:{_enrich:p}},p),{hero:'https://example.com/gyro.jpeg',logo:p.hero_url,gallery:['https://example.com/gyro.jpeg']});
+ assert.deepEqual(profileMedia({profile:{_enrich:p}},p),{hero:'https://example.com/gyro.jpeg',logo:p.hero_url,gallery:['https://example.com/gyro.jpeg'],heroGallery:['https://example.com/gyro.jpeg']});
  assert.equal(profileMedia({profile:{_enrich:p},photo_url:p.hero_url},p).hero,'https://example.com/gyro.jpeg');
  const ad='https://example.com/Melodia_Anzeige.jpeg';assert.equal(interfaceArtwork(ad),true);
  assert.equal(profileMedia({owner_content:{photo_url:ad},profile:{_enrich:p}},p).hero,ad);
@@ -28,3 +28,17 @@ test('explicit owner image endpoints and signed query-root image providers stay 
  for(const image of ['https://images.example.com/?url=photo','https://example.com/photo.php?id=2','https://example.com/'])assert.equal(profileMedia({owner_content:{photo_url:image},profile:{}},{}).hero,image);
  assert.equal(profileMedia({profile:{_enrich:{}}},{photo_url:'https://images.example.com/?url=photo'}).hero,'https://images.example.com/?url=photo');
 });
+
+test('exact source gallery-only roles retain photos without promoting them into a hero',()=>{
+ const portrait='https://source.example/parade.jpg',wide='https://source.example/room.jpg';
+ const p={photos:[portrait],photo_roles:[{url:portrait,role:'gallery_only'}]};
+ const m=profileMedia({profile:{_enrich:p}},p);assert.equal(m.hero,null);assert.deepEqual(m.gallery,[portrait]);assert.deepEqual(m.heroGallery,[]);
+ p.photos.push(wide);assert.equal(profileMedia({profile:{_enrich:p}},p).hero,wide);
+});
+test('gallery-only restrictions are exact URL bound and explicit owner hero wins',()=>{
+ const url='https://source.example/parade.jpg';const p={photos:[url],photo_roles:[{url,role:'gallery_only'}]};
+ assert.equal(profileMedia({profile:{_enrich:p},owner_content:{photo_url:url}},p).hero,url);
+ assert.equal(profileMedia({profile:{_enrich:p},owner_content:{photo_url:null}},p).hero,null);
+ const other={...p,photos:[url+'?different=1']};assert.equal(profileMedia({profile:{_enrich:other}},other).hero,url+'?different=1');
+});
+test('explicit owner gallery choice can override an imported gallery-only role',()=>{const url='https://source.example/parade.jpg',p={photos:[url],photo_roles:[{url,role:'gallery_only'}]};const m=profileMedia({profile:{_enrich:p},owner_content:{profile:{photos:[url]}}},p);assert.equal(m.hero,url);assert.deepEqual(m.heroGallery,[url]);});

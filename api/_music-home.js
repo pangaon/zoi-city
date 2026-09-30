@@ -18,7 +18,7 @@ export function musicHomeContent(entity){if(!eligiblePerson(entity,'artist'))ret
  const spotify=Object.hasOwn(op,'spotify_url')?op.spotify_url:Object.hasOwn(p,'spotify_url')?p.spotify_url:social.spotify||(!Object.hasOwn(o,'social_links')?p.listen?.spotify:'');
  const reviewed=!quarantine?reviewedArtistMedia(entity):null;
  const hasPortrait=Object.hasOwn(o,'photo_url')||Object.hasOwn(p,'photo_url')||Object.hasOwn(p,'hero_url')||Object.hasOwn(p,'portrait_url');
- const portrait=(!hasPortrait?reviewed?.portrait:'')||media.hero||(d.portrait&&!interfaceArtwork(d.portrait)?d.portrait:'')||'';
+ const portrait=(!hasPortrait?reviewed?.portrait:'')||media.hero||(d.portrait&&!interfaceArtwork(d.portrait)&&(hasPortrait||!(Array.isArray(machine.photo_roles)&&machine.photo_roles.some(r=>r?.url===d.portrait&&r.role==='gallery_only')))?d.portrait:'')||'';
  const hasSpotify=Object.hasOwn(op,'spotify_url')||Object.hasOwn(p,'spotify_url')||Object.hasOwn(o,'social_links')||Object.hasOwn(p,'social_links');
  const hasYoutube=Object.hasOwn(op,'youtube_url')||Object.hasOwn(p,'youtube_url')||Object.hasOwn(o,'social_links')||Object.hasOwn(p,'social_links');
  const gallerySource=personURL(entity.website)||'https://www.zoi.city/artist/'+encodeURIComponent(d.slug);
