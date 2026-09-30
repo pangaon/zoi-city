@@ -1,0 +1,39 @@
+{
+  "migration": "20260930012202",
+  "deployment": "not applied; pending live legacy messaging metadata review",
+  "postgres_behavior_checks_passed": 15,
+  "unit_checks_passed": 3,
+  "browser": {
+    "mode": "isolated explicit RPC fixtures; not live persistence verification",
+    "widths": [
+      390,
+      1440
+    ],
+    "horizontal_overflow": false,
+    "operator_select_reply_receipt": "passed; exactly one reply RPC",
+    "message_html_escaped": true,
+    "anonymous_customer_signin_page": "passed; no sign-in email sent"
+  },
+  "defaults": "disabled per listing until owner/admin enables",
+  "permissions": "customer own conversations; owner/admin/editor private inbox; viewer/staff denied; assignment never grants membership",
+  "boundaries": [
+    "ownership transfer/unpublication blocks further replies",
+    "old conversations do not transfer to new workspace",
+    "immutable messages and actor/time status audit",
+    "stable request IDs; concurrent duplicates collapse",
+    "10 new conversations/day;10 messages/minute;100 messages/day per author",
+    "50 threads/page;100 messages/page"
+  ],
+  "not_implemented": [
+    "external email or push notifications",
+    "attachments",
+    "realtime subscriptions",
+    "legal advice automation"
+  ],
+  "production_verification_required": [
+    "read legacy live messaging metadata",
+    "migration compatibility review",
+    "transaction rollback full workflow",
+    "real authenticated customer/operator HTTP workflow with scoped private fixtures"
+  ]
+}

@@ -22,7 +22,7 @@ try{
  execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-l',join(dir,'server.log'),'-o',`-k ${dir} -p ${port} -c listen_addresses=''`,'-w','start'],{stdio:'ignore'});started=true;
  await query(readFileSync(new URL('./venue-fixture.sql',import.meta.url),'utf8'));
  await query(`create role service_role; create table zoi.ai_profiles(workspace_id uuid primary key,business_name text,about text,tone text,languages text,sample text,updated_at timestamptz);create function zoi.ops_role(p_workspace uuid) returns text language sql security definer as $$select m.role from zoi.workspace_members m join zoi.user_profiles p on p.id=m.profile_id where m.workspace_id=p_workspace and p.auth_user_id=auth.uid()$$; update zoi.workspace_members set role='viewer' where profile_id='${member}';insert into zoi.workspace_members values('${ws}','${other}','editor');`);
- await query(readFileSync(new URL('../../supabase/migrations/20260930010702_bounded_ai_generation_ledger.sql',import.meta.url),'utf8'));
+ await query(readFileSync(new URL('../../supabase/migrations/20260930013516_bounded_ai_generation_ledger.sql',import.meta.url),'utf8'));
  const request=n=>`80000000-0000-4000-8000-${String(n).padStart(12,'0')}`;
  const begin=(n,user=actor)=>`select public.ai_generation_begin('${user}','${ws}','${request(n)}','${'a'.repeat(64)}','caption','Hello',1,'{}');`;
  await rejects(`select public.ai_profile_save('${ws}','Biz','','','','');`,member,/insufficient_permission/);pass('viewer cannot mutate business AI profile');

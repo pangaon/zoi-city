@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-09-29T23:54:41.508043+00:00",
+  "generated_at": "2026-09-30T01:33:51.673531+00:00",
   "coverage": "All existing routes/modules plus all user-requested capability areas; presence of code never establishes delivery.",
   "modules": [
     {
@@ -21,10 +21,11 @@
       "source": "assets/suite/analytics.js",
       "route": "/social/analytics",
       "rpc_calls": [],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "web": "Authorized workspace internal counts; no fabricated external engagement; external provider analytics unavailable.",
+      "ios": "Provider analytics and native parity pending.",
+      "android": "Provider analytics and native parity pending.",
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "audience",
@@ -34,27 +35,30 @@
       "web": "implementation exists; full journey not yet verified",
       "ios": "parity review required",
       "android": "parity review required",
-      "evidence": []
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "bio",
       "source": "assets/suite/bio.js",
       "route": "/social/bio",
       "rpc_calls": [],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "web": "Persisted profile/bio tools with truthful save receipts; private unpublished QA verified.",
+      "ios": "Native web export saved private unpublished bio; physical devices pending.",
+      "android": "Native web export saved private unpublished bio; physical devices pending.",
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "bizpage",
       "source": "assets/suite/bizpage.js",
       "route": "/social/bizpage",
       "rpc_calls": [],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "web": "Owned business profile and social URL editing implemented; public home real data/claim ownership checks.",
+      "ios": "Native owned profile edit source/export verified; device link acceptance pending.",
+      "android": "Native owned profile edit source/export verified; device link acceptance pending.",
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "calendar",
@@ -71,7 +75,8 @@
       "web": "implementation exists; full journey not yet verified",
       "ios": "parity review required",
       "android": "parity review required",
-      "evidence": []
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "composer",
@@ -103,20 +108,22 @@
         "social_channel_add",
         "social_channels_list"
       ],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "web": "Production availability derives from actual provider configuration; six external social providers currently unconfigured.",
+      "ios": "External provider OAuth acceptance pending.",
+      "android": "External provider OAuth acceptance pending.",
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "email",
       "source": "assets/suite/email.js",
       "route": "/social/email",
       "rpc_calls": [],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "web": "Delivery disabled pending configured provider; campaign UI must not imply sent mail.",
+      "ios": "Full native campaign workflow pending.",
+      "android": "Full native campaign workflow pending.",
+      "evidence": [],
+      "source_present": true
     },
     {
       "id": "settings",
@@ -130,7 +137,90 @@
       "web": "implementation exists; full journey not yet verified",
       "ios": "parity review required",
       "android": "parity review required",
-      "evidence": []
+      "evidence": [],
+      "source_present": true
+    },
+    {
+      "id": "week",
+      "source": "assets/suite/ai.js",
+      "route": "/social/week",
+      "rpc_calls": [],
+      "evidence": [],
+      "source_present": true
+    },
+    {
+      "id": "bookings",
+      "source": "assets/suite/bookings.js",
+      "route": "/social/bookings",
+      "rpc_calls": [],
+      "evidence": [],
+      "web": "Production service/resource/availability/customer booking foundation; recurring planner passing local PostgreSQL/browser tests and awaiting PR6 backend release.",
+      "ios": "Native booking and recurring planner exports verified; real planner HTTP and physical devices pending.",
+      "android": "Native booking and recurring planner exports verified; real planner HTTP and physical devices pending.",
+      "source_present": true
+    },
+    {
+      "id": "builtin-welcome",
+      "source": "assets/suite/composer.js",
+      "route": "/social/builtin-welcome",
+      "rpc_calls": [],
+      "evidence": [],
+      "source_present": true
+    },
+    {
+      "id": "documents",
+      "source": "assets/suite/documents.js",
+      "route": "/social/documents",
+      "rpc_calls": [],
+      "evidence": [],
+      "web": "Private immutable files deployed and real HTTP accepted; suite navigation in PR6 candidate.",
+      "ios": "Native web export real upload/download/version/archive accepted; physical OS sharing pending.",
+      "android": "Native web export real upload/download/version/archive accepted; physical OS sharing pending.",
+      "source_present": true
+    },
+    {
+      "id": "inbox",
+      "source": "assets/suite/inbox.js",
+      "route": "/social/inbox",
+      "rpc_calls": [],
+      "evidence": [],
+      "web": "Customer enquiries and operator inbox locally tested; schema/production integration pending.",
+      "ios": "Native implementation in progress.",
+      "android": "Native implementation in progress.",
+      "source_present": true
+    },
+    {
+      "id": "operations",
+      "source": "assets/suite/operations.js",
+      "route": "/social/operations",
+      "rpc_calls": [],
+      "evidence": [],
+      "web": "Production persisted company/contact/project/task operations, version checks, role authorization and audit; private QA create/update/archive verified.",
+      "ios": "Native web export exercised real private operations; physical devices pending.",
+      "android": "Native web export exercised real private operations; physical devices pending.",
+      "source_present": true
+    },
+    {
+      "id": "organizations",
+      "source": "assets/suite/organizations.js",
+      "route": "/social/organizations",
+      "rpc_calls": [],
+      "evidence": [],
+      "web": "Production programs, volunteer shifts and registration; PostgreSQL success/failure tests and authenticated web operator acceptance.",
+      "ios": "Native volunteer and operator source/export verified; physical devices pending.",
+      "android": "Native volunteer and operator source/export verified; physical devices pending.",
+      "source_present": true
+    },
+    {
+      "id": "priorities",
+      "source": "assets/suite/priorities.js",
+      "route": "/social/priorities",
+      "rpc_calls": [],
+      "evidence": [],
+      "web": "Production explainable ranking with source provenance and partial-source failures; authenticated web acceptance.",
+      "ios": "Shared ranking and native export verified; physical devices pending.",
+      "android": "Shared ranking and native export verified; physical devices pending.",
+      "source_present": true
     }
   ],
   "static_surfaces": [
@@ -699,5 +789,49 @@
     }
   ],
   "native_evidence_source": "mobile/capabilities.json",
-  "release_rule": "Each feature requires implementation and applicable success/failure evidence across web/iOS/Android before completed status. A placeholder, local draft, browser handoff or web export is not full delivery."
+  "release_rule": "Each feature requires implementation and applicable success/failure evidence across web/iOS/Android before completed status. A placeholder, local draft, browser handoff or web export is not full delivery.",
+  "benchmark_source": "docs/software-benchmark-30.json",
+  "release_evidence_source": "docs/recovery-release-evidence.json",
+  "native_release_note": "Latest source includes features beyond available early APK and iOS simulator binary. Export success is not physical-device or App Store/TestFlight acceptance.",
+  "profession_gaps": {
+    "restaurants": [
+      "Combined tables",
+      "Waitlist",
+      "Paid deposits and refunds",
+      "Restaurant inventory/POS integration"
+    ],
+    "salons": [
+      "Multi-service appointments",
+      "Staff service eligibility",
+      "Client history and consent",
+      "Paid deposits"
+    ],
+    "fitness": [
+      "Pooled class capacity",
+      "Memberships",
+      "Class passes"
+    ],
+    "legal": [
+      "Conflict checks",
+      "Jurisdiction-specific deadlines",
+      "Time billing/trust accounting",
+      "Electronic signatures"
+    ],
+    "churches": [
+      "Giving/payment receipts",
+      "Family/check-in safeguarding",
+      "Parish communications provider configuration"
+    ],
+    "creators_musicians": [
+      "Verified Spotify/social analytics",
+      "Sponsorship pipeline and media kit",
+      "Royalty/distribution integration",
+      "Approved social account publishing"
+    ],
+    "business_formation": [
+      "Jurisdiction-specific supported filing provider",
+      "Identity checks and government submissions",
+      "Corporate minute books/signing"
+    ]
+  }
 }

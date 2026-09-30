@@ -30,7 +30,7 @@ test('worker deployment uses argument arrays, fixed project and reviewed JWT mod
  let invocation;await runRelease(base(),{env,read:()=>content,log:()=>{},deploy:(file,args)=>invocation={file,args}});
  assert.equal(invocation.file,'npx');assert.ok(invocation.args.includes('--no-verify-jwt'));assert.ok(invocation.args.includes('csebihpaychdkanjjsmz'));
 });
-test('only one reviewed, hash-bound private fixture is allowed',()=>{
+test('only unique reviewed, hash-bound private fixtures are allowed',()=>{
  const f={path:'ops/qa-booking-planner-setup.sql',sha256:hash};
  assert.equal(validateRelease({...base(),fixtures:[f]},options).fixtures[0].query,content);
  assert.throws(()=>validateRelease({...base(),fixtures:[f,f]},options),/fixture/);
