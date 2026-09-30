@@ -1,26 +1,56 @@
 {
-  "id": "release-ticket-recovery-access-20260930",
+  "id": "release-booking-guard-source-images-20260930",
   "project": "csebihpaychdkanjjsmz",
-  "expires_at": "2026-09-30T09:32:37.642479+00:00",
+  "expires_at": "2026-09-30T09:41:18.722360+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930082649_idempotent_general_admission_reservations.sql",
-      "sha256": "dcb269d98b6845de046df1d50d873ed525f2dd52fdd57bb3b32d06da1984c46e"
-    },
-    {
-      "path": "supabase/migrations/20260930083307_ticket_read_visibility_and_operator_access.sql",
-      "sha256": "03652f65216d44ea1b772cbda217f55166bb85d09ef4868693c72316194b7ff6"
+      "path": "supabase/migrations/20260930083803_booking_create_public_moderation_guard.sql",
+      "sha256": "190a9dce9865b34edbb4e2a858ab09f2e4949b3381e4421a7432792af52cf22b"
     }
   ],
-  "workers": [],
+  "workers": [
+    {
+      "name": "zoi-enrich",
+      "files": [
+        {
+          "path": "supabase/functions/zoi-enrich/_images.js",
+          "sha256": "368244cfb1450713397673591398f36247dc3d8fae8017ee5f54d87a47442db5"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_media.js",
+          "sha256": "46d77834fce1f9842916e9f952b003118d687514c5106e55ac8ce560e45b0f8b"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_member.js",
+          "sha256": "911c39811c6e4404f0788504d4beb005245a0c54358b87c1f8ff821f491105fc"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_menus.js",
+          "sha256": "15cb6033f57dedb29d9a8abd8e19a6aaa3494e6f2821f51798c4e030a340f962"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_receipts.js",
+          "sha256": "af5749384a8f0b06dd35510599a38a269e7d0190be4e2a561f5070398fee8b0c"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_social.js",
+          "sha256": "d164d906ee8a5242d26e9c419fd6dfae9239a346712655508d8bc72f5ce81be8"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/_ssrf.ts",
+          "sha256": "54b9c13fd5000421e2e5beee8cd85edd20d91337621b6e97252081eb309f6ee3"
+        },
+        {
+          "path": "supabase/functions/zoi-enrich/index.ts",
+          "sha256": "81533ef8d3a6dec5b13d675252dca6d3185269b712da5d3a924ab7a9ca0d806f"
+        }
+      ]
+    }
+  ],
   "fixtures": [
     {
-      "path": "ops/qa-general-ticket-reservations-rollback.sql",
-      "sha256": "f81f0b3f98a9d5745a4c2b995b1bca4951080c696f2b01c33cb17eb44a142159"
-    },
-    {
-      "path": "ops/qa-ticket-read-access-rollback.sql",
-      "sha256": "68134b3f5421a7387e733f4a5f1ae18870a220c2a94265032d95f9ddaea63c10"
+      "path": "ops/qa-booking-moderation-rollback.sql",
+      "sha256": "017b2ec5a3da343134e24294e8a640f64107530235c343011d75799e7457adc7"
     }
   ]
 }

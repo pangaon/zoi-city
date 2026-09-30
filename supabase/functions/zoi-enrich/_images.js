@@ -1,16 +1,16 @@
 // Source evidence only: never generate missing pictures or infer a photographed subject.
 const decode=s=>String(s||'').replace(/&amp;|&#38;|&#x26;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/g,"'");
 export function sourceImage(raw,base){
- if(typeof raw!=='string'||raw.length>3000||/[\u0000-\u001f\\]/.test(raw))return null;
- try{const u=new URL(decode(raw).trim(),base);if(u.protocol!=='https:'||u.username||u.password||u.port||!u.hostname.includes('.')||/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)||u.hostname.includes(':')||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/.test(u.hostname))return null;u.hash='';return u.href;}catch{return null;}
+ if(typeof raw!=='string'||!raw.trim()||raw.length>3000||/[\u0000-\u001f\\]/.test(raw))return null;
+ try{const u=new URL(decode(raw).trim(),base);if(u.protocol!=='https:'||u.username||u.password||u.port||!u.hostname.includes('.')||/^\d+\.\d+\.\d+\.\d+$/.test(u.hostname)||u.hostname.includes(':')||/(?:^|\.)(?:localhost|local|internal|test|invalid)$/.test(u.hostname))return null;if(u.pathname==='/'&&!u.search)return null;u.hash='';return u.href;}catch{return null;}
 }
 export function imageIdentity(raw){const u=new URL(raw);u.pathname=u.pathname.replace(/\.(jpe?g|png)\.webp$/i,'.$1').replace(/-(?:\d{2,5}x\d{2,5}|\d{2,5}w)(?=\.[a-z]+$)/i,'');for(const k of ['w','h','width','height','q','quality','fit','format','auto'])u.searchParams.delete(k);return u.href;}
 const attr=(tag,name)=>{const m=tag.match(new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|([^\\s>]+))','i'));return decode(m?.[1]??m?.[2]??m?.[3]??'');};
-const artwork=/(?:^|[\s/_.-])(?:logo|icon|avatar|sprite|pixel|tracking|favicon|badge|app[-_ ]?store|google[-_ ]?play|payment|placeholder|spinner|loader)(?:[\s/_.-]|$)/i;
+const artwork=/(?:^|[\s/_.-])(?:logos?|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_ ]?rating|advert(?:isement)?|anzeige|flyer|poster|app[-_ ]?store|google[-_ ]?play|payment|placeholder|spinner|loader)(?:[\s/_.-]|$)/i;
 const leaf=u=>{try{return decodeURIComponent(new URL(u).pathname.split('/').pop()||'');}catch{return u;}};
 export function extractSiteImages(doc,base,business={}){
  const candidates=[],logos=[],seen=new Map();const clean=String(doc).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
- const add=(raw,kind,source,score=10,hint='')=>{const url=sourceImage(raw,base);if(!url)return;const name=leaf(url);if(/(?:pexels|unsplash|shutterstock|istockphoto|depositphotos)/i.test(url))return;const logo=/logo/i.test(name+' '+hint),ui=artwork.test(name+' '+hint)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(name);if(kind==='logo'||logo){logos.push({url,source,score});return;}if(ui||/\.svg(?:\?|$)/i.test(url))return;const key=imageIdentity(url),prior=seen.get(key);if(prior){if(score>prior.score){prior.url=url;prior.source=source;prior.score=score;}return;}const record={url,source,score};seen.set(key,record);candidates.push(record);};
+ const add=(raw,kind,source,score=10,hint='')=>{const url=sourceImage(raw,base);if(!url)return;const name=leaf(url);if(/(?:pexels|unsplash|shutterstock|istockphoto|depositphotos)/i.test(url))return;let context=new URL(url).pathname;try{context=decodeURIComponent(context);}catch{}context+=' '+hint;const logo=/(?:^|[\s/_.-])logos?(?:[\s/_.-]|$)/i.test(context),ui=artwork.test(context)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(name);if(kind==='logo'||logo){logos.push({url,source,score});return;}if(ui||/\.svg(?:\?|$)/i.test(url))return;const key=imageIdentity(url),prior=seen.get(key);if(prior){if(score>prior.score){prior.url=url;prior.source=source;prior.score=score;}return;}const record={url,source,score};seen.set(key,record);candidates.push(record);};
  const values=v=>Array.isArray(v)?v.flatMap(values):typeof v==='string'?[v]:v&&typeof v==='object'?values(v.contentUrl||v.url||[]):[];
  for(const u of values(business.logo))add(u,'logo','jsonld-logo',100);
  for(const u of values(business.image))add(u,'photo','jsonld-image',70);

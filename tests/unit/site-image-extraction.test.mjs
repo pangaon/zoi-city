@@ -7,3 +7,8 @@ test('rejects private addresses/credentials/data and ignores scripts',()=>{for(c
 test('supplements only two explicit same-origin contact/gallery pages, not forms or external links',()=>{const pages=supplementaryPages('<a href="/gallery/">Photos</a><a href="/contact/">Contact</a><a href="https://evil.example/contact">Contact</a><a href="/contact?delete=yes">Contact</a>',base);assert.deepEqual(pages,[{url:base+'gallery/',purpose:'gallery'},{url:base+'contact/',purpose:'contact'}]);});
 
 test('small explicit header logos remain available without entering photo gallery',()=>{const r=extractSiteImages('<img src="/brand.png" class="site-logo" width="120" height="40">',base);assert.equal(r.logo.url,base+'brand.png');assert.equal(r.photos.length,0);});
+test('empty or page logo values do not resolve into image URLs and logo directories are not photos',()=>{
+ const result=extractSiteImages('<img src="https://cdn.example.com/logos/23131.png"><img src="/food_rating.png"><img src="/Melodia_Anzeige.jpeg"><img src="/gyro.jpeg">','https://example.com/',{logo:'',image:'https://example.com/'});
+ assert.equal(result.logo.url,'https://cdn.example.com/logos/23131.png');assert.equal(result.hero.url,'https://example.com/gyro.jpeg');assert.equal(result.photos.length,1);
+ assert.equal(extractSiteImages('','https://example.com/',{logo:'https://example.com/'}).logo,null);
+});
