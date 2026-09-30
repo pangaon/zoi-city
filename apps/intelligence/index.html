@@ -2,7 +2,7 @@
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
 <title>Intelligence · Zoi</title>
-<meta name="description" content="Zoi Intelligence — Similarweb-style SEO, GEO and AI-citation readiness command center. Scan, score, ticket, fix, verify, log. Evidence-based, governance-compliant."/>
+<meta name="description" content="Check your website’s search essentials, save private reports and find specific improvements for your business."/>
 <!-- SEO & AI Intelligence Engine for the Greek Diaspora -->
 <meta name="robots" content="index,follow"/>
 <link rel="canonical" href="https://www.zoi.city/apps/intelligence/">
@@ -385,7 +385,14 @@ async function runLiveScan(){
       document.getElementById('liveActionPlan').innerHTML=failed.length
         ? '<div class="card" style="margin-top:12px;padding:14px"><div class="label">Recommended next actions</div><div class="action-plan">'+failed.map(function(c,i){return '<div class="action-item"><span class="num">'+(i+1)+'</span><span><b>Fix '+esc(c.label)+'</b><br><span class="cap">'+esc(c.detail)+' · open Social or Command Center to continue the work.</span></span></div>';}).join('')+'</div></div>'
         : '<div class="note" style="margin-top:12px">All checks passed for this homepage. This preview is not saved yet.</div>';
-      document.getElementById('liveActionPlan').innerHTML += '<div class="card" style="margin-top:12px;padding:14px"><div class="label">Keep this report</div><p class="cap" style="margin:6px 0 12px">Register to save this real evidence, revisit it, compare future scans, and turn findings into tracked work.</p><a class="btn btn-primary btn-sm" href="/social?intelligence_url='+encodeURIComponent(data.url)+'">Register and save this report</a></div>';
+      if(data.save_available===true && data.save_receipt){
+        var keep=document.createElement('div');keep.className='card';keep.style.cssText='margin-top:12px;padding:14px';
+        var copy=document.createElement('p');copy.className='cap';copy.textContent='Sign in, choose the business you manage, and save this measured report privately. The save link expires in two hours.';
+        var saveButton=document.createElement('button');saveButton.className='btn btn-primary btn-sm';saveButton.textContent='Sign in to save this report';
+        saveButton.onclick=async function(){try{var bridge=await import('/assets/intelligence/handoff.mjs');location.href=bridge.rememberReport(data);}catch(error){copy.textContent=error.message||'This report could not be carried to sign-in.';}};
+        keep.append(copy,saveButton);document.getElementById('liveActionPlan').append(keep);
+      }else{document.getElementById('liveActionPlan').innerHTML+='<p class="cap">This free preview is not saved. Report saving is temporarily unavailable.</p>';}
+      var savedLink=document.createElement('a');savedLink.href='/social?intelligence=reports';savedLink.className='btn btn-ghost btn-sm';savedLink.textContent='View my saved reports';document.getElementById('liveActionPlan').append(savedLink);
     }catch(e){out.innerHTML='<div class="note amber">The external site could not be scanned: '+esc(e.message||'request failed')+'</div>';}
     btn.disabled=false;btn.textContent='Scan this page';return;
   }
@@ -450,6 +457,7 @@ function liveBadge(live){
 function setConn(t){document.getElementById('connState').textContent=t;}
 
 function sevClass(s){return s==='critical'||s==='high'?'sc-bad':s==='medium'?'sc-mid':'sc-good';}
+function measuredScore(value){if(value==null||typeof value==='boolean'||typeof value==='object'||typeof value==='string'&&!value.trim())return null;const n=Number(value);return Number.isFinite(n)&&n>=0&&n<=100?n:null;}
 function scoreClass(n){return n<40?'sc-bad':n<70?'sc-mid':'sc-good';}
 function sevColor(s){return s==='critical'?'var(--crit)':s==='high'?'var(--crit)':s==='medium'?'var(--warn)':'var(--ink-3)';}
 function esc(s){return String(s==null?'':s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
@@ -460,7 +468,7 @@ function render(){
   const overview=document.getElementById('v-overview');
   if(overview){let old=document.getElementById('liveDataError');if(old)old.remove();if(errorNote){old=document.createElement('div');old.id='liveDataError';old.innerHTML=errorNote;overview.insertBefore(old,overview.firstChild);}}
   // gauge
-  const sc=Number.isFinite(Number(d.ecosystem_score))?Number(d.ecosystem_score):null;
+  const sc=measuredScore(d.ecosystem_score);
   document.getElementById('ecoScore').textContent=sc==null?'—':sc;
   const C=389.6; document.getElementById('ecoArc').style.strokeDashoffset=sc==null?C:C-(C*sc/100);
   document.getElementById('ecoArc').style.stroke=sc==null?'var(--ink-3)':sc<40?'var(--crit)':sc<70?'var(--warn)':'var(--ok)';

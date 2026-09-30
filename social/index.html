@@ -274,6 +274,15 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       '</div>'+
     '</div>';
 
+    // Optional report handoff stays separate from the selected workspace tool.
+    var intelligenceWs=STATE.ws,intelligenceToken=C.auth.token(),intelligenceRequestedUrl=location.href;
+    import('/assets/intelligence/workspace.mjs').then(function(module){
+      if(STATE.ws!==intelligenceWs||C.auth.token()!==intelligenceToken||!module.wantsIntelligence(intelligenceRequestedUrl))return;
+      var anchor=document.getElementById('mount');if(!anchor)return;
+      var panel=document.createElement('section');anchor.before(panel);
+      module.mountIntelligence(panel,{C:C,workspace:STATE.ws,role:STATE.role,workspaceName:STATE.wsName});
+    }).catch(function(){ /* Workspace tools remain available if the optional report panel cannot load. */ });
+
     // wire nav
     var nav=document.getElementById('nav');
     nav.addEventListener('click',function(e){

@@ -140,8 +140,8 @@ test('city options preserve country identity for unambiguous filtering', () => {
 test('public Intelligence offers a truthful free preview and registration handoff', () => {
   const html = readFileSync(join(ROOT, 'apps/intelligence/index.html'), 'utf8');
   assert.match(html, /Test any public website now/);
-  assert.match(html, /Register and save this report/);
-  assert.match(html, /intelligence_url/);
+  assert.match(html, /Sign in to save this report/);
+  assert.match(html, /rememberReport/);
   assert.doesNotMatch(html, /External customer websites will be supported through the paid scanner/);
 });
 

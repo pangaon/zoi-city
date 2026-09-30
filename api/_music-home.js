@@ -1,3 +1,4 @@
+import{ownerHomeContent}from'./_owner-home-content.js';
 import{ARTIST_SOURCES}from'../assets/homes/templates/music/sources.mjs';
 import{renderMusic}from'../assets/homes/templates/music/render.mjs';
 import{esc,safeHttps,TEMPLATES}from'../assets/homes/templates/music/model.mjs';
@@ -8,6 +9,6 @@ export function musicHomeContent(entity){const source=ARTIST_SOURCES[entity?.id]
  // Petrelis is an existing sparse artist record. Label/Spotify sources were
  // independently reviewed; never invent an official website on the entity.
  if(entity.id==='78ee3fac-5a97-4e87-88af-57f1eb6a638d'){if(!['thanos petrelis','θάνος πετρέλης'].includes(String(entity.name||'').trim().toLowerCase()))return null;if(entity.website&&!sameSource(entity.website,source.website))return null;}
- return {...source,slug:entity.canonical_slug||entity.slug||source.slug};}
+ return ownerHomeContent({...source,slug:entity.canonical_slug||entity.slug||source.slug},entity,'music');}
 export function renderMusicHome(entity,publishedDesign=null){const artist=musicHomeContent(entity);if(!artist)return null;const design=publishedDesign&&typeof publishedDesign==='object'&&!Array.isArray(publishedDesign)?publishedDesign:{},template=TEMPLATES.includes(design.template)?design.template:'concierge',canonical='https://www.zoi.city/artist/'+encodeURIComponent(artist.slug),title=artist.name+' · Music, appearances & your plans | Zoi',description='Explore '+artist.name+' recordings, source-listed shows and personal plans.';return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><meta name="description" content="'+esc(description)+'"><link rel="canonical" href="'+esc(canonical)+'"><meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+esc(description)+'">'+(safeHttps(artist.portrait)?'<meta property="og:image" content="'+esc(artist.portrait)+'">':'')+'<link rel="stylesheet" href="/assets/homes/templates/music/style.css?v=20260930c"><script src="/assets/zoi-core.js?v=20260930" defer></script></head><body data-template="'+template+'" class="'+template+'"><div id="music-home">'+renderMusic(artist,template,design,{preview:false})+'</div><script type="application/json" id="music-home-content">'+json({artist,design:{...design,template}})+'</script><script type="module" src="/assets/homes/templates/music/app.mjs?v=20260930c"></script></body></html>';}
 export default renderMusicHome;

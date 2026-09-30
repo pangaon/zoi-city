@@ -18,12 +18,13 @@ export function interfaceArtwork(value){
 }
 export function profileMedia(entity,profile){
  const raw=entity?.profile||{},derived=raw._enrich||{},own=key=>Object.hasOwn(raw,key);
- const explicitHero=entity.hero_url||entity.photo_url||entity.photo|| (own('hero_url')?raw.hero_url:own('photo_url')?raw.photo_url:null);
- const ownGallery=own('photo_urls')||own('photos');
- const source=own('photo_urls')?raw.photo_urls:own('photos')?raw.photos:profile.photo_urls||profile.photos||[];
+ const owner=entity?.owner_content||{},ownerProfile=owner.profile||{},ownerHero=Object.hasOwn(owner,'photo_url'),ownerPhotos=Object.hasOwn(ownerProfile,'photos');
+ const explicitHero=ownerHero?owner.photo_url:entity.hero_url||entity.photo_url||entity.photo|| (own('hero_url')?raw.hero_url:own('photo_url')?raw.photo_url:null);
+ const ownGallery=ownerPhotos||own('photo_urls')||own('photos');
+ const source=ownerPhotos?ownerProfile.photos:own('photo_urls')?raw.photo_urls:own('photos')?raw.photos:profile.photo_urls||profile.photos||[];
  const gallery=[],seen=new Set();
  for(const item of Array.isArray(source)?source:[]){const url=httpsImage(typeof item==='string'?item:item?.url);if(!url||(!ownGallery&&interfaceArtwork(url)))continue;const key=imageIdentity(url);if(seen.has(key))continue;seen.add(key);gallery.push(url);if(gallery.length===12)break;}
- const mayFallback=!own('hero_url')&&!own('photo_url');
+ const mayFallback=!ownerHero&&!own('hero_url')&&!own('photo_url');
  const candidates=[profile.hero_url,profile.photo_url,...gallery].filter(v=>httpsImage(v)&&!interfaceArtwork(v));
  const hero=httpsImage(explicitHero)||(mayFallback?candidates[0]||null:null);
  const logo=httpsImage(entity.logo_url||(own('logo_url')?raw.logo_url:profile.logo_url))||(!own('logo_url')&&derived.hero_url&&/logo/i.test(derived.hero_url)?httpsImage(derived.hero_url):null);

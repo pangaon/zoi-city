@@ -1,3 +1,4 @@
+import {categoryEditionBody,categoryEditorialRequest} from './_category-edition.js';
 import {faithHubBody} from './_faith-hub.js';
 /**
  * api/place.js — server-rendered place and category hubs.
@@ -260,6 +261,8 @@ export default async function handler(req, res) {
       }
     }
 
+    const editionScope={country,region,city},editorialRequest=categoryEditorialRequest({category:cat,scope:editionScope});
+    const editorialPending=editorialRequest?rpc('seo_entity',{p_slug:editorialRequest.slug},1200).catch(()=>null):Promise.resolve(null);
     const early=primaryEarly?await primaryEarly:null;if(early?.error)throw early.error;
     const data = early?.data || await rpc('explore_place_listings', {
       p_country: country || null, p_region: region || null, p_city: city || null,
@@ -296,7 +299,10 @@ export default async function handler(req, res) {
     if (city) crumbs.push({ name: city, item: '/in/' + slug(country) + '/' + slug(region) + '/' + slug(city) });
     if (catLabel) crumbs.push({ name: catLabel, item: publicPath });
 
-    let body = '<section class="ph-hero"><div class="ph-hero-copy"><nav class="ph-crumb" aria-label="Breadcrumb">'
+    const editionBody=categoryEditionBody({category:cat,label:catLabel,scope:editionScope,rows,total,page,path:publicPath,editorialEntity:await editorialPending});
+    let body=editionBody;
+    if(!editionBody){
+    body = '<section class="ph-hero"><div class="ph-hero-copy"><nav class="ph-crumb" aria-label="Breadcrumb">'
       + crumbs.map((c, i) => (i ? '<i>/</i>' : '')
         + (i === crumbs.length - 1 ? '<span>' + esc(c.name) + '</span>'
           : '<a href="' + attr(c.item) + '">' + esc(c.name) + '</a>')).join('')
@@ -326,6 +332,8 @@ export default async function handler(req, res) {
       ]) + '</section>';
     }
     body += '<div class="ph-grid">' + rows.map(card).join('') + '</div>';
+
+    }
 
     const pages = Math.ceil(total / PER);
     const base = publicPath;
