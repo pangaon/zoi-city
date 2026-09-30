@@ -62,7 +62,7 @@
       '.zm-panel{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px;}' +
       '.zm-panel h3{margin:0 0 10px;font-size:14px;font-weight:700;color:var(--tx);}' +
       '.zm-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}' +
-      '.zm-item{background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;transition:border-color .15s,background .15s;}' +
+      '.zm-item{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;transition:border-color .15s,background .15s;}' +
       '.zm-item:hover{border-color:var(--line2);}' +
       '.zm-item.zm-on{border-color:var(--acc);background:var(--bg2);}' +
       '.zm-item-top{display:flex;align-items:center;gap:8px;margin-bottom:3px;}' +
@@ -89,10 +89,10 @@
       '.zm-charc.warn{color:var(--gold);}' +
       '.zm-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;padding-top:14px;border-top:1px solid var(--line);}' +
       '.zm-btn{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--line2);' +
-        'background:var(--bg3);color:var(--tx);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;}' +
+        'background:var(--card2);color:var(--tx);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;}' +
       '.zm-btn:hover{border-color:var(--acc);}' +
       '.zm-btn:disabled{opacity:.5;cursor:not-allowed;}' +
-      '.zm-btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;}' +
+      '.zm-btn.pri{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-fg);}' +
       '.zm-btn.pri:hover{filter:brightness(1.08);}' +
       '.zm-btn.gold{background:var(--gold);border-color:var(--gold);color:#1a1400;}' +
       '.zm-btn.danger{color:#ff8080;}' +
@@ -113,7 +113,7 @@
       '.zm-empty{color:var(--dim);text-align:center;padding:34px 12px;font-size:13px;}' +
       '.zm-loading{color:var(--mut);padding:20px;text-align:center;font-size:13px;}' +
       '.zm-mergehint{font-size:12px;color:var(--mut);background:var(--bg);border:1px dashed var(--line2);border-radius:8px;padding:8px 10px;margin-bottom:12px;}' +
-      '.zm-mergehint code{background:var(--bg3);border:1px solid var(--line2);border-radius:4px;padding:1px 5px;color:var(--gold);font-size:11px;}';
+      '.zm-mergehint code{background:var(--card2);border:1px solid var(--line2);border-radius:4px;padding:1px 5px;color:var(--gold);font-size:11px;}';
     var s = doc.createElement('style');
     s.id = STYLE_ID;
     s.textContent = css;

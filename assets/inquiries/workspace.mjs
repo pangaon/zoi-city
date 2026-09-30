@@ -1,10 +1,12 @@
 import {esc,message,subject,confirmed,errorText,requestTracker,time} from './model.mjs';
 // Shared customer/operator UI. All authorization remains inside authenticated RPCs.
 export async function mount(root,{C,workspace=null,listing=null}){
+ root.__zoiInquiryAbort?.abort();const events=new AbortController();root.__zoiInquiryAbort=events;
  const operator=!!workspace;let data=null,detail=null,busy=false,offset=0,filter='',selected=null;const sendRequest=requestTracker(),startRequest=requestTracker();
  const rpc=(fn,args)=>C.api.rpc(fn,args,{auth:'require'});
  if(!document.querySelector('link[data-inquiries-css]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/assets/inquiries/inquiries.css?v=20260930';link.dataset.inquiriesCss='';document.head.append(link);}
  root.innerHTML=`<section class="zinq"><h${operator?'2':'1'}>${operator?'Customer inbox':'Your enquiries'}</h${operator?'2':'1'}><p>Private conversations between signed-in customers and the business team. Replies appear here; email notifications and attachments are not connected.</p><div role="status" aria-live="polite" data-i="status"></div><div data-i="setup"></div>${!operator&&listing?'<form data-start class="card"><h2>Start an enquiry</h2><label>Subject<input name="subject" required maxlength="120"></label><label>Message<textarea name="body" required maxlength="4000"></textarea></label><p>Please avoid sending confidential documents, payment details or urgent requests here.</p><button class="primary">Send enquiry</button></form>':''}<div class="toolbar"><button data-refresh>Refresh</button>${operator?'<label>Status<select data-filter><option value="">All enquiries</option><option value="open">Open</option><option value="waiting">Waiting for customer</option><option value="resolved">Resolved</option></select></label>':''}</div><div class="columns"><section aria-label="Conversation list"><div data-i="list"></div><button data-previous hidden>Previous page</button><button data-next hidden>Next page</button></section><section aria-label="Selected conversation" data-i="detail"><p>Select a conversation to read and reply.</p></section></div></section>`;
+ const wrapper=root.firstElementChild,observer=new MutationObserver(()=>{if(!root.contains(wrapper)){events.abort();observer.disconnect();}});observer.observe(root,{childList:true});
  const $=id=>root.querySelector('[data-i="'+id+'"]'),status=text=>$('status').textContent=text;
  async function act(fn){if(busy)return;busy=true;const controls=[...root.querySelectorAll('button,input,select,textarea')].map(n=>[n,n.disabled]);controls.forEach(([n])=>n.disabled=true);try{await fn();}catch(e){status(errorText(e));}finally{busy=false;controls.forEach(([n,disabled])=>n.disabled=disabled);}}
  function renderList(){
@@ -26,13 +28,13 @@ export async function mount(root,{C,workspace=null,listing=null}){
   if(button.matches('[data-previous]'))act(async()=>{offset=Math.max(0,offset-50);await load();});
   if(button.dataset.enable)act(async()=>{const saved=await rpc('inquiry_settings_save',{p_workspace:workspace,p_listing:button.dataset.enable,p_enabled:button.dataset.value==='true',p_expected_version:Number(button.dataset.version)});if(saved?.ok!==true||!saved.settings?.listing_id)throw Error('inquiry_unavailable');await load();status('Enquiry settings saved.');});
   if(button.matches('[data-older]'))act(async()=>{const older=await rpc('inquiry_thread',{p_thread:selected,p_before:detail.older_cursor});detail.messages=[...older.messages,...detail.messages];detail.older_cursor=older.older_cursor;renderDetail();});
- });
+ },{signal:events.signal});
  root.querySelector('[data-filter]')?.addEventListener('change',event=>{filter=event.target.value;offset=0;act(load);});
  async function refreshSaved(id,receipt){status(receipt);try{await load();await open(id);status(receipt);}catch(_){status(receipt+' The conversation could not refresh. Use Refresh to load it; do not send again.');}}
  root.addEventListener('submit',event=>{event.preventDefault();const form=event.target;const fields=new FormData(form);
   if(form.matches('[data-start]'))act(async()=>{const title=subject(fields.get('subject')),body=message(fields.get('body'));const t=confirmed(await rpc('inquiry_start',{p_listing:listing,p_subject:title,p_body:body,p_request:startRequest.get([listing,title,body])}),'thread');startRequest.clear();form.reset();offset=0;await refreshSaved(t.id,'Enquiry sent and saved. Reference '+t.id+'. Replies will appear in this conversation.');});
   if(form.matches('[data-reply]'))act(async()=>{const body=message(fields.get('body'));confirmed(await rpc('inquiry_reply',{p_thread:selected,p_body:body,p_request:sendRequest.get([selected,body])}),'message');sendRequest.clear();form.reset();await refreshSaved(selected,'Reply sent and saved.');});
   if(form.matches('[data-update]'))act(async()=>{confirmed(await rpc('inquiry_update',{p_workspace:workspace,p_thread:selected,p_expected_version:detail.thread.version,p_status:fields.get('status'),p_assignee:fields.get('assignee')||null}),'thread');await refreshSaved(selected,'Status and assignment saved.');});
- });
+ },{signal:events.signal});
  await act(async()=>{await load();const requested=new URL(location.href).searchParams.get('thread');if(requested&&/^[0-9a-f-]{36}$/i.test(requested))await open(requested);});
 }

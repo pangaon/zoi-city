@@ -1,22 +1,30 @@
 {
   "project": "csebihpaychdkanjjsmz",
-  "id": "release-20260930-preserve-drafts-cleanup",
-  "expires_at": "2026-09-30T02:36:53.227528+00:00",
+  "id": "release-20260930-creator-rescheduling",
+  "expires_at": "2026-09-30T03:06:23.154021+00:00",
   "migrations": [
     {
-      "path": "supabase/migrations/20260930014910_preserve_explicit_listing_drafts.sql",
-      "sha256": "f8598fd5ae548ef50b815799f5bd67ae96d5ea4e5476194bfa95548c3d438a3c"
+      "path": "supabase/migrations/20260930013139_booking_atomic_rescheduling.sql",
+      "sha256": "dc5d1fe310ffa79b468cb9f83feebea68926a60fa48bdc9013ab622ce00dac40"
+    },
+    {
+      "path": "supabase/migrations/20260930013535_creator_briefs_and_deliverables.sql",
+      "sha256": "4a8d4eb2637761b45dd81eb843a2a4b57c45060033ad55fbfe858c9ff949c03a"
     }
   ],
   "workers": [],
   "fixtures": [
     {
-      "path": "ops/qa-booking-planner-cleanup-reviewed-fixture.sql",
-      "sha256": "05b99341b107e58d260139176f3d2d27731414517f7cda8ffe65c1f92f3d4630"
+      "path": "ops/qa-listing-draft-privacy-rollback.sql",
+      "sha256": "b35c2e665f97394ee0c18ca55064ef14488a3eaf41c0f4e4a1cee5a08bbba96c"
     },
     {
-      "path": "tests/database/inquiries-production-rollback.sql",
-      "sha256": "249b4dad50ca36bfb90cac5166094a4083139e783cd36fb6d23726de2d9edb1b"
+      "path": "ops/qa-booking-reschedule-rollback.sql",
+      "sha256": "a4b66e074052f85fca7018aca8a3aa67d30bf43ec32d3caf95209d77e7698169"
+    },
+    {
+      "path": "tests/database/creator-production-rollback.sql",
+      "sha256": "72ca7ee80d0247f6a12ebd1b058dc109071dfd81b48b9aab9e307236dba71d99"
     }
   ]
 }

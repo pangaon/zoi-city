@@ -9,7 +9,7 @@ test('actual listing trigger preserves explicit drafts while maintaining existin
  await sql('create trigger listings_publish_gate before insert on zoi.listings for each row execute function zoi.tg_apply_publish_gate();');
  assert.equal(await sql("insert into zoi.listings(name,publish_status) values('Quality passes','draft') returning publish_status;"),'published','reproduces reviewed production bug');
  const oldRow=await sql('select to_jsonb(l) from zoi.listings l;');
- await sql(file('../../supabase/migrations/20260930014910_preserve_explicit_listing_drafts.sql'));
+ await sql(file('../../supabase/migrations/20260930015254_preserve_explicit_listing_drafts.sql'));
  assert.equal(await sql('select to_jsonb(l) from zoi.listings l;'),oldRow,'migration does not mutate preexisting rows');
  for(const status of ['draft','published',null,'pending_review','hidden','archived'])for(const good of [true,false]){
   const row=JSON.parse(await sql(`insert into zoi.listings(name,publish_status,profile,completeness_score) values('${good?'Quality passes':'Quality fails'}',${status===null?'NULL':"'"+status+"'"},'{"custom":"preserved","gate":{"original":true}}',0.555) returning to_jsonb(listings);`));
