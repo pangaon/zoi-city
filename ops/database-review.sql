@@ -1,5 +1,7 @@
 select jsonb_build_object(
- 'tables',(select jsonb_agg(x) from(select table_name,column_name,data_type,udt_name,is_nullable,column_default from information_schema.columns where table_schema='zoi' and (table_name like 'social_%' or table_name like '%oauth%') order by table_name,ordinal_position)x),
- 'policies',(select jsonb_agg(x) from(select * from pg_policies where schemaname='zoi' and (tablename like 'social_%' or tablename like '%oauth%'))x),
- 'functions',(select jsonb_agg(x) from(select n.nspname,p.proname,pg_get_function_identity_arguments(p.oid) as arguments,pg_get_functiondef(p.oid) as definition,p.proacl from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname in('public','zoi') and (p.proname like 'social_%' or p.proname like '%oauth%'))x)
-) as social_connection_review;
+ 'columns',(select jsonb_agg(x) from(select table_schema,table_name,column_name,data_type,udt_name from information_schema.columns where table_name='app_config')x),
+ 'constraints',(select jsonb_agg(x) from(select c.relname,con.conname,pg_get_constraintdef(con.oid) as definition from pg_constraint con join pg_class c on c.oid=con.conrelid join pg_namespace n on n.oid=c.relnamespace where n.nspname='zoi' and c.relname in('social_channels','social_oauth_states'))x),
+ 'indexes',(select jsonb_agg(x) from(select tablename,indexdef from pg_indexes where schemaname='zoi' and tablename in('social_channels','social_oauth_states'))x),
+ 'cron',(select jsonb_agg(x) from(select jobid,jobname,active,command ilike '%social-publish%' as invokes_social_publisher,command ilike '%social_cron_secret_get%' as uses_secret_get,command ilike '%social_cron_secret%' as refers_secret_key from cron.job)x),
+ 'configured_channel_counts',(select jsonb_agg(x) from(select platform,count(*) as channels,count(*) filter(where access_token is not null and access_token<>'') as with_access_token,count(*) filter(where refresh_token is not null and refresh_token<>'') as with_refresh_token from zoi.social_channels group by platform)x)
+) as social_rotation_review;
