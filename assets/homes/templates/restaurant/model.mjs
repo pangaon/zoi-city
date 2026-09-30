@@ -1,3 +1,4 @@
+export const RESTAURANT_TEMPLATES=['atelier','concierge','table','parea'];
 export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 export const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const text=v=>typeof v==='string'||typeof v==='number'?String(v).trim():'';

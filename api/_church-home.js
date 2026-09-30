@@ -1,7 +1,7 @@
 /** Canonical church home adapter. Unsupported/incomplete parishes return null.
  * No fixture content is ever transplanted onto another church identity.
  */
-import {PARISH,MINISTRIES,DESIGNS} from '../assets/homes/templates/church/data.mjs';
+import {PARISH,MINISTRIES,DESIGNS,PARISH_DETAILS} from '../assets/homes/templates/church/data.mjs';
 import {renderChurch} from '../assets/homes/templates/church/render.mjs';
 import {esc,httpsUrl,parishContent} from '../assets/homes/templates/church/model.mjs';
 const SITE='https://www.zoi.city';
@@ -10,7 +10,7 @@ function sourceMatches(value){try{const u=new URL(value);return u.protocol==='ht
 export function churchHomeContent(entity){
  if(!entity||entity.id!==PARISH.id||entity.entity_type!=='church'||!sourceMatches(entity.website)||entity.marketplace_status==='hidden'||entity.publish_status&&entity.publish_status!=='published')return null;
  const phone=String(entity.phone||PARISH.phone).replace(/[^\d+]/g,'');const normalizedPhone=phone.startsWith('+')?phone:phone.length===10?'+1'+phone:phone.length===11&&phone.startsWith('1')?'+'+phone:PARISH.phone;
- const content={...PARISH,ministries:MINISTRIES,id:entity.id,slug:entity.canonical_slug||entity.slug||PARISH.slug,name:String(entity.name||PARISH.fullName).replace(/ Greek Orthodox Cathedral$/i,''),fullName:String(entity.name||PARISH.fullName),city:String(entity.city||PARISH.city),address:String(entity.address||PARISH.address),phone:normalizedPhone,phoneDisplay:String(entity.phone||PARISH.phoneDisplay),site:httpsUrl(entity.website)||PARISH.site};
+ const content={...PARISH,ministries:MINISTRIES,details:PARISH_DETAILS,id:entity.id,slug:entity.canonical_slug||entity.slug||PARISH.slug,name:String(entity.name||PARISH.fullName).replace(/ Greek Orthodox Cathedral$/i,''),fullName:String(entity.name||PARISH.fullName),city:String(entity.city||PARISH.city),address:String(entity.address||PARISH.address),phone:normalizedPhone,phoneDisplay:String(entity.phone||PARISH.phoneDisplay),site:httpsUrl(entity.website)||PARISH.site};
  return parishContent(content);
 }
 export function renderChurchHome(entity,publishedDesign=null,options={}){

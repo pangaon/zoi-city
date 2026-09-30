@@ -1,0 +1,1 @@
+import{mountEventActions}from'/assets/homes/templates/events/client.mjs';const response=await fetch('../source.json');if(response.ok)mountEventActions(await response.json());

@@ -1,0 +1,2 @@
+import{mountCreatorActions}from'/assets/homes/templates/creator/client.mjs';
+try{const r=await fetch('../source.json');if(!r.ok)throw Error('Source unavailable');mountCreatorActions(await r.json());}catch{const p=document.createElement('p');p.className='fine';p.setAttribute('role','status');p.textContent='Interactive planning could not load. Official creator, ticket and contact links remain available. Reload to try again.';document.querySelector('main').prepend(p);document.querySelectorAll('button,form input,form textarea,form select').forEach(e=>e.disabled=true);}
