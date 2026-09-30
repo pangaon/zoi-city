@@ -3,6 +3,10 @@ import {inspectSourceDocument} from '../../supabase/functions/zoi-enrich/_docume
 import {extractRenderedSource,extractorHash} from './extractor.mjs';
 import {sha256} from '../quality/evidence.mjs';
 
+export async function launchSourceBrowser({executablePath=process.env.CHROMIUM_EXECUTABLE_PATH,launch=async options=>(await import('playwright-core')).chromium.launch(options)}={}){
+ try{return await launch({headless:true,chromiumSandbox:true,env:Object.fromEntries(['PATH','HOME','TMPDIR','XDG_RUNTIME_DIR','DISPLAY','NODE_EXTRA_CA_CERTS'].filter(k=>process.env[k]).map(k=>[k,process.env[k]])),...(executablePath?{executablePath}:{}),args:['--disable-background-networking','--disable-quic','--force-webrtc-ip-handling-policy=disable_non_proxied_udp','--disable-features=WebTransport']});}catch(error){error.source_stage='browser_launch';throw error;}
+}
+export async function verifySourceBrowser(options={}){const browser=await launchSourceBrowser(options);const browserVersion=browser.version?.()||'unknown';try{const context=await browser.newContext({serviceWorkers:'block'});const page=await context.newPage();await page.goto('about:blank');await context.close();}finally{await browser.close();}return {sandbox:true,external_page_requests:0,browser_version:browserVersion};}
 export function allowedRenderRequest(request){return request.method()==='GET'&&['document','script','stylesheet','xhr','fetch','image'].includes(request.resourceType());}
 /** Browser HTTP/WebSocket interception: every page HTTP request is fulfilled through the shared
  * DNS-pinned public-only fetcher and robots gate. No browser cookies/auth forwarded.
@@ -14,7 +18,7 @@ export async function renderOfficialSource(row,{executablePath=process.env.CHROM
  const source=await session.sourceFetch(url.href);
  if(source.status!==200)throw Error('source_http_'+source.status);
  if(/cf-chl-|checking your browser|verify you are human/i.test(source.text))throw Error('source_challenge');
- const browser=await launch({headless:true,chromiumSandbox:true,env:Object.fromEntries(['PATH','HOME','TMPDIR','XDG_RUNTIME_DIR','DISPLAY','NODE_EXTRA_CA_CERTS'].filter(k=>process.env[k]).map(k=>[k,process.env[k]])),...(executablePath?{executablePath}:{}),args:['--disable-background-networking','--disable-quic','--force-webrtc-ip-handling-policy=disable_non_proxied_udp','--disable-features=WebTransport']});
+ const browser=await launchSourceBrowser({executablePath,launch});
  let context;let pending=0;const blocked=[];const requested=[];
  try{
   context=await browser.newContext({serviceWorkers:'block',acceptDownloads:false,viewport:{width:1440,height:1000},userAgent:'ZoiQualityBot/1.0 (+https://www.zoi.city; permitted rendered-source audit)'});

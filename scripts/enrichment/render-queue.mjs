@@ -2,7 +2,8 @@ import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {serviceCredential} from '../quality/ci.mjs';
 import {canonical,sha256} from '../quality/evidence.mjs';
-import {renderOfficialSource} from './render-source.mjs';
+import {sourceFailureReason} from './source-errors.mjs';
+import {renderOfficialSource,verifySourceBrowser} from './render-source.mjs';
 import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
 const PROJECT='https://csebihpaychdkanjjsmz.supabase.co';
 const norm=v=>String(v||'').normalize('NFKC').toLowerCase().replace(/[\p{P}\p{S}\s]+/gu,' ').trim();
@@ -21,15 +22,18 @@ export function automaticRenderedPayload(row,report,hash){
  const {lease,blocked,last_error,status,crawl_status,...previous}=row.existing_enrich||{};
  return{slug:row.slug,website:row.website,lease_id:row.lease_id,profile:{...previous,...fields,crawl_status:'ok',rendered_source_evidence:{sha256:hash,source_sha256:report.source.sha256,render_sha256:report.render.sha256,method:'exact_title_same_host_rendered_source',identity_verified:false}},provenance:{...(previous.provenance||{}),...Object.fromEntries(Object.keys(fields).map(k=>[k,'rendered-official-source:'+report.render.url]))}};
 }
-export async function runRenderQueue({directory='rendered-source-evidence',env=process.env,fetchImpl=fetch,render=renderOfficialSource,log=v=>console.log(JSON.stringify(v))}={}){
- const request=JSON.parse(await readFile(new URL('../../ops/source-render-request.json',import.meta.url),'utf8'));
+export async function runRenderQueue({directory='rendered-source-evidence',env=process.env,fetchImpl=fetch,render=renderOfficialSource,preflight=verifySourceBrowser,requestOverride=null,log=v=>console.log(JSON.stringify(v))}={}){
+ const request=requestOverride||JSON.parse(await readFile(new URL('../../ops/source-render-request.json',import.meta.url),'utf8'));
+
  if(request.enabled!==true||!Number.isFinite(Date.parse(request.expires_at))||Date.parse(request.expires_at)<=Date.now()||request.max_listings_per_run!==3){log({status:'disabled_or_expired',network_requests:0});return;}
+ // Infrastructure must work before credentials or listing leases are requested.
+ try{await preflight();}catch(error){throw Error(sourceFailureReason(error));}
  const key=await serviceCredential(env,fetchImpl,key=>{if(env.GITHUB_ACTIONS==='true')console.log('::add-mask::'+key)});
  const rpc=async(fn,args)=>{const r=await fetchImpl(PROJECT+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:key,...(key.startsWith('eyJ')?{Authorization:'Bearer '+key}:{}),'Content-Type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(15000)});if(!r.ok)throw Error('enrichment_rpc_'+r.status);return r.json()};
  await mkdir(directory,{recursive:true,mode:0o700});
  // A single existing capped queue lease; no parallel/new queue, no arbitrary URL.
  const rows=await rpc('enrich_queue_lease',{p_limit:3});if(!Array.isArray(rows)||rows.length>3)throw Error('enrichment_lease_unconfirmed');
- for(const row of rows){let report;try{report=await render(row);}catch(e){report={schema:1,listing_id:row.listing_id,website:row.website,status:'repair_required',reason:['ENOTFOUND','EAI_AGAIN'].includes(e.code)?'source_dns_unavailable':/timeout/i.test(e.message||'')?'source_render_timeout':/^[a-z_0-9]+$/i.test(e.message||'')?e.message:'source_capture_failed',specialist:'enrichment'};}
+ for(const row of rows){let report;try{report=await render(row);}catch(e){report={schema:1,listing_id:row.listing_id,website:row.website,status:'repair_required',reason:sourceFailureReason(e),specialist:'enrichment'};}
   const hash=sha256(canonical(report));await writeFile(path.join(directory,hash+'.json'),canonical(report),{flag:'wx',mode:0o600});
   const payload=automaticRenderedPayload(row,report,hash);const pending={listing_id:row.listing_id,hash,payload};await writeFile(path.join(directory,hash+'.pending.json'),canonical(pending),{flag:'wx',mode:0o600});
   // Never retry an ambiguous write. Preserve exact pending artifact for reconciliation.
