@@ -3,14 +3,14 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Directory · Zoi</title>
+<title>Discover the Greek world · Zoi</title>
 <meta name="description" content="Search Greek businesses, churches, professionals, festivals and creators across the diaspora. Browse live listings, verified records, and places still awaiting review."/>
 <link rel="canonical" href="https://www.zoi.city/explore"/>
 <meta name="theme-color" content="#080a0e"/>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <meta name="color-scheme" content="dark light">
-<link rel="stylesheet" href="/assets/zoi-theme.css?v=2026mediterranean">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930-readable">
 <style>
 :root{
   /* bridged onto the shared design system — /assets/zoi-theme.css */
@@ -18,7 +18,7 @@
   --bg3:var(--card);
   --acc2:var(--acc);
   --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
-  --btnp-fg:var(--btn-fg);
+  --btnp-fg:var(--on-text);
   --ease:cubic-bezier(.22,.61,.36,1);
 }
 .zoi-header .zoi-search{display:none!important}
@@ -34,7 +34,7 @@ a{color:inherit;text-decoration:none}
 .btn.p:hover{transform:translateY(-1px)}
 .btn.g{background:transparent;border-color:var(--line2);color:var(--tx)}
 .btn.g:hover{background:var(--bg2);border-color:var(--dim)}
-nav{position:sticky;top:0;z-index:60;background:var(--navbg);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid var(--line)}
+.legacy-nav{position:sticky;top:0;z-index:60;background:var(--navbg);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid var(--line)}
 .nv{display:flex;align-items:center;gap:22px;height:62px}
 .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
 .seal{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(150deg,var(--bg3),var(--bg2));border:1px solid var(--line2);font-family:'Fraunces';font-weight:400;font-size:17px;color:var(--gold)}
@@ -54,10 +54,10 @@ nav{position:sticky;top:0;z-index:60;background:var(--navbg);backdrop-filter:blu
 .sbar input{flex:1;border:none;outline:none;background:transparent;font:500 16px 'Hanken Grotesk';color:var(--tx);min-width:0}
 .sbar input::placeholder{color:var(--dim)}
 .filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
-.fpill{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;padding:8px 14px;border:1px solid var(--line);border-radius:8px;color:var(--mut);cursor:pointer;transition:.2s;background:transparent}
+.fpill{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;padding:9px 14px;min-height:42px;border:1px solid var(--line);border-radius:8px;color:var(--mut);cursor:pointer;transition:.2s;background:transparent}
 .fpill:hover{color:var(--tx);border-color:var(--line2)}
 .fpill.on{color:var(--btnp-fg);background:var(--tx);border-color:var(--tx)}
-.fpill b{margin-left:6px;opacity:.55;font-weight:500}
+.fpill b{margin-left:6px;font-weight:500}
 select.city{background:var(--bg2);border:1px solid var(--line);border-radius:8px;color:var(--tx);font:500 13px 'Hanken Grotesk';padding:8px 12px;outline:none;cursor:pointer}
 
 section{padding:clamp(20px,3vw,36px) 0 60px}
@@ -141,8 +141,8 @@ footer a:hover{color:var(--tx)}
   background:transparent;color:var(--tx);cursor:pointer;transition:.2s var(--ease);min-height:34px;
   display:inline-flex;align-items:center;gap:6px;text-decoration:none}
 .lbtn:hover{border-color:var(--acc);color:var(--acc)}
-.lbtn.pri{background:var(--tx);color:var(--btn-fg);border-color:var(--tx)}
-.lbtn.pri:hover{filter:brightness(1.06);color:var(--btn-fg)}
+.lbtn.pri{background:var(--tx);color:var(--on-text);border-color:var(--tx)}
+.lbtn.pri:hover{filter:brightness(1.06);color:var(--on-text)}
 .lbtn.claim{color:var(--gold);border-color:color-mix(in srgb, var(--gold) 45%, transparent)}
 .lbtn.claim:hover{border-color:var(--gold);color:var(--gold)}
 .lverify{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;
@@ -195,14 +195,14 @@ footer a:hover{color:var(--tx)}
   <p class="hsub">Tavernas, churches, lawyers, bakeries, festivals, creators — the living record of the Greek world, searchable with verification status shown on every listing.</p>
   <div class="sbar">
     <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-    <input id="q" placeholder="Try “taverna”, “orthodox church”, “lawyer”…" autocomplete="off"/>
+    <input id="q" aria-label="Search places and people" placeholder="Try “taverna”, “orthodox church”, “lawyer”…" autocomplete="off"/>
     <button class="btn p" onclick="runSearch(true)">Search</button>
   </div>
   <div class="filters" id="type-pills"></div>
   <div class="filters">
-    <select class="city" id="city-sel"><option value="">Every city</option></select>
-    <select class="city" id="country-sel" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
-    <select class="city" id="sort-sel" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
+    <select class="city" id="city-sel" aria-label="City"><option value="">Every city</option></select>
+    <select class="city" id="country-sel" aria-label="Country" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
+    <select class="city" id="sort-sel" aria-label="Sort results" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
     <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
     <button class="mapcta" id="lang-btn" style="color:var(--tx);border-color:var(--line2)" onclick="toggleExploreLang()">🌐 <span id="langTxt">EN</span></button>
     <button class="mapcta" id="surprise-btn" style="color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)" onclick="randomGreekSpot()">🎲 Surprise Spot</button>
@@ -309,7 +309,7 @@ function pillsRender(){
   const el=document.getElementById('type-pills');
   el.innerHTML=TYPES.map(([v,l])=>{
     const n=v?(ST.counts[v]||''):'';
-    return '<button class="fpill'+(ST.type===v?' on':'')+'" onclick="setType(\''+v+'\')">'+esc(l)+
+    return '<button class="fpill'+(ST.type===v?' on':'')+'" aria-pressed="'+String(ST.type===v)+'" onclick="setType(\''+v+'\')">'+esc(l)+
       (n?'<b>'+Number(n).toLocaleString()+'</b>':'')+'</button>';
   }).join('');
 }

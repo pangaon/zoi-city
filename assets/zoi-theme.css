@@ -24,7 +24,7 @@
   --tx:#eef3fa; --mut:#c4d5e8; --dim:#b8c9de;
   --acc:#75d3ff; --aegean:#1f9ec9; --med-blue:#0284c7; --med-deep:#073b6c; --sea:#1f9ec9;
   --gold:#f3d894; --green:#5bc49a; --red:#e0796b;
-  --btn-fg:#ffffff; --btn-bg:#0369a1;      /* primary = Mediterranean Blue */
+  --btn-fg:#ffffff; --btn-bg:#0369a1; --on-text:#062f55; --on-gold:#332607;      /* primary = Mediterranean Blue */
   --ease:cubic-bezier(.22,.61,.36,1);
   --r:18px; --r-sm:12px; --maxw:1200px;
   --shadow:0 22px 44px -26px rgba(0,0,0,.55);
@@ -36,7 +36,7 @@
   --tx:#0b2545; --mut:#4a6180; --dim:#526b89;
   --acc:#0369a1; --aegean:#1f9ec9; --med-blue:#0369a1; --med-deep:#073b6c; --sea:#1f9ec9;
   --gold:#96701c; --green:#1b7a55; --red:#b84a38;
-  --btn-fg:#ffffff; --btn-bg:#0369a1;
+  --btn-fg:#ffffff; --btn-bg:#0369a1; --on-text:#ffffff; --on-gold:#ffffff;
 }
 [data-theme="gold"]{
   /* The formal variant: gold on near-black with Mediterranean highlights. */
@@ -45,12 +45,12 @@
   --tx:#f6f0e2; --mut:#c4b294; --dim:#94856b;
   --acc:#e0be7a; --aegean:#e0be7a; --med-blue:#c49a45; --med-deep:#22160a; --sea:#e0be7a;
   --gold:#e0be7a; --green:#8fbf9f; --red:#d99a86;
-  --btn-fg:#0a0906; --btn-bg:#e0be7a;
+  --btn-fg:#0a0906; --btn-bg:#e0be7a; --on-text:#0a0906; --on-gold:#0a0906;
 }
 
 /* ---- Base ---- */
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:88px}
 body{
   margin:0; color:var(--tx);
   font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
@@ -85,8 +85,8 @@ h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
 .zoi-bar{display:flex;align-items:center;justify-content:space-between;height:68px}
 .zoi-brand{display:flex;align-items:center;gap:12px}
 .zoi-seal{width:36px;height:36px;flex:0 0 36px;border-radius:10px;display:grid;place-items:center;
-  font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:21px;color:var(--btn-fg);
-  background:linear-gradient(150deg,var(--gold),color-mix(in srgb,var(--gold) 55%,#fff));line-height:1}
+  font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:21px;color:#332607;
+  background:linear-gradient(150deg,#f3d894,#fff1cc);line-height:1}
 .zoi-brand b{font-weight:800;font-size:19px;letter-spacing:-.02em}
 .zoi-nav{display:flex;gap:26px}
 .zoi-nav a{color:var(--mut);font-size:15px;transition:color .25s var(--ease)}
@@ -105,11 +105,11 @@ h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
   min-height:46px;transition:transform .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
 .btn svg{width:16px;height:16px}
 .btn:active{transform:translateY(1px)}
-.btn-primary{background:linear-gradient(135deg,#0284c7,#1f9ec9);color:#ffffff;border:none;box-shadow:0 8px 24px -8px rgba(2,132,199,.7)}
-.btn-primary:hover{background:linear-gradient(135deg,#0369a1,#0284c7);transform:translateY(-2px);box-shadow:0 12px 28px -8px rgba(2,132,199,.85)}
+.btn-primary{background:linear-gradient(135deg,#0369a1,#0875a4);color:#ffffff;border:none;box-shadow:0 8px 24px -8px rgba(2,132,199,.7)}
+.btn-primary:hover{background:linear-gradient(135deg,#075985,#0369a1);transform:translateY(-2px);box-shadow:0 12px 28px -8px rgba(2,132,199,.85)}
 .btn-ghost{background:transparent;color:var(--tx);border-color:var(--line2)}
 .btn-ghost:hover{border-color:var(--acc);transform:translateY(-2px)}
-.btn-gold{background:var(--gold);color:var(--btn-fg)}
+.btn-gold{background:var(--gold);color:var(--on-gold)}
 
 /* ---- Cards ---- */
 .card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
@@ -352,6 +352,8 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
   ::view-transition-group(zoi-brand){ animation-duration:.3s; }
 }
 
+/* Content remains fully opaque throughout motion: nested scroll timelines
+   must never multiply opacity or make search results unreadable. */
 /* ── 2. Scroll-driven reveals, in CSS ──────────────────────────────────────
    The old version was an IntersectionObserver that toggled a class, which meant
    content was opacity:0 until JavaScript ran. This runs on the compositor, needs
@@ -382,7 +384,7 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
       translate:none !important; clip-path:none !important;
     }
     @keyframes rise-in{
-      from{ opacity:0; translate:0 18px; }
+      from{ opacity:1; translate:0 10px; }
       to  { opacity:1; translate:0 0; }
     }
 
@@ -402,7 +404,7 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
       animation-range:cover 0% cover 24%;
     }
     @keyframes wipe{
-      from{ clip-path:inset(0 100% 0 0); opacity:.4; }
+      from{ clip-path:inset(0); opacity:1; }
       to  { clip-path:inset(0 0 0 0);    opacity:1; }
     }
 
@@ -421,7 +423,7 @@ a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(-
    never fight over the same element. */
 @supports not (animation-timeline: view()){
   @media (prefers-reduced-motion: no-preference){
-    [data-reveal]{ opacity:0; translate:0 14px;
+    [data-reveal]{ opacity:1; translate:0 10px;
       transition:opacity .5s var(--ease-out), translate .5s var(--ease-out); }
     [data-reveal].in{ opacity:1; translate:0 0; }
   }
