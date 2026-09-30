@@ -1,8 +1,11 @@
+import { churchSourceScope } from './_scope.js';
 import { identityMatches, sourceURL, memberEnrichmentGuard } from '../../../assets/enrichment/member-source.mjs';
 import { extractAssociationCard } from '../../../assets/enrichment/association-cards.mjs';
 /** Lease metadata is authoritative; never infer identity from fetched branding. */
 export function memberLeaseGuard(row, html = '', finalUrl = row.website) {
   if (!row.name || !row.entity_type) return {handled:true,skipSupplementary:true,profile:{crawl_status:'error',last_error:'lease_identity_missing'},provenance:{source_kind:'lease_identity_guard'}};
+  const churchScope=churchSourceScope(row,html,finalUrl);
+  if(churchScope.handled)return churchScope;
   const existing=row.existing_enrich&&typeof row.existing_enrich==='object'?row.existing_enrich:{};
   const listing={name:row.name,entity_type:row.entity_type,website:row.website,profile:{_enrich:existing}};
   const initial=memberEnrichmentGuard({listing,url:row.website,html:''});

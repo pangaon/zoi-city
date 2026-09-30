@@ -1,0 +1,11 @@
+# Gap canary12673: transport passed, source scope failed
+
+Root executed the reviewed three-record sample once. Read-only acceptance found HTTP200, queued3/applied3/unprocessed0, duration3,828ms and stats.ok3. All three protected owner hashes and source fingerprints matched their before-states. No prior nonempty machine field disappeared.
+
+This does not pass the catch-up gate. The Brescia parish's stored website is the root of ortodossia.it. New title/description identified the Italian Orthodox archdiocese, accompanied by12 site photographs and a video; they were not parish-specific evidence. Its before-state had no imported title/description/photo/gallery/video, but already had institution contacts/socials. Root owns exact guarded rollback and public quarantine. Neither restoring the old machine payload nor HTTP200 alone establishes correct parish identity.
+
+Olympia Express's source title matched its listing and added source image fields. Association MOREAS retained an existing damaged-character description and gained no usable media. No render, owner workflow or full-home completion is implied by these fetches. The pilot must remain blocked pending source-scope safeguards and further reviewed acceptance.
+
+Worker candidate adds church institution-homepage detection before generic extraction and supplementary crawling, emits source_scope_mismatch as a blocked error, and reports that separately from successful extraction. It does not invent a parish URL or affiliation. Known reviewed host and generic primary metadata checks are conservative; matching parish primary headings and actual institution records remain distinct.11 local tests include actual worker-handler control flow. The existing database error branch preserves prior evidence and persists blocked_reason; public projections must quarantine that marker while preserving authoritative owner overrides and explicit clears. Dedicated parish pages on shared domains still need scoped extraction evidence; the bounded root-page guard is not universal identity verification.
+
+Private recovery evidence remains in .recovery/logs/gap-canary-private-receipt.json and gap-canary-after-private.json (0600), with sanitized field-diff summary separate. No replay, cron change or production data mutation was performed by this audit.

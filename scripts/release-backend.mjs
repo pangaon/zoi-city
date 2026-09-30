@@ -54,6 +54,19 @@ export async function safeBackendError(response){
  }
  return result;
 }
+// Child output can contain credentials, bundle source or provider response bodies.
+// Classify a bounded sample in memory and return only fixed diagnostic labels.
+export function safeWorkerError(error){
+ const sample=value=>Buffer.isBuffer(value)?value.subarray(0,4096).toString('utf8'):typeof value==='string'?value.slice(0,4096):'';
+ const text=sample(error?.stderr)+'\n'+sample(error?.stdout);
+ let category='details_withheld';
+ if(error?.code==='ETIMEDOUT')category='timeout';
+ else if(/(?:npm (?:ERR!|error).*(?:EAI_AGAIN|ENOTFOUND|ETARGET|ECONNRESET|E429)|FetchError.*registry\.npmjs|npm (?:ERR!|error).*network)/i.test(text))category='npm_fetch';
+ else if(/(?:module not found|cannot find module|could not resolve (?:module|import)|failed to resolve (?:module|import))/i.test(text))category='module_not_found';
+ else if(/(?:\bunauthorized\b|\bforbidden\b|permission denied|access token.*(?:invalid|expired)|HTTP[^\r\n]{0,20}\b(?:401|403)\b)/i.test(text))category='permission';
+ else if(/(?:failed to bundle|bundling failed|failed to build|build failed|bundle generation failed|syntaxerror)/i.test(text))category='build_error';
+ return {category,exit_status:Number.isInteger(error?.status)&&error.status>=0&&error.status<=255?error.status:null};
+}
 export async function runRelease(manifest,{env=process.env,read=readFileSync,fetcher=fetch,deploy=execFileSync,log=console.log}={}){
  if(env.GITHUB_ACTIONS!=='true'||env.GITHUB_REPOSITORY!=='pangaon/zoi-city'||env.GITHUB_REF!=='refs/heads/main')throw Error('Production releases run only in the authorized main CI');
  const release=validateRelease(manifest,{read,attempt:env.GITHUB_RUN_ATTEMPT||'1'});
@@ -74,7 +87,7 @@ export async function runRelease(manifest,{env=process.env,read=readFileSync,fet
  }
  for(const worker of release.workers){
   const args=['--yes','supabase@2.115.0','functions','deploy',worker.name,'--use-api','--project-ref',PROJECT];if(!worker.verifyJwt)args.push('--no-verify-jwt');
-  try{deploy('npx',args,{env,stdio:['ignore','pipe','pipe'],timeout:120000});}catch{throw Error('Worker deployment unconfirmed: '+worker.name+'; inspect before retrying');}
+  try{deploy('npx',args,{env,stdio:['ignore','pipe','pipe'],timeout:120000});}catch(error){const detail=safeWorkerError(error);log(JSON.stringify({worker:worker.name,worker_error:detail}));throw Error('Worker deployment unconfirmed: '+worker.name+' ('+detail.category+'); inspect before retrying');}
   log(JSON.stringify({worker:worker.name,status:'deployed'}));
  }
  for(const fixture of release.fixtures){

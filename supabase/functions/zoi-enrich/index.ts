@@ -572,7 +572,7 @@ Deno.serve(async (req) => {
       }
       const member = memberLeaseGuard(row, got.doc!, got.finalUrl!);
       if (member.handled) {
-        bump(member.profile && "member" in member.profile ? "member-identity-matched" : "member-review-required");
+        bump(member.profile?.last_error === "source_scope_mismatch" ? "source-scope-mismatch" : member.profile && "member" in member.profile ? "member-identity-matched" : "member-review-required");
         batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile: member.profile, provenance: member.provenance });
         continue; // Never run generic metadata or supplementary crawls for a person on a member source.
       }
