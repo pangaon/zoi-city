@@ -29,7 +29,7 @@ export function supplementaryPages(doc,base){
  const origin=new URL(base).origin,result=[];for(const match of String(doc).replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'').matchAll(/<a\b([^>]*)>([\s\S]{0,300}?)<\/a>/gi)){
   const href=attr(match[1],'href'),text=decode(match[2].replace(/<[^>]*>/g,' ')).trim();let url;try{url=new URL(href,base);}catch{continue;}
   if(url.origin!==origin||url.username||url.password||url.search||url.hash||url.href===base||/\.(?:pdf|jpe?g|png|webp|zip)$/i.test(url.pathname))continue;
-  let pathname=url.pathname;try{pathname=decodeURIComponent(pathname);}catch{continue;}const context=text+' '+pathname;const purpose=/\b(?:gallery|galerie|photos|bilder)\b|φωτογραφ|γκαλερί/i.test(context)?'gallery':/\b(?:contact|kontakt|contacto)\b|επικοινων/i.test(context)?'contact':null;
-  if(purpose&&!result.some(x=>x.purpose===purpose))result.push({url:url.href,purpose});if(result.length===2)break;
- }return result;
+  let pathname=url.pathname;try{pathname=decodeURIComponent(pathname);}catch{continue;}const context=text+' '+pathname;const purpose=/\b(?:menu|speisekarte|speisen|speisen-getraenke)\b|μενού|κατάλογος/i.test(context)?'menu':/\b(?:gallery|galerie|photos|bilder)\b|φωτογραφ|γκαλερί/i.test(context)?'gallery':/\b(?:contact|kontakt|contacto)\b|επικοινων/i.test(context)?'contact':null;
+  if(purpose&&!result.some(x=>x.purpose===purpose))result.push({url:url.href,purpose});if(result.length===3)break;
+ }return result.sort((a,b)=>(a.purpose==='menu'?-1:0)-(b.purpose==='menu'?-1:0)).slice(0,2);
 }

@@ -12,3 +12,4 @@ test('empty or page logo values do not resolve into image URLs and logo director
  assert.equal(result.logo.url,'https://cdn.example.com/logos/23131.png');assert.equal(result.hero.url,'https://example.com/gyro.jpeg');assert.equal(result.photos.length,1);
  assert.equal(extractSiteImages('','https://example.com/',{logo:'https://example.com/'}).logo,null);
 });
+test('explicit same-origin menu takes priority within the unchanged two-page budget',()=>{const html='<a href="/contact">Contact</a><a href="/gallery">Gallery</a><a href="/speisen-getraenke/">Speisen & Getränke</a><a href="https://outside.example/menu">Menu</a>';assert.deepEqual(supplementaryPages(html,'https://restaurant.example/'),[{url:'https://restaurant.example/speisen-getraenke/',purpose:'menu'},{url:'https://restaurant.example/contact',purpose:'contact'}]);});

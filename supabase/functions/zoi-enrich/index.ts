@@ -357,7 +357,7 @@ function extract(doc: string, finalUrl: string) {
 
   if (!isAgg) {
     const structuredMenu = extractStructuredMenu(doc, finalUrl);
-    if (structuredMenu) for (const [key, value] of Object.entries(structuredMenu)) put(key, value, "jsonld-menu:" + finalUrl);
+    if (structuredMenu) for (const [key, value] of Object.entries(structuredMenu)) put(key, value, (structuredMenu.menu_source_format === "schema.org" ? "jsonld-menu:" : "html-product-menu:") + finalUrl);
   }
 
   const biz = ldNodes(doc).find((n) => {
@@ -445,7 +445,7 @@ function extract(doc: string, finalUrl: string) {
     if (!/^https?:/.test(abs)) continue;
     for (const [re, key] of [
       [/\b(book|reserve|reservation|κράτηση|ραντεβού)\b/, "booking_url"],
-      [/\b(menu|μενού|κατάλογος)\b/, "menu_url"],
+      [/\b(menu|speisekarte|speisen|μενού|κατάλογος)\b/, "menu_url"],
       [/\b(order|delivery|παραγγελ)\b/, "order_url"],
       [/\b(donate|δωρεά|stewardship)\b/, "give_url"],
     ] as [RegExp, string][]) {
@@ -578,10 +578,11 @@ Deno.serve(async (req) => {
       }
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
       if (!aggregator) {
-        // At most two explicit same-origin pages; each keeps robots, DNS, redirect,
+        // At most two explicit same-origin pages (menu first); each keeps robots, DNS, redirect,
         // byte and timeout guards. No search-engine discovery or guessed URLs.
         for (const page of supplementaryPages(got.doc!, got.finalUrl!)) {
           if (Date.now() - started > 90_000) break;
+          if (page.purpose === "menu" && Array.isArray(profile.menu) && profile.menu.length) continue;
           if (page.purpose === "gallery" && Array.isArray(profile.photo_urls) && profile.photo_urls.length >= 6) continue;
           if (page.purpose === "contact" && profile.phone && profile.email && Object.keys((profile.social || {}) as object).length >= 2) continue;
           const pageVet = await vet(page.url);

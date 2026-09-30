@@ -150,7 +150,7 @@ footer span,footer a{font-size:13px;color:var(--dim)}
     $('p-sub').textContent = sub || '';
     $('p-body').innerHTML = body || '';
     $('p-actions').innerHTML = actions || '';
-    $('panel').scrollIntoView({behavior:'smooth', block:'nearest'});
+    $('panel').scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth', block:'nearest'});
   }
 
   /* Every value carries where it came from. A field with no provenance is a
@@ -215,6 +215,11 @@ footer span,footer a{font-size:13px;color:var(--dim)}
     var raw = $('site').value;
     var bad = localRefusal(raw);
     if(bad){ $('err').textContent = bad; $('site').focus(); return; }
+    if(!C.auth.isSignedIn()){
+      panel('Sign in to continue','Create a private draft and review the information from your business website.','', '<a class="btn btn-primary" href="/social/">Sign in, then return to add your business →</a>');
+      $('p-actions').querySelector('a').focus({preventScroll:true});
+      return;
+    }
 
     var btn = $('go');
     btn.disabled = true; btn.textContent = 'Reading…';
@@ -228,9 +233,9 @@ footer span,footer a{font-size:13px;color:var(--dim)}
       // Signing in is the honest ask: an open endpoint that makes a server fetch
       // a named host is a crawler pointed at other people's sites.
       var m = String((e && e.message) || e);
-      if(/401|403|auth/i.test(m)){
+      if(/401|403|auth|sign[\s-]?in/i.test(m)){
         panel('Sign in first',
-          'One email code. It stops this becoming a way to aim our crawler at other people.',
+          'Sign in to save a private draft and review your business details.',
           '', '<a class="btn btn-primary" href="/social">Sign in and come back →</a>');
       } else {
         panel('That did not go through', m, '', '');
