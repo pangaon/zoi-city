@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from './Auth';
 import { normalizeProfile } from './profile';
-export function BusinessProfile({ slug, back }: { slug: string; back: () => void }) {
+import { BookingPanel } from './Bookings';
+export function BusinessProfile({ slug, back, signIn }: { slug: string; back: () => void; signIn: () => void }) {
   const { client } = useAuth(); const [profile, setProfile] = useState<ReturnType<typeof normalizeProfile>>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [retry, setRetry] = useState(0); const [imageFailed, setImageFailed] = useState(false);
   useEffect(() => { let active = true; setLoading(true); setProfile(null); setError(''); setImageFailed(false); client.request('/rest/v1/rpc/seo_entity', { p_slug: slug }).then(data => { if (active) setProfile(normalizeProfile(data)); }).catch(() => { if (active) setError('This profile could not be loaded. Please try again.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [slug, retry, client]);
   const open = async (url: string) => { try { await Linking.openURL(url); } catch { setError('Your device could not open this link. Please try another contact option.'); } };
@@ -15,6 +16,7 @@ export function BusinessProfile({ slug, back }: { slug: string; back: () => void
     {profile.address ? <View style={s.panel}><Text style={s.heading}>Visit</Text><Text selectable style={s.body}>{profile.address}</Text></View> : null}
     {profile.services.length ? <View style={s.panel}><Text style={s.heading}>Services</Text>{profile.services.map((service, index) => <Text key={index} style={s.body}>• {service}</Text>)}</View> : null}
     {profile.socials.length ? <View style={s.panel}><Text style={s.heading}>Follow their story</Text><View style={s.row}>{profile.socials.map(social => action(social.label, social.url))}</View></View> : null}
+    {profile.id ? <BookingPanel listingId={profile.id} signIn={signIn} /> : null}
     {profile.enrichmentNote ? <Text style={s.small}>{profile.enrichmentNote}</Text> : null}{action('Open canonical Zoi profile', 'https://www.zoi.city/p/' + encodeURIComponent(profile.slug || slug))}
   </> : null}</ScrollView>;
 }
