@@ -519,7 +519,7 @@ var _adminChecked=false;
 var authState={step:'email',email:''};
 var _authEls=null;
 try{var _sa=localStorage.getItem('zoi_auth');if(_sa){var pa=JSON.parse(_sa);if(pa&&pa.access_token)auth=pa;}}catch(e){auth=null;}
-function saveAuth(a){auth=a;try{if(a)localStorage.setItem('zoi_auth',JSON.stringify(a));else localStorage.removeItem('zoi_auth');}catch(e){}}
+function saveAuth(a){auth=a;try{if(a)localStorage.setItem('zoi_auth',JSON.stringify(a));else localStorage.removeItem('zoi_auth');}catch(e){}if(typeof followed!=='undefined')syncFollowAccount();}
 function isAuthed(){return !!(auth&&auth.access_token&&auth.expires_at&&(auth.expires_at*1000)>Date.now());}
 /* --- GoTrue REST calls (resolve to {ok,status,body}; never throw) --- */
 function _gotrue(path,body){
@@ -530,6 +530,7 @@ function authSendOTP(email){return _gotrue('/otp',{email:email,create_user:true}
 function authVerify(email,token){return _gotrue('/verify',{type:'email',email:email,token:token});}
 /* --- Authenticated RPC (Bearer access_token). 401 -> clear session + prompt re-login --- */
 function authRPC(fn,body){
+ var requestToken=auth&&auth.access_token;
  return new Promise(function(res){
   if(!isAuthed()){res(null);return;}
   try{
@@ -537,11 +538,11 @@ function authRPC(fn,body){
    var to=setTimeout(function(){if(ctl)ctl.abort();res(null);},9000);
    fetch(SB.url+'/rest/v1/rpc/'+fn,{
     method:'POST',
-    headers:{'apikey':SB.key,'Authorization':'Bearer '+auth.access_token,'Content-Type':'application/json'},
+    headers:{'apikey':SB.key,'Authorization':'Bearer '+requestToken,'Content-Type':'application/json'},
     body:JSON.stringify(body||{}),
     signal:ctl?ctl.signal:undefined
    }).then(function(r){clearTimeout(to);
-     if(r.status===401||r.status===403){handleAuthExpired();res(null);return null;}
+     if(r.status===401||r.status===403){if(auth&&auth.access_token===requestToken)handleAuthExpired();res(null);return null;}
      if(!r.ok){res(null);return null;}
      return r.json();
    }).then(function(j){res(j||null);},function(){res(null);})
@@ -1012,25 +1013,25 @@ function gradFor(col){return 'linear-gradient(150deg,'+col+', '+col+'cc 130%)';}
 var saved={};try{var _sv=localStorage.getItem('zoi_saved');if(_sv)saved=JSON.parse(_sv)||{};}catch(e){saved={};}
 function saveSaved(){try{localStorage.setItem('zoi_saved',JSON.stringify(saved));}catch(e){}}
 /* ===== followed places ("This is my church" / "Add to my Zoi"), keyed by slug ===== */
-var followed={};try{var _fl=localStorage.getItem('zoi_followed');if(_fl)followed=JSON.parse(_fl)||{};}catch(e){followed={};}
-function saveFollowed(){try{localStorage.setItem('zoi_followed',JSON.stringify(followed));}catch(e){}}
+var followed={},followAccount=null,followBusy={},followControls=[];
 var myZoi=null; /* cached zoi_my_zoi payload */
+function bindFollowControl(node,paint){followControls.push({node:node,paint:paint});paint();}
+function refreshFollowControls(){followControls=followControls.filter(function(c){if(!c.node.isConnected)return false;c.paint();return true;});}
+function syncFollowAccount(){
+ var current=null;try{var raw=JSON.parse(localStorage.getItem('zoi_auth')||'null');if(raw&&raw.access_token&&raw.user_id&&raw.expires_at*1000>Date.now()){auth=raw;current=raw.user_id;}else auth=null;}catch(e){auth=null;}
+ if(current!==followAccount){followAccount=current;followed={};followBusy={};myZoi=null;account=null;if(current)try{var cache=JSON.parse(localStorage.getItem('zoi_followed:'+current)||'{}');Object.keys(cache).forEach(function(slug){var v=cache[slug];if(v&&v.confirmed===true&&v.relation==='follow')followed[slug]=v;});}catch(e){}refreshFollowControls();}
+ return current;
+}
+function saveFollowed(){if(followAccount)try{localStorage.setItem('zoi_followed:'+followAccount,JSON.stringify(followed));}catch(e){}}
+syncFollowAccount();
+window.addEventListener('storage',function(e){if(e.key==='zoi_auth'||e.key===null)syncFollowAccount();});
+window.addEventListener('focus',syncFollowAccount);
 /* the persisted profile id from onboard (identity for the new backend engine) */
 function profileId(){return (profile&&(profile._id||profile.id_uuid))||null;}
 /* relation + verb per entity type for the "this is mine" action */
-function relationFor(t){return {church:'my_church',school:'my_school',business:'my_business',organization:'my_org',event:'attend'}[t]||'follow';}
-function followVerb(t){
- if(t==='church')return lang==='en'?'This is my church':'Η εκκλησία μου';
- if(t==='school')return lang==='en'?'This is my school':'Το σχολείο μου';
- if(t==='event')return lang==='en'?'I’m going':'Θα πάω';
- return lang==='en'?'Add to my Zoi':'Στο Ζωή μου';
-}
-function followedVerb(t){
- if(t==='church')return lang==='en'?'Your church ✓':'Η εκκλησία σου ✓';
- if(t==='school')return lang==='en'?'Your school ✓':'Το σχολείο σου ✓';
- if(t==='event')return lang==='en'?'Going ✓':'Πάω ✓';
- return lang==='en'?'In your Zoi ✓':'Στο Ζωή σου ✓';
-}
+function relationFor(t){return 'follow';}
+function followVerb(t){return lang==='en'?'Follow':'Ακολούθηση';}
+function followedVerb(t){return lang==='en'?'Following':'Ακολουθείς';}
 function relationLabel(rel){
  return {my_church:lang==='en'?'Your church':'Η εκκλησία σου',my_school:lang==='en'?'Your school':'Το σχολείο σου',
   my_business:lang==='en'?'Your spot':'Δικό σου',my_org:lang==='en'?'Your group':'Η ομάδα σου',
@@ -1038,34 +1039,27 @@ function relationLabel(rel){
 }
 /* Follow/unfollow a place via the live engine. slug required. Updates local state + My Zoi cache. */
 function toggleFollow(slug,entType,name,cb){
- if(!slug){ZT(lang==='en'?'This place can’t be added yet':'Δεν μπορεί να προστεθεί ακόμη');return;}
- var pid=profileId();
- var rel=relationFor(entType);
+ if(!slug)return;
+ var actor=syncFollowAccount();
+ if(!actor){ZT(lang==='en'?'Sign in to follow this page':'Συνδέσου για να ακολουθήσεις τη σελίδα');openAuth(function(){toggleFollow(slug,entType,name,cb);});return;}
+ if(followBusy[slug])return;followBusy[slug]=true;
  var on=!!followed[slug];
- if(on){ /* unfollow */
-  delete followed[slug];saveFollowed();if(cb)cb(false);myZoi=null;
-  ZT(lang==='en'?'Removed from your Zoi':'Αφαιρέθηκε από το Ζωή σου');
-  if(pid)sbRPC('zoi_unfollow_place',{p_profile:pid,p_slug:slug});
-  return;
- }
- if(!pid){ /* no identity yet — start onboarding, then they can follow */
-  followed[slug]={slug:slug,type:entType,name:name,relation:rel,_pending:true};saveFollowed();if(cb)cb(true);
-  ZT(lang==='en'?'Saved — build your Zoi to keep it':'Αποθηκεύτηκε — χτίσε το Ζωή σου');
-  return;
- }
- followed[slug]={slug:slug,type:entType,name:name,relation:rel};saveFollowed();if(cb)cb(true);myZoi=null;
- ZT(followedVerb(entType));
- sbRPC('zoi_follow_place',{p_profile:pid,p_slug:slug,p_relation:rel}).then(function(r){
-  /* if blocked, keep optimistic local state; My Zoi will reconcile on next load */
- });
+ return authRPC('zoi_me',{}).then(function(me){
+  if(syncFollowAccount()!==actor)return null;
+  var pid=me&&me.authenticated===true&&me.profile&&me.profile.id;
+  if(!pid)throw Error('identity_unavailable');
+  return authRPC(on?'zoi_unfollow_place':'zoi_follow_place',on?{p_profile:pid,p_slug:slug}:{p_profile:pid,p_slug:slug,p_relation:'follow'});
+ }).then(function(r){
+  if(syncFollowAccount()!==actor)return;
+  if(!r||r.ok!==true||(!on&&(r.slug!==slug||r.relation!=='follow')))throw Error('not_confirmed');
+  if(on)delete followed[slug];else followed[slug]={slug:slug,type:entType,name:name,relation:'follow',confirmed:true};
+  saveFollowed();myZoi=null;refreshFollowControls();if(cb)cb(!on);ZT(on?(lang==='en'?'Unfollowed':'Η ακολούθηση καταργήθηκε'):followedVerb(entType));
+ }).catch(function(){if(syncFollowAccount()===actor)ZT(lang==='en'?'Could not confirm the change. Please try again.':'Δεν επιβεβαιώθηκε η αλλαγή. Δοκίμασε ξανά.');}).then(function(){if(followAccount===actor)delete followBusy[slug];});
 }
 /* When a profile id first appears, flush any pending (pre-identity) follows to the engine. */
 function flushPendingFollows(){
- var pid=profileId();if(!pid)return;
- Object.keys(followed).forEach(function(slug){
-  var f=followed[slug];if(f&&f._pending){f._pending=false;sbRPC('zoi_follow_place',{p_profile:pid,p_slug:slug,p_relation:f.relation||relationFor(f.type)});}
- });
- saveFollowed();
+ /* Legacy device-only optimistic entries are not authenticated consent to write. */
+ syncFollowAccount();
 }
 /* ===== sample fallbacks (so the app is alive if egress blocked) ===== */
 var SAMPLE_FEATURED=[
@@ -1106,7 +1100,7 @@ function listingCard(it,i){
  var rate=(it.rating)?'<span class="rating">'+svIco('star','',12).replace('stroke:','fill:#c79a4b;stroke:')+(+it.rating).toFixed(1)+'</span>':'';
  var slug=it.slug||null;
  var isFollowed=!!(slug&&followed[slug]);
- var affBadge=isFollowed?'<span class="tag go" style="margin-bottom:1px">'+svIco('check','#2f7d5c',10)+relationLabel((followed[slug]&&followed[slug].relation)||relationFor(it.entity_type))+'</span>':'';
+ var affBadge=isFollowed?'<span data-follow-badge class="tag go" style="margin-bottom:1px">'+svIco('check','#2f7d5c',10)+relationLabel((followed[slug]&&followed[slug].relation)||relationFor(it.entity_type))+'</span>':'';
  var body=el('div','lbody');
  body.innerHTML='<div class="lcat">'+esc(it.category||L(m.l))+'</div>'
   +(affBadge||'')
@@ -1119,8 +1113,8 @@ function listingCard(it,i){
  lrow.innerHTML=rate||'<span class="tag gold">'+esc(L(m.l))+'</span>';
  if(slug){
   var qb=el('button','btn sm');
-  function paintQ(){var on=!!followed[slug];qb.className='btn '+(on?'go':'glass')+' sm';qb.style.padding='6px 10px';qb.style.fontSize='10.5px';qb.innerHTML=svIco(on?'check':(it.entity_type==='church'?'church':'star'),on?'#fff':'#0c2f4e',12)+(on?(lang==='en'?'Saved':'Έγινε'):(it.entity_type==='church'?(lang==='en'?'My church':'Δική μου'):(lang==='en'?'Add':'Πρόσθεσε')));}
-  paintQ();qb.addEventListener('click',function(e){e.stopPropagation();toggleFollow(slug,it.entity_type,it.name,function(){paintQ();var nb=affBadge;c.classList.toggle('followed-card');});});
+  function paintQ(){var on=!!followed[slug];qb.className='btn '+(on?'go':'glass')+' sm';qb.style.padding='6px 10px';qb.style.fontSize='10.5px';qb.textContent=on?followedVerb(it.entity_type):followVerb(it.entity_type);c.classList.toggle('followed-card',on);var badge=body.querySelector('[data-follow-badge]');if(badge&&!on)badge.remove();}
+  bindFollowControl(qb,paintQ);qb.addEventListener('click',function(e){e.stopPropagation();toggleFollow(slug,it.entity_type,it.name,function(){if(qb.isConnected)paintQ();});});
   lrow.appendChild(qb);
  }
  c.addEventListener('click',function(){openEntity(it.slug||it.id,it);});
@@ -1180,12 +1174,12 @@ function renderEntity(ent,live){
   +(badges?'<div class="dhbadges">'+badges+'</div>':'');
  d.appendChild(hero);
  var inner=el('div','inner');d.appendChild(inner);
- /* primary affiliation action: "This is my church" / "Add to my Zoi" — wired to zoi_follow_place (NOT owner-claim) */
+ /* Generic authenticated Follow; separate from affiliation and ownership. */
  var fslug=ent.slug||null;
  var followRow=el('div','ctarow');followRow.style.marginTop='16px';
  var fbtn=el('button','btn');
  function paintFollow(){var on=!!(fslug&&followed[fslug]);fbtn.className='btn '+(on?'go':(ent.entity_type==='church'?'sea':'gold'))+' wide';fbtn.innerHTML=svIco(on?'check':(ent.entity_type==='church'?'church':'star'),on?'#fff':(ent.entity_type==='church'?'#fff':'#3a2706'),15)+(on?followedVerb(ent.entity_type):followVerb(ent.entity_type));}
- if(fslug){paintFollow();fbtn.addEventListener('click',function(){toggleFollow(fslug,ent.entity_type,ent.name,function(){paintFollow();});});followRow.appendChild(fbtn);inner.appendChild(followRow);}
+ if(fslug){bindFollowControl(fbtn,paintFollow);fbtn.addEventListener('click',function(){toggleFollow(fslug,ent.entity_type,ent.name,function(){if(fbtn.isConnected)paintFollow();});});followRow.appendChild(fbtn);inner.appendChild(followRow);}
  /* save + quick actions */
  var actions=el('div','ctarow');actions.style.marginTop='10px';
  var sid=ent.id||ent.slug||ent.name;
@@ -1223,7 +1217,7 @@ function renderEntity(ent,live){
  /* reviews (live, optional) */
  if(ent.slug){
   var rWrap=el('div');inner.appendChild(rWrap);
-  sbRPC('zoi_listing_reviews',{slug:ent.slug}).then(function(rr){
+  sbRPC('zoi_listing_reviews',{p_slug:ent.slug}).then(function(rr){
    var revs=rr?(rr.reviews||(Array.isArray(rr)?rr:[])):[];
    if(!revs||!revs.length)return;
    rWrap.appendChild(el('div','dsec-t',lang==='en'?'Reviews':'Κριτικές'));
@@ -1568,13 +1562,11 @@ function eventCardEl(ev,i){
  c.addEventListener('click',function(){openEntity(ev.slug||ev.id,Object.assign({entity_type:'event'},ev));});
  var slug=ev.slug||null;
  var btn=el('button','btn glass sm');
- if(slug){ /* wired to zoi_follow_place(attend) when we can */
-  function paintF(){var on=!!followed[slug];if(on){btn.className='btn go sm';btn.innerHTML=svIco('check','#fff',14)+(lang==='en'?'Going':'Πάω');}else{btn.className='btn glass sm';btn.innerHTML=svIco('check','#0c2f4e',14)+(lang==='en'?'I’m going':'Θα πάω');}}
-  paintF();btn.addEventListener('click',function(e){e.stopPropagation();toggleFollow(slug,'event',ev.name,function(){paintF();});});
- }else{ /* fallback: local-only going flag */
-  var key='zoi_going_'+(ev.id||i),going=false;try{going=localStorage.getItem(key)==='1';}catch(e){}
-  function paintG(){if(going){btn.className='btn go sm';btn.innerHTML=svIco('check','#fff',14)+(lang==='en'?'Going':'Πάω');}else{btn.className='btn glass sm';btn.innerHTML=svIco('check','#0c2f4e',14)+(lang==='en'?'I’m going':'Θα πάω');}}
-  paintG();btn.addEventListener('click',function(e){e.stopPropagation();going=!going;try{localStorage.setItem(key,going?'1':'0');}catch(e){}paintG();ZT(going?(lang==='en'?'See you there ✦':'Τα λέμε εκεί ✦'):(lang==='en'?'Removed':'Αφαιρέθηκε'));});
+ if(slug){ /* Generic Follow does not assert attendance. */
+  function paintF(){var on=!!followed[slug];if(on){btn.className='btn go sm';btn.innerHTML=svIco('check','#fff',14)+followedVerb('event');}else{btn.className='btn glass sm';btn.innerHTML=svIco('check','#0c2f4e',14)+followVerb('event');}}
+  bindFollowControl(btn,paintF);btn.addEventListener('click',function(e){e.stopPropagation();toggleFollow(slug,'event',ev.name,function(){if(btn.isConnected)paintF();});});
+ }else{
+  btn.disabled=true;btn.textContent=lang==='en'?'Follow unavailable':'Η ακολούθηση δεν είναι διαθέσιμη';
  }
  c.appendChild(btn);return c;
 }
@@ -2006,8 +1998,8 @@ function scrMyZoi(b){
    sug.slice(0,4).forEach(function(s,i){var c=el('div','card tap evt');c.style.animationDelay=(i*45)+'ms';
     c.innerHTML='<div class="art-thumb" style="width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(150deg,#0a4d8c,#1f9ec9)">'+svIco('church','#fff',24)+'</div><div class="evt-main"><h4>'+esc(s.name)+'</h4><p>'+svIco('mappin','#9a6f24',12)+esc(s.city||'')+'</p></div>';
     c.addEventListener('click',function(){openEntity(s.slug||s.name,{name:s.name,entity_type:'church',city:s.city,slug:s.slug});});
-    var fb=el('button','btn sea sm');function pf(){var on=!!(s.slug&&followed[s.slug]);fb.className='btn '+(on?'go':'sea')+' sm';fb.innerHTML=svIco(on?'check':'church','#fff',13)+(on?(lang==='en'?'Your church ✓':'Δική σου ✓'):(lang==='en'?'Follow your church':'Η εκκλησία μου'));}
-    pf();fb.addEventListener('click',function(e){e.stopPropagation();toggleFollow(s.slug,'church',s.name,function(){pf();myZoi=null;});});c.appendChild(fb);
+    var fb=el('button','btn sea sm');function pf(){var on=!!(s.slug&&followed[s.slug]);fb.className='btn '+(on?'go':'sea')+' sm';fb.innerHTML=svIco(on?'check':'church','#fff',13)+(on?followedVerb('church'):followVerb('church'));}
+    bindFollowControl(fb,pf);fb.addEventListener('click',function(e){e.stopPropagation();toggleFollow(s.slug,'church',s.name,function(){if(fb.isConnected)pf();myZoi=null;});});c.appendChild(fb);
     sl.appendChild(c);});
    sugSec.appendChild(sl);
   }
