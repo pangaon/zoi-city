@@ -296,6 +296,27 @@
         "device validation",
         "live isolated published availability and customer acceptance"
       ]
+    },
+    {
+      "id": "volunteer-programs",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "explicit organization invitations and custom deep links",
+        "public opportunities and registration snapshots",
+        "authenticated signup and cancellation",
+        "foreground registration refresh",
+        "owner/admin/editor program and shift editing",
+        "viewer read-only access",
+        "shared timezone and DST validation",
+        "private volunteer rosters",
+        "share invitation"
+      ],
+      "acceptance": "Real native web-export HTTP: anonymous empty opportunities, authenticated private draft program, future shift, roster, shift cancellation, program archive; 390px without overflow. Never published QA opportunities.",
+      "required": [
+        "device validation",
+        "live public signup/cancellation acceptance"
+      ]
     }
   ],
   "architecture": {
@@ -309,7 +330,8 @@
     "zoi://community",
     "zoi://grow",
     "zoi://business/:slug",
-    "zoi://tickets/:eventUUID"
+    "zoi://tickets/:eventUUID",
+    "zoi://volunteer/:workspaceUUID"
   ],
   "releaseGates": [
     "TypeScript",
