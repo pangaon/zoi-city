@@ -13,6 +13,7 @@
 // Talks to Postgres directly (zoi schema is not exposed to PostgREST). Isolated.
 
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { authenticatedUser, canAdministerListing, isUuid, safeReturnUrl } from "../_shared/delivery-auth.ts";
 import postgres from "https://deno.land/x/postgresjs@v3.4.4/mod.js";
 
 const cors = {
@@ -36,15 +37,17 @@ Deno.serve(async (req) => {
   // ===================== SAFETY GATE =====================
   // No live key => create NOTHING. Inert by design.
   const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
-  if (!STRIPE_SECRET_KEY) {
-    return json({ ok: false, staged: true, reason: "awaiting live keys" });
+  if (!STRIPE_SECRET_KEY || Deno.env.get("DELIVERY_PAYMENTS_ENABLED") !== "on") {
+    return json({ ok: false, staged: true, reason: "delivery payments are not enabled" });
   }
   // ======================================================
 
+  const userId=await authenticatedUser(req);
+  if(!userId)return json({ok:false,error:"sign_in_required"},401);
   let body: any;
   try { body = await req.json(); } catch { return json({ ok: false, error: "invalid JSON" }, 400); }
   const { order_id } = body ?? {};
-  if (!order_id) return json({ ok: false, error: "order_id required" }, 400);
+  if (!isUuid(order_id)) return json({ ok: false, error: "order_id required" }, 400);
 
   const sql = postgres(Deno.env.get("SUPABASE_DB_URL")!, { prepare: false });
   try {
@@ -58,10 +61,11 @@ Deno.serve(async (req) => {
       limit 1`;
     if (rows.length === 0) return json({ ok: false, error: "order not found" }, 404);
     const order = rows[0];
+    if(!await canAdministerListing(sql,order.listing_id,userId))return json({ok:false,error:"not_authorized"},403);
 
     // Idempotency at the data layer: never double-charge an order.
     if (order.stripe_ref) {
-      return json({ ok: true, already_charged: true, order_id, stripe_ref: order.stripe_ref });
+      return json({ ok: true, payment_intent_exists: true, payment_confirmed: false, order_id, stripe_ref: order.stripe_ref });
     }
 
     const fees = order.fees ?? {};
@@ -74,8 +78,10 @@ Deno.serve(async (req) => {
     if (!Number.isFinite(zoiMargin) || zoiMargin < 0) return json({ ok: false, error: "invalid zoi_margin on order" }, 422);
 
     const currency = String(fees.currency ?? "usd").toLowerCase();
+    if(!["usd","eur","cad"].includes(currency) || zoiMargin>customerFee)return json({ok:false,error:"invalid_fee_configuration"},422);
     const amount = toMinor(customerFee);                 // total charged to customer
-    const applicationFee = toMinor(zoiMargin);           // Zoi's cut = customer_fee - provider_cost
+    const applicationFee = toMinor(zoiMargin);
+    if(!Number.isSafeInteger(amount)||amount<=0||amount>99999999)return json({ok:false,error:"invalid_amount"},422);           // Zoi's cut = customer_fee - provider_cost
 
     // Destination charge: charge on platform, transfer to merchant, keep app fee.
     // Idempotency-Key = delivery_order id => safe to retry without double charge.
@@ -92,6 +98,7 @@ Deno.serve(async (req) => {
 
     const resp = await fetch("https://api.stripe.com/v1/payment_intents", {
       method: "POST",
+      signal: AbortSignal.timeout(15000),
       headers: {
         "Authorization": `Bearer ${STRIPE_SECRET_KEY}`,
         "Content-Type": "application/x-www-form-urlencoded",
@@ -104,22 +111,25 @@ Deno.serve(async (req) => {
       return json({ ok: false, error: "stripe error", detail: pi?.error?.message ?? pi }, 502);
     }
 
+    if(typeof pi.id!=="string"||!pi.id.startsWith("pi_"))return json({ok:false,error:"invalid_provider_receipt"},502);
     // Persist the PaymentIntent id on the order. status lifecycle is advanced
     // by a separate, founder-approved step — we only record the reference here.
-    await sql`update zoi.delivery_orders set stripe_ref = ${pi.id} where id = ${order.id}`;
+    const saved=await sql`update zoi.delivery_orders set stripe_ref = ${pi.id} where id = ${order.id} returning id`;
+    if(saved.length!==1)return json({ok:false,error:"receipt_not_persisted"},503);
 
     return json({
       ok: true,
       order_id: order.id,
       stripe_ref: pi.id,
       payment_intent_status: pi.status,
+      payment_confirmed: false,
       amount,
       currency,
       application_fee_amount: applicationFee,
       destination,
     });
   } catch (e) {
-    return json({ ok: false, error: String(e?.message ?? e) }, 500);
+    return json({ ok: false, error: String(e instanceof Error ? e.message : e) }, 500);
   } finally {
     await sql.end();
   }

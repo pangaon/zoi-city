@@ -1,10 +1,10 @@
 {
-  "updated_at": "2026-09-30T00:21:00Z",
+  "updated_at": "2026-09-30T00:57:00Z",
   "production_web": {
-    "commit": "bd06a1b",
-    "deployment": "dpl_9Vw26DX13zdacrsJVUxzLrPbTKHi",
+    "commit": "6fce553042d71a50c5cce345b798302b25e38b77",
+    "deployment": "dpl_DN8ZPUwMpLrJ843M2SdNu8kHU3FS",
     "status": "READY",
-    "checks": "8 public route checks; mobile homepage width390 and menu verified"
+    "checks": "8 public routes; actual authenticated private operations CRUD/history/reload; 390px venue studio 24 seats and 3D render"
   },
   "database": {
     "controlled_restart": "2026-09-29T23:54:42Z",
@@ -19,29 +19,36 @@
       "20260930000829_atomic_community_publish",
       "20260930001738_business_operations_foundation",
       "20260930001746_safe_email_delivery",
-      "20260930001839_venue_plans_and_atomic_seat_holds"
+      "20260930001839_venue_plans_and_atomic_seat_holds",
+      "20260930003844_public_search_visibility_and_sitemap",
+      "20260930004013_bound_canonical_normalization_work",
+      "20260930004059_booking_services_resources_and_reservations",
+      "20260930004540_organization_volunteer_scheduling",
+      "20260930005210_public_related_visibility",
+      "20260930005338_social_stats_workspace_authorization"
     ]
   },
   "workers": {
     "zoi-feed-publish": 7,
     "social-publish": 14,
     "email-send": 13,
-    "email-unsubscribe": 1
+    "email-unsubscribe": 1,
+    "delivery-charge": 11,
+    "delivery-connect-onboard": 11,
+    "zoi-enrich": 31
   },
   "release_guards": {
-    "publishing_crons": "paused pending matching frontend verification",
+    "publishing_crons": "resumed after second-release verification; queue empty at resume",
     "email_delivery": "not enabled; no real marketing messages sent",
-    "named_seating": "disabled pending production transaction verification"
+    "named_seating": "enabled after production rollback full-flow verification",
+    "delivery_payments": "disabled; signed-in ownership checks deployed, no charges"
   },
   "mobile": {
     "android_apk": "https://expo.dev/artifacts/eas/YoBJQIVEIzHCfK8m6QGW2KH-gvYQtn4PymmsUDFq1LY.apk",
     "ios_simulator_archive": "https://expo.dev/artifacts/eas/5SJDOKzRs7I1UydF9kzT3LvhbkIPhevMULgmnrmiLZc.tar.gz",
     "binary_source_commit": "6e93a44",
     "later_source_local_checks_only": [
-      "6224f5c",
-      "1bc2a4f",
-      "72e691d",
-      "2268f20"
+      "through 3f68373: 54 tests, TypeScript and Expo export; browser verification includes real private bookings and volunteer operator RPCs; no physical-device acceptance"
     ],
     "physical_ios_distribution": "signing credentials not configured",
     "observed_credit_usage": {
@@ -58,5 +65,19 @@
     "Run exact mobile install toolchain and tests before cloud builds",
     "Inspect failed build before any retry; never duplicate active jobs",
     "Use local PostgreSQL and bounded production rollback checks for backend verification"
-  ]
+  ],
+  "third_release_candidate": {
+    "status": "local validation, not yet production",
+    "checks": [
+      "400 local checks passed, 6 database suites explicitly skipped in generic runner",
+      "19 real PostgreSQL SEO/volunteer/stats checks passed separately",
+      "booking 19 real PostgreSQL checks previously passed by specialist",
+      "54 native source tests passed"
+    ],
+    "limitations": [
+      "No cloud binaries for latest source yet",
+      "No persistent public QA entities or live paid transactions",
+      "Provider credential/approval gaps remain"
+    ]
+  }
 }
