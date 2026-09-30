@@ -449,6 +449,7 @@ select option{background:var(--card)!important;color:var(--tx)!important}
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Zoi">
+<link rel="stylesheet" href="/assets/tickets/table-inventory-operator.css?v=20260930-1">
 <link rel="stylesheet" href="/assets/tickets/venue-studio.css?v=20260930-tables4">
 </head>
 <body>
@@ -1222,8 +1223,8 @@ function updateNav(){
       + '<button class="nav-link" data-act="signout">Sign out</button>';
   } else { nr.innerHTML=''; }
 }
-function switchWs(){ localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
-function signOut(){ clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null,events:[],types:{},expanded:{},q:'',when:'all',sort:'soon'}; updateNav(); renderSignIn('Signed out.'); }
+function switchWs(){ closeGen(); localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
+function signOut(){ closeGen(); clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null,events:[],types:{},expanded:{},q:'',when:'all',sort:'soon'}; updateNav(); renderSignIn('Signed out.'); }
 
 /* ---- soft-identity bridge (unify with zoi.city onboarding) ---- */
 function zoiKnownEmail(){try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);var m=/^zoi_linked_(.+@.+\..+)$/.exec(k);if(m)return m[1];}var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.email)return p.email;}catch(e){}return null;}
@@ -1281,7 +1282,7 @@ function renderWorkspacePicker(workspaces){
         + '<div class="arr">→</div></button>').join('')
     + '</div></div></div>';
 }
-function pickWs(id){ localStorage.setItem('zoi_ws', id); DASH.ws=id; updateNav(); loadDashboard(); }
+function pickWs(id){ closeGen(); localStorage.setItem('zoi_ws', id); DASH.ws=id; updateNav(); loadDashboard(); }
 
 function renderNoWorkspace(){
   app.innerHTML = '<div class="center-wrap"><div class="auth-card">'
@@ -1517,6 +1518,7 @@ function evCard(ev){
     +   '<button class="tkx-btn" data-tone="door" data-act="door" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'" data-when="'+esc(when||'')+'">'+ico('scan')+' Door mode</button>'
     +   '<button class="tkx-btn" data-act="attendees" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'" data-when="'+esc(when||'')+'">Attendees</button>'
     +   '<button class="tkx-btn" data-act="tiers" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'">Ticket tiers</button>'
+    +   '<button class="tkx-btn" data-act="tableinventory" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'">Table inventory</button>'
     +   '<button class="tkx-btn" data-act="expand" data-ev="'+esc(ev.id)+'" aria-pressed="'+(expanded?'true':'false')+'">'+(expanded?'Hide capacity':'Show capacity')+'</button>'
     +   '<button class="tkx-btn" data-act="dup" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'">Duplicate</button>'
     +   '<button class="tkx-btn" data-act="manifest" data-ev="'+esc(ev.id)+'" data-name="'+esc(ev.name||'')+'" data-when="'+esc(when||'')+'">Print manifest</button>'
@@ -1808,13 +1810,27 @@ async function launchDoor(evId, name, when){
 /* ═══════════════════════════════════════════════════════════════════
    MODALS: create event, tiers, duplicate, QR, shortcuts
    ═══════════════════════════════════════════════════════════════════ */
+let tableInventoryDispose=null,tableInventoryEpoch=0;
+function clearTableInventory(){tableInventoryEpoch++;tableInventoryDispose?.();tableInventoryDispose=null;}
+async function openTableInventory(eventId,name){
+  const workspace=DASH.ws;let actor;try{actor=gaIdentity().actor;}catch{return renderSignIn('Sign in again to manage table inventory.');}if(actor==='guest'||!workspace)return renderSignIn();
+  openGen('Table inventory','Owner and administrator settings for existing venue tables.','<div id="tableInventoryMount">Loading editor…</div>');
+  const epoch=tableInventoryEpoch;const root=document.getElementById('tableInventoryMount');
+  const identity=()=>{try{return DASH.ws===workspace?gaIdentity().actor:null;}catch{return null;}};
+  try{const {mountTableInventory}=await import('/assets/tickets/table-inventory-operator.mjs?v=20260930-1');if(epoch!==tableInventoryEpoch||!root.isConnected||identity()!==actor)return;tableInventoryDispose=mountTableInventory(root,{workspace,event:eventId,eventName:name,getActor:identity,call:(fn,args)=>{if(identity()!==actor)throw Error('Your account changed. Reopen the editor.');return rpc(fn,args,getAuth()?.access_token);}});}
+  catch{if(epoch===tableInventoryEpoch&&root.isConnected)root.textContent='The table editor could not load. Close this window and try again.';}
+}
+window.addEventListener('storage',e=>{if(e.key==='zoi_auth'&&tableInventoryDispose)closeGen();});
+window.addEventListener('zoi:auth-change',()=>{if(tableInventoryDispose)closeGen();});
 function openGen(title, desc, bodyHtml){
+  clearTableInventory();
   $('#genTitle').textContent=title; $('#genDesc').textContent=desc||''; $('#genBody').innerHTML=bodyHtml;
   $('#genModal').classList.add('open');
   const f=$('#genBody').querySelector('input,select,textarea,button');
   if(f) setTimeout(()=>f.focus(),40);
 }
 function closeGen(){
+  clearTableInventory();
   const m=$('#genModal');
   if(!m.classList.contains('open')) return;
   m.classList.remove('open');
@@ -2053,6 +2069,7 @@ const ACTIONS = {
   qr: t => showQR(t.dataset.url, t.dataset.name),
   printqr: t => printQr(t.dataset.url, t.dataset.name),
   expand: t => toggleExpand(t.dataset.ev),
+  tableinventory: t => openTableInventory(t.dataset.ev,t.dataset.name),
   tiers: t => openManageTickets(t.dataset.ev, t.dataset.name),
   addtier: () => doAddType(),
   dup: t => openDuplicate(t.dataset.ev, t.dataset.name),

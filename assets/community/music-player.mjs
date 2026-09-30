@@ -5,7 +5,7 @@ const KEY='zoi.music.player.position.v1';
 export function createMusicPlayer({onClose=()=>{},onPrevious=null,onNext=null,mountContext=null}={}){
  const panel=document.createElement('section');panel.className='zmp';panel.hidden=true;panel.setAttribute('aria-label','Floating music player');document.body.append(panel);
  const abort=new AbortController();let current=null,position=null,drag=null,compact=true,contextCleanup=null,contextOpen=false,youtube=null,youtubeIsReady=false,mediaGeneration=0;
- if(!document.querySelector('link[data-zmp-style]')){const css=document.createElement('link');css.rel='stylesheet';css.href='/assets/community/music-player.css?v=20260930-direct';css.dataset.zmpStyle='';css.addEventListener('load',()=>{if(!panel.hidden)place()});document.head.append(css)}
+ if(!document.querySelector('link[data-zmp-style]')){const css=document.createElement('link');css.rel='stylesheet';css.href='/assets/community/music-player.css?v=20260930-bounds';css.dataset.zmpStyle='';css.addEventListener('load',()=>{if(!panel.hidden)place()});document.head.append(css)}
  try{position=JSON.parse(localStorage.getItem(KEY)||'null')}catch{}
  const small=()=>matchMedia('(max-width:760px)').matches;
  function place(value=position){const width=innerWidth,height=window.visualViewport?.height||innerHeight,box={width:panel.offsetWidth||340,height:panel.offsetHeight||270};position=boundedPlayerPosition(value,{width,height:height-(small()?84:0)},box);if(!value&&small())position.y=Math.max(76,height-box.height-96);panel.style.left=position.x+'px';panel.style.top=position.y+'px';}
