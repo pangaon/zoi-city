@@ -80,7 +80,8 @@ const BANNED_PROFILE_KEYS = /^(rating|rating_count|ratingvalue|reviewcount|aggre
  * Plus the bookkeeping keys the enrichment writer adds alongside its fields. */
 const RESERVED_PROFILE_KEYS = new Set(['_enrich', '_geo', '_meta']);
 const ENRICH_META_KEYS = new Set(['provenance', 'source_url', 'checked_at',
-                                  'blocked', 'blocked_reason', 'last_error']);
+                                  'blocked', 'blocked_reason', 'last_error', 'status', 'crawl_status', 'lease',
+                                  'last_attempt_at', 'last_success_at', 'media_expires_at']);
 
 /**
  * The profile a page should render.
@@ -164,31 +165,32 @@ const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
 const DAY_LABEL = { mon: 'Mon', tue: 'Tue', wed: 'Wed', thu: 'Thu', fri: 'Fri', sat: 'Sat', sun: 'Sun' };
 const DAY_SCHEMA = { mon: 'Monday', tue: 'Tuesday', wed: 'Wednesday', thu: 'Thursday',
   fri: 'Friday', sat: 'Saturday', sun: 'Sunday' };
-function hhmm(v) { const m = /^(\d{1,2}):(\d{2})$/.exec(str(v)); return m ? (m[1].padStart(2, '0') + ':' + m[2]) : ''; }
+function hhmm(v) { const m = /^(\d{1,2}):(\d{2})$/.exec(str(v)); return m && Number(m[1])<=23 && Number(m[2])<=59 ? (m[1].padStart(2, '0') + ':' + m[2]) : ''; }
 
 /* Machine hours -> display, grouping consecutive identical days:
  * "Mon–Thu 17:00–23:00". Takes [{day,open,close,note}]. */
 export function hoursBlock(hours) {
   const rows = arr(hours).map((h) => ({
     day: str(h.day).slice(0, 3).toLowerCase(),
-    open: hhmm(h.open), close: hhmm(h.close), note: str(h.note),
-  })).filter((h) => DAYS.indexOf(h.day) >= 0 && h.open && h.close);
+    open: hhmm(h.open), close: hhmm(h.close), note: str(h.note), closed: h.closed === true,
+  })).filter((h) => DAYS.indexOf(h.day) >= 0 && (h.closed || (h.open && h.close)));
   if (!rows.length) return '';
   const byDay = {};
   rows.forEach((r) => { (byDay[r.day] = byDay[r.day] || []).push(r); });
-  const sig = (d) => (byDay[d] || []).map((r) => r.open + '-' + r.close + '|' + r.note).join(',');
+  const sig = (d) => (byDay[d] || []).map((r) => r.open + '-' + r.close + '|' + r.note + '|' + r.closed).join(',');
   const groups = [];
   for (const d of DAYS) {
-    if (!byDay[d]) { groups.push({ days: [d], closed: true }); continue; }
+    if (!byDay[d]) continue;
+    if (byDay[d].every(r => r.closed)) { groups.push({ days: [d], closed: true }); continue; }
     const last = groups[groups.length - 1];
-    if (last && !last.closed && sig(last.days[0]) === sig(d)) last.days.push(d);
+    if (last && !last.closed && DAYS.indexOf(last.days.at(-1)) + 1 === DAYS.indexOf(d) && sig(last.days[0]) === sig(d)) last.days.push(d);
     else groups.push({ days: [d], closed: false });
   }
   // merge runs of closed days too
   const merged = [];
   for (const g of groups) {
     const last = merged[merged.length - 1];
-    if (last && last.closed && g.closed) last.days.push(...g.days);
+    if (last && last.closed && g.closed && DAYS.indexOf(last.days.at(-1)) + 1 === DAYS.indexOf(g.days[0])) last.days.push(...g.days);
     else merged.push(g);
   }
   return '<div class="sched">' + merged.map((g) => {
@@ -230,16 +232,17 @@ export function openNow(hours, timezone) {
   const toMin = (v) => { const m = /^(\d{2}):(\d{2})$/.exec(hhmm(v)); return m ? (+m[1] * 60 + +m[2]) : null; };
   for (const h of rows) {
     const d = str(h.day).slice(0, 3).toLowerCase();
+    if (h.closed === true) continue;
     const o = toMin(h.open), c = toMin(h.close);
     if (o == null || c == null) continue;
     if (c > o) { if (d === wd && nowMin >= o && nowMin < c) return true; }
-    else {
+    else if (c < o) {
       // spans midnight
       if (d === wd && nowMin >= o) return true;
       if (d === prevDay && nowMin < c) return true;
     }
   }
-  return false;
+  return rows.some(h => str(h.day).slice(0,3).toLowerCase() === wd && (h.closed === true || (hhmm(h.open) && hhmm(h.close) && hhmm(h.open)!==hhmm(h.close)))) ? false : null;
 }
 
 /* Seasonal gating, in the listing's timezone. An item whose window has passed
@@ -287,6 +290,8 @@ function panel(title, iconPath, bodyHtml, opts) {
 
 /* A weekly schedule: profile.schedule = [{day,label,time,note}] */
 function scheduleBlock(list) {
+  if (typeof list === 'string') return prose(list);
+  if (arr(list).some(h => h && typeof h === 'object' && ('open' in h || 'close' in h || h.closed === true))) return hoursBlock(list);
   list = arr(list);
   if (!list.length) return '';
   return '<div class="sched">' + list.map((s) => {
@@ -435,6 +440,7 @@ export function profileForVertical(vertical, profile, entity = {}) {
     }
   }
   const key = str(vertical && vertical.key).toLowerCase();
+  if (!Object.prototype.hasOwnProperty.call(p,'hours') && (Array.isArray(entity.hours) || typeof entity.hours === 'string')) p.hours = entity.hours;
 
   if (key === 'church') {
     if (!arr(p.schedule).length && arr(p.services).length) {

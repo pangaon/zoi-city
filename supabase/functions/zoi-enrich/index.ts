@@ -15,6 +15,7 @@
 //   1. NO URL IS EVER ACCEPTED FROM A CALLER. The worker asks the database, via
 //      zoi.enrich_queue, which listings are due; the database returns each
 //      listing's own registered website. The request body controls batch size
+//      or selects at most three stored listing IDs for an authorized canary.
 //      and nothing else. This single property removes most of the attack.
 //   2. Every URL is validated before a socket is opened: scheme, no embedded
 //      credentials, no odd ports, no IP literals, no reserved or internal names.
@@ -115,6 +116,8 @@ async function sbRpc(fn: string, args: Record<string, unknown> = {}) {
 import { vet, dnsState } from "./_ssrf.ts";
 import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
+import { extractSiteImages, supplementaryPages, imageIdentity } from "./_images.js";
+import { confirmedEnrichmentReceipts, enrichmentSample } from "./_receipts.js";
 
 /* ── politeness ─────────────────────────────────────────────────────────── */
 const hostBusy = new Map<string, Promise<void>>();
@@ -308,35 +311,6 @@ function metaTag(doc: string, key: string, attr = "property"): string | null {
   return null;
 }
 
-function imageUrl(raw: string, base: string): string | null {
-  const value = unent(String(raw || "")).trim();
-  if (!value || /^data:|^javascript:|^blob:/i.test(value)) return null;
-  try {
-    const url = new URL(value, base);
-    return url.protocol === "https:" ? url.toString() : null;
-  } catch { return null; }
-}
-
-function pageImages(doc: string, finalUrl: string): string[] {
-  const found: string[] = [];
-  const add = (raw: string) => {
-    const url = imageUrl(raw, finalUrl);
-    if (!url || found.includes(url) || /logo|icon|avatar|sprite|pixel|tracking|favicon/i.test(url)) return;
-    found.push(url);
-  };
-  for (const m of doc.matchAll(/<(?:img|source)\b[^>]*>/gi)) {
-    const tag = m[0];
-    const size = tag.match(/\b(?:width|height)=["'](\d+)["']/gi) || [];
-    if (size.some((v) => Number(v.match(/\d+/)?.[0]) <= 1)) continue;
-    const srcset = tag.match(/\b(?:srcset|data-srcset)=["']([^"']+)/i)?.[1];
-    const src = tag.match(/\b(?:data-src|data-lazy-src|data-original|src)=["']([^"']+)/i)?.[1];
-    if (srcset) add(srcset.split(",").pop()?.trim().split(/\s+/)[0] || "");
-    if (src) add(src);
-    if (found.length >= 8) break;
-  }
-  return found;
-}
-
 function ldNodes(doc: string): Record<string, unknown>[] {
   const out: Record<string, unknown>[] = [];
   const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
@@ -367,7 +341,7 @@ const digits = (s: string) => (s || "").replace(/\D/g, "");
 
 function extract(doc: string, finalUrl: string) {
   const host = new URL(finalUrl).hostname.toLowerCase().replace(/^www\./, "");
-  const isAgg = AGGREGATORS.has(host);
+  const isAgg = [...AGGREGATORS].some(domain => host === domain || host.endsWith("." + domain));
   const profile: Record<string, unknown> = {};
   const provenance: Record<string, string> = {};
   const put = (k: string, v: unknown, src: string) => {
@@ -423,23 +397,6 @@ function extract(doc: string, finalUrl: string) {
         put("geo", { lat: +lat.toFixed(6), lng: +lng.toFixed(6) }, "jsonld");
       }
     }
-    let img = biz.image ?? biz.logo;
-    if (Array.isArray(img)) {
-      const urls = img.map((value) => typeof value === "string" ? value : value && typeof value === "object" ? String((value as Record<string, unknown>).url || "") : "")
-        .filter((value) => value.startsWith("https://")).slice(0, 8);
-      if (urls[0]) put("photo_url", urls[0], "jsonld");
-      if (urls[1]) put("hero_url", urls[1], "jsonld");
-      if (urls.length > 1) put("photo_urls", urls, "jsonld");
-    } else if (img && typeof img === "object") {
-      const u = (img as Record<string, unknown>).url;
-      if (typeof u === "string" && u.startsWith("https://")) put("photo_url", u, "jsonld");
-    } else if (typeof img === "string" && img.startsWith("https://")) {
-      put("photo_url", img, "jsonld");
-    }
-    const logo = biz.logo;
-    const logoUrl = typeof logo === "string" ? logo : logo && typeof logo === "object" ? (logo as Record<string, unknown>).url : null;
-    if (typeof logoUrl === "string" && logoUrl.startsWith("https://")) put("logo_url", logoUrl, "jsonld");
-
     if (typeof biz.servesCuisine === "string") put("cuisine", biz.servesCuisine.trim().slice(0, 100), "jsonld");
     else if (Array.isArray(biz.servesCuisine)) put("cuisine", (biz.servesCuisine as string[]).slice(0, 5).join(", "), "jsonld");
 
@@ -451,16 +408,17 @@ function extract(doc: string, finalUrl: string) {
   if (!isAgg) {
     put("tagline", metaTag(doc, "og:site_name"), "og");
     put("description", (metaTag(doc, "og:description") || metaTag(doc, "description", "name") || "").slice(0, 1200), "og");
-    const im = metaTag(doc, "og:image") || metaTag(doc, "twitter:image");
-    if (im && im.startsWith("https://")) {
-      put("photo_url", im, "og");
-      put("hero_url", im, "og");
+    const imagery = extractSiteImages(doc, finalUrl, biz || {});
+    // A successful current crawl replaces only machine imagery, including stale bad fallbacks.
+    for (const key of ["logo_url", "photo_url", "hero_url"]) profile[key] = null;
+    profile.photo_urls = [];
+    if (imagery.logo) { profile.logo_url = imagery.logo.url; provenance.logo_url = imagery.logo.source; }
+    if (imagery.hero) {
+      profile.photo_url = imagery.hero.url; profile.hero_url = imagery.hero.url;
+      provenance.photo_url = imagery.hero.source; provenance.hero_url = imagery.hero.source;
     }
-    const logo = metaTag(doc, "og:logo") || metaTag(doc, "logo");
-    if (logo && logo.startsWith("https://")) put("logo_url", logo, "og");
-    const images = pageImages(doc, finalUrl);
-    if (images[0]) put("photo_url", images[0], "page-image");
-    if (images.length > 1) put("photo_urls", images, "page-image");
+    if (imagery.photos.length) { profile.photo_urls = imagery.photos.map(p => p.url); provenance.photo_urls = "deduplicated-site-images"; }
+
   }
 
   const tel = [...doc.matchAll(/tel:([+\d][\d().\s\-\/]{6,24})/gi)]
@@ -548,11 +506,15 @@ Deno.serve(async (req) => {
   }
 
   let limit = BATCH;
+  let sample: string[] | null = null;
   try {
     const b = await req.json();
-    // The ONLY thing a caller may influence. Never a URL.
+    // Caller can bound the batch or select max3 existing listing IDs. Never a URL.
+    if (b?.sample_ids !== undefined) sample = enrichmentSample(b.sample_ids);
     if (b && typeof b.limit === "number") limit = Math.max(1, Math.min(200, Math.floor(b.limit)));
-  } catch { /* no body is fine */ }
+  } catch (e) {
+    if (req.body !== null) return new Response(JSON.stringify({ok:false,error:e instanceof Error && e.message === "invalid_enrichment_sample" ? e.message : "invalid_enrichment_request"}), {status:400,headers:{"Content-Type":"application/json"}});
+  }
 
   const started = Date.now();
   const stats: Record<string, number> = {};
@@ -561,7 +523,7 @@ Deno.serve(async (req) => {
 
   let queue: { slug: string; website: string; lease_id: string }[] = [];
   try {
-    queue = (await sbRpc("enrich_queue_lease", { p_limit: limit })) ?? [];
+    queue = (sample ? await sbRpc("enrich_sample_lease", {p_ids:sample}) : await sbRpc("enrich_queue_lease", { p_limit: limit })) ?? [];
   } catch (e) {
     return new Response(
       JSON.stringify({ ok: false, error: `enrich_queue_lease: ${String(e).slice(0, 200)}` }),
@@ -600,9 +562,34 @@ Deno.serve(async (req) => {
         continue;
       }
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
+      if (!aggregator) {
+        // At most two explicit same-origin pages; each keeps robots, DNS, redirect,
+        // byte and timeout guards. No search-engine discovery or guessed URLs.
+        for (const page of supplementaryPages(got.doc!, got.finalUrl!)) {
+          if (Date.now() - started > 90_000) break;
+          if (page.purpose === "gallery" && Array.isArray(profile.photo_urls) && profile.photo_urls.length >= 6) continue;
+          if (page.purpose === "contact" && profile.phone && profile.email && Object.keys((profile.social || {}) as object).length >= 2) continue;
+          const pageVet = await vet(page.url);
+          if (!pageVet.url) { bump("supplement-refused"); continue; }
+          const pageUrl = pageVet.url;
+          if (!(await robotsAllows(pageUrl))) continue;
+          const extra = await fetchDoc(pageUrl);
+          if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { bump("supplement-unavailable"); continue; }
+          const next = extract(extra.doc, extra.finalUrl);
+          for (const key of ["phone", "email", "logo_url", "photo_url", "hero_url", "menu_url", "booking_url"]) {
+            if (!profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
+          }
+          profile.social = { ...(next.profile.social || {}) as object, ...(profile.social || {}) as object };
+          if (next.profile.social) provenance.social = "same-origin-pages";
+          const photos = [...(Array.isArray(profile.photo_urls) ? profile.photo_urls : []), ...(Array.isArray(next.profile.photo_urls) ? next.profile.photo_urls : [])];
+          const keys = new Set(); profile.photo_urls = photos.filter(u => { const key = imageIdentity(u); if (keys.has(key)) return false; keys.add(key); return true; }).slice(0, 12);
+          if ((profile.photo_urls as string[]).length) provenance.photo_urls = "same-origin-pages";
+          bump("supplement:" + page.purpose);
+        }
+      }
       if (aggregator) {
-        for (const k of ["tagline", "description", "photo_url"]) {
-          delete profile[k]; delete provenance[k];
+        for (const k of ["tagline", "description", "photo_url", "hero_url", "logo_url", "photo_urls"]) {
+          profile[k] = k === "photo_urls" ? [] : null; provenance[k] = "aggregator-branding-excluded";
         }
       }
       if (!Object.keys(profile).length) {
@@ -626,7 +613,9 @@ Deno.serve(async (req) => {
   if (batch.length) {
     try {
       const res = await sbRpc("enrich_apply", { p_batch: batch });
-      applied = Array.isArray(res) ? res.length : batch.length;
+      const receipt = confirmedEnrichmentReceipts(batch, res);
+      applied = receipt.applied;
+      if (receipt.rejected) stats["lease-rejected"] = receipt.rejected;
     } catch (e) {
       return new Response(JSON.stringify({
         ok: false, error: `enrich_apply: ${String(e).slice(0, 200)}`,
@@ -636,7 +625,8 @@ Deno.serve(async (req) => {
   }
 
   return new Response(JSON.stringify({
-    ok: true, queued: queue.length, applied,
+    ok: !stats["lease-rejected"] && (!sample || queue.length === sample.length), queued: queue.length, applied,
+    unprocessed: queue.length - batch.length, sample_requested: sample?.length ?? null,
     dns_guard: dnsState() === null ? "unused" : dnsState() ? "enforced" : "unavailable",
     ms: Date.now() - started, stats,
   }, null, 1), { headers: { "Content-Type": "application/json" } });
