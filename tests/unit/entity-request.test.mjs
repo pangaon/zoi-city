@@ -34,3 +34,23 @@ test('deadline remains active while reading a stalled response body',async()=>{
 test('legacy canonical redirect skips optional work and has a short cache',async()=>{
  const r=await run(async()=>response(entity),{slug:entity.slug,canon:'1'});assert.equal(r.status,301);assert.equal(r.headers.Location,'/business/greek-home');assert.deepEqual(r.calls,['seo_entity']);assert.equal(r.headers['Cache-Control'],'public, max-age=0, s-maxage=300');
 });
+test('verified workflow links reach real booking and volunteer entry points',async()=>{
+ const id='00000000-0000-0000-0000-000000000001';
+ const r=await run(async fn=>response(fn==='seo_entity'?{...entity,booking_url:'/book/?listing='+id,volunteer_url:'/volunteer/?workspace='+id}:null));
+ assert.match(r.body,/Book on Zoi/);assert.match(r.body,/Volunteer opportunities/);assert.ok(r.body.includes('/book/?listing='+id));
+ const unsafe=await run(async fn=>response(fn==='seo_entity'?{...entity,booking_url:'javascript:alert(1)',volunteer_url:'https://evil.invalid'}:null));
+ assert.doesNotMatch(unsafe.body,/Book on Zoi|Volunteer opportunities|evil.invalid/);
+});
+test('directions prefer street address and never route to unverified centroid coordinates',async()=>{
+ const render=e=>run(async fn=>response(fn==='seo_entity'?{...entity,...e}:null));
+ const address=await render({address:'12 Main St',latitude:1,longitude:2,geo_precision:'city'});
+ assert.match(address.body,/destination=12%20Main%20St%2C%20Athens/);
+ const city=await render({latitude:1,longitude:2,geo_precision:'city'});
+ assert.match(city.body,/destination=Greek%20Home%2C%20Athens/);assert.doesNotMatch(city.body,/destination=1%2C2/);
+ const exact=await render({latitude:1,longitude:2,geo_precision:'rooftop'});assert.match(exact.body,/destination=1%2C2/);
+});
+test('public business data cannot inject executable actions or close the structured-data script',async()=>{
+ const r=await run(async fn=>response(fn==='seo_entity'?{...entity,name:'Greek </script><script>alert(1)</script>',website:'javascript:alert(2)',description:'</script><img src=x onerror=alert(3)>'}:null));
+ assert.equal(r.status,200);assert.doesNotMatch(r.body,/<script>alert\(1\)|href="javascript:/);
+ const json=r.body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];assert.ok(json);assert.equal(JSON.parse(json).name,'Greek </script><script>alert(1)</script>');
+});

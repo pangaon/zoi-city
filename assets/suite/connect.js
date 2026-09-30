@@ -157,6 +157,7 @@
        social-config already reports the truth per platform — ask it. */
     var providerReady = {};      // platform id -> boolean, filled in below
     var configKnown = false;
+    var configFailed = false;
 
     var state = {
       channels: (ctx.channels && ctx.channels.slice()) || [],
@@ -352,11 +353,11 @@
         btn.type = 'button';
         if (!providerReady[p.key]) {
           btn.disabled = true;
-          btn.title = configKnown
+          btn.title = configFailed ? 'Service availability could not be checked' : configKnown
             ? p.name + ' has no developer app registered yet'
             : 'Checking availability\u2026';
           foot.appendChild(btn);
-          foot.appendChild(el('p', 'zn-note', configKnown
+          foot.appendChild(el('p', 'zn-note', configFailed ? 'Service availability is temporarily unavailable. Refresh to try again.' : configKnown
             ? 'Not connectable yet: Zoi needs a ' + esc(p.name) +
               ' developer app registered before it can ask for permission to post.'
             : 'Checking whether ' + esc(p.name) + ' is connectable\u2026'));
@@ -461,17 +462,15 @@
        the safe direction. */
     (async function loadProviderConfig() {
       try {
-        var r = await fetch(C.BASE + '/functions/v1/social-config', {
-          method: 'POST',
-          headers: { apikey: C.KEY, Authorization: 'Bearer ' + C.KEY, 'Content-Type': 'application/json' },
-          body: '{}'
-        });
-        var j = await r.json();
+        var j;
+        if (Object.prototype.hasOwnProperty.call(ctx,'providerConfig')) j=ctx.providerConfig;
+        else { var cap=await import('/assets/suite/capabilities.mjs'); j=await cap.loadProviderConfig(C.BASE,C.KEY); }
+        if (!j) throw new Error('Service availability unavailable');
         (j && j.platforms ? j.platforms : []).forEach(function (pl) {
           if (pl && pl.id) providerReady[pl.id] = !!pl.available;
         });
       } catch (e) {
-        // leave every platform unready
+        configFailed = true;
       }
       configKnown = true;
       paintBanner();

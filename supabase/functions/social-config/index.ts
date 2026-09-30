@@ -11,5 +11,5 @@ const PLATFORMS:{id:string;label:string;env:string[]}[]=[
 ];
 Deno.serve(()=> new Response(JSON.stringify({
   platforms:PLATFORMS.map(p=>({id:p.id,label:p.label,available:p.env.every(k=>!!Deno.env.get(k))})),
-  services:{email:!!Deno.env.get("RESEND_API_KEY"), ai:!!Deno.env.get("ANTHROPIC_API_KEY"), stripe:!!Deno.env.get("STRIPE_SECRET_KEY")}
+  services:{email:!!Deno.env.get("RESEND_API_KEY")&&!!Deno.env.get("EMAIL_FROM")&&Deno.env.get("EMAIL_DELIVERY_ENABLED")==="on", ai:!!Deno.env.get("ANTHROPIC_API_KEY"), stripe:!!Deno.env.get("STRIPE_SECRET_KEY"), payments:!!Deno.env.get("STRIPE_SECRET_KEY")&&Deno.env.get("DELIVERY_PAYMENTS_ENABLED")==="on"}
 }),{headers:{...CORS,"Content-Type":"application/json"}}));

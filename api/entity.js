@@ -19,6 +19,12 @@ async function rpc(fn, body, timeoutMs = 7000) {
 }
 function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
 function attr(s){return esc(s);}
+function safeActionHref(value){
+  if(typeof value!=='string'||/[\x00-\x20\\]/.test(value))return false;
+  if(/^\/(?!\/)/.test(value))return true;
+  if(/^tel:\+?[0-9]+$/.test(value)||/^mailto:[^@]+@[^@]+$/i.test(value))return true;
+  try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)&&!url.username&&!url.password;}catch{return false;}
+}
 function pretty(slug){return (slug||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
 function cleanPublicText(value) {
   var text = String(value == null ? '' : value)
@@ -123,7 +129,7 @@ function jsonld(e,url){
     o.areaServed=areas.map(function(a){ return { '@type':'Place', name:String(a) }; });
   }
   var sa=socialArr(e); if(sa.length) o.sameAs=sa;
-  return JSON.stringify(o);
+  return JSON.stringify(o).replace(/</g,'\\u003c');
 }
 function completionLabel(key, e) {
   var c = String(e.category_slug || '').toLowerCase();
@@ -162,13 +168,16 @@ function page(e, related, completeness){
   var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
   var publicDescription = cleanPublicText(e.description || p.about || p.description);
-  var desc = cleanPublicText(e.meta_description) || publicDescription || (e.name + (e.city?(' in '+e.city):'') + ' — on Zoi, the directory of the Greek world.');
-  var mapHref = (e.latitude!=null&&e.longitude!=null)
-      ? ('https://www.google.com/maps/search/?api=1&query='+e.latitude+','+e.longitude)
-      : (e.address? ('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(e.address)) : null);
+  var desc = cleanPublicText(e.meta_description) || publicDescription || (e.name + (e.city?(' in '+e.city):'') + ' — connect with the Greek world on Zoi.');
+  var destination = e.address ? [e.address,e.city,e.country].filter(Boolean).join(', ') :
+    ['rooftop','entrance','building','parcel','exact'].includes(String(e.geo_precision||'').toLowerCase()) && Number.isFinite(Number(e.latitude)) && Number.isFinite(Number(e.longitude)) && e.latitude!=null && e.longitude!=null
+      ? e.latitude+','+e.longitude : e.city ? [e.name,e.city,e.country].filter(Boolean).join(', ') : null;
+  var mapHref = destination ? 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination) : null;
 
   /* ---- primary actions: the vertical's own, then the universally real ones ---- */
   var acts = [];
+  if (/^\/book\/\?listing=[0-9a-f-]{36}$/i.test(e.booking_url||'')) acts.push({label:'Book on Zoi',href:e.booking_url,icon:IC.cal,primary:true});
+  if (/^\/volunteer\/\?workspace=[0-9a-f-]{36}$/i.test(e.volunteer_url||'')) acts.push({label:'Volunteer opportunities',href:e.volunteer_url,icon:IC.cal});
   (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
   if(e.phone)   acts.push({ label:'Call', href: 'tel:'+String(e.phone).replace(/[^0-9+]/g,''), icon: IC.phone });
   if(e.website) acts.push({ label:'Website', href: e.website, icon: IC.globe, external:true });
@@ -181,6 +190,7 @@ function page(e, related, completeness){
       + '?subject=' + encodeURIComponent('Enquiry via Zoi \u2014 ' + (e.name||'')),
       icon: IC.mail || IC.globe });
   }
+  acts=acts.filter(function(a){return safeActionHref(a.href);});
   var actHtml = acts.length ? '<div class="acts">' + acts.map(function(a,i){
       var cls = (a.primary || (i===0 && !acts.some(function(x){return x.primary;}))) ? 'btn btn-primary' : 'btn btn-ghost';
       return '<a class="'+cls+'" href="'+attr(a.href)+'"'+(a.external?' rel="nofollow noopener" target="_blank"':'')+'>'+
