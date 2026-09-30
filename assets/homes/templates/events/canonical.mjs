@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20260930-poster-sharing';
+import {mountEventActions} from './client.mjs?v=20260930-publicity-room';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');

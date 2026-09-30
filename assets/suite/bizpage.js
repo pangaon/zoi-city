@@ -553,12 +553,14 @@
         state.entity = e;
         var spec = FS.fieldsFor(e.entity_type, e.category_slug);
         state.vkind = spec.key === 'generic' ? 'details' : spec.key + ' details';
+        state.publicityForm=null;
         state.vform = UI.render(slot, {
           entityType: e.entity_type,
           categorySlug: e.category_slug,
           profile: state.ownerProfile || e.profile,
           onDirty: function () { contentDirty=true; }
         });
+        if(['event','venue'].includes(e.entity_type)||e.id==='9d969028-74cb-4b49-97f1-58eba8fc0e69'){var publicityModule=await import('/assets/events/publicity-editor.mjs');if(!scopeLive()||!slot.isConnected||state.entity?.id!==e.id)return;var publicitySlot=doc.createElement('section');slot.appendChild(publicitySlot);state.publicityForm=publicityModule.mountPublicityEditor(publicitySlot,{value:state.ownerProfile?.event_publicity||null,onDirty:function(){contentDirty=true;}});}
       } catch (err) {
         if(!scopeLive()||!slot.isConnected)return;
         // Never block the basics on this.
@@ -910,6 +912,7 @@
       if(!state.pendingContent){
         for(var i=0;i<(d.social||[]).length;i++){if(d.social[i].url&&!/^https?:\/\/[^\s]+$/i.test(d.social[i].url.trim())){savedNote.textContent='Social links must be complete http(s) URLs.';return;}}
         var profileSnapshot;try{profileSnapshot=state.vform?JSON.parse(JSON.stringify(state.vform.read())):{};}catch(e){savedNote.textContent='Check your detailed fields: '+(e.message||'invalid value');return;}
+        if(state.publicityForm){try{var publicityPatch=state.publicityForm.read();if(publicityPatch!==undefined)profileSnapshot.event_publicity=publicityPatch;}catch(e){savedNote.textContent=e.message||'Check event announcements.';return;}}
         if(!state.contentVersion){savedNote.textContent='Reload your page before saving so existing changes stay safe.';return;}
         state.pendingContent={p_workspace:ws,p_listing:s.listingId,p_expected_version:state.contentVersion,p_request:global.crypto.randomUUID(),p_base:{description:firstStr(d.description)||null,phone:firstStr(d.phone)||null,email:firstStr(d.email)||null,website:firstStr(d.website)||null,hours:firstStr(d.hours)||null,price_range:firstStr(d.price_range)||null,photo_url:firstStr(d.photo_url)||null,social_links:assembleSocial(d.social)},p_profile:profileSnapshot};
       }
@@ -919,7 +922,7 @@
       rpcWrite('home_content_save',payload).then(function(res){
         if(!scopeLive())return;
         if(res?.ok!==true||res.workspace_id!==ws||res.listing_id!==s.listingId||res.request_id!==payload.p_request||!/^([a-f0-9]{32})$/.test(res.version||''))throw Error('Save confirmation was incomplete. Retry to confirm the same changes.');
-        state.contentVersion=res.version;if(state.vform?.acceptSaved)state.vform.acceptSaved(payload.p_profile);state.ownerProfile=Object.assign({},state.ownerProfile||{},payload.p_profile);state.pendingContent=null;state.saving=false;contentDirty=false;finishSave(saveBtn,savedNote);savedNote.textContent='Saved. Your page details and menu are updated.';toast('Business home saved.');
+        state.contentVersion=res.version;if(state.vform?.acceptSaved)state.vform.acceptSaved(payload.p_profile);if(state.publicityForm?.acceptSaved)state.publicityForm.acceptSaved();state.ownerProfile=Object.assign({},state.ownerProfile||{},payload.p_profile);state.pendingContent=null;state.saving=false;contentDirty=false;finishSave(saveBtn,savedNote);savedNote.textContent='Saved. Your page details and menu are updated.';toast('Business home saved.');
       }).catch(function(err){
         if(!scopeLive())return;state.saving=false;var message=String(err?.message||'The response could not be confirmed.');
         if(/version_conflict|not_authorized|no_access_to_listing|invalid_|unsupported_|rate_limit/.test(message)){
@@ -938,7 +941,7 @@
     /* ---- controller ---- */
     async function boot(listingId) {
       if(!scopeLive())return;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
-      state.vform=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
+      state.vform=null;state.publicityForm=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
       state.loading = true;
       state.error = null;
       renderLoading();
