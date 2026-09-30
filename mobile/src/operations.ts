@@ -13,10 +13,11 @@ export function assertOpsReceipt(value: unknown, workspace: string, kind: Record
 }
 export function canWrite(role: string, kind: RecordKind) { return role === 'owner' || role === 'admin' || (role === 'editor' && kind !== 'company'); }
 export function toForm(row?: OpsRecord): Record<string, string> {
-  return { title: row?.title || '', notes: String(row?.data.notes || ''), sector: String(row?.data.sector || ''), legal_name: String(row?.data.legal_name || ''), jurisdiction: String(row?.data.jurisdiction || ''), registration_number: String(row?.data.registration_number || ''), website: String(row?.data.website || ''), email: String(row?.data.email || ''), phone: String(row?.data.phone || ''), status: row?.status || 'open', due_at: row?.due_at?.slice(0, 10) || '', company_id: row?.company_id || '', project_id: row?.project_id || '', contact_id: row?.contact_id || '', assignee_profile_id: row?.assignee_profile_id || '' };
+  return { title: row?.title || '', notes: String(row?.data.notes || ''), sector: String(row?.data.sector || 'business'), legal_name: String(row?.data.legal_name || ''), jurisdiction: String(row?.data.jurisdiction || ''), registration_number: String(row?.data.registration_number || ''), website: String(row?.data.website || ''), email: String(row?.data.email || ''), phone: String(row?.data.phone || ''), status: row?.status || 'open', due_at: row?.due_at?.slice(0, 10) || '', company_id: row?.company_id || '', project_id: row?.project_id || '', contact_id: row?.contact_id || '', assignee_profile_id: row?.assignee_profile_id || '' };
 }
 export function recordPayload(form: Record<string, string>, existing?: OpsRecord, kind: RecordKind = existing?.kind || 'contact') {
   if (!form.title.trim() || form.title.trim().length > 200) throw new Error('Enter a title of 1–200 characters.');
+  if (kind === 'company' && !['business','lawyer','church','restaurant','stylist','creator'].includes(form.sector)) throw new Error('Choose a business sector.');
   if (kind === 'project' && !form.company_id) throw new Error('Link this project to a company first.');
   if (kind === 'task' && !form.project_id) throw new Error('Link this task to a project first.');
   let due: string | null = null;
