@@ -449,6 +449,7 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 <link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Zoi">
+<link rel="stylesheet" href="/assets/tickets/venue-studio.css?v=20260930">
 </head>
 <body>
 <div class="world"></div>
@@ -466,8 +467,9 @@ select option{background:var(--glass)!important;color:var(--paper)!important}
 
 <div class="tk-advanced">
   <span class="tk-adv-lab">Advanced</span>
-  <span class="tk-adv-note">Create events, reservations, attendees, QR check-in, and Door mode here. Advanced venue design is not live yet.</span>
+  <a href="#venue-studio">Open venue & seating studio</a><span class="tk-adv-note">Create a floor plan and inspect it in 3D. Layout drafts stay in this browser.</span>
 </div>
+<details id="venue-studio" class="venue-studio"><summary>Venue & seating studio</summary></details>
 <div id="app"></div>
 
 <!-- Confirm reservation modal -->
@@ -786,11 +788,25 @@ function paintHead(ev, types, url){
   canon.href = url;
 }
 
+function ticketEventAvailability(available){
+  window.zoiTicketEventAvailable=available;
+  window.dispatchEvent(new CustomEvent('zoi:ticket-event',{detail:{available}}));
+}
+function paintEventUnavailable(){
+  ticketEventAvailability(false);
+  document.title='Event unavailable · Tickets · Zoi';
+  app.innerHTML='<section class="hero"><h1 class="hero-title">Event unavailable</h1><p class="tkx-sub">This event link is invalid, unpublished, or no longer available.</p><a class="tkx-btn" href="/events/">Browse events</a></section>';
+}
 async function renderPublic(eventId){
   PUB.eventId = eventId;
+  PUB.ev=null;PUB.types=[];ticketEventAvailability(false);
+  if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId)){paintEventUnavailable();return;}
   const code = qs('c');
   app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading tickets…</div>';
-  try{ PUB.ev = await rpc('tickets_event_public', {p_event:eventId}, PUBKEY); }catch(e){ PUB.ev = null; }
+  try{ PUB.ev = await rpc('tickets_event_public', {p_event:eventId}, PUBKEY); }catch(e){
+    app.innerHTML=errBlock('Could not load this event','Please try again when the connection is available.','renderPublic');return;
+  }
+  if(!PUB.ev||!PUB.ev.id||PUB.ev.error){paintEventUnavailable();return;}
   let types;
   try{ types = await rpc('tickets_types_list', {p_event:eventId}, PUBKEY); }
   catch(err){
@@ -798,6 +814,7 @@ async function renderPublic(eventId){
     return;
   }
   PUB.types = Array.isArray(types)?types:[];
+  ticketEventAvailability(true);
   paintHead(PUB.ev, PUB.types, PUBLIC_BASE+'?e='+encodeURIComponent(eventId));
   if(code){ paintTicketView(code); return; }
   paintPublic();
@@ -843,6 +860,7 @@ function qrSvg(payload, title){
 }
 
 function paintPublic(){
+  if(!PUB.ev||!PUB.ev.id){paintEventUnavailable();return;}
   const ev = PUB.ev || {};
   const roll = LIB.rollup(PUB.types);
   const anyLeft = PUB.types.some(t=>!LIB.tierMath(t).soldOut);
@@ -859,7 +877,7 @@ function paintPublic(){
     +   (place?'<span class="hero-meta-item">'+ico('pin')+' '+place+'</span>':'')
     +   (whenTxt?'<span class="hero-meta-item">'+ico('cal')+' '+esc(whenTxt)+'</span>':'')
     +   '<span class="hero-meta-item">'+ico('ticket')+' Instant confirmation code</span>'
-    +   '<span class="hero-meta-item">'+ico('info')+' No account needed</span>'
+    +   '<span class="hero-meta-item">'+ico('info')+' General admission or named seating</span>'
     + '</div>'
     + '<div class="tkx-acts" style="margin-top:16px">'
     +   '<button class="tkx-btn" data-act="share" data-url="'+esc(url)+'">Share this event</button>'
@@ -878,6 +896,7 @@ function paintPublic(){
       const m = LIB.tierMath(t);
       const sel = PUB.selected===t.id;
       const watching = !!PUB.watch[t.id];
+      const namedSeats=window.zoiSeating&&String(window.zoiSeating.ticket_type_id)===String(t.id);
       return '<div class="tkx-tier" style="'+(sel?'border-color:var(--gold)':'')+'">'
         + '<div class="tkx-tier-top">'
         +   '<span class="tkx-tier-nm">'+esc(t.name)+'</span>'
@@ -890,7 +909,7 @@ function paintPublic(){
             : '<div class="tkx-bar"><i data-lvl="'+m.level+'" style="width:'+(m.pct||0)+'%"></i></div>'
               + '<div class="tkx-tier-sub">'+m.left+' of '+m.capacity+' left · '+m.reserved+' reserved</div>')
         + '<div class="tkx-acts" style="margin-top:10px">'
-        +   (m.soldOut
+        +   (namedSeats ? '<a class="tkx-btn" href="#seat-booking">Choose named seats</a>' : m.soldOut
               ? '<button class="tkx-btn" data-act="watch" data-tier="'+esc(String(t.id))+'" aria-pressed="'+(watching?'true':'false')+'">'
                 + (watching?'Watching for openings':'Tell me if a spot opens')+'</button>'
               : (m.free || SVC.payments
@@ -910,8 +929,8 @@ function paintPublic(){
     +   (hasPaidTier && !SVC.payments ? PAY_GATE_HTML : '')
     +   '<div class="tkx-note" data-tone="info" style="margin-top:12px">'+ico('info')
     +   '<div><b>How a reservation works.</b> Pick a tier, give a name and an email, and reserve. You get a'
-    +   ' confirmation code and a QR code immediately, and your seat is held. At the door the organiser scans'
-    +   ' the QR or types the code. Nothing is charged, and nothing needs an account.</div></div>'
+    +   ' confirmation code and a QR code immediately, and your place is reserved. At the door the organiser scans'
+    +   ' the QR or types the code. General admission does not require an account. Named seating requires sign-in.</div></div>'
     + '</div>'
     + '<div id="tkxPanel">'+renderReservePanel(anyLeft)+'</div>'
     + '</div>';
@@ -919,6 +938,7 @@ function paintPublic(){
 
 function renderReservePanel(anyLeft){
   const t = PUB.types.find(x=>x.id===PUB.selected);
+  if(t&&window.zoiSeating&&String(window.zoiSeating.ticket_type_id)===String(t.id)) return '<div class="order-box"><div class="order-header">Choose your seats</div><div class="order-body"><a href="#seat-booking">Open this event’s seating plan</a></div></div>';
   if(!t){
     return '<div class="order-box"><div class="order-header">Your reservation</div>'
       + '<div class="order-body"><div class="empty-cart">'
@@ -2090,5 +2110,7 @@ route();
   <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Discover</a><a href="/community">Community</a><a href="/business">For Business</a><a href="/tickets">Events</a><a href="https://buygreek.shop" target="_blank" rel="noopener">Marketplace</a></nav>
 </div></footer>
 <script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
+<script type="module" src="/assets/tickets/venue-studio.mjs?v=20260930"></script>
+<script type="module" src="/assets/tickets/seat-booking.mjs?v=20260930"></script>
 </body>
 </html>

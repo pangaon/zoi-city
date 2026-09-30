@@ -159,7 +159,7 @@
     if (typeof verifiedFlag === 'boolean') {
       view.verified = verifiedFlag;
     } else if (view.verificationStatus) {
-      view.verified = /verified|approved|confirmed|complete/i.test(view.verificationStatus);
+      view.verified = /^(verified|approved|confirmed|complete)$/i.test(view.verificationStatus);
     } else {
       view.verified = false;
     }
@@ -173,6 +173,14 @@
     return view;
   }
 
+  function editableListings(raw) {
+    if (!raw || typeof raw !== 'object') return [];
+    var found = [];
+    (Array.isArray(raw.owned) ? raw.owned : []).forEach(function(r){if(r && r.id) found.push(Object.assign({},r,{claimed:true}));});
+    (Array.isArray(raw.claims) ? raw.claims : []).forEach(function(r){if(r && /^(approved|verified)$/.test(r.status || '') && !found.some(function(x){return x.id===r.listing_id;}))found.push(Object.assign({},r,{id:r.listing_id,claimed:true}));});
+    return found;
+  }
+
   // Normalize bizpage_get content into a stable draft object.
   function normContent(raw) {
     var o = (raw && typeof raw === 'object') ? raw : {};
@@ -184,7 +192,7 @@
       hours: firstStr(o.hours, o.opening_hours, o.business_hours),
       price_range: firstStr(o.price_range, o.priceRange, o.price),
       photo_url: firstStr(o.photo_url, o.photoUrl, o.image_url, o.photo, o.image),
-      social: normSocialRows(firstDef(o.social, o.socials, o.social_links, o.links))
+      social: normSocialRows(Object.assign({}, assembleSocial(normSocialRows(o.profile && o.profile._enrich && o.profile._enrich.social)), assembleSocial(normSocialRows(o.profile && o.profile.social)), assembleSocial(normSocialRows(o.links)), assembleSocial(normSocialRows(o.socials)), assembleSocial(normSocialRows(o.social_links)), assembleSocial(normSocialRows(o.social))))
     };
     // Clamp price_range to a known option; unknown values fall back to ''.
     var known = false;
@@ -398,8 +406,10 @@
 
     /* ---- public link ---- */
     function publicPath() {
+      var raw = state.status && state.status.raw;
+      if(raw && typeof raw.path==='string' && /^\/(?!\/)/.test(raw.path)) return raw.path;
       var slug = state.status && state.status.slug;
-      return slug ? ('/p/' + slug) : null;
+      return slug ? ('/p/' + encodeURIComponent(slug)) : null;
     }
     function publicUrl() {
       var p = publicPath();
@@ -519,7 +529,7 @@
       if (!slug) return;
       slot.innerHTML = '<p class="zp-note">Loading your details\u2026</p>';
       try {
-        var raw = await rpcRead('seo_entity', { p_slug: slug });
+        var raw = state.entity || await rpcRead('seo_entity', { p_slug: slug });
         var e = Array.isArray(raw) ? raw[0] : raw;
         if (!e) { slot.innerHTML = ''; return; }
         state.entity = e;
@@ -542,6 +552,7 @@
     function renderEditor() {
       wrap.innerHTML = '';
       var s = state.status;
+      if(state.choices && state.choices.length>1){var picker=el(doc,'select','zp-select');picker.setAttribute('aria-label','Business to edit');state.choices.forEach(function(r){var opt=el(doc,'option',null,esc(r.name||r.slug));opt.value=r.id;opt.selected=r.id===s.listingId;picker.appendChild(opt);});picker.addEventListener('change',function(){if(global.confirm('Switch businesses? Unsaved changes will be discarded.'))boot(picker.value);else picker.value=s.listingId;});wrap.appendChild(picker);}
 
       // header + tools
       var head = renderHeader('Edit how ' + (s.name ? '“' + s.name + '”' : 'your business') +
@@ -567,7 +578,7 @@
       var form = el(doc, 'form', 'zp-card');
       form.setAttribute('novalidate', 'novalidate');
       form.appendChild(el(doc, 'h3', null, 'Page details'));
-      form.appendChild(el(doc, 'p', 'zp-csub', 'All fields optional — a fuller page ranks and converts better.'));
+      form.appendChild(el(doc, 'p', 'zp-csub', 'Add accurate details so customers can understand and contact your business.'));
 
       // completeness meter (updated live)
       var meter = el(doc, 'div', 'zp-meter');
@@ -722,7 +733,7 @@
       pvCard.appendChild(pvShell);
       var pvHint = el(doc, 'p', 'zp-note');
       pvHint.style.marginTop = '10px';
-      pvHint.textContent = 'This is how your listing appears to the public.';
+      pvHint.textContent = 'Preview of your main details. Open the public page to see the complete layout.';
       pvCard.appendChild(pvHint);
       pvCol.appendChild(pvCard);
 
@@ -837,7 +848,7 @@
       // submit
       form.addEventListener('submit', function (ev) {
         ev.preventDefault();
-        if (state.saving) return;
+        if (state.saving || !form.reportValidity()) return;
         doSave(saveBtn, savedNote, sync);
       });
 
@@ -853,6 +864,11 @@
     function doSave(saveBtn, savedNote, sync) {
       var s = state.status;
       var d = state.draft;
+      for(var i=0;i<(d.social||[]).length;i++){if(d.social[i].url && !/^https?:\/\/[^\s]+$/i.test(d.social[i].url.trim())){savedNote.textContent='Social links must be complete http(s) URLs.';return;}}
+      var profileSnapshot;
+      try { profileSnapshot = state.vform ? JSON.parse(JSON.stringify(state.vform.read())) : null; } catch (e) { savedNote.textContent='Check your detailed fields: '+((e&&e.message)||'invalid value'); return; }
+      var locked=Array.from(wrap.querySelectorAll('button,input,select,textarea')).map(function(n){var old=n.disabled;n.disabled=true;return[n,old];});
+      state.unlock=function(){locked.forEach(function(item){item[0].disabled=item[1];});};
       state.saving = true;
       saveBtn.setAttribute('disabled', 'disabled');
       saveBtn.innerHTML = '<span class="zp-spin"></span> Saving…';
@@ -872,7 +888,7 @@
       };
 
       rpcWrite('bizpage_save', params).then(async function (res) {
-        var ok = res == null ? true : (res.ok !== false);
+        var ok = res === true;
 
         /* The vertical profile goes through its own writer, because owner-typed
            detail and machine-read detail are stored separately on purpose. A
@@ -880,10 +896,11 @@
         var profileNote = '';
         if (ok && state.vform && state.status && state.status.listingId) {
           try {
-            var prof = state.vform.read();
+            var prof = profileSnapshot || {};
             if (Object.keys(prof).length) {
-              await rpcWrite('bizpage_save_profile', {
-                p_workspace: ctx.ws, p_listing: state.status.listingId, p_profile: prof });
+              var profileReceipt = await rpcWrite('bizpage_save_profile', {
+                p_workspace: ctx.ws, p_listing: s.listingId, p_profile: prof });
+              if (profileReceipt !== true) throw new Error('The server did not confirm the detailed fields');
               profileNote = ' Your ' + (state.vkind || 'details') + ' were saved too.';
             }
           } catch (e) {
@@ -910,13 +927,15 @@
       });
     }
     function finishSave(saveBtn, savedNote) {
+      if(state.unlock){state.unlock();state.unlock=null;}
       saveBtn.removeAttribute('disabled');
       saveBtn.innerHTML =
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> Save page';
     }
 
     /* ---- controller ---- */
-    async function boot() {
+    async function boot(listingId) {
+      state.vform=null;state.entity=null;
       state.loading = true;
       state.error = null;
       renderLoading();
@@ -930,7 +949,9 @@
         return;
       }
 
-      var status = normStatus(statusRaw);
+      state.choices=editableListings(statusRaw);
+      var chosen=state.choices.find(function(r){return r.id===listingId;}) || state.choices[0];
+      var status = normStatus(chosen || statusRaw);
       state.status = status;
 
       if (!status.claimed) {
@@ -945,10 +966,13 @@
       try {
         contentRaw = await rpcRead('bizpage_get', { p_workspace: ws, p_listing: status.listingId });
       } catch (e2) {
-        // Content load failed, but the claim is real — let them start from blank
-        // rather than blanking the whole module. Surface a gentle note.
-        contentRaw = null;
+        state.loading = false;
+        renderError('Your existing page could not be loaded. Please retry before editing so saved details stay safe.');
+        return;
       }
+      if (!contentRaw || typeof contentRaw !== 'object') { state.loading=false; renderError('The server did not return your page details. Please retry.'); return; }
+      try { var entityRaw=await rpcRead('seo_entity',{p_slug:status.slug});state.entity=Array.isArray(entityRaw)?entityRaw[0]:entityRaw; } catch(e) { state.entity=null; }
+      if(state.entity && state.entity.profile) contentRaw.profile=state.entity.profile;
       state.draft = normContent(contentRaw);
       state.loading = false;
       renderEditor();

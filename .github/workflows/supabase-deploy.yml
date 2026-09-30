@@ -1,94 +1,64 @@
-name: Supabase DB Deploy
+name: Supabase validation and worker release
 
 on:
   push:
     branches: [main]
     paths:
-      - 'supabase/migrations/**'
+      - 'supabase/**'
+      - '.github/workflows/supabase-deploy.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
       - '.github/workflows/supabase-deploy.yml'
   workflow_dispatch:
+    inputs:
+      function:
+        description: Reviewed Edge Function to release
+        required: true
+        type: choice
+        options: [zoi-enrich, zoi-feed-publish, social-publish, email-send, email-unsubscribe]
 
+permissions:
+  contents: read
+concurrency:
+  group: supabase-production-deploy
+  cancel-in-progress: false
 jobs:
-  deploy:
+  verify:
+    # The shared CI already validates pushes and PRs; avoid running it twice.
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
-    if: github.repository == 'pangaon/zoi-city'
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-
-      - name: Install Supabase CLI
-        run: npm install -g supabase
-
-      - name: Deploy audited SQL to production
-        run: |
-          cd /home/runner/work/zoi-city/zoi-city
-          supabase link --project-ref csebihpaychdkanjjsmz || true
-          # The production migration ledger contains historical versions that
-          # are not present in this checkout. Apply only the audited additive
-          # contracts instead of attempting to replay unknown migrations.
-          supabase db query --linked --file supabase/migrations/0039_canonical_geography_contract.sql
-          supabase db query --linked --file supabase/migrations/0040_enrichment_control_plane.sql
-          supabase db query --linked --file supabase/migrations/0041_enrichment_schedule.sql
-          supabase db query --linked --file supabase/migrations/0042_place_hub_media_contract.sql
-          supabase db query --linked --file supabase/migrations/0043_city_filter_contract.sql
-          supabase db query --linked --file supabase/migrations/0044_fast_city_options.sql
-          supabase db query --linked --file supabase/migrations/0045_city_country_contract.sql
-          supabase db query --linked --file supabase/migrations/0046_enrichment_data_integrity.sql
-          supabase db query --linked --file supabase/migrations/0048_intelligence_dashboard_bound.sql
+          node-version: 24
+      - run: npm run verify:local
+  deploy-worker:
+    if: github.event_name == 'workflow_dispatch'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Deploy reviewed worker
         env:
+          FUNCTION_NAME: ${{ inputs.function }}
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Deploy enrichment worker to production
         run: |
-          cd /home/runner/work/zoi-city/zoi-city
-          supabase functions deploy zoi-enrich --use-api --project-ref csebihpaychdkanjjsmz
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Kick one protected enrichment batch
-        run: |
-          cd /home/runner/work/zoi-city/zoi-city
-          supabase db query --linked "select net.http_post(
-            url := 'https://csebihpaychdkanjjsmz.supabase.co/functions/v1/zoi-enrich',
-            headers := jsonb_build_object(
-              'Content-Type', 'application/json',
-              'Authorization', 'Bearer ' || (select decrypted_secret from vault.decrypted_secrets where name = 'service_role_key'),
-              'x-enrich-token', (select decrypted_secret from vault.decrypted_secrets where name = 'enrich_token')
-            ),
-            body := '{\"limit\":200}'::jsonb,
-            timeout_milliseconds := 120000
-          );"
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Report enrichment control-plane state
-        run: |
-          cd /home/runner/work/zoi-city/zoi-city
-          supabase db query --linked "select jsonb_build_object(
-            'due', (select count(*) from zoi.listings l where l.website is not null and l.website <> '' and l.website ~* '^https?://' and coalesce(l.profile -> '_enrich' ->> 'blocked', '') <> 'true' and (l.profile -> '_enrich' ->> 'checked_at' is null or (l.profile -> '_enrich' ->> 'checked_at')::date < current_date - 30)),
-            'enriched', (select count(*) from zoi.listings where profile ? '_enrich'),
-            'with_media', (select count(*) from zoi.listings where coalesce(profile ->> 'photo_url', profile -> '_enrich' ->> 'photo_url', profile -> '_enrich' ->> 'logo_url') is not null),
-            'latest_http', (select jsonb_build_object('status', status_code, 'body', left(content::text, 300)) from net._http_response order by created desc limit 1)
-          );"
-        env:
-          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-
-      - name: Verify public contract and security checks
-        run: node tests/contract/run.mjs
-
-      - name: Notify deployment
-        if: success()
-        run: echo "✅ Supabase migrations deployed successfully"
-
-      - name: Notify failure
-        if: failure()
-        run: |
-          echo "❌ Supabase deployment failed"
-          echo "Add SUPABASE_ACCESS_TOKEN secret to GitHub repo settings:"
-          echo "https://github.com/pangaon/zoi-city/settings/secrets/actions"
-          exit 1
+          set -euo pipefail
+          case "$FUNCTION_NAME" in
+            email-unsubscribe|zoi-enrich|social-publish|email-send)
+              # Existing functions validate caller JWT/cron secret in the handler; unsubscribe validates its opaque token.
+              npx --yes supabase@2.115.0 functions deploy "$FUNCTION_NAME" --no-verify-jwt --use-api --project-ref csebihpaychdkanjjsmz ;;
+            zoi-feed-publish)
+              npx --yes supabase@2.115.0 functions deploy "$FUNCTION_NAME" --use-api --project-ref csebihpaychdkanjjsmz ;;
+            *) echo 'Unsupported function'; exit 1 ;;
+          esac
+# Schema changes are individually reviewed and recorded in the production
+# migration ledger. Never replay the old fixed list or use blanket db push:
+# this repository contains legacy versions absent from the live ledger.

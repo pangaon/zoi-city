@@ -17,6 +17,6 @@ function scenario(files,base){
   return spawnSync(process.execPath,[script],{cwd:dir,env:{...process.env,VERCEL_GIT_PREVIOUS_SHA:base||'HEAD^'}}).status;
  }finally{rmSync(dir,{recursive:true,force:true});}
 }
-test('operational and mobile changes do not build web',()=>assert.equal(scenario(['ops/request.json','mobile/App.tsx','docs/status.json']),0));
+test('operational, backend and mobile changes do not build web',()=>assert.equal(scenario(['ops/request.json','mobile/App.tsx','supabase/functions/example/index.ts','docs/status.json']),0));
 test('web changes build even alongside operational changes',()=>assert.equal(scenario(['ops/request.json','api/entity.js']),1));
 test('unknown previous deployment builds conservatively',()=>assert.equal(scenario(['docs/status.json'],'missing-sha'),1));

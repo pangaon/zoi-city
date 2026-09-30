@@ -40,7 +40,7 @@
     });
   }
   function isHttpUrl(u) {
-    return /^https?:\/\/\S+/i.test(String(u == null ? '' : u).trim());
+    try { var parsed = new URL(String(u == null ? '' : u).trim()); return /^https?:$/.test(parsed.protocol) && !!parsed.hostname && !parsed.username && !parsed.password; } catch (e) { return false; }
   }
   function slugify(s) {
     return String(s == null ? '' : s).toLowerCase().trim()
@@ -99,7 +99,9 @@
     if (plat === 'twitter') plat = 'x';
     var meta = CHAN_META[plat];
     if (!meta) return null;
-    var handle = cleanHandle(ch.handle || ch.username || ch.display_name || '');
+    var direct = ch.profile_url || ch.url;
+    if (direct && isHttpUrl(direct)) return {label:clampLen(ch.display_name || meta.name,60),url:String(direct).trim(),platform:plat};
+    var handle = cleanHandle(ch.handle || ch.username || '');
     if (!handle) return null;
     var label = ch.display_name && String(ch.display_name).trim()
       ? String(ch.display_name).trim()
@@ -313,7 +315,7 @@
     /* -------- data load -------- */
     function safeRpc(fn, params, auth) {
       try {
-        if (!C.api || typeof C.api.rpc !== 'function') return Promise.resolve(null);
+        if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('Profile service unavailable. Your draft was not changed.'));
         return C.api.rpc(fn, params, { auth: auth || 'prefer' });
       } catch (e) { return Promise.reject(e); }
     }
@@ -377,11 +379,12 @@
     function anyBadLink() {
       return state.links.some(function (l) {
         var u = String(l.url || '').trim();
-        return u !== '' && !isHttpUrl(u);
+        var label = String(l.label || '').trim();
+        return (u !== '' || label !== '') && (!isHttpUrl(u) || u.length > 500 || !label);
       });
     }
     function canSave() {
-      return slugValid() && !anyBadLink() && !state.saving;
+      return slugValid() && !!state.title.trim() && state.links.length <= 12 && !anyBadLink() && (!state.photo_url || isHttpUrl(state.photo_url)) && !state.saving;
     }
 
     /* -------- live updates that avoid re-rendering inputs -------- */
@@ -606,7 +609,7 @@
     }
 
     function moveLink(from, to) {
-      if (from < 0 || to < 0 || from >= state.links.length || to >= state.links.length) return;
+      if (state.saving || from < 0 || to < 0 || from >= state.links.length || to >= state.links.length) return;
       var item = state.links.splice(from, 1)[0];
       state.links.splice(to, 0, item);
       renderLinksList();
@@ -614,12 +617,15 @@
       updateSaveState();
     }
     function removeLink(idx) {
+      if(state.saving)return;
       state.links.splice(idx, 1);
       renderLinksList();
       updatePreview();
       updateSaveState();
     }
     function addLink(prefill) {
+      if(state.saving)return;
+      if(state.links.length>=12){toast('Bio pages support up to 12 links.');return;}
       state.links.push({ label: (prefill && prefill.label) || '', url: (prefill && prefill.url) || '' });
       renderLinksList();
       updatePreview();
@@ -635,11 +641,14 @@
     /* -------- save -------- */
     async function doSave() {
       if (!canSave()) {
-        if (!slugValid()) toast('Pick a valid handle first (3–40 chars, a–z 0–9 -).');
-        else if (anyBadLink()) toast('Some link URLs are invalid — they must start with http(s).');
+        if (!state.title.trim()) toast('Add a title for your bio page.');
+        else if (!slugValid()) toast('Pick a valid handle first (3–40 chars, a–z 0–9 -).');
+        else if (anyBadLink()) toast('Each link needs a label and a valid http(s) URL.');
+        else if (state.photo_url && !isHttpUrl(state.photo_url)) toast('Use a valid http(s) photo URL.');
         return;
       }
       state.saving = true;
+      var locked = Array.from(wrap.querySelectorAll('button,input,textarea,select')).map(function(n){var old=n.disabled;n.disabled=true;return[n,old];});
       updateSaveState();
       if (refs.saveBtn) {
         refs.saveBtn.innerHTML = '<span class="zb-spin"></span> Saving…';
@@ -662,7 +671,8 @@
         errMsg = (e && e.message) || 'Save failed. Please try again.';
       }
       state.saving = false;
-      if (errMsg || !res || res.ok === false) {
+      locked.forEach(function(item){item[0].disabled=item[1];});
+      if (errMsg || !res || res.ok !== true || res.slug !== payload.p_slug) {
         restoreSaveBtn();
         updateSaveState();
         toast(errMsg || (res && res.error) || 'Save failed. Please try again.');

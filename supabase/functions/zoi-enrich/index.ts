@@ -113,6 +113,7 @@ async function sbRpc(fn: string, args: Record<string, unknown> = {}) {
    Lives in _ssrf.ts so it can be unit-tested against known-dangerous inputs
    rather than reasoned about. See that file's header. */
 import { vet, dnsState } from "./_ssrf.ts";
+import { extractSocialLinks } from "./_social.js";
 
 /* ── politeness ─────────────────────────────────────────────────────────── */
 const hostBusy = new Map<string, Promise<void>>();
@@ -285,12 +286,6 @@ const AGGREGATORS = new Set([
   "facebook.com", "instagram.com", "linkedin.com", "yelp.com", "tripadvisor.com",
   "google.com", "linktr.ee", "youtube.com", "x.com", "twitter.com", "tiktok.com",
 ]);
-const SOCIALS: Record<string, string> = {
-  "instagram.com": "instagram", "facebook.com": "facebook", "tiktok.com": "tiktok",
-  "youtube.com": "youtube", "x.com": "x", "twitter.com": "x",
-  "linkedin.com": "linkedin", "spotify.com": "spotify", "soundcloud.com": "soundcloud",
-  "wa.me": "whatsapp", "t.me": "telegram",
-};
 const DAYS: Record<string, string> = {
   monday: "mon", tuesday: "tue", wednesday: "wed", thursday: "thu",
   friday: "fri", saturday: "sat", sunday: "sun",
@@ -474,22 +469,8 @@ function extract(doc: string, finalUrl: string) {
     .map((m) => m[1]).filter((e) => !/example\.|sentry|wixpress/i.test(e));
   if (mail.length) put("email", mail[0], "mailto-link");
 
-  const social: Record<string, string> = {};
-  for (const m of doc.matchAll(/href=["'](https?:\/\/[^"'>\s]+)["']/gi)) {
-    let h = "", path = "";
-    try {
-      const u = new URL(unent(m[1]));
-      h = u.hostname.toLowerCase().replace(/^www\./, "");
-      path = u.pathname.replace(/^\/|\/$/g, "");
-    } catch { continue; }
-    for (const [dom, name] of Object.entries(SOCIALS)) {
-      if (h !== dom && !h.endsWith("." + dom)) continue;
-      if (!path || /^(sharer|share|intent|dialog|plugins|embed|login|home|watch|hashtag|search|profile\.php|tr)(\/|$)/i.test(path)) break;
-      if (!social[name]) social[name] = unent(m[1]).split("?")[0].slice(0, 220);
-      break;
-    }
-  }
-  put("social", social, "links");
+  const { social, source: socialSource } = extractSocialLinks(doc, biz?.sameAs);
+  put("social", social, socialSource);
 
   for (const m of doc.matchAll(/href=["']([^"'>\s]+)["'][^>]*>([\s\S]{0,90}?)<\/a>/gi)) {
     const label = unent(m[2].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim().toLowerCase();

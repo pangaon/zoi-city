@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
     inputs:
       run_live:
-        description: Run production contract checks
+        description: 'Run production API and page checks explicitly'
         type: boolean
         default: false
 
@@ -23,7 +23,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
 
       - name: Syntax-check every inline <script> block
         run: npm run check
@@ -41,6 +41,56 @@ jobs:
       - name: Unit tests
         run: node scripts/run-tests.mjs tests --local
 
+  mobile-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      relevant: ${{ steps.paths.outputs.relevant }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: paths
+        name: Check native source changes
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BASE: ${{ github.event.before }}
+        run: |
+          relevant=true
+          base="$PUSH_BASE"
+          if [ "$EVENT_NAME" = pull_request ]; then base="$PR_BASE"; fi
+          if [ "$EVENT_NAME" != workflow_dispatch ] && git cat-file -e "$base^{commit}" 2>/dev/null; then
+            if git diff --name-only "$base" HEAD > /tmp/native-changed-paths; then
+              relevant=false
+              if grep -Eq '^(mobile/|assets/tickets/venue-model\.mjs$|\.github/workflows/ci\.yml$)' /tmp/native-changed-paths; then relevant=true; fi
+            fi
+          fi
+          echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
+
+  mobile:
+    needs: mobile-changes
+    if: needs.mobile-changes.outputs.relevant == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: mobile
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: mobile/package-lock.json
+      - name: Install locked mobile dependencies
+        run: npm ci
+      - name: Verify native session lifecycle
+        run: npm test
+      - name: Type-check native application
+        run: npx tsc --noEmit
+      - name: Verify Expo web bundle
+        run: npx expo export --platform web --output-dir /tmp/zoi-mobile-web
+
   live-contracts:
     if: github.event_name == 'workflow_dispatch' && inputs.run_live
     runs-on: ubuntu-latest
@@ -49,6 +99,6 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-      - name: Verify production contracts
+          node-version: 24
+      - name: Verify live API and page contracts
         run: node scripts/run-tests.mjs tests --live

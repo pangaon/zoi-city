@@ -44,6 +44,7 @@ export function socialProfile(raw) {
   return { platform, url: url.toString() };
 }
 
+/** @param {string} doc @param {unknown} sameAs */
 export function extractSocialLinks(doc, sameAs = []) {
   const social = {};
   const sources = new Set();

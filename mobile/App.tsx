@@ -1,1204 +1,162 @@
 import { StatusBar } from 'expo-status-bar';
-import { Linking, Pressable, SafeAreaView, ScrollView, StyleSheet, Text, TextInput, View, Alert } from 'react-native';
-import { useState } from 'react';
+import { ActivityIndicator, Image, Linking, Platform, Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar as NativeStatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AuthProvider } from './src/Auth';
+import { AccountPanel, CommunityComposer } from './src/Account';
+import { VenueStudio } from './src/Venue';
+import { BusinessProfile } from './src/Profile';
+import { OperationsPanel } from './src/Operations';
+import { TicketsScreen } from './src/Tickets';
+import { CreatorPanel } from './src/Creator';
 
 const WEB = 'https://www.zoi.city';
+const API = 'https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/';
+const KEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+const C = { navy: '#132F46', blue: '#116CBA', sky: '#EAF4FB', cream: '#FAF8F3', gold: '#A77B32', muted: '#60717E', line: '#DFE6EB', white: '#FFFFFF' };
+type Tab = 'home' | 'discover' | 'community' | 'tickets' | 'grow';
+type Place = { id: string; name: string; slug: string; path?: string; entity_type?: string; description?: string; city?: string; country?: string; photo_url?: string; category?: string };
+type Post = { id: string; author?: string; body?: string; created_at?: string; media_photo?: string; likes?: number; comments?: number };
 
-type MainTab = 'home' | 'chat' | 'table' | 'private' | 'kds' | 'business' | 'tickets' | 'more';
-type SplitMode = 'equal' | 'items' | 'custom' | 'cover';
-type Station = 'all' | 'kitchen' | 'bar' | 'host';
-type PrivateSubTab = 'rsvp' | 'seating' | 'registry' | 'photos' | 'itinerary';
-type MealChoice = 'lamb' | 'sea_bass' | 'vegetarian' | 'kids';
-
-interface ChatMessage {
-  id: string;
-  sender: string;
-  text: string;
-  time: string;
-  isMe: boolean;
-  sticker?: string;
+async function rpc<T>(name: string, body: Record<string, unknown>, signal: AbortSignal): Promise<T[]> {
+  const response = await fetch(API + name, { method: 'POST', signal, headers: { apikey: KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!response.ok) throw new Error('We could not load this right now. Please try again.');
+  const data = await response.json();
+  if (!Array.isArray(data)) throw new Error('We could not load this right now. Please try again.');
+  return data;
 }
 
-interface TableMember {
-  id: string;
-  name: string;
-  isHost?: boolean;
-  avatar: string;
-  itemsOrdered: number;
+function useRemote<T>(name: string, body: Record<string, unknown>) {
+  const key = JSON.stringify(body);
+  const [rows, setRows] = useState<T[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [version, refresh] = useState(0);
+  useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    let expired = false;
+    const timeout = setTimeout(() => { expired = true; controller.abort(); }, 15000);
+    setLoading(true); setError(''); setRows([]);
+    rpc<T>(name, JSON.parse(key), controller.signal).then(data => {
+      if (active) setRows(data);
+    }).catch(() => {
+      if (active) setError(expired ? 'This is taking longer than expected. Please try again.' : 'We could not load this right now. Check your connection and try again.');
+    }).finally(() => { clearTimeout(timeout); if (active) setLoading(false); });
+    return () => { active = false; clearTimeout(timeout); controller.abort(); };
+  }, [name, key, version]);
+  return { rows, loading, error, reload: () => refresh(v => v + 1) };
 }
 
-interface OrderItem {
-  id: string;
-  name: string;
-  price: number;
-  category: 'food' | 'drink' | 'raffle' | 'gift';
-  station: 'kitchen' | 'bar';
-  orderedBy: string;
+function Button({ label, onPress, subtle = false }: { label: string; onPress: () => void; subtle?: boolean }) {
+  return <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [s.button, subtle && s.buttonSubtle, pressed && s.pressed]}><Text style={[s.buttonLabel, subtle && s.buttonLabelSubtle]}>{label}</Text></Pressable>;
 }
-
-interface LiveOrderTicket {
-  id: string;
-  table: string;
-  guestName: string;
-  items: { name: string; qty: number; notes?: string }[];
-  station: 'kitchen' | 'bar';
-  total: number;
-  status: 'received' | 'preparing' | 'ready' | 'delivered';
-  paymentMethod: 'apple_pay' | 'card' | 'cash_pending' | 'cash_collected';
-  time: string;
+function RemoteState({ loading, error, empty, onRetry }: { loading: boolean; error: string; empty: boolean; onRetry: () => void }) {
+  if (loading) return <View style={s.state} accessibilityLiveRegion="polite"><ActivityIndicator color={C.blue} /><Text style={s.body}>Loading from Zoi…</Text></View>;
+  if (error) return <View style={s.state} accessibilityRole="alert"><Text style={s.body}>{error}</Text><Button label="Try again" onPress={onRetry} subtle /></View>;
+  if (empty) return <View style={s.state}><Text style={s.cardTitle}>Nothing here yet</Text><Text style={s.body}>Try a different search, or check back for new additions.</Text></View>;
+  return null;
 }
-
-const MENU_ITEMS: Omit<OrderItem, 'id' | 'orderedBy'>[] = [
-  { name: 'Grilled Mediterranean Octopus', price: 28, category: 'food', station: 'kitchen' },
-  { name: 'Spanakopita Artisanal Platter', price: 18, category: 'food', station: 'kitchen' },
-  { name: 'Assyrtiko Santorini White (Bottle)', price: 65, category: 'drink', station: 'bar' },
-  { name: 'Greek Wine Xinomavro Naoussa (Bottle)', price: 72, category: 'drink', station: 'bar' },
-  { name: 'Mastiha Digestif Round (4 shots)', price: 32, category: 'drink', station: 'bar' },
-  { name: 'Panigiri Super Raffle Ticket (x5)', price: 25, category: 'raffle', station: 'bar' },
-  { name: 'Nameday Table Gift: Honey Loukoumades', price: 22, category: 'gift', station: 'kitchen' },
-];
-
-function openRoute(path: string) {
-  Linking.openURL(path.startsWith('http') ? path : WEB + path);
+function Photo({ uri, name }: { uri?: string; name: string }) {
+  const [failed, setFailed] = useState(false);
+  useEffect(() => setFailed(false), [uri]);
+  if (!uri || !/^https:\/\//i.test(uri) || failed) return <View style={s.photoFallback}><Text style={s.monogram}>{name.slice(0, 1).toLocaleUpperCase()}</Text><Text style={s.photoLabel}>ZOI · DISCOVER</Text></View>;
+  return <Image accessibilityLabel={name} source={{ uri }} resizeMode="cover" style={s.photo} onError={() => setFailed(true)} />;
 }
-
-/* ─────────────────────────────────────────────────────────────
-   GUEST TABLE & BILL SPLIT EXPERIENCE
-   ───────────────────────────────────────────────────────────── */
-function GuestTableView() {
-  const [tableCode, setTableCode] = useState('VIP-4');
-  const [guestName, setGuestName] = useState('George');
-  const [joined, setJoined] = useState(true);
-  const [splitMode, setSplitMode] = useState<SplitMode>('equal');
-  const [members, setMembers] = useState<TableMember[]>([
-    { id: '1', name: 'George (You)', isHost: true, avatar: 'Γ', itemsOrdered: 3 },
-    { id: '2', name: 'Eleni K.', avatar: 'E', itemsOrdered: 2 },
-    { id: '3', name: 'Nikos P.', avatar: 'N', itemsOrdered: 2 },
-    { id: '4', name: 'Sofia M.', avatar: 'Σ', itemsOrdered: 1 },
-  ]);
-  const [tableOrders, setTableOrders] = useState<OrderItem[]>([
-    { id: 'o1', name: 'Assyrtiko Santorini White (Bottle)', price: 65, category: 'drink', station: 'bar', orderedBy: 'George (You)' },
-    { id: 'o2', name: 'Grilled Mediterranean Octopus', price: 28, category: 'food', station: 'kitchen', orderedBy: 'George (You)' },
-    { id: 'o3', name: 'Spanakopita Artisanal Platter', price: 18, category: 'food', station: 'kitchen', orderedBy: 'Eleni K.' },
-    { id: 'o4', name: 'Greek Wine Xinomavro Naoussa', price: 72, category: 'drink', station: 'bar', orderedBy: 'Nikos P.' },
-    { id: 'o5', name: 'Panigiri Super Raffle Ticket (x5)', price: 25, category: 'raffle', station: 'bar', orderedBy: 'Sofia M.' },
-  ]);
-  const [crossTableGift, setCrossTableGift] = useState('');
-  const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null);
-
-  const subtotal = tableOrders.reduce((sum, item) => sum + item.price, 0);
-  const tax = Math.round(subtotal * 0.13);
-  const tip = Math.round(subtotal * 0.18);
-  const grandTotal = subtotal + tax + tip;
-  const equalSplit = (grandTotal / Math.max(1, members.length)).toFixed(2);
-  const myItemsTotal = tableOrders.filter(i => i.orderedBy.includes('You')).reduce((sum, i) => sum + i.price, 0);
-  const myShare = Math.round(myItemsTotal * 1.31);
-
-  const handleAddItem = (item: typeof MENU_ITEMS[0]) => {
-    const newItem: OrderItem = {
-      ...item,
-      id: 'o_' + Date.now(),
-      orderedBy: `${guestName} (You)`,
-    };
-    setTableOrders([...tableOrders, newItem]);
-    Alert.alert('Item Added', `${item.name} added to Table ${tableCode} tab.`);
-  };
-
-  const handlePay = (method: 'apple' | 'card' | 'cash') => {
-    if (method === 'cash') {
-      setPaymentSuccess('Cash payment requested! Server has been dispatched to collect physical cash at Table ' + tableCode);
-    } else {
-      setPaymentSuccess(`Payment of $${splitMode === 'equal' ? equalSplit : myShare} processed via ${method === 'apple' ? 'Apple Pay' : 'Credit Card'}!`);
-    }
-  };
-
-  const handleSendGift = () => {
-    if (!crossTableGift) return;
-    Alert.alert('Round Sent! 🥂', `Complimentary bottle of Greek Wine sent to Table ${crossTableGift}! They will receive an on-screen toast with your name.`);
-    setCrossTableGift('');
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.tableHeaderBox}>
-        <View style={styles.tableBadgeRow}>
-          <View style={styles.liveDot} />
-          <Text style={styles.tableBadgeText}>TABLE {tableCode} · SPONSORED BY KRINOS FOODS</Text>
-        </View>
-        <Text style={styles.tableTitle}>Hellenic Gala 2025 Table Tab</Text>
-        <Text style={styles.tableSubtitle}>Orders placed by anyone at this table sync live in real-time.</Text>
-      </View>
-
-      {paymentSuccess && (
-        <View style={styles.successBanner}>
-          <Text style={styles.successText}>✓ {paymentSuccess}</Text>
-          <Pressable onPress={() => setPaymentSuccess(null)} style={{ marginTop: 6 }}>
-            <Text style={{ color: '#d4af5f', fontWeight: '700', fontSize: 12 }}>Dismiss</Text>
-          </Pressable>
-        </View>
-      )}
-
-      {/* WHO IS AT THE TABLE */}
-      <Text style={styles.sectionTitle}>Seated at Table ({members.length})</Text>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.memberScroll}>
-        {members.map(m => (
-          <View key={m.id} style={styles.memberPill}>
-            <View style={styles.memberAvatar}><Text style={styles.memberAvatarText}>{m.avatar}</Text></View>
-            <View>
-              <Text style={styles.memberName}>{m.name}</Text>
-              <Text style={styles.memberSub}>{m.isHost ? 'Host · ' : ''}{m.itemsOrdered} items</Text>
-            </View>
-          </View>
-        ))}
-        <Pressable style={styles.addMemberBtn} onPress={() => Alert.alert('Share Table QR', `Have your guest scan the Table ${tableCode} QR code or enter code "${tableCode}" in their Zoi app.`)}>
-          <Text style={styles.addMemberText}>+ Invite</Text>
-        </Pressable>
-      </ScrollView>
-
-      {/* ORDER MENU */}
-      <Text style={styles.sectionTitle}>Order Food, Wine & Raffle</Text>
-      <View style={styles.menuGrid}>
-        {MENU_ITEMS.map((item, idx) => (
-          <View key={idx} style={styles.menuCard}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.menuName}>{item.name}</Text>
-              <Text style={styles.menuCat}>{item.category.toUpperCase()} · TO {item.station.toUpperCase()}</Text>
-            </View>
-            <Text style={styles.menuPrice}>${item.price}</Text>
-            <Pressable style={styles.menuAddBtn} onPress={() => handleAddItem(item)}>
-              <Text style={styles.menuAddText}>+ Add</Text>
-            </Pressable>
-          </View>
-        ))}
-      </View>
-
-      {/* CROSS TABLE ROUND GIFTING */}
-      <View style={styles.giftCard}>
-        <Text style={styles.giftTitle}>🥂 Buy Another Table a Round</Text>
-        <Text style={styles.giftBody}>Send drinks or dessert to friends celebrating across the room.</Text>
-        <View style={styles.giftRow}>
-          <TextInput
-            placeholder="e.g. Table 8"
-            placeholderTextColor="#64748f"
-            style={styles.giftInput}
-            value={crossTableGift}
-            onChangeText={setCrossTableGift}
-          />
-          <Pressable style={styles.giftBtn} onPress={handleSendGift}>
-            <Text style={styles.giftBtnText}>Send Round ($32)</Text>
-          </Pressable>
-        </View>
-      </View>
-
-      {/* LIVE TABLE BILL & SPLIT */}
-      <Text style={styles.sectionTitle}>Live Table Bill (${grandTotal})</Text>
-      <View style={styles.billCard}>
-        <View style={styles.splitToggleRow}>
-          {(['equal', 'items', 'cover'] as SplitMode[]).map(mode => (
-            <Pressable
-              key={mode}
-              style={[styles.splitTab, splitMode === mode && styles.splitTabActive]}
-              onPress={() => setSplitMode(mode)}
-            >
-              <Text style={[styles.splitTabText, splitMode === mode && styles.splitTabTextActive]}>
-                {mode === 'equal' ? 'Split Equally' : mode === 'items' ? 'Pay My Items' : 'Cover Table'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-
-        <View style={styles.orderList}>
-          {tableOrders.map(item => (
-            <View key={item.id} style={styles.orderRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.orderItemName}>{item.name}</Text>
-                <Text style={styles.orderItemBy}>by {item.orderedBy}</Text>
-              </View>
-              <Text style={styles.orderItemPrice}>${item.price}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.billDivider} />
-        <View style={styles.totalRow}><Text style={styles.totalLabel}>Subtotal</Text><Text style={styles.totalVal}>${subtotal}</Text></View>
-        <View style={styles.totalRow}><Text style={styles.totalLabel}>HST Tax (13%)</Text><Text style={styles.totalVal}>${tax}</Text></View>
-        <View style={styles.totalRow}><Text style={styles.totalLabel}>Service Gratuity (18%)</Text><Text style={styles.totalVal}>${tip}</Text></View>
-        <View style={[styles.totalRow, { marginTop: 6 }]}><Text style={styles.grandLabel}>Total Table Bill</Text><Text style={styles.grandVal}>${grandTotal}</Text></View>
-
-        <View style={styles.yourShareBox}>
-          <Text style={styles.yourShareLabel}>YOUR AMOUNT TO PAY ({splitMode === 'equal' ? `1/${members.length}th share` : splitMode === 'items' ? 'your items + tax/tip' : 'entire table'}):</Text>
-          <Text style={styles.yourShareAmount}>${splitMode === 'equal' ? equalSplit : splitMode === 'items' ? myShare : grandTotal}</Text>
-        </View>
-
-        {/* PAYMENT BUTTONS */}
-        <View style={styles.payActionGrid}>
-          <Pressable style={[styles.payBtn, styles.payBtnApple]} onPress={() => handlePay('apple')}>
-            <Text style={styles.payBtnAppleText}> Pay with Pay</Text>
-          </Pressable>
-          <Pressable style={[styles.payBtn, styles.payBtnCard]} onPress={() => handlePay('card')}>
-            <Text style={styles.payBtnCardText}>💳 Credit / Debit</Text>
-          </Pressable>
-          <Pressable style={[styles.payBtn, styles.payBtnCash]} onPress={() => handlePay('cash')}>
-            <Text style={styles.payBtnCashText}>💵 Pay Cash to Server</Text>
-          </Pressable>
-        </View>
-      </View>
-    </ScrollView>
-  );
+function PlaceCard({ place, open }: { place: Place; open: (path: string) => void }) {
+  const path = place.path && /^\/(?!\/)/.test(place.path) ? place.path : '/p/' + encodeURIComponent(place.slug);
+  return <Pressable accessibilityRole="link" accessibilityLabel={`View ${place.name} profile`} onPress={() => open(path)} style={({ pressed }) => [s.card, pressed && s.pressed]}>
+    <Photo uri={place.photo_url} name={place.name} />
+    <View style={s.cardContent}><Text style={s.eyebrow}>{(typeof place.category === 'string' ? place.category : place.entity_type || 'Discover').replaceAll('_', ' ')}</Text><Text style={s.cardTitle}>{place.name}</Text><Text style={s.meta}>{[place.city, place.country].filter(Boolean).join(' · ') || 'Greek connections worldwide'}</Text>{place.description ? <Text style={s.body} numberOfLines={3}>{place.description}</Text> : null}<Text style={s.textLink}>View profile →</Text></View>
+  </Pressable>;
 }
-
-/* ─────────────────────────────────────────────────────────────
-   PRIVATE EVENTS: WEDDINGS, BAPTISMS & PRIVATE GALAS
-   ───────────────────────────────────────────────────────────── */
-function PrivateEventsView() {
-  const [subTab, setSubTab] = useState<PrivateSubTab>('rsvp');
-  const [eventPin, setEventPin] = useState('WED-2025');
-  const [isUnlocked, setIsUnlocked] = useState(true);
-  const [rsvpAttending, setRsvpAttending] = useState(true);
-  const [partyCount, setPartyCount] = useState(2);
-  const [guest1Meal, setGuest1Meal] = useState<MealChoice>('lamb');
-  const [guest2Meal, setGuest2Meal] = useState<MealChoice>('sea_bass');
-  const [dietaryNotes, setDietaryNotes] = useState('Gluten-free for guest 2');
-  const [giftAmount, setGiftAmount] = useState('250');
-  const [giftMessage, setGiftMessage] = useState('Να ζήσετε! Wishing you a lifetime of joy, love, and health!');
-  const [giftFund, setGiftFund] = useState('honeymoon');
-  const [photoList, setPhotoList] = useState<{ id: string; user: string; table: string; cap: string; time: string }[]>([
-    { id: '1', user: 'Nikos P.', table: 'Table 4', cap: 'First dance zeibekiko! 🥂', time: '5m ago' },
-    { id: '2', user: 'Sofia M.', table: 'Table 2', cap: 'Stefana & Koumbaroi blessing 🙏', time: '18m ago' },
-    { id: '3', user: 'George P.', table: 'Table 4', cap: 'Table 4 raising a glass to Dimitris & Maria!', time: '24m ago' },
-  ]);
-  const [newPhotoCap, setNewPhotoCap] = useState('');
-  const [rsvpSuccess, setRsvpSuccess] = useState<string | null>(null);
-
-  const handleRsvpSubmit = () => {
-    setRsvpSuccess('✓ RSVP confirmed for Party of ' + partyCount + '! Meals: Lamb & Sea Bass logged for Table 4.');
-  };
-
-  const handleSendGift = (method: 'apple' | 'card' | 'envelope') => {
-    if (method === 'envelope') {
-      Alert.alert('Noted! 💌', 'Marked that you are bringing a traditional cash envelope to the reception gift box.');
-    } else {
-      Alert.alert('Gift Sent! 🎁', `$${giftAmount} sent to Dimitris & Maria's ${giftFund === 'honeymoon' ? 'Santorini Honeymoon Fund' : 'Digital Shakoula'} via ${method === 'apple' ? 'Apple Pay' : 'Card'}. Personal note attached.`);
-    }
-  };
-
-  const handleDropPhoto = () => {
-    if (!newPhotoCap) return;
-    setPhotoList([
-      { id: 'p_' + Date.now(), user: 'George (You)', table: 'Table 4', cap: newPhotoCap, time: 'Just now' },
-      ...photoList,
-    ]);
-    setNewPhotoCap('');
-    Alert.alert('Photo Uploaded! 📸', 'Your photo has been projected to the live reception screen slideshow!');
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.content}>
-      {/* EVENT HEADER */}
-      <View style={styles.privateHeaderBox}>
-        <View style={styles.privatePillRow}>
-          <Text style={styles.privatePillText}>💒 SACRAMENT OF HOLY MATRIMONY · PRIVATE INVITATION</Text>
-        </View>
-        <Text style={styles.privateTitle}>Dimitris &amp; Maria's Wedding</Text>
-        <Text style={styles.privateSubtitle}>Saturday, June 28, 2025 · Toronto, ON</Text>
-        <Text style={styles.privateParish}>St. Nicholas Greek Orthodox Church &amp; The Grand Ballroom</Text>
-      </View>
-
-      {/* SUBTABS */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.privateTabScroll}>
-        {([
-          ['rsvp', 'RSVP & Meals'],
-          ['seating', 'My Seating'],
-          ['registry', 'Digital Envelope / Shakoula'],
-          ['photos', 'Live Photo Wall'],
-          ['itinerary', 'Timetable & Koumbaroi'],
-        ] as [PrivateSubTab, string][]).map(([key, label]) => (
-          <Pressable
-            key={key}
-            style={[styles.privateTabBtn, subTab === key && styles.privateTabBtnActive]}
-            onPress={() => setSubTab(key)}
-          >
-            <Text style={[styles.privateTabText, subTab === key && styles.privateTabTextActive]}>{label}</Text>
-          </Pressable>
-        ))}
-      </ScrollView>
-
-      {/* 1. RSVP & MEAL CHOICE */}
-      {subTab === 'rsvp' && (
-        <View style={styles.privateCard}>
-          <Text style={styles.privateCardTitle}>RSVP &amp; Meal Preferences</Text>
-          <Text style={styles.privateCardSub}>Please confirm attendance by May 15, 2025.</Text>
-
-          {rsvpSuccess && (
-            <View style={styles.successBanner}>
-              <Text style={styles.successText}>{rsvpSuccess}</Text>
-            </View>
-          )}
-
-          <View style={styles.rsvpRow}>
-            <Text style={styles.rsvpLabel}>Attendance Status:</Text>
-            <View style={{ flexDirection: 'row', gap: 8 }}>
-              <Pressable style={[styles.choicePill, rsvpAttending && styles.choicePillActive]} onPress={() => setRsvpAttending(true)}>
-                <Text style={[styles.choiceText, rsvpAttending && styles.choiceTextActive]}>Joyfully Accept</Text>
-              </Pressable>
-              <Pressable style={[styles.choicePill, !rsvpAttending && styles.choicePillActive]} onPress={() => setRsvpAttending(false)}>
-                <Text style={[styles.choiceText, !rsvpAttending && styles.choiceTextActive]}>Regretfully Decline</Text>
-              </Pressable>
-            </View>
-          </View>
-
-          {rsvpAttending && (
-            <>
-              <View style={styles.formGroup}>
-                <Text style={styles.inputLabel}>Guest 1 (George) — Entrée Choice:</Text>
-                <View style={styles.mealGrid}>
-                  {(['lamb', 'sea_bass', 'vegetarian'] as MealChoice[]).map(m => (
-                    <Pressable key={m} style={[styles.mealBtn, guest1Meal === m && styles.mealBtnActive]} onPress={() => setGuest1Meal(m)}>
-                      <Text style={[styles.mealBtnText, guest1Meal === m && styles.mealBtnTextActive]}>
-                        {m === 'lamb' ? '🍖 Roasted Greek Lamb' : m === 'sea_bass' ? '🐟 Fresh Aegean Sea Bass' : '🌱 Gemista / Vegetarian'}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.inputLabel}>Guest 2 (Eleni) — Entrée Choice:</Text>
-                <View style={styles.mealGrid}>
-                  {(['lamb', 'sea_bass', 'vegetarian'] as MealChoice[]).map(m => (
-                    <Pressable key={m} style={[styles.mealBtn, guest2Meal === m && styles.mealBtnActive]} onPress={() => setGuest2Meal(m)}>
-                      <Text style={[styles.mealBtnText, guest2Meal === m && styles.mealBtnTextActive]}>
-                        {m === 'lamb' ? '🍖 Roasted Greek Lamb' : m === 'sea_bass' ? '🐟 Fresh Aegean Sea Bass' : '🌱 Gemista / Vegetarian'}
-                      </Text>
-                    </Pressable>
-                  ))}
-                </View>
-              </View>
-
-              <View style={styles.formGroup}>
-                <Text style={styles.inputLabel}>Dietary Requirements or Allergies:</Text>
-                <TextInput
-                  style={styles.textInput}
-                  value={dietaryNotes}
-                  onChangeText={setDietaryNotes}
-                  placeholder="e.g. Celiac / Nut Allergy"
-                  placeholderTextColor="#64748f"
-                />
-              </View>
-
-              <Pressable style={[styles.payBtn, styles.payBtnCard, { marginTop: 10 }]} onPress={handleRsvpSubmit}>
-                <Text style={styles.payBtnCardText}>Confirm Wedding RSVP</Text>
-              </Pressable>
-            </>
-          )}
-        </View>
-      )}
-
-      {/* 2. SEATING ASSIGNMENT */}
-      {subTab === 'seating' && (
-        <View style={styles.privateCard}>
-          <Text style={styles.privateCardTitle}>Your Seating Assignment</Text>
-          <View style={styles.tableSpotlight}>
-            <Text style={styles.tableSpotlightBadge}>ASSIGNED TABLE</Text>
-            <Text style={styles.tableSpotlightName}>Table 4 — Koumbaroi &amp; Close Family</Text>
-            <Text style={styles.tableSpotlightDesc}>Beside the main dance floor · Table Host: Panagiotis K. (Koumbaros)</Text>
-          </View>
-
-          <Text style={[styles.sectionTitle, { fontSize: 16 }]}>Guests Seated with You:</Text>
-          <View style={styles.tablematesList}>
-            <View style={styles.tablemateRow}><Text style={styles.tmName}>George Panagopoulos</Text><Text style={styles.tmMeal}>Lamb · Table 4</Text></View>
-            <View style={styles.tablemateRow}><Text style={styles.tmName}>Eleni K.</Text><Text style={styles.tmMeal}>Sea Bass · Gluten-Free</Text></View>
-            <View style={styles.tablemateRow}><Text style={styles.tmName}>Panagiotis K. (Koumbaros)</Text><Text style={styles.tmMeal}>Lamb · Koumbaros</Text></View>
-            <View style={styles.tablemateRow}><Text style={styles.tmName}>Maria V. (Koumbara)</Text><Text style={styles.tmMeal}>Sea Bass</Text></View>
-            <View style={styles.tablemateRow}><Text style={styles.tmName}>Father Vassilios &amp; Presvytera</Text><Text style={styles.tmMeal}>Parish Priest</Text></View>
-          </View>
-        </View>
-      )}
-
-      {/* 3. DIGITAL ENVELOPE / SHAKOULA & REGISTRY */}
-      {subTab === 'registry' && (
-        <View style={styles.privateCard}>
-          <Text style={styles.privateCardTitle}>Digital Envelope (Shakoula) &amp; Registry</Text>
-          <Text style={styles.privateCardSub}>Bless the newlyweds directly with a wedding gift and personal note.</Text>
-
-          <View style={styles.fundSelectRow}>
-            <Pressable style={[styles.fundCard, giftFund === 'honeymoon' && styles.fundCardActive]} onPress={() => setGiftFund('honeymoon')}>
-              <Text style={styles.fundIcon}>✈️</Text>
-              <Text style={styles.fundName}>Santorini &amp; Milos Honeymoon</Text>
-              <Text style={styles.fundProgress}>$3,850 of $5,000 raised</Text>
-            </Pressable>
-            <Pressable style={[styles.fundCard, giftFund === 'shakoula' && styles.fundCardActive]} onPress={() => setGiftFund('shakoula')}>
-              <Text style={styles.fundIcon}>💌</Text>
-              <Text style={styles.fundName}>Traditional Shakoula / Cash</Text>
-              <Text style={styles.fundProgress}>Direct gift to couple</Text>
-            </Pressable>
-          </View>
-
-          <Text style={styles.inputLabel}>Gift Amount:</Text>
-          <View style={styles.amountGrid}>
-            {['150', '250', '500', '1000'].map(amt => (
-              <Pressable key={amt} style={[styles.amtBtn, giftAmount === amt && styles.amtBtnActive]} onPress={() => setGiftAmount(amt)}>
-                <Text style={[styles.amtText, giftAmount === amt && styles.amtTextActive]}>${amt}</Text>
-              </Pressable>
-            ))}
-          </View>
-
-          <Text style={[styles.inputLabel, { marginTop: 12 }]}>Personal Wedding Wish / Message:</Text>
-          <TextInput
-            style={[styles.textInput, { height: 70, textAlignVertical: 'top' }]}
-            multiline
-            value={giftMessage}
-            onChangeText={setGiftMessage}
-          />
-
-          <View style={styles.payActionGrid}>
-            <Pressable style={[styles.payBtn, styles.payBtnApple]} onPress={() => handleSendGift('apple')}>
-              <Text style={styles.payBtnAppleText}>Send ${giftAmount} with Pay</Text>
-            </Pressable>
-            <Pressable style={[styles.payBtn, styles.payBtnCard]} onPress={() => handleSendGift('card')}>
-              <Text style={styles.payBtnCardText}>Send ${giftAmount} with Credit Card</Text>
-            </Pressable>
-            <Pressable style={[styles.payBtn, styles.payBtnCash]} onPress={() => handleSendGift('envelope')}>
-              <Text style={styles.payBtnCashText}>💌 Bringing Physical Envelope to Reception</Text>
-            </Pressable>
-          </View>
-        </View>
-      )}
-
-      {/* 4. LIVE PHOTO WALL */}
-      {subTab === 'photos' && (
-        <View style={styles.privateCard}>
-          <Text style={styles.privateCardTitle}>Live Reception Photo Wall</Text>
-          <Text style={styles.privateCardSub}>Photos dropped here stream live onto the reception hall screen!</Text>
-
-          <View style={styles.photoUploadBox}>
-            <TextInput
-              style={styles.photoInput}
-              placeholder="Add a fun caption (e.g. Raising a glass from Table 4!)..."
-              placeholderTextColor="#64748f"
-              value={newPhotoCap}
-              onChangeText={setNewPhotoCap}
-            />
-            <Pressable style={styles.photoDropBtn} onPress={handleDropPhoto}>
-              <Text style={styles.photoDropBtnText}>📸 Drop Photo to Screen</Text>
-            </Pressable>
-          </View>
-
-          <View style={styles.photoFeed}>
-            {photoList.map(p => (
-              <View key={p.id} style={styles.photoCard}>
-                <View style={styles.photoCardHdr}>
-                  <Text style={styles.photoCardUser}>{p.user} · {p.table}</Text>
-                  <Text style={styles.photoCardTime}>{p.time}</Text>
-                </View>
-                <View style={styles.photoPlaceholder}>
-                  <Text style={styles.photoPlaceholderText}>📷 [Live Wedding Photo]</Text>
-                </View>
-                <Text style={styles.photoCaption}>{p.cap}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      )}
-
-      {/* 5. TIMETABLE & KOUMBAROI */}
-      {subTab === 'itinerary' && (
-        <View style={styles.privateCard}>
-          <Text style={styles.privateCardTitle}>Wedding Timetable &amp; Key Details</Text>
-          
-          <View style={styles.timelineList}>
-            <View style={styles.timelineItem}>
-              <Text style={styles.timeBadge}>1:00 PM</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.timeTitle}>Sacrament of Holy Matrimony 💒</Text>
-                <Text style={styles.timeLoc}>St. Nicholas Greek Orthodox Church</Text>
-                <Text style={styles.timeDesc}>Officiated by Father Vassilios · Koumbaroi: Panagiotis &amp; Maria</Text>
-              </View>
-            </View>
-
-            <View style={styles.timelineItem}>
-              <Text style={styles.timeBadge}>5:30 PM</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.timeTitle}>Cocktail Hour &amp; Mezedes 🍸</Text>
-                <Text style={styles.timeLoc}>The Grand Ballroom Foyer</Text>
-                <Text style={styles.timeDesc}>Live bouzouki acoustic performance &amp; Aegean appetizers</Text>
-              </View>
-            </View>
-
-            <View style={styles.timelineItem}>
-              <Text style={styles.timeBadge}>7:00 PM</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.timeTitle}>Grand Entrance &amp; Dinner 🍽</Text>
-                <Text style={styles.timeLoc}>Main Ballroom · Table 4</Text>
-                <Text style={styles.timeDesc}>Four-course Greek banquet with wine pairings</Text>
-              </View>
-            </View>
-
-            <View style={styles.timelineItem}>
-              <Text style={styles.timeBadge}>9:00 PM</Text>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.timeTitle}>First Dance &amp; Zeibekiko 💃</Text>
-                <Text style={styles.timeLoc}>Central Dance Floor</Text>
-                <Text style={styles.timeDesc}>Celebration continues with live Greek band and DJ until late!</Text>
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
-    </ScrollView>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
-   VENDOR / KITCHEN / HOST DISPLAY SYSTEM (KDS)
-   ───────────────────────────────────────────────────────────── */
-function VendorKDSView() {
-  const [station, setStation] = useState<Station>('all');
-  const [tickets, setTickets] = useState<LiveOrderTicket[]>([
-    {
-      id: 'TK-101',
-      table: 'Table VIP-4',
-      guestName: 'George P.',
-      station: 'bar',
-      total: 97,
-      status: 'received',
-      paymentMethod: 'apple_pay',
-      time: '2m ago',
-      items: [
-        { name: 'Assyrtiko Santorini White', qty: 1 },
-        { name: 'Mastiha Digestif Round (4 shots)', qty: 1 },
-      ],
-    },
-    {
-      id: 'TK-102',
-      table: 'Table 12',
-      guestName: 'Dimitris V.',
-      station: 'kitchen',
-      total: 56,
-      status: 'preparing',
-      paymentMethod: 'cash_pending',
-      time: '6m ago',
-      items: [
-        { name: 'Grilled Mediterranean Octopus', qty: 2, notes: 'Extra lemon on side' },
-      ],
-    },
-    {
-      id: 'TK-103',
-      table: 'Table VIP-1',
-      guestName: 'National Bank Table',
-      station: 'bar',
-      total: 144,
-      status: 'ready',
-      paymentMethod: 'card',
-      time: '9m ago',
-      items: [
-        { name: 'Greek Wine Xinomavro Naoussa', qty: 2 },
-      ],
-    },
-    {
-      id: 'TK-104',
-      table: 'Table 8',
-      guestName: 'Anna S.',
-      station: 'kitchen',
-      total: 40,
-      status: 'received',
-      paymentMethod: 'cash_pending',
-      time: 'Just now',
-      items: [
-        { name: 'Spanakopita Artisanal Platter', qty: 2 },
-        { name: 'Honey Loukoumades', qty: 1 },
-      ],
-    },
-  ]);
-
-  const advanceTicket = (id: string) => {
-    setTickets(tickets.map(t => {
-      if (t.id === id) {
-        const nextStatus = t.status === 'received' ? 'preparing' : t.status === 'preparing' ? 'ready' : 'delivered';
-        return { ...t, status: nextStatus };
-      }
-      return t;
-    }));
-  };
-
-  const collectCash = (id: string) => {
-    setTickets(tickets.map(t => {
-      if (t.id === id) {
-        return { ...t, paymentMethod: 'cash_collected' };
-      }
-      return t;
-    }));
-    Alert.alert('Cash Settlement Recorded', 'Cash collected and logged into register float.');
-  };
-
-  const filteredTickets = tickets.filter(t => station === 'all' || t.station === station);
-
-  return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.kdsHeader}>
-        <View>
-          <Text style={styles.kdsTitle}>Live Station &amp; KDS Display</Text>
-          <Text style={styles.kdsSubtitle}>Orders routed live from guest in-seat table tabs.</Text>
-        </View>
-        <View style={styles.kdsLivePill}>
-          <View style={styles.liveDot} />
-          <Text style={styles.kdsLiveText}>LIVE DISPATCH</Text>
-        </View>
-      </View>
-
-      {/* STATION SWITCHER */}
-      <View style={styles.stationRow}>
-        {(['all', 'kitchen', 'bar', 'host'] as Station[]).map(st => (
-          <Pressable
-            key={st}
-            style={[styles.stationTab, station === st && styles.stationTabActive]}
-            onPress={() => setStation(st)}
-          >
-            <Text style={[styles.stationTabText, station === st && styles.stationTabTextActive]}>
-              {st === 'all' ? 'All Stations' : st === 'kitchen' ? '🍳 Kitchen KDS' : st === 'bar' ? '🍷 Bar Station' : '💵 Host / Cashier'}
-            </Text>
-          </Pressable>
-        ))}
-      </View>
-
-      {/* TICKETS LIST */}
-      <View style={styles.ticketGridKds}>
-        {filteredTickets.map(t => (
-          <View key={t.id} style={[styles.ticketCardKds, t.paymentMethod === 'cash_pending' && styles.ticketCardCashPending]}>
-            <View style={styles.tKdsHeader}>
-              <View>
-                <Text style={styles.tKdsTable}>{t.table}</Text>
-                <Text style={styles.tKdsGuest}>{t.guestName} · {t.time}</Text>
-              </View>
-              <View style={[styles.statusTag, t.status === 'ready' ? styles.statusReady : t.status === 'preparing' ? styles.statusPrep : styles.statusRecv]}>
-                <Text style={styles.statusTagText}>{t.status.toUpperCase()}</Text>
-              </View>
-            </View>
-
-            {/* CASH ALERT */}
-            {t.paymentMethod === 'cash_pending' && (
-              <View style={styles.cashAlertBox}>
-                <Text style={styles.cashAlertText}>⚠️ CASH PAYMENT REQUESTED (${t.total})</Text>
-                <Pressable style={styles.cashCollectBtn} onPress={() => collectCash(t.id)}>
-                  <Text style={styles.cashCollectBtnText}>Collect Cash &amp; Settle</Text>
-                </Pressable>
-              </View>
-            )}
-
-            <View style={styles.tKdsItemList}>
-              {t.items.map((item, idx) => (
-                <View key={idx} style={styles.tKdsItemRow}>
-                  <Text style={styles.tKdsItemQty}>{item.qty}x</Text>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.tKdsItemName}>{item.name}</Text>
-                    {item.notes ? <Text style={styles.tKdsItemNotes}>Note: {item.notes}</Text> : null}
-                  </View>
-                </View>
-              ))}
-            </View>
-
-            <View style={styles.tKdsFooter}>
-              <Text style={styles.tKdsTotal}>Total: ${t.total}</Text>
-              {t.status !== 'delivered' && (
-                <Pressable style={styles.advanceBtn} onPress={() => advanceTicket(t.id)}>
-                  <Text style={styles.advanceBtnText}>
-                    {t.status === 'received' ? 'Mark Preparing ➔' : t.status === 'preparing' ? 'Mark Ready for Runner ➔' : 'Mark Delivered ✓'}
-                  </Text>
-                </Pressable>
-              )}
-            </View>
-          </View>
-        ))}
-      </View>
-    </ScrollView>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
-   DIASPORA AGORA MESSENGER (P2P, BIZ & TABLE CHAT)
-   ───────────────────────────────────────────────────────────── */
-function AgoraMessengerView() {
-  const [activeThread, setActiveThread] = useState<'mythos' | 'table' | 'gala'>('mythos');
-  const [inputMsg, setInputMsg] = useState('');
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    { id: '1', sender: 'Mythos Taverna', text: 'Γεια σας George! Your table reservation is confirmed for Saturday 7:30 PM. Would you like us to chill an Assyrtiko wine for your arrival? 🇬🇷', time: '10:14 AM', isMe: false },
-    { id: '2', sender: 'You', text: 'Ναι παρακαλώ! We are looking forward to it. We will have 4 guests.', time: '10:18 AM', isMe: true },
-  ]);
-
-  const handleSend = (customText?: string) => {
-    const txt = (customText || inputMsg).trim();
-    if (!txt) return;
-    const newMsg: ChatMessage = {
-      id: 'msg_' + Date.now(),
-      sender: 'You',
-      text: txt,
-      time: 'Just now',
-      isMe: true,
-    };
-    setMessages([...messages, newMsg]);
-    setInputMsg('');
-    setTimeout(() => {
-      setMessages(prev => [
-        ...prev,
-        {
-          id: 'reply_' + Date.now(),
-          sender: activeThread === 'mythos' ? 'Mythos Taverna' : 'Table 4 Host',
-          text: 'Ευχαριστούμε! Received loud and clear. See you soon in the Greek world! 🇬🇷✨',
-          time: 'Just now',
-          isMe: false,
-        }
-      ]);
-    }, 800);
-  };
-
-  return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.privateHeaderBox}>
-        <View style={styles.privatePillRow}>
-          <Text style={styles.privatePillText}>💬 PAN-HELLENIC AGORA MESSENGER</Text>
-        </View>
-        <Text style={styles.privateTitle}>Direct &amp; Business Messenger</Text>
-        <Text style={styles.privateSubtitle}>Chat with tavernas, event organizers, and your table guests.</Text>
-      </View>
-
-      {/* THREAD SELECTOR */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.privateTabScroll}>
-        <Pressable
-          style={[styles.privateTabBtn, activeThread === 'mythos' && styles.privateTabBtnActive]}
-          onPress={() => setActiveThread('mythos')}
-        >
-          <Text style={[styles.privateTabText, activeThread === 'mythos' && styles.privateTabTextActive]}>🍷 Mythos Taverna</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.privateTabBtn, activeThread === 'table' && styles.privateTabBtnActive]}
-          onPress={() => setActiveThread('table')}
-        >
-          <Text style={[styles.privateTabText, activeThread === 'table' && styles.privateTabTextActive]}>🍽 Table VIP-4 Group</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.privateTabBtn, activeThread === 'gala' && styles.privateTabBtnActive]}
-          onPress={() => setActiveThread('gala')}
-        >
-          <Text style={[styles.privateTabText, activeThread === 'gala' && styles.privateTabTextActive]}>🎭 Hellenic Gala Committee</Text>
-        </Pressable>
-      </ScrollView>
-
-      {/* CHAT MESSAGES CONTAINER */}
-      <View style={styles.chatContainer}>
-        <View style={styles.chatHeader}>
-          <View style={styles.chatAvatar}>
-            <Text style={{ color: '#fff', fontWeight: '800' }}>
-              {activeThread === 'mythos' ? 'M' : activeThread === 'table' ? 'T' : 'H'}
-            </Text>
-          </View>
-          <View>
-            <Text style={styles.chatTitle}>
-              {activeThread === 'mythos' ? 'Mythos Taverna (Astoria)' : activeThread === 'table' ? 'Table VIP-4 Group Chat' : 'Hellenic Gala Committee'}
-            </Text>
-            <Text style={styles.chatStatus}>● Online · Responds in minutes</Text>
-          </View>
-        </View>
-
-        <View style={styles.messageList}>
-          {messages.map(m => (
-            <View key={m.id} style={[styles.bubble, m.isMe ? styles.bubbleMe : styles.bubbleThem]}>
-              <Text style={[styles.bubbleText, m.isMe && styles.bubbleTextMe]}>{m.text}</Text>
-              <Text style={styles.bubbleTime}>{m.time}</Text>
-            </View>
-          ))}
-        </View>
-
-        {/* GREEK STICKERS BAR */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stickerScroll}>
-          {['🥂 Χρόνια Πολλά!', 'OPA! 🧿', '🇬🇷 Μπράβο!', '🙏 Ευλογίες', '🍷 Στην υγειά μας!'].map(stk => (
-            <Pressable key={stk} style={styles.stickerBtn} onPress={() => handleSend(stk)}>
-              <Text style={styles.stickerText}>{stk}</Text>
-            </Pressable>
-          ))}
-        </ScrollView>
-
-        <View style={styles.chatInputRow}>
-          <TextInput
-            style={styles.chatInput}
-            placeholder="Write in Greek or English…"
-            placeholderTextColor="#64748f"
-            value={inputMsg}
-            onChangeText={setInputMsg}
-          />
-          <Pressable style={styles.chatSendBtn} onPress={() => handleSend()}>
-            <Text style={styles.chatSendBtnText}>Send</Text>
-          </Pressable>
-        </View>
-      </View>
-    </ScrollView>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────
-   STANDARD ECOSYSTEM TABS
-   ───────────────────────────────────────────────────────────── */
-function Home({ onGoTable, onGoPrivate }: { onGoTable: () => void; onGoPrivate: () => void }) {
-  return (
-    <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      <View style={styles.hero}>
-        <View style={styles.seal}><Text style={styles.sealText}>Ζ</Text></View>
-        <Text style={styles.kicker}>THE GREEK WORLD, CONNECTED</Text>
-        <Text style={styles.heroTitle}>Find your people. Build what matters.</Text>
-        <Text style={styles.heroBody}>The live ecosystem app for discovery, private weddings/baptisms, in-seat event ordering, group tab splitting, and operator dispatch.</Text>
-        <View style={styles.row}>
-          <Pressable style={[styles.action, styles.actionPrimary]} onPress={onGoPrivate}>
-            <Text style={[styles.actionText, styles.actionTextPrimary]}>💒 Private Events &amp; Weddings</Text>
-          </Pressable>
-          <Pressable style={styles.action} onPress={onGoTable}>
-            <Text style={styles.actionText}>🍽 In-Seat Table Tab</Text>
-          </Pressable>
-        </View>
-      </View>
-
-      <Text style={styles.sectionTitle}>Private &amp; Community Celebrations</Text>
-      <View style={styles.card}>
-        <Text style={styles.eyebrow}>WEDDINGS · BAPTISMS · MEMORIALS</Text>
-        <Text style={styles.cardTitle}>Private Invitations &amp; Digital Envelopes</Text>
-        <Text style={styles.cardBody}>RSVP with meal selections, view assigned family seating, send traditional Shakoula/cash gifts with personal notes, and drop photos live to the reception screen.</Text>
-        <Pressable style={[styles.action, styles.actionPrimary]} onPress={onGoPrivate}>
-          <Text style={[styles.actionText, styles.actionTextPrimary]}>Open Dimitris &amp; Maria's Wedding</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.sectionTitle}>Live Event Operations</Text>
-      <View style={styles.card}>
-        <Text style={styles.eyebrow}>IN-SEAT &amp; SPLIT BILL</Text>
-        <Text style={styles.cardTitle}>Table Tabs &amp; Bill Splitting</Text>
-        <Text style={styles.cardBody}>Join your event table, order food &amp; wine in real time, split the check equally or by item, and pay with Apple Pay or Cash.</Text>
-        <Pressable style={[styles.action, styles.actionPrimary]} onPress={onGoTable}>
-          <Text style={[styles.actionText, styles.actionTextPrimary]}>Launch Guest Table App</Text>
-        </Pressable>
-      </View>
-
-      <Text style={styles.sectionTitle}>Ecosystem</Text>
-      <ProductCard eyebrow="DISCOVER" title="The Greek directory" body="Search real businesses, churches, professionals, events, and places across the diaspora." path={ROUTES.discover} action="Search places" />
-      <ProductCard eyebrow="COMMUNITY" title="The agora" body="See what the community is sharing, tag real places, and keep the conversation connected to the directory." path={ROUTES.community} action="Open Community" />
-      <ProductCard eyebrow="BUSINESS" title="Your daily business desk" body="Plan content, use templates, manage your audience, publish to Zoi Community, and connect external networks." path={ROUTES.business} action="Open Business" />
-    </ScrollView>
-  );
-}
-
-function ProductCard({ eyebrow, title, body, path, action }: { eyebrow: string; title: string; body: string; path: string; action: string }) {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.eyebrow}>{eyebrow}</Text>
-      <Text style={styles.cardTitle}>{title}</Text>
-      <Text style={styles.cardBody}>{body}</Text>
-      <Pressable accessibilityRole="button" style={styles.action} onPress={() => openRoute(path)}>
-        <Text style={styles.actionText}>{action}</Text>
-      </Pressable>
+function Home({ navigate, open }: { navigate: (tab: Tab) => void; open: (path: string) => void }) {
+  const data = useRemote<Place>('explore_search', { p_q: '', p_limit: 4 });
+  return <ScrollView contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={data.loading} onRefresh={data.reload} tintColor={C.blue} />}>
+    <View style={s.hero}><Text style={s.eyebrow}>ROOTED IN GREECE. OPEN TO THE WORLD.</Text><Text style={s.heroTitle}>Your world.{ '\n' }Your people.{ '\n' }Your Zoi.</Text><Text style={s.heroBody}>A place to belong, discover Greek businesses, and build what comes next.</Text><Button label="Find your Greek connection →" onPress={() => navigate('discover')} /><View style={s.heroRule} /><Text style={s.heroFooter}>ζωή / zoí / life</Text></View>
+    <Text style={s.sectionTitle}>Make yourself at home</Text>
+    <View style={s.tiles}>
+      <Pressable accessibilityRole="button" onPress={() => navigate('community')} style={s.tile}><Text style={s.tileNumber}>01 / CONNECT</Text><Text style={s.cardTitle}>Our community</Text><Text style={s.body}>Stories and conversations from Greeks around the world.</Text><Text style={s.textLink}>Come on in →</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => navigate('grow')} style={[s.tile, s.tileBlue]}><Text style={s.tileNumber}>02 / BUILD</Text><Text style={s.cardTitle}>Your next chapter</Text><Text style={s.body}>Bring your business, your ideas, and your ambition.</Text><Text style={s.textLink}>Explore your workspace →</Text></Pressable>
     </View>
-  );
+    <View style={s.sectionHead}><Text style={s.sectionTitle}>Discover the community</Text><Pressable accessibilityRole="button" onPress={() => navigate('discover')}><Text style={s.textLink}>See all →</Text></Pressable></View>
+    <RemoteState {...data} empty={!data.rows.length} onRetry={data.reload} />
+    {data.rows.map(place => <PlaceCard key={place.id} place={place} open={open} />)}
+    <View style={s.shop}><Text style={s.eyebrow}>BUY GREEK. GO GLOBAL.</Text><Text style={s.sectionTitle}>A little closer to home.</Text><Text style={s.body}>Explore BuyGreek and support Greek makers and merchants.</Text><Button label="Visit BuyGreek.shop ↗" onPress={() => open('https://buygreek.shop')} subtle /></View>
+  </ScrollView>;
 }
-
-const ROUTES = {
-  discover: '/explore',
-  map: '/explore/map',
-  business: '/social',
-  tickets: '/tickets',
-  intelligence: '/apps/intelligence/',
-  command: '/apps/command-center/',
-  community: '/community',
-};
-
-export default function App() {
-  const [tab, setTab] = useState<MainTab>('home');
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar style="light" />
-      <View style={styles.topbar}>
-        <Text style={styles.brand}>Zoi</Text>
-        <Text style={styles.topbarHint}>Weddings, Tables &amp; KDS</Text>
-      </View>
-      <View style={styles.screen}>
-        {tab === 'home' && <Home onGoTable={() => setTab('table')} onGoPrivate={() => setTab('private')} />}
-        {tab === 'chat' && <AgoraMessengerView />}
-        {tab === 'private' && <PrivateEventsView />}
-        {tab === 'table' && <GuestTableView />}
-        {tab === 'kds' && <VendorKDSView />}
-        {tab === 'business' && (
-          <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.pageTitle}>Business Suite</Text>
-            <ProductCard eyebrow="OPERATOR" title="Open Business Suite" body="Publishing, calendar, and analytics for Greek businesses." path={ROUTES.business} action="Launch Business Desk" />
-          </ScrollView>
-        )}
-        {tab === 'tickets' && (
-          <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.pageTitle}>Tickets &amp; Events</Text>
-            <ProductCard eyebrow="EVENTS" title="3D Tickets &amp; Door Mode" body="Real-time check-in, 3D venue builder, and seat maps." path={ROUTES.tickets} action="Open Tickets" />
-          </ScrollView>
-        )}
-        {tab === 'more' && (
-          <ScrollView contentContainerStyle={styles.content}>
-            <Text style={styles.pageTitle}>Founder &amp; Intelligence</Text>
-            <ProductCard eyebrow="CONSOLE" title="Command Center" body="Ingestion, health, and knowledge graph operations." path={ROUTES.command} action="Open Command Center" />
-          </ScrollView>
-        )}
-      </View>
-      <View style={styles.nav} accessibilityRole="tablist">
-        {([
-          ['home', 'Home', '⌂'],
-          ['chat', 'Messenger', '💬'],
-          ['private', 'Weddings', '💒'],
-          ['table', 'Table Tab', '🍽'],
-          ['kds', 'KDS / Host', '⚡'],
-          ['business', 'Business', '✦'],
-          ['tickets', 'Tickets', '◇'],
-          ['more', 'More', '•••'],
-        ] as [MainTab, string, string][]).map(([key, label, ic]) => (
-          <Pressable key={key} accessibilityRole="tab" accessibilityState={{ selected: tab === key }} style={styles.navItem} onPress={() => setTab(key)}>
-            <Text style={[styles.navIcon, tab === key && styles.navActive]}>{ic}</Text>
-            <Text style={[styles.navLabel, tab === key && styles.navActive]}>{label}</Text>
-          </Pressable>
-        ))}
-      </View>
-    </SafeAreaView>
-  );
+function Discover({ open }: { open: (path: string) => void }) {
+  const [input, setInput] = useState('');
+  const [query, setQuery] = useState('');
+  const [type, setType] = useState('');
+  const data = useRemote<Place>('explore_search', { p_q: query, p_limit: 24, ...(type ? { p_type: type } : {}) });
+  return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={data.loading} onRefresh={data.reload} />}>
+    <Text style={s.eyebrow}>THE GREEK WORLD, CONNECTED</Text><Text style={s.pageTitle}>Find your people.{ '\n' }Find your place.</Text><Text style={s.body}>Search businesses, professionals and community spaces.</Text>
+    <View style={s.searchRow}><TextInput accessibilityLabel="Search Greek businesses and places" placeholder="Name, city or keyword" placeholderTextColor={C.muted} value={input} onChangeText={setInput} returnKeyType="search" onSubmitEditing={() => setQuery(input.trim())} style={s.input} /><Button label="Search" onPress={() => setQuery(input.trim())} /></View>
+    <View style={s.chips}>{[['', 'All'], ['business', 'Businesses'], ['professional', 'Professionals'], ['church', 'Churches']].map(([value, label]) => <Pressable accessibilityRole="button" accessibilityState={{ selected: type === value }} key={value} onPress={() => setType(value)} style={[s.chip, type === value && s.chipActive]}><Text style={[s.chipText, type === value && s.chipActiveText]}>{label}</Text></Pressable>)}</View>
+    <RemoteState {...data} empty={!data.rows.length} onRetry={data.reload} />
+    {!data.loading && !data.error && data.rows.length > 0 ? <Text style={s.meta}>{data.rows.length} results{data.rows.length === 24 ? ' · refine your search to find more' : ''}</Text> : null}
+    {data.rows.map(place => <PlaceCard key={place.id} place={place} open={open} />)}
+  </ScrollView>;
 }
-
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#07111f' },
-  topbar: { height: 58, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#1b3148', backgroundColor: '#091827' },
-  brand: { color: '#f2f5fa', fontSize: 23, fontWeight: '800' },
-  topbarHint: { color: '#87a0ba', fontSize: 12, marginLeft: 9 },
-  screen: { flex: 1 },
-  content: { padding: 18, paddingBottom: 40 },
-  hero: { paddingVertical: 14, marginBottom: 14 },
-  seal: { width: 44, height: 44, borderRadius: 12, backgroundColor: '#d4af5f', alignItems: 'center', justifyContent: 'center', marginBottom: 16 },
-  sealText: { color: '#142238', fontSize: 26, fontWeight: '800' },
-  kicker: { color: '#d4af5f', fontSize: 10, fontWeight: '800', letterSpacing: 1.5, marginBottom: 8 },
-  heroTitle: { color: '#f2f5fa', fontSize: 30, lineHeight: 36, fontWeight: '800', marginBottom: 10 },
-  heroBody: { color: '#9bb0c7', fontSize: 15, lineHeight: 22, marginBottom: 18 },
-  pageTitle: { color: '#f2f5fa', fontSize: 28, fontWeight: '800', marginBottom: 8 },
-  sectionTitle: { color: '#f2f5fa', fontSize: 19, fontWeight: '800', marginTop: 18, marginBottom: 12 },
-  row: { flexDirection: 'row', flexWrap: 'wrap', gap: 9 },
-  card: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, padding: 16, marginBottom: 14 },
-  eyebrow: { color: '#d4af5f', fontSize: 10, fontWeight: '800', letterSpacing: 1.3, marginBottom: 6 },
-  cardTitle: { color: '#f2f5fa', fontSize: 19, fontWeight: '800', marginBottom: 6 },
-  cardBody: { color: '#9bb0c7', fontSize: 14, lineHeight: 20, marginBottom: 14 },
-  action: { alignSelf: 'flex-start', borderWidth: 1, borderColor: '#34526e', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10 },
-  actionPrimary: { backgroundColor: '#4f9be8', borderColor: '#4f9be8' },
-  actionText: { color: '#dce8f5', fontWeight: '700', fontSize: 13 },
-  actionTextPrimary: { color: '#06101f' },
-  nav: { height: 72, paddingHorizontal: 4, borderTopWidth: 1, borderTopColor: '#1b3148', backgroundColor: '#091827', flexDirection: 'row', justifyContent: 'space-around' },
-  navItem: { alignItems: 'center', justifyContent: 'center', minWidth: 50 },
-  navIcon: { color: '#718aa5', fontSize: 20, lineHeight: 24 },
-  navLabel: { color: '#718aa5', fontSize: 10, fontWeight: '700', marginTop: 2 },
-  navActive: { color: '#d4af5f' },
-
-  /* Table styles */
-  tableHeaderBox: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#d4af5f', borderRadius: 16, padding: 16, marginBottom: 14 },
-  tableBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 6 },
-  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#5bc49a' },
-  tableBadgeText: { color: '#d4af5f', fontSize: 10, fontWeight: '800', letterSpacing: 1 },
-  tableTitle: { color: '#f2f5fa', fontSize: 22, fontWeight: '800', marginBottom: 4 },
-  tableSubtitle: { color: '#9bb0c7', fontSize: 13 },
-  successBanner: { backgroundColor: 'rgba(91,196,154,0.15)', borderWidth: 1, borderColor: '#5bc49a', borderRadius: 12, padding: 12, marginBottom: 14 },
-  successText: { color: '#5bc49a', fontWeight: '700', fontSize: 13 },
-
-  memberScroll: { flexDirection: 'row', marginBottom: 8 },
-  memberPill: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#132438', borderWidth: 1, borderColor: '#223d5a', borderRadius: 24, paddingHorizontal: 10, paddingVertical: 6, marginRight: 8, gap: 8 },
-  memberAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: '#4f9be8', alignItems: 'center', justifyContent: 'center' },
-  memberAvatarText: { color: '#fff', fontWeight: '800', fontSize: 13 },
-  memberName: { color: '#f2f5fa', fontWeight: '700', fontSize: 12 },
-  memberSub: { color: '#718aa5', fontSize: 10 },
-  addMemberBtn: { borderWidth: 1, borderColor: '#d4af5f', borderStyle: 'dashed', borderRadius: 24, paddingHorizontal: 14, justifyContent: 'center', height: 42 },
-  addMemberText: { color: '#d4af5f', fontWeight: '700', fontSize: 12 },
-
-  menuGrid: { gap: 10, marginBottom: 14 },
-  menuCard: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 12, padding: 12 },
-  menuName: { color: '#f2f5fa', fontWeight: '700', fontSize: 14 },
-  menuCat: { color: '#718aa5', fontSize: 10, fontWeight: '700', marginTop: 2 },
-  menuPrice: { color: '#d4af5f', fontWeight: '800', fontSize: 16, marginHorizontal: 10 },
-  menuAddBtn: { backgroundColor: '#4f9be8', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
-  menuAddText: { color: '#06101f', fontWeight: '800', fontSize: 12 },
-
-  giftCard: { backgroundColor: 'rgba(212,175,95,0.08)', borderWidth: 1, borderColor: 'rgba(212,175,95,0.3)', borderRadius: 14, padding: 14, marginBottom: 14 },
-  giftTitle: { color: '#d4af5f', fontWeight: '800', fontSize: 15, marginBottom: 4 },
-  giftBody: { color: '#9bb0c7', fontSize: 12, marginBottom: 10 },
-  giftRow: { flexDirection: 'row', gap: 8 },
-  giftInput: { flex: 1, backgroundColor: '#091827', borderWidth: 1, borderColor: '#223d5a', borderRadius: 8, paddingHorizontal: 10, color: '#fff', fontSize: 13 },
-  giftBtn: { backgroundColor: '#d4af5f', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8, justifyContent: 'center' },
-  giftBtnText: { color: '#142238', fontWeight: '800', fontSize: 12 },
-
-  billCard: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, padding: 16 },
-  splitToggleRow: { flexDirection: 'row', gap: 6, marginBottom: 14, backgroundColor: '#08121e', padding: 4, borderRadius: 10 },
-  splitTab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 8 },
-  splitTabActive: { backgroundColor: '#1d3852' },
-  splitTabText: { color: '#718aa5', fontSize: 11, fontWeight: '700' },
-  splitTabTextActive: { color: '#f2f5fa', fontWeight: '800' },
-
-  orderList: { gap: 8 },
-  orderRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  orderItemName: { color: '#dce8f5', fontSize: 13, fontWeight: '600' },
-  orderItemBy: { color: '#64748f', fontSize: 11 },
-  orderItemPrice: { color: '#f2f5fa', fontSize: 13, fontWeight: '700' },
-  billDivider: { height: 1, backgroundColor: '#1d3852', marginVertical: 10 },
-  totalRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 4 },
-  totalLabel: { color: '#718aa5', fontSize: 12 },
-  totalVal: { color: '#dce8f5', fontSize: 12, fontWeight: '600' },
-  grandLabel: { color: '#f2f5fa', fontSize: 15, fontWeight: '800' },
-  grandVal: { color: '#d4af5f', fontSize: 17, fontWeight: '800' },
-
-  yourShareBox: { backgroundColor: '#132438', borderRadius: 10, padding: 12, marginVertical: 14, alignItems: 'center' },
-  yourShareLabel: { color: '#718aa5', fontSize: 10, fontWeight: '800', letterSpacing: 0.8, marginBottom: 4 },
-  yourShareAmount: { color: '#5bc49a', fontSize: 26, fontWeight: '800' },
-
-  payActionGrid: { gap: 8 },
-  payBtn: { paddingVertical: 12, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  payBtnApple: { backgroundColor: '#f2f5fa' },
-  payBtnAppleText: { color: '#06101f', fontWeight: '800', fontSize: 14 },
-  payBtnCard: { backgroundColor: '#4f9be8' },
-  payBtnCardText: { color: '#06101f', fontWeight: '800', fontSize: 14 },
-  payBtnCash: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#d4af5f' },
-  payBtnCashText: { color: '#d4af5f', fontWeight: '800', fontSize: 13 },
-
-  /* KDS styles */
-  kdsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  kdsTitle: { color: '#f2f5fa', fontSize: 22, fontWeight: '800' },
-  kdsSubtitle: { color: '#718aa5', fontSize: 12 },
-  kdsLivePill: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: 'rgba(91,196,154,0.15)', borderWidth: 1, borderColor: '#5bc49a', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 20 },
-  kdsLiveText: { color: '#5bc49a', fontSize: 9, fontWeight: '800' },
-
-  stationRow: { flexDirection: 'row', gap: 6, marginBottom: 14, flexWrap: 'wrap' },
-  stationTab: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 20, backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852' },
-  stationTabActive: { backgroundColor: '#4f9be8', borderColor: '#4f9be8' },
-  stationTabText: { color: '#718aa5', fontSize: 11, fontWeight: '700' },
-  stationTabTextActive: { color: '#06101f', fontWeight: '800' },
-
-  ticketGridKds: { gap: 12 },
-  ticketCardKds: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 14, padding: 14 },
-  ticketCardCashPending: { borderColor: '#d4af5f', backgroundColor: 'rgba(212,175,95,0.06)' },
-  tKdsHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 },
-  tKdsTable: { color: '#f2f5fa', fontWeight: '800', fontSize: 16 },
-  tKdsGuest: { color: '#718aa5', fontSize: 11, marginTop: 2 },
-  statusTag: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  statusRecv: { backgroundColor: '#223d5a' },
-  statusPrep: { backgroundColor: '#b8893b' },
-  statusReady: { backgroundColor: '#5bc49a' },
-  statusTagText: { color: '#fff', fontSize: 10, fontWeight: '800' },
-
-  cashAlertBox: { backgroundColor: 'rgba(212,175,95,0.12)', borderWidth: 1, borderColor: '#d4af5f', borderRadius: 8, padding: 10, marginVertical: 8 },
-  cashAlertText: { color: '#d4af5f', fontWeight: '800', fontSize: 11, marginBottom: 6 },
-  cashCollectBtn: { backgroundColor: '#d4af5f', paddingVertical: 6, borderRadius: 6, alignItems: 'center' },
-  cashCollectBtnText: { color: '#142238', fontWeight: '800', fontSize: 11 },
-
-  tKdsItemList: { marginVertical: 8, gap: 6 },
-  tKdsItemRow: { flexDirection: 'row', gap: 8 },
-  tKdsItemQty: { color: '#4f9be8', fontWeight: '800', fontSize: 13, width: 22 },
-  tKdsItemName: { color: '#dce8f5', fontSize: 13, fontWeight: '600' },
-  tKdsItemNotes: { color: '#d4af5f', fontSize: 11, marginTop: 1 },
-
-  tKdsFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#1d3852' },
-  tKdsTotal: { color: '#9bb0c7', fontSize: 13, fontWeight: '700' },
-  advanceBtn: { backgroundColor: '#4f9be8', paddingHorizontal: 12, paddingVertical: 8, borderRadius: 8 },
-  advanceBtnText: { color: '#06101f', fontWeight: '800', fontSize: 11 },
-
-  /* Private Event & Wedding styles */
-  privateHeaderBox: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#d4af5f', borderRadius: 16, padding: 18, marginBottom: 14 },
-  privatePillRow: { marginBottom: 6 },
-  privatePillText: { color: '#d4af5f', fontSize: 9.5, fontWeight: '800', letterSpacing: 1 },
-  privateTitle: { color: '#f2f5fa', fontSize: 24, fontWeight: '800', marginBottom: 4 },
-  privateSubtitle: { color: '#5dbedc', fontSize: 13, fontWeight: '700' },
-  privateParish: { color: '#9bb0c7', fontSize: 12, marginTop: 2 },
-
-  privateTabScroll: { flexDirection: 'row', marginBottom: 14 },
-  privateTabBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', marginRight: 8 },
-  privateTabBtnActive: { backgroundColor: '#d4af5f', borderColor: '#d4af5f' },
-  privateTabText: { color: '#718aa5', fontSize: 11.5, fontWeight: '700' },
-  privateTabTextActive: { color: '#142238', fontWeight: '800' },
-
-  privateCard: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, padding: 16, marginBottom: 14 },
-  privateCardTitle: { color: '#f2f5fa', fontSize: 18, fontWeight: '800', marginBottom: 4 },
-  privateCardSub: { color: '#9bb0c7', fontSize: 12.5, marginBottom: 14 },
-
-  rsvpRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 },
-  rsvpLabel: { color: '#dce8f5', fontSize: 13, fontWeight: '700' },
-  choicePill: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16, backgroundColor: '#132438', borderWidth: 1, borderColor: '#223d5a' },
-  choicePillActive: { backgroundColor: '#5bc49a', borderColor: '#5bc49a' },
-  choiceText: { color: '#718aa5', fontSize: 11.5, fontWeight: '700' },
-  choiceTextActive: { color: '#06101f', fontWeight: '800' },
-
-  formGroup: { marginBottom: 14 },
-  inputLabel: { color: '#dce8f5', fontSize: 12, fontWeight: '700', marginBottom: 6 },
-  mealGrid: { gap: 6 },
-  mealBtn: { paddingVertical: 8, paddingHorizontal: 10, borderRadius: 8, backgroundColor: '#132438', borderWidth: 1, borderColor: '#223d5a' },
-  mealBtnActive: { backgroundColor: '#1f9ec9', borderColor: '#1f9ec9' },
-  mealBtnText: { color: '#9bb0c7', fontSize: 12, fontWeight: '600' },
-  mealBtnTextActive: { color: '#06101f', fontWeight: '800' },
-  textInput: { backgroundColor: '#091827', borderWidth: 1, borderColor: '#223d5a', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: '#fff', fontSize: 13 },
-
-  tableSpotlight: { backgroundColor: 'rgba(212,175,95,0.1)', borderWidth: 1, borderColor: '#d4af5f', borderRadius: 12, padding: 14, marginBottom: 14 },
-  tableSpotlightBadge: { color: '#d4af5f', fontSize: 9.5, fontWeight: '800', letterSpacing: 1, marginBottom: 4 },
-  tableSpotlightName: { color: '#f2f5fa', fontSize: 18, fontWeight: '800', marginBottom: 2 },
-  tableSpotlightDesc: { color: '#9bb0c7', fontSize: 12 },
-  tablematesList: { gap: 6 },
-  tablemateRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#1d3852' },
-  tmName: { color: '#dce8f5', fontSize: 13, fontWeight: '600' },
-  tmMeal: { color: '#d4af5f', fontSize: 12, fontWeight: '700' },
-
-  fundSelectRow: { flexDirection: 'row', gap: 10, marginBottom: 14 },
-  fundCard: { flex: 1, backgroundColor: '#132438', borderWidth: 1, borderColor: '#223d5a', borderRadius: 12, padding: 12 },
-  fundCardActive: { borderColor: '#d4af5f', backgroundColor: 'rgba(212,175,95,0.08)' },
-  fundIcon: { fontSize: 22, marginBottom: 4 },
-  fundName: { color: '#f2f5fa', fontWeight: '700', fontSize: 12, marginBottom: 2 },
-  fundProgress: { color: '#5bc49a', fontSize: 10, fontWeight: '700' },
-
-  amountGrid: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  amtBtn: { flex: 1, paddingVertical: 10, borderRadius: 8, backgroundColor: '#132438', borderWidth: 1, borderColor: '#223d5a', alignItems: 'center' },
-  amtBtnActive: { backgroundColor: '#d4af5f', borderColor: '#d4af5f' },
-  amtText: { color: '#9bb0c7', fontWeight: '700', fontSize: 14 },
-  amtTextActive: { color: '#142238', fontWeight: '800' },
-
-  photoUploadBox: { backgroundColor: '#132438', borderRadius: 12, padding: 12, marginBottom: 14 },
-  photoInput: { backgroundColor: '#091827', borderWidth: 1, borderColor: '#223d5a', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, color: '#fff', fontSize: 13, marginBottom: 8 },
-  photoDropBtn: { backgroundColor: '#4f9be8', paddingVertical: 10, borderRadius: 8, alignItems: 'center' },
-  photoDropBtnText: { color: '#06101f', fontWeight: '800', fontSize: 13 },
-
-  photoFeed: { gap: 10 },
-  photoCard: { backgroundColor: '#091827', borderRadius: 10, padding: 10, borderWidth: 1, borderColor: '#1d3852' },
-  photoCardHdr: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  photoCardUser: { color: '#5dbedc', fontWeight: '700', fontSize: 12 },
-  photoCardTime: { color: '#64748f', fontSize: 10 },
-  photoPlaceholder: { height: 120, backgroundColor: '#132438', borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
-  photoPlaceholderText: { color: '#718aa5', fontSize: 12 },
-  photoCaption: { color: '#dce8f5', fontSize: 12 },
-
-  timelineList: { gap: 12 },
-  timelineItem: { flexDirection: 'row', gap: 12, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#1d3852' },
-  timeBadge: { color: '#d4af5f', fontWeight: '800', fontSize: 13, width: 62 },
-  timeTitle: { color: '#f2f5fa', fontWeight: '700', fontSize: 14, marginBottom: 2 },
-  timeLoc: { color: '#5dbedc', fontSize: 12, fontWeight: '600' },
-  timeDesc: { color: '#9bb0c7', fontSize: 11.5, marginTop: 2 },
-
-  /* Chat & Messenger styles */
-  chatContainer: { backgroundColor: '#0e1d30', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, overflow: 'hidden' },
-  chatHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, borderBottomWidth: 1, borderBottomColor: '#1d3852', backgroundColor: '#132438' },
-  chatAvatar: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#0284c7', alignItems: 'center', justifyContent: 'center' },
-  chatTitle: { color: '#f2f5fa', fontSize: 14, fontWeight: '700' },
-  chatStatus: { color: '#5bc49a', fontSize: 11, fontWeight: '600', marginTop: 1 },
-  messageList: { padding: 14, gap: 10, minHeight: 180 },
-  bubble: { maxWidth: '82%', paddingHorizontal: 13, paddingVertical: 9, borderRadius: 14 },
-  bubbleMe: { alignSelf: 'flex-end', backgroundColor: '#0284c7' },
-  bubbleThem: { alignSelf: 'flex-start', backgroundColor: '#132438', borderWidth: 1, borderColor: '#1d3852' },
-  bubbleText: { color: '#f2f5fa', fontSize: 13, lineHeight: 18 },
-  bubbleTextMe: { color: '#fff' },
-  bubbleTime: { fontSize: 9.5, color: 'rgba(255,255,255,0.6)', marginTop: 4, alignSelf: 'flex-end' },
-  stickerScroll: { flexDirection: 'row', paddingHorizontal: 12, paddingVertical: 8, backgroundColor: '#091827', borderTopWidth: 1, borderTopColor: '#1d3852' },
-  stickerBtn: { backgroundColor: '#132438', borderWidth: 1, borderColor: '#1d3852', borderRadius: 16, paddingHorizontal: 10, paddingVertical: 5, marginRight: 6 },
-  stickerText: { color: '#d4af5f', fontSize: 11, fontWeight: '700' },
-  chatInputRow: { flexDirection: 'row', gap: 8, padding: 10, backgroundColor: '#091827', borderTopWidth: 1, borderTopColor: '#1d3852' },
-  chatInput: { flex: 1, backgroundColor: '#132438', borderWidth: 1, borderColor: '#1d3852', borderRadius: 10, paddingHorizontal: 12, color: '#fff', fontSize: 13 },
-  chatSendBtn: { backgroundColor: '#0284c7', paddingHorizontal: 14, justifyContent: 'center', borderRadius: 10 },
-  chatSendBtnText: { color: '#fff', fontWeight: '800', fontSize: 12 },
+function Community({ open }: { open: (path: string) => void }) {
+  const data = useRemote<Post>('feed_list', { p_limit: 20, p_offset: 0 });
+  return <ScrollView contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={data.loading} onRefresh={data.reload} />}>
+    <Text style={s.eyebrow}>WHEREVER WE ARE, WE BELONG</Text><Text style={s.pageTitle}>The conversation{ '\n' }starts here.</Text><Text style={s.body}>The latest stories shared with the Zoi community.</Text>
+    <CommunityComposer onPublished={data.reload} /><Button label="Open community website ↗" onPress={() => open('/community')} /><Text style={s.meta}>Read and publish here. Replies and media uploads open the Zoi website.</Text>
+    <RemoteState {...data} empty={!data.rows.length} onRetry={data.reload} />
+    {data.rows.map(post => <View key={post.id} style={s.post}><View style={s.postHead}><View style={s.avatar}><Text style={s.avatarText}>{(post.author || 'Zoi').slice(0, 1).toUpperCase()}</Text></View><View style={{ flex: 1 }}><Text style={s.cardTitle}>{post.author || 'Community member'}</Text>{post.created_at && !Number.isNaN(Date.parse(post.created_at)) ? <Text style={s.meta}>{new Date(post.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</Text> : null}</View></View><Text style={s.postBody}>{post.body || ''}</Text>{post.media_photo ? <Photo uri={post.media_photo} name="Community photo" /> : null}<Pressable accessibilityRole="link" onPress={() => open('/community#post-' + encodeURIComponent(post.id))}><Text style={s.textLink}>Read and respond ↗</Text></Pressable></View>)}
+  </ScrollView>;
+}
+function Grow({ open }: { open: (path: string) => void }) {
+  const links = [
+    { label: 'Your business workspace', text: 'Manage your profile, content and customer relationships.', path: '/social', tag: 'CREATE & GROW' },
+    { label: 'Bring people together', text: 'Explore events and manage your tickets on Zoi.', path: '/tickets', tag: 'EVENTS & TICKETS' },
+    { label: 'BuyGreek', text: 'Connect with Greek products and merchants.', path: 'https://buygreek.shop', tag: 'COMMERCE' },
+    { label: 'Your account', text: 'Sign in to your existing Zoi account securely.', path: '/social', tag: 'YOUR ZOI' },
+  ];
+  return <ScrollView contentContainerStyle={s.content}><Text style={s.eyebrow}>MADE FOR YOUR NEXT CHAPTER</Text><Text style={s.pageTitle}>Greek roots.{ '\n' }Global ambition.</Text><Text style={s.body}>Your work deserves a home in the Greek world.</Text><AccountPanel /><CreatorPanel /><OperationsPanel /><VenueStudio /><View style={s.note}><Text style={s.body}>Explore additional services below. Connected provider availability is shown inside each workspace.</Text></View>{links.map(link => <View key={link.tag} style={s.workspace}><Text style={s.eyebrow}>{link.tag}</Text><Text style={s.sectionTitle}>{link.label}</Text><Text style={s.body}>{link.text}</Text><Button label="Open workspace ↗" onPress={() => open(link.path)} subtle /></View>)}<Text style={s.meta}>Manage your bio, operations and venue drafts here. Paid checkout and additional connected services open on the website.</Text></ScrollView>;
+}
+function ZoiApp() {
+  const [profileSlug, setProfileSlug] = useState<string | null>(null);
+  const [tab, setTab] = useState<Tab>('home');
+  const [eventId, setEventId] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState('');
+  useEffect(() => {
+    const handleLink = (url: string | null) => {
+      if (!url || !url.startsWith('zoi://')) return;
+      if (url.startsWith('zoi://tickets')) { const id = url.slice(14).replace(/^\//, '').split(/[?#]/)[0]; setEventId(/^[0-9a-f-]{36}$/i.test(id) ? id : null); setProfileSlug(null); setTab('tickets'); return; }
+      const detail = /^zoi:\/\/(?:p|business|professional|church|organization|creator|artist|school|venue|vendor|event|sports|travel-place)\/([^/?#]+)$/.exec(url);
+      if (detail) { try { setProfileSlug(decodeURIComponent(detail[1])); } catch {} return; }
+      setProfileSlug(null);
+      const route = url.slice(6).split(/[/?#]/)[0];
+      if (['home', 'discover', 'community', 'grow'].includes(route)) setTab(route as Tab);
+    };
+    Linking.getInitialURL().then(handleLink).catch(() => {});
+    const subscription = Linking.addEventListener('url', event => handleLink(event.url));
+    return () => subscription.remove();
+  }, []);
+  const mounted = useRef(true);
+  useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+  const open = async (path: string) => {
+    setLinkError('');
+    if (/^\/tickets(?:[?#]|$)/.test(path)) { setEventId(new URL(path, WEB).searchParams.get('e')); setProfileSlug(null); setTab('tickets'); return; }
+    const profileMatch = /^\/(?:p|business|professional|church|organization|creator|artist|school|venue|vendor|event|sports|travel-place)\/([^/?#]+)$/.exec(path);
+    if (profileMatch) { try { setProfileSlug(decodeURIComponent(profileMatch[1])); } catch { setLinkError('This profile link is not valid.'); } return; }
+    const url = path.startsWith('/') && !path.startsWith('//') ? WEB + path : path;
+    if (!/^https:\/\/(www\.zoi\.city|buygreek\.shop)(\/|$)/.test(url)) { setLinkError('This link is not available. Please try the Zoi website.'); return; }
+    try { await Linking.openURL(url); } catch { if (mounted.current) setLinkError('We could not open your browser. Please try again.'); }
+  };
+  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}><View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Zoi home" onPress={() => { setProfileSlug(null); setTab('home'); }}><Text style={s.wordmark}>zoi<Text style={s.wordmarkDot}>.</Text></Text></Pressable><Text style={s.headerTag}>GREEK ROOTS.{ '\n' }GLOBAL LIFE.</Text><Pressable accessibilityRole="link" accessibilityLabel="Your Zoi account" onPress={() => { setProfileSlug(null); setTab('grow'); }} style={s.account}><Text style={s.accountText}>Your Zoi ↗</Text></Pressable></View>{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}>{profileSlug ? <BusinessProfile slug={profileSlug} back={() => setProfileSlug(null)} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover open={open} /> : tab === 'community' ? <Community open={open} /> : tab === 'tickets' ? <TicketsScreen eventId={eventId} chooseEvent={setEventId} signIn={() => setTab('grow')} /> : <Grow open={open} />}</View><View style={s.nav}>{([{ id: 'home', icon: '⌂', label: 'Home' }, { id: 'discover', icon: '◎', label: 'Discover' }, { id: 'community', icon: '☷', label: 'Community' }, { id: 'tickets', icon: '◇', label: 'Events' }, { id: 'grow', icon: '↗', label: 'Grow' }] as const).map(item => <Pressable key={item.id} accessibilityRole="tab" accessibilityState={{ selected: tab === item.id }} onPress={() => { setLinkError(''); setProfileSlug(null); setTab(item.id); }} style={[s.navItem, tab === item.id && s.navSelected]}><Text style={[s.navIcon, tab === item.id && s.navActive]}>{item.icon}</Text><Text style={[s.navLabel, tab === item.id && s.navActive]}>{item.label}</Text></Pressable>)}</View></View></SafeAreaView>;
+}
+const s = StyleSheet.create({
+  safe: { flex: 1, backgroundColor: C.cream, paddingTop: Platform.OS === 'android' ? NativeStatusBar.currentHeight || 0 : 0 }, shell: { flex: 1, width: '100%', maxWidth: 780, alignSelf: 'center' }, screen: { flex: 1 },
+  header: { paddingHorizontal: 22, paddingVertical: 14, flexDirection: 'row', alignItems: 'center', gap: 16, backgroundColor: C.white, borderBottomColor: C.line, borderBottomWidth: 1 }, wordmark: { fontSize: 40, letterSpacing: -3, fontWeight: '800', color: C.navy }, wordmarkDot: { color: C.gold }, headerTag: { fontSize: 9, fontWeight: '700', letterSpacing: 1.5, lineHeight: 15, color: C.muted, flex: 1 }, account: { minHeight: 44, justifyContent: 'center' }, accountText: { color: C.blue, fontWeight: '700', fontSize: 13 },
+  content: { padding: 22, gap: 20, paddingBottom: 32 }, hero: { padding: 26, backgroundColor: C.sky, borderRadius: 24, gap: 22 }, eyebrow: { fontSize: 10, lineHeight: 17, fontWeight: '800', letterSpacing: 1.5, color: C.gold, textTransform: 'uppercase' }, heroTitle: { fontSize: 48, lineHeight: 52, fontWeight: '700', letterSpacing: -2, color: C.navy }, heroBody: { color: C.navy, fontSize: 17, lineHeight: 26 }, heroRule: { height: 1, backgroundColor: '#C7DDEB' }, heroFooter: { fontSize: 13, color: C.muted, letterSpacing: 2 },
+  pageTitle: { color: C.navy, fontSize: 36, lineHeight: 42, letterSpacing: -1.2, fontWeight: '700' }, sectionTitle: { color: C.navy, fontSize: 24, lineHeight: 30, letterSpacing: -0.7, fontWeight: '700' }, cardTitle: { color: C.navy, fontSize: 20, lineHeight: 27, fontWeight: '700' }, body: { color: C.muted, fontSize: 15, lineHeight: 24 }, meta: { color: C.muted, fontSize: 12, lineHeight: 19 }, textLink: { color: C.blue, fontWeight: '700', fontSize: 14, paddingVertical: 10 },
+  button: { minHeight: 48, backgroundColor: C.blue, borderRadius: 12, paddingVertical: 14, paddingHorizontal: 18, alignItems: 'center', justifyContent: 'center' }, buttonSubtle: { backgroundColor: C.sky }, buttonLabel: { color: C.white, fontWeight: '700', fontSize: 14 }, buttonLabelSubtle: { color: C.blue }, pressed: { opacity: 0.75 }, tiles: { gap: 14 }, tile: { padding: 22, gap: 10, borderWidth: 1, borderColor: C.line, backgroundColor: C.white, borderRadius: 18 }, tileBlue: { backgroundColor: '#F1F6FA' }, tileNumber: { color: C.gold, fontSize: 10, letterSpacing: 2, fontWeight: '700' }, sectionHead: { gap: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' },
+  card: { backgroundColor: C.white, borderRadius: 18, borderWidth: 1, borderColor: C.line, overflow: 'hidden' }, cardContent: { padding: 20, gap: 8 }, photo: { width: '100%', height: 190 }, photoFallback: { height: 150, backgroundColor: '#E6EFF0', alignItems: 'center', justifyContent: 'center', gap: 12 }, monogram: { color: '#416D7D', fontSize: 56, fontWeight: '300' }, photoLabel: { color: '#416D7D', fontSize: 9, letterSpacing: 3 }, shop: { backgroundColor: '#F2EADB', padding: 24, borderRadius: 20, gap: 16 }, state: { padding: 24, alignItems: 'center', gap: 16, backgroundColor: C.white, borderRadius: 16 }, searchRow: { flexDirection: 'row', gap: 10 }, input: { flex: 1, minWidth: 0, minHeight: 50, borderColor: C.line, borderWidth: 1, backgroundColor: C.white, borderRadius: 12, paddingHorizontal: 14, fontSize: 15, color: C.navy }, chips: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' }, chip: { minHeight: 44, paddingHorizontal: 16, justifyContent: 'center', borderRadius: 24, backgroundColor: C.white, borderColor: C.line, borderWidth: 1 }, chipActive: { backgroundColor: C.navy, borderColor: C.navy }, chipText: { color: C.muted, fontSize: 13 }, chipActiveText: { color: C.white },
+  post: { backgroundColor: C.white, borderWidth: 1, borderColor: C.line, borderRadius: 18, padding: 20, gap: 18 }, postHead: { flexDirection: 'row', gap: 12, alignItems: 'center' }, avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: C.sky, justifyContent: 'center', alignItems: 'center' }, avatarText: { color: C.blue, fontWeight: '700', fontSize: 20 }, postBody: { fontSize: 16, lineHeight: 26, color: C.navy }, workspace: { backgroundColor: C.white, padding: 24, borderWidth: 1, borderColor: C.line, borderRadius: 18, gap: 16 }, note: { borderLeftWidth: 3, borderLeftColor: C.gold, paddingLeft: 16 }, error: { padding: 16, backgroundColor: '#FFF0DF', gap: 10 },
+  nav: { flexDirection: 'row', backgroundColor: C.white, borderTopWidth: 1, borderTopColor: C.line, paddingHorizontal: 8, paddingTop: 8, paddingBottom: Platform.OS === 'android' ? 22 : 8 }, navItem: { flex: 1, minHeight: 58, alignItems: 'center', justifyContent: 'center', gap: 4, borderRadius: 12 }, navSelected: { backgroundColor: C.sky }, navIcon: { fontSize: 24, color: C.muted }, navLabel: { fontSize: 11, fontWeight: '600', color: C.muted }, navActive: { color: C.blue },
 });
 
-
-
+export default function App() { return <AuthProvider><ZoiApp /></AuthProvider>; }

@@ -1,0 +1,251 @@
+{
+  "schemaVersion": 1,
+  "releaseStatus": "candidate-not-device-verified",
+  "features": [
+    {
+      "id": "discovery",
+      "ios": "native-read-candidate",
+      "android": "native-read-candidate",
+      "required": [
+        "live RPC validation",
+        "device acceptance"
+      ]
+    },
+    {
+      "id": "community-read",
+      "ios": "native-read-candidate",
+      "android": "native-read-candidate",
+      "required": [
+        "live RPC validation",
+        "device acceptance"
+      ]
+    },
+    {
+      "id": "business-profile",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "required": [
+        "live representative profile acceptance",
+        "device link checks"
+      ],
+      "implemented": [
+        "seo_entity detail",
+        "canonical profile navigation",
+        "owner/enrichment precedence",
+        "real contact and social links",
+        "provenance labels",
+        "image fallback"
+      ]
+    },
+    {
+      "id": "auth-and-session",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "required": [
+        "live auth acceptance",
+        "device secure storage validation",
+        "OAuth PKCE flow"
+      ],
+      "implemented": [
+        "email/password",
+        "email code verification",
+        "secure native refresh credential storage",
+        "foreground and expiry refresh",
+        "local sign-out and server revocation",
+        "session restoration"
+      ]
+    },
+    {
+      "id": "community-write",
+      "ios": "native-text-candidate",
+      "android": "native-text-candidate",
+      "required": [
+        "live isolated test post",
+        "media permissions and uploads",
+        "replies",
+        "device validation"
+      ],
+      "implemented": [
+        "authenticated text publishing",
+        "user-scoped local drafts",
+        "duplicate-submit prevention",
+        "publication confirmation"
+      ]
+    },
+    {
+      "id": "business-workspace",
+      "ios": "browser-handoff",
+      "android": "browser-handoff",
+      "required": [
+        "native equivalent for each shipped web workflow"
+      ]
+    },
+    {
+      "id": "tickets-and-commerce",
+      "ios": "browser-handoff",
+      "android": "browser-handoff",
+      "required": [
+        "native checkout lifecycle",
+        "provider return links",
+        "receipts",
+        "refund state",
+        "store policy review"
+      ]
+    },
+    {
+      "id": "notifications",
+      "ios": "not-implemented",
+      "android": "not-implemented",
+      "required": [
+        "permission flow",
+        "token registration",
+        "delivery",
+        "deep link handling"
+      ]
+    },
+    {
+      "id": "navigation-deep-links",
+      "ios": "custom-scheme-candidate",
+      "android": "custom-scheme-candidate",
+      "required": [
+        "device validation",
+        "universal links",
+        "Android app links"
+      ]
+    },
+    {
+      "id": "workspace-selection",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "zoi_me workspace list",
+        "per-user persisted selection"
+      ],
+      "required": [
+        "live authenticated acceptance",
+        "native business modules"
+      ]
+    },
+    {
+      "id": "venue-authoring",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "sharedModel": "assets/tickets/venue-model.mjs",
+      "implemented": [
+        "2D floor plan",
+        "geometry-projected 3D preview",
+        "camera rotation",
+        "stable object IDs",
+        "individual seat selection",
+        "seat rows, tables and stage",
+        "bounded movement and overlap validation",
+        "accessible/excluded seats",
+        "user-scoped device drafts",
+        "JSON import/export"
+      ],
+      "required": [
+        "device verification",
+        "server layout persistence",
+        "real atomic seat holds",
+        "ticket checkout"
+      ]
+    },
+    {
+      "id": "company-operations",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "company/contact/project/task CRUD",
+        "workspace membership selection",
+        "editor/viewer/owner permissions",
+        "linked records",
+        "due dates",
+        "task assignees",
+        "optimistic version checks",
+        "soft archive confirmation",
+        "audit history",
+        "verified mutation receipts"
+      ],
+      "required": [
+        "operations migration deployment",
+        "isolated live CRUD and tenancy acceptance",
+        "device validation"
+      ]
+    },
+    {
+      "id": "event-seating",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "public event discovery and detail",
+        "actual ticket tiers",
+        "shared geometry seat selection",
+        "authenticated idempotent holds",
+        "server-clock hold expiry",
+        "foreground hold and receipt recovery",
+        "free reservation receipts",
+        "authorized named-seat cancellation",
+        "session isolation"
+      ],
+      "required": [
+        "seat migration deployment and runtime flag enablement after verification",
+        "isolated live acceptance",
+        "device validation",
+        "native paid checkout"
+      ]
+    },
+    {
+      "id": "creator-bio",
+      "ios": "native-candidate",
+      "android": "native-candidate",
+      "implemented": [
+        "bio status loading",
+        "handle/title/tagline/photo URL editing",
+        "12 validated ordered links",
+        "light/dark/gold theme selection",
+        "publish/unpublish",
+        "exact save receipt",
+        "workspace and account isolation"
+      ],
+      "required": [
+        "isolated authenticated live acceptance",
+        "device validation",
+        "media picker upload",
+        "business listing profile edit"
+      ]
+    }
+  ],
+  "architecture": {
+    "backend": "Shared Supabase contracts and authorization across web/iOS/Android",
+    "nativeUI": "React Native screens with real data and no simulated transaction state",
+    "parityRule": "Browser handoff is not native completion. Each web feature requires iOS and Android acceptance coverage."
+  },
+  "supportedSchemeRoutes": [
+    "zoi://home",
+    "zoi://discover",
+    "zoi://community",
+    "zoi://grow",
+    "zoi://business/:slug",
+    "zoi://tickets/:eventUUID"
+  ],
+  "releaseGates": [
+    "TypeScript",
+    "web export",
+    "iOS build and device/simulator acceptance",
+    "Android build and device/emulator acceptance",
+    "large text and screen reader checks",
+    "offline/retry checks",
+    "auth and transaction lifecycle checks"
+  ],
+  "distribution": {
+    "easProjectId": "59352b1c-50c5-4717-a22d-53188fa500c7",
+    "observedBuildCount": 4,
+    "checkedAt": "2026-09-29",
+    "storeReleaseVerified": false,
+    "includedBuildCreditUsed": 1000,
+    "includedBuildCreditLimit": 22500,
+    "overageCostCents": 0,
+    "successfulInternalBuilds": 2,
+    "buildCreditConsumedCents": 300
+  }
+}

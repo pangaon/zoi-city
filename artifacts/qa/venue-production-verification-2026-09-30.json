@@ -1,0 +1,12 @@
+{
+  "migration": "20260930001839",
+  "environment": "production Supabase SQL transaction",
+  "rollback_flow_passed": true,
+  "runtime_enabled_after_rollback": false,
+  "persisted_test_events": 0,
+  "checks": ["owner claim", "publication gate", "draft persistence", "immutable published layout", "seat map", "hold", "free reservation", "check-in", "repeat check-in", "second reservation cancellation", "terminal cancellation after release", "repeat cancellation", "cancelled check-in rejected", "tier counter", "owner reservation history"],
+  "limits": ["SQL owner JWT claim set transaction-locally; no HTTP JWT verification", "No browser sign-in end-to-end verification", "Paid seated checkout not implemented"],
+  "local_postgresql_checks": 18,
+  "local_unit_tests": 10,
+  "browser": "390px editor and seat-map/hold client flow with explicit fixtures; no page overflow"
+}

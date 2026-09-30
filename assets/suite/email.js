@@ -122,6 +122,13 @@
 
   /* ---------- helpers ---------- */
   function statusOf(c) {
+    var delivery = c && c.delivery;
+    if (delivery && delivery.total > 0) {
+      if (delivery.pending > 0) return 'processing';
+      if (delivery.uncertain > 0) return 'needs_review';
+      if (delivery.failed > 0) return delivery.accepted > 0 ? 'partial' : 'failed';
+      return delivery.accepted > 0 ? 'accepted' : 'suppressed';
+    }
     if (c && c.sent_at) return 'sent';
     if (c && (c.status === 'scheduled' || c.scheduled_at)) return 'scheduled';
     return 'draft';
@@ -160,6 +167,7 @@
       campaigns: [],
       selectedId: null,   // id of campaign being edited, or null for a fresh draft
       loading: true,
+      busy: false,
       schedOpen: false
     };
 
@@ -181,8 +189,9 @@
         '<div class="zm-banner">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
             '<path d="M12 9v4M12 17h.01"/><circle cx="12" cy="12" r="9"/></svg>' +
-          '<div>Campaigns <b>save and schedule</b> now. Delivery turns on when Zoi’s email ' +
-            'provider is connected — and every send will honor <b>consent + one-click unsubscribe (CASL)</b>.</div>' +
+          '<div>' + (ctx.avail && ctx.avail.email
+            ? 'Save your campaign, review recipients, then schedule delivery.'
+            : 'Write and save drafts. Email delivery is unavailable; scheduling is disabled until the sending service is configured.') + '</div>' +
         '</div>' +
         '<div class="zm-grid">' +
           '<div class="zm-panel">' +
@@ -193,6 +202,7 @@
         '</div>';
 
       q('new').addEventListener('click', function () {
+        if (state.busy) return;
         state.selectedId = null;
         state.schedOpen = false;
         renderComposer();
@@ -219,7 +229,9 @@
         if (st === 'sent' && c.sent_at) when = 'Sent ' + fmtDateTime(c.sent_at);
         else if (st === 'scheduled' && c.scheduled_at) when = 'Scheduled ' + fmtDateTime(c.scheduled_at);
         else if (c.updated_at) when = 'Edited ' + (relTime(c.updated_at) || fmtDateTime(c.updated_at));
-        var recips = (st === 'sent' && c.recipients != null)
+        var recips = c.delivery && c.delivery.total > 0
+          ? '<span>' + esc(String(c.delivery.accepted)) + ' accepted · ' + esc(String(c.delivery.pending)) + ' pending · ' + esc(String(c.delivery.failed)) + ' failed · ' + esc(String(c.delivery.suppressed)) + ' suppressed · ' + esc(String(c.delivery.uncertain)) + ' need review</span>'
+          : (st === 'sent' && c.recipients != null)
           ? '<span>' + esc(String(c.recipients)) + ' recipients</span>' : '';
         item.innerHTML =
           '<div class="zm-item-top">' +
@@ -233,6 +245,7 @@
             recips +
           '</div>';
         item.addEventListener('click', function () {
+          if (state.busy) return;
           state.selectedId = c.id;
           state.schedOpen = false;
           renderComposer();
@@ -256,7 +269,7 @@
       if (!host) return;
       var c = current() || {};
       var st = current() ? statusOf(c) : 'draft';
-      var isSent = st === 'sent';
+      var isSent = ['sent','processing','accepted','partial','failed','needs_review','suppressed'].indexOf(st) !== -1;
       var isScheduled = st === 'scheduled';
       var selTag = c.audience_tag || 'all';
       var tags = TAG_PRESETS.slice();
@@ -265,8 +278,8 @@
       host.innerHTML =
         '<h3>' + (current() ? 'Edit campaign' : 'New campaign') +
           (current() ? ' <span class="zm-chip ' + st + '" style="float:right">' + st + '</span>' : '') + '</h3>' +
-        (isSent ? '<div class="zm-mergehint">This campaign was reported <b>sent</b> by the backend. ' +
-          'Fields are read-only; use <b>Duplicate</b> to reuse it.</div>' : '') +
+        (isSent ? '<div class="zm-mergehint">Delivery has started. The saved content is read-only so retries use the same message. ' +
+          '<button class="zm-btn" data-z="dup">Duplicate as a new draft</button></div>' : '') +
         '<div class="zm-field">' +
           '<label>Subject <span class="zm-charc" data-z="c_subj"></span></label>' +
           '<input class="zm-input" data-z="subject" maxlength="150" placeholder="Your subject line" ' +
@@ -307,7 +320,7 @@
             '<div class="zm-prev-pre" data-z="pv_pre2"></div>' +
             '<div class="zm-prev-body" data-z="pv_body"></div>' +
             '<div class="zm-prev-foot">You received this because you opted in. ' +
-              '<a href="#" onclick="return false">Unsubscribe</a> — one click, honored (CASL).</div>' +
+              'Sent campaigns include an unsubscribe link. Provider acceptance does not confirm inbox delivery.</div>' +
           '</div>' +
         '</div>' +
         (isSent ? '' :
@@ -327,6 +340,7 @@
           '</div>');
 
       if (!isSent) wireComposer();
+      else if (q('dup')) q('dup').addEventListener('click', doDuplicate);
       updatePreview();
       updateCounts();
     }
@@ -369,6 +383,7 @@
       if (saveBtn) saveBtn.addEventListener('click', function () { doSave(); });
 
       var st = q('sched_toggle');
+      if (st) { st.disabled = !(ctx.avail && ctx.avail.email); st.title = st.disabled ? 'Email delivery is unavailable' : ''; }
       if (st) st.addEventListener('click', function () {
         state.schedOpen = !state.schedOpen;
         var sc = q('sched');
@@ -380,6 +395,7 @@
         }
       });
       var sg = q('sched_go');
+      if (sg) sg.disabled = !(ctx.avail && ctx.avail.email);
       if (sg) sg.addEventListener('click', function () { doSchedule(); });
       var un = q('unsched');
       if (un) un.addEventListener('click', function () { doUnschedule(); });
@@ -406,12 +422,29 @@
     }
 
     async function withBusy(btn, fn) {
-      if (btn) btn.disabled = true;
+      if (state.busy) return;
+      state.busy = true;
+      var controls = Array.from(wrap.querySelectorAll('button,input,textarea,select')).map(function (control) {
+        var saved = { control: control, disabled: control.disabled };
+        control.disabled = true;
+        return saved;
+      });
+      wrap.setAttribute('aria-busy', 'true');
       var prev = btn ? btn.textContent : '';
-      if (btn) btn.textContent = '…';
+      if (btn) btn.textContent = 'Working…';
       try { await fn(); }
       catch (e) { toast((e && e.message) ? e.message : 'Something went wrong.', 'error'); }
-      finally { if (btn) { btn.disabled = false; btn.textContent = prev; } }
+      finally {
+        state.busy = false;
+        wrap.removeAttribute('aria-busy');
+        controls.forEach(function (saved) { saved.control.disabled = saved.disabled; });
+        if (btn) btn.textContent = prev;
+      }
+    }
+
+    function requireReceipt(result, operation) {
+      if (!result || result.ok === false) throw new Error(operation + ' was not confirmed. Your draft has been kept.');
+      return result;
     }
 
     /* ---------- save (returns id for chaining) ---------- */
@@ -428,10 +461,16 @@
         p_audience_tag: d.audience,
         p_id: state.selectedId || null
       }, { auth: 'require' });
-      var id = res && (res.id != null ? res.id : (res.ok ? state.selectedId : null));
-      if (id != null) state.selectedId = id;
+      requireReceipt(res, 'Save');
+      var id = typeof res === 'string' && /^[0-9a-f-]{36}$/i.test(res) ? res : res && res.id;
+      if (id == null) throw new Error('Save returned no campaign identifier. Nothing was scheduled.');
+      state.selectedId = id;
+      // Keep the saved snapshot locally even if refreshing the list fails.
+      var saved = Object.assign({}, d, { id: id, status: 'draft', audience_tag: d.audience });
+      state.campaigns = state.campaigns.filter(function (campaign) { return campaign.id !== id; });
+      state.campaigns.unshift(saved);
       await reload();
-      return state.selectedId;
+      return id;
     }
 
     function doSave() {
@@ -442,18 +481,19 @@
     }
 
     function doSchedule() {
+      if (!(ctx.avail && ctx.avail.email)) { toast('Email delivery is unavailable. Save your draft for now.', 'warn'); return; }
       withBusy(q('sched_go'), async function () {
         var val = q('sched_at') ? q('sched_at').value : '';
         if (!val) { toast('Pick a date and time.', 'warn'); return; }
         var when = new Date(val);
         if (isNaN(when.getTime())) { toast('That date isn’t valid.', 'warn'); return; }
-        if (when.getTime() < Date.now() - 60000) { toast('Pick a time in the future.', 'warn'); return; }
+        if (when.getTime() <= Date.now()) { toast('Pick a time in the future.', 'warn'); return; }
         var id = await saveCore();          // persist latest edits first
         if (id == null) return;
-        await rpc('email_campaign_schedule', { p_workspace: ws, p_id: id, p_at: when.toISOString() }, { auth: 'require' });
+        requireReceipt(await rpc('email_campaign_schedule', { p_workspace: ws, p_id: id, p_at: when.toISOString() }, { auth: 'require' }), 'Scheduling');
         state.schedOpen = false;
         await reload();
-        toast('Queued for ' + fmtDateTime(when.toISOString()) + '. It sends once the provider is connected.', 'success');
+        toast('Queued for ' + fmtDateTime(when.toISOString()) + '. Check delivery status after the scheduled time.', 'success');
         renderComposer(); renderList();
       });
     }
@@ -461,7 +501,7 @@
     function doUnschedule() {
       withBusy(q('unsched'), async function () {
         if (!state.selectedId) return;
-        await rpc('email_campaign_unschedule', { p_workspace: ws, p_id: state.selectedId }, { auth: 'require' });
+        requireReceipt(await rpc('email_campaign_unschedule', { p_workspace: ws, p_id: state.selectedId }, { auth: 'require' }), 'Unscheduling');
         await reload();
         toast('Moved back to draft.', 'success');
         renderComposer(); renderList();
@@ -472,8 +512,11 @@
       withBusy(q('dup'), async function () {
         if (!state.selectedId) return;
         var res = await rpc('email_campaign_duplicate', { p_workspace: ws, p_id: state.selectedId }, { auth: 'require' });
+        requireReceipt(res, 'Duplication');
+        var duplicateId = typeof res === 'string' && /^[0-9a-f-]{36}$/i.test(res) ? res : res.id;
+        if (duplicateId == null) throw new Error('Duplication returned no campaign identifier.');
         await reload();
-        if (res && res.id != null) state.selectedId = res.id;
+        state.selectedId = duplicateId;
         state.schedOpen = false;
         toast('Duplicated as a new draft.', 'success');
         renderComposer(); renderList();
@@ -484,7 +527,7 @@
       if (!state.selectedId) return;
       if (!global.confirm('Delete this campaign? This cannot be undone.')) return;
       withBusy(q('del'), async function () {
-        await rpc('email_campaign_delete', { p_workspace: ws, p_id: state.selectedId }, { auth: 'require' });
+        requireReceipt(await rpc('email_campaign_delete', { p_workspace: ws, p_id: state.selectedId }, { auth: 'require' }), 'Deletion');
         state.selectedId = null;
         state.schedOpen = false;
         await reload();
@@ -499,8 +542,14 @@
       try {
         var rows = await rpc('email_campaign_list', { p_workspace: ws }, { auth: 'prefer' });
         state.campaigns = Array.isArray(rows) ? rows : (rows && rows.campaigns) || [];
+        try {
+          var summaries = await rpc('email_delivery_status_list', { p_workspace: ws }, { auth: 'require' });
+          if (Array.isArray(summaries)) state.campaigns.forEach(function (campaign) {
+            var delivery = summaries.find(function (item) { return item.campaign_id === campaign.id; });
+            if (delivery) campaign.delivery = delivery.summary;
+          });
+        } catch (summaryError) { /* Ledger is additive; drafts remain usable before deployment. */ }
       } catch (e) {
-        state.campaigns = [];
         toast((e && e.message) ? e.message : 'Could not load campaigns.', 'error');
       }
       state.loading = false;

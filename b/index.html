@@ -71,7 +71,7 @@ a.link:active{transform:translateY(0)}
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const KEY='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-function safeUrl(u){ u=String(u||''); return (u.indexOf('http://')===0||u.indexOf('https://')===0)?u:'#'; }
+function safeUrl(u){try{const url=new URL(String(u||''));return /^https?:$/.test(url.protocol)&&url.hostname&&!url.username&&!url.password?url.href:null;}catch{return null;}}
 function slugFromPath(){
   try{
     const q=new URLSearchParams(location.search).get('s'); if(q) return q.trim();
@@ -84,7 +84,7 @@ function slugFromPath(){
   }catch(e){ return ''; }
 }
 async function bioGet(slug){
-  const r=await fetch(BASE+'/rest/v1/rpc/bio_get',{method:'POST',
+  const r=await fetch(BASE+'/rest/v1/rpc/bio_get',{method:'POST',signal:AbortSignal.timeout(15000),
     headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},
     body:JSON.stringify({p_slug:slug})});
   if(!r.ok) throw new Error('load failed');
@@ -102,10 +102,10 @@ function render(page){
   document.documentElement.setAttribute('data-theme', (['dark','light','gold'].indexOf(page.theme)>=0?page.theme:'dark'));
   const initial=esc((page.title||'Z').trim().charAt(0).toUpperCase());
   const links=Array.isArray(page.links)?page.links:[];
-  const linksHtml=links.filter(l=>l&&l.label).map(l=>
+  const linksHtml=links.filter(l=>l&&l.label&&safeUrl(l.url)).map(l=>
     '<a class="link" href="'+esc(safeUrl(l.url))+'" target="_blank" rel="noopener noreferrer">'+esc(l.label)+'</a>').join('');
   wrap.innerHTML=
-    (page.photo_url?'<img class="ava" src="'+esc(safeUrl(page.photo_url))+'" alt="">':'<div class="ava">'+initial+'</div>')+
+    (safeUrl(page.photo_url)?'<img class="ava" src="'+esc(safeUrl(page.photo_url))+'" alt="">':'<div class="ava">'+initial+'</div>')+
     '<h1>'+esc(page.title||'')+'</h1>'+
     (page.tagline?'<div class="tag">'+esc(page.tagline)+'</div>':'')+
     '<div class="links">'+(linksHtml||'')+'</div>'+
@@ -121,7 +121,7 @@ function render(page){
   const slug=slugFromPath();
   if(!slug){ render(null); return; }
   try{ render(await bioGet(slug)); }
-  catch(e){ render(null); }
+  catch(e){ document.title='Profile temporarily unavailable · Zoi'; document.getElementById('wrap').innerHTML='<div class="missing" role="alert"><h1>This profile is temporarily unavailable</h1><p>We could not load its latest details. Please try again.</p><button type="button" id="retryProfile" class="link">Try again</button><p><a href="/">Back to Zoi</a></p></div>';document.getElementById('retryProfile').addEventListener('click',()=>location.reload()); }
 })();
 </script>
 <script src="/assets/zoi-theme.js"></script>
