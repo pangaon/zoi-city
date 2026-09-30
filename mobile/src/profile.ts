@@ -5,9 +5,9 @@ export function publicURL(value: unknown) {
   if (typeof value !== 'string') return '';
   try { const url = new URL(value); if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || !url.hostname.includes('.') || /^(localhost|127\.|0\.|169\.254\.)/i.test(url.hostname)) return ''; return url.href; } catch { return ''; }
 }
-export function profileAction(value: unknown, kind: 'booking' | 'volunteer' | 'inquiry') {
+export function profileAction(value: unknown, kind: 'booking' | 'volunteer' | 'inquiry' | 'calendar' | 'group') {
   if(typeof value !== 'string')return '';
-  const pattern=kind==='inquiry'?/^\/inquiries\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='booking'?/^\/book\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:/^\/volunteer\/\?workspace=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+  const pattern=kind==='calendar'?/^\/organization-calendar\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='group'?/^\/groups\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='inquiry'?/^\/inquiries\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='booking'?/^\/book\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:/^\/volunteer\/\?workspace=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
   return pattern.exec(value)?.[1].toLowerCase() || '';
 }
 export function normalizeProfile(input: unknown) {
@@ -25,7 +25,9 @@ export function normalizeProfile(input: unknown) {
   const fieldsFromWebsite = Object.keys(enrichment).filter(key => !banned.test(key) && !(key in raw));
   const services = Array.isArray(profile.services) ? profile.services.map((v: unknown) => plain(v) || plain(object(v).name) || plain(object(v).title)).filter(Boolean).slice(0, 30) : [];
   const booking = profileAction(e.booking_url, 'booking'), inquiry = profileAction(e.inquiry_url, 'inquiry');
-  return { inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), description: plain(e.description || profile.about || profile.description), location: [e.city, e.country].map(plain).filter(Boolean).join(' · '), address: plain(e.address), website: publicURL(e.website || profile.website), phone: plain(e.phone || profile.phone), email: plain(e.email || profile.email), photo, socials, services, verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };
+  return { calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
+    groupListing:profileAction(e.group_url,'group')===String(e.id||'').toLowerCase()?profileAction(e.group_url,'group'):'',
+    inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), description: plain(e.description || profile.about || profile.description), location: [e.city, e.country].map(plain).filter(Boolean).join(' · '), address: plain(e.address), website: publicURL(e.website || profile.website), phone: plain(e.phone || profile.phone), email: plain(e.email || profile.email), photo, socials, services, verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };
 }
 
 export function profileImageMode(width:number,height:number): 'center'|'cover' {return Number.isFinite(width)&&Number.isFinite(height)&&width>=480&&height>=240&&width/height>=0.85&&width/height<=1.8?'cover':'center';}
