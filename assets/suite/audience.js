@@ -352,6 +352,9 @@
         '</div>';
 
       q('f_cancel').addEventListener('click', function () { host.style.display = 'none'; host.innerHTML = ''; });
+      var consentBox = el('div', 'zu-field');
+      consentBox.innerHTML = '<label><input type="checkbox" data-z="f_consent"> Record explicit permission for marketing emails</label><input class="zu-input" data-z="f_consent_source" placeholder="Evidence: signup form, date, or written permission" maxlength="1000"><label>When permission was given <input class="zu-input" type="datetime-local" data-z="f_consent_date"></label><small>Leave unchecked unless you have permission. Previously unsubscribed recipients stay suppressed.</small>';
+      host.insertBefore(consentBox, q('f_save').parentNode);
       q('f_save').addEventListener('click', function () { doSave(c.id != null ? c.id : null); });
       if (q('f_name')) q('f_name').focus();
     }
@@ -361,6 +364,11 @@
       var email = (q('f_email') && q('f_email').value || '').trim();
       var phone = (q('f_phone') && q('f_phone').value || '').trim();
       var nameday = (q('f_nameday') && q('f_nameday').value || '').trim();
+      var recordConsent = q('f_consent') && q('f_consent').checked;
+      var consentSource = (q('f_consent_source') && q('f_consent_source').value || '').trim();
+      var consentAt = new Date(q('f_consent_date') && q('f_consent_date').value || '');
+      if (recordConsent && (isNaN(consentAt.getTime()) || consentAt.getTime() > Date.now())) { toast('Enter when the recipient gave permission, using a past date and time.', 'warn'); return; }
+      if (recordConsent && (consentSource.length < 8 || !(q('f_email') && q('f_email').value.trim()))) { toast('Add an email and describe where and when this person agreed to marketing emails.', 'warn'); return; }
       var notes = (q('f_notes') && q('f_notes').value || '').trim();
       var tags = parseTagsInput(q('f_tags') && q('f_tags').value);
 
@@ -371,10 +379,15 @@
       var btn = q('f_save');
       btn.disabled = true; var prev = btn.textContent; btn.textContent = 'Saving…';
       try {
-        await rpc('audience_upsert', {
+        var contactReceipt = await rpc('audience_upsert', {
           p_workspace: ws, p_name: name, p_email: email, p_phone: phone,
           p_nameday: nameday, p_tags: tags, p_notes: notes, p_id: id || null
         }, { auth: 'require' });
+        if (typeof contactReceipt !== 'string' || !/^[0-9a-f-]{36}$/i.test(contactReceipt)) throw new Error('The contact save was not confirmed. Your form is unchanged.');
+        if (recordConsent) {
+          var consent = await rpc('email_consent_record', { p_workspace: ws, p_email: email, p_name: name, p_tags: tags, p_source: consentSource, p_consented_at: consentAt.toISOString() }, { auth: 'require' });
+          if (!consent || consent.ok !== true) throw new Error('Contact saved, but marketing consent was not confirmed. No marketing eligibility was added.');
+        }
         q('form').style.display = 'none'; q('form').innerHTML = '';
         await reload(); renderTable();
         toast(id ? 'Contact updated.' : 'Contact added.', 'success');
@@ -406,8 +419,8 @@
           '<h3>Import contacts from CSV</h3>' +
           '<div class="zu-consent">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>' +
-            '<div><b>Only import contacts who agreed to hear from you.</b> Zoi honors consent + one-click ' +
-              'unsubscribe on every send (CASL) — importing people who did not opt in is not allowed.</div>' +
+            '<div><b>Only import contacts who agreed to hear from you.</b> Imported contacts are not automatically eligible for marketing emails. ' +
+              'Record each recipient’s permission in their contact form before sending.</div>' +
           '</div>' +
           '<div class="zu-field"><label>Columns: <span class="zu-hint">name, email, phone, tags (pipe | separated), nameday, notes</span></label>' +
             '<textarea class="zu-ta" data-z="csv" placeholder="name,email,phone,tags,nameday,notes&#10;Maria K,maria@example.com,+1..,customers|vip,Aug 15,Met at market"></textarea></div>' +

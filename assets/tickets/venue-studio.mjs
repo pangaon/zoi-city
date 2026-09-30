@@ -1,0 +1,93 @@
+import {createVenueClient} from './venue-api.mjs';
+import {createLayout,validateLayout,seatRows,updateObjects,selectedSeats,summarize,parseLayout,projectPoint} from './venue-model.mjs';
+const root=document.getElementById('venue-studio');
+if(root) init();
+function init(){
+ const key='zoi_venue_draft_v1';
+ let layout=createLayout(),selected=new Set(),undo=[],redo=[],view='plan',yaw=35,tilt=45;
+ let cloud={workspace:'',plan:null,revision:0},cloudBusy=false,cloudSaved='';
+ const api=createVenueClient({getToken:()=>window.getAuth?.()?.access_token});
+ const $=id=>root.querySelector('#vs-'+id);
+ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const message=(text,error=false)=>{$('status').textContent=text;$('status').dataset.error=String(error);};
+ root.innerHTML=`<summary><strong>Venue & seating studio</strong><span>Design your room · 2D + 3D</span></summary><div class="vs-body">
+ <p class="vs-intro">Arrange labelled seats and explore your venue in 3D. Design locally, then connect your workspace to save your venue and publish seating for a free event. Selecting seats in this editor changes your design.</p>
+ <form id="vs-room" class="vs-bar"><label>Venue name<input id="vs-name" maxlength="100" value="My venue" required></label><label>Width · m<input class="vs-number" id="vs-width" type="number" min="4" max="100" step="0.5" value="20" required></label><label>Depth · m<input class="vs-number" id="vs-depth" type="number" min="4" max="100" step="0.5" value="15" required></label><button>Update room</button></form>
+ <form id="vs-rows" class="vs-bar"><label>First row<input class="vs-number" id="vs-prefix" maxlength="1" value="A" pattern="[A-Z]" required></label><label>Rows<input class="vs-number" id="vs-row-count" type="number" min="1" max="20" value="3" required></label><label>Seats / row<input class="vs-number" id="vs-seat-count" type="number" min="1" max="30" value="8" required></label><label>Left · m<input class="vs-number" id="vs-row-x" type="number" min="0" step="0.1" value="2" required></label><label>Top · m<input class="vs-number" id="vs-row-y" type="number" min="0" step="0.1" value="4" required></label><button>Add seat rows</button><button id="vs-stage" type="button">Add stage</button><button id="vs-table" type="button">Add table</button></form>
+ <div class="vs-stats" id="vs-stats"></div><div class="vs-bar"><button id="vs-plan-tab" type="button" aria-pressed="true">2D floor plan</button><button id="vs-preview-tab" type="button" aria-pressed="false">3D preview</button><button id="vs-undo" type="button">Undo</button><button id="vs-redo" type="button">Redo</button><button id="vs-clear" type="button">Clear selection</button></div>
+ <div class="vs-layout"><div class="vs-view"><label class="vs-zoom">Floor plan zoom<input id="vs-zoom" type="range" min="440" max="1600" value="800" step="40"></label><div id="vs-plan-wrap" class="vs-plan-wrap" role="region" aria-label="Scrollable venue floor plan"><div id="vs-plan" class="vs-plan" aria-label="Venue objects"></div></div><div id="vs-3d" hidden><svg id="vs-preview" class="vs-preview" viewBox="0 0 800 440" role="img" aria-label="3D preview of the current venue layout"></svg><div class="vs-bar"><label>Rotate view<input id="vs-yaw" type="range" min="-180" max="180" value="35"></label><label>View angle<input id="vs-tilt" type="range" min="15" max="80" value="45"></label></div></div><p class="vs-selection" id="vs-selection"></p></div>
+ <form id="vs-properties" class="vs-properties"><h3>Selected object</h3><p id="vs-object-help">Select one object to edit its label and position. Select several seats to plan a group.</p><label>Label<input id="vs-label" maxlength="50" disabled required></label><label>Left · m<input id="vs-x" type="number" min="0" step="0.05" disabled required></label><label>Top · m<input id="vs-y" type="number" min="0" step="0.05" disabled required></label><label class="vs-check"><input id="vs-accessible" type="checkbox" disabled>Accessible seat</label><label class="vs-check"><input id="vs-excluded" type="checkbox" disabled>Exclude from plan</label><button id="vs-apply" disabled>Apply changes</button><button id="vs-delete" type="button" disabled>Remove selected</button></form></div>
+ <fieldset class="vs-cloud"><legend>Workspace plans</legend><p class="vs-intro">Save versioned plans to your signed-in workspace. Owners and admins can save; workspace members can load.</p><div class="vs-bar"><button id="vs-connect" type="button">Connect workspace</button><label>Workspace<select id="vs-workspace" disabled><option value="">Connect to choose</option></select></label><label>Saved plan<select id="vs-plans" disabled><option value="">New plan</option></select></label><button id="vs-cloud-load" type="button" disabled>Load plan</button><button id="vs-cloud-save" type="button" disabled>Save to workspace</button></div><div class="vs-bar"><label>Event<select id="vs-event" disabled><option value="">Choose an event</option></select></label><label>Free ticket tier<select id="vs-tier" disabled><option value="">Choose a tier</option></select></label><button id="vs-publish" type="button" disabled>Publish seating</button></div><p class="vs-intro">Publishing creates an immutable seating plan for a free ticket tier with no existing reservations. Named-seat booking remains unavailable until the server enables it.</p></fieldset>
+ <div class="vs-bar"><button id="vs-save" type="button">Save browser draft</button><button id="vs-export" type="button">Export layout</button><label class="vs-file">Import layout<input id="vs-import" type="file" accept="application/json,.json"></label></div><p id="vs-status" class="vs-status" role="status" aria-live="polite">Start with an empty room. Add your own seats, tables and stage.</p></div>`;
+ function commit(next){const valid=validateLayout(next);undo.push(layout);if(undo.length>40)undo.shift();redo=[];layout=valid;selected=new Set([...selected].filter(id=>layout.objects.some(o=>o.id===id)));render();message('Draft updated. Save it in this browser or export a copy.');}
+ function act(fn){try{fn();}catch(error){message(error.message,true);}}
+ function num(id){return Number($(id).value);}
+ function render(){
+  $('name').value=layout.name;$('width').value=layout.width;$('depth').value=layout.depth;
+  const s=summarize(layout);$('stats').innerHTML=`<span><strong>${s.seats}</strong>planned seats</span><span><strong>${s.accessible}</strong>accessible</span><span><strong>${s.excluded}</strong>excluded</span><span>${layout.width} × ${layout.depth} m</span>`;
+  $('plan').style.aspectRatio=`${layout.width}/${layout.depth}`;
+  $('plan').style.width=$('zoom').value+'px';
+  $('plan').innerHTML=layout.objects.map(o=>`<button type="button" class="vs-object" data-id="${esc(o.id)}" data-kind="${o.kind}" data-accessible="${o.accessible}" data-excluded="${o.excluded}" aria-pressed="${selected.has(o.id)}" aria-label="${esc(o.label)}, ${o.kind}${o.accessible?', accessible':''}${o.excluded?', excluded from plan':''}" style="left:${o.x/layout.width*100}%;top:${o.y/layout.depth*100}%;width:${o.width/layout.width*100}%;height:${o.depth/layout.depth*100}%">${esc(o.label)}</button>`).join('')||'<div class="vs-empty">Your room is ready.<br>Add seats or a stage to begin.</div>';
+  const seatSelection=selectedSeats(layout,selected);$('selection').textContent=seatSelection.length?`Planning selection: ${seatSelection.map(o=>o.label).join(', ')} · ${seatSelection.length} seats. No tickets are held.`:'Select objects on the floor plan. Use Tab and Space, or tap a seat.';
+  const object=selected.size===1?layout.objects.find(o=>selected.has(o.id)):null;
+  for(const id of ['label','x','y','apply'])$(id).disabled=!object;
+  $('label').value=object?.label||'';$('x').value=object?.x??'';$('y').value=object?.y??'';
+  for(const id of ['accessible','excluded']){$(id).disabled=!object||object.kind!=='seat';$(id).checked=!!object?.[id];}
+  $('delete').disabled=!selected.size;$('undo').disabled=!undo.length;$('redo').disabled=!redo.length;
+  $('publish').disabled=!cloud.plan||!$('tier').value||cloudSaved!==JSON.stringify(layout);
+  render3d();
+ }
+ function render3d(){
+  const p=(x,y,z)=>projectPoint(x,y,z,layout,yaw*Math.PI/180,tilt*Math.PI/180);
+  const points=vertices=>vertices.map(v=>{const q=p(...v);return `${q.x.toFixed(2)},${q.y.toFixed(2)}`;}).join(' ');
+  const floor=[[0,0,0],[layout.width,0,0],[layout.width,layout.depth,0],[0,layout.depth,0]];
+  const faces=[];
+  for(const o of layout.objects){
+   const boxes=o.kind==='seat'?[{x:o.x,y:o.y,width:o.width,depth:o.depth,height:0.45},{x:o.x,y:o.y+o.depth-0.12,width:o.width,depth:0.12,height:o.height}]:[o];
+   const color=selected.has(o.id)?'#007eae':o.excluded?'#9aa1a5':o.kind==='stage'?'#34404b':o.kind==='table'?'#c49642':o.accessible?'#3e937c':'#667e99';
+   for(const box of boxes){
+   const {x,y,width:w,depth:d,height:h}=box;
+   const geometry=[[[x,y,0],[x+w,y,0],[x+w,y,h],[x,y,h]],[[x+w,y,0],[x+w,y+d,0],[x+w,y+d,h],[x+w,y,h]],[[x+w,y+d,0],[x,y+d,0],[x,y+d,h],[x+w,y+d,h]],[[x,y+d,0],[x,y,0],[x,y,h],[x,y+d,h]],[[x,y,h],[x+w,y,h],[x+w,y+d,h],[x,y+d,h]]];
+   geometry.forEach((vertices,i)=>faces.push({depth:vertices.reduce((sum,v)=>sum+p(...v).depth,0)/4,html:`<polygon points="${points(vertices)}" fill="${color}" fill-opacity="${i===4?1:0.7}" stroke="var(--bg)" stroke-width="0.6"><title>${esc(o.label)}</title></polygon>`}));
+   }
+  }
+  faces.sort((a,b)=>b.depth-a.depth);
+  $('preview').innerHTML=`<title>${esc(layout.name)} — same ${layout.objects.length} objects as the floor plan</title><polygon points="${points(floor)}" fill="var(--card2)" stroke="var(--line2)" stroke-width="2"/>${faces.map(f=>f.html).join('')}<text x="22" y="415" font-size="13">${esc(layout.name)} · ${layout.width} × ${layout.depth} m · planning preview</text>`;
+ }
+ $('room').addEventListener('submit',e=>{e.preventDefault();act(()=>commit({...layout,name:$('name').value,width:num('width'),depth:num('depth')}));});
+ $('rows').addEventListener('submit',e=>{e.preventDefault();act(()=>commit(seatRows(layout,{rows:num('row-count'),seats:num('seat-count'),x:num('row-x'),y:num('row-y'),prefix:$('prefix').value.toUpperCase(),idPrefix:crypto.randomUUID()})));});
+ for(const kind of ['stage','table'])$(kind).addEventListener('click',()=>act(()=>{const width=kind==='stage'?Math.min(6,layout.width-2):1.8,depth=kind==='stage'?2:1.8;commit({...layout,objects:[...layout.objects,{id:crypto.randomUUID(),kind,label:kind==='stage'?'Stage':`Table ${layout.objects.filter(o=>o.kind==='table').length+1}`,x:kind==='stage'?(layout.width-width)/2:1,y:kind==='stage'?0.5:1,width,depth,height:kind==='stage'?0.5:0.75}]});}));
+ $('plan').addEventListener('click',e=>{const button=e.target.closest('[data-id]');if(!button)return;const id=button.dataset.id;if(selected.has(id))selected.delete(id);else selected.add(id);render();root.querySelector(`[data-id="${id}"]`)?.focus();});
+ $('zoom').addEventListener('input',()=>{$('plan').style.width=$('zoom').value+'px';});
+ $('plan').addEventListener('keydown',e=>{
+  const direction={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowDown:[0,1],ArrowUp:[0,-1]}[e.key];
+  const origin=layout.objects.find(o=>o.id===e.target.dataset.id);if(!direction||!origin)return;
+  e.preventDefault();
+  const candidates=layout.objects.filter(o=>o.id!==origin.id).map(o=>({o,dx:o.x-origin.x,dy:o.y-origin.y})).filter(c=>c.dx*direction[0]+c.dy*direction[1]>0.05);
+  candidates.sort((a,b)=>(Math.hypot(a.dx,a.dy)+Math.abs(a.dx*direction[1]-a.dy*direction[0])*3)-(Math.hypot(b.dx,b.dy)+Math.abs(b.dx*direction[1]-b.dy*direction[0])*3));
+  if(candidates[0])root.querySelector(`[data-id="${candidates[0].o.id}"]`)?.focus();
+ });
+ $('clear').addEventListener('click',()=>{selected.clear();render();});
+ $('properties').addEventListener('submit',e=>{e.preventDefault();act(()=>commit(updateObjects(layout,selected,{label:$('label').value,x:num('x'),y:num('y'),accessible:$('accessible').checked,excluded:$('excluded').checked})));});
+ $('delete').addEventListener('click',()=>act(()=>commit({...layout,objects:layout.objects.filter(o=>!selected.has(o.id))})));
+ for(const name of ['undo','redo'])$(name).addEventListener('click',()=>{const from=name==='undo'?undo:redo,to=name==='undo'?redo:undo;if(!from.length)return;to.push(layout);layout=from.pop();selected.clear();render();message('Layout '+(name==='undo'?'restored.':'reapplied.'));});
+ for(const name of ['plan','preview'])$(name+'-tab').addEventListener('click',()=>{view=name;$('plan-wrap').hidden=view!=='plan';root.querySelector('.vs-zoom').hidden=view!=='plan';$('3d').hidden=view!=='preview';$('plan-tab').setAttribute('aria-pressed',String(view==='plan'));$('preview-tab').setAttribute('aria-pressed',String(view==='preview'));});
+ $('yaw').addEventListener('input',()=>{yaw=num('yaw');render3d();});$('tilt').addEventListener('input',()=>{tilt=num('tilt');render3d();});
+ $('save').addEventListener('click',()=>act(()=>{localStorage.setItem(key,JSON.stringify(layout));message('Saved in this browser. This draft is not published and does not hold inventory.');}));
+ $('export').addEventListener('click',()=>act(()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(layout,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='zoi-venue-layout.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message('Layout exported. Keep this file as a backup.');}));
+ $('import').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>250000)throw new Error('Maximum file size is 250 KB.');commit(parseLayout(await file.text()));message('Layout imported. Save a browser draft to keep it here.');}catch(error){message(error.message,true);}e.target.value='';});
+ async function cloudAction(fn){if(cloudBusy)return;cloudBusy=true;for(const id of ['connect','cloud-save','cloud-load','publish'])$(id).disabled=true;try{await fn();}catch(error){message(error.message,true);}finally{cloudBusy=false;$('connect').disabled=false;$('cloud-save').disabled=!cloud.workspace;$('cloud-load').disabled=!$('plans').value;$('publish').disabled=!cloud.plan||!$('tier').value||cloudSaved!==JSON.stringify(layout);}}
+ async function listPlans(){const plans=await api('venue_plan_list',{p_workspace:cloud.workspace});$('plans').innerHTML='<option value="">New plan</option>'+plans.map(p=>`<option value="${esc(p.plan_id)}">${esc(p.name)} · v${p.revision}</option>`).join('');$('plans').disabled=false;if(cloud.plan)$('plans').value=cloud.plan;}
+ async function selectWorkspace(){cloud={workspace:$('workspace').value,plan:null,revision:0};$('tier').innerHTML='<option value="">Choose a tier</option>';$('tier').disabled=true;if(!cloud.workspace)return;await listPlans();const dashboard=await api('tickets_dashboard',{p_workspace:cloud.workspace});$('event').innerHTML='<option value="">Choose an event</option>'+(dashboard.events||[]).map(e=>`<option value="${esc(e.id)}">${esc(e.name)}</option>`).join('');$('event').disabled=false;message('Workspace connected. Save your draft or load an existing plan.');}
+ $('connect').addEventListener('click',()=>cloudAction(async()=>{const me=await api('zoi_me');const spaces=me.workspaces||[];$('workspace').innerHTML='<option value="">Choose workspace</option>'+spaces.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('');$('workspace').disabled=false;if(spaces.length===1){$('workspace').value=spaces[0].id;await selectWorkspace();}else message(spaces.length?'Choose your workspace.':'Create a workspace in Zoi Business first.');}));
+ $('workspace').addEventListener('change',()=>cloudAction(selectWorkspace));
+ $('plans').addEventListener('change',()=>{$('cloud-load').disabled=!$('plans').value;cloud.plan=null;cloud.revision=0;message($('plans').value?'Load the selected plan before editing it. Your current draft can be saved as a new plan.':'Your next workspace save creates a new plan.');});
+ $('cloud-load').addEventListener('click',()=>cloudAction(async()=>{const result=await api('venue_plan_get',{p_workspace:cloud.workspace,p_plan_id:$('plans').value});commit(parseLayout(JSON.stringify(result.layout)));cloud.plan=result.plan_id;cloud.revision=result.revision;cloudSaved=JSON.stringify(layout);message(`Loaded workspace plan, version ${cloud.revision}.`);}));
+ $('cloud-save').addEventListener('click',()=>cloudAction(async()=>{const result=await api('venue_plan_save',{p_workspace:cloud.workspace,p_plan_id:cloud.plan,p_expected_revision:cloud.revision,p_layout:layout});cloud.plan=result.plan_id;cloud.revision=result.revision;cloudSaved=JSON.stringify(layout);await listPlans();message(`Saved to workspace as version ${cloud.revision}.`);}));
+ $('event').addEventListener('change',()=>cloudAction(async()=>{const tiers=$('event').value?await api('tickets_types_list',{p_event:$('event').value}):[];$('tier').innerHTML='<option value="">Choose a tier</option>'+tiers.filter(t=>Number(t.price_cents)===0).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');$('tier').disabled=false;}));
+ $('tier').addEventListener('change',()=>{$('publish').disabled=!cloud.plan||!$('tier').value||cloudSaved!==JSON.stringify(layout);});
+ $('publish').addEventListener('click',()=>cloudAction(async()=>{const result=await api('venue_plan_publish',{p_workspace:cloud.workspace,p_plan_id:cloud.plan,p_revision:cloud.revision,p_event:$('event').value,p_type:$('tier').value});if(!result?.ok)throw new Error('Publication was not confirmed.');message('Seating published for this event. Its layout is now fixed.');}));
+ try{const saved=localStorage.getItem(key);if(saved){layout=parseLayout(saved);message('Browser draft restored. No ticket inventory is held.');}}catch{message('The saved draft could not be loaded. Import a backup or create a new layout.',true);}
+ render();if(location.hash==='#venue-studio')root.open=true;
+ addEventListener('hashchange',()=>{if(location.hash==='#venue-studio')root.open=true;});
+}

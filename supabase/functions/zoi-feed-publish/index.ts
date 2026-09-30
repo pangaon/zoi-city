@@ -1,15 +1,10 @@
 // zoi-feed-publish — publishes scheduled composer posts to the Zoi community feed.
 //
-// Deliberately a SEPARATE worker from social-publish rather than a branch inside
-// it. social-publish runs every minute, handles six external networks plus
-// scheduled email, and is working; adding a branch would mean redeploying it from
-// the repo, and if the live copy has drifted from source that regresses something
-// that currently works. This is additive: if it breaks, nothing else notices.
-//
-// Authorship is the whole reason this exists. feed_post() takes the author from
-// the caller's session, so a worker with no session cannot post as anyone.
-// zoi.social_posts already records author_profile, so feed_post_as() uses that —
-// service-role only, never reachable from a browser.
+// Both publisher workers call the same atomic SQL operation. A dedicated
+// community worker remains available, and concurrent runs are safe because
+// delivery identity is recorded transactionally against the saved social post.
+// Browser callers use a separate wrapper with workspace and author checks.
+// Scheduled delivery is service-role only.
 //
 // Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (platform-provided),
 //      FEED_PUBLISH_ENABLED=on   kill switch, fails closed
@@ -25,6 +20,7 @@ const TOKEN = Deno.env.get("ENRICH_TOKEN") || "";
 async function rpc(fn: string, args: Record<string, unknown> = {}) {
   const r = await fetch(`${URL_}/rest/v1/rpc/${fn}`, {
     method: "POST",
+    signal: AbortSignal.timeout(15000),
     headers: {
       apikey: SERVICE, Authorization: `Bearer ${SERVICE}`, "Content-Type": "application/json",
     },
@@ -73,9 +69,9 @@ Deno.serve(async (req) => {
   const stats: Record<string, number> = {};
   const bump = (k: string) => (stats[k] = (stats[k] || 0) + 1);
 
-  let due: Array<{ id: string; author_profile: string; body: string; media: unknown; nameday_ref: string | null }> = [];
+  let due: Array<{ id: string }> = [];
   try {
-    due = (await rpc("feed_due_community_posts", { p_limit: limit })) ?? [];
+    due = (await rpc("feed_due_community_post_ids", { p_limit: limit })) ?? [];
   } catch (e) {
     return json({ ok: false, error: String(e).slice(0, 200) }, 500);
   }
@@ -85,24 +81,13 @@ Deno.serve(async (req) => {
     // leave everything marked neither published nor failed.
     if (Date.now() - started > 100_000) { bump("stopped-time-budget"); break; }
     try {
-      const res = await rpc("feed_post_as", {
-        p_profile: p.author_profile,
-        p_body: p.body,
-        p_listing: null,
-        p_nameday: p.nameday_ref ?? null,
-        p_media: Array.isArray(p.media) ? p.media : [],
-      });
-      const ok = !!(res && (res.ok === true || res.id));
-      await rpc("feed_mark_published", {
-        p_id: p.id, p_ok: ok, p_note: ok ? "posted to the community feed" : "feed_post_as returned no id",
-      });
-      bump(ok ? "published" : "rejected");
+      const res = await rpc("feed_publish_scheduled_post", { p_id: p.id });
+      const ok = !!(res && res.ok === true && res.id);
+      bump(ok ? (res.already_published ? "already-published" : "published") : "rejected");
     } catch (e) {
-      // Record the failure rather than retrying forever: a post that cannot be
-      // published should show as failed in the calendar, not sit as scheduled
-      // looking like it is still going to happen.
+      // The atomic RPC rolls back on failure. Leave the saved post available
+      // for retry; never finalize an entire mixed-network post here.
       const note = String(e).slice(0, 160);
-      try { await rpc("feed_mark_published", { p_id: p.id, p_ok: false, p_note: note }); } catch { /* nothing more to do */ }
       bump("error:" + note.split(":")[0].slice(0, 30));
     }
   }

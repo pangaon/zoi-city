@@ -90,8 +90,24 @@
     }
   };
 
+  /* Read the whole API response within one deadline; no mutation retries. */
+  function request(url, options) {
+    var controller = new AbortController();
+    var timer = setTimeout(function(){ controller.abort(); }, 15000);
+    return global.fetch(url, Object.assign({}, options, {signal:controller.signal})).then(function(response){
+      return response.text().then(function(body){
+        return {ok:response.ok,status:response.status,
+          text:function(){return Promise.resolve(body);},
+          json:function(){return Promise.resolve().then(function(){return JSON.parse(body);});}};
+      });
+    }).catch(function(error){
+      if(controller.signal.aborted){var timeout=new Error('The service took too long. Please try again.');timeout.code='REQUEST_TIMEOUT';throw timeout;}
+      throw error;
+    }).finally(function(){clearTimeout(timer);});
+  }
+
   /* ---- auth session {access_token, refresh_token, expires_at, email} ---- */
-  var _auth = null, _loaded = false;
+  var _auth = null, _loaded = false, _authVersion = 0, _refreshPromise = null;
   function authLoad(){
     _auth = null; _loaded = true;
     var raw = lsGet(K_AUTH);
@@ -100,6 +116,7 @@
   }
   function cur(){ return _loaded ? _auth : authLoad(); }
   function authSave(a){
+    _authVersion++;
     _auth = a || null; _loaded = true;
     if (a) lsSet(K_AUTH, JSON.stringify(a)); else lsDel(K_AUTH);
     return _auth;
@@ -116,22 +133,32 @@
     if (!a || !a.access_token) return Promise.resolve(false);
     if (Number(a.expires_at) * 1000 > Date.now() + 30000) return Promise.resolve(true);
     if (!a.refresh_token) return Promise.resolve(false);
-    return global.fetch(BASE + '/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { apikey: KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: a.refresh_token })
-    }).then(function (r) { return r.json(); }).then(function (j) {
-      if (j && j.access_token) {
-        authSave({
-          access_token: j.access_token,
-          refresh_token: j.refresh_token || a.refresh_token || null,
-          expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600),
-          email: (j.user && j.user.email) || a.email || null
-        });
-        return true;
-      }
-      return false;
-    }).catch(function () { return false; });
+    if (_refreshPromise) return _refreshPromise;
+    var version = _authVersion;
+    _refreshPromise = request(BASE + '/auth/v1/token?grant_type=refresh_token', {
+      method:'POST', headers:{apikey:KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:a.refresh_token})
+    }).then(function(response){
+      return response.json().then(function(j){
+        if(version !== _authVersion) return false;
+        if(response.ok && j && j.access_token){
+          authSave({access_token:j.access_token,refresh_token:j.refresh_token||a.refresh_token,
+            expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),
+            email:(j.user&&j.user.email)||a.email||null,user_id:(j.user&&j.user.id)||a.user_id||null});
+          return true;
+        }
+        if(response.status===400 || response.status===401 || response.status===403) authClear();
+        return false;
+      });
+    }).catch(function(){return false;}).finally(function(){_refreshPromise=null;});
+    return _refreshPromise;
+  }
+  function signOut(){
+    var a=cur(), tk=a&&a.access_token;
+    authClear(); lsDel(K_PENDING); lsDel(K_WS);
+    if(!tk) return Promise.resolve();
+    return request(BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tk}})
+      .then(function(r){if(!r.ok) throw new Error('Signed out on this device; server revocation was not confirmed.');});
   }
 
   /* ---- RPC: POST /rest/v1/rpc/<fn> ---- */
@@ -142,7 +169,7 @@
   }
   function rpc(fn, params, opts){
     var mode = (opts && opts.auth) || 'prefer';
-    var p;
+    var p, requestAuthVersion = null;
     if (mode === 'require') {
       p = ensureFresh().then(function (ok) {
         if (!ok) throw new Error('Please sign in.');
@@ -154,15 +181,19 @@
       p = Promise.resolve(token());
     }
     return p.then(function (tk) {
-      return global.fetch(BASE + '/rest/v1/rpc/' + fn, {
+      if(tk) requestAuthVersion = _authVersion;
+      return request(BASE + '/rest/v1/rpc/' + fn, {
         method: 'POST',
         headers: { apikey: KEY, Authorization: 'Bearer ' + (tk || KEY), 'Content-Type': 'application/json' },
         body: JSON.stringify(params || {})
       });
     }).then(function (r) {
       return r.text().then(function (t) {
-        if (!r.ok) throw new Error(errMsg(t, r.status));
-        return t ? JSON.parse(t) : null;
+        if(requestAuthVersion !== null && requestAuthVersion !== _authVersion) throw new Error('Your session changed. Reload this view to check the result.');
+        if (!r.ok) {var error=new Error(errMsg(t,r.status));error.status=r.status;throw error;}
+        var result=t?JSON.parse(t):null;
+        if(result && (result.error || result.ok===false)) throw new Error(String(result.error||result.message||'The request was not completed.'));
+        return result;
       });
     });
   }
@@ -171,7 +202,7 @@
   var otp = {
     send: function (email) {
       email = String(email || '').trim();
-      return global.fetch(BASE + '/auth/v1/otp', {
+      return request(BASE + '/auth/v1/otp', {
         method: 'POST',
         headers: { apikey: KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, create_user: true })
@@ -183,8 +214,9 @@
       });
     },
     verify: function (email, code) {
+      var version = _authVersion;
       email = String(email || lsGet(K_PENDING) || '').trim();
-      return global.fetch(BASE + '/auth/v1/verify', {
+      return request(BASE + '/auth/v1/verify', {
         method: 'POST',
         headers: { apikey: KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'email', email: email, token: String(code == null ? '' : code).trim() })
@@ -200,6 +232,7 @@
           email: email,
           user_id: (j.user && j.user.id) || null
         };
+        if(version !== _authVersion) throw new Error('Sign-in was cancelled. Please try again.');
         authSave(sess);
         lsDel(K_PENDING);
         return sess;
@@ -257,7 +290,7 @@
     relTime: relTime,
     toast: toast,
     theme: theme,
-    auth: { load: authLoad, save: authSave, clear: authClear, token: token, ensureFresh: ensureFresh, isSignedIn: isSignedIn },
+    auth: { load: authLoad, save: authSave, clear: authClear, signOut: signOut, token: token, ensureFresh: ensureFresh, isSignedIn: isSignedIn },
     api: { rpc: rpc },
     otp: otp,
     trapFocus: trapFocus,

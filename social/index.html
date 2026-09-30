@@ -43,10 +43,10 @@ a{color:inherit;text-decoration:none}
 .wsname{flex:1;min-width:0;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .wsdrop{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:6px;z-index:40;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);display:none}
 .wsdrop.on{display:block}
-.wsitem{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.wsitem{width:100%;border:0;background:transparent;color:var(--tx);text-align:left;font-family:inherit;display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13.5px}
 .wsitem:hover{background:var(--bg2)} .wsitem.active{color:var(--gold)}
 nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
-.nitem{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--mut);cursor:pointer;font-weight:600;font-size:14px;transition:.15s;margin-bottom:2px}
+.nitem{width:100%;border:0;background:transparent;text-align:left;font-family:inherit;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--mut);cursor:pointer;font-weight:600;font-size:14px;transition:.15s;margin-bottom:2px}
 .nitem:hover{color:var(--tx);background:var(--bg3)}
 .nitem.active{color:var(--tx);background:var(--bg3)}
 .nitem.active .nic{color:var(--gold)}
@@ -114,22 +114,23 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 </div></header>
 
 <div id="root"><div class="center"><div class="spin"></div></div></div>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <!-- foundation + suite modules (load synchronously, in order) -->
-<script src="/assets/zoi-core.js"></script>
+<script src="/assets/zoi-core.js?v=20260930"></script>
 <script>window.ZoiSuite = window.ZoiSuite || { modules: [] };</script>
-<script src="/assets/suite/composer.js?v=104f6bf"></script>
+<script src="/assets/suite/composer.js?v=20260930"></script>
 <script src="/assets/suite/calendar.js"></script>
-<script src="/assets/suite/analytics.js"></script>
-<script src="/assets/suite/bio.js"></script>
-<script src="/assets/suite/email.js"></script>
-<script src="/assets/suite/audience.js"></script>
+<script src="/assets/suite/analytics.js?v=20260930"></script>
+<script src="/assets/suite/bio.js?v=20260930"></script>
+<script src="/assets/suite/email.js?v=20260930"></script>
+<script src="/assets/suite/audience.js?v=20260930"></script>
+<script src="/assets/suite/operations.js?v=20260930"></script>
 <!-- the per-vertical profile editor: schemas, then the renderer, then the
      module that mounts it. Order matters — bizpage.js reads both. -->
 <script src="/assets/suite/_vertical-forms.js"></script>
 <script src="/assets/suite/_vertical-ui.js"></script>
-<script src="/assets/suite/bizpage.js"></script>
+<script src="/assets/suite/bizpage.js?v=20260930"></script>
 <script src="/assets/suite/connect.js"></script>
 <script src="/assets/suite/settings.js"></script>
 <script src="/assets/suite/ai.js"></script>
@@ -156,13 +157,13 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     '<div class="center"><div class="card">'+
       '<div class="mono" style="margin-bottom:14px">The Greek business world, one desk</div>'+
       '<h1>Your <span class="serif">suite.</span></h1>'+
-      '<p class="sub">Publish everywhere, schedule, grow, and sell — sign in with a 6-digit code.</p>'+
+      '<p class="sub">Your business, content and community in one workspace. Sign in with the code sent to your email.</p>'+
       (step==='code'
-        ? '<div class="field"><label>Code sent to '+esc(email)+'</label><input id="g-code" class="inp" inputmode="numeric" maxlength="8" placeholder="6-digit code" style="letter-spacing:.3em;font-family:JetBrains Mono"></div>'+
+        ? '<div class="field"><label for="g-code">Code sent to '+esc(email)+'</label><input id="g-code" class="inp" inputmode="numeric" maxlength="8" placeholder="6-digit code" style="letter-spacing:.3em;font-family:JetBrains Mono"></div>'+
           '<div class="err" id="g-err"></div>'+
           '<button class="btn p" id="g-verify" style="width:100%">Enter</button>'+
-          '<div style="text-align:center;margin-top:12px"><a id="g-back" style="color:var(--dim);font-size:13px;cursor:pointer">Use a different email</a></div>'
-        : '<div class="field"><label>Email</label><input id="g-email" class="inp" type="email" placeholder="you@business.com" autocomplete="email"></div>'+
+          '<div style="text-align:center;margin-top:12px"><button type="button" id="g-back" class="btn g" style="color:var(--dim);font-size:13px;cursor:pointer">Use a different email</button></div>'
+        : '<div class="field"><label for="g-email">Email</label><input id="g-email" class="inp" type="email" placeholder="you@business.com" autocomplete="email"></div>'+
           '<div class="err" id="g-err"></div>'+
           '<button class="btn p" id="g-send" style="width:100%">Send my code</button>')+
     '</div></div>';
@@ -201,7 +202,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       '<div class="mono" style="margin-bottom:14px">Welcome</div>'+
       '<h1>Name your <span class="serif">business.</span></h1>'+
       '<p class="sub">This is your workspace — you can rename it anytime in Settings.</p>'+
-      '<div class="field"><label>Business name</label><input id="c-name" class="inp" placeholder="e.g. Taverna Ousia"></div>'+
+      '<div class="field"><label for="c-name">Business name</label><input id="c-name" class="inp" placeholder="e.g. Taverna Ousia"></div>'+
       '<div class="err" id="c-err"></div>'+
       '<button class="btn p" id="c-go" style="width:100%">Create workspace</button>'+
     '</div></div>';
@@ -237,7 +238,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     var navHtml = mods.map(function(m){
       var group=groupFor(m.id), heading=group!==lastGroup?'<div class="navgroup">'+group+'</div>':'';
       lastGroup=group;
-      return heading+'<div class="nitem" data-id="'+esc(m.id)+'"><span class="nic">'+(m.icon||'')+'</span>'+esc(m.label||m.id)+'</div>';
+      return heading+'<button type="button" class="nitem" data-id="'+esc(m.id)+'"><span class="nic">'+(m.icon||'')+'</span>'+esc(m.label||m.id)+'</button>';
     }).join('');
     var wsInitial = esc((STATE.wsName||'Z').trim().charAt(0).toUpperCase());
     root.innerHTML =
@@ -246,11 +247,11 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       '<aside class="side" id="side">'+
         '<div class="brand"><span class="seal">Ζ</span>Zoi <span style="color:var(--dim);font-weight:500;font-size:13px;margin-left:2px">suite</span></div>'+
         '<div class="wsbar">'+
-          '<button class="wsbtn" id="wsbtn"><span class="wsav">'+wsInitial+'</span><span class="wsname">'+esc(STATE.wsName||'Workspace')+'</span>'+
+          '<button class="wsbtn" id="wsbtn" aria-expanded="false" aria-controls="wsdrop"><span class="wsav">'+wsInitial+'</span><span class="wsname">'+esc(STATE.wsName||'Workspace')+'</span>'+
             '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--dim)"><path d="M6 9l6 6 6-6"/></svg></button>'+
           '<div class="wsdrop" id="wsdrop">'+
-            STATE.workspaces.map(function(w){ return '<div class="wsitem'+(w.id===STATE.ws?' active':'')+'" data-ws="'+esc(w.id)+'" data-name="'+esc(w.name||'Workspace')+'"><span class="wsav" style="width:22px;height:22px;font-size:12px">'+esc((w.name||'Z').charAt(0).toUpperCase())+'</span>'+esc(w.name||'Workspace')+'</div>'; }).join('')+
-            '<div class="wsitem" id="ws-new" style="color:var(--gold)"><span class="wsav" style="width:22px;height:22px;font-size:14px">+</span>New business</div>'+
+            STATE.workspaces.map(function(w){ return '<button type="button" class="wsitem'+(w.id===STATE.ws?' active':'')+'" data-ws="'+esc(w.id)+'" data-name="'+esc(w.name||'Workspace')+'"><span class="wsav" style="width:22px;height:22px;font-size:12px">'+esc((w.name||'Z').charAt(0).toUpperCase())+'</span>'+esc(w.name||'Workspace')+'</button>'; }).join('')+
+            '<button type="button" class="wsitem" id="ws-new" style="color:var(--gold)"><span class="wsav" style="width:22px;height:22px;font-size:14px">+</span>New business</button>'+
           '</div>'+
         '</div>'+
         '<nav class="nv" id="nav">'+navHtml+'</nav>'+
@@ -263,7 +264,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
         '</div>'+
       '</aside>'+
       '<div class="main">'+
-        '<div class="topbar"><button class="hamb" id="hamb"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>'+
+        '<div class="topbar"><button class="hamb" id="hamb" aria-label="Open workspace navigation" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>'+
           '<div><div style="font-weight:700">Zoi suite</div><div style="font-size:11px;color:var(--dim)">Plan · create · grow · convert</div></div></div>'+
         '<div class="mount" id="mount"></div>'+
       '</div>'+
@@ -278,8 +279,8 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     });
     // workspace dropdown
     var wsbtn=document.getElementById('wsbtn'), wsdrop=document.getElementById('wsdrop');
-    wsbtn.onclick=function(e){ e.stopPropagation(); wsdrop.classList.toggle('on'); };
-    document.addEventListener('click',function(){ wsdrop.classList.remove('on'); });
+    wsbtn.onclick=function(e){ e.stopPropagation(); wsdrop.classList.toggle('on'); wsbtn.setAttribute('aria-expanded',String(wsdrop.classList.contains('on'))); };
+    document.addEventListener('click',function(){ wsdrop.classList.remove('on'); wsbtn.setAttribute('aria-expanded','false'); });
     wsdrop.addEventListener('click',function(e){
       var it=e.target.closest('.wsitem'); if(!it) return;
       if(it.id==='ws-new'){ renderCreate(); return; }
@@ -288,11 +289,17 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     });
     // theme + signout + mobile
     document.getElementById('suiteThemeBtn').onclick=function(){ flipTheme(); document.getElementById('suiteThemeBtn').innerHTML=iconTheme(); if(STATE.active) selectModule(STATE.active); };
-    document.getElementById('signout').onclick=function(){ C.auth.clear(); try{localStorage.removeItem('zoi_ws');}catch(e){} location.reload(); };
+    document.getElementById('signout').onclick=function(){ STATE.me=null; STATE.ws=null; var pending=C.auth.signOut(); renderGate('email'); pending.catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');}); };
     var side=document.getElementById('side'), scrim=document.getElementById('scrim');
-    document.getElementById('hamb').onclick=function(){ side.classList.add('open'); scrim.classList.add('on'); };
+    var hamb=document.getElementById('hamb');
+    var narrow=window.matchMedia('(max-width:860px)');
+    function syncDrawerAccess(){var hidden=narrow.matches&&!side.classList.contains('open');side.inert=hidden;if(hidden)side.setAttribute('aria-hidden','true');else side.removeAttribute('aria-hidden');}
+    syncDrawerAccess();
+    narrow.onchange=function(){if(!side.isConnected){narrow.onchange=null;return;}closeDrawerFn();};
+    hamb.onclick=function(){side.classList.add('open');scrim.classList.add('on');hamb.setAttribute('aria-expanded','true');syncDrawerAccess();if(C.trapFocus)C.trapFocus(side);};
     scrim.onclick=closeDrawer;
-    function closeDrawerFn(){ side.classList.remove('open'); scrim.classList.remove('on'); }
+    function closeDrawerFn(){var wasOpen=side.classList.contains('open');side.classList.remove('open');scrim.classList.remove('on');hamb.setAttribute('aria-expanded','false');if(C.releaseFocus)C.releaseFocus();if(wasOpen&&narrow.matches)hamb.focus();syncDrawerAccess();}
+    side.addEventListener('keydown',function(event){if(event.key==='Escape')closeDrawerFn();});
     window.__closeDrawer=closeDrawerFn;
 
     // mount initial
@@ -316,10 +323,11 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     var items=document.querySelectorAll('.nitem');
     for(var j=0;j<items.length;j++){ items[j].classList.toggle('active', items[j].getAttribute('data-id')===id); }
     var mount=document.getElementById('mount');
-    mount.innerHTML='<div class="spin"></div>';
+    mount.innerHTML='';
+    var surface=document.createElement('div');surface.className='suite-surface';mount.appendChild(surface);surface.innerHTML='<div class="spin"></div>';
     try{
-      var r = mod.mount(mount, STATE.ctx);
-      if(r && typeof r.catch==='function'){ r.catch(function(e){ mount.innerHTML='<div style="padding:20px;color:var(--red)">This section hit an error: '+esc(e&&e.message||e)+'</div>'; }); }
+      var r = mod.mount(surface, STATE.ctx);
+      if(r && typeof r.catch==='function'){ r.catch(function(e){ if(STATE.active!==id || !surface.isConnected)return; surface.innerHTML='<div style="padding:20px;color:var(--red)">This section hit an error: '+esc(e&&e.message||e)+'</div>'; }); }
     }catch(e){
       mount.innerHTML='<div style="padding:20px;color:var(--red)">This section hit an error: '+esc(e&&e.message||e)+'</div>';
     }
@@ -352,13 +360,14 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       try{ localStorage.setItem('zoi_ws', STATE.ws); }catch(e){}
       loadContext();
     }).catch(function(e){
-      renderGate('email');
+      root.innerHTML='<div class="center"><div class="card"><h1>Workspace unavailable</h1><p class="sub">We could not load your workspace. Your saved session has been kept.</p><button class="btn p" id="retry-workspace">Try again</button></div></div>';
+      document.getElementById('retry-workspace').onclick=boot;
     });
   }
   function loadContext(){
     root.innerHTML='<div class="center"><div class="spin"></div></div>';
     Promise.all([
-      C.api.rpc('suite_config',{},{auth:'prefer'}).catch(function(){ return {publish:false,email:false,ai:true,payments:false,claims:true}; }),
+      C.api.rpc('suite_config',{},{auth:'prefer'}).catch(function(){ return {publish:false,email:false,ai:false,payments:false,claims:false,unavailable:true}; }),
       C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; })
     ]).then(function(res){
       STATE.avail = res[0]||{};

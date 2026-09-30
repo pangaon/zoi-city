@@ -8,7 +8,7 @@
  * HONESTY CONTRACT (hard requirement): this module renders ONLY numbers we
  * actually have from the backend RPCs. It NEVER fabricates engagement metrics
  * (impressions / likes / reach / views). Per-post engagement is honestly
- * gated behind a "connect your accounts" panel. Missing data renders as an
+ * marked unavailable until a collection integration exists. Missing data renders as an
  * explicit empty/unavailable state, never as an invented value.
  *
  * Registers into window.ZoiSuite.modules.
@@ -1168,29 +1168,16 @@
 
     // ---- honest gated engagement panel ----
     function renderGate(d) {
-      var connected = !!(avail && avail.publish);
       var card = el(doc, 'div', 'za-gate');
-      var badge = connected
-        ? '<span class="za-badge green">Accounts connected</span>'
-        : '<span class="za-badge gold">Locked</span>';
-      card.innerHTML =
-        '<h3><span class="za-lock"><svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>' +
-        'Engagement analytics ' + badge + '</h3>';
+      card.innerHTML = '<h3>Engagement analytics <span class="za-badge gold">Unavailable</span></h3>';
       var p = el(doc, 'p');
-      if (connected) {
-        p.textContent = 'Your accounts are connected. Per-post reach, impressions, likes and follower ' +
-          'growth will appear here once the provider APIs report them for your posts. We show provider-reported ' +
-          'numbers only — Zoi never estimates or fabricates engagement metrics.';
-      } else {
-        p.textContent = 'Per-post reach, impressions, likes and follower growth require a connected provider ' +
-          '(Meta, X, LinkedIn, TikTok, YouTube). These unlock when you connect your accounts. Until then we will ' +
-          'not show any number we cannot verify — nothing here is estimated or invented.';
-      }
+      p.textContent = 'External reach, impressions, reactions and follower growth are not collected by this dashboard. ' +
+        'Connecting a publishing account does not enable these reports. The charts above show recorded workspace activity only.';
       card.appendChild(p);
       var list = el(doc, 'div', 'za-locklist');
       ['Impressions', 'Reach', 'Likes / reactions', 'Comments', 'Shares', 'Follower growth', 'Click-through'].forEach(function (m) {
         var pill = el(doc, 'span', 'za-lockpill');
-        pill.innerHTML = '<b>' + esc(m) + '</b> ' + (connected ? 'awaiting provider' : 'needs connection');
+        pill.innerHTML = '<b>' + esc(m) + '</b> unavailable';
         list.appendChild(pill);
       });
       card.appendChild(list);

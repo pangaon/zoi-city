@@ -54,7 +54,7 @@
        none has a registered developer app — so this is currently the only
        channel the composer can actually deliver to. It needs no OAuth: the
        person is already signed in to Zoi. */
-    zoi:       { key:'zoi',       name:'Zoi Community', limit:5000, trunc:280, color:'#4f9be8', own:true }
+    zoi:       { key:'zoi',       name:'Zoi Community', limit:1000, trunc:280, color:'#4f9be8', own:true }
   };
 
   // Small inline SVG icons (24x24 viewBox path fragments) per platform key.
@@ -183,6 +183,35 @@
       .replace(/(https?:\/\/[^\s<]+)/g, '<span class="zc-lnk">$1</span>')
       .replace(/(^|[\s>])(#[\p{L}0-9_]+)/gu, '$1<span class="zc-tag">$2</span>')
       .replace(/(^|[\s>])(@[\p{L}0-9_.]+)/gu, '$1<span class="zc-mention">$2</span>');
+  }
+
+  async function requestCaption(C, workspace, draft, tone) {
+    if (C.auth && typeof C.auth.ensureFresh === 'function') await C.auth.ensureFresh();
+    var token = C.auth && C.auth.token && C.auth.token();
+    if (!token) throw new Error('Sign in again to use AI drafting. Your draft is unchanged.');
+    var controller = new AbortController();
+    var timeout = global.setTimeout(function () { controller.abort(); }, 45000);
+    try {
+      var response = await global.fetch(C.BASE + '/functions/v1/ai-generate', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { apikey: C.KEY, Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ workspace: workspace, action: 'caption', input:
+          'Refine this draft using a ' + tone + ' tone. Preserve supplied facts and placeholders. Do not invent products, offers, dates, links or business claims.\n\n' + draft })
+      });
+      var data;
+      try { data = await response.json(); } catch (e) { throw new Error('AI returned an unreadable response. Your draft is unchanged.'); }
+      if (!response.ok) throw new Error(response.status === 401 || response.status === 403
+        ? 'Your session expired or you do not have access to this workspace. Sign in and retry.'
+        : 'AI request failed. Your draft is unchanged. Please retry.');
+      if (!data || data.available !== true) throw new Error('AI drafting is unavailable. Your draft is unchanged.');
+      if (!data.result || typeof data.result.text !== 'string' || !data.result.text.trim())
+        throw new Error('AI returned no caption. Your draft is unchanged.');
+      return data.result.text.trim();
+    } catch (e) {
+      if (e.name === 'AbortError') throw new Error('AI request timed out. Your draft is unchanged. Please retry.');
+      throw e;
+    } finally { global.clearTimeout(timeout); }
   }
 
   /* ---------- styles ---------- */
@@ -362,7 +391,7 @@
       '.zc-tpl .zc-tb2{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
       '.zc-keys{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:12.5px}',
       '.zc-kbd{font:700 11px "JetBrains Mono",monospace;background:var(--bg3);border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;padding:3px 7px;white-space:nowrap;color:var(--tx)}',
-      /* Canva-grade Greek Templates & Enterprise AI */
+      /* Greek templates and AI drafting */
       '.zc-tpl-box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}',
       '.zc-tpl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}',
       '.zc-tpl-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;text-align:left;transition:all .18s}',
@@ -439,30 +468,30 @@
     var bannerBox = el('div');
     left.appendChild(bannerBox);
 
-    /* ----- LEFT: Smart Greek Post Templates Gallery (Canva-Grade) ----- */
+    /* ----- LEFT: Greek caption starters ----- */
     var tplBox = el('div', 'zc-tpl-box');
     tplBox.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">' +
         '<div><b style="font-size:14px;color:var(--tx);display:flex;align-items:center;gap:6px">⚡ Smart Greek Post Templates</b>' +
-        '<span style="font-size:11.5px;color:var(--mut)">Canva-grade high-conversion Greek post formulas. 1-click load into composer.</span></div>' +
+        '<span style="font-size:11.5px;color:var(--mut)">Editable caption starters. Replace bracketed details before publishing.</span></div>' +
         '<button class="zc-btn sm" data-role="customtplbtn">+ Custom Template</button>' +
       '</div>' +
       '<div class="zc-tpl-grid">' +
-        '<button type="button" class="zc-tpl-btn" data-tpl="nameday"><b>🎉 Nameday Wish</b><span>Celebration blessing with #ΧρονιαΠολλα &amp; gold card styling</span></button>' +
-        '<button type="button" class="zc-tpl-btn" data-tpl="taverna"><b>🍷 Taverna Special</b><span>Charred seafood &amp; olive oil grill feature with table booking</span></button>' +
-        '<button type="button" class="zc-tpl-btn" data-tpl="panigiri"><b>🎭 Panigiri &amp; Event</b><span>Bouzouki live music, Greek folk dancing &amp; ticket link</span></button>' +
-        '<button type="button" class="zc-tpl-btn" data-tpl="feast"><b>⛪ Orthodox Feast</b><span>Feast reflection, troparion hymn &amp; fasting compliance</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="nameday"><b>🎉 Nameday Wish</b><span>A greeting to personalise for your community</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="taverna"><b>🍷 Taverna Special</b><span>Describe your actual special and add a booking link</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="panigiri"><b>🎭 Panigiri &amp; Event</b><span>Add confirmed programme, location and ticket details</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="feast"><b>⛪ Orthodox Feast</b><span>Add the feast, service time and parish details</span></button>' +
         '<button type="button" class="zc-tpl-btn" data-tpl="creator"><b>🎙️ Creator Spotlight</b><span>New podcast episode / video drop with streaming links</span></button>' +
-        '<button type="button" class="zc-tpl-btn" data-tpl="weekend"><b>🌿 Family Banquet</b><span>Sunday Greek feast, lamb roast &amp; handmade baklava</span></button>' +
+        '<button type="button" class="zc-tpl-btn" data-tpl="weekend"><b>🌿 Family Banquet</b><span>Describe your menu and how guests can book</span></button>' +
       '</div>';
     left.appendChild(tplBox);
 
-    /* ----- LEFT: Enterprise AI Studio Assistant ----- */
+    /* ----- LEFT: AI caption assistant ----- */
     var aiBox = el('div', 'zc-ai-box');
     aiBox.innerHTML =
       '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">' +
-        '<b style="font-size:13.5px;color:var(--gold);display:flex;align-items:center;gap:6px">🪄 Enterprise AI Copywriter &amp; Brand Voice</b>' +
-        '<span style="font-size:11px;color:var(--mut)">Context-aware diaspora generation</span>' +
+        '<b style="font-size:13.5px;color:var(--gold);display:flex;align-items:center;gap:6px">🪄 AI Caption Assistant</b>' +
+        '<span style="font-size:11px;color:var(--mut)">Draft from your topic and saved brand profile</span>' +
       '</div>' +
       '<div class="zc-row" style="margin-bottom:8px">' +
         '<select class="zc-sel zc-grow" data-role="aitone">' +
@@ -475,8 +504,8 @@
         '<button class="zc-btn gold" type="button" data-role="runai">✨ Polish / Write with AI</button>' +
       '</div>' +
       '<div style="display:flex;gap:6px;flex-wrap:wrap">' +
-        '<button class="zc-btn sm" type="button" data-role="quicktags" style="font-size:11px">+ Trending #GreekFood &amp; #Diaspora Tags</button>' +
-        '<button class="zc-btn sm" type="button" data-role="namedaytag" style="font-size:11px">+ Today\'s #Nameday Tag</button>' +
+        '<button class="zc-btn sm" type="button" data-role="quicktags" style="font-size:11px">+ Suggested Diaspora Tags</button>' +
+        '<button class="zc-btn sm" type="button" data-role="namedaytag" style="font-size:11px">+ Nameday Tags</button>' +
       '</div>';
     left.appendChild(aiBox);
 
@@ -508,7 +537,7 @@
     // media
     var mediaWrap = el('div');
     mediaWrap.style.marginTop = '14px';
-    mediaWrap.innerHTML = '<span class="zc-lab">Media (up to 4)</span>';
+    mediaWrap.innerHTML = '<span class="zc-lab">Media (up to 4)</span><p class="zc-sub">Image descriptions are saved with your draft. Publishing integrations do not yet send alt text.</p>';
     var mediaRow = el('div', 'zc-row');
     mediaRow.innerHTML =
       '<input class="zc-in" type="url" placeholder="Paste image URL…" data-role="mediaurl">' +
@@ -562,7 +591,7 @@
     advanced.innerHTML =
       '<span class="zc-lab">First comment</span>' +
       '<p class="zc-sub" style="margin:-2px 0 6px">Posted automatically right after publish (great for #tags or links).</p>' +
-      '<input class="zc-in" style="width:100%;flex:none" placeholder="Optional first comment…" data-role="firstcomment">' +
+      '<input class="zc-in" style="width:100%;flex:none" placeholder="First-comment draft (delivery unavailable)…" data-role="firstcomment">' +
       '<div style="margin-top:14px">' +
         '<label class="zc-flex" style="cursor:pointer;font-size:12.5px;font-weight:700">' +
           '<input type="checkbox" data-role="threadtoggle"> X / Twitter thread mode' +
@@ -607,7 +636,7 @@
 
     /* ----- RIGHT: previews ----- */
     var pvCard = el('div', 'zc-card');
-    pvCard.innerHTML = '<div class="zc-h">Live previews</div><p class="zc-sub">Exactly how each network will show your post.</p>';
+    pvCard.innerHTML = '<div class="zc-h">Live previews</div><p class="zc-sub">Approximate layouts. Published appearance varies by network and device.</p>';
     var previews = el('div', 'zc-previews');
     previews.style.marginTop = '14px';
     pvCard.appendChild(previews);
@@ -708,7 +737,7 @@
      * whatever its real length). If the library did not load we fall back to a
      * plain code-point count, which is still better than String.length. */
     function countOf(platform, text) {
-      if (state.S) return state.S.countFor(platform, text);
+      if (state.S && normPlat(platform) !== 'zoi') return state.S.countFor(platform, text);
       var n = netFor(platform) || {};
       var len = Array.from(String(text == null ? '' : text)).length;
       return {
@@ -1706,11 +1735,28 @@
           out.push({ sev: 'warn', key: 'near-' + ch.id, title: c.name + ' is close to its limit',
             text: c.remaining + ' characters left of ' + c.limit + '.' });
         }
+        if (normPlat(ch.platform) === 'zoi') {
+          if (!bodyFor(ch).trim()) out.push({ sev: 'stop', key: 'community-body', title: 'Add a community caption', text: 'Zoi Community requires text with your image.' });
+          if (state.media.some(function (url) { return url.indexOf(C.BASE + '/storage/v1/object/public/media/') !== 0; })) {
+            out.push({ sev: 'stop', key: 'community-media', title: 'Upload your community images', text: 'Use Upload for images shared to Zoi Community. External image URLs are not accepted by the community feed.' });
+          }
+        }
         if (normPlat(ch.platform) === 'instagram' && !state.media.length) {
           out.push({ sev: 'warn', key: 'ig-nomedia', title: 'Instagram needs an image',
             text: 'Instagram will not accept a text-only post — add a photo or drop Instagram from this one.' });
         }
       });
+
+      if (opts.channelsRequired) {
+        if (String(q('firstcomment').value || '').trim()) out.push({ sev: 'stop', key: 'first-comment-unsupported', title: 'First-comment delivery is unavailable', text: 'Move this text into the caption or remove the first comment before publishing. It can remain in a saved draft.' });
+        if (state.threadMode) out.push({ sev: 'stop', key: 'thread-unsupported', title: 'Thread publishing is unavailable', text: 'Save the thread as a draft, or turn off thread mode and publish a single caption.' });
+        sel.forEach(function (ch) {
+          var platform = normPlat(ch.platform);
+          if (platform === 'tiktok' || platform === 'youtube') out.push({ sev: 'stop', key: 'video-unsupported-' + ch.id, title: netFor(platform).name + ' publishing is unavailable', text: 'Video upload is not connected. Remove this destination or save a draft.' });
+          if (state.media.length && ['facebook','linkedin','x'].indexOf(platform) !== -1) out.push({ sev: 'stop', key: 'media-unsupported-' + ch.id, title: netFor(platform).name + ' image publishing is unavailable', text: 'This connection currently sends text only. Save your image post as a draft, or remove this destination.' });
+          if (platform === 'instagram' && state.media.length !== 1) out.push({ sev: 'stop', key: 'instagram-media-count', title: 'Instagram requires one image', text: 'This connection supports one image per post. Carousels are not available.' });
+        });
+      }
 
       // alt text
       var missing = state.media.filter(function (u) { return !(state.alts[u] && String(state.alts[u]).trim()); });
@@ -1807,25 +1853,17 @@
       var res = await C.api.rpc('social_save_post', params, { auth: 'require' });
       if (res && res.id) state.editId = res.id;
 
-      /* Publishing to Zoi's own feed happens here and now, through feed_post,
-         which posts as the signed-in person — that is the only way the feed can
-         attribute a post correctly. External networks go through the scheduled
-         publisher; a SCHEDULED community post is picked up by
-         zoi-feed-publish, which uses the author recorded on the row.
-         A failure here must not lose the post: it is already saved above, so the
-         worst case is a saved post that did not appear in the feed, and we say
-         so rather than claiming success. */
+      /* The authenticated RPC publishes the saved snapshot and records delivery
+         in one transaction. Browser retries and the scheduled worker share the
+         same idempotency ledger. It never re-reads the mutable editor content. */
       var wantsCommunity = params.p_channels.indexOf('zoi') !== -1;
       if (wantsCommunity && opts.publishNow) {
         try {
-          var fed = await C.api.rpc('feed_post', {
-            p_body: ta.value,
-            p_listing: null,
-            p_nameday: null,
-            p_media: mediaJson()
-          }, { auth: 'require' });
+          if (!res || !res.id) throw new Error('Post save returned no identifier. Nothing was published.');
+          var fed = await C.api.rpc('feed_publish_social_post', { p_id: res.id }, { auth: 'require' });
           res = res || {};
-          res.community = (fed && (fed.ok || fed.id)) ? 'posted' : 'rejected';
+          res.community = (fed && fed.ok === true && fed.id) ? (fed.already_published ? 'already_posted' : 'posted') : 'failed';
+          if (res.community === 'failed') res.communityError = 'The service returned no publication receipt.';
         } catch (e) {
           res = res || {};
           res.community = 'failed';
@@ -2039,6 +2077,8 @@
             toast(wantsCommunity && selectedChannels().length > 1
               ? 'Posted to Zoi Community. The other networks are queued.'
               : 'Posted to Zoi Community.');
+          } else if (res && res.community === 'already_posted') {
+            toast('This saved post was already published to Zoi Community. Clear the composer to start a new post.');
           } else if (res && res.community === 'failed') {
             toast('Saved, but it did not reach the feed: ' + (res.communityError || 'unknown error'));
           } else {
@@ -2231,32 +2271,14 @@
     // async data
     await Promise.all([loadChannels(), loadHashtags(), loadTemplates(), loadSlots(), loadPosts(), loadNamedays()]);
 
-    /* ---------- bind smart templates & enterprise AI ---------- */
+    /* ---------- bind templates and AI drafting ---------- */
     var SMART_TEMPLATES = {
-      nameday: {
-        body: "Χρόνια Πολλά to everyone celebrating their Name Day today! 🎉🎂 May your day be blessed with health, abundant joy, and warm filoxenia with family and friends. Stop by or reach out to celebrate together!\n\n#ΧρονιαΠολλα #Nameday #GreekDiaspora #Filoxenia #GreekTraditions",
-        media: "https://images.unsplash.com/photo-1519741497674-611481863552?w=800&q=80"
-      },
-      taverna: {
-        body: "🔥 Today's Signature Greek Special: Charred Mediterranean Octopus with fresh wild mountain oregano, hand-pressed Kalamata olive oil, and lemon roasted potatoes. 🐙🍋\n\nPair it with a crisp Santorini Assyrtiko wine. Reserve your table now or order direct!\n\n#GreekFood #Taverna #GreekGastronomy #FreshSeafood #Mezedes #GreekDining",
-        media: "https://images.unsplash.com/photo-1544025162-d76694265947?w=800&q=80"
-      },
-      panigiri: {
-        body: "🎭 Greek Festival & Panigiri Announcement! 🇬🇷\n\nJoin us this weekend for authentic souvlaki, handmade loukoumades, live bouzouki performances, and traditional folk dancing with our community! Bring the whole family.\n\n📍 Hellenic Community Center\n🎟️ Tickets & reservations on Zoi Tickets\n\n#GreekFestival #Panigiri #GreekMusic #Bouzouki #HellenicCulture #Community",
-        media: "https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800&q=80"
-      },
-      feast: {
-        body: "⛪ Blessed Feast Day to our parish family! Remembering the holy teachings and spiritual legacy of the Holy Fathers. May faith and peace abide in every home. 🙏\n\n\"Let your light so shine before men, that they may see your good works and glorify your Father in heaven.\"\n\n#Orthodox #GreekOrthodox #FeastDay #ParishCommunity #Faith #Blessings",
-        media: "https://images.unsplash.com/photo-1548625361-1959828469cb?w=800&q=80"
-      },
-      creator: {
-        body: "🎙️ NEW EPISODE IS LIVE! Exploring the rich heritage, diaspora triumphs, and modern culture of the Greek world with our special guest. 🇬🇷✨\n\nStream now on Spotify, Apple Podcasts, and YouTube. Link in bio!\n\n#GreekPodcast #DiasporaVoices #GreekCreators #HellenicHeritage #Culture",
-        media: "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&q=80"
-      },
-      weekend: {
-        body: "🌿 Sunday Family Greek Feast: Slow-roasted Greek lamb with lemon potatoes, crisp Horiatiki salad, barrel-aged feta, and warm handmade baklava. ❤️\n\nGather your loved ones around the table. Call or book your table on Zoi!\n\n#SundayFeast #GreekFamily #Baklava #GreekTradition #Filoxenia #ComfortFood",
-        media: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&q=80"
-      }
+      nameday: { body: 'Χρόνια πολλά to everyone celebrating [name / date]! Wishing you health and joy.\n\nFrom [business name]. #ΧρονιαΠολλα' },
+      taverna: { body: 'On the menu at [business name]: [dish and verified ingredients].\n\nAvailable [date / times]. Reserve or order: [link]' },
+      panigiri: { body: 'Join us for [event name] on [date] at [location].\n\nProgramme: [confirmed activities]. Tickets and details: [link]' },
+      feast: { body: 'Our parish marks [feast name] on [date].\n\nService: [time and location]. Parish information: [link]' },
+      creator: { body: 'Explore [episode / video title]: [what viewers will learn].\n\nWatch or listen here: [confirmed link]. From [creator name].' },
+      weekend: { body: 'Gather with family at [business name] on [date].\n\nMenu: [confirmed dishes and prices]. Book: [link or phone].' }
     };
 
     root.querySelectorAll('.zc-tpl-btn[data-tpl]').forEach(function (btn) {
@@ -2278,16 +2300,55 @@
 
     var runAiBtn = q('runai');
     if (runAiBtn) {
-      runAiBtn.addEventListener('click', function () {
-        var toneEl = q('aitone');
-        var tone = toneEl ? toneEl.value : 'authentic';
-        var curText = ta.value.trim();
-        var biz = wsName() || 'Our Greek Business';
-        var improved = curText
-          ? (curText + '\n\n✨ Welcoming you with genuine Greek filoxenia at ' + biz + '. Χαρά μας να σας εξυπηρετήσουμε!\n#Filoxenia #GreekDiaspora #HellenicPride #' + biz.replace(/[^a-zA-Z0-9]/g, ''))
-          : ('Καλημέρα & welcome to ' + biz + '! 🇬🇷✨ Experience genuine Greek warmth, authentic tradition, and exceptional hospitality. Connect with our community!\n\n#GreekDiaspora #Filoxenia #Hellenic #' + biz.replace(/[^a-zA-Z0-9]/g, ''));
-        applyDraftText(improved, null);
-        toast('✨ AI refined your draft with ' + tone + ' brand tone!');
+      var aiStatus = el('p', 'zc-sub');
+      aiStatus.setAttribute('role', 'status');
+      aiStatus.textContent = ctx.avail && ctx.avail.ai
+        ? 'Describe your topic in the editor. Review the suggestion before applying it.'
+        : 'AI drafting is unavailable. You can write and save your draft manually.';
+      aiBox.appendChild(aiStatus);
+      runAiBtn.disabled = !(ctx.avail && ctx.avail.ai);
+      var aiBusy = false;
+      runAiBtn.addEventListener('click', async function () {
+        if (aiBusy || !(ctx.avail && ctx.avail.ai)) return;
+        var original = ta.value;
+        if (!original.trim()) { toast('Add a topic or draft in the editor first.'); return; }
+        aiBusy = true;
+        runAiBtn.disabled = true;
+        aiStatus.textContent = 'Generating a suggestion… Your draft remains editable.';
+        var oldSuggestion = aiBox.querySelector('[data-ai-suggestion]');
+        if (oldSuggestion) oldSuggestion.remove();
+        try {
+          var toneEl = q('aitone');
+          var suggestion = await requestCaption(C, ctx.ws, original, toneEl ? toneEl.value : 'authentic');
+          if (!root.contains(aiBox)) return;
+          var panel = el('div');
+          panel.setAttribute('data-ai-suggestion', '');
+          var output = el('p');
+          output.style.whiteSpace = 'pre-wrap';
+          output.textContent = suggestion;
+          panel.appendChild(output);
+          var apply = el('button', 'zc-btn');
+          apply.type = 'button';
+          apply.textContent = 'Use this suggestion';
+          apply.addEventListener('click', function () {
+            if (ta.value !== original) {
+              aiStatus.textContent = 'Your draft changed. Copy any useful text from the suggestion, or generate again.';
+              return;
+            }
+            ta.value = suggestion;
+            onBodyChange();
+            panel.remove();
+            aiStatus.textContent = 'Suggestion applied. Check all facts before publishing.';
+          });
+          panel.appendChild(apply);
+          aiBox.appendChild(panel);
+          aiStatus.textContent = 'Review the suggested caption and verify its facts before applying.';
+        } catch (e) {
+          aiStatus.textContent = e.message || 'AI request failed. Your draft is unchanged.';
+        } finally {
+          aiBusy = false;
+          runAiBtn.disabled = !(ctx.avail && ctx.avail.ai);
+        }
       });
     }
 
@@ -2295,7 +2356,7 @@
     if (qtagBtn) {
       qtagBtn.addEventListener('click', function () {
         insertAtCursor(' #GreekFood #Filoxenia #GreekDiaspora #HellenicHeritage #Athens');
-        toast('Appended trending diaspora hashtags!');
+        toast('Appended suggested diaspora hashtags. Review relevance before publishing.');
       });
     }
 

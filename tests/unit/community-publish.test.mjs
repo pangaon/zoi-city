@@ -45,7 +45,7 @@ test('publishing now is explicit, not inferred from the status', () => {
     'the publish handler passes publishNow explicitly');
   assert.match(composer, /if \(wantsCommunity && opts\.publishNow\)/,
     'savePost acts on the flag, not on the status');
-  assert.match(composer, /rpc\('feed_post'/, 'it posts through feed_post, as the signed-in person');
+  assert.match(composer, /rpc\('feed_publish_social_post'/, 'it publishes the saved snapshot through the atomic RPC');
 });
 
 test('a post can never reach the feed twice', () => {
@@ -53,7 +53,8 @@ test('a post can never reach the feed twice', () => {
   // leave it visible to the community worker as well.
   assert.match(mig, /NOT \(COALESCE\(p\.meta,'\{\}'::jsonb\) \? 'community'\)/,
     'the queue must skip anything already carrying a community result');
-  assert.match(worker, /feed_mark_published/, 'the worker records the outcome either way');
+  assert.match(worker, /feed_publish_scheduled_post/, 'the worker uses the same atomic delivery ledger');
+  assert.doesNotMatch(worker, /rpc\("feed_post_as"/, 'no separate insert can race receipt recording');
 });
 
 test('the author-explicit insert is unreachable from a browser', () => {

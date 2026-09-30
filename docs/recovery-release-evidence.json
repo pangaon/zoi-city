@@ -1,0 +1,62 @@
+{
+  "updated_at": "2026-09-30T00:21:00Z",
+  "production_web": {
+    "commit": "bd06a1b",
+    "deployment": "dpl_9Vw26DX13zdacrsJVUxzLrPbTKHi",
+    "status": "READY",
+    "checks": "8 public route checks; mobile homepage width390 and menu verified"
+  },
+  "database": {
+    "controlled_restart": "2026-09-29T23:54:42Z",
+    "bounded_maintenance_first_cron": {
+      "time": "2026-09-30T00:07:00Z",
+      "status": "succeeded",
+      "duration_seconds": 2.64
+    },
+    "applied_migrations": [
+      "20260930000424_bounded_listing_maintenance",
+      "20260930000628_bounded_maintenance_schedule",
+      "20260930000829_atomic_community_publish",
+      "20260930001738_business_operations_foundation",
+      "20260930001746_safe_email_delivery",
+      "20260930001839_venue_plans_and_atomic_seat_holds"
+    ]
+  },
+  "workers": {
+    "zoi-feed-publish": 7,
+    "social-publish": 14,
+    "email-send": 13,
+    "email-unsubscribe": 1
+  },
+  "release_guards": {
+    "publishing_crons": "paused pending matching frontend verification",
+    "email_delivery": "not enabled; no real marketing messages sent",
+    "named_seating": "disabled pending production transaction verification"
+  },
+  "mobile": {
+    "android_apk": "https://expo.dev/artifacts/eas/YoBJQIVEIzHCfK8m6QGW2KH-gvYQtn4PymmsUDFq1LY.apk",
+    "ios_simulator_archive": "https://expo.dev/artifacts/eas/5SJDOKzRs7I1UydF9kzT3LvhbkIPhevMULgmnrmiLZc.tar.gz",
+    "binary_source_commit": "6e93a44",
+    "later_source_local_checks_only": [
+      "6224f5c",
+      "1bc2a4f",
+      "72e691d",
+      "2268f20"
+    ],
+    "physical_ios_distribution": "signing credentials not configured",
+    "observed_credit_usage": {
+      "included_credits_usd": 3,
+      "overage_usd": 0,
+      "basis": "observed EAS included usage changed1000 to1300cents across2successful builds; not a full platform invoice"
+    },
+    "new_cloud_builds": "paused until next reviewed batch"
+  },
+  "cost_controls": [
+    "Vercel skips operations/docs/tests/mobile/backend-only commits; unknown history builds conservatively",
+    "Native CI runs only for native source/shared dependency changes or explicit full validation",
+    "Shared CI replaces duplicate Supabase push/PR verification",
+    "Run exact mobile install toolchain and tests before cloud builds",
+    "Inspect failed build before any retry; never duplicate active jobs",
+    "Use local PostgreSQL and bounded production rollback checks for backend verification"
+  ]
+}
