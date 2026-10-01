@@ -1,7 +1,7 @@
-import {panelContent,sourceCalendarFile,currentSourceDates} from './panels.mjs?v=20260930-scope';
+import {panelContent,sourceCalendarFile,currentSourceDates} from './panels.mjs?v=20261001-official-contact';
 import {PARISH,MINISTRIES,DESIGNS} from './data.mjs';
-import {renderChurch,ministryCards} from './render.mjs';
-import {filterMinistries,visitPlan,visitCalendar,calendarRows,esc} from './model.mjs';
+import {renderChurch,ministryCards} from './render.mjs?v=20261001-official-contact';
+import {filterMinistries,visitPlan,visitCalendar,calendarRows,esc} from './model.mjs?v=20261001-official-contact';
 const mounts=new WeakMap();
 export function mountChurch(root,PARISH,template='atelier',design={},options={}){
 mounts.get(root)?.abort();const controller=new AbortController();mounts.set(root,controller);
