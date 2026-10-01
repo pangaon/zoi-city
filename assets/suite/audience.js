@@ -209,7 +209,7 @@
     function dispose(){if(disposed)return;disposed=true;loadEpoch++;clearTimeout(searchTimer);if(closeImport)closeImport();state.contacts=[];state.knownTags=[];state.q='';state.tag='';if(importState)importState.parsed=null;wrap.replaceChildren();global.removeEventListener('zoi:auth-change',authChanged);}
     function authChanged(){if(!active())dispose();}
     global.addEventListener('zoi:auth-change',authChanged);
-    function denied(e){return /not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission/.test(String(e&&e.message||e));}
+    function denied(e){return [401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e));}
     function fail(e){if(!active())return;if(denied(e)){canWrite=false;canConsent=false;state.contacts=[];state.knownTags=[];state.error='Your permissions changed. Refresh contacts to check your access.';if(closeImport)closeImport();q('form').replaceChildren();q('form').style.display='none';renderTable();permissions();}toast(e&&e.message||'Request could not be confirmed.','error');}
     injectStyles(document);
 

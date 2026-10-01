@@ -175,6 +175,29 @@
     root.innerHTML = '';
     root.appendChild(wrap);
 
+    var workspaceAtMount=ctx.ws, actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, ended=false;
+    function dispose(message){
+      if(ended)return;ended=true;
+      global.removeEventListener('zoi:auth-change',identityChanged);
+      global.removeEventListener('storage',identityChanged);
+      if(root.contains(wrap)){root.replaceChildren();if(message)root.textContent=message;}
+    }
+    function active(){
+      if(ended)return false;
+      if(ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount||!root.contains(wrap)){dispose();return false;}
+      return true;
+    }
+    function identityChanged(){active();}
+    global.addEventListener('zoi:auth-change',identityChanged);
+    global.addEventListener('storage',identityChanged);
+    function accessDenied(e){return [401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e));}
+    var originalToast=toast;toast=function(){if(active())originalToast.apply(null,arguments);};
+    var rawRpc=rpc;
+    if(rawRpc)rpc=async function(name,args,options){
+      if(!active())throw Error('Account or workspace changed.');
+      try{var value=await rawRpc(name,args,options);if(!active())throw Error('Account or workspace changed.');return value;}
+      catch(e){if(active()&&accessDenied(e))dispose('Your workspace access changed. Reopen Email to continue.');throw e;}
+    };
     function q(id) { return wrap.querySelector('[data-z="' + id + '"]'); }
 
     /* ---------- shell ---------- */
@@ -202,7 +225,7 @@
         '</div>';
 
       q('new').addEventListener('click', function () {
-        if (state.busy) return;
+        if (!active() || state.busy) return;
         state.selectedId = null;
         state.schedOpen = false;
         renderComposer();
@@ -245,7 +268,7 @@
             recips +
           '</div>';
         item.addEventListener('click', function () {
-          if (state.busy) return;
+          if (!active() || state.busy) return;
           state.selectedId = c.id;
           state.schedOpen = false;
           renderComposer();
@@ -422,7 +445,7 @@
     }
 
     async function withBusy(btn, fn) {
-      if (state.busy) return;
+      if (!active() || state.busy) return;
       state.busy = true;
       var controls = Array.from(wrap.querySelectorAll('button,input,textarea,select')).map(function (control) {
         var saved = { control: control, disabled: control.disabled };
@@ -538,6 +561,7 @@
 
     /* ---------- data ---------- */
     async function reload() {
+      if(!active())return;
       if (!rpc) { state.campaigns = []; state.loading = false; return; }
       try {
         var rows = await rpc('email_campaign_list', { p_workspace: ws }, { auth: 'prefer' });
@@ -550,6 +574,7 @@
           });
         } catch (summaryError) { /* Ledger is additive; drafts remain usable before deployment. */ }
       } catch (e) {
+        state.campaigns=[];if(!active())return;
         toast((e && e.message) ? e.message : 'Could not load campaigns.', 'error');
       }
       state.loading = false;
@@ -559,8 +584,8 @@
     renderShell();
     renderComposer();
     await reload();
-    renderList();
-    renderComposer();
+    if(active()){renderList();renderComposer();}
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */

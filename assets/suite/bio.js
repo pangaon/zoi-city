@@ -312,12 +312,32 @@
     var wrap = el(doc, 'div', 'zb-wrap');
     root.appendChild(wrap);
 
+    var workspaceAtMount=ctx.ws, actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, ended=false;
+    function dispose(message){
+      if(ended)return;ended=true;
+      global.removeEventListener('zoi:auth-change',identityChanged);
+      global.removeEventListener('storage',identityChanged);
+      if(root.contains(wrap)){root.replaceChildren();if(message)root.textContent=message;}
+    }
+    function active(){
+      if(ended)return false;
+      if(ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount||!root.contains(wrap)){dispose();return false;}
+      return true;
+    }
+    function identityChanged(){active();}
+    global.addEventListener('zoi:auth-change',identityChanged);
+    global.addEventListener('storage',identityChanged);
+    function accessDenied(e){return [401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e));}
+    var originalToast=toast;toast=function(){if(active())originalToast.apply(null,arguments);};
     /* -------- data load -------- */
-    function safeRpc(fn, params, auth) {
+    async function safeRpc(fn, params, auth) {
+      if(!active())throw Error('Account or workspace changed.');
       try {
-        if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('Profile service unavailable. Your draft was not changed.'));
-        return C.api.rpc(fn, params, { auth: auth || 'prefer' });
-      } catch (e) { return Promise.reject(e); }
+        if (!C.api || typeof C.api.rpc !== 'function') throw new Error('Profile service unavailable. Your draft was not changed.');
+        var value=await C.api.rpc(fn, params, { auth: auth || 'prefer' });
+        if(!active())throw Error('Account or workspace changed.');
+        return value;
+      } catch(e){if(active()&&accessDenied(e))dispose('Your workspace access changed. Reopen Link in bio to continue.');throw e;}
     }
 
     async function loadStatus() {
@@ -640,6 +660,7 @@
 
     /* -------- save -------- */
     async function doSave() {
+      if(!active())return;
       if (!canSave()) {
         if (!state.title.trim()) toast('Add a title for your bio page.');
         else if (!slugValid()) toast('Pick a valid handle first (3–40 chars, a–z 0–9 -).');
@@ -1056,6 +1077,7 @@
 
     /* -------- go -------- */
     await loadStatus();
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */

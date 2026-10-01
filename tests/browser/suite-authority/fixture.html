@@ -1,0 +1,35 @@
+<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Controlled suite authorization journeys</title></head><body><main id="root" class="mount"></main><p role="status" id="status"></p><script src="/assets/suite/audience.js"></script><script src="/assets/suite/email.js"></script><script src="/assets/suite/bio.js"></script><script src="/assets/suite/settings.js"></script><script>
+const ws='22222222-2222-4222-8222-222222222222',id='33333333-3333-4333-8333-333333333333';
+window.qa={actor:'11111111-1111-4111-8111-111111111111',role:'owner',session:true,mode:'ok',writes:[],rows:[],campaigns:[],bio:{slug:'qa-business',title:'Private bio draft',links:[],published:false},name:'Workspace',profile:{business_name:'Business',about:'Notes',tone:'Warm',languages:'English',sample:'Sample'},version:id,voiceVersion:'44444444-4444-4444-8444-444444444444',receipts:{}};
+const error=m=>Object.assign(Error(m),{code:'42501',status:403});
+qa.ctx={ws,role:'owner',avail:{email:true,ai:false},toast:t=>document.querySelector('#status').textContent=t,C:{auth:{load:()=>({user_id:qa.actor})},api:{rpc:async(n,a)=>{
+if(!qa.session)throw error('suite_session_unavailable');
+if(a.p_workspace!==ws)throw error('no_access_to_workspace');
+const reads=['audience_access','audience_list','email_campaign_list','email_delivery_status_list','bio_status','workspace_settings_get','workspace_team_get'];
+if(!reads.includes(n)&&!['owner','admin','editor'].includes(qa.role))throw error('insufficient_permission');
+if(n.startsWith('workspace_settings_')&&n!=='workspace_settings_get'&&a.p_section==='identity'&&!['owner','admin'].includes(qa.role))throw error('insufficient_permission');
+if(qa.mode==='held'&&reads.includes(n))return new Promise(r=>qa.release=()=>r(n==='bio_status'?structuredClone(qa.bio):structuredClone(qa.campaigns)));
+if(n==='audience_access')return{ok:true,workspace_id:ws,role:qa.role,can_write:['owner','admin','editor'].includes(qa.role),can_record_consent:['owner','admin','editor'].includes(qa.role)};
+if(n==='audience_list')return structuredClone(qa.rows);
+if(n==='email_campaign_list')return structuredClone(qa.campaigns);
+if(n==='email_delivery_status_list')return[];
+if(n==='bio_status')return structuredClone(qa.bio);
+if(n==='workspace_team_get')return{ok:true,workspace_id:ws,actor_profile_id:qa.actor,role:qa.role,members:[]};
+const snapshot=()=>({ok:true,workspace_id:ws,role:qa.role,identity:{name:qa.name,version:qa.version},voice:{...qa.profile,version:qa.voiceVersion}});
+if(n==='workspace_settings_get')return snapshot();
+if(n==='workspace_settings_request')return qa.receipts[a.p_request]||{ok:false,error:'request_unknown',workspace_id:ws,request_id:a.p_request,section:a.p_section};
+qa.writes.push({name:n,args:structuredClone(a)});
+let result;
+if(n==='audience_upsert'){qa.rows=[{id,name:a.p_name,email:a.p_email,tags:a.p_tags}];result=id;}
+else if(n==='audience_delete'){qa.rows=[];result=true;}
+else if(n==='email_campaign_save'){const row={id,subject:a.p_subject,body:a.p_body,preheader:a.p_preheader,from_name:a.p_from_name,audience_tag:a.p_audience_tag,status:'draft'};qa.campaigns=[row];result=id;}
+else if(n==='email_campaign_schedule'){qa.campaigns[0].status='scheduled';qa.campaigns[0].scheduled_at=a.p_at;result=true;}
+else if(n==='email_campaign_unschedule'){qa.campaigns[0].status='draft';qa.campaigns[0].scheduled_at=null;result=true;}
+else if(n==='bio_save'){qa.bio={slug:a.p_slug,title:a.p_title,tagline:a.p_tagline,theme:a.p_theme,links:a.p_links,published:a.p_published};result={ok:true,slug:a.p_slug,url:'https://www.zoi.city/b/'+a.p_slug};}
+else if(n==='workspace_settings_save'){if(qa.receipts[a.p_request])return qa.receipts[a.p_request];if(a.p_section==='identity'){qa.name=a.p_values.name;qa.version=crypto.randomUUID();}else{qa.profile=a.p_values;qa.voiceVersion=crypto.randomUUID();}result={ok:true,workspace_id:ws,request_id:a.p_request,section:a.p_section,version:snapshot()[a.p_section].version,value:snapshot()[a.p_section]};qa.receipts[a.p_request]=result;}
+else throw Error('Unexpected fixture RPC '+n);
+if(qa.mode==='held-write')return new Promise(r=>qa.release=()=>r(result));
+return result;
+}}}};
+qa.mount=async()=>{qa.handle?.destroy?.();qa.handle=await ZoiSuite.modules.find(m=>m.id===new URLSearchParams(location.search).get('module')).mount(document.querySelector('#root'),qa.ctx);};qa.mount();
+</script></body></html>

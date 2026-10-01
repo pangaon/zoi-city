@@ -1504,7 +1504,7 @@
   /* ---------- go ---------- */
   (async function () {
     var initial = readUrl();
-    import('/assets/discovery/autocomplete.mjs?v=20261001-map-search').then(function(module){
+    import('/assets/discovery/autocomplete.mjs?v=20261001-selected-types').then(function(module){
       mapAutocomplete=module.attachAutocomplete($('q'),{mountAfter:$('mapsearch'),id:'map-suggestions',suggestionLabel:'Select a place on the map',filters:function(){var area=activeMapLocality(),types=TYPES.filter(function(t){return on[t.k];});return{city:area.city,country:area.country,type:types.length===1?types[0].k:null,types:types.map(function(t){return t.k;}),strict:true};},onSubmit:showMatches,onChoose:function(row){
         $('q').blur();if(!ready){pendingAutocompleteSlug=row.slug;status('Opening '+row.name+' when the map is ready…',true);return;}
         var hit=ALL.find(function(p){return p.s===row.slug;});if(hit)choose(hit);else openUnmappedPlace(row.slug);

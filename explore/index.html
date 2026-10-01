@@ -460,7 +460,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   }).catch(()=>{});
   const q=document.getElementById('q');
   q.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(()=>{ ST.q=q.value.trim(); runSearch(true); },350); });
-  import('/assets/discovery/autocomplete.mjs?v=20260930-search-recovery').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation()}),onSubmit:submitExplore});}).catch(()=>{});
+  import('/assets/discovery/autocomplete.mjs?v=20261001-selected-types').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation()}),onSubmit:submitExplore});}).catch(()=>{});
   q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!exploreAutocomplete){clearTimeout(debounceT);ST.q=q.value.trim();runSearch(true);}});
   const cs=document.getElementById('country-sel');
   if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; ST.scope=ST.country?'':'global'; document.getElementById('city-sel').value=''; runSearch(true); });

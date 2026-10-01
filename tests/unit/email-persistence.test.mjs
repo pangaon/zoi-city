@@ -32,11 +32,12 @@ test('email mutation guard prevents overlapping requests and locks editable cont
   const start = source.indexOf('    async function withBusy(');
   const end = source.indexOf('\n    function requireReceipt(', start);
   const state = { busy: false };
+  let current = true;
   const input = { disabled: false };
   const permanentlyDisabled = { disabled: true };
   const button = { textContent: 'Save' };
   const fn = vm.runInNewContext('(' + source.slice(start, end).trim() + ')', {
-    state, wrap: { querySelectorAll: () => [input, permanentlyDisabled], setAttribute() {}, removeAttribute() {} }, toast() {}
+    state, active: () => current, wrap: { querySelectorAll: () => [input, permanentlyDisabled], setAttribute() {}, removeAttribute() {} }, toast() {}
   });
   let release;
   let calls = 0;
@@ -49,6 +50,10 @@ test('email mutation guard prevents overlapping requests and locks editable cont
   assert.equal(input.disabled, false);
   assert.equal(permanentlyDisabled.disabled, true);
   assert.equal(button.textContent, 'Save');
+  current = false;
+  await fn(button, () => { calls++; });
+  assert.equal(calls, 1, 'inactive account cannot start another mutation');
+  assert.equal(input.disabled, false);
 });
 test('email scheduling is blocked when the actual provider is unavailable', () => {
   const start = source.indexOf('    function doSchedule()');
