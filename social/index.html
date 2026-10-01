@@ -140,7 +140,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 <script src="/assets/suite/_vertical-ui.js?v=20260930c"></script>
 <script src="/assets/suite/bizpage.js?v=20260930d"></script>
 <script src="/assets/suite/connect.js?v=20260930c"></script>
-<script src="/assets/suite/settings.js"></script>
+<script src="/assets/suite/settings.js?v=20261001-workspace-identity"></script>
 <script src="/assets/suite/ai.js"></script>
 
 <script>
@@ -413,7 +413,15 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       STATE.navigation=res[2].navigation;STATE.avail = res[2].cap.resolveCapabilities(res[0],res[2].provider);
       STATE.channels = Array.isArray(res[1])?res[1]:[];
       STATE.sessionIdentity=res[2].sessionIdentity;STATE.actor=STATE.sessionIdentity(C);
-      STATE.ctx = { C:C, ws:STATE.ws,managedNavigation:true, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, role:STATE.role, toast:toast, navigate:selectModule };
+      STATE.ctx = { C:C, ws:STATE.ws,managedNavigation:true, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, role:STATE.role, toast:toast, navigate:selectModule, onWorkspaceRenamed:function(change){
+        if(generation!==STATE.epoch||requestedWs!==STATE.ws||STATE.actor!==STATE.sessionIdentity(C)||!change||change.workspaceId!==requestedWs||typeof change.name!=='string'||!change.name.trim())return;
+        var workspace=STATE.workspaces.find(function(item){return item.id===requestedWs;});if(!workspace)return;
+        var oldName=STATE.wsName,name=change.name.trim();workspace.name=name;STATE.wsName=name;
+        var label=document.querySelector('#wsbtn .wsname'),avatar=document.querySelector('#wsbtn .wsav'),context=document.getElementById('workspace-context-name');
+        if(label)label.textContent=name;if(avatar)avatar.textContent=name.charAt(0).toUpperCase();if(context)context.textContent=name;
+        document.querySelectorAll('.wsitem').forEach(function(item){if(item.dataset.ws===requestedWs){item.dataset.name=name;item.innerHTML='<span class="wsav" style="width:22px;height:22px;font-size:12px">'+esc(name.charAt(0).toUpperCase())+'</span>'+esc(name);}});
+        var suffix=' · '+oldName+' · Zoi';if(document.title.endsWith(suffix))document.title=document.title.slice(0,-suffix.length)+' · '+name+' · Zoi';
+      } };
       renderShell();
     }).catch(function(){
       if(generation!==STATE.epoch)return;

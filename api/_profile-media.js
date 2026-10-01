@@ -16,7 +16,7 @@ export function interfaceArtwork(value){
  const url=machineImage(value);if(!url)return true;
  let leaf=new URL(url).pathname||'';
  try{leaf=decodeURIComponent(leaf);}catch{} leaf=leaf.toLowerCase();
- return /(?:^|[/\s_.-])(?:logos?|advert(?:isement)?|anzeige|flyer|poster|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_]rating|app[-_]?store|google[-_]?play|payment|placeholder)(?:[/\s_.-]|$)/i.test(leaf)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(leaf.split('/').pop());
+ return /(?:^|[/\s_.+-])(?:(?:web[-_]?)?logos?|advert(?:isement)?|anzeige|flyer|poster|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_]rating|app[-_]?store|google[-_]?play|payment|placeholder)(?:[/\s_.+-]|$)/i.test(leaf)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(leaf.split('/').pop());
 }
 export function profileMedia(entity,profile){
  const raw=entity?.profile||{},derived=raw._enrich||{},own=key=>Object.hasOwn(raw,key);

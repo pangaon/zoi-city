@@ -112,9 +112,23 @@
     };
     var toast = ctx.toast || (C.toast) || function () {};
 
+    root.__zoiSettingsDestroy?.();
     root.innerHTML = '';
     var wrap = el('div', 'zs-wrap');
     root.appendChild(wrap);
+    var actor = C.auth.load?.()?.user_id, workspace = ctx.ws, ended = false, role = null;
+    var aiLoaded = false, nameBusy = false, aiBusy = false, namePending = null, aiPending = null;
+    function active() { return !ended && root.isConnected && root.contains(wrap) && !!actor && C.auth.load?.()?.user_id === actor && ctx.ws === workspace; }
+    function destroy() { if (ended) return; ended = true; clearInterval(timer); observer.disconnect(); ['storage','focus','zoi:auth-change','zoi:authchange'].forEach(function(event){ global.removeEventListener(event,check); }); namePending = aiPending = null; wrap.replaceChildren(); }
+    function check() { if (active()) return; destroy(); if (root.contains(wrap)) wrap.textContent = 'Your account or workspace changed. Reopen Settings to continue.'; }
+    var timer = setInterval(check, 500), observer = new MutationObserver(check);
+    observer.observe(document.body, {childList:true,subtree:true});
+    ['storage','focus','zoi:auth-change','zoi:authchange'].forEach(function(event){ global.addEventListener(event,check); });
+    root.__zoiSettingsDestroy = destroy;
+    function denied(e) { return [401,403].includes(Number(e?.status || e?.statusCode)) || /42501|not_authorized|insufficient_permission/.test(String(e?.code || '')+' '+String(e?.message || '')); }
+    async function rpc(name,args) { if (!active()) throw Error('Workspace changed.'); try { var value = await C.api.rpc(name,args,{auth:'require'}); if (!active()) throw Error('Workspace changed.'); return value; } catch(e) { if (active() && denied(e)) { destroy(); wrap.textContent = 'Your access to these private settings changed. Reopen Settings after your access is restored.'; } throw e; } }
+    async function membership() { var me = await rpc('zoi_me',{}); if (!me?.authenticated || !Array.isArray(me.workspaces)) throw Error('Workspace identity could not be confirmed.'); var found = me.workspaces.find(function(w){return w.id===workspace;}); if (!found) { var error=Object.assign(Error('not_authorized'),{status:403}); destroy(); wrap.textContent='You no longer have access to this workspace.'; throw error; } return found; }
+
 
     wrap.appendChild(el('div', 'zs-title', 'Settings'));
     wrap.appendChild(el('p', 'zs-sub',
@@ -130,7 +144,7 @@
     var wsInput = el('input');
     wsInput.type = 'text';
     wsInput.placeholder = 'e.g. BuyGreek Shop';
-    wsInput.maxLength = 120;
+    wsInput.maxLength = 120; wsInput.setAttribute('aria-label','Workspace name');
     wsField.appendChild(wsInput);
     wsRow.appendChild(wsField);
     var wsBtn = el('button', 'zs-btn', 'Save name');
@@ -154,6 +168,7 @@
     var fBiz = el('div', 'zs-field');
     fBiz.appendChild(el('label', null, 'Business name (as the AI should say it)'));
     var inBiz = el('input'); inBiz.type = 'text'; inBiz.maxLength = 120; inBiz.placeholder = 'BuyGreek Shop';
+    inBiz.setAttribute('aria-label','AI business name');
     fBiz.appendChild(inBiz);
     aiBody.appendChild(fBiz);
 
@@ -260,37 +275,40 @@
       setTimeout(function () { node.classList.remove('on'); }, 2200);
     }
 
-    async function saveName() {
-      var name = (wsInput.value || '').trim();
-      if (!name) { toast('Enter a workspace name.'); wsInput.focus(); return; }
-      wsBtn.disabled = true; wsBtn.textContent = 'Saving…';
-      try {
-        await C.api.rpc('workspace_rename', { p_workspace: ctx.ws, p_name: name }, { auth: 'require' });
-        flashSaved(wsSaved);
-        toast('Workspace renamed.');
-      } catch (e) {
-        toast('Could not rename: ' + (e && e.message ? e.message : 'unknown error'));
-      }
-      wsBtn.disabled = false; wsBtn.textContent = 'Save name';
+    function controls() {
+      if (!active()) return;
+      wsBtn.disabled = nameBusy || !['owner','admin'].includes(role); wsInput.disabled = nameBusy || !!namePending || !['owner','admin'].includes(role);
+      aiBtn.disabled = !aiLoaded || aiBusy || !['owner','admin','editor'].includes(role);
+      [inBiz,inAbout,selTone,inLang,inSample].forEach(function(input){input.disabled=!aiLoaded || aiBusy || !!aiPending || !['owner','admin','editor'].includes(role);});
+      wsBtn.textContent = nameBusy ? 'Checking…' : namePending ? 'Check saved name' : 'Save name';
+      aiBtn.textContent = aiBusy ? 'Checking…' : aiPending ? 'Check saved AI voice' : 'Save AI voice';
     }
-
-    async function saveAi() {
-      aiBtn.disabled = true; aiBtn.textContent = 'Saving…';
+    async function saveName() {
+      if (nameBusy || !active() || !['owner','admin'].includes(role)) return;
+      var name = namePending || (wsInput.value || '').trim();
+      if (!name) { toast('Enter a workspace name.'); wsInput.focus(); return; }
+      var first = !namePending; namePending = name; nameBusy = true; controls();
       try {
-        await C.api.rpc('ai_profile_save', {
-          p_workspace: ctx.ws,
-          p_business: (inBiz.value || '').trim(),
-          p_about: (inAbout.value || '').trim(),
-          p_tone: selTone.value,
-          p_languages: (inLang.value || '').trim(),
-          p_sample: (inSample.value || '').trim()
-        }, { auth: 'require' });
-        flashSaved(aiSaved);
-        toast('AI voice saved.');
-      } catch (e) {
-        toast('Could not save AI voice: ' + (e && e.message ? e.message : 'unknown error'));
-      }
-      aiBtn.disabled = false; aiBtn.textContent = 'Save AI voice';
+        if (first) { try { var renamed=await rpc('workspace_rename',{p_workspace:workspace,p_name:name}); if (renamed === false) { namePending=null; toast('The workspace was not renamed. Refresh settings before trying again.'); return; } } catch(e) { if (!active()) return; if (/invalid_workspace_name|name_required/i.test(String(e?.message || ''))) { namePending=null; toast('Check the workspace name and try again.'); return; } } }
+        var found = await membership();
+        if (found.name !== name) throw Error('The requested name is not confirmed. Check again before editing.');
+        namePending=null; wsInput.value=found.name; role=found.role;
+        ctx.onWorkspaceRenamed?.({workspaceId:workspace,name:found.name});
+        flashSaved(wsSaved); toast('Workspace name confirmed.');
+      } catch(e) { if (active()) toast('Name not confirmed: '+e.message); }
+      finally { nameBusy=false; controls(); }
+    }
+    function aiValues() { return {business_name:inBiz.value.trim(),about:inAbout.value.trim(),tone:selTone.value,languages:inLang.value.trim(),sample:inSample.value.trim()}; }
+    async function saveAi() {
+      if (!aiLoaded || aiBusy || !active() || !['owner','admin','editor'].includes(role)) return;
+      var first=!aiPending; aiPending=aiPending || aiValues(); aiBusy=true; controls();
+      try {
+        if (first) { try { await rpc('ai_profile_save',{p_workspace:workspace,p_business:aiPending.business_name,p_about:aiPending.about,p_tone:aiPending.tone,p_languages:aiPending.languages,p_sample:aiPending.sample}); } catch(e) { if (!active()) return; } }
+        var actual=await rpc('ai_profile_get',{p_workspace:workspace});
+        if (!actual || !Object.keys(aiPending).every(function(key){return actual[key]===aiPending[key];})) throw Error('The requested voice is not confirmed. Check again before editing.');
+        aiPending=null; flashSaved(aiSaved); toast('AI voice confirmed.');
+      } catch(e) { if (active()) toast('AI voice not confirmed: '+e.message); }
+      finally { aiBusy=false; controls(); }
     }
 
     wsBtn.addEventListener('click', saveName);
@@ -311,20 +329,22 @@
       selTone.value = val;
     }
 
+    var reloadBtn=el('button','zs-btn zs-ghost','Retry loading settings'); reloadBtn.type='button'; reloadBtn.hidden=true; wrap.appendChild(reloadBtn);
+    reloadBtn.onclick=function(){ if(active()) { destroy(); mountSettings(root,ctx); } };
+    controls();
     try {
-      var prof = await C.api.rpc('ai_profile_get', { p_workspace: ctx.ws }, { auth: 'prefer' });
-      if (prof) {
-        if (prof.business_name) { inBiz.value = prof.business_name; wsInput.value = prof.business_name; }
-        if (prof.about) inAbout.value = prof.about;
-        setTone(prof.tone);
-        if (prof.languages) inLang.value = prof.languages;
-        if (prof.sample) inSample.value = prof.sample;
+      var found = await membership(); role=found.role; wsInput.value=found.name || '';
+      var prof = await rpc('ai_profile_get', {p_workspace:workspace});
+      if (prof == null) prof = {};
+      if (typeof prof !== 'object' || Array.isArray(prof)) throw Error('Invalid AI profile response.');
+      {
+        aiLoaded=true; inBiz.value=prof.business_name || ''; inAbout.value=prof.about || '';
+        setTone(prof.tone); inLang.value=prof.languages || ''; inSample.value=prof.sample || '';
       }
-    } catch (e) {
-      toast('Could not load AI profile: ' + (e && e.message ? e.message : 'unknown error'));
-    }
-    aiLoad.style.display = 'none';
-    aiBody.style.display = '';
+    } catch(e) { if (active()) { toast('Could not load settings: '+e.message); reloadBtn.hidden=false; } }
+    if (active()) { aiLoad.style.display='none'; aiBody.style.display=''; controls(); }
+    return {destroy:destroy};
+
   }
 
   /* ---------- register ---------- */

@@ -10,7 +10,7 @@ export function auxiliaryImage(value,hint=''){
   // Visually reviewed official share image is a screenshot of the website UI.
   if(['alexiourealtyny.com','www.alexiourealtyny.com'].includes(host)&&path==='/wp-content/uploads/2024/10/fb.jpg')return true;
   // Translation controls are interface assets, not artist or venue photographs.
-  if(/\/wp-content\/plugins\/(?:qtranslate(?:-x)?|polylang|sitepress-multilingual-cms)\/(?:[^/]+\/)*flags?\//i.test(path))return true;
+  if(/\/wp-content\/plugins\/(?:qtranslate(?:-x)?|polylang|wpglobus|sitepress-multilingual-cms)\/(?:[^/]+\/)*flags?\//i.test(path))return true;
   if(['agfg.com.au','www.agfg.com.au'].includes(host)&&/^\/images\/layout\/tb-(?:facebook|instagram)\.png$/i.test(path))return true;
   // Reviewed 27×24 full/half rating stars from the published restaurant source.
   // Exact source path avoids excluding a Star Hotel's genuine photography.

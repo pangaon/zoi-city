@@ -78,3 +78,23 @@ test('substantive hydrated business page with contact CAPTCHA remains available 
  const report=await renderOfficialSource({listing_id:'id',website:url},{session:{stats:{bytes:0},sourceFetch:async()=>({status:200,text:'<title>Actual Restaurant</title><body>Loading restaurant</body>',url})},launch:async()=>({newContext:async()=>context,close:async()=>{}})});
  assert.equal(report.profile.phone,'+442012345678');assert.equal(report.render.title,'Actual Restaurant');assert.equal(report.source.source_state,'html_available');assert.equal(report.review_required,true);
 });
+
+test('partial rendered refresh preserves prior photos and networks while replacing a changed network',async()=>{
+ const {automaticRenderedPayload}=await import('../../scripts/enrichment/render-queue.mjs');
+ const row={listing_id:'id',slug:'example',website:'https://restaurant.org/',name:'Example Restaurant',lease_id:'lease',source_fingerprint:'fp',existing_enrich:{photo_urls:['https://restaurant.org/old.jpg','https://restaurant.org/shared.jpg'],social:{facebook:'https://facebook.com/old',instagram:'https://instagram.com/retained'},phone:'111',provenance:{phone:'prior-source'}}};
+ const report={listing_id:'id',website:row.website,source_fingerprint:'fp',source:{http_status:200,sha256:'s'},render:{title:row.name,url:row.website,sha256:'r'},profile:{photo_urls:['https://restaurant.org/new.jpg','https://restaurant.org/shared.jpg'],social:{facebook:'https://facebook.com/current',instagram:null},phone:'222'}};
+ const before=JSON.stringify(row),result=automaticRenderedPayload(row,report,'hash');
+ assert.deepEqual(result.profile.photo_urls,['https://restaurant.org/new.jpg','https://restaurant.org/shared.jpg','https://restaurant.org/old.jpg']);
+ assert.deepEqual(result.profile.social,{facebook:'https://facebook.com/current',instagram:'https://instagram.com/retained'});assert.equal(JSON.stringify(row),before);
+ for(const empty of[{},null,undefined]){const p=automaticRenderedPayload(row,{...report,profile:{phone:'222',social:empty,photo_urls:[]}},'hash').profile;assert.deepEqual(p.social,row.existing_enrich.social);assert.deepEqual(p.photo_urls,row.existing_enrich.photo_urls);}
+ assert.equal(automaticRenderedPayload({...row,owner_managed:true},report,'hash').profile.last_error,'owner_managed_render_review');
+ assert.throws(()=>automaticRenderedPayload(row,{...report,source_fingerprint:'changed'},'hash'),/fingerprint_mismatch/);
+});
+test('rendered contact conflict enters preservation review; resolved contact clears only its stale conflict marker',async()=>{
+ const {automaticRenderedPayload}=await import('../../scripts/enrichment/render-queue.mjs');
+ const row={listing_id:'id',slug:'example',website:'https://restaurant.org/',name:'Example Restaurant',lease_id:'lease',source_fingerprint:'fp',existing_enrich:{email:'old@restaurant.org',email_conflict:{structured:'old@restaurant.org',linked:['other@restaurant.org']},phone:'111'}};
+ const report={listing_id:'id',website:row.website,source_fingerprint:'fp',source:{http_status:200,sha256:'s'},render:{title:row.name,url:row.website,sha256:'r'},profile:{phone:'222',email:null,email_conflict:{structured:'a@restaurant.org',linked:['b@restaurant.org'],source_url:row.website}}};
+ const p=automaticRenderedPayload(row,report,'hash').profile;assert.equal(p.last_error,'rendered_source_email_review');assert.equal(p.crawl_status,'error');assert(!Object.hasOwn(p,'email'));
+ const absent=automaticRenderedPayload(row,{...report,profile:{phone:'222',email:null,email_conflict:null}},'hash').profile;assert.equal(absent.email,row.existing_enrich.email);assert.deepEqual(absent.email_conflict,row.existing_enrich.email_conflict);
+ const resolved=automaticRenderedPayload(row,{...report,profile:{phone:'222',email:'resolved@restaurant.org',email_conflict:null}},'hash').profile;assert.equal(resolved.email,'resolved@restaurant.org');assert.equal(resolved.email_conflict,null);
+});

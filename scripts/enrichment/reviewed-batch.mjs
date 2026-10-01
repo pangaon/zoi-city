@@ -40,12 +40,19 @@ function reviewedSourceHTML(report,review,lease){
   verified.set(image.sha256,image);
  }
  if([...approved].some(hash=>!verified.has(hash)))throw Error('source_image_review_mismatch');
- const allowed=new Set(['description','tagline','phone','email','social','site_lang','photo_urls','photo_url','hero_url']);
+ const allowed=new Set(['description','tagline','phone','email','email_conflict','social','site_lang','photo_urls','photo_url','hero_url']);
  for(const key of Object.keys(report.profile))if(!allowed.has(key))throw Error('unapproved_source_html_field');
+ const conflict=report.profile.email_conflict;
+ const email=value=>typeof value==='string'&&/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(value);
+ if(conflict!==undefined&&conflict!==null){
+  if(!object(conflict)||Object.keys(conflict).some(key=>!['structured','linked','source_url'].includes(key))||conflict.source_url!==source.url||report.profile.email!==null||!(conflict.structured===null||email(conflict.structured))||!Array.isArray(conflict.linked)||!conflict.linked.length||conflict.linked.length>100||!conflict.linked.every(email)||new Set([...(conflict.structured?[conflict.structured]:[]),...conflict.linked].map(value=>value.toLowerCase())).size<2)throw Error('source_email_conflict_invalid');
+ }
  const overrides=review.approved_fields||{};
  for(const key of Object.keys(overrides))if(!['description','tagline'].includes(key)||typeof overrides[key]!=='string'||!overrides[key].trim())throw Error('unapproved_review_field');
  const urls=new Set([...approved].map(hash=>verified.get(hash).url));
- const fields=Object.fromEntries(Object.entries({...report.profile,...overrides}).filter(([key,value])=>!['photo_urls','photo_url','hero_url'].includes(key)&&value!==null&&value!==''&&(!Array.isArray(value)||value.length)&&(!object(value)||Object.keys(value).length)));
+ const fields=Object.fromEntries(Object.entries({...report.profile,...overrides}).filter(([key,value])=>!['photo_urls','photo_url','hero_url'].includes(key)&&value!==undefined&&value!==null&&value!==''&&(!Array.isArray(value)||value.length)&&(!object(value)||Object.keys(value).length)));
+ if(conflict){fields.email=null;fields.email_conflict=conflict;}
+ else if(conflict===null&&email(fields.email))fields.email_conflict=null;
  const photos=(report.profile.photo_urls||[]).filter(value=>urls.has(value));
  if(!photos.length&&!fields.phone&&!fields.email&&String(fields.description||'').trim().length<40)throw Error('source_html_no_useful_fields');
  const {lease:oldLease,blocked,last_error,status,crawl_status,checked_at,last_attempt_at,source_url,provenance:oldProvenance,...previous}=existing;

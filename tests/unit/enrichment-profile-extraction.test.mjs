@@ -10,3 +10,20 @@ test('aggregator subdomains do not gain website branding through new image extra
 
 test('actual worker includes source-attributed structured menus without overwriting unrelated fields',()=>{const r=extract('<script type="application/ld+json">{"@type":"Restaurant","hasMenu":{"@type":"Menu","hasMenuItem":{"@type":"MenuItem","name":"Published dish","offers":{"price":14,"priceCurrency":"EUR"}}}}</script>','https://restaurant.example.org/menu');assert.equal(r.profile.menu[0].items[0].name,'Published dish');assert.equal(r.profile.menu[0].items[0].price,'14 EUR');assert.equal(r.profile.menu_source,'https://restaurant.example.org/menu');assert.equal(r.provenance.menu,'jsonld-menu:https://restaurant.example.org/menu');});
 test('actual worker recognizes German menu links and labels structured HTML provenance accurately',()=>{const r=extract('<a href="/speisen-getraenke/">Speisen & Getränke</a><div class="menuProductNameHolder">Gyro</div><span class="menuProductPriceHolder">&pound;7.99</span><span class="menuAddToBasket" data-id="1" data-name="Gyro" data-price="7.99"></span>','https://restaurant.example.org/menu');assert.equal(r.profile.menu_url,'https://restaurant.example.org/speisen-getraenke/');assert.equal(r.profile.menu[0].items[0].price,'£7.99');assert.equal(r.provenance.menu,'html-product-menu:https://restaurant.example.org/menu');});
+
+test('metadata keeps embedded opposite quotes, attribute order and encoded punctuation',()=>{
+ for(const meta of [`<meta property="og:site_name" content="Poppi's Cafe">`,`<meta CONTENT = 'Poppi&#39;s Cafe' PROPERTY = 'og:site_name'>`])assert.equal(extract(meta,'https://bistro.test/').profile.tagline,"Poppi's Cafe");
+ assert.equal(extract(`<meta name='description' content='A "Greek" kitchen > ordinary dining'>`,'https://bistro.test/').profile.description,'A "Greek" kitchen > ordinary dining');
+});
+const emailDoc=email=>`<script type="application/ld+json">${JSON.stringify({'@type':'Restaurant',email})}</script>`;
+test('conflicting source email remains unset with exact review provenance, never first-wins',()=>{
+ const r=extract(emailDoc('old@bistro.test')+'<a href="mailto:hello@bistro.test">Email us</a>','https://bistro.test/contact');
+ assert.equal(r.profile.email,null);assert.deepEqual(r.profile.email_conflict,{structured:'old@bistro.test',linked:['hello@bistro.test'],source_url:'https://bistro.test/contact'});assert.equal(r.provenance.email,'conflicting-source-emails');assert.match(r.provenance.email_conflict,/bistro\.test\/contact$/);
+});
+test('multiple distinct links do not select a designer or unrelated contact',()=>{
+ const r=extract('<a href="mailto:hello@bistro.test">Contact</a><a href="mailto:designer@agency.test">Web design</a>','https://bistro.test/');assert.equal(r.profile.email,null);assert.equal(r.profile.email_conflict.linked.length,2);
+});
+test('matching duplicate contacts do not conflict; hidden/script/comment mailtos are not contacts',()=>{
+ const r=extract(emailDoc('Hello@bistro.test')+`<a href="mailto:hello@bistro.test?subject=Visit">Contact</a><a href='mailto:HELLO@bistro.test'>Email</a><script>const link='mailto:bad@script.test'</script><!-- <a href="mailto:bad@comment.test">Bad</a> --><div hidden><a href="mailto:bad@hidden.test">Hidden</a></div><a aria-hidden="true" href="mailto:bad@hidden.test">Hidden</a><div style="display:none"><a href="mailto:bad@style.test">Hidden</a></div>`,'https://bistro.test/');assert.equal(r.profile.email,'Hello@bistro.test');assert.equal(r.profile.email_conflict,null);
+ assert.equal(extract('<p>No contacts published</p>','https://bistro.test/').profile.email,undefined);
+});

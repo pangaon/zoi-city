@@ -70,6 +70,9 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  const extracted=extractRenderedSource(source.text,source.url),title=(source.text.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1]||'').replace(/<[^>]+>/g,' ').trim();
  if(extracted.aggregator||assessMachineSourceIdentity({website:row.website,finalUrl:source.url,name:row.name,title,description:extracted.profile.description}).outcome!=='continue')throw Error('source_identity_scope_review');
  const profile=Object.fromEntries(['description','tagline','phone','email','social','site_lang'].filter(k=>extracted.profile[k]!=null&&extracted.profile[k]!==''&&(!(typeof extracted.profile[k]==='object')||Object.keys(extracted.profile[k]).length)).map(k=>[k,extracted.profile[k]]));
+ // Preserve an explicit machine-contact quarantine; absence is not a clear.
+ if(extracted.profile.email_conflict){profile.email=null;profile.email_conflict=extracted.profile.email_conflict;}
+ else if(extracted.profile.email_conflict===null&&typeof profile.email==='string'&&/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(profile.email))profile.email_conflict=null;
  const candidates=[...new Set(extracted.profile.photo_urls||[])].slice(0,4),images=[],rejected=[];let decoder;
  imagePhase=true;
  try{for(const candidate of candidates){

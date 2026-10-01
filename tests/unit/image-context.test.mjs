@@ -72,3 +72,24 @@ test('all reviewed Tasty source candidates retain food and exclude decorative UI
  const e={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',slug:'tasty-greek-corner-coventry',name:'Tasty Greek Corner',entity_type:'business',category_slug:'greek-restaurants',website:base,profile:{_enrich:{...p,source_url:base}}};
  assert.deepEqual(restaurantHomeContent(e).photos,[food]);const html=renderRestaurantHome(e);for(const url of auxiliary)assert.equal(html.includes(url),false,url);assert.ok(html.includes(food));
 });
+
+test('stored plus-delimited and weblogo artwork cannot replace genuine machine photographs; owner choices remain authoritative',()=>{
+ const photos=['https://restaurant.org/Poppis-dining.jpg','https://restaurant.org/LogoVillage-terrace.jpg'];
+ for(const logo of ['https://cdn.example.org/Logo+best+quality+no+words.jpg?format=1500w','https://cdn.example.org/Poppis_weblogos-03.png?format=1500w']){
+  const p={hero_url:logo,photo_urls:[logo,...photos]},entity={profile:{_enrich:p}};
+  const result=profileMedia(entity,p);assert.equal(result.hero,photos[0]);assert.deepEqual(result.gallery,photos);assert.equal(result.logo,logo);
+  const sparse={hero_url:logo,photo_urls:[logo]};const empty=profileMedia({profile:{_enrich:sparse}},sparse);assert.equal(empty.hero,null);assert.deepEqual(empty.gallery,[]);
+  const selected=profileMedia({...entity,owner_content:{photo_url:logo,profile:{photos:[logo]}}},p);assert.equal(selected.hero,logo);assert.deepEqual(selected.gallery,[logo]);
+  const cleared=profileMedia({...entity,owner_content:{photo_url:null,profile:{photos:[]}}},p);assert.equal(cleared.hero,null);assert.deepEqual(cleared.gallery,[]);
+  assert.equal(p.hero_url,logo,'stored source evidence is not mutated');
+ }
+});
+test('restaurant and hospitality projections share stored-logo filtering for populated and sparse homes',async()=>{
+ const {restaurantHomeContent}=await import('../../api/_restaurant-home.js');const {hospitalityHomeContent}=await import('../../api/_hospitality-home.js');
+ const logo='https://cdn.example.org/Poppis_weblogos-03.png',photo='https://restaurant.org/dining.jpg';
+ const base={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',slug:'example',name:'Example',website:'https://restaurant.org/',profile:{_enrich:{hero_url:logo,photo_urls:[logo,photo]}}};
+ for(const [project,kind] of [[restaurantHomeContent,{entity_type:'business',category_slug:'greek-restaurants'}],[hospitalityHomeContent,{entity_type:'travel_place',category_slug:'hotels'}]]){
+  const populated=project({...base,...kind});assert.equal(populated.hero,photo);assert.deepEqual(populated.photos,[photo]);
+  const sparse=project({...base,...kind,profile:{_enrich:{hero_url:logo,photo_urls:[logo]}}});assert(!sparse.hero);assert.deepEqual(sparse.photos,[]);
+ }
+});

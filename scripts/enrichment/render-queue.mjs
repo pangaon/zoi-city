@@ -18,9 +18,17 @@ export function automaticRenderedPayload(row,report,hash){
  // Exact source-title identity is deliberately required for unattended imports.
  // Other names/agency/member pages retain their source data and get a repair report.
  if(norm(report.render?.title)!==norm(row.name))return refusal('rendered_source_identity_review');
- const fields=Object.fromEntries(Object.entries(report.profile||{}).filter(([,v])=>v!==null&&v!==''&&(!Array.isArray(v)||v.length)));
+ // Conflicting published contacts require review; never revive an old email by filtering a null.
+ if(report.profile?.email_conflict)return refusal('rendered_source_email_review');
+ const fields=Object.fromEntries(Object.entries(report.profile||{}).filter(([,v])=>v!==undefined&&v!==null&&v!==''&&(!Array.isArray(v)||v.length)));
  if(!fields.hero_url&&!fields.phone&&!fields.email&&!fields.menu_url)return refusal('rendered_source_no_useful_fields');
  const {lease,blocked,last_error,status,crawl_status,...previous}=row.existing_enrich||{};
+ const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
+ if(object(fields.social))fields.social={...(object(previous.social)?previous.social:{}),...Object.fromEntries(Object.entries(fields.social).filter(([,value])=>typeof value==='string'&&value.trim()))};
+ if(Array.isArray(fields.photo_urls))fields.photo_urls=[...new Set([...fields.photo_urls,...(Array.isArray(previous.photo_urls)?previous.photo_urls:[])])];
+ // The worker emits explicit null after resolving contact disagreement. Only a
+ // newly extracted email can clear this marker; absence leaves old evidence intact.
+ if(fields.email&&report.profile.email_conflict===null)fields.email_conflict=null;
  return{slug:row.slug,website:row.website,lease_id:row.lease_id,profile:{...previous,...fields,crawl_status:'ok',rendered_source_evidence:{sha256:hash,source_sha256:report.source.sha256,render_sha256:report.render.sha256,method:'exact_title_same_host_rendered_source',identity_verified:false,source_fingerprint:row.source_fingerprint}},provenance:{...(previous.provenance||{}),...Object.fromEntries(Object.keys(fields).map(k=>[k,'rendered-official-source:'+report.render.url]))}};
 }
 export async function runRenderQueue({directory='rendered-source-evidence',env=process.env,fetchImpl=fetch,render=renderOfficialSource,preflight=verifySourceBrowser,requestOverride=null,log=v=>console.log(JSON.stringify(v))}={}){

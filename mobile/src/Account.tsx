@@ -1,24 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { AsyncStorage, drafts, useAuth } from './Auth';
 import { validPostReceipt } from './drafts';
+import {accountWorkspaceLinks} from './accountWorkspaceLinks';
 const color = { navy: '#132F46', blue: '#116CBA', muted: '#60717E' };
 function Action({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) { return <Pressable accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.action, disabled && { opacity: 0.55 }]}><Text style={styles.actionText}>{label}</Text></Pressable>; }
 export function AccountPanel({onAuthenticationError}:{onAuthenticationError?:()=>void}={}) {
   const { client, session, booting, notice, setNotice, signOut, workspaceId: selected, setWorkspaceId: setSelected } = useAuth();
   const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [code, setCode] = useState('');
   const [mode, setMode] = useState<'password' | 'email'>('password'); const [sent, setSent] = useState(false); const [busy, setBusy] = useState(false); const [error, setError] = useState('');
+  const [workspaceActor,setWorkspaceActor]=useState('');
   const [workspaces, setWorkspaces] = useState<{ id: string; name: string; role?: string }[]>([]); const [workspaceError, setWorkspaceError] = useState(''); const [workspaceLoading, setWorkspaceLoading] = useState(false); const [reload, setReload] = useState(0);
   useEffect(() => {
-    let current = true; setWorkspaces([]); setSelected(''); setWorkspaceError('');
+    let current = true; setWorkspaceActor(''); setWorkspaces([]); setSelected(''); setWorkspaceError('');
     if (!session) return;
     setWorkspaceLoading(true);
     Promise.all([client.rpc('zoi_me', {}), AsyncStorage.getItem('zoi.workspace.' + session.user.id)]).then(([me, saved]) => {
       if (!me || !Array.isArray(me.workspaces)) throw new Error('Your workspace list could not be loaded.');
-      if (current) { setWorkspaces(me.workspaces); setSelected(me.workspaces.some((w: { id: string }) => w.id === saved) ? saved! : me.workspaces[0]?.id || ''); }
+      if (current) { setWorkspaceActor(session.user.id); setWorkspaces(me.workspaces); setSelected(me.workspaces.some((w: { id: string }) => w.id === saved) ? saved! : me.workspaces[0]?.id || ''); }
     }).catch(() => { if (current) setWorkspaceError('Your workspaces could not be loaded. Please try again.'); }).finally(() => { if (current) setWorkspaceLoading(false); });
     return () => { current = false; };
   }, [session?.user.id, reload, client]);
+  const [handoffError,setHandoffError]=useState('');
+  const links=workspaceActor===session?.user.id&&workspaces.some(workspace=>workspace.id===selected)?accountWorkspaceLinks(selected):null;
+  useEffect(()=>{setHandoffError('');},[session?.user.id,selected]);
+  const openWorkspace=(url:string)=>{if(!session||client.session?.user.id!==session.user.id||!links||![links.settings,links.home].includes(url))return;const actor=session.user.id;setHandoffError('');void Linking.openURL(url).catch(()=>{if(client.session?.user.id===actor)setHandoffError('The browser could not open. Try again, or visit www.zoi.city/social.');});};
   const submit = async () => {
     if (busy) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setError('Enter a valid email address.'); return; }
@@ -35,7 +41,7 @@ export function AccountPanel({onAuthenticationError}:{onAuthenticationError?:()=
   };
   return <View style={styles.panel}><Text style={styles.title}>Your Zoi account</Text>{notice ? <Text accessibilityRole="alert" style={styles.message}>{notice}</Text> : null}{booting ? <ActivityIndicator color={color.blue} /> : session ? <>
     <Text style={styles.body}>{session.user.email || 'Signed in'}</Text><Text style={styles.heading}>Your workspaces</Text>{workspaceLoading ? <ActivityIndicator color={color.blue} /> : workspaceError ? <><Text accessibilityRole="alert" style={styles.body}>{workspaceError}</Text><Action label="Reload workspaces" onPress={() => setReload(v => v + 1)} /></> : workspaces.length ? workspaces.map(workspace => <Pressable accessibilityRole="radio" aria-checked={selected === workspace.id} accessibilityState={{ checked: selected === workspace.id }} key={workspace.id} style={[styles.workspace, selected === workspace.id && styles.selected]} onPress={async () => { setSelected(workspace.id); try { await AsyncStorage.setItem('zoi.workspace.' + session.user.id, workspace.id); } catch { setWorkspaceError('Selection works for this session, but could not be saved.'); } }}><Text style={styles.heading}>{selected === workspace.id ? '● ' : '○ '}{workspace.name || 'Workspace'}</Text>{workspace.role ? <Text style={styles.body}>{workspace.role}</Text> : null}</Pressable>) : <Text style={styles.body}>No workspaces yet. Create your business workspace on the Zoi website.</Text>}
-    <Text style={styles.small}>Workspace selection is saved on this device and used by the tools below.</Text><Action label={busy ? 'Signing out…' : 'Sign out'} disabled={busy} onPress={async () => { setBusy(true); try { await signOut(); } finally { setBusy(false); } }} />
+    <Text style={styles.small}>Workspace selection is saved on this device and used by the tools below.</Text>{links&&!workspaceLoading&&!workspaceError?<View><Text style={styles.heading}>Your business on Zoi</Text><Text style={styles.body}>Open the selected workspace’s settings or public home editor on the Zoi website. You may need to sign in again; your current role controls editing access.</Text><Action label="Workspace settings on web ↗" onPress={()=>openWorkspace(links.settings)}/><Action label="Business home editor on web ↗" onPress={()=>openWorkspace(links.home)}/></View>:null}{handoffError?<Text accessibilityRole="alert" style={styles.error}>{handoffError}</Text>:null}<Action label={busy ? 'Signing out…' : 'Sign out'} disabled={busy} onPress={async () => { setBusy(true); try { await signOut(); } finally { setBusy(false); } }} />
   </> : <><Text style={styles.body}>Sign in to post to the community and access your workspaces.</Text><TextInput accessibilityLabel="Email address" style={styles.input} placeholder="Email address" autoCapitalize="none" autoCorrect={false} keyboardType="email-address" autoComplete="email" value={email} editable={!busy && !sent} onChangeText={setEmail} />{mode === 'password' ? <TextInput accessibilityLabel="Password" style={styles.input} placeholder="Password" secureTextEntry autoComplete="current-password" value={password} onChangeText={setPassword} editable={!busy} onSubmitEditing={submit} /> : sent ? <><Text style={styles.body}>Enter the code sent to {email}. If your email contains only a link, use your password or complete sign-in on the website.</Text><TextInput accessibilityLabel="Email sign-in code" style={styles.input} placeholder="Email code" autoComplete="one-time-code" keyboardType="number-pad" value={code} onChangeText={setCode} editable={!busy} onSubmitEditing={submit} /></> : <Text style={styles.small}>A sign-in code will be sent to your email address. New members can create an account this way.</Text>}{error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}<Action disabled={busy} label={busy ? 'Please wait…' : mode === 'password' ? 'Sign in' : sent ? 'Verify code' : 'Email me a code'} onPress={submit} /><Action disabled={busy} label={mode === 'password' ? 'Use an email code instead' : 'Use a password instead'} onPress={() => { setMode(mode === 'password' ? 'email' : 'password'); setSent(false); setError(''); setCode(''); }} />{sent ? <Action label="Use a different email" disabled={busy} onPress={() => { setSent(false); setCode(''); }} /> : null}</>}</View>;
 }
 export function CommunityComposer({ onPublished }: { onPublished: () => void }) {

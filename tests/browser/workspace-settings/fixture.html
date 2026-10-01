@@ -1,0 +1,11 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Isolated workspace settings</title></head><body><main id="root"></main><p role="status" id="status"></p><script src="/assets/suite/settings.js"></script><script>
+const actor='11111111-1111-4111-8111-111111111111',ws='22222222-2222-4222-8222-222222222222';
+window.qa={actor,name:'Actual workspace',profile:{business_name:'Different AI brand',about:'PRIVATE BUSINESS NOTES',tone:'Professional',languages:'English',sample:'PRIVATE SAMPLE'},mode:'ok',role:'owner',writes:0,renamed:null,hold:null};
+const ctx={ws,avail:{ai:false},toast:t=>document.querySelector('#status').textContent=t,onWorkspaceRenamed:value=>qa.renamed=value,C:{auth:{load:()=>({user_id:qa.actor})},api:{rpc:async(name,args)=>{
+if(qa.mode==='denied')throw Object.assign(Error('not_authorized'),{status:403});
+if(name==='zoi_me')return {authenticated:true,workspaces:[{id:ws,name:qa.name,role:qa.role}]};
+if(name==='ai_profile_get'){if(qa.mode==='sparse')return null;if(qa.mode==='ai-failure')throw Error('Temporary AI read failure');const value={...qa.profile};if(qa.mode==='held')return new Promise(resolve=>qa.hold=()=>resolve(value));return value;}
+if(name==='workspace_rename'){qa.writes++;if(qa.mode==='invalid')throw Error('invalid_workspace_name');if(qa.mode==='false')return false;if(qa.mode!=='unchanged')qa.name=args.p_name;if(qa.mode==='lost')throw Error('Lost response');return null;}
+if(name==='ai_profile_save'){qa.writes++;qa.profile={business_name:args.p_business,about:args.p_about,tone:args.p_tone,languages:args.p_languages,sample:args.p_sample};return null;}throw Error(name);
+}}}};qa.mount=()=>ZoiSuite.modules.find(x=>x.id==='settings').mount(document.querySelector('#root'),ctx);qa.mount();
+</script></body></html>

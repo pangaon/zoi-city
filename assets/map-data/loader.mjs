@@ -35,11 +35,17 @@ export function focusOptions(point,{width=1200,height=800,left=0,right=0,top=0,b
  return{center:[point.lng,point.lat],zoom:preservedZoom,pitch:0,bearing:0,padding:{left:Math.round(left*horizontal),right:Math.round(right*horizontal),top:Math.round(top*vertical),bottom:Math.round(bottom*vertical)},retainPadding:false,duration:reducedMotion?0:1400,essential:false};
 }
 
-export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&row.lat!=null&&row.lng!=null&&Number.isFinite(+row.lat)&&Number.isFinite(+row.lng)&&Math.abs(+row.lat)<=90&&Math.abs(+row.lng)<=180);}
+// Reject coercion-only coordinates and the missing-coordinate (0,0) sentinel.
+// A real point on the equator or prime meridian remains eligible.
+export function validCoordinates(point){
+ const numeric=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value.trim())&&Number.isFinite(Number(value));
+ return !!point&&numeric(point.lat)&&numeric(point.lng)&&Math.abs(Number(point.lat))<=90&&Math.abs(Number(point.lng))<=180&&!(Number(point.lat)===0&&Number(point.lng)===0);
+}
+export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&validCoordinates(row));}
 
 // Only address/street evidence may place an individual listing on the map.
-// City/region/unknown values stay searchable; their centroids are not premises.
-export function hasStreetPosition(point){return !!point&&!point.position_conflict&&['street','address','rooftop'].includes(String(point.precision||point.geo_precision||'').toLowerCase())&&point.lat!=null&&point.lng!=null&&Number.isFinite(+point.lat)&&Number.isFinite(+point.lng)&&Math.abs(+point.lat)<=90&&Math.abs(+point.lng)<=180;}
+export function hasStreetPosition(point){return !!point&&!point.position_conflict&&['street','address','rooftop'].includes(String(point.precision||point.geo_precision||'').toLowerCase())&&validCoordinates(point);}
+
 
 /** Bounds never imply premises from coarse or unverified coordinates. */
 export function matchBounds(points){const valid=points.filter(hasStreetPosition);if(!valid.length)return null;let west=180,east=-180,south=90,north=-90;for(const p of valid){west=Math.min(west,+p.lng);east=Math.max(east,+p.lng);south=Math.min(south,+p.lat);north=Math.max(north,+p.lat);}return[[west,south],[east,north]];}
@@ -51,3 +57,19 @@ export function validatePositionCohorts(points){
  const conflicts=new Set();for(const [k,group] of groups){const cities=new Set(group.filter(p=>p.city&&p.country).map(p=>fold(p.city)+'|'+fold(p.country))),addresses=new Set(group.map(p=>fold(p.addr||p.address)).filter(Boolean));if(cities.size>1||addresses.size>8)conflicts.add(k);}
  return points.map(point=>({...point,position_conflict:conflicts.has(key(point))}));
 }
+
+// Public area search supplements the coordinate feed; it never supplies pins.
+export function createMapAreaSearch(fetchPage,{changed=()=>{},pageSize=24}={}){
+ let generation=0,key='',scope=null,rows=[],offset=0,busy=false,done=false,error=null;
+ const fold=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const state=()=>({key,rows:rows.slice(),offset,busy,done,error,active:!!scope});
+ async function more(){if(!scope||busy||done)return;const token=generation,snapshot={...scope};busy=true;error=null;changed(state());try{
+  const result=await fetchPage({p_q:snapshot.q||null,p_city:snapshot.city||null,p_country:snapshot.country||null,p_type:null,p_limit:pageSize,p_offset:offset});
+  if(token!==generation)return;if(!Array.isArray(result)||result.length>pageSize)throw Error('Invalid area results');
+  const valid=result.filter(r=>r&&r.id&&r.slug&&r.name&&(!snapshot.city||fold(r.city)===fold(snapshot.city))&&(!snapshot.country||fold(r.country)===fold(snapshot.country))&&r.marketplace_status!=='hidden'&&(!r.publish_status||r.publish_status==='published'));
+  const seen=new Set(rows.map(r=>r.slug));for(const row of valid)if(!seen.has(row.slug)){seen.add(row.slug);rows.push(row);}
+  offset+=result.length;done=result.length<pageSize;
+ }catch(e){if(token===generation)error='Additional places could not be loaded. Retry this area.';}finally{if(token===generation){busy=false;changed(state());}}}
+ return{state,more,setScope(next){const clean={q:String(next.q||'').trim(),city:String(next.city||'').trim(),country:String(next.country||'').trim(),actor:String(next.actor||'')},nextKey=JSON.stringify(clean);if(nextKey===key)return;generation++;key=nextKey;scope=clean.q||clean.city||clean.country?clean:null;rows=[];offset=0;busy=false;done=false;error=null;},clear(){generation++;key='';scope=null;rows=[];offset=0;busy=false;done=false;error=null;}};
+}
+export function areaResultPlace(row){const place=unmappedPlace(row,row?.slug);return place?{...place,areaResult:true,precision:'',unknown:true,exact:false}:null;}

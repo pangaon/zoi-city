@@ -318,14 +318,20 @@ const unent = (s: string) =>
   s.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&nbsp;/g, " ");
 
+// Match the opening quote with its closing quote; apostrophes inside double
+// quoted attributes (and double quotes inside single quoted ones) are content.
+function quotedAttributes(tag: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  for (const match of tag.matchAll(/([^\s=<>]+)\s*=\s*("[^"]*"|'[^']*')/g)) {
+    const key = match[1].toLowerCase();
+    if (!(key in attrs)) attrs[key] = unent(match[2].slice(1, -1));
+  }
+  return attrs;
+}
 function metaTag(doc: string, key: string, attr = "property"): string | null {
-  const esc = key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  for (const re of [
-    new RegExp(`<meta[^>]*${attr}=["']${esc}["'][^>]*content=["']([^"']*)["']`, "i"),
-    new RegExp(`<meta[^>]*content=["']([^"']*)["'][^>]*${attr}=["']${esc}["']`, "i"),
-  ]) {
-    const m = doc.match(re);
-    if (m?.[1]) return unent(m[1]).trim() || null;
+  for (const match of doc.matchAll(/<meta\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)) {
+    const attrs = quotedAttributes(match[0]);
+    if (attrs[attr]?.toLowerCase() === key.toLowerCase()) return attrs.content?.trim() || null;
   }
   return null;
 }
@@ -449,9 +455,23 @@ function extract(doc: string, finalUrl: string) {
   const tel = [...doc.matchAll(/tel:([+\d][\d().\s\-\/]{6,24})/gi)]
     .map((m) => m[1].trim()).filter((p) => digits(p).length >= 7 && digits(p).length <= 15);
   if (tel.length) put("phone", tel[0], "tel-link");
-  const mail = [...doc.matchAll(/mailto:([A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})/gi)]
-    .map((m) => m[1]).filter((e) => !/example\.|sentry|wixpress/i.test(e));
-  if (mail.length) put("email", mail[0], "mailto-link");
+  const contactDoc = doc.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "").replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/<([a-z][\w:-]*)\b[^>]*(?:\shidden(?:\s|=|>)|aria-hidden\s*=\s*["']true["']|style\s*=\s*["'][^"']*(?:display\s*:\s*none|visibility\s*:\s*hidden))[^>]*>[\s\S]*?<\/\1\s*>/gi, "");
+  const mail = [...new Set([...contactDoc.matchAll(/<a\b(?:[^>"']|"[^"]*"|'[^']*')*>/gi)]
+    .filter(m => !/\bhidden(?:\s|=|>)/i.test(m[0]) && !/aria-hidden\s*=\s*["']true/i.test(m[0]))
+    .map(m => quotedAttributes(m[0]).href || "")
+    .map(href => href.match(/^mailto:([A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})(?:\?|$)/i)?.[1]?.toLowerCase())
+    .filter((email): email is string => !!email && !/example\.|sentry|wixpress/i.test(email)))];
+  const structuredEmail = typeof profile.email === "string" ? profile.email.toLowerCase() : null;
+  // Disagreement is evidence for review, not permission to pick the first link
+  // (which may belong to a site designer or another location).
+  profile.email_conflict = null;
+  if ((structuredEmail && mail.some(email => email !== structuredEmail)) || (!structuredEmail && mail.length > 1)) {
+    profile.email = null;
+    profile.email_conflict = { structured: structuredEmail, linked: mail, source_url: finalUrl };
+    provenance.email = "conflicting-source-emails";
+    provenance.email_conflict = "jsonld-and-anchor-review:" + finalUrl;
+  } else if (mail.length === 1) put("email", mail[0], "mailto-link");
 
   const { social, source: socialSource } = extractSocialLinks(doc, biz?.sameAs);
   put("social", social, socialSource);
@@ -631,6 +651,9 @@ Deno.serve(async (req) => {
           if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { bump("supplement-unavailable"); continue; }
           const next = extract(extra.doc, extra.finalUrl);
           for (const key of ["phone", "email", "logo_url", "photo_url", "hero_url", "menu_url", "booking_url", "menu", "menu_source", "menu_source_format"]) {
+            if (key === "email" && (profile.email_conflict || next.profile.email_conflict)) {
+              profile.email = null; profile.email_conflict = profile.email_conflict || next.profile.email_conflict; provenance.email = "conflicting-source-emails"; provenance.email_conflict = provenance.email_conflict || next.provenance.email_conflict; continue;
+            }
             if (!profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
           }
           profile.social = { ...(next.profile.social || {}) as object, ...(profile.social || {}) as object };

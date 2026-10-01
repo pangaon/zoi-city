@@ -423,11 +423,11 @@
    * unverified coordinate must never become a routing destination: the address
    * on the record is exact even when the coordinate derived from it is not. */
   function directionsUrl(p) {
-    if (!p) return null;
+    if (!p || p.areaResult) return null;
     var dest = null;
     if (p.addr) {
       dest = [p.addr, p.city, p.country].filter(Boolean).join(', ');
-    } else if (precisionOf(p).exact && !p.position_conflict) {
+    } else if (mapTools.hasStreetPosition(p)) {
       dest = p.lat + ',' + p.lng;
     } else if (p.city) {
       dest = [p.n, p.city, p.country].filter(Boolean).join(', ');
@@ -436,9 +436,9 @@
     return 'https://www.google.com/maps/dir/?api=1&destination=' + encodeURIComponent(dest);
   }
   function directionsBasis(p) {
-    if (!p) return '';
+    if (!p || p.areaResult) return '';
     if (p.addr) return 'address';
-    if (precisionOf(p).exact && !p.position_conflict) return 'pin';
+    if (mapTools.hasStreetPosition(p)) return 'pin';
     return p.city ? 'name' : '';
   }
   function haversine(a, b, c, d) {
@@ -550,7 +550,7 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    mapTools = await import('/assets/map-data/loader.mjs?v=20260930-resilient-place');
+    mapTools = await import('/assets/map-data/loader.mjs?v=20261001-area-results');
     previewModule = await import('/assets/map-data/preview.mjs?v=20260930-profile-details');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
@@ -942,7 +942,7 @@
       : basis === 'name' ? 'Directions search by name — the pin is not exact'
       : '';
     return '<div class="m-rowwrap">' +
-      '<a class="m-row" href="' + href(p) + '" data-i="' + p.i + '">' +
+      '<a class="m-row" href="' + href(p) + '" data-slug="'+esc(p.s)+'" data-i="' + p.i + '">' +
       '<span class="m-mark" style="background:' + COLOURS[i] + '">' + esc(initial) + '</span>' +
       '<span class="m-meta"><span class="m-nm">' + esc(p.n) + '</span>' +
       '<span class="m-wh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</span>' +
@@ -959,7 +959,7 @@
   var listState = { items: [], shown: 0, mode: 'all' };
   function paint(reset) {
     var body = $('pbody');
-    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),loadDetails:function(slug){return selected&&selected.unmapped?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),loadDetails:function(slug){return selected&&selected.unmapped&&!selected.areaResult?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
     var slice = listState.items.slice(listState.shown, listState.shown + 60);
     var advance=slice.length;
     if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});
@@ -980,13 +980,13 @@
   $('pbody').addEventListener('mouseover', function (e) {
     var a = e.target.closest && e.target.closest('.m-row');
     if (!a) return;
-    var p = ALL[+a.dataset.i];
+    var p = listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];
     if (p) tip(p, [p.lng, p.lat]);
   });
   $('pbody').addEventListener('mouseout', hideTip);
-  $('pbody').addEventListener('focusin',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(a){var p=ALL[+a.dataset.i];if(p)tip(p,[p.lng,p.lat]);}});
+  $('pbody').addEventListener('focusin',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(a){var p=listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];if(p)tip(p,[p.lng,p.lat]);}});
   $('pbody').addEventListener('focusout',hideTip);
-  $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=ALL[+a.dataset.i];if(p){e.preventDefault();choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
+  $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];if(p){e.preventDefault();choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
   function updateSavedLabel(){if(previewModule)$('tSaved').textContent='Saved ('+previewModule.readSavedPlaces().length+')';}
   $('tSaved').addEventListener('click',function(){if(!previewModule)return;setSheet(false);$('stage').classList.remove('m-selected-view');selected=null;selectionVersion++;pendingPlace=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Currently available loaded places are shown, including those awaiting a map position.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
 
@@ -1012,13 +1012,25 @@
     if (lngLat) spiderfy(items, lngLat);
   }
 
+  var areaSearch=null,areaTimer;
+  function areaState(){return areaSearch?areaSearch.state():{active:false,rows:[]};}
+  function syncAreaSearch(){
+    if(!areaSearch)areaSearch=mapTools.createMapAreaSearch(function(args){return C.api.rpc('explore_search',args,{auth:'anon'});},{changed:function(){if(listState.mode==='all')showAll();}});
+    var locality=activeMapLocality(),before=areaSearch.state().key;
+    areaSearch.setScope({q:query,city:locality.city,country:locality.country,actor:C.auth&&C.auth.load()?.user_id||''});
+    if(before!==areaSearch.state().key){clearTimeout(areaTimer);areaTimer=setTimeout(function(){if(listState.mode==='all')areaSearch.more();},250);}
+  }
+  $('pfoot').addEventListener('click',function(event){if(event.target.closest('[data-area-more]')&&areaSearch)areaSearch.more();});
+  ['zoi:auth-change','zoi:authchange','storage'].forEach(function(name){window.addEventListener(name,function(){clearTimeout(areaTimer);areaSearch?.clear();if(ready&&listState.mode==='all')showAll();});});
   function showAll() {
     selectionVersion++;pendingPlace=null;
     $('stage').classList.remove('m-selected-view');
     clearSpider();
     selected = null;
     document.querySelectorAll('.m-pin.m-selected').forEach(function(pin){pin.classList.remove('m-selected');});
-    var vis = ALL.filter(matches);
+    syncAreaSearch();
+    var vis = ALL.filter(matches),seenSlugs=new Set(vis.map(function(p){return p.s;}));
+    areaState().rows.forEach(function(row){var p=mapTools.areaResultPlace(row);if(p&&!seenSlugs.has(p.s)&&on[p.t]){p.hay=fold(p.n+' '+p.city+' '+p.country);vis.push(p);seenSlugs.add(p.s);}});
     // nearest-first once we know where the user is, otherwise centre-out
     var c = map ? map.getCenter() : { lat: 37.98, lng: 23.72 };
     var o = here || c;
@@ -1035,7 +1047,8 @@
         : fmtN(vis.length) + ' of ' + fmtN(ALL.length) + ' shown') + '</span>';
     $('pclose').hidden = true;
     paint(true);
-    $('pfoot').innerHTML = coverageNote();
+    var area=areaState();
+    $('pfoot').innerHTML = coverageNote()+(area.active?'<p>'+area.rows.length+' public search results loaded for this search or area; additional places have no verified pin.</p>'+(area.error?'<p role="status">'+esc(area.error)+'</p>':'')+(area.busy?'<p role="status">Loading additional places…</p>':!area.done?'<button type="button" data-area-more>'+ (area.error?'Retry area results':'Load more area results')+'</button>':''):'');
   }
 
   var totalListings = null;

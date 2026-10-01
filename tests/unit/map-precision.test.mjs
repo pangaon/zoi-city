@@ -12,6 +12,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
+import * as mapTools from '../../assets/map-data/loader.mjs';
 
 const src = readFileSync(new URL('../../explore/map/index.html', import.meta.url), 'utf8');
 
@@ -25,9 +26,9 @@ function lift(startMarker, endMarker) {
 }
 
 const block = lift('var PRECISION = {', '/* ---------- state ---------- */');
-const sandbox = new Function(block + `
+const sandbox = new Function('mapTools', block + `
   return { PRECISION, UNKNOWN_PRECISION, precisionOf, precisionLabel, directionsUrl, directionsBasis };
-`)();
+`)(mapTools);
 const { PRECISION, precisionOf, precisionLabel, directionsUrl, directionsBasis } = sandbox;
 
 // Every raw value observed in production on 2026-09-13, with its row count.
@@ -257,3 +258,5 @@ test('folding does not collapse distinct words', () => {
 });
 
 test('conflicting street metadata never routes to rejected centroid coordinates',()=>{const p={n:'Community',city:'Brantford',country:'Canada',lat:43.6532,lng:-79.3832,precision:'street',position_conflict:true};assert.equal(directionsBasis(p),'name');assert.ok(!directionsUrl(p).includes('43.6532'));assert.match(decodeURIComponent(directionsUrl(p)),/Community, Brantford, Canada/);});
+
+test('invalid street coordinates cannot become directions destination',()=>{for(const lat of ['',false,91,0]){const p={n:'Place',city:'City',country:'Country',lat,lng:0,precision:'street'};assert.equal(directionsBasis(p),'name');assert.match(decodeURIComponent(directionsUrl(p)),/Place, City, Country/);}assert.equal(directionsBasis({lat:0,lng:12,precision:'street'}),'pin');});

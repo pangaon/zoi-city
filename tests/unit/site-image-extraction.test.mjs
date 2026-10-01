@@ -34,3 +34,47 @@ test('invalid responsive descriptors cannot manufacture URLs from transformation
  const result=extractSiteImages('<img src="/fallback.jpg" srcset="/small.jpg 20h, /large.jpg 2x 300w">',base);
  assert.equal(result.hero.url,base+'fallback.jpg');
 });
+
+test('captured Melanthi slider originals replace dummy images without manufacturing URLs',async()=>{
+ const {readFile}=await import('node:fs/promises');
+ const html=await readFile(new URL('../fixtures/melanthi-declared-images.html',import.meta.url),'utf8');
+ const result=extractSiteImages(html,'https://www.melanthi.gr/');
+ const prefix='https://www.melanthi.gr/wp-content/uploads/2021/10/';
+ assert.deepEqual(result.photos.map(x=>x.url),[
+  prefix+'Melanthi-Complex-Nightview-01-796-2-Copy.jpg',
+  prefix+'Melanthi-Iliana-Bedroom-03.jpg',
+  prefix+'Melanthi-Breakfast-Buffet-Detais-541.jpg',
+  prefix+'Melanthi-Liakoto-Nightime-03-978-2.jpg',
+  prefix+'Melanthi-Complex-I-Nightime-Veranda-01-027-2.jpg'
+ ]);
+ assert.equal(result.hero.source,'page-image');
+ assert.equal(result.photos.at(-1).source,'page-background');
+});
+test('plugin lazy declarations preserve responsive and existing lazy priorities',()=>{
+ const result=extractSiteImages('<img data-lazyload="/actual.jpg" src="/placeholder.png"><img data-src="/preferred.jpg" data-lazyload="/other.jpg" src="/placeholder.png"><img srcset="/responsive.jpg 1200w" data-lazyload="/other.jpg"><source data-lazyload="/not-an-image.jpg">',base);
+ assert.deepEqual(result.photos.map(x=>x.url),['actual.jpg','preferred.jpg','responsive.jpg'].map(x=>base+x));
+});
+test('plugin image declarations enforce URL and auxiliary guards and ignore fake attributes',()=>{
+ const bad=['javascript:alert(1)','data:image/png,x','http://public.example/photo.jpg','https://127.0.0.1/photo.jpg','https://user:pass@public.example/photo.jpg','/favicon.png','/placeholder.jpg'];
+ const html=bad.map(url=>`<img data-lazyload="${url}" src="/placeholder.png"><div data-vc-parallax-image="${url}"></div>`).join('')+
+ '<img title="fake data-lazyload=\'/fake.jpg\'" src="/placeholder.png"><div title="fake data-vc-parallax-image=\'/fake-background.jpg\'"></div><div data-not-vc-parallax-image="/also-fake.jpg"></div><script><div data-vc-parallax-image="/script.jpg"></div></script><!-- <img data-lazyload="/comment.jpg"> -->';
+ assert.deepEqual(extractSiteImages(html,base).photos,[]);
+ const result=extractSiteImages('<div data-vc-parallax-image="/terrace.jpg"></div><div style="background-image:url(/terrace.jpg)"></div>',base);
+ assert.deepEqual(result.photos.map(x=>x.url),[base+'terrace.jpg']);
+});
+
+test('plugin flags stay auxiliary and encoded logo filenames stay logos through actual rendered extractor',async()=>{
+ const {auxiliaryImage}=await import('../../supabase/functions/zoi-enrich/_image-context.js');
+ const {extractRenderedSource}=await import('../../scripts/enrichment/extractor.mjs');
+ const flag='https://www.hellenic.ie/wp-content/plugins/wpglobus/flags/us.png';
+ const logos=[
+ 'https://images.squarespace-cdn.com/content/v1/62a91cf2abf94c47f7cac21c/cb7269d4-62c1-4b96-a4ec-14e09b616d95/Logo+best+quality+no+words.jpg?format=1500w',
+ 'https://images.squarespace-cdn.com/content/v1/60528beab133344379972e4e/6faefd0d-81f7-493a-ad86-603add2db913/Poppis_weblogos-03.png?format=1500w'];
+ assert.equal(auxiliaryImage(flag),true);
+ assert.equal(auxiliaryImage('https://example.org/photos/wpglobus-building.jpg'),false);
+ for(const logo of logos){
+  const html=`<html><title>Local restaurant</title><img src="${flag}"><img src="${logo}"><img src="/Poppis-dining.jpg"><img src="/LogoVillage-terrace.jpg"></html>`;
+  const images=extractSiteImages(html,base);assert.equal(images.logo.url,logo);assert.deepEqual(images.photos.map(x=>x.url),[base+'Poppis-dining.jpg',base+'LogoVillage-terrace.jpg']);
+  const result=extractRenderedSource(html,base);assert.equal(result.profile.logo_url,logo);assert.deepEqual(result.profile.photo_urls,[base+'Poppis-dining.jpg',base+'LogoVillage-terrace.jpg']);
+ }
+});

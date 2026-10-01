@@ -27,3 +27,16 @@ test('ordinary business challenge enters preservation branch with original lease
  assert.equal(result.result.stats['source-challenge'],1);assert.equal(result.result.stats.ok,undefined);
  assert.equal({...item.existing_enrich,...payload.profile}.phone,'reviewed contact');
 });
+
+test('supplementary contact extraction cannot refill a source email conflict',async()=>{
+ const item={...row,entity_type:'business',website:'https://bistro.test/',name:'Bistro'};
+ for(const conflictOnHome of [true,false]){
+ let count=0;
+ const conflict={structured:'old@bistro.test',linked:['new@bistro.test'],source_url:item.website};
+ const r=await run(item,{doc:'Bistro source',finalUrl:item.website},{
+   supplementaryPages:()=>[{purpose:'contact',url:'https://bistro.test/contact'}],
+   extract:()=>{const home=++count===1;return {profile:home===conflictOnHome?{email:null,email_conflict:conflict}:{email:'other@bistro.test'},provenance:{email:home===conflictOnHome?'conflicting-source-emails':'mailto-link',email_conflict:'jsonld-and-anchor-review:'+item.website},aggregator:false};}
+ });
+ assert.equal(r.batch[0].profile.email,null);assert.deepEqual(r.batch[0].profile.email_conflict,conflict);assert.equal(r.batch[0].provenance.email,'conflicting-source-emails');
+ }
+});
