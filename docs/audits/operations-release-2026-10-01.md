@@ -23,3 +23,13 @@ Independent capture/adapter suite: 50 checks passed. One fresh Melanthi capture 
 ## Release status
 
 Specialist native actual Expo-web mounted acceptance passed at 390/1440 for interrupted create, nonce-only remount/recovery, transient draft retention and authoritative access revocation, with zero captured page errors. Native 197 tests and TypeScript passed. Final web rerun also passed the delayed-import account-change regression. Client release and exact archived-tree validation pending at this checkpoint. Full source coverage, real authenticated production lifecycle testing, physical iOS/Android acceptance, connected event inventory/payment/invitation capabilities and the broader requested platform scope remain open.
+
+## Deployed acceptance and clean-build correction
+
+Web release `4c54773b3f53704c51037018e2cedfbd456085ff` deployed and independently passed actual-module controlled-transport checks at 390/1440, with byte equality to exact tree `161263d3099bf6e7f6d8428a664ed7f20aac26c1`. Local verification ran 250 node:test files plus two standalone suites, 197 native tests, TypeScript and mounted Operations checks.
+
+CI run 36801072122 exposed a missing `assets/operations` Metro watch folder in its clean mobile build despite the local export succeeding. Commit `cc6fd21d46b3a0a0bb1aa626238c647cd053990e` adds that folder without duplicating recovery code. Fresh archive `/tmp/zoi-ops-clean-release-1wjwvxvj` (tree `f243f14c027b7a6231a781dcd169db6460494bbf`) installed locked dependencies into its own non-symlinked node_modules and passed `expo export --platform web --clear`. GitHub CI 36801528089 then passed, including mobile. Vercel deployment: https://vercel.com/pangaons-projects/zoi-city/FEKjV1XgctEhmdGtLisF8GNB9FMr .
+
+CI path selection now also includes the shared Operations recovery implementation, so a future helper-only change exercises the mobile build. Its actual grep predicate was checked against relevant module/native paths and unrelated documentation/styles.
+
+The automatically triggered source-render run 36801072123 wrote three identity-review error receipts, not three enriched profiles. Independent artifact review preserved that distinction; see `source-run-36801072123-independent-2026-10-01.md`.

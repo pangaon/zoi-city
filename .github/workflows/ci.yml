@@ -65,7 +65,7 @@ jobs:
             if git diff --name-only "$base" HEAD > /tmp/native-changed-paths; then
               relevant=false
               if [ "$EVENT_NAME" = push ] && grep -Fxq "ops/backend-release-request.json" /tmp/native-changed-paths; then backend=true; fi
-              if grep -Eq '^(mobile/|assets/homes/phone\.mjs$|assets/enrichment/(publisher-social|branch-contact-scope)\.mjs$|supabase/functions/zoi-enrich/_social\.js$|assets/tickets/venue-model\.mjs$|assets/bookings/(model|planner|reschedule-model)\.mjs$|assets/priorities/(engine|sources)\.mjs$|assets/commerce/model\.mjs$|assets/organizations/(calendar-model|group-model)\.mjs$|assets/timekeeping/model\.mjs$|assets/documents/file-rules\.mjs$|\.github/workflows/ci\.yml$)' /tmp/native-changed-paths; then relevant=true; fi
+              if grep -Eq '^(mobile/|assets/homes/phone\.mjs$|assets/enrichment/(publisher-social|branch-contact-scope)\.mjs$|supabase/functions/zoi-enrich/_social\.js$|assets/tickets/venue-model\.mjs$|assets/bookings/(model|planner|reschedule-model)\.mjs$|assets/priorities/(engine|sources)\.mjs$|assets/commerce/model\.mjs$|assets/operations/recovery\.mjs$|assets/organizations/(calendar-model|group-model)\.mjs$|assets/timekeeping/model\.mjs$|assets/documents/file-rules\.mjs$|\.github/workflows/ci\.yml$)' /tmp/native-changed-paths; then relevant=true; fi
             fi
           fi
           echo "relevant=$relevant" >> "$GITHUB_OUTPUT"
