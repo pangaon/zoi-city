@@ -107,22 +107,49 @@
   }
 
   /* ---- auth session {access_token, refresh_token, expires_at, email} ---- */
-  var _auth = null, _loaded = false, _authVersion = 0, _refreshPromise = null;
+  var _auth = null, _loaded = false, _authVersion = 0, _sessionEpoch = 0, _authStorage = null, _refreshPromise = null;
   function authLoad(){
-    _auth = null; _loaded = true;
-    var raw = lsGet(K_AUTH);
-    if (raw) { try { var a = JSON.parse(raw); if (a && a.access_token) _auth = a; } catch (e) {} }
+    var previous = _auth, wasLoaded = _loaded, next = null;
+    var raw = lsGet(K_AUTH); _authStorage = raw;
+    if (raw) { try { var parsed = JSON.parse(raw); if (parsed && parsed.access_token) next = parsed; } catch (e) {} }
+    if (wasLoaded && JSON.stringify(previous) !== JSON.stringify(next)) { _authVersion++; if(!sameAuthSession(previous,next))_sessionEpoch++; }
+    _auth = next; _loaded = true;
     return _auth;
   }
-  function cur(){ return _loaded ? _auth : authLoad(); }
-  function authSave(a){
+  function cur(){ if(_loaded && lsGet(K_AUTH)!==_authStorage)authLoad();return _loaded ? _auth : authLoad(); }
+  function authClaims(a){
+    try{var claims=JSON.parse(global.atob(a.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return claims && typeof claims==='object' && !Array.isArray(claims) ? claims : {};}catch(_){return {};}
+  }
+  function authActor(a){
+    var stored=a && a.user_id ? String(a.user_id).toLowerCase() : '', subject=authClaims(a).sub;
+    subject=typeof subject==='string'?subject.toLowerCase():'';
+    return stored && subject && stored!==subject ? '' : subject || stored;
+  }
+  function sameAuthSession(a,b){
+    var actor=authActor(a), session=authClaims(a).session_id;
+    return !!actor && actor===authActor(b) && typeof session==='string' && !!session && session===authClaims(b).session_id;
+  }
+  function storeAuth(a, refreshed){
+    if(!refreshed || !authActor(_auth) || authActor(_auth)!==authActor(a) || (authClaims(_auth).session_id || '') !== (authClaims(a).session_id || '')) _sessionEpoch++;
     _authVersion++;
     _auth = a || null; _loaded = true;
     if (a) lsSet(K_AUTH, JSON.stringify(a)); else lsDel(K_AUTH);
+    _authStorage = lsGet(K_AUTH);
     // Identity-only notification; never expose session tokens in event detail.
     try { global.dispatchEvent(new global.CustomEvent('zoi:auth-change')); } catch (_) {}
     return _auth;
   }
+  function authSave(a){return storeAuth(a,false);}
+  if(global.addEventListener)global.addEventListener('storage',function(event){
+    if(event.key === K_AUTH || event.key === null){
+      // A storage event is an external transition even if a rapid logout/login
+      // has restored an identical final snapshot before this listener runs.
+      var before=null,after=null;
+      try{before=JSON.parse(event.oldValue);after=JSON.parse(event.newValue);}catch(_){}
+      _authVersion++; if(!sameAuthSession(before,after))_sessionEpoch++; authLoad();
+      try { global.dispatchEvent(new global.CustomEvent('zoi:auth-change')); } catch (_) {}
+    }
+  });
   function authClear(){ authSave(null); }
   function token(){
     var a = cur();
@@ -142,11 +169,14 @@
       body:JSON.stringify({refresh_token:a.refresh_token})
     }).then(function(response){
       return response.json().then(function(j){
+        cur();
         if(version !== _authVersion) return false;
-        if(response.ok && j && j.access_token){
-          authSave({access_token:j.access_token,refresh_token:j.refresh_token||a.refresh_token,
+        if(response.ok && j && typeof j.access_token === 'string' && j.access_token){
+          var refreshedSession = {access_token:j.access_token,refresh_token:j.refresh_token||a.refresh_token,
             expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),
-            email:(j.user&&j.user.email)||a.email||null,user_id:(j.user&&j.user.id)||a.user_id||null});
+            email:(j.user&&j.user.email)||a.email||null,user_id:(j.user&&j.user.id)||a.user_id||null};
+          if(!authActor(a) || authActor(a)!==authActor(refreshedSession) || (authClaims(a).session_id||'')!==(authClaims(refreshedSession).session_id||''))return false;
+          storeAuth(refreshedSession,true);
           return true;
         }
         if(response.status===400 || response.status===401 || response.status===403) authClear();
@@ -171,19 +201,23 @@
   }
   function rpc(fn, params, opts){
     var mode = (opts && opts.auth) || 'prefer';
-    var p, requestAuthVersion = null;
+    var initialToken = mode === 'anon' ? null : token();
+    var requestEpoch = _sessionEpoch, protectedRequest = mode === 'require' || !!initialToken;
+    function checkSession(){if(lsGet(K_AUTH)!==_authStorage)authLoad();if(protectedRequest && requestEpoch !== _sessionEpoch)throw new Error('Your session changed. Reload this view to check the result.');}
+    var p;
     if (mode === 'require') {
       p = ensureFresh().then(function (ok) {
+        checkSession();
         if (!ok) throw new Error('Please sign in.');
         return cur().access_token;
       });
     } else if (mode === 'anon') {
       p = Promise.resolve(null);
     } else {
-      p = Promise.resolve(token());
+      p = Promise.resolve(initialToken);
     }
     return p.then(function (tk) {
-      if(tk) requestAuthVersion = _authVersion;
+      checkSession();
       return request(BASE + '/rest/v1/rpc/' + fn, {
         method: 'POST',
         headers: { apikey: KEY, Authorization: 'Bearer ' + (tk || KEY), 'Content-Type': 'application/json' },
@@ -191,7 +225,7 @@
       });
     }).then(function (r) {
       return r.text().then(function (t) {
-        if(requestAuthVersion !== null && requestAuthVersion !== _authVersion) throw new Error('Your session changed. Reload this view to check the result.');
+        checkSession();
         if (!r.ok) {var error=new Error(errMsg(t,r.status));error.status=r.status;throw error;}
         var result=t?JSON.parse(t):null;
         if(result && (result.error || result.ok===false)) throw new Error(String(result.error||result.message||'The request was not completed.'));
@@ -234,6 +268,7 @@
           email: email,
           user_id: (j.user && j.user.id) || null
         };
+        cur();
         if(version !== _authVersion) throw new Error('Sign-in was cancelled. Please try again.');
         authSave(sess);
         lsDel(K_PENDING);
