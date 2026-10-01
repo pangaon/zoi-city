@@ -119,7 +119,7 @@
       if (!doc.getElementById(id)) {
         var tag = doc.createElement('script');
         tag.id = id;
-        tag.src = SELF_DIR + file + '.js';
+        tag.src = SELF_DIR + file + '.js' + (file === '_schedule' ? '?v=20261001-actor-drafts' : '');
         tag.async = false;
         (doc.head || doc.documentElement).appendChild(tag);
       }
@@ -199,11 +199,11 @@
         body: JSON.stringify({ workspace: workspace, action: 'caption', input:
           'Refine this draft using a ' + tone + ' tone. Preserve supplied facts and placeholders. Do not invent products, offers, dates, links or business claims.\n\n' + draft })
       });
+      if (!response.ok) throw Object.assign(new Error(response.status === 401 || response.status === 403
+        ? 'Your session expired or you do not have access to this workspace. Sign in and retry.'
+        : 'AI request failed. Your draft is unchanged. Please retry.'), {status:response.status});
       var data;
       try { data = await response.json(); } catch (e) { throw new Error('AI returned an unreadable response. Your draft is unchanged.'); }
-      if (!response.ok) throw new Error(response.status === 401 || response.status === 403
-        ? 'Your session expired or you do not have access to this workspace. Sign in and retry.'
-        : 'AI request failed. Your draft is unchanged. Please retry.');
       if (!data || data.available !== true) throw new Error('AI drafting is unavailable. Your draft is unchanged.');
       if (!data.result || typeof data.result.text !== 'string' || !data.result.text.trim())
         throw new Error('AI returned no caption. Your draft is unchanged.');
@@ -463,6 +463,41 @@
     wrap.appendChild(left);
     wrap.appendChild(right);
     root.appendChild(wrap);
+    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false, modalClosers=new Set();
+    function dispose(message){
+      if(ended)return;
+      // Keep same-account navigation recovery, but never save an outgoing
+      // account's pending keystrokes under the next signed-in identity.
+      if(root.contains(wrap)&&ctx.ws===workspaceAtMount&&(C.auth&&C.auth.load&&C.auth.load()?.user_id)===actorAtMount&&state.S&&typeof ta!=='undefined'){
+        var pendingDraft=snapshotDraft();
+        if(state.S.draftIsMeaningful(pendingDraft))state.S.saveDraft(workspaceAtMount,pendingDraft,null,actorAtMount);
+      }
+      ended=true;
+      if(typeof saveTimer!=='undefined'&&saveTimer)global.clearTimeout(saveTimer);
+      scopeObserver.disconnect();
+      ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.removeEventListener(n,scopeChanged);});
+      modalClosers.forEach(function(close){close();});modalClosers.clear();
+      if(root.contains(wrap)){root.replaceChildren();if(typeof message==='string')root.textContent=message;}
+    }
+    function scopeActive(){
+      if(ended)return false;
+      if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
+      return true;
+    }
+    function scopeChanged(){scopeActive();}
+    var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(doc.body,{childList:true,subtree:true});
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
+    var originalToast=toast;toast=function(){if(scopeActive())originalToast.apply(null,arguments);};
+    function clearOnDenied(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');}
+    var originalRpc=C.api.rpc.bind(C.api), originalAuth=C.auth;
+    C=Object.assign({},C,{auth:Object.assign({},originalAuth,{token:function(){if(!scopeActive())throw Error('Account or workspace changed.');return originalAuth.token.call(originalAuth);}})});
+    C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
+      if(!scopeActive())throw Error('Account or workspace changed.');
+      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      catch(e){clearOnDenied(e);throw e;}
+    }})});
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+
 
     /* ----- LEFT: draft-restore banner (filled only if there is a draft) ----- */
     var bannerBox = el('div');
@@ -693,6 +728,7 @@
 
     /* ---------- render chips ---------- */
     function renderChips() {
+      if(!scopeActive())return;
       chips.innerHTML = '';
       if (!state.channels.length) {
         chips.innerHTML = '<span class="zc-sub">No channels found. Connect social accounts to target networks.</span>';
@@ -748,6 +784,7 @@
       };
     }
     function renderCounters() {
+      if(!scopeActive())return;
       counters.innerHTML = '';
       var sel = selectedChannels();
       if (!sel.length) {
@@ -776,6 +813,7 @@
      * before scheduling. */
     var altEditing = null;
     function renderMedia() {
+      if(!scopeActive())return;
       media.innerHTML = '';
       state.media.forEach(function (url, i) {
         var t = el('div', 'zc-thumb');
@@ -810,6 +848,7 @@
       renderAltEditor();
     }
     function renderAltEditor() {
+      if(!scopeActive())return;
       altBox.innerHTML = '';
       if (!state.media.length) return;
       var missing = state.media.filter(function (u) { return !(state.alts[u] && String(state.alts[u]).trim()); });
@@ -862,6 +901,7 @@
 
     /* ---------- thread ---------- */
     function renderThread() {
+      if(!scopeActive())return;
       var box = q('threadbox');
       box.style.display = state.threadMode ? 'block' : 'none';
       if (!state.threadMode) return;
@@ -920,6 +960,7 @@
     }
 
     function renderOnePreview(ch, rawText) {
+      if(!scopeActive())return;
       var plat = normPlat(ch.platform);
       var n = netFor(ch.platform);
       var name = esc(ch.display_name || ch.handle || n.name);
@@ -1002,6 +1043,7 @@
     }
 
     function renderPreviews() {
+      if(!scopeActive())return;
       renderCounters();
       previews.innerHTML = '';
       var sel = selectedChannels();
@@ -1045,6 +1087,7 @@
       return out;
     }
     function renderBestTime() {
+      if(!scopeActive())return;
       var box = q('besttime');
       var slots = nextOpenSlots(3);
       if (!(state.slots || []).length) {
@@ -1095,6 +1138,7 @@
 
     /* ---------- hashtags dropdown ---------- */
     function renderHashtags() {
+      if(!scopeActive())return;
       var sel = q('hashsel');
       if (!state.hashtags.length) {
         sel.innerHTML = '<option value="">No saved sets</option>';
@@ -1127,6 +1171,7 @@
     function fastClass(level) { return 'zc-fast f-' + (level || 'none'); }
 
     function renderLit() {
+      if(!scopeActive())return;
       var box = q('lit');
       if (!box) return;
       if (!state.O) {
@@ -1211,6 +1256,7 @@
     }
 
     function renderOpps() {
+      if(!scopeActive())return;
       var box = q('opps');
       if (!box) return;
       if (!state.O) {
@@ -1252,6 +1298,7 @@
      * on every keystroke stole the caret out from under whoever was typing in it.
      */
     function renderOverrideTabs() {
+      if(!scopeActive())return;
       var tabs = q('ovtabs'), body = q('ovbody');
       if (!tabs || !body) return;
       var sel = selectedChannels();
@@ -1280,6 +1327,7 @@
       }
     }
     function renderOverrideBody(focusIt) {
+      if(!scopeActive())return;
       var body = q('ovbody');
       if (!body) return;
       var sel = selectedChannels();
@@ -1338,6 +1386,7 @@
       (doc.body || doc.documentElement).appendChild(ov);
       var restoreFocus = doc.activeElement;
       function close() {
+        modalClosers.delete(close);
         if (ov.parentNode) ov.parentNode.removeChild(ov);
         doc.removeEventListener('keydown', onKey, true);
         try { if (restoreFocus && restoreFocus.focus) restoreFocus.focus(); } catch (e) {}
@@ -1355,6 +1404,7 @@
         if (e.shiftKey && doc.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
       }
+      modalClosers.add(close);
       doc.addEventListener('keydown', onKey, true);
       ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
       m.querySelector('[data-role="close"]').addEventListener('click', close);
@@ -1473,12 +1523,14 @@
       };
     }
     function scheduleAutosave() {
+      if (!scopeActive())return;
       if (!state.S) return;
       if (saveTimer) global.clearTimeout(saveTimer);
       saveTimer = global.setTimeout(function () {
+        if(!scopeActive())return;
         var d = snapshotDraft();
-        if (state.S.draftIsMeaningful(d)) state.S.saveDraft(ctx.ws, d);
-        else state.S.clearDraft(ctx.ws);
+        if (state.S.draftIsMeaningful(d)) state.S.saveDraft(workspaceAtMount, d, null, actorAtMount);
+        else state.S.clearDraft(workspaceAtMount, null, actorAtMount);
       }, DRAFT_SAVE_MS);
     }
     function applyStoredDraft(d) {
@@ -1505,6 +1557,7 @@
      * the composer must say so: the same buttons now update a row instead of
      * creating one, and that is not something to leave implicit. */
     function renderEditBanner(post) {
+      if(!scopeActive())return;
       bannerBox.innerHTML = '';
       if (!state.editId) return;
       var b = el('div', 'zc-banner');
@@ -1572,9 +1625,10 @@
     }
 
     function renderRestoreBanner() {
+      if(!scopeActive())return;
       bannerBox.innerHTML = '';
       if (!state.S) return;
-      var saved = state.S.loadDraft(ctx.ws);
+      var saved = state.S.loadDraft(workspaceAtMount, null, actorAtMount);
       if (!saved || !state.S.draftIsMeaningful(saved.draft)) return;
       if (ta.value.trim()) return;                    // already working on something
       var age = C.relTime ? C.relTime(new Date(saved.at).toISOString()) : '';
@@ -1594,7 +1648,7 @@
       discard.type = 'button';
       discard.textContent = 'Discard';
       discard.addEventListener('click', function () {
-        state.S.clearDraft(ctx.ws);
+        state.S.clearDraft(workspaceAtMount, null, actorAtMount);
         bannerBox.innerHTML = '';
       });
       acts.appendChild(restore);
@@ -1805,6 +1859,7 @@
       ok: '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>'
     };
     function renderChecks() {
+      if(!scopeActive())return;
       var box = q('checks');
       if (!box) return;
       box.innerHTML = '';
@@ -1875,6 +1930,7 @@
 
     /* ---------- honest publish gating ---------- */
     function applyGating() {
+      if(!scopeActive())return;
       var pubBtn = q('publish');
       var note = q('publishnote');
       /* The old gate keyed off ctx.avail.publish alone, which is about external
@@ -1959,19 +2015,22 @@
         var uid = (C.auth.load && C.auth.load() && C.auth.load().user_id) || 'me';
         var name = Date.now() + '_' + f.name.replace(/[^\w.\-]+/g, '_');
         var path = C.BASE + '/storage/v1/object/media/' + encodeURIComponent(uid) + '/' + encodeURIComponent(name);
+        if(!scopeActive())return;
         var resp = await global.fetch(path, {
           method: 'POST',
           headers: { Authorization: 'Bearer ' + C.auth.token(), 'Content-Type': f.type || 'application/octet-stream', apikey: C.KEY },
           body: f
         });
-        if (!resp.ok) throw new Error('upload failed');
+        if(!scopeActive())return;
+        if (!resp.ok) throw Object.assign(new Error('upload failed'),{status:resp.status});
         var pub = C.BASE + '/storage/v1/object/public/media/' + encodeURIComponent(uid) + '/' + encodeURIComponent(name);
         addMedia(pub);
         toast('Image uploaded.');
       } catch (err) {
+        clearOnDenied(err);
         toast('Upload failed — paste a URL instead.');
       }
-      q('file').value = '';
+      if(scopeActive())q('file').value = '';
     });
 
     // hashtags
@@ -2042,7 +2101,7 @@
     // actions — every save disables its button while the RPC is in flight
     var _busy = false;
     async function withBusy(btn, fn) {
-      if (_busy) return;
+      if (!scopeActive()||_busy) return;
       _busy = true;
       var prev = btn.textContent;
       btn.disabled = true;
@@ -2136,7 +2195,7 @@
       state.threadMode = false;
       state.scheduledAt = null;
       state.editId = null;
-      if (state.S) state.S.clearDraft(ctx.ws);
+      if (state.S) state.S.clearDraft(workspaceAtMount, null, actorAtMount);
       bannerBox.innerHTML = '';   // and with it the "editing an existing post" notice
       q('threadtoggle').checked = false;
       q('firstcomment').value = '';
@@ -2240,6 +2299,7 @@
     /* Libraries first: the counters, the pre-flight checks and the whole
      * Orthodox layer depend on them, and they are two small local files. */
     var libs = await loadDeps(doc);
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
     state.O = libs.O;
     state.S = libs.S;
     if (state.S) {
@@ -2251,7 +2311,7 @@
 
     /* A draft handed over from the Calendar ("draft this feast") beats an old
      * autosaved one — the user just asked for it. */
-    var handoff = state.S ? state.S.takeHandoff() : null;
+    var handoff = state.S ? state.S.takeHandoff(null, {actor:actorAtMount,workspace:workspaceAtMount}) : null;
     if (handoff && handoff.id) {
       applyIncomingPost(handoff);
       toast('Editing the post you picked in the calendar.');
@@ -2270,6 +2330,7 @@
 
     // async data
     await Promise.all([loadChannels(), loadHashtags(), loadTemplates(), loadSlots(), loadPosts(), loadNamedays()]);
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
 
     /* ---------- bind templates and AI drafting ---------- */
     var SMART_TEMPLATES = {
@@ -2319,7 +2380,9 @@
         if (oldSuggestion) oldSuggestion.remove();
         try {
           var toneEl = q('aitone');
+          if(!scopeActive())return;
           var suggestion = await requestCaption(C, ctx.ws, original, toneEl ? toneEl.value : 'authentic');
+          if(!scopeActive())return;
           if (!root.contains(aiBox)) return;
           var panel = el('div');
           panel.setAttribute('data-ai-suggestion', '');
@@ -2344,6 +2407,7 @@
           aiBox.appendChild(panel);
           aiStatus.textContent = 'Review the suggested caption and verify its facts before applying.';
         } catch (e) {
+          clearOnDenied(e);
           aiStatus.textContent = e.message || 'AI request failed. Your draft is unchanged.';
         } finally {
           aiBusy = false;
@@ -2372,6 +2436,7 @@
     renderBestTime();
     renderLit();
     renderChecks();
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */

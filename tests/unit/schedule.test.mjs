@@ -300,14 +300,14 @@ test('the CSV parser handles quotes, commas and blank lines', () => {
 
 test('a draft survives a reload but is never restored silently', () => {
   const store = fakeStore();
-  assert.equal(S.loadDraft('ws1', store), null);
-  S.saveDraft('ws1', { body: 'half-written post' }, store);
-  const back = S.loadDraft('ws1', store);
+  assert.equal(S.loadDraft('ws1', store, 'actor1'), null);
+  S.saveDraft('ws1', { body: 'half-written post' }, store, 'actor1');
+  const back = S.loadDraft('ws1', store, 'actor1');
   assert.equal(back.draft.body, 'half-written post');
   assert.ok(back.at > 0, 'the age is stored so the UI can say how old it is');
-  assert.equal(S.loadDraft('ws2', store), null, 'drafts are per workspace');
-  S.clearDraft('ws1', store);
-  assert.equal(S.loadDraft('ws1', store), null);
+  assert.equal(S.loadDraft('ws2', store, 'actor1'), null, 'drafts are per workspace');
+  S.clearDraft('ws1', store, 'actor1');
+  assert.equal(S.loadDraft('ws1', store, 'actor1'), null);
 });
 
 test('an empty draft is not worth offering back', () => {
@@ -324,17 +324,36 @@ test('storage being unavailable is survivable, not fatal', () => {
     setItem() { throw new Error('QuotaExceeded'); },
     removeItem() { throw new Error('nope'); },
   };
-  assert.equal(S.saveDraft('ws', { body: 'x' }, hostile), false);
-  assert.equal(S.loadDraft('ws', hostile), null);
-  assert.equal(S.clearDraft('ws', hostile), false);
-  assert.equal(S.setHandoff({ body: 'x' }, hostile), false);
-  assert.equal(S.takeHandoff(hostile), null);
+  assert.equal(S.saveDraft('ws', { body: 'x' }, hostile, 'actor1'), false);
+  assert.equal(S.loadDraft('ws', hostile, 'actor1'), null);
+  assert.equal(S.clearDraft('ws', hostile, 'actor1'), false);
+  assert.equal(S.setHandoff({ body: 'x' }, hostile, {actor:'actor1',workspace:'ws1'}), false);
+  assert.equal(S.takeHandoff(hostile,{actor:'actor1',workspace:'ws1'}), null);
 });
 
 test('a calendar-to-composer handoff is consumed exactly once', () => {
   const store = fakeStore();
-  S.setHandoff({ body: 'Χρόνια πολλά', scheduledAt: '2026-08-15T09:00' }, store);
-  const got = S.takeHandoff(store);
+  S.setHandoff({ body: 'Χρόνια πολλά', scheduledAt: '2026-08-15T09:00' }, store, {actor:'actor1',workspace:'ws1'});
+  const got = S.takeHandoff(store,{actor:'actor1',workspace:'ws1'});
   assert.equal(got.body, 'Χρόνια πολλά');
-  assert.equal(S.takeHandoff(store), null, 'a second mount must not re-apply it');
+  assert.equal(S.takeHandoff(store,{actor:'actor1',workspace:'ws1'}), null, 'a second mount must not re-apply it');
+});
+
+
+test('private drafts and handoffs require both account and workspace and ignore legacy payloads',()=>{
+ const store=fakeStore(),scope={actor:'a',workspace:'w'};
+ store.setItem('zoi_composer_draft_w',JSON.stringify({draft:{body:'legacy private'}}));
+ store.setItem('zoi_composer_handoff',JSON.stringify({body:'legacy handoff'}));
+ assert.equal(S.loadDraft('w',store,'a'),null);
+ assert.equal(S.takeHandoff(store,scope),null);
+ assert.equal(S.saveDraft('w',{body:'missing identity'},store),false);
+ assert.equal(S.setHandoff({body:'missing scope'},store),false);
+ S.saveDraft('w',{body:'private A'},store,'a');
+ assert.equal(S.loadDraft('w',store,'b'),null);
+ assert.equal(S.loadDraft('other',store,'a'),null);
+ S.clearDraft('w',store,'b');assert.equal(S.loadDraft('w',store,'a').draft.body,'private A');
+ S.setHandoff({body:'private handoff'},store,scope);
+ assert.equal(S.takeHandoff(store,{actor:'b',workspace:'w'}),null);
+ assert.equal(S.takeHandoff(store,{actor:'a',workspace:'other'}),null);
+ assert.equal(S.takeHandoff(store,scope).body,'private handoff');
 });

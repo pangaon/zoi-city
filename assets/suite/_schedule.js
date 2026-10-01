@@ -418,30 +418,30 @@
    * and offered back on the next mount. Never silently restored — a surprise
    * body in the box is worse than losing it.
    */
-  function draftKey(ws) { return 'zoi_composer_draft_' + String(ws || 'default'); }
-  function saveDraft(ws, draft, store) {
-    var s = store || (global.localStorage);
-    if (!s) return false;
+  function draftKey(ws,actor) { return ws&&actor?'zoi_composer_draft_v2:'+encodeURIComponent(String(actor))+':'+encodeURIComponent(String(ws)):null; }
+  function saveDraft(ws, draft, store, actor) {
+    var s = store || (global.localStorage), key=draftKey(ws,actor);
+    if (!s||!key) return false;
     try {
-      s.setItem(draftKey(ws), JSON.stringify({ at: Date.now(), draft: draft }));
+      s.setItem(key, JSON.stringify({ at: Date.now(), draft: draft }));
       return true;
     } catch (e) { return false; }
   }
-  function loadDraft(ws, store) {
-    var s = store || (global.localStorage);
-    if (!s) return null;
+  function loadDraft(ws, store, actor) {
+    var s = store || (global.localStorage), key=draftKey(ws,actor);
+    if (!s||!key) return null;
     try {
-      var raw = s.getItem(draftKey(ws));
+      var raw = s.getItem(key);
       if (!raw) return null;
       var j = JSON.parse(raw);
       if (!j || !j.draft) return null;
       return j;
     } catch (e) { return null; }
   }
-  function clearDraft(ws, store) {
-    var s = store || (global.localStorage);
-    if (!s) return false;
-    try { s.removeItem(draftKey(ws)); return true; } catch (e) { return false; }
+  function clearDraft(ws, store, actor) {
+    var s = store || (global.localStorage), key=draftKey(ws,actor);
+    if (!s||!key) return false;
+    try { s.removeItem(key); return true; } catch (e) { return false; }
   }
 
   /** Is a stored draft worth offering back? Empty shells are not. */
@@ -460,21 +460,15 @@
    * item cannot be found the draft is still saved, and the user is told where
    * to find it — never a silent no-op.
    */
-  var HANDOFF_KEY = 'zoi_composer_handoff';
-  function setHandoff(payload, store) {
-    var s = store || global.localStorage;
-    if (!s) return false;
-    try { s.setItem(HANDOFF_KEY, JSON.stringify(payload || {})); return true; } catch (e) { return false; }
+  var HANDOFF_KEY='zoi_composer_handoff'; // Legacy identifier only; never consumed without scope.
+  function handoffKey(scope){return scope&&scope.actor&&scope.workspace?'zoi_composer_handoff_v2:'+encodeURIComponent(String(scope.actor))+':'+encodeURIComponent(String(scope.workspace)):null;}
+  function setHandoff(payload, store, scope) {
+    var s=store||global.localStorage,key=handoffKey(scope);if(!s||!key)return false;
+    try{s.setItem(key,JSON.stringify(payload||{}));return true;}catch(e){return false;}
   }
-  function takeHandoff(store) {
-    var s = store || global.localStorage;
-    if (!s) return null;
-    try {
-      var raw = s.getItem(HANDOFF_KEY);
-      if (!raw) return null;
-      s.removeItem(HANDOFF_KEY);
-      return JSON.parse(raw);
-    } catch (e) { return null; }
+  function takeHandoff(store, scope) {
+    var s=store||global.localStorage,key=handoffKey(scope);if(!s||!key)return null;
+    try{var raw=s.getItem(key);if(!raw)return null;s.removeItem(key);return JSON.parse(raw);}catch(e){return null;}
   }
 
   global.ZoiSchedule = {

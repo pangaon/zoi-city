@@ -72,7 +72,7 @@
       if (!doc.getElementById(id)) {
         var tag = doc.createElement('script');
         tag.id = id;
-        tag.src = SELF_DIR + file + '.js';
+        tag.src = SELF_DIR + file + '.js' + (file === '_schedule' ? '?v=20261001-actor-drafts' : '');
         tag.async = false;
         (doc.head || doc.documentElement).appendChild(tag);
       }
@@ -450,6 +450,33 @@
     root.innerHTML = '';
     var wrap = el('div', 'zk-wrap');
     root.appendChild(wrap);
+    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false, modalClosers=new Set();
+    function dispose(message){
+      if(ended)return;ended=true;
+      if(typeof saveTimer!=='undefined'&&saveTimer)global.clearTimeout(saveTimer);
+      scopeObserver.disconnect();
+      ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.removeEventListener(n,scopeChanged);});
+      modalClosers.forEach(function(close){close();});modalClosers.clear();
+      if(root.contains(wrap)){root.replaceChildren();if(typeof message==='string')root.textContent=message;}
+    }
+    function scopeActive(){
+      if(ended)return false;
+      if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
+      return true;
+    }
+    function scopeChanged(){scopeActive();}
+    var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(doc.body,{childList:true,subtree:true});
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
+    var originalToast=toast;toast=function(){if(scopeActive())originalToast.apply(null,arguments);};
+    var originalRpc=C.api.rpc.bind(C.api), originalAuth=C.auth;
+    C=Object.assign({},C,{auth:Object.assign({},originalAuth,{token:function(){if(!scopeActive())throw Error('Account or workspace changed.');return originalAuth.token.call(originalAuth);}})});
+    C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
+      if(!scopeActive())throw Error('Account or workspace changed.');
+      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      catch(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');throw e;}
+    }})});
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+
 
     // toolbar
     var bar = el('div', 'zk-bar');
@@ -596,6 +623,7 @@
       return out;
     }
     function renderCampaignFilter() {
+      if(!scopeActive())return;
       var sel = q('campaign');
       var cur = state.campaign;
       var opts = '<option value="">All campaigns</option>';
@@ -638,6 +666,7 @@
       return key;
     }
     function renderNetworkFilter() {
+      if(!scopeActive())return;
       var sel = q('network');
       if (!sel) return;
       var present = {};
@@ -740,6 +769,7 @@
 
     /* ---------- render dispatch ---------- */
     function render() {
+      if(!scopeActive())return;
       q('range').textContent = rangeLabel();
       renderCampaignFilter();
       renderNetworkFilter();
@@ -782,6 +812,7 @@
 
     /* ---------- AGENDA: the liturgical planning view ---------- */
     function renderAgenda() {
+      if(!scopeActive())return;
       var box = el('div', 'zk-ag');
       var main = el('div', 'zk-agcol');
       var side = el('div', 'zk-agcol');
@@ -853,6 +884,7 @@
 
     /* ---------- opportunities panel ---------- */
     function renderOppsPanel() {
+      if(!scopeActive())return;
       var card = el('div', 'zk-side');
       card.innerHTML = '<h4>This week&rsquo;s opportunities</h4>' +
         '<p class="zk-hint">Feasts and name days in the next seven days, computed from the Paschalion. One click drafts the post.</p>';
@@ -886,6 +918,7 @@
 
     /* ---------- queue health panel: real slots, real posts ---------- */
     function renderQueuePanel() {
+      if(!scopeActive())return;
       var card = el('div', 'zk-side');
       card.style.marginTop = '12px';
       var act = state.S ? state.S.activeSlots(state.slots) : (state.slots || []);
@@ -935,7 +968,8 @@
      * through localStorage and we click the shell's own nav item. If either is
      * unavailable the user is told where the draft went — never a silent no-op. */
     function gotoComposer(payload) {
-      var stored = state.S ? state.S.setHandoff(payload) : false;
+      if(!scopeActive())return;
+      var stored = state.S ? state.S.setHandoff(payload,null,{actor:actorAtMount,workspace:workspaceAtMount}) : false;
       if (!stored) { toast('Storage is unavailable, so the draft could not be handed over.'); return; }
       var nav = doc.querySelector('.nitem[data-id="composer"]');
       if (nav && nav.click) { nav.click(); return; }
@@ -952,6 +986,7 @@
 
     /* ---------- undo bar ---------- */
     function renderUndoBar() {
+      if(!scopeActive())return;
       undoBox.innerHTML = '';
       if (!state.lastDeleted) return;
       var p = state.lastDeleted.post;
@@ -1041,6 +1076,7 @@
 
     /* ---------- MONTH ---------- */
     function renderMonth() {
+      if(!scopeActive())return;
       var c = state.cursor;
       var first = new Date(c.getFullYear(), c.getMonth(), 1);
       var gridStart = addDays(first, -first.getDay());
@@ -1148,6 +1184,7 @@
 
     /* ---------- WEEK ---------- */
     function renderWeek() {
+      if(!scopeActive())return;
       var c = state.cursor;
       var ws = startOfDay(addDays(c, -c.getDay()));
       var today = startOfDay(new Date());
@@ -1178,6 +1215,7 @@
 
     /* ---------- LIST (upcoming) ---------- */
     function renderList() {
+      if(!scopeActive())return;
       var today = startOfDay(new Date());
       var ps = filteredPosts().filter(function (p) {
         var d = postDate(p);
@@ -1291,8 +1329,9 @@
         '<div class="zk-mf" data-role="foot"></div>';
       ov.appendChild(modal);
       doc.body.appendChild(ov);
-      function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); doc.removeEventListener('keydown', onKey); }
+      function close() { modalClosers.delete(close);if (ov.parentNode) ov.parentNode.removeChild(ov); doc.removeEventListener('keydown', onKey); }
       function onKey(e) { if (e.key === 'Escape') close(); }
+      modalClosers.add(close);
       doc.addEventListener('keydown', onKey);
       ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
       modal.querySelector('[data-role="close"]').addEventListener('click', close);
@@ -1761,10 +1800,12 @@
 
     // The liturgical layer and the scheduling maths are two small local files.
     var libs = await loadDeps(doc);
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
     state.O = libs.O;
     state.S = libs.S;
     await Promise.all([loadPosts(), loadSlots()]);
-    render();
+    if(scopeActive())render();
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */
