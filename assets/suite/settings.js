@@ -119,7 +119,8 @@
     var actor = C.auth.load?.()?.user_id, workspace = ctx.ws, ended = false, role = null;
     var aiLoaded = false, nameBusy = false, aiBusy = false, namePending = null, aiPending = null;
     function active() { return !ended && root.isConnected && root.contains(wrap) && !!actor && C.auth.load?.()?.user_id === actor && ctx.ws === workspace; }
-    function destroy() { if (ended) return; ended = true; clearInterval(timer); observer.disconnect(); ['storage','focus','zoi:auth-change','zoi:authchange'].forEach(function(event){ global.removeEventListener(event,check); }); namePending = aiPending = null; wrap.replaceChildren(); }
+    var teamController=null;
+    function destroy() { if (ended) return; ended = true; teamController?.destroy(); clearInterval(timer); observer.disconnect(); ['storage','focus','zoi:auth-change','zoi:authchange'].forEach(function(event){ global.removeEventListener(event,check); }); namePending = aiPending = null; wrap.replaceChildren(); }
     function check() { if (active()) return; destroy(); if (root.contains(wrap)) wrap.textContent = 'Your account or workspace changed. Reopen Settings to continue.'; }
     var timer = setInterval(check, 500), observer = new MutationObserver(check);
     observer.observe(document.body, {childList:true,subtree:true});
@@ -214,6 +215,9 @@
 
     aiCard.appendChild(aiBody);
     wrap.appendChild(aiCard);
+
+    var teamRoot=el('section','zs-card');teamRoot.textContent='Loading your team…';wrap.appendChild(teamRoot);
+    import('/assets/suite/workspace-team.mjs?v=20261001-team').then(function(module){if(active())teamController=module.mountWorkspaceTeam(teamRoot,{C:C,ws:workspace,active:active,onAccessLost:function(){destroy();wrap.textContent='Your workspace access changed. Reopen Settings to continue.';}});}).catch(function(){if(active())teamRoot.textContent='Team tools could not load. Reopen Settings to retry.';});
 
     /* ===== 3) Appearance / theme ===== */
     var thCard = el('div', 'zs-card');

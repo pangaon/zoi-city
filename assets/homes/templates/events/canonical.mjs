@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20260930-labels';
+import {mountEventActions} from './client.mjs?v=20261001-camera';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');
