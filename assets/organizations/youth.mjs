@@ -1,4 +1,4 @@
-import{privateScope,youthPendingGuard}from'./private-scope.mjs';
+import{privateScope,youthPendingGuard}from'./private-scope.mjs?v=20261001-workspace-scope';
 import{esc,when}from'./core.mjs';import{youthProgramData,youthEnrolData,youthCatalog,youthFamily,youthOperator,youthReceipt,youthError}from'./youth-model.mjs';
 function shell(root,title){if(!document.querySelector('link[data-youth-css]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/assets/organizations/calendar.css';link.dataset.youthCss='';document.head.append(link);}root.innerHTML=`<section class="orgcal"><h2>${esc(title)}</h2><p role="status" aria-live="polite" data-status></p><div data-recovery></div><div data-body></div></section>`;return{body:root.querySelector('[data-body]'),status:root.querySelector('[data-status]'),recovery:root.querySelector('[data-recovery]')};}
 function controller(root,C,parts,ctx=null,listing=null){
