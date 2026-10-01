@@ -215,6 +215,19 @@
         { k: 'press_kit_url', label: 'Press kit', type: T.URL }
       ]
     },
+    hospitality: {
+      title: 'Your hotel',
+      note: 'Describe your actual room types, dining and occasion spaces. Your booking provider or team confirms rates and availability.',
+      fields: ['rooms','dining','venues'].map(function(key){return {k:key,label:{rooms:'Rooms',dining:'Dining',venues:'Occasion spaces'}[key],type:T.REPEAT,maxRows:30,stableIds:true,catalogue:true,of:[
+        {k:'name',label:'Name',type:T.TEXT,max:160,required:true},
+        {k:'detail',label:'Details',type:T.AREA,max:500},
+        {k:'image',label:'Photo URL (HTTPS)',type:T.URL,max:2000},
+        {k:'source',label:'Details link (HTTPS)',type:T.URL,max:2000}
+      ]};}).concat([
+        {k:'amenities',label:'Amenities',type:T.TAGS,catalogue:true,hint:'Only add amenities your hotel actually provides. Up to 20.'},
+        {k:'booking_url',label:'Booking or enquiry link',type:T.URL,hint:'Opens your provider. Adding a link does not connect room inventory.'}
+      ])
+    },
     venue: {
       title: 'Your venue',
       fields: [
@@ -267,6 +280,7 @@
   ];
   function schemaFor(entityType, categorySlug) {
     var t = String(entityType || '').toLowerCase();
+    if (['hotels','hotel','resorts','guesthouses','accommodation'].indexOf(String(categorySlug||'').toLowerCase())!==-1) return {key:'hospitality',schema:V.hospitality};
     if (t === 'artist' || t === 'musician') return {key:'music',schema:V.music};
     if (V[t]) return { key: t, schema: V[t] };
     var c = String(categorySlug || '');
@@ -353,6 +367,21 @@
     return out;
   }
 
+  function catalogue(key,value){
+    if(value===null)return null;
+    if(!Array.isArray(value)||value.length>(key==='amenities'?20:30))throw Error('Too many or invalid '+key+' entries.');
+    var seen=Object.create(null);
+    function plain(v,max){return typeof v==='string'&&v.trim().length>0&&v.length<=max&&!/[<>\u0000-\u001f]/.test(v);}
+    function link(v){if(v===undefined||v==='')return true;try{var u=new URL(v);return v.length<=2000&&u.protocol==='https:'&&!u.username&&!u.password&&!/\s/.test(v);}catch(e){return false;}}
+    value.forEach(function(row){
+      if(key==='amenities'){if(!plain(row,120)||seen[row.toLowerCase()])throw Error('Use distinct amenity names, up to 120 characters.');seen[row.toLowerCase()]=true;return;}
+      if(!row||typeof row!=='object'||Array.isArray(row)||Object.keys(row).some(function(k){return ['id','name','detail','image','source'].indexOf(k)===-1;})||!plain(row.name,160))throw Error('Each offering needs a name, up to 160 characters.');
+      if(row.detail!==undefined&&(typeof row.detail!=='string'||row.detail.length>500||/[<>\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(row.detail)))throw Error('Details must be plain text, up to 500 characters.');
+      if(row.id!==undefined&&(typeof row.id!=='string'||!/^[A-Za-z0-9_-]{1,80}$/.test(row.id)||seen[row.id]))throw Error('Each offering needs a distinct identifier.');
+      if(row.id)seen[row.id]=true;
+      if(!link(row.image)||!link(row.source))throw Error('Photo and details links must be complete HTTPS URLs without login details.');
+    });return value;
+  }
   function money(amount,currency){
     amount=String(amount||'').trim();currency=String(currency||'').trim().toUpperCase();
     if(!amount&&!currency)return '';
@@ -363,7 +392,7 @@
     if((amount.split('.')[1]||'').length>digits)throw Error('This currency allows '+digits+' decimal places.');
     return currency+' '+amount;
   }
-  global.ZoiVerticalForms = {money:money,
+  global.ZoiVerticalForms = {money:money,catalogue:catalogue,
     T: T, DAYS: DAYS, SHARED: SHARED, VERTICALS: V,
     schemaFor: schemaFor, fieldsFor: fieldsFor,
     partition: partition, clean: clean, isEmpty: isEmpty, ENRICH_ALIAS: ENRICH_ALIAS

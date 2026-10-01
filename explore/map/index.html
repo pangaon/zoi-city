@@ -84,7 +84,7 @@
   .m-panel header{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
   .m-panel header h2{margin:0;font-family:"Fraunces",serif;font-size:16px;font-weight:600;letter-spacing:-.01em;flex:1}
   .m-panel header .m-sub{display:block;font-family:"Hanken Grotesk",sans-serif;font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0}
-  .m-panel .m-body{flex:1;overflow-y:auto;overscroll-behavior:contain}
+  .m-panel .m-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
   .m-xbtn{border:1px solid var(--line);background:var(--bg2);color:var(--mut);width:28px;height:28px;
     border-radius:8px;cursor:pointer;font-size:15px;line-height:1;flex:0 0 auto}
   .m-xbtn:hover{color:var(--tx);border-color:var(--line2)}
@@ -120,7 +120,8 @@
   .m-dir svg{width:17px;height:17px;fill:currentColor}
   @media (max-width:520px){.m-dir span{display:none}.m-dir{padding:0 15px}}
   .m-empty{padding:34px 20px;text-align:center;color:var(--mut);font-size:13.5px;line-height:1.6}
-  .m-panel footer{padding:9px 15px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);line-height:1.5}
+  .m-panel #pfoot{max-height:130px}
+  .m-panel footer{flex:0 0 auto;max-height:160px;overflow-y:auto;padding:9px 15px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);line-height:1.5}
 
   /* map controls, bottom right */
   .m-tools{bottom:14px;right:calc(var(--pw) + 26px);padding:6px;display:flex;flex-direction:column;gap:4px;z-index:13}
@@ -1042,31 +1043,31 @@
     });
     listState = { items: vis, shown: 0, mode: 'all' };
     $('ptitle').innerHTML = (here ? 'Street locations near you · more places below' : (query ? 'Search results' : 'Explore places')) +
-      '<span class="m-sub">' + (vis.length === ALL.length
-        ? fmtN(vis.length) + ' places'
-        : fmtN(vis.length) + ' of ' + fmtN(ALL.length) + ' shown') + '</span>';
+      '<span class="m-sub">' + fmtN(vis.length) + (vis.length===1?' place loaded':' places loaded') + '</span>';
     $('pclose').hidden = true;
     paint(true);
-    var area=areaState();
-    $('pfoot').innerHTML = coverageNote()+(area.active?'<p>'+area.rows.length+' public search results loaded for this search or area; additional places have no verified pin.</p>'+(area.error?'<p role="status">'+esc(area.error)+'</p>':'')+(area.busy?'<p role="status">Loading additional places…</p>':!area.done?'<button type="button" data-area-more>'+ (area.error?'Retry area results':'Load more area results')+'</button>':''):'');
+    renderBrowseFooter();
   }
 
   var totalListings = null;
+  function renderBrowseFooter() {
+    if (listState.mode !== 'all') return;
+    var area=areaState(),items=listState.items,located=items.filter(mapTools.hasStreetPosition).length;
+    var context=area.active?'In these loaded results':'In the loaded list';
+    $('pfoot').innerHTML='<p>'+context+': '+fmtN(located)+' with street-level map positions; '+fmtN(items.length-located)+' awaiting a map position.</p>'+
+      (area.active&&located===0?'<p>No street-level positions in these loaded results. Browse the list for details.</p>':'')+
+      (area.active?''+(area.error?'<p role="status">'+esc(area.error)+'</p>':'')+(area.busy?'<p role="status">Loading additional places…</p>':!area.done?'<button type="button" data-area-more>'+ (area.error?'Retry area results':'Load more area results')+'</button>':''):'')+
+      '<details><summary>Global map coverage</summary><p>Area results include places without street-level positions; these remain in the list without a pin.</p><p>'+coverageNote()+'</p></details>';
+    $('pfoot').scrollTop=0;
+  }
   function coverageNote() {
-    var parts = [];
-    if (failedPages || truncated) {
-      parts.push(fmtN(ALL.length) + ' places loaded.');
-    } else if (totalListings && totalListings > ALL.length) {
-      parts.push(fmtN(ALL.length) + ' of ' + fmtN(totalListings) +
-        ' listings have coordinates. The rest are in <a href="/explore">Explore</a>.');
-    } else {
-      parts.push(fmtN(ALL.length) + ' listings available to browse.');
-    }
-    var located=ALL.filter(mapTools.hasStreetPosition).length;
-    parts.push(fmtN(located)+' have street-level map positions; '+fmtN(ALL.length-located)+' remain browsable by name and city without a map pin.');
-    if (truncated) parts.push('The map reached its display limit. More places may be available in Explore.');
+    var parts = [],located=ALL.filter(mapTools.hasStreetPosition).length;
+    parts.push('The global map feed has '+fmtN(ALL.length)+' loaded records, including '+fmtN(located)+' with street-level map positions.');
+    if (totalListings) parts.push('The full directory contains '+fmtN(totalListings)+' listings worldwide.');
+    parts.push('Search an area to load additional directory results here, including places without coordinates, or browse <a href="/explore">Explore</a>.');
+    if (truncated) parts.push('The map feed reached its display limit; these counts are not the full directory.');
     if (failedPages) {
-      parts.push('<strong>Part of the directory did not load</strong> — some places are missing. ' +
+      parts.push('<strong>Part of the map feed did not load</strong> — some places are missing. ' +
         '<button type="button" class="m-linkish" id="reloadmap">Reload</button>');
     }
     return parts.join(' ');
@@ -1166,8 +1167,12 @@
   function showMatches(){
     if(!ready){status('The map is still loading. Try your search in a moment.',false,3500);return;}
     query=$('q').value.trim();$('clearq').hidden=!query;showAll();refresh();setSheet(false);
-    var found=ALL.filter(matches),bounds=mapTools.matchBounds(found);
-    if(bounds){var mobile=matchMedia('(max-width:860px)').matches;map.fitBounds(bounds,{padding:mobile?{top:document.querySelector('.m-controls').offsetHeight+30,bottom:Math.min(innerHeight*.29,220),left:25,right:25}:{top:35,bottom:35,left:410,right:410},maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else status(found.length?fmtN(found.length)+' matching places are in the list. Street positions are awaiting verification.':'No loaded places match. Search the full directory in Explore.',false,6000);writeUrl();
+    var found=listState.items,bounds=mapTools.matchBounds(found);
+    if(bounds){var mobile=matchMedia('(max-width:860px)').matches;map.fitBounds(bounds,{padding:mobile?{top:document.querySelector('.m-controls').offsetHeight+30,bottom:Math.min(innerHeight*.29,220),left:25,right:25}:{top:35,bottom:35,left:410,right:410},maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else {
+      // No trusted scope bounds: discard the previous area's camera, never invent a listing pin.
+      map.stop();map.jumpTo({center:[0,0],zoom:0.6,pitch:0,bearing:0});
+      status('World view — no street-level positions in these loaded results. Browse the place list for details.',false,6000);
+    }writeUrl();
   }
   $('mapsearch').addEventListener('submit',function(e){e.preventDefault();if(query!==$('q').value.trim()){query=$('q').value.trim();mapSearchIntent();}showMatches();});
   document.querySelectorAll('[data-start-city]').forEach(function(b){b.addEventListener('click',function(){if(!ready){status('The map is still loading.',false,2500);return;}$('q').value=b.dataset.startCity;query=$('q').value;mapSearchIntent();showMatches();});});
@@ -1514,7 +1519,7 @@
     C.api.rpc('home_stats', {}, { auth: 'anon' }).then(function (s) {
       var r = Array.isArray(s) ? s[0] : s;
       totalListings = r && (r.listings || r.total_listings || r.n_listings) || null;
-      if (listState.mode === 'all') $('pfoot').innerHTML = coverageNote();
+      if (listState.mode === 'all') renderBrowseFooter();
     }).catch(function () {});
 
     try { boot(initial); }

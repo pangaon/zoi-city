@@ -1,0 +1,1 @@
+Run `node tests/browser/host-request-recovery/verify.cjs` from the repository root. Uses installed Chromium or CHROMIUM_EXECUTABLE_PATH. Mounts real host modules and styles against synthetic RPCs, blocks external requests, and writes /tmp/host-request-{unknown,recovered}-{390,1440}.png. No live data or messages.
