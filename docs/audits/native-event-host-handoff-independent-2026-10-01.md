@@ -1,0 +1,9 @@
+# Independent native selected-event handoff acceptance — 1 October 2026
+
+Accepted the bounded context-preserving handoff. Runtime hashes: Tickets `c5aac0aeb7878f0846685baf5c595d5155a1c0683482486df2bd4264209107b1`; helper `85d5004bd5d21451941392318afa762fa0888e26d24ea4c04bf23c31d2da4254`.
+
+Source review confirms guest URL contains only the canonical selected event UUID. Organiser handoff uses the explicitly selected workspace, fresh exact-one owner/admin membership and the existing event ownership/inventory reader before constructing the fixed HTTPS host URL. No first-workspace fallback or token is embedded. Captured actor, mounted event and selected workspace are checked after asynchronous reads and before opening. Browser independently authenticates/authorizes; this does not carry the native login into the browser.
+
+Independent six unit tests passed (`/tmp/native-event-host-units-independent.log`). Actual running Expo web browser test passed owner/viewer at 390/1440 (`/tmp/native-event-host-independent.log`), selecting a workspace that is not first, checking exact guest and operator URLs, denying viewer before inventory read, and rejecting a held authority result after navigation and workspace change. Supabase responses were controlled and external opening was captured, not followed. No customer/provider mutation occurred.
+
+Phone screenshot inspected: approved Zoi logo and event title are clear, guest/organiser actions fit their card without horizontal overflow. The organiser button wraps on phone but remains readable. This is Expo web evidence, not physical iOS/Android acceptance or proof that a real user reached authorized host tools in a separate browser. Deadline/payment tools remain the separately reviewed web feature; no native payment UI or provider collection is claimed.
