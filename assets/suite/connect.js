@@ -170,6 +170,31 @@
     var wrap = el('div', 'zn-wrap');
     root.appendChild(wrap);
 
+    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false;
+    function dispose(message){
+      if(ended)return;ended=true;scopeObserver.disconnect();
+      ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.removeEventListener(n,scopeChanged);});
+      if(root.contains(wrap)){root.replaceChildren();if(typeof message==='string')root.textContent=message;}
+    }
+    function scopeActive(){
+      if(ended)return false;
+      if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
+      return true;
+    }
+    function scopeChanged(){scopeActive();}
+    function clearOnDenied(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');}
+    var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(root.ownerDocument.body,{childList:true,subtree:true});
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
+    var originalToast=toast;toast=function(){if(scopeActive())originalToast.apply(null,arguments);};
+    var originalRpc=C.api.rpc.bind(C.api);
+    C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
+      if(!scopeActive())throw Error('Account or workspace changed.');
+      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      catch(e){clearOnDenied(e);throw e;}
+    }})});
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+
+
     // header
     var head = el('div', 'zn-head');
     var htxt = el('div');
@@ -191,6 +216,7 @@
     wrap.appendChild(banner);
 
     function paintBanner() {
+      if(!scopeActive())return;
       var ready = PLATFORMS.filter(function (p) { return providerReady[p.key]; });
       banner.className = 'zn-banner' + (ready.length ? ' zn-live' : '');
       bdot.innerHTML = ready.length ? CHECK_SVG : SHIELD_SVG;
@@ -274,6 +300,7 @@
 
     /* ---------- render the platform cards ---------- */
     function renderGrid() {
+      if(!scopeActive())return;
       grid.innerHTML = '';
       if (state.loading) {
         grid.appendChild(el('div', 'zn-load', 'Loading accounts…'));
@@ -366,6 +393,7 @@
           // server-side (PKCE where the provider requires it) and hands it back;
           // we navigate to it. No OAuth secrets ever touch the browser.
           btn.addEventListener('click', async function () {
+            if(!scopeActive())return;
             btn.disabled = true;
             var original = btn.textContent;
             btn.textContent = 'Opening ' + p.name + '\u2026';
@@ -379,7 +407,10 @@
                 },
                 body: JSON.stringify({ workspace: ctx.ws, platform: p.key, return_to: location.origin + '/social' })
               });
+              if(!scopeActive())return;
+              if(r.status===401||r.status===403){clearOnDenied({status:r.status});return;}
               var j = await r.json().catch(function () { return {}; });
+              if(!scopeActive())return;
               var url = j.url || j.authorize_url || j.redirect;
               if (r.ok && url) { location.href = url; return; }
               toast(j.error || ('Could not start the ' + p.name + ' connection.'));
@@ -400,6 +431,7 @@
 
     /* ---------- data loaders ---------- */
     async function refreshChannels() {
+      if(!scopeActive())return;
       state.loading = true;
       renderGrid();
       try {
@@ -413,6 +445,7 @@
     }
 
     async function addHandle() {
+      if(!scopeActive())return;
       if (state.adding) return;
       var platform = selPlat.value;
       var handle = (inHandle.value || '').trim();
@@ -429,6 +462,7 @@
           p_handle: handle,
           p_display: disp
         }, { auth: 'require' });
+        if(!scopeActive())return;
         inHandle.value = '';
         inDisp.value = '';
         toast('Planning handle added.');
@@ -481,6 +515,7 @@
     if (!state.channels.length) {
       refreshChannels();
     }
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */

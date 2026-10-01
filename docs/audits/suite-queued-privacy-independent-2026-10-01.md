@@ -1,0 +1,9 @@
+# Independent AI and Accounts continuation review — 1 October 2026
+
+Accepted the bounded client privacy correction. AI runtime SHA-256 `26b1dcdb41c1a75ca2cffc9fe860f6a68d6b36847f843d4c94eec6dffb667e63`; Accounts `d9adf27c9e105a216a45b81e7c4026d7c77b499af18d216f8ff5c2b9db8629c7`.
+
+Source review confirms validated actor/workspace UUIDs, early rejection of unresolved identities, mount lifecycle cleanup and RPC entry/completion fences. AI rechecks after token refresh and after response/body reads before using private output. Accounts rechecks after the handshake and JSON parsing before navigating to an authorization destination. Raw 401/403 clears the old private surface even with malformed response bodies. Already-issued provider work is not retroactively cancelled, and server authorization remains essential.
+
+Independent `OUTPUT_DIR=/tmp/suite-queued-privacy-independent node tests/browser/suite-queued-privacy/verify.cjs` passed 20 controlled actual-shell cases at 390/1440. Findings `/tmp/suite-queued-privacy-independent/findings.json`; log `/tmp/suite-queued-privacy-independent.log`. Cases include held refresh/account change with no private POST, held authorization result with no stale redirect, positive generation and draft save, intercepted cross-origin authorization navigation, denial cleanup and missing/opaque actor rejection. Seven AI generation units also passed (combined log `/tmp/queued-privacy-deadline-units-independent.log`).
+
+The phone result capture was visually inspected; it establishes the synthetic result card, with a transient saved toast over part of the action area. It is not a complete responsive design audit. All data/provider transports were controlled; no real model request, OAuth grant, account connection, publication or customer write occurred. Analytics is untouched and not accepted as complete by this review. Lead owns production-source parity, deployment and separate provider capability evidence.

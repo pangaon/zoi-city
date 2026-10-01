@@ -144,6 +144,31 @@
     wrap.appendChild(right);
     root.appendChild(wrap);
 
+    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false;
+    function dispose(message){
+      if(ended)return;ended=true;scopeObserver.disconnect();
+      ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.removeEventListener(n,scopeChanged);});
+      if(root.contains(wrap)){root.replaceChildren();if(typeof message==='string')root.textContent=message;}
+    }
+    function scopeActive(){
+      if(ended)return false;
+      if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
+      return true;
+    }
+    function scopeChanged(){scopeActive();}
+    function clearOnDenied(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');}
+    var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(root.ownerDocument.body,{childList:true,subtree:true});
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
+    var originalToast=toast;toast=function(){if(scopeActive())originalToast.apply(null,arguments);};
+    var originalRpc=C.api.rpc.bind(C.api);
+    C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
+      if(!scopeActive())throw Error('Account or workspace changed.');
+      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      catch(e){clearOnDenied(e);throw e;}
+    }})});
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+
+
     /* ---------- LEFT: prompt panel ---------- */
     var panel = el('div', 'zai-card');
     panel.innerHTML =
@@ -170,6 +195,7 @@
     panel.appendChild(fType);
 
     function renderTypes() {
+      if(!scopeActive())return;
       types.innerHTML = '';
       ACTIONS.forEach(function (a) {
         var t = el('div', 'zai-type' + (state.action === a.id ? ' on' : '') + (aiOn ? '' : ' disabled'));
@@ -272,6 +298,7 @@
 
     /* ---------- field sync per action ---------- */
     function syncFields() {
+      if(!scopeActive())return;
       var a = state.action;
       var lab = q('topiclab');
       var ta = q('topic');
@@ -314,6 +341,7 @@
 
     /* ---------- brand voice note ---------- */
     function renderVoice() {
+      if(!scopeActive())return;
       var box = q('voice');
       var p = state.profile;
       var settingsHint = ' <a class="zai-hintlink" href="#settings" data-role="tosettings">Improve it in Settings →</a>';
@@ -335,6 +363,7 @@
 
     /* ---------- results rendering ---------- */
     function showEmpty() {
+      if(!scopeActive())return;
       results.innerHTML =
         '<div class="zai-empty">' +
           '<svg viewBox="0 0 24 24"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z"/></svg>' +
@@ -344,6 +373,7 @@
         '</div>';
     }
     function showLoading() {
+      if(!scopeActive())return;
       var n = state.action === 'week' ? Math.min(state.count, 5) : 1;
       var h = '<div class="zai-loading">';
       for (var i = 0; i < n; i++) h += '<div class="zai-skel"></div>';
@@ -351,9 +381,11 @@
       results.innerHTML = h;
     }
     function showError(msg) {
+      if(!scopeActive())return;
       results.innerHTML = '<div class="zai-err"><b>Couldn’t generate.</b><br>' + esc(msg) + '</div>';
     }
     function showNotConfigured() {
+      if(!scopeActive())return;
       results.innerHTML =
         '<div class="zai-err"><b>Zoi’s AI isn’t connected yet.</b><br>' +
         'The workspace reached the AI service but it has no model key configured, so there is nothing to draft with. ' +
@@ -381,6 +413,7 @@
     }
 
     function renderSuggestions(list) {
+      if(!scopeActive())return;
       results.innerHTML = '';
       if (!list.length) {
         showError('Zoi’s AI replied but returned no usable text. Try rephrasing your topic and generate again.');
@@ -470,16 +503,19 @@
 
     /* ---------- token ---------- */
     async function freshToken() {
+      if(!scopeActive())throw Error("Account or workspace changed.");
       var t = (C.auth && typeof C.auth.token === 'function') ? C.auth.token() : null;
       if (C.auth && typeof C.auth.ensureFresh === 'function') {
         try { await C.auth.ensureFresh(); t = C.auth.token(); }
         catch (e) { /* keep whatever token we had; backend gates honestly */ }
       }
+      if(!scopeActive())throw Error("Account or workspace changed.");
       return t;
     }
 
     /* ---------- generate (the honest core) ---------- */
     async function generate() {
+      if(!scopeActive())return;
       if (!aiOn) { toast('AI drafting turns on when Zoi’s AI is connected.'); return; }
       if (state.loading) return;
 
@@ -498,6 +534,7 @@
 
       try {
         var token = await freshToken();
+        if(!scopeActive())return;
         var resp = await global.fetch(C.BASE + '/functions/v1/ai-generate', {
           method: 'POST',
           signal: AbortSignal.timeout(60000),
@@ -509,10 +546,13 @@
           body: JSON.stringify(body)
         });
 
+        if(!scopeActive())return;
+        if(resp.status===401||resp.status===403){clearOnDenied({status:resp.status});return;}
         var data = null, rawText = '';
         try { rawText = await resp.text(); } catch (e) { rawText = ''; }
         if (rawText) { try { data = JSON.parse(rawText); } catch (e) { data = null; } }
 
+        if(!scopeActive())return;
         if (!resp.ok) {
           var em = (data && data.error) ? data.error : ('The AI service returned an error (HTTP ' + resp.status + ').');
           if (resp.status === 403 || (data && data.error === 'no_access')) {
@@ -533,11 +573,12 @@
       } finally {
         state.loading = false;
         setGenBusy(false);
-        await refreshHistory();
+        if(scopeActive())await refreshHistory();
       }
     }
 
     function setGenBusy(busy) {
+      if(!scopeActive())return;
       var btn = q('go');
       if (!btn) return;
       if (busy) {
@@ -600,9 +641,11 @@
       state.tone = q('tone') ? q('tone').value : TONES[0];
     }
     if (!state.tone) state.tone = q('tone') ? q('tone').value : TONES[0];
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
     await refreshHistory();
     var savedId = new URLSearchParams(global.location.search).get('generation');
-    if (/^[0-9a-f-]{36}$/i.test(savedId || '')) await restoreGeneration(savedId);
+    if (scopeActive()&&/^[0-9a-f-]{36}$/i.test(savedId || '')) await restoreGeneration(savedId);
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */
