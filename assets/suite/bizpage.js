@@ -598,7 +598,7 @@
       var designSlot=el(doc,'div');designPanel.appendChild(designSlot);wrap.appendChild(designPanel);
       var designLoading=false;
       async function openDesign(){if(!designPanel.open||designHandle||designLoading||!scopeLive())return;designLoading=true;var epoch=++designEpoch;designSlot.innerHTML='<p role="status">Loading design tools…</p>';
-        try{var editor=await import('/assets/homes/editor.mjs');if(!scopeLive()||epoch!==designEpoch||!designSlot.isConnected)return;
+        try{var editor=await import('/assets/homes/editor.mjs?v=20261001-owner-access');if(!scopeLive()||epoch!==designEpoch||!designSlot.isConnected)return;
           var handle=await editor.mount(designSlot,ctx,{listing:s.listingId});if(!scopeLive()||epoch!==designEpoch||!designSlot.isConnected){handle.destroy();return;}designHandle=handle;
         }catch(e){if(scopeLive()&&epoch===designEpoch){designSlot.innerHTML='<p role="alert">Design tools could not load.</p><button type="button">Retry design tools</button>';designSlot.querySelector('button').onclick=openDesign;}}
         finally{designLoading=false;}

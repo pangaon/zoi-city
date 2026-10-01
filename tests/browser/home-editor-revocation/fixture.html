@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Owner editor access regression fixture</title>
+</head>
+<body>
+<div id="root"></div><script type="module">
+import {mount} from '/assets/homes/editor.mjs';
+const id=n=>'10000000-0000-4000-8000-'+String(n).padStart(12,'0');window.mode='ok';window.actor=id(1);window.writes=0;
+const C={auth:{load:()=>({user_id:actor}),token:()=>actor?'fixture-token':''},api:{rpc:async(fn,args)=>{if(fn==='home_design_change'){writes++;throw Error('network unavailable')}if(mode==='http-denied')throw Object.assign(Error('Forbidden'),{status:403});if(mode==='denied')throw Object.assign(Error('home_design_permission_denied'),{code:'42501'});if(mode==='transient')throw Error('network unavailable');return{ok:true,listing:id(3),workspace:id(2),version:0,items:[],history:[],draft:{schema_version:1,template:'concierge',section_order:['intro'],hidden_sections:[],copy:{headline:'PRIVATE OWNER DRAFT'},item_order:{offerings:[]}}}}}};
+window.handle=await mount(document.querySelector('#root'),{C,ws:id(2)},{listing:id(3)});window.ready=true;
+</script>
+</body>
+</html>

@@ -73,3 +73,11 @@ No new blocker was found in the published announcement/contact journey. Remainin
 `assets/homes/templates/events/promoter.mjs` now displays valid date-only concert values as “26 March 2027”, using UTC calendar formatting so viewers in Honolulu or Kiritimati see the same source day. Strict round-trip validation avoids silently converting invalid calendar dates. Non-date source wording and timestamps remain unchanged; no missing date/time is invented. Owner-supplied dates still come through the existing authoritative projection, including clears.
 
 Eleven focused promoter/generic-event tests passed, including both timezone extremes, leap day, invalid date, prose source date, timestamp preservation, owner replacement and sparse/cleared shows. This formatting change applies to every shared promoter home, not only OPA. It has not yet been released; the production screenshots above precede this polish.
+
+## Interactive-room entry-point candidate acceptance
+
+Independent current live inspection found the interactive-room entry existed but sat1860px below mobile #offerings viewport and1380px below desktop viewport. Candidate adds explicit hero/details/nav/photo-viewer3D entry points and automatic #room opening.
+
+Actual local canonical-rendered candidate390/1440 passed: fresh#room→actual Three canvas; choose10A→Use→enquiry preference10A and quantity focus; open gallery image→3Dlink→dialog closes and10A persists. Zero page errors. Evidence `.qa-opa-room/entry-candidate-results.json` and screenshots. One visual CSS issue reported to root: opener.hidden true did not hide its displayed button due button display rules; root owns correction. No candidate deployment claimed here.
+
+Follow-up: root's scoped opener hidden CSS correction independently rechecked at390/1440. Computed visibility is now hidden after scene readiness. Full entry/table/gallery/enquiry regression repeated successfully; candidate acceptance clear, browser closed.

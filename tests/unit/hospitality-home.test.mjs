@@ -11,3 +11,24 @@ test('owner setup routes are real tools and distinguish timed services from hote
 test('generic hotel consumes normalized website fields and filters interface imagery',()=>{const d=hospitalityHomeContent({...e,id:'11345678-1234-4234-8234-123456789012',website:'https://hotel.example/',profile:{_enrich:{photo_url:'https://hotel.example/rooms.jpg',email:'stay@hotel.example',booking_url:'https://hotel.example/book',checked_at:'2026-09-30'}}});assert.equal(d.hero,'https://hotel.example/rooms.jpg');assert.equal(d.email,'stay@hotel.example');assert.equal(d.provider,'https://hotel.example/book');assert.equal(d.providerDates,false);const logo=hospitalityHomeContent({...e,id:'11345678-1234-4234-8234-123456789012',website:'https://hotel.example/',profile:{_enrich:{photo_url:'https://hotel.example/logo.png'}}});assert.equal(logo.hero,'');});
 test('owner media and contact clears suppress enrichment and curated fallback',()=>{const d=hospitalityHomeContent({...e,profile:{photos:[],photo_url:null,email:null,phone:null,booking_url:null,_enrich:{photo_url:'https://source.example/old.jpg',email:'old@example.com',phone:'123456789',booking_url:'https://source.example/book'}}});assert.deepEqual(d.photos,[]);assert.equal(d.hero,'');assert.equal(d.email,'');assert.equal(d.phone,'');assert.equal(d.provider,'');});
 test('gallery-only hotel photos do not become the hero again in the model',()=>{const url='https://hotel.example/event-portrait.jpg';const d=hospitalityHomeContent({...e,id:'11345678-1234-4234-8234-123456789012',website:'https://hotel.example/',profile:{_enrich:{photos:[url],photo_roles:[{url,role:'gallery_only'}]}}});assert.equal(d.hero,'');assert.deepEqual(d.photos,[url]);});
+test('hospitality socials project official enrichment while owner clear/replacement remains authoritative',()=>{
+ const base={...e,id:'10000000-0000-4000-8000-000000000001',website:'https://hotel.test/',profile:{_enrich:{source_url:'https://hotel.test/',social:{facebook:'https://www.facebook.com/OfficialHotel/',instagram:'https://www.instagram.com/officialhotel/'}}}};
+ const d=hospitalityHomeContent(base);assert.deepEqual(d.socials.map(x=>x.platform),['facebook','instagram']);
+ const html=renderHospitalityHome(base);assert.match(html,/aria-label="Official social profiles"/);assert.match(html,/"sameAs":\["https:\/\/www.facebook.com\/OfficialHotel\//);
+ for(const socials of [null,{}, {youtube:'https://www.youtube.com/@OwnerHotel'}]){
+  const current={...base,owner_content:{social_links:socials}},links=Object.values(socials||{});assert.deepEqual(hospitalityHomeContent(current).socials.map(x=>x.url),links);
+  const rendered=renderHospitalityHome(current);assert.ok(!rendered.includes('https://www.facebook.com/OfficialHotel/'));assert.ok(!rendered.includes('https://www.instagram.com/officialhotel/'));if(!links.length)assert.ok(!rendered.includes('"sameAs"'));
+ }
+ assert.deepEqual(hospitalityHomeContent({...base,owner_content:{social_links:{bad:'javascript:alert(1)',secret:'https://user:pass@hotel.test/'}}}).socials,[]);
+});
+test('all hospitality designs omit empty services and room selection without hiding populated owner services',()=>{
+ const sparse={...e,id:'10000000-0000-4000-8000-000000000001',website:'https://hotel.test/',profile:{}};
+ for(const template of ['atelier','concierge','table','parea']){
+  const html=renderHospitalityHome(sparse,{template,section_order:['events','menu','services','gallery','visit']});
+  for(const id of ['services','menu','events','gallery']){assert.ok(!html.includes(`id="${id}"`));assert.ok(!html.includes(`href="#${id}"`));}
+  assert.ok(!html.includes('name="room"'));assert.ok(!html.includes('Rooms, dining'));assert.ok(!html.includes('Hotel website &amp; booking'));assert.ok(html.includes('Choose your dates and guests'));
+  const populated={...sparse,profile:{rooms:[{name:'Garden studio'}],dining:[{name:'Published café'}],venues:[{name:'Published meeting space'}]}};
+  const full=renderHospitalityHome(populated,{template,section_order:['events','menu','services']});assert.ok(full.indexOf('id="events"')<full.indexOf('id="menu"'));assert.ok(full.includes('Garden studio'));assert.ok(full.includes('Published café'));assert.ok(full.includes('name="room"'));
+  const hidden=renderHospitalityHome(populated,{template,hidden_sections:['services','menu','events','visit']});assert.ok(!hidden.includes('id="services"'));assert.ok(!hidden.includes('href="#services"'));assert.ok(!hidden.includes('data-shortlist='));
+ }
+});

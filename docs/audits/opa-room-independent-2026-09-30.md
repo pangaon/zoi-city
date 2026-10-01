@@ -31,3 +31,7 @@ Cold-load visual race found: table selection is available before Three.js finish
 ## Cold-load corrective candidate independent acceptance
 
 Read-reviewed ready-time reapplication using `notify:false,focus:false`: this synchronizes newly created geometry/labels without duplicating selection notification or resetting the chosen camera. Independently held the Three.js module network request, selected10A in the actual integrated form before releasing it, then released the module at390/1440. Both retained form10A, created exactly the10A pressed scene label, and closed the finder after successful WebGL initialization. Screenshot `/tmp/opa-cold-independent-390.png` inspected. Reproduction `/tmp/opa-cold-independent.mjs`. Corrective candidate passes; not yet a production-fix claim.
+
+## Corrective production c024633 acceptance
+
+Actual production390/1440 verified with Three.js request held until10A was selected. After releasing the original network request, field10A persisted, exactly10A scene label became pressed/highlighted, and finder closed. Use table10A → three people → Prepare my enquiry retained10A/3 with not-held/not-submitted wording; Clear emptied choice and hid stale note. Actual canonical/client/room-scene URLs all carried `?v=20260930-room-ready`. Inspected `/tmp/opa-cold-live-c024633-390.png`; logs `/tmp/opa-cold-live-c024633.log`, reproduction `/tmp/opa-cold-live-c024633.mjs`. Cold-load visual issue is resolved in the verified production artifact. No messages, payments or bookings sent; browser closed.
