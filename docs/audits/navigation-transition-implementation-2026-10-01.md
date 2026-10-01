@@ -25,3 +25,11 @@ Frozen hashes:
 - events/giannis-ploutarchos-andromache-toronto-2027/index.html: 8beec7f01abae9fa910f843caec13f2b302c21612e9d53dd099cba2517f2240c
 
 Independent review requested positive animation eligibility evidence. Fixture now records the first destination pagereveal without a rejection handler: normal-motion viewTransition must exist and its ready promise must resolve; reduced-motion viewTransition must be absent. All four cases pass. This verifies the configuration repair independently of expected cancellation handling.
+
+## Release loader/cache review — 04:07Z
+
+Explore references /assets/zoi-theme.js without a version query. Production response uses public,max-age=0,must-revalidate. sw.js explicitly fetches assets and pages network-first and only falls back offline. Therefore the bounded online release does not require a global loader query rewrite or service-worker cache-name change; deployment acceptance must compare actual served theme bytes and repeat the browser journey. Already cached offline behavior remains an explicit limitation. Both verifier scripts pass node --check and owned diff whitespace checks.
+
+## Actual production confirmation
+
+Release6228502 served exact reviewed theme/HTML hashes. Full actual public Toronto verifier exited0 at390/1440 with zero page exceptions and zero write attempts; search exact published UUID → rendered link → room → table10 → group passed. Evidence: /tmp/toronto-catalogue-production-6228502.json and toronto-catalogue-production-journey-2026-10-01.md. No prototype response substitutions or error suppression in this run.
