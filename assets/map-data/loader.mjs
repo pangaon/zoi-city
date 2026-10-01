@@ -18,11 +18,12 @@ export function unmappedPlace(entity,slug){
 export async function loadMapPages(fetchPage,{pageSize=1000,maxRows=40000,concurrency=4,onProgress=()=>{},retries=2,wait}={}){
  if(!Number.isSafeInteger(pageSize)||pageSize<1||!Number.isSafeInteger(maxRows)||maxRows<pageSize||!Number.isSafeInteger(concurrency)||concurrency<1||concurrency>4)throw Error('Invalid pagination limits');
  const maxPages=Math.floor(maxRows/pageSize),pages=[],failedOffsets=[];let requests=0,endDetected=false,stoppedOnFailure=false;
- for(let first=0;first<maxPages;first+=concurrency){const indexes=Array.from({length:Math.min(concurrency,maxPages-first)},(_,i)=>first+i);const batch=await Promise.all(indexes.map(async index=>{try{const rows=await retryMapRead(()=>{requests++;return fetchPage(index*pageSize,pageSize);},{retries,wait});if(!Array.isArray(rows)||rows.length>pageSize)throw Error('Invalid page response');return{index,rows};}catch(error){return{index,error};}}));
+ // Probe the first page before fan-out so an unavailable service receives one retry chain.
+ for(let first=0;first<maxPages;){const width=first===0?1:Math.min(concurrency,maxPages-first);const indexes=Array.from({length:width},(_,i)=>first+i);const batch=await Promise.all(indexes.map(async index=>{try{const rows=await retryMapRead(()=>{requests++;return fetchPage(index*pageSize,pageSize);},{retries,wait});if(!Array.isArray(rows)||rows.length>pageSize)throw Error('Invalid page response');return{index,rows};}catch(error){return{index,error};}}));
  let end=Infinity;for(const result of batch)if(!result.error&&result.rows.length<pageSize)end=Math.min(end,result.index);
  for(const result of batch){if(result.index>end)continue;if(result.error)failedOffsets.push(result.index*pageSize);else pages.push(result);}
  endDetected=Number.isFinite(end);onProgress({requests,loaded:pages.reduce((n,p)=>n+p.rows.length,0),failedPages:failedOffsets.length});
- if(endDetected)break;if(batch.every(r=>r.error)){stoppedOnFailure=true;break;}
+ if(endDetected)break;if(batch.every(r=>r.error)){stoppedOnFailure=true;break;}first+=width;
  }
  if(!pages.length)throw Error('Directory unavailable: no page could be loaded');
  pages.sort((a,b)=>a.index-b.index);const rows=pages.flatMap(p=>p.rows);const truncated=!endDetected&&!stoppedOnFailure&&pages.length+failedOffsets.length>=maxPages;

@@ -556,7 +556,7 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    mapTools = await import('/assets/map-data/loader.mjs?v=20261001-reviewed-directions');
+    mapTools = await import('/assets/map-data/loader.mjs?v=20261001-first-page-probe');
     previewModule = await import('/assets/map-data/preview.mjs?v=20261001-reviewed-directions');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
@@ -1532,6 +1532,7 @@
       $('ptitle').innerHTML = 'Could not load the map<span class="m-sub">the directory did not answer</span>';
       $('pbody').innerHTML = '<div class="m-empty">Try again in a moment, or browse <a href="/explore">Explore</a>.<br><button type="button" class="m-linkish" id="retrymap">Try again</button></div>';
       $('retrymap').addEventListener('click', function () { location.reload(); });
+      setSheet(false);
       return;
     }
 
