@@ -69,3 +69,22 @@ archive `/tmp/zoi-workspace-artist-release-f6mv3ko0` (tree
 `31a094ba9738a511e1cbbc557da4f29eeb521405`). The verifier additionally supports
 `WORKSPACE_SOURCE_ORIGIN` to exercise downloaded deployed modules with controlled
 RPCs after release; that mode has not yet been run at this audit checkpoint.
+
+## Production readback — release 0f29bc0
+
+After the lead pushed `0f29bc0`, read-only requests to
+`https://zoi.city/social/index.html`, `/assets/suite/bizpage.js` and
+`/assets/suite/workspace-creation.mjs` returned bytes identical to the three
+reviewed SHA256 values above. The deployed-source verifier then passed all shell
+checks again at both 390px and 1440px with no uncaught page errors.
+
+Command:
+
+```sh
+WORKSPACE_SOURCE_ORIGIN=https://zoi.city CHROMIUM_EXECUTABLE_PATH=/home/codespace/.cache/ms-playwright/chromium-1234/chrome-linux64/chrome node tests/browser/workspace-shell/verify.cjs
+```
+
+These are actual deployed frontend modules exercised locally with controlled RPC
+responses. They prove the deployed shell's handling of the tested responses, not
+an authenticated production creation or production backend write. No live account
+or workspace was changed by this reviewer.
