@@ -22,6 +22,11 @@ export function creatorRequestStore(scope:string){
  const namespace=scope.toLowerCase().replace(/[0-9]/g,d=>String.fromCharCode(103+Number(d)));
  return new PrivateRequestStore({getItem:async key=>Platform.OS==='web'?globalThis.sessionStorage.getItem(key)||null:SecureStore.getItemAsync(key),setItem:async(key,value)=>{if(Platform.OS==='web')globalThis.sessionStorage.setItem(key,value);else await SecureStore.setItemAsync(key,value,{keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY});},removeItem:async key=>{if(Platform.OS==='web')globalThis.sessionStorage.removeItem(key);else await SecureStore.deleteItemAsync(key);}},()=>client.session?.user.id,'zoi.creator-request.'+namespace+'.');
 }
+export function operationsRequestStore(scope:string){
+ if(scope!=='customer'&&!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(scope))throw Error('Invalid Operations workspace.');
+ const namespace=scope.toLowerCase().replace(/[0-9]/g,d=>String.fromCharCode(103+Number(d)));
+ return new PrivateRequestStore({getItem:async key=>Platform.OS==='web'?globalThis.sessionStorage.getItem(key)||null:SecureStore.getItemAsync(key),setItem:async(key,value)=>{if(Platform.OS==='web')globalThis.sessionStorage.setItem(key,value);else await SecureStore.setItemAsync(key,value,{keychainAccessible:SecureStore.WHEN_UNLOCKED_THIS_DEVICE_ONLY});},removeItem:async key=>{if(Platform.OS==='web')globalThis.sessionStorage.removeItem(key);else await SecureStore.deleteItemAsync(key);}},()=>client.session?.user.id,'zoi.operations-request.'+namespace+'.');
+}
 export const drafts = new DraftStore(AsyncStorage, () => client.session?.user.id);
 type AuthState = { workspaceId: string; setWorkspaceId: (id: string) => void; client: SessionClient; session: Session | null; booting: boolean; notice: string; setNotice: (text: string) => void; signOut: () => Promise<void> };
 const Context = createContext<AuthState | null>(null);

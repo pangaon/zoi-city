@@ -17,3 +17,4 @@ test('unavailable or corrupt durable storage fails before a mutation can start',
 });
 
 test('silent storage failure prevents sending without a durable marker',()=>{const storage={getItem(){return null},setItem(){}};const p=creatorPending({actor,scope:'customer',storage});assert.throws(()=>p.begin('creator_convert',{}),/creator_recovery_unavailable/);assert.equal(p.payload,null);});
+test('readback error after successful persistence fences replacement until remount',()=>{const storage=memory(),p=creatorPending({actor,scope:'customer',storage});const read=storage.getItem;storage.getItem=()=>{throw Error('read failed')};assert.throws(()=>p.begin('creator_convert',{}),/read failed/);assert.equal(storage.map.size,1);assert.throws(()=>p.begin('creator_convert',{}),/creator_recovery_unavailable/);storage.getItem=read;assert(creatorPending({actor,scope:'customer',storage}).record);});

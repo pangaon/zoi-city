@@ -30,12 +30,33 @@
   }
   async function mount(root, ctx) {
     var doc = root.ownerDocument; styles(doc);
-    var C = ctx.C || {}, rpc = C.api && C.api.rpc && C.api.rpc.bind(C.api);
+    var C = ctx.C || {}, transport = C.api && C.api.rpc && C.api.rpc.bind(C.api), actor=C.auth&&C.auth.load()?.user_id, workspace=ctx.ws;
+    root.__zoiOpsDestroy?.();var mountToken={};root.__zoiOpsMount=mountToken;
+    var alive=true,abort=new AbortController(),recovery,observer;
+    var helpers=await import('/assets/operations/recovery.mjs?v=20261001-ops-recovery');
+    if(root.__zoiOpsMount!==mountToken||!root.isConnected||C.auth.load()?.user_id!==actor||ctx.ws!==workspace)return {destroy:function(){}};
+    function active(){return alive&&root.isConnected&&root.contains(wrap)&&!!actor&&C.auth.load()?.user_id===actor&&ctx.ws===workspace;}
+    function assert(){if(!active())throw new Error('Operations account or workspace changed.');}
+    async function rpc(name,args,options){assert();try{var result=await transport(name,args,options);assert();return result;}catch(error){if(active()&&helpers.operationsDenied(error)){clearPrivate();render();}throw error;}}
+
     var state = {records:[],members:[],role:null,kind:'company',sector:'business',selected:null,busy:false,ready:false,dirty:false,events:[],archived:false};
-    root.innerHTML = '<section class="zops"><h2>Business Operations</h2><p class="zops-muted">Company records, relationships, projects and deadlines in your workspace.</p><div class="zops-status" role="status" aria-live="polite" data-o="status"></div><div data-o="content"></div></section>';
+    root.innerHTML = '<section class="zops"><h2>Business Operations</h2><p class="zops-muted">Company records, relationships, projects and deadlines in your workspace.</p><div class="zops-status" role="status" aria-live="polite" data-o="status"></div><div data-o="recovery"></div><div data-o="content"></div></section>';
     var wrap = root.firstElementChild;
+    var key='zoi:ops-pending:v1:'+actor+':'+workspace;
+    recovery=helpers.createOperationsRecovery({actor,workspace,current:active,call:(name,args)=>rpc(name,args,{auth:'require'}),nonce:()=>crypto.randomUUID(),changed:()=>{if(active())renderRecovery();},storage:{load:async()=>JSON.parse(global.sessionStorage.getItem(key)||'null'),save:async value=>global.sessionStorage.setItem(key,JSON.stringify(value)),clear:async()=>global.sessionStorage.removeItem(key)}});
+    function clearPrivate(){state.records=[];state.members=[];state.role=null;state.selected=null;state.events=[];state.dirty=false;recovery.dropPayload();}
+    function destroy(){alive=false;abort.abort();observer?.disconnect();clearPrivate();}
+    function account(){if(active())return;destroy();if(root.contains(wrap))root.innerHTML='<p>Your account changed. Reload Operations to access the current workspace.</p>';}
+    root.__zoiOpsDestroy=destroy;
+    observer=new MutationObserver(()=>{if(!root.contains(wrap))destroy();});observer.observe(root,{childList:true});
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(name=>global.addEventListener(name,account,{signal:abort.signal}));
+    function renderRecovery(){var host=q('recovery');if(!host)return;var p=recovery.state();host.innerHTML=(!p.ready?'<p>Load your recovery reference before making changes.</p><button type="button" data-ops-recovery="load">Load recovery reference</button>':'')+(p.marker?'<section class="zops-card"><h3>Check your previous change</h3><p>Private record content is not stored on this device.</p><button type="button" data-ops-recovery="check">Check saved receipt</button>'+(p.payload?'<button type="button" data-ops-recovery="retry">Retry exact change</button>':'')+'<button type="button" data-ops-recovery="cancel">Cancel if not saved</button><p>Cancellation preserves any change that already saved.</p></section>':'');
+      wrap.querySelectorAll('[data-o="form"] input,[data-o="form"] select,[data-o="form"] textarea,[data-o="form"] button,[data-o="new"]').forEach(function(node){if(p.blocked){if(!node.hasAttribute('data-ops-disabled'))node.dataset.opsDisabled=String(node.disabled);node.disabled=true;}else if(node.hasAttribute('data-ops-disabled')){node.disabled=node.dataset.opsDisabled==='true';delete node.dataset.opsDisabled;}});
+      host.querySelectorAll('button').forEach(button=>{button.disabled=state.busy||p.busy;button.addEventListener('click',()=>busy(async()=>{if(button.dataset.opsRecovery==='load'){await recovery.load();return;}var value=await recovery.recover(button.dataset.opsRecovery);if(value.state==='missing'){status('No saved receipt yet. Retry the exact change or cancel if unsaved before starting another.');return;}await refreshSaved(value);}));});
+    }
+    async function refreshSaved(value){state.selected=null;state.dirty=false;render();var message=value.state==='saved'?'Change saved. Reference '+value.record_id+'.':'Unsaved request cancelled. A delayed request cannot save it.';status(message);try{await load();state.selected=state.records.find(row=>row.id===value.record_id)||null;if(state.selected)state.kind=state.selected.kind;render();status(message);}catch(error){if(active())status(message+' Refresh to load current records.');}}
     function q(name) { return wrap.querySelector('[data-o="' + name + '"]'); }
-    function status(text) { q('status').textContent = text || ''; }
+    function status(text) { if(active()&&q('status'))q('status').textContent = text || ''; }
     function canWrite(kind) { return ['owner','admin'].indexOf(state.role) !== -1 || (state.role === 'editor' && kind !== 'company'); }
     function isAdmin() { return state.role === 'owner' || state.role === 'admin'; }
     function labels() { return {company:'Company records',contact:'Contacts',project:PROJECT_LABELS[state.sector] || 'Projects',task:'Tasks',audit:'Activity history'}; }
@@ -43,12 +64,12 @@
     function recordName(id) { var found = state.records.find(function (r) { return r.id === id; }); return found ? found.title : ''; }
     function confirmDiscard() { return !state.dirty || !global.confirm || global.confirm('Discard the unsaved changes in this form?'); }
     async function busy(fn) {
-      if (state.busy) return;
+      if (state.busy||!active()) return;
       state.busy = true;
       var controls = Array.from(wrap.querySelectorAll('button,input,select,textarea')).map(function (node) { var previous = node.disabled; node.disabled = true; return [node,previous]; });
       wrap.setAttribute('aria-busy','true');
       try { await fn(); } catch (error) { status(errorText(error)); }
-      finally { state.busy = false; wrap.removeAttribute('aria-busy'); controls.forEach(function (item) { item[0].disabled = item[1]; }); }
+      finally { state.busy = false; wrap.removeAttribute('aria-busy'); controls.forEach(function (item) { item[0].disabled = item[1]; });if(active())renderRecovery(); }
     }
     async function load() {
       if (!rpc || !ctx.ws) throw new Error('Sign in and choose a workspace to use Business Operations.');
@@ -72,7 +93,7 @@
       q('refresh').addEventListener('click',function () { if (!confirmDiscard()) return; busy(async function () { await load(); state.selected=null;state.dirty=false;render();status('Workspace records refreshed.'); }); });
       q('archives').addEventListener('click',function () { if (!confirmDiscard()) return; busy(async function () { state.archived=!state.archived;await load();state.selected=null;state.dirty=false;render(); }); });
       wrap.querySelectorAll('[data-kind]').forEach(function (button) { button.addEventListener('click',function () { if (!confirmDiscard()) return; busy(async function () {state.kind=button.dataset.kind;state.selected=null;state.dirty=false;if(state.kind==='audit')await loadAudit();render();status('');}); }); });
-      renderList(); renderEditor();
+      renderList(); renderEditor();renderRecovery();
     }
     function renderList() {
       var host = q('list');
@@ -83,8 +104,8 @@
       var records = state.records.filter(function (r) { return r.kind === state.kind; });
       host.innerHTML = '<div class="zops-card"><h3>' + esc(labels()[state.kind]) + '</h3>' + (canWrite(state.kind) ? '<button type="button" data-o="new" class="primary">+ Add ' + esc(singular(state.kind)) + '</button>' : '<p class="zops-muted">You have read-only access to these records.</p>') + '</div>' +
         (records.length ? records.map(function (r) { var overdue=r.due_at && new Date(r.due_at)<new Date() && r.status!=='completed' && !r.archived_at;return '<button type="button" class="zops-record zops-card" data-record="' + esc(r.id) + '"><strong>' + esc(r.title) + '</strong><span class="zops-muted">' + esc(r.archived_at?'Archived':r.status.replace(/_/g,' ')) + ' · v' + r.version + (r.company_id?' · '+esc(recordName(r.company_id)):'') + '</span>' + (r.due_at?'<span class="'+(overdue?'zops-overdue':'zops-muted')+'">'+(overdue?'Overdue · ':'Due · ')+esc(new Date(r.due_at).toLocaleString())+'</span>':'')+'</button>';}).join('') : '<div class="zops-card"><p>No ' + esc(labels()[state.kind].toLowerCase()) + ' yet.</p><p class="zops-muted">Start with a company record, add a project and contact, then create a task with a deadline.</p></div>');
-      if (q('new')) q('new').addEventListener('click',function () {if(!confirmDiscard())return;state.selected=null;state.dirty=false;renderEditor(true);});
-      host.querySelectorAll('[data-record]').forEach(function (button) {button.addEventListener('click',function () {if(!confirmDiscard())return;state.selected=state.records.find(function(r){return r.id===button.dataset.record;});state.dirty=false;renderEditor();});});
+      if (q('new')) q('new').addEventListener('click',function () {if(!confirmDiscard())return;state.selected=null;state.dirty=false;renderEditor(true);renderRecovery();});
+      host.querySelectorAll('[data-record]').forEach(function (button) {button.addEventListener('click',function () {if(!confirmDiscard())return;state.selected=state.records.find(function(r){return r.id===button.dataset.record;});state.dirty=false;renderEditor();renderRecovery();});});
     }
     function field(key,label,value,type) {return '<label>'+esc(label)+'<input data-field="'+key+'" type="'+(type||'text')+'" value="'+esc(value||'')+'" '+(key==='title'?'required maxlength="200"':'maxlength="2000"')+'></label>';}
     function select(key,label,options,value) {return '<label>'+esc(label)+'<select data-field="'+key+'">'+options.map(function(option){return '<option value="'+esc(option[0])+'"'+(String(value||'')===String(option[0])?' selected':'')+'>'+esc(option[1])+'</option>';}).join('')+'</select></label>';}
@@ -113,14 +134,14 @@
         var values=payload(record);form.querySelectorAll('[data-field]').forEach(function(node){values[node.dataset.field]=node.value;});
         values.company_id=values.company_id||null;values.project_id=values.project_id||null;values.contact_id=values.contact_id||null;values.assignee_profile_id=values.assignee_profile_id||null;
         values.due_at=values.due_at?new Date(values.due_at).toISOString():null;
-        busy(async function(){var result=await rpc('ops_record_save',{p_workspace:ctx.ws,p_kind:state.kind,p_data:values,p_id:record?record.id:null,p_expected_version:record?record.version:0},{auth:'require'});
-          var saved=receipt(result,ctx.ws,record&&record.id,record?record.version:0,state.kind);state.records=state.records.filter(function(r){return r.id!==saved.id;});state.records.unshift(saved);state.selected=saved;state.dirty=false;if(saved.kind==='company')state.sector=saved.data.sector;render();status('Saved version '+saved.version+'.');});
+        busy(async function(){var value=await recovery.send('save',{p_kind:state.kind,p_data:values,p_id:record?record.id:null,p_expected_version:record?record.version:0});await refreshSaved(value);});
       });
-      if(q('archive'))q('archive').addEventListener('click',function(){if(!global.confirm('Archive this record? Its history will be retained.'))return;busy(async function(){var result=await rpc('ops_record_archive',{p_workspace:ctx.ws,p_id:record.id,p_expected_version:record.version},{auth:'require'});var saved=receipt(result,ctx.ws,record.id,record.version,state.kind);state.records=state.records.filter(function(r){return r.id!==saved.id;});if(state.archived)state.records.push(saved);state.selected=null;state.dirty=false;render();status('Record archived.');});});
+      if(q('archive'))q('archive').addEventListener('click',function(){if(!global.confirm('Archive this record? Its history will be retained.'))return;busy(async function(){await refreshSaved(await recovery.send('archive',{p_id:record.id,p_expected_version:record.version}));});});
       if(q('history'))q('history').addEventListener('click',function(){if(!confirmDiscard())return;busy(async function(){await loadAudit(record.id);state.kind='audit';state.dirty=false;render();});});
     }
     status('Loading workspace records…');
-    try {await load();render();status('');}catch(error){status(errorText(error));q('content').innerHTML='<div class="zops-card"><p>Operations records are unavailable. No local sample records are substituted.</p><button type="button" data-o="retry">Try again</button></div>';q('retry').addEventListener('click',function(){busy(async function(){await load();render();status('');});});}
+    try {await recovery.load();await load();render();status('');}catch(error){status(errorText(error));q('content').innerHTML='<div class="zops-card"><p>Operations records are unavailable. No local sample records are substituted.</p><button type="button" data-o="retry">Try again</button></div>';q('retry').addEventListener('click',function(){busy(async function(){if(!recovery.state().ready)await recovery.load();await load();render();status('');});});}
+    return {destroy:destroy};
   }
   global.ZoiSuite=global.ZoiSuite||{modules:[]};
   global.ZoiSuite.modules.push({id:'operations',label:'Operations',order:65,icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 5V3h8v2M8 10h8M8 14h8M8 18h5"/></svg>',mount:mount});

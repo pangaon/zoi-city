@@ -7,6 +7,6 @@ export function creatorPending({actor,scope,storage}){
  return{get record(){return record},get payload(){return payload},dropPayload(){payload=null},begin(action,args){
   if(!available)throw Error('creator_recovery_unavailable');if(record)throw Error('creator_request_pending');if(!CREATOR_MUTATIONS.includes(action))throw Error('invalid_creator_request');
   const next={actor,request:crypto.randomUUID(),action};const copy=JSON.parse(JSON.stringify(args));delete copy.p_request;
-  const encoded=JSON.stringify(next);storage.setItem(key,encoded);if(storage.getItem(key)!==encoded){available=false;throw Error('creator_recovery_unavailable');}record=next;payload={p_request:next.request,p_action:action,p_args:copy};return payload;
+  const encoded=JSON.stringify(next);try{storage.setItem(key,encoded);if(storage.getItem(key)!==encoded)throw Error('creator_recovery_unavailable');}catch(error){available=false;throw error;}record=next;payload={p_request:next.request,p_action:action,p_args:copy};return payload;
  },matches(value){return value?.ok===true&&record&&value.request_id===record.request&&(['missing','cancelled'].includes(value.state)||(value.state==='saved'&&value.action===record.action&&UUID.test(value.campaign_id||'')&&UUID.test(value.entity_id||'')));},clear(){storage.removeItem(key);record=null;payload=null;}};
 }

@@ -1,4 +1,4 @@
-import {creatorPending,CREATOR_MUTATIONS} from './pending.mjs';
+import {creatorPending,CREATOR_MUTATIONS} from './pending.mjs?v=20261001-creator-storage';
 import {esc,time,requestTracker,CHANNELS,receipt,deliveryUrl,errorText,draftFromForm,localInput} from './model.mjs';
 export async function mount(root,{C,workspace=null}){
  root.__zoiCreatorDispose?.();root.__zoiCreatorAbort?.abort();const events=new AbortController();root.__zoiCreatorAbort=events;

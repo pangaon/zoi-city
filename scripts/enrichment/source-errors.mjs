@@ -9,6 +9,7 @@ export function sourceFailureReason(error){
  if(['ENOTFOUND','EAI_AGAIN'].includes(code))return'source_dns_unavailable';
  if(['ECONNRESET','ECONNREFUSED','EHOSTUNREACH','ENETUNREACH'].includes(code))return'source_connection_failure';
  if(/timeout|timed out/i.test(message)||code==='ETIMEDOUT')return'source_render_timeout';
+ if(['source_html_sparse','source_html_no_useful_fields','source_identity_scope_review','javascript_render_required','source_capture_fingerprint_missing','source_image_directory_required'].includes(message))return message;
  if(/^(?:invalid_source_url|unsafe_source_(?:dns|url)|robots_(?:disallow|unavailable)|javascript_render_unresolved|rendered_document_too_large|source_(?:challenge|cross_host_navigation|http_[0-9]{3}|byte_budget|cross_host_redirect|dns_timeout|redirect_limit|request_budget|time_budget|timeout|too_large))$/.test(message))return message;
  return error?.source_stage==='browser_launch'?'browser_launch_failed':error?.source_stage==='browser_navigation'?'source_navigation_failed':'source_capture_failed';
 }
