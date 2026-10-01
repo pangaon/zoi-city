@@ -15,3 +15,9 @@ Actual map module mounted with local candidate HTML/loader on the production ori
 The first browser run timed out waiting for the result; it did not capture diagnostic state. A second run with diagnostic capture and a shorter 10-second assertion passed both widths. Do not interpret the repeat as proof of zero intermittent loading failures. Real provider tiles were involved; public RPC results in this test were controlled.
 
 No coordinates were invented, no geocoder was called, and no production data or schema was changed. This is candidate acceptance, not deployed coverage or proof that all listings have verified locations.
+
+## Exact staged archive and production baseline
+
+Archive `/tmp/zoi-map-settings-release-yeugnw5k`, tree `8f9d5dc2271c8313b8fc2dab72bf2214c7599c37`: independently reran archived Settings mounted harness and archived map HTML/loader sparse Nairobi scenario at both 390/1440; passed. Candidate screenshots `/tmp/map-archive-area-390.png` and `/tmp/map-archive-area-1440.png`.
+
+Separate unmodified production baseline: Nairobi390 and Toronto1440 returned200 with correct explicit locality and no recorded errors/overflow. Existing production footer reports14,610 coordinate-bearing records out of30,214. Nairobi panel shows zero results; Toronto screenshot shows642 scoped records. An earlier DOM snapshot preceded row paint, so its empty row array is not treated as the final Toronto result. Screenshots `/tmp/map-baseline-Nairobi.png` and `/tmp/map-baseline-Toronto.png` were inspected; `/tmp/map-real-baseline.json` records the early snapshot and response state. These runs did not use synthetic RPCs and did not exercise the not-yet-deployed area-search feature.

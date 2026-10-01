@@ -5,3 +5,30 @@ test('mismatched or quarantined machine source cannot supply artist imagery or s
 test('owner clears beat source imagery/channels and sparse artists still inherit the family',()=>{const d=musicHomeContent({...e,owner_content:{photo_url:null,social_links:null,profile:{photos:null,spotify_url:null}}});assert.equal(d.portrait,'');assert.equal(d.gallery.length,0);assert.equal(d.spotify,'');assert.equal(d.instagram,'');const sparse={...e,website:null,profile:{}};for(const template of['atelier','concierge','table','parea']){const h=renderMusicHome(sparse,{template});assert.match(h,/Artist photograph unavailable/);assert.doesNotMatch(h,/data-listen="artist"/);assert.match(h,/Sakis Rouvas/);}});
 
 test('organization identity quarantines duplicated base portrait and social fields while authorized edits win',()=>{for(const flag of[{identity_scope:'organization'},{source_kind:'association_member'}]){const polluted={...e,photo_url:'https://society.example/banner.jpg',social_links:{instagram:'https://instagram.com/society'},profile:{_enrich:{...e.profile._enrich,...flag}}};const d=musicHomeContent(polluted);assert.equal(d.portrait,'');assert.equal(d.instagram,'');const owned=musicHomeContent({...polluted,owner_content:{photo_url:'https://owner.example/portrait.jpg',social_links:{instagram:'https://instagram.com/artist'}}});assert.equal(owned.portrait,'https://owner.example/portrait.jpg');assert.equal(owned.instagram,'https://instagram.com/artist');const cleared=musicHomeContent({...polluted,owner_content:{photo_url:null,social_links:null}});assert.equal(cleared.portrait,'');assert.equal(cleared.instagram,'');}});
+
+test('official iframe media survives actual extraction into every generic artist design',async()=>{
+ const {extractRenderedSource}=await import('../../scripts/enrichment/extractor.mjs');
+ const website='https://artist.example.org/',youtube='https://www.youtube.com/watch?v=dQw4w9WgXcQ',spotify='https://open.spotify.com/artist/0VuyN0xzSqykiDB2MxihTe';
+ const html='<title>Independent Artist</title><iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ"></iframe><iframe src="https://open.spotify.com/embed/artist/0VuyN0xzSqykiDB2MxihTe"></iframe>';
+ const q=extractRenderedSource(html,website).profile;assert.equal(q.listen.spotify,spotify);assert.equal(q.listen.youtube,youtube);
+ const entity={id:'11111111-1111-4111-8111-111111111111',name:'Independent Artist',slug:'independent-artist',entity_type:'artist',website,profile:{_enrich:{...q,source_url:website}}};
+ const d=musicHomeContent(entity);assert.equal(d.spotify,spotify);assert.equal(d.youtube,youtube);assert.deepEqual(d.releases,[]);assert.deepEqual(d.shows,[]);
+ for(const template of['atelier','concierge','table','parea']){const rendered=renderMusicHome(entity,{template});assert.match(rendered,/data-listen="artist"/);assert(rendered.includes(spotify));assert(rendered.includes(youtube));}
+ for(const source of['https://other.example.org/',website+'another-artist/']){
+  const scoped={...entity,website:website+'artist/',profile:{_enrich:{...q,source_url:source}}};assert.equal(musicHomeContent(scoped).spotify,'');assert.equal(musicHomeContent(scoped).youtube,'');
+ }
+ for(const flag of[{scope_review_required:true},{source_kind:'association_member'}]){const rejected=musicHomeContent({...entity,profile:{_enrich:{...q,source_url:website,...flag}}});assert.equal(rejected.spotify,'');assert.equal(rejected.youtube,'');}
+ for(const owner_content of[{social_links:{}},{social_links:null},{profile:{spotify_url:null,youtube_url:''}}]){const cleared=musicHomeContent({...entity,owner_content});assert.equal(cleared.spotify,'');assert.equal(cleared.youtube,'');}
+ const replacement='https://www.youtube.com/watch?v=abcdefghijk';assert.equal(musicHomeContent({...entity,owner_content:{profile:{youtube_url:replacement}}}).youtube,replacement);
+ const sparse={...entity,profile:{}};for(const template of['atelier','concierge','table','parea'])assert.doesNotMatch(renderMusicHome(sparse,{template}),/data-listen="artist"/);
+ for(const listen of[{youtube:'https://evil.example/watch?v=dQw4w9WgXcQ',spotify:'https://open.spotify.com/artist/invalid'},{youtube:spotify,spotify:youtube},{youtube:'javascript:alert(1)',spotify:'https://user:pass@open.spotify.com/artist/0VuyN0xzSqykiDB2MxihTe'}]){const invalid=musicHomeContent({...entity,profile:{_enrich:{source_url:website,listen}}});assert.equal(invalid.spotify,'');assert.equal(invalid.youtube,'');}
+});
+test('single video embed accepts exact provider IDs; channel links remain external and playlist retains priority',async()=>{
+ const {youtubeVideoEmbed,artistVideo}=await import('../../assets/homes/templates/music/model.mjs');
+ for(const url of['https://youtu.be/dQw4w9WgXcQ','https://www.youtube.com/watch?v=dQw4w9WgXcQ','https://www.youtube.com/shorts/dQw4w9WgXcQ'])assert.equal(youtubeVideoEmbed(url),'https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ');
+ for(const url of['https://www.youtube.com/@artist','https://evil.example/watch?v=dQw4w9WgXcQ','https://user:pass@www.youtube.com/watch?v=dQw4w9WgXcQ','https://youtube.com:444/watch?v=dQw4w9WgXcQ','https://youtube.com/watch?v=bad'])assert.equal(youtubeVideoEmbed(url),null);
+ assert.equal(artistVideo({youtube:'https://www.youtube.com/@artist'}),null);
+ assert.equal(artistVideo({video_playlist:'https://www.youtube.com/playlist?list=PLabcdefghijk',youtube:'https://youtu.be/dQw4w9WgXcQ'}).kind,'playlist');
+ const entity={...e,profile:{_enrich:{source_url:e.website,listen:{youtube:'https://www.youtube.com/watch?v=dQw4w9WgXcQ'}}}};
+ for(const template of['atelier','concierge','table','parea']){const html=renderMusicHome(entity,{template});assert.match(html,/data-video/);assert.doesNotMatch(html,/verified artist video collection is not available/);assert.doesNotMatch(html,/<iframe/);assert.doesNotMatch(renderMusicHome({...entity,owner_content:{profile:{youtube_url:null}}},{template}),/data-video/);}
+});

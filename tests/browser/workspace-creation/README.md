@@ -1,0 +1,3 @@
+# Workspace creation uncertainty controller
+
+Run `CHROMIUM_EXECUTABLE_PATH=/path/to/chromium node tests/browser/workspace-creation/verify.cjs` from the repository root with existing Playwright. Uses the real shared creation controller and actor-scoped browser storage in a controlled form/RPC fixture, at 390/1440. Tests lost response, duplicate programmatic submission, remount fence, nonce-only storage and refusal to infer success from a same-name workspace. Root separately owns actual suite-shell integration and successful new-workspace routing. No production writes or account used; browser/server close and page errors fail assertions.

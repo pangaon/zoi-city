@@ -6,6 +6,6 @@ export async function openOwnerEditor({workspace,listing,current,rpc,open}:{work
   if(!current())return false;
   if(value?.ok!==true||value.workspace_id!==workspace||value.listing_id!==listing||typeof value.version!=='string'||!value.version)throw new Error('Your editing access could not be confirmed. Try again.');
   // Browser authentication stays separate. Never transfer native credentials.
-  await open('https://www.zoi.city/social/bizpage?workspace='+encodeURIComponent(workspace));
+  await open('https://www.zoi.city/social/bizpage?workspace='+encodeURIComponent(workspace)+'&listing='+encodeURIComponent(listing));
   return current();
 }

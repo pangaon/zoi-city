@@ -381,7 +381,7 @@
     var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
     var ownerEntity = (await import('/assets/suite/owner-entity.mjs')).ownerEntity;
     var socialResolver = (await import('/assets/homes/social-links.mjs')).resolveSocialLinks;
-    var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false;
+    var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false, selectedListingIntent = null;
     function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
     function destroyDesign(){mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
     function unsaved(){return contentDirty || state.saving || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
@@ -491,9 +491,14 @@
       var e = el(doc, 'div', 'zp-err');
       e.innerHTML = '<span>' + esc(msg || 'Could not load your business page.') + '</span>';
       var retry = el(doc, 'button', 'zp-btn', 'Retry');
-      retry.addEventListener('click', function () { boot(); });
+      retry.addEventListener('click', function () { boot(selectedListingIntent); });
       e.appendChild(retry);
       wrap.appendChild(e);
+    }
+
+    function renderUnavailableListing() {
+      renderError('The requested business is not available in this workspace. Choose an authorized business below or switch workspace.');
+      state.choices.forEach(function(choice){var button=el(doc,'button','zp-btn','Edit '+esc(choice.name||choice.slug||'business'));button.type='button';button.addEventListener('click',function(){boot(choice.id);});wrap.appendChild(button);});
     }
 
     /* ---- claim-first (honest: no page invented) ---- */
@@ -941,7 +946,7 @@
 
     /* ---- controller ---- */
     async function boot(listingId) {
-      if(!scopeLive())return;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
+      if(!scopeLive())return;selectedListingIntent=listingId || null;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
       state.vform=null;state.publicityForm=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
       state.loading = true;
       state.error = null;
@@ -959,7 +964,8 @@
 
       if(!scopeLive()||loadEpoch!==bootEpoch)return;
       state.choices=editableListings(statusRaw);
-      var chosen=state.choices.find(function(r){return r.id===listingId;}) || state.choices[0];
+      var chosen=listingId ? state.choices.find(function(r){return r.id.toLowerCase()===String(listingId).toLowerCase();}) : state.choices[0];
+      if(listingId && !chosen){state.status=null;state.draft=null;state.loading=false;renderUnavailableListing();return;}
       var status = normStatus(chosen || statusRaw);
       state.status = status;
 
@@ -987,10 +993,13 @@
       contentRaw.owner_content=state.entity.owner_content;
       state.draft = normContent(contentRaw,socialResolver);
       state.loading = false;
+      selectedListingIntent=status.listingId;
+      if(typeof ctx.onListingSelected==='function')ctx.onListingSelected({workspaceId:ws,listingId:status.listingId});
+      else try{var selectedURL=new URL(global.location.href);selectedURL.searchParams.set('workspace',ws);selectedURL.searchParams.set('listing',status.listingId);global.history.replaceState(null,'',selectedURL.pathname+selectedURL.search+selectedURL.hash);}catch(_){}
       renderEditor();
     }
 
-    var requestedListing=null;try{var requested=new URL(global.location.href).searchParams.get('listing');if(/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requested||''))requestedListing=requested;}catch(_){}
+    var requestedListing=null;try{var requests=new URL(global.location.href).searchParams.getAll('listing');if(requests.length)requestedListing=requests.length===1&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requests[0])?requests[0]:'invalid-listing-intent';}catch(_){}
     await boot(requestedListing);
     return {destroy:destroy,hasUnsavedChanges:unsaved,showView:function(view){var panel=wrap.querySelector('.zp-design-panel');if(panel){panel.open=view==='design';if(panel.open)panel.querySelector('summary').focus();}}};
   }

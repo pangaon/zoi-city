@@ -138,7 +138,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
      module that mounts it. Order matters — bizpage.js reads both. -->
 <script src="/assets/suite/_vertical-forms.js?v=20260930c"></script>
 <script src="/assets/suite/_vertical-ui.js?v=20260930c"></script>
-<script src="/assets/suite/bizpage.js?v=20260930d"></script>
+<script src="/assets/suite/bizpage.js?v=20261001-exact-listing"></script>
 <script src="/assets/suite/connect.js?v=20260930c"></script>
 <script src="/assets/suite/settings.js?v=20261001-workspace-identity"></script>
 <script src="/assets/suite/ai.js"></script>
@@ -209,27 +209,19 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 
   /* ---------- create business ---------- */
   function renderCreate(){
-    root.innerHTML =
-    '<div class="center"><div class="card">'+
-      '<div class="mono" style="margin-bottom:14px">Welcome</div>'+
-      '<h1>Name your <span class="serif">business.</span></h1>'+
-      '<p class="sub">This is your workspace — you can rename it anytime in Settings.</p>'+
-      '<div class="field"><label for="c-name">Business name</label><input id="c-name" class="inp" placeholder="e.g. Taverna Ousia"></div>'+
-      '<div class="err" id="c-err"></div>'+
-      '<button class="btn p" id="c-go" style="width:100%">Create workspace</button>'+
-    '</div></div>';
-    var ni=document.getElementById('c-name'); ni.focus();
-    ni.addEventListener('keydown',function(e){ if(e.key==='Enter') go(); });
-    document.getElementById('c-go').onclick=go;
-    function go(){
-      var name=(document.getElementById('c-name').value||'').trim();
-      var err=document.getElementById('c-err'); err.textContent='';
-      if(name.length<2){ err.textContent='Give it a name.'; return; }
-      var b=document.getElementById('c-go'); b.disabled=true; b.textContent='Creating…';
-      C.api.rpc('zoi_create_workspace',{p_name:name,p_kind:'business'},{auth:'require'})
-        .then(function(){ boot(); })
-        .catch(function(e){ err.textContent=e.message||'Could not create.'; b.disabled=false; b.textContent='Create workspace'; });
-    }
+    root.innerHTML = '<div class="center"><div class="card"><div class="mono" style="margin-bottom:14px">Welcome</div><h1>Name your <span class="serif">business.</span></h1><p class="sub">Create a workspace for this business. You can rename it later in Settings.</p><div class="field"><label for="c-name">Business name</label><input id="c-name" class="inp" maxlength="120" autocomplete="organization" placeholder="e.g. Taverna Ousia"></div><div class="err" id="c-err" role="status"></div><button class="btn p" id="c-go" style="width:100%" disabled>Create workspace</button><button class="btn" id="c-check" hidden>Check previous request</button><div id="c-review"></div></div></div>';
+    var ni=document.getElementById('c-name'),button=document.getElementById('c-go'),checkButton=document.getElementById('c-check'),err=document.getElementById('c-err'),review=document.getElementById('c-review'),actor=C.auth.load()?.user_id,controller;
+    function current(){return ni.isConnected&&C.auth.load()?.user_id===actor;}
+    function paint(state){if(!current())return;button.disabled=!state.ready||state.busy||state.pending;ni.disabled=state.busy||state.pending;button.textContent=state.busy?'Checking…':'Create workspace';checkButton.hidden=!state.pending&&state.ready;checkButton.disabled=state.busy;checkButton.textContent=state.ready?'Check previous request':'Retry recovery check';}
+    var creationObserver=new MutationObserver(clearPrivate);creationObserver.observe(root,{childList:true,subtree:true});
+    function cleanupCreation(){creationObserver.disconnect();['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(event){window.removeEventListener(event,clearPrivate);});}
+    function clearPrivate(){if(current())return;cleanupCreation();controller?.dispose();ni.value='';review.replaceChildren();button.disabled=true;checkButton.disabled=true;err.textContent='Your account changed. Reopen workspace setup.';}
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(event){window.addEventListener(event,clearPrivate);});
+    async function go(){if(!controller||button.disabled||!current())return;err.textContent='';review.replaceChildren();try{await controller.create({name:ni.value,kind:'business'});}catch(e){if(current())err.textContent=e.message||'The creation result could not be confirmed. Check the previous request before trying again.';}}
+    ni.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();go();}});button.onclick=go;
+    checkButton.onclick=async function(){if(!controller||checkButton.disabled||!current())return;err.textContent='';try{var result=await controller.check();if(!current())return;if(result.status==='unconfirmed'){err.textContent='The previous request has no confirmed receipt. Review your workspaces below. Creating again is paused to avoid a duplicate.';review.replaceChildren();result.workspaces.forEach(function(w){var link=document.createElement('a');link.className='btn';link.textContent='Open '+w.name;link.href='/social?workspace='+encodeURIComponent(w.id);review.appendChild(link);});}}catch(e){if(current())err.textContent=e.message||'Could not confirm the previous request.';}};
+    import('/assets/suite/workspace-creation.mjs?v=20261001-exact-workspace').then(async function(module){if(!current())return;var key='zoi_workspace_creation:'+actor;controller=module.createWorkspaceController({actor:actor,current:current,rpc:function(name,args){return C.api.rpc(name,args,{auth:'require'});},storage:{load:function(){var value=sessionStorage.getItem(key);return value===null?null:JSON.parse(value);},save:function(value){sessionStorage.setItem(key,JSON.stringify(value));},clear:function(){sessionStorage.removeItem(key);}},changed:paint,onConfirmed:function(value){if(!current())return;cleanupCreation();history.replaceState(null,'','/social?workspace='+encodeURIComponent(value.workspaceId));try{localStorage.setItem('zoi_ws',value.workspaceId);}catch(_){}boot();}});await controller.load();if(current()&&controller.state().pending)err.textContent='A previous workspace request needs checking before another can be created.';}).catch(function(e){if(current()){err.textContent=e.message||'Workspace setup could not load.';checkButton.hidden=!controller;}});
+    ni.focus();
   }
 
   /* ---------- shell ---------- */
@@ -306,7 +298,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       var it=e.target.closest('.wsitem'); if(!it) return;
       if(it.id==='ws-new'){if(!mayLeave())return;destroyCurrent();renderCreate();return;}
       var id=it.getAttribute('data-ws');
-      if(id && id!==STATE.ws){if(!mayLeave())return;destroyCurrent();try{ localStorage.setItem('zoi_ws', id); }catch(err){} location.reload(); }
+      if(id && id!==STATE.ws && STATE.workspaces.some(function(w){return w.id===id;})){if(!mayLeave())return;destroyCurrent();var nextWorkspaceURL=new URL(location.href);nextWorkspaceURL.searchParams.set('workspace',id);nextWorkspaceURL.searchParams.delete('ws');nextWorkspaceURL.searchParams.delete('listing');history.replaceState(null,'',nextWorkspaceURL.pathname+nextWorkspaceURL.search+nextWorkspaceURL.hash);try{localStorage.setItem('zoi_ws',id);}catch(err){}location.reload();}
     });
     // theme + signout + mobile
     document.getElementById('suiteThemeBtn').onclick=function(){ flipTheme(); document.getElementById('suiteThemeBtn').innerHTML=iconTheme();  };
@@ -342,7 +334,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     if(!keep)destroyCurrent();
     STATE.activeView=view||null;
     var search=document.getElementById('tool-search');if(search&&search.value){search.value='';document.querySelectorAll('#nav .nitem,#nav .nav-section').forEach(function(n){n.hidden=false;});document.getElementById('tool-empty').hidden=true;}
-    STATE.active=id;STATE.ctx.view=view||null;STATE.ctx.navigate=selectModule;STATE.ctx.managedNavigation=true; try{var route=STATE.navigation.moduleRoute(id,view),next=route+(route.indexOf('#')===-1?location.search:'');if(replace)history.replaceState(null,'',next);else if(location.pathname+location.search+location.hash!==next)history.pushState(null,'',next);}catch(e){}STATE.currentRoute=location.pathname+location.search+location.hash;try{localStorage.setItem('zoi_suite_tab:'+STATE.ws,id);}catch(e){}
+    STATE.active=id;STATE.ctx.view=view||null;STATE.ctx.navigate=selectModule;STATE.ctx.managedNavigation=true; try{var route=STATE.navigation.moduleRoute(id,view),target=new URL(route,location.origin);target.search=location.search;var next=target.pathname+target.search+target.hash;if(replace)history.replaceState(null,'',next);else if(location.pathname+location.search+location.hash!==next)history.pushState(null,'',next);}catch(e){}STATE.currentRoute=location.pathname+location.search+location.hash;try{localStorage.setItem('zoi_suite_tab:'+STATE.ws,id);}catch(e){}
     var items=document.querySelectorAll('.nitem');
     for(var j=0;j<items.length;j++){ var selected=items[j].getAttribute('data-id')===id;items[j].classList.toggle('active',selected);if(selected){items[j].setAttribute('aria-current','page');items[j].closest('details').open=true;}else items[j].removeAttribute('aria-current'); }
     var mount=document.getElementById('mount');
@@ -413,7 +405,10 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       STATE.navigation=res[2].navigation;STATE.avail = res[2].cap.resolveCapabilities(res[0],res[2].provider);
       STATE.channels = Array.isArray(res[1])?res[1]:[];
       STATE.sessionIdentity=res[2].sessionIdentity;STATE.actor=STATE.sessionIdentity(C);
-      STATE.ctx = { C:C, ws:STATE.ws,managedNavigation:true, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, role:STATE.role, toast:toast, navigate:selectModule, onWorkspaceRenamed:function(change){
+      STATE.ctx = { C:C, ws:STATE.ws,managedNavigation:true, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, role:STATE.role, toast:toast, navigate:selectModule, onListingSelected:function(change){
+      if(generation!==STATE.epoch||requestedWs!==STATE.ws||STATE.actor!==STATE.sessionIdentity(C)||STATE.active!=='bizpage'||!change||change.workspaceId!==requestedWs||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(change.listingId||''))return;
+      var selectedURL=new URL(location.href);selectedURL.searchParams.set('workspace',requestedWs);selectedURL.searchParams.delete('ws');selectedURL.searchParams.set('listing',change.listingId);var next=selectedURL.pathname+selectedURL.search+selectedURL.hash;history.replaceState(null,'',next);STATE.currentRoute=next;
+    },onWorkspaceRenamed:function(change){
         if(generation!==STATE.epoch||requestedWs!==STATE.ws||STATE.actor!==STATE.sessionIdentity(C)||!change||change.workspaceId!==requestedWs||typeof change.name!=='string'||!change.name.trim())return;
         var workspace=STATE.workspaces.find(function(item){return item.id===requestedWs;});if(!workspace)return;
         var oldName=STATE.wsName,name=change.name.trim();workspace.name=name;STATE.wsName=name;

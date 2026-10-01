@@ -73,7 +73,8 @@ const PAGES = [
       // suite modules. Assert the behaviour that matters — the page knows about
       // workspaces and can create one — rather than a function name that is free
       // to be refactored.
-      assert(/zoi_create_workspace/.test(html),
+      // Module-backed creation is exercised by the real shell browser suite.
+      assert(/zoi_create_workspace/.test(html)||(/workspace-creation\.mjs/.test(html)&&/controller\.create\(/.test(html)),
         '/social: no workspace creation path found');
     },
   },
