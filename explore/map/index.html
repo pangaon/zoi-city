@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
 
 <style>
+#q::-webkit-search-cancel-button{display:none}.m-controls .discovery-suggestions{margin-top:8px;border:1px solid var(--line2);border-radius:16px;background:var(--bg2);box-shadow:0 16px 36px #0003;overflow:hidden}.discovery-suggestions[hidden]{display:none}.m-controls .suggestion-status{padding:10px 12px;font-size:12px;color:var(--mut);line-height:1.4}.suggestion-status button{padding:8px 12px;border:1px solid var(--line2);border-radius:9px;background:var(--bg);color:var(--tx);margin-left:6px}.m-controls .discovery-suggestions [role=listbox]{max-height:min(34dvh,280px);overflow:auto;overscroll-behavior:contain}.m-controls .discovery-suggestions [role=option]{padding:11px 12px;min-height:48px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);cursor:pointer}.m-controls .discovery-suggestions strong{font-size:14px;overflow-wrap:anywhere}.m-controls .discovery-suggestions span{font-size:12px;color:var(--mut)}.m-controls .discovery-suggestions [role=option]:hover,.m-controls .discovery-suggestions [aria-selected=true]{background:var(--bg3);box-shadow:inset 3px 0 var(--acc)}
   html,body{height:100%}
   body{overflow:hidden}
   .zoi-header{position:relative;z-index:40}
@@ -326,9 +327,9 @@
 (function () {
   'use strict';
   var C = window.ZoiCore, MB = window.maplibregl, BM = window.ZoiBasemap;
-  var mapLocality=null,mapHome=null,mapLocalityModel=null,mapIntentURL=location.href;
-  function activeMapLocality(){return mapLocalityModel?mapLocalityModel.resolveLocality(mapIntentURL,mapHome):{source:'global',city:'',country:''};}
-  function mapSearchIntent(){var u=new URL(mapIntentURL);u.hash='';['city','country','region','place'].forEach(function(k){u.searchParams.delete(k);});if(query)u.searchParams.set('q',query);else{u.searchParams.delete('q');u.searchParams.set('scope','global');}mapIntentURL=u.href;if(mapLocality)mapLocality.refresh();}
+  var mapAutocomplete=null,pendingAutocompleteSlug=null,mapLocality=null,mapHome=null,mapLocalityModel=null,mapIntentURL=location.href;
+  function activeMapLocality(){return mapLocalityModel?mapLocalityModel.resolveLocality(mapIntentURL,mapHome):{source:'explicit',city:new URL(mapIntentURL).searchParams.get('city')||'',country:new URL(mapIntentURL).searchParams.get('country')||''};}
+  function mapSearchIntent(){var u=new URL(mapIntentURL);u.hash='';u.searchParams.delete('place');if(query)u.searchParams.set('q',query);else{u.searchParams.delete('q');if(!['city','country','region'].some(function(k){return u.searchParams.has(k);}))u.searchParams.set('scope','global');}mapIntentURL=u.href;if(mapLocality)mapLocality.refresh();}
 
   /* ---------- categories, in the emblem wheel's order ---------- */
   var TYPES = [
@@ -523,7 +524,7 @@
   }
 
   function restoreMapHistory(){
-    clearTimeout(urlT);mapIntentURL=mapLocalityModel?mapLocalityModel.mapHistoryIntent(location.href,history.state):location.href;
+    pendingAutocompleteSlug=null;mapAutocomplete?.close();clearTimeout(urlT);mapIntentURL=mapLocalityModel?mapLocalityModel.mapHistoryIntent(location.href,history.state):location.href;
     var restored=readUrl();if(mapLocality)mapLocality.refresh();if(!ready)return;
     selectionVersion++;selected=null;pendingPlace=null;hideTip();clearSpider();buildChips();showAll();refresh();
     if(restored.view)map.jumpTo(restored.view);else if(activeMapLocality().city||activeMapLocality().country||query)showMatches();else map.jumpTo({center:[23.7275,37.9838],zoom:1.35,pitch:0,bearing:0});
@@ -622,6 +623,7 @@
       b.innerHTML = '<span class="m-dot"></span>' + esc(t.label) +
         ' <span class="m-n">' + fmtN(counts[t.k]) + '</span>';
       b.addEventListener('click', function (e) {
+        pendingAutocompleteSlug=null;mapAutocomplete?.close();
         // Alt-click isolates one category — much faster than turning 11 off.
         if (e.altKey || e.metaKey) {
           var only = TYPES.every(function (x) { return x.k === t.k ? on[x.k] : !on[x.k]; });
@@ -1026,7 +1028,7 @@
     if(before!==areaSearch.state().key){clearTimeout(areaTimer);areaTimer=setTimeout(function(){if(listState.mode==='all')areaSearch.more();},250);}
   }
   $('pfoot').addEventListener('click',function(event){if(event.target.closest('[data-area-more]')&&areaSearch)areaSearch.more();});
-  ['zoi:auth-change','zoi:authchange','storage'].forEach(function(name){window.addEventListener(name,function(){clearTimeout(areaTimer);areaSearch?.clear();if(ready&&listState.mode==='all')showAll();});});
+  ['zoi:auth-change','zoi:authchange','storage'].forEach(function(name){window.addEventListener(name,function(){pendingAutocompleteSlug=null;mapAutocomplete?.close();clearTimeout(areaTimer);areaSearch?.clear();if(ready&&listState.mode==='all')showAll();});});
   function showAll() {
     selectionVersion++;pendingPlace=null;
     $('stage').classList.remove('m-selected-view');
@@ -1149,6 +1151,7 @@
   /* ---------- filtering ---------- */
   var refreshT;
   function refresh() {
+    mapAutocomplete?.refresh();
     clearTimeout(refreshT);
     refreshT = setTimeout(function () {
       if (!ready) return;
@@ -1161,16 +1164,16 @@
   }
 
   $('q').addEventListener('input', function () {
-    query = this.value.trim();mapSearchIntent();
+    pendingAutocompleteSlug=null;query = this.value.trim();mapSearchIntent();
     if(ready)showAll();
     $('clearq').hidden = !query;
     refresh(); writeUrl();
   });
   $('clearq').addEventListener('click', function () {
-    query = ''; $('q').value = '';mapSearchIntent(); this.hidden = true; if(ready)showAll(); refresh(); writeUrl(); $('q').focus();
+    pendingAutocompleteSlug=null;mapAutocomplete?.close();query = ''; $('q').value = '';mapSearchIntent(); this.hidden = true; if(ready)showAll(); refresh(); writeUrl(); $('q').focus();
   });
   $('allon').addEventListener('click', function () {
-    TYPES.forEach(function (t) { on[t.k] = true; });
+    pendingAutocompleteSlug=null;mapAutocomplete?.close();TYPES.forEach(function (t) { on[t.k] = true; });
     syncChips(); refresh(); writeUrl();
   });
 
@@ -1185,7 +1188,7 @@
     }writeUrl();
   }
   $('mapsearch').addEventListener('submit',function(e){e.preventDefault();if(query!==$('q').value.trim()){query=$('q').value.trim();mapSearchIntent();}showMatches();});
-  document.querySelectorAll('[data-start-city]').forEach(function(b){b.addEventListener('click',function(){if(!ready){status('The map is still loading.',false,2500);return;}$('q').value=b.dataset.startCity;query=$('q').value;mapSearchIntent();showMatches();});});
+  document.querySelectorAll('[data-start-city]').forEach(function(b){b.addEventListener('click',function(){if(!ready){status('The map is still loading.',false,2500);return;}pendingAutocompleteSlug=null;mapAutocomplete?.close();var cityIntent=new URL(mapIntentURL);['city','country','region'].forEach(function(k){cityIntent.searchParams.delete(k);});mapIntentURL=cityIntent.href;$('q').value=b.dataset.startCity;query=$('q').value;mapSearchIntent();showMatches();});});
   $('nearLabel').addEventListener('click',function(){$('tNear').click();});
 
   /* ---------- style / theme ---------- */
@@ -1306,7 +1309,7 @@
       // A ?place= link should reopen that listing, not just its viewport. If the
       // slug no longer resolves, fall through to the full list rather than
       // leaving the panel asserting a selection that is not there.
-      var want = initial && initial.place;
+      var want = pendingAutocompleteSlug || initial && initial.place;pendingAutocompleteSlug=null;
       if (want) {
         var hit = null;
         for (var i = 0; i < ALL.length; i++) { if (ALL[i].s === want) { hit = ALL[i]; break; } }
@@ -1488,7 +1491,7 @@
   /* keyboard: / focuses search, Escape backs out */
   document.addEventListener('keydown', function (e) {
     if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
-    if (e.key === 'Escape') { hideTip(); clearSpider(); if (listState.mode !== 'all') { closeSelection(); } }
+    if (e.key === 'Escape' && e.target!==$('q')) { hideTip(); clearSpider(); if (listState.mode !== 'all') { closeSelection(); } }
   });
 
   /* theme changes must repaint the basemap, not just the chrome */
@@ -1501,7 +1504,14 @@
   /* ---------- go ---------- */
   (async function () {
     var initial = readUrl();
-    await import('/assets/personalization/locality.mjs').then(function(model){mapLocalityModel=model;mapIntentURL=model.mapHistoryIntent(location.href,history.state);mapLocality=model.mountLocalityControl({core:C,container:$('map-locality'),getURL:function(){return mapIntentURL;},onChange:function(value){var wasHome=activeMapLocality().source==='home',before=JSON.stringify(mapHome);mapHome=value.home;if(before!==JSON.stringify(mapHome)&&ready){if(wasHome&&!mapHome)map.jumpTo({center:[23.7275,37.9838],zoom:1.35,pitch:0,bearing:0});showAll();refresh();if(activeMapLocality().source==='home')showMatches();}},onNavigate:function(href){clearTimeout(urlT);history.replaceState(Object.assign({},history.state||{},{zoiMapIntent:mapIntentURL}),'');history.pushState({zoiMapIntent:new URL(href,location.href).href},'',href);mapIntentURL=location.href;readUrl();if(mapLocality)mapLocality.refresh();if(ready){showAll();refresh();showMatches();}}});}).catch(function(){});
+    import('/assets/discovery/autocomplete.mjs?v=20261001-map-search').then(function(module){
+      mapAutocomplete=module.attachAutocomplete($('q'),{mountAfter:$('mapsearch'),id:'map-suggestions',suggestionLabel:'Select a place on the map',filters:function(){var area=activeMapLocality(),types=TYPES.filter(function(t){return on[t.k];});return{city:area.city,country:area.country,type:types.length===1?types[0].k:null,types:types.map(function(t){return t.k;}),strict:true};},onSubmit:showMatches,onChoose:function(row){
+        $('q').blur();if(!ready){pendingAutocompleteSlug=row.slug;status('Opening '+row.name+' when the map is ready…',true);return;}
+        var hit=ALL.find(function(p){return p.s===row.slug;});if(hit)choose(hit);else openUnmappedPlace(row.slug);
+      }});
+    }).catch(function(){/* Search and the results list remain available. */});
+
+    await import('/assets/personalization/locality.mjs').then(function(model){mapLocalityModel=model;mapIntentURL=model.mapHistoryIntent(location.href,history.state);mapLocality=model.mountLocalityControl({core:C,container:$('map-locality'),getURL:function(){return mapIntentURL;},onChange:function(value){var wasHome=activeMapLocality().source==='home',before=JSON.stringify(mapHome);mapHome=value.home;if(before!==JSON.stringify(mapHome)&&ready){if(wasHome&&!mapHome)map.jumpTo({center:[23.7275,37.9838],zoom:1.35,pitch:0,bearing:0});showAll();refresh();if(activeMapLocality().source==='home')showMatches();}},onNavigate:function(href){pendingAutocompleteSlug=null;mapAutocomplete?.close();clearTimeout(urlT);history.replaceState(Object.assign({},history.state||{},{zoiMapIntent:mapIntentURL}),'');history.pushState({zoiMapIntent:new URL(href,location.href).href},'',href);mapIntentURL=location.href;readUrl();if(mapLocality)mapLocality.refresh();if(ready){showAll();refresh();showMatches();}}});}).catch(function(){});
     if(matchMedia('(max-width:860px)').matches&&!initial.place&&!query)setSheet(true);
 
     // header height drives the stage inset; measure rather than assume

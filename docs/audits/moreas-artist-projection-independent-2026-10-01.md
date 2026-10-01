@@ -1,0 +1,39 @@
+# MOREAS artist projection independent review
+
+Accepted shared candidate hashes: api/_music-home.js `7e837a056eb1578774083885e6c47d672fa2bb7675c04d3de754ae1ceed551dd`; person-data `0a4fa678b01216d6eb795d8d9114fdf0b011fb4e80254a5751903f4c22aae347`; official-url `4b3df874074ccf72a464c7ffced80ac5d98288a5de33cf36ce0e098e430eb7a5`; music model `27a39c2f89f8dea1387539814d1e3326d442eec53a61fffd9963f900df5a292f`; render `d8992a3529dadc3046db2b6b16374a0e80cca7e24ff5ceb2b85ad4601e7e8fc1`; app `565c7429fc176e37dc24232ccf24adc4f6d52a04a0b50882a59094f95e577a9c`.
+
+Source review: officialURL is restricted to credential-free HTTP/HTTPS outbound navigation. It is not used for server fetching or to loosen media/embed validators. Source description precedence now respects explicit owner/nested/profile description edits and clears, plus owner press, before matching-source enrichment and imported fallback. Source matching retains host/path/port and quarantine gates; credentials on either side fail. Final description and story agree. Website clears are preserved. No image or event is invented for sparse records.
+
+Independent 23 unit cases passed across HTTP source/owner-clear, generic/canonical music, source attribution and shared person families. Tests include four music layouts, unrelated/quarantined sources, wrong credentials/port/path, owner fields and sparse imagery. This is code-contract evidence, not category-wide source completeness.
+
+Rendered/journey evidence: the retained public snapshot /tmp/moreas-public-entity.json was rendered through candidate server and candidate browser assets. Four browser cases passed at390/1440 for source-populated and explicit owner-clear versions. Actual official-link click opened the exact published HTTP URL; its final external page was controlled, so this does not certify third-party uptime. French source biography and link were present in source cases, both absent when explicitly cleared, with no page errors or horizontal overflow. Report /tmp/music-official-independent/report.json and log /tmp/music-official-independent.log. Phone screenshot /tmp/music-official-independent/390-source.png visually inspected: accents, paragraphs and link are legible.
+
+No duplicate live source probes, production writes or provider messages were made. Production deployment/readback remains parent responsibility. Shared person projection now preserves HTTP navigation, but creator/professional renderers may still apply their own HTTPS-only output rules; this review does not claim those families fully fixed. The exact source snapshot has no portrait; none was fabricated.
+
+## Browser interception correction and cache integration
+
+The initial browser fixture used page.route for the popup's first request, which does not reliably control that initial popup navigation. Its earlier evidence proves navigation URL, not a controlled destination. The corrected fixture uses context.route. Independently reran all four cases successfully with /tmp/music-official-independent-controlled/report.json and log, now genuinely intercepting the external handoff. No third-party uptime claim.
+
+Root cache integration updates music app/render/model URL versions to official-source. New server hash `f02c42866cbee5ad42955f02367e7bcb187d64231d0a8102f5db5547e395a4ee`, app `46868481d4b7ab4c564d5cb9481ff2b1ab7bb64c5d40c8b6c4fe2e7df60d9a1c`, render `5e264e8eff8e40477a18cf80a92f641472907d1075e6ce9120784f0806052cda`. Corrected browser run used these bytes. Shared owner/family continuation is being reviewed separately before final release acceptance.
+
+## Final family continuation acceptance
+
+Accepted final hashes: music server `0df6084e69bdc4571f6fb8cb850757e71ef79f29f2c341b9a0ea725315016bd8`; creator server `546713ac465a2b2b05906205c284ad5b059d0df7ac26e236990b33d582ab706e`; shared owner helper `73291030c85a65e99dfdae03eb2811680887da87bdcc9cab82d068a897326469`; creator renderer `d65d326ca83ca352e7cb49e70f82533a134dc1dc9aa00f4c2ce685838a90fa2d`; professional model `3ad6c84c5ef452a7ed92412984d9416adda67a00bb0c35acb5c4bcfc6ee06de4`. Other navigation/cache modules remain as above.
+
+Shared owner website edits/clears now override curated defaults. The actual writer changes base website together with owner_content: curated music/creator/professional now fall back to their generic family when an explicit owner website edit makes the old curated source incompatible. Without that owner edit the existing wrong-source guard remains. Generic fallback does not borrow the old curated release/show/character/practice media constants. Creator now exposes the navigation action; professional navigation is exercised too. HTTPS-only media/social validation remains unchanged.
+
+Independent23 tests passed across person official navigation, owner home content, HTTP music source, canonical music and generic person families. Independent12 browser cases passed for actual curated IDs with post-save base+owner new HTTP website or explicit clear, across artist/creator/professional at390/1440. Positive cases click visible official links and intercept popup destination at browser context; clear cases expose no cleared link. No page errors; positive cases no horizontal overflow. Reports /tmp/person-official-independent/report.json and /tmp/person-official-clear-independent/report.json. Creator/professional390 screenshots visually inspected and legible. These are controlled post-save projection fixtures, not production owner writes.
+
+The earlier limitation about creator/professional HTTP rendering is resolved for these demonstrated family paths. This remains a shared behavior correction with representative/curated/sparse tests, not a claim that every profile has complete source enrichment.
+
+## Final server import compatibility correction
+
+Root archive validation caught a browser cache query on the transitive server renderer's model import. Final music renderer SHA256 `40e5cfa4ab9444b591a44544c49c91c1dc91167f7f53eb95d44afc82b7db7b9c` imports officialURL directly from unversioned ../../official-url.mjs and keeps other model symbols on the original unversioned model path. Client app cache versioning remains. Independently inspected the import change;14 focused music/person tests and both server-import-tracing regression checks passed. Accepted; no behavior change found. This hash supersedes prior renderer hashes above.
+
+## Actual public projection prerequisite
+
+Production contract inspection by room_repair found that the actual public_owner_content reader omitted website even though bizpage_save writes website and suite-bizpage provenance. Therefore prior post-save renderer fixtures represented the intended public shape, not yet the complete live writer-to-reader chain. Production owner-edit acceptance depended on fixing this omitted projection.
+
+Independently accepted migration `20261001153000_public_owner_website_projection.sql`, SHA256 `bc04ff6aa17e27361ee94800ce6a7a7a2c27b7b4e48a0704cb2dd83d69725aff`. It pins exact current pg_get_functiondef MD5 `d34e6bb9fa641480743f2ccc9a9419d0` and adds only website from l.website inside the existing suite-bizpage branch. Retained current definition fixture SHA256 `ae804a019a5b794eed1c85cbc1f34787cc7b67f76e68f54b0d7c1aa9b01dbdca`. No privilege or current hospitality allowlist change.
+
+Five independent local PostgreSQL groups passed: exact website-only definition/data difference and unchanged ACL; null/empty/new HTTP owner values preserved; non-owner enrichment and absent listing cannot create owner proof; anonymous/authenticated direct helper access denied; altered definition refuses migration. Log /tmp/public-owner-website-independent.log. Reviewer made no live apply or customer edits. Parent controls production application/readback and should use bounded DDL timeouts. This closes the demonstrated contract gap in candidate code; it does not retroactively make earlier browser fixtures live-write evidence.

@@ -19,3 +19,7 @@ test('closing suggestions cancels a scheduled automatic retry',async()=>{
  controller=suggestionController({delay:0,retryDelay:20,onState:s=>states.push(s),search:async()=>{calls++;throw Error('network');}});
  controller.run('SIGNAT');await new Promise(r=>setTimeout(r,5));controller.cancel();await new Promise(r=>setTimeout(r,35));assert.equal(calls,1);assert.equal(states.some(s=>s.status==='error'),false);
 });
+
+test('strict map scope never expands an empty suggestion result into another city',async()=>{let calls=0;const result=await searchSuggestions('Amara',{city:'Athens',country:'Greece',strict:true},undefined,async()=>{calls++;return{ok:true,json:async()=>[]};});assert.equal(calls,1);assert.deepEqual(result,{rows:[],outside:false});});
+
+test('map suggestions omit disabled categories when several categories remain selected',async()=>{const result=await searchSuggestions('Sig',{types:['event','venue'],strict:true},undefined,async()=>({ok:true,json:async()=>[row,{...row,entity_type:'event',slug:'concert'}]}));assert.deepEqual(result.rows.map(r=>r.type),['event']);});

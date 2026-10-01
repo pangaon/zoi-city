@@ -3,8 +3,8 @@ import{createMusicPlayer}from'/assets/community/music-player.mjs?v=20260930-play
 import{mountListeningQueue}from'./queue.mjs';
 import{mountArtistDemand}from'/assets/music/demand.mjs';
 import{artistGallery}from'./layouts.mjs?v=20260930-horizon';
-import{renderMusic,showCards}from'./render.mjs?v=20261001-home-brand';
-import{esc,UUID,safeHttps,spotifyEmbed,calendarReminder,confirmedShow,scopedRequest,youtubePlaylistEmbed}from'./model.mjs';
+import{renderMusic,showCards}from'./render.mjs?v=20261001-official-source';
+import{esc,UUID,safeHttps,officialURL,spotifyEmbed,calendarReminder,confirmedShow,scopedRequest,youtubePlaylistEmbed}from'./model.mjs?v=20261001-official-source';
 const root=document.querySelector('#music-home'),C=window.ZoiCore,template=document.body.dataset.template;
 let player,data,dialog,shows=[],busy=false,actor=null,authIdentity=null,version=0;const identity=()=>{const s=C.auth.load();return C.auth.token()?s?.user_id||s?.email||null:null;};
 const status=text=>{const target=root.querySelector('[data-dialog-status]')||root.querySelector('[data-status]');if(target)target.textContent=text;};
@@ -25,7 +25,7 @@ function unavailableImage(image){
  const note=document.createElement('p');note.className='image-unavailable';note.textContent='This photograph is temporarily unavailable.';image.replaceWith(note);
  if(hero&&portrait&&!hero.querySelector('.hero-photo-status')){
   const caption=document.createElement('p');caption.className='hero-photo-status';caption.textContent='Artist photograph temporarily unavailable.';
-  const official=safeHttps(data.website);if(official){const link=document.createElement('a');link.href=official;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Visit the artist website ↗';caption.append(' ',link);}
+  const official=officialURL(data.website);if(official){const link=document.createElement('a');link.href=official;link.target='_blank';link.rel='noopener noreferrer';link.textContent='Visit the artist website ↗';caption.append(' ',link);}
   hero.append(caption);
  }
 }
