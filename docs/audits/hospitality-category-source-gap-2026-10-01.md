@@ -1,0 +1,9 @@
+# Hospitality category source gap — read-only audit
+
+2026-10-01 production query joins `zoi.listings.primary_category_id` to `zoi.categories.id`, published + clean, all categories currently accepted by the hospitality renderer. Result:388 hotels,187 with websites,158 with `_enrich`;0 imported rooms,0 imported amenities,85 imported booking URLs.11 explicit profile room arrays and18 explicit amenities exist. Three imported booking URLs equal the homepage after fragment/trailing-slash normalization. Counts describe stored fields, not verified source completeness or current provider validity.
+
+The shared worker has general contact/media/booking extraction but no hospitality rooms/dining/venues/amenity catalogue extraction. The renderer supports these arrays, so increasing photographic resolution cannot supply the absent offerings.
+
+Read source and production projections for Acanthus Blue, Acropolis Museum Boutique and Amara. All three production room/dining/venue/amenity arrays are empty. Amara is a concrete source-positive case: official homepage links Rooms, Suites, Dining, Restaurants, Spa and Wellness; `/rooms/` publishes named links “Deluxe Sea View Room” and “Deluxe Grand Sea View Room”, each linking its exact `/room/.../` page. Local captures `/tmp/hotel-audit-amara.html` and `/tmp/hotel-audit-amara-rooms.html`. We do not infer amenities, availability, price, occupancy or room inventory from navigation labels.
+
+Proposed bounded shared repair: source-declared offering links/names and supported structured amenity facts, guarded by exact source identity and safe same-origin URLs; wire into reviewed ingestion and hospitality projection with owner explicit clears overriding imports. Verify source→extractor→reviewed adapter→renderer using isolated fixtures. Production388 coverage remains open; no live data was changed by this audit.
