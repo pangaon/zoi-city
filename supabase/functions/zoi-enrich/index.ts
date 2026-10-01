@@ -1,3 +1,4 @@
+import {usablePhone} from './_phone.js';
 // zoi-enrich — website enrichment worker.
 //
 // Fetches the website each listing already publishes, extracts what the business
@@ -392,7 +393,7 @@ function extract(doc: string, finalUrl: string) {
   if (biz) {
     if (typeof biz.description === "string") put("description", unent(biz.description).trim().slice(0, 1200), "jsonld");
     if (typeof biz.slogan === "string") put("tagline", biz.slogan.trim().slice(0, 160), "jsonld");
-    if (typeof biz.telephone === "string" && digits(biz.telephone).length >= 7) put("phone", biz.telephone.trim(), "jsonld");
+    if (usablePhone(biz.telephone) && digits(biz.telephone).length >= 7) put("phone", biz.telephone.trim(), "jsonld");
     if (typeof biz.email === "string" && biz.email.includes("@")) put("email", biz.email.replace("mailto:", "").trim(), "jsonld");
     if (typeof biz.priceRange === "string") put("price_range", biz.priceRange.trim().slice(0, 12), "jsonld");
 
@@ -455,7 +456,7 @@ function extract(doc: string, finalUrl: string) {
   }
 
   const tel = [...doc.matchAll(/tel:([+\d][\d().\s\-\/]{6,24})/gi)]
-    .map((m) => m[1].trim()).filter((p) => digits(p).length >= 7 && digits(p).length <= 15);
+    .map((m) => m[1].trim()).filter((p) => usablePhone(p) && digits(p).length >= 7 && digits(p).length <= 15);
   if (tel.length) put("phone", tel[0], "tel-link");
   const contactDoc = doc.replace(/<(script|style|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi, "").replace(/<!--[\s\S]*?-->/g, "")
     .replace(/<([a-z][\w:-]*)\b[^>]*(?:\shidden(?:\s|=|>)|aria-hidden\s*=\s*["']true["']|style\s*=\s*["'][^"']*(?:display\s*:\s*none|visibility\s*:\s*hidden))[^>]*>[\s\S]*?<\/\1\s*>/gi, "");

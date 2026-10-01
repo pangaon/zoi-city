@@ -1,3 +1,4 @@
+import {placeholderPhone} from '../../supabase/functions/zoi-enrich/_phone.js';
 import {auxiliaryImage} from '../../supabase/functions/zoi-enrich/_image-context.js';
 import {sharedBranchContactSource} from '../enrichment/branch-contact-scope.mjs';
 import {websiteContacts} from '../homes/source-contact.mjs';
@@ -16,7 +17,7 @@ export function quickLookDetails(e){
  const o=e.owner_content||{},p=e.profile||{},op=o.profile||{},source=websiteContacts(e);
  const value=k=>own(o,k)?o[k]:own(op,k)?op[k]:own(p,k)?p[k]:e[k];
  const q=p._enrich||{},trusted=sourceIdentity(e),has=k=>own(o,k)||own(op,k)||own(p,k),locationSource=trusted&&!sharedBranchContactSource(e,q.source_url);
- const website=publicURL(value('website')),address=text(value('address'))||(!has('address')&&locationSource?[text(q.address_parts?.street),text(q.address_parts?.postcode)].filter(Boolean).join(', '):''),phone=phoneHref((own(o,'phone')||own(op,'phone')||own(p,'phone'))?value('phone'):(value('phone')||source.phone));
+ const website=publicURL(value('website')),address=text(value('address'))||(!has('address')&&locationSource?[text(q.address_parts?.street),text(q.address_parts?.postcode)].filter(Boolean).join(', '):''),phone=phoneHref((own(o,'phone')||own(op,'phone')||own(p,'phone'))?value('phone'):(!placeholderPhone(value('phone'))&&value('phone')||source.phone));
  const description=text(value('description'))||(!own(o,'description')&&!own(op,'description')&&!own(p,'description')&&trusted?text(q.description):'');
  const menu=publicURL(value('menu_url'))||(!has('menu_url')&&!has('menu')&&trusted?publicURL(q.menu_url):null);
  const photoKeys=['photo_url','photos','photo_urls','hero_url','hero_image','hero','gallery'];

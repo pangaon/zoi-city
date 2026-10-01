@@ -1,3 +1,4 @@
+import {usablePhone} from '../../supabase/functions/zoi-enrich/_phone.js';
 import {extractHospitality} from '../../supabase/functions/zoi-enrich/_hospitality.js';
 // Reuse the repository worker extractor body. Deployment is verified separately.
 // Only trusted repository code is compiled;
@@ -15,7 +16,7 @@ if(start<0||end<start)throw Error('extractor_contract_changed');
 const body=source.slice(start,end+marker.length);
 // A capture must identify the helper code that actually shaped its result, too.
 // Keep this explicit manifest in sync with the injected pure helpers and their imports.
-const helpers=['_menus.js','_images.js','_image-context.js','_social.js','_media.js','_hospitality.js'];
+const helpers=['_phone.js','_menus.js','_images.js','_image-context.js','_social.js','_media.js','_hospitality.js'];
 const implementation={body,helpers:Object.fromEntries(helpers.map(name=>[name,readFileSync(new URL('../../supabase/functions/zoi-enrich/'+name,import.meta.url),'utf8')]))};
 export const extractorHash=createHash('sha256').update(JSON.stringify(implementation)).digest('hex');
-export const extractRenderedSource=new Function('extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(body)+';return extract;')(extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
+export const extractRenderedSource=new Function('usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(body)+';return extract;')(usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);

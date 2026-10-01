@@ -1,3 +1,4 @@
+import {placeholderPhone} from '../supabase/functions/zoi-enrich/_phone.js';
 import {identityHead,identityHtml} from '../assets/brand/site-identity.mjs';
 // Canonical metadata reflects the same normalized public content as the home.
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -10,7 +11,7 @@ export function completeHomeMetadata(html,data,{preserveStructuredData=false}={}
  const subject={'@type':['Person','Restaurant','Church'].includes(data.type)?data.type:'Thing','@id':canonical+'#identity',name,url:canonical};
  if(image)subject.image=image;if(description)subject.description=description;
  if(subject['@type']!=='Thing'&&text(data.address))subject.address=text(data.address);
- if(subject['@type']!=='Thing'&&/^\+?[\d ()-]{6,25}$/.test(data.phone||''))subject.telephone=data.phone;
+ if(subject['@type']!=='Thing'&&!placeholderPhone(data.phone)&&/^\+?[\d ()-]{6,25}$/.test(data.phone||''))subject.telephone=data.phone;
  if(subject['@type']!=='Thing'&&/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(data.email||''))subject.email=data.email;
  const links=[...new Set((data.sameAs||[]).map(https).filter(Boolean))];if(links.length)subject.sameAs=links;
  const schema={'@context':'https://schema.org','@type':'WebPage','@id':canonical+'#webpage',url:canonical,name:title,description,mainEntity:subject};

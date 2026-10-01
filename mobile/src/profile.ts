@@ -1,3 +1,5 @@
+// @ts-ignore Shared conservative phone placeholder guard.
+import {placeholderPhone} from '../../supabase/functions/zoi-enrich/_phone.js';
 // @ts-ignore Shared reviewed branch contact scope.
 import {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../../assets/enrichment/branch-contact-scope.mjs';
 // @ts-ignore Shared pure presentation contract.
@@ -30,7 +32,8 @@ export function normalizeProfile(input: unknown) {
   }
   const names: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', linkedin: 'LinkedIn', x: 'X', twitter: 'X', spotify: 'Spotify', soundcloud: 'SoundCloud', telegram: 'Telegram', whatsapp: 'WhatsApp' };
   const social = Object.hasOwn(owner,'social_links')?object(owner.social_links):{ ...object(profile.social), ...object(profile.social_links), ...object(e.social_links) };
-  const phone=plain(Object.hasOwn(owner,'phone')?owner.phone:e.phone || profile.phone);
+  const rawPhone=plain(Object.hasOwn(owner,'phone')?owner.phone:Object.hasOwn(ownerProfile,'phone')?ownerProfile.phone:Object.hasOwn(raw,'phone')?raw.phone:(!placeholderPhone(e.phone)&&e.phone)||profile.phone);
+  const phone=placeholderPhone(rawPhone)?'':rawPhone;
   const seen = new Set<string>();
   const socials = Object.entries(names).flatMap(([key, label]) => { const url = publicURL(social[key]); if (!url || seen.has(url)) return []; seen.add(url); return [{ label, url }]; });
   const photo = [e.hero_url, e.photo_url, e.photo, profile.hero_url, profile.photo_url].map(publicURL).find(value => value.startsWith('https://')) || '';

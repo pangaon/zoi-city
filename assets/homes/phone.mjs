@@ -1,7 +1,8 @@
+import {placeholderPhone} from '../../supabase/functions/zoi-enrich/_phone.js';
 // Presentation-only dial target. No country inference or ownership verification.
 // Retain the original display string separately when this returns null.
 export function phoneTarget(value) {
- if(typeof value!=='string')return null;
+ if(typeof value!=='string'||placeholderPhone(value))return null;
  let number=value.trim(),extension='';
  const ext=number.match(/(?:\s*(?:ext\.?|extension|x)\s*|;ext=)(\d{1,8})$/i);
  if(ext){extension=ext[1];number=number.slice(0,ext.index).trim();}
