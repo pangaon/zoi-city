@@ -1,0 +1,11 @@
+# Organization and community workspace onboarding
+
+Defect: the ordinary Suite setup rendered only business wording and always sent `p_kind=business`, despite the existing controller/schema supporting six workspace types. New organizations and communities could not select their correct type through the normal UI.
+
+Changed only `social/index.html` setup/renderCreate and the New workspace menu label. The existing name field now uses neutral wording; a labelled selector exposes Business, Organization or nonprofit, Community or club, Creator, Agency and Personal. Business remains the default for compatibility. The chosen value is passed through the existing validated creation controller. Both name and type lock while busy or awaiting a missing receipt. Account change clears the private name, resets the type and disables submission. Creation still does not publish or claim a listing.
+
+Source evidence: existing `assets/suite/workspace-creation.mjs` allows business/creator/organization/community/personal/agency, and current backend `zoi_create_workspace` accepts those values. No schema, RPC, profile-linking or controller implementation changed.
+
+Rendered/exercised evidence: expanded `tests/browser/workspace-shell/verify.cjs` mounts the actual shell and styles with controlled RPC responses at390/1440. First-workspace Organization and additional Organization/Community flows each submit exactly once, preserve kind in the authoritative membership fixture and navigate to the exact returned workspace. Existing duplicate Enter, lost-response recovery/type lock, account clearing, unsaved navigation and listing-selection cases pass. Screenshots `/tmp/workspace-setup-organization-390.png` and1440 plus community variants; phone setup visually inspected. `tests/browser/workspace-onboarding/verify.cjs` still passes390/1440 recovery/role/account flows. Eleven workspace-creation controller unit tests pass.
+
+Not production transaction evidence: no organization, profile, membership or listing was created live. Native creation remains the existing explicit web handoff. Existing legacy workspace creation is not idempotent; this change preserves its conservative missing-receipt pause rather than claiming to solve that separate backend gap.
