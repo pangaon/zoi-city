@@ -1,4 +1,5 @@
 import {usablePhone} from './_phone.js';
+import {decodeSource} from './_decode.js';
 // zoi-enrich — website enrichment worker.
 //
 // Fetches the website each listing already publishes, extracts what the business
@@ -219,15 +220,7 @@ async function getCapped(url: URL, accept: string, deadline = Infinity) {
       buf.set(c, off);
       off += c.byteLength;
     }
-    let enc = "utf-8";
-    const m = ct.match(/charset=["']?([\w-]+)/);
-    if (m) enc = m[1];
-    let text = "";
-    try {
-      text = new TextDecoder(enc, { fatal: false }).decode(buf);
-    } catch {
-      text = new TextDecoder("utf-8", { fatal: false }).decode(buf);
-    }
+    const text = decodeSource(buf, ct);
     return { status: res.status, body: text, ct } as const;
   });
 }

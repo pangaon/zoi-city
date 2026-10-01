@@ -1,21 +1,23 @@
+import{mountWorkspaceInvitations}from'/assets/suite/workspace-invitations.mjs?v=20261001-invites';
 // Existing organization members. Invitations and delivery are separate capabilities.
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const roles=['owner','admin','editor','viewer'];
 const node=(tag,text,cls)=>{const n=document.createElement(tag);if(text)n.textContent=text;if(cls)n.className=cls;return n;};
 export function mountWorkspaceTeam(root,{C,ws,active=()=>true,onAccessLost=()=>{}}){
  const actor=C.auth.load?.()?.user_id,key=`zoi_team_request:${actor}:${ws}`;
- let ended=false,busy=false,snapshot=null,pending=null;
+ let ended=false,busy=false,snapshot=null,pending=null,invites=null;
  const current=()=>!ended&&root.isConnected&&active()&&C.auth.load?.()?.user_id===actor;
  const heading=node('h3','Your team'),intro=node('p','Manage the people who already belong to this organization. Owners and administrators control access.','zs-hint'),status=node('p','','zs-hint'),body=node('div');
- status.setAttribute('role','status');root.classList.add('zs-card');root.replaceChildren(heading,intro,status,body);
- function destroy(){ended=true;root.replaceChildren();}
+ const inviteRoot=node('section');
+ status.setAttribute('role','status');root.classList.add('zs-card');root.replaceChildren(heading,intro,status,body,inviteRoot);
+ function destroy(){ended=true;invites?.destroy();root.replaceChildren();}
  function denied(e){return [401,403].includes(Number(e?.status||e?.statusCode))||/42501|not_authorized/.test(`${e?.code} ${e?.message}`);}
  async function rpc(name,args){if(!current())throw Error('Account changed.');try{const r=await C.api.rpc(name,args,{auth:'require'});if(!current())throw Error('Account changed.');return r;}catch(e){if(current()&&denied(e)){destroy();root.textContent='Your team access changed. Reopen Settings to continue.';onAccessLost();}throw e;}}
  function button(text,fn){const b=node('button',text,'zs-btn zs-ghost');b.type='button';b.onclick=fn;b.disabled=busy;return b;}
  function store(value){if(value){const raw=JSON.stringify(value);sessionStorage.setItem(key,raw);if(sessionStorage.getItem(key)!==raw)throw Error('Recovery storage unavailable.');}else{sessionStorage.removeItem(key);if(sessionStorage.getItem(key)!==null)throw Error('Recovery storage unavailable.');}pending=value;}
  function validate(r){return r?.ok===true&&r.workspace_id===ws&&roles.includes(r.role)&&uuid.test(r.actor_profile_id)&&Array.isArray(r.members)&&r.members.every(m=>uuid.test(m.id)&&uuid.test(m.profile_id)&&uuid.test(m.revision)&&typeof m.name==='string'&&roles.includes(m.role)&&typeof m.protected==='boolean');}
  async function read(){const r=await rpc('workspace_team_get',{p_workspace:ws});if(!validate(r))throw Error('Team response could not be verified.');snapshot=r;}
- function render(){if(!current())return;body.replaceChildren();if(pending){const box=node('div');box.append(node('p','A team change needs confirmation. Check its result before making another change.'));const actions=node('div',null,'zs-actions');actions.append(button('Check team change',()=>recover(false)),button('Cancel unconfirmed change',()=>recover(true)));box.append(actions);body.append(box);return;}
+ function render(){if(!current())return;if(snapshot&&['owner','admin'].includes(snapshot.role)){if(!invites)invites=mountWorkspaceInvitations(inviteRoot,{C,ws,active:current,onAccessLost});}else{invites?.destroy();invites=null;inviteRoot.replaceChildren();}body.replaceChildren();if(pending){const box=node('div');box.append(node('p','A team change needs confirmation. Check its result before making another change.'));const actions=node('div',null,'zs-actions');actions.append(button('Check team change',()=>recover(false)),button('Cancel unconfirmed change',()=>recover(true)));box.append(actions);body.append(box);return;}
  if(!snapshot){body.append(button('Retry loading team',load));return;}
  if(!snapshot.members.length)body.append(node('p','No additional team members are listed.'));
  for(const m of snapshot.members){const row=node('section');row.style.cssText='border-top:1px solid var(--line);padding:14px 0;overflow-wrap:anywhere';row.setAttribute('aria-label',`Team member ${m.name}`);const name=node('strong',m.name);row.append(name,node('p',m.role[0].toUpperCase()+m.role.slice(1)+(m.profile_id===snapshot.actor_profile_id?' · You':''),'zs-hint'));
