@@ -133,6 +133,7 @@ import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { extractStructuredMenu } from "./_menus.js";
+import { extractHospitality, hospitalitySupplements, hospitalitySourceMatches, validHospitalityFields } from "./_hospitality.js";
 import { extractSiteImages, supplementaryPages, imageIdentity } from "./_images.js";
 import { confirmedEnrichmentReceipts, enrichmentSample } from "./_receipts.js";
 
@@ -438,6 +439,7 @@ function extract(doc: string, finalUrl: string) {
   if (!isAgg) {
     put("tagline", metaTag(doc, "og:site_name"), "og");
     put("description", (metaTag(doc, "og:description") || metaTag(doc, "description", "name") || "").slice(0, 1200), "og");
+    for (const [key, value] of Object.entries(extractHospitality(doc, finalUrl))) put(key, value, "source-hospitality:" + finalUrl);
     const imagery = extractSiteImages(doc, finalUrl, biz || {});
     // A successful current crawl replaces only machine imagery, including stale bad fallbacks.
     for (const key of ["logo_url", "photo_url", "hero_url"]) profile[key] = null;
@@ -635,10 +637,18 @@ Deno.serve(async (req) => {
         continue; // Never run generic metadata or supplementary crawls for a person on a member source.
       }
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
+      if (!hospitalitySourceMatches(got.finalUrl!, row.website)) {
+        for (const key of ["rooms", "dining", "venues", "amenities"]) { delete profile[key]; delete provenance[key]; }
+      }
       if (!aggregator) {
+        if (["rooms", "dining", "venues", "amenities"].some(key => profile[key])) {
+          const sourceHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(got.doc!)))).map(b => b.toString(16).padStart(2, "0")).join("");
+          for (const key of ["rooms", "dining", "venues", "amenities"]) if (profile[key]) provenance[key] += "#sha256=" + sourceHash;
+        }
         // At most two explicit same-origin pages (menu first); each keeps robots, DNS, redirect,
         // byte and timeout guards. No search-engine discovery or guessed URLs.
-        for (const page of supplementaryPages(got.doc!, got.finalUrl!)) {
+        const supplements = hospitalitySupplements(supplementaryPages(got.doc!, got.finalUrl!), got.doc!, got.finalUrl!);
+        for (const page of supplements) {
           if (Date.now() - started > 90_000) break;
           if (page.purpose === "menu" && Array.isArray(profile.menu) && profile.menu.length) continue;
           if (page.purpose === "gallery" && Array.isArray(profile.photo_urls) && profile.photo_urls.length >= 6) continue;
@@ -650,6 +660,10 @@ Deno.serve(async (req) => {
           const extra = await fetchDoc(pageUrl, deadline - RPC_MS);
           if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { bump("supplement-unavailable"); continue; }
           const next = extract(extra.doc, extra.finalUrl);
+          const pageHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(extra.doc)))).map(b => b.toString(16).padStart(2, "0")).join("");
+          for (const key of ["rooms", "dining", "venues", "amenities"]) {
+            if (hospitalitySourceMatches(got.finalUrl!, row.website) && hospitalitySourceMatches(extra.finalUrl, row.website) && validHospitalityFields(next.profile, row.website) && !profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = "source-hospitality:" + extra.finalUrl + "#sha256=" + pageHash; }
+          }
           for (const key of ["phone", "email", "logo_url", "photo_url", "hero_url", "menu_url", "booking_url", "menu", "menu_source", "menu_source_format"]) {
             if (key === "email" && (profile.email_conflict || next.profile.email_conflict)) {
               profile.email = null; profile.email_conflict = profile.email_conflict || next.profile.email_conflict; provenance.email = "conflicting-source-emails"; provenance.email_conflict = provenance.email_conflict || next.provenance.email_conflict; continue;

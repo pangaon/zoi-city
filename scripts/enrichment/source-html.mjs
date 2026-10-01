@@ -69,7 +69,7 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  if(memberLeaseGuard(row,source.text,source.url).handled)throw Error('source_identity_scope_review');
  const extracted=extractRenderedSource(source.text,source.url),title=(source.text.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1]||'').replace(/<[^>]+>/g,' ').trim();
  if(extracted.aggregator||assessMachineSourceIdentity({website:row.website,finalUrl:source.url,name:row.name,title,description:extracted.profile.description}).outcome!=='continue')throw Error('source_identity_scope_review');
- const profile=Object.fromEntries(['description','tagline','phone','email','social','site_lang'].filter(k=>extracted.profile[k]!=null&&extracted.profile[k]!==''&&(!(typeof extracted.profile[k]==='object')||Object.keys(extracted.profile[k]).length)).map(k=>[k,extracted.profile[k]]));
+ const profile=Object.fromEntries(['description','tagline','phone','email','social','site_lang','rooms','dining','venues','amenities'].filter(k=>extracted.profile[k]!=null&&extracted.profile[k]!==''&&(!(typeof extracted.profile[k]==='object')||Object.keys(extracted.profile[k]).length)).map(k=>[k,extracted.profile[k]]));
  // Preserve an explicit machine-contact quarantine; absence is not a clear.
  if(extracted.profile.email_conflict){profile.email=null;profile.email_conflict=extracted.profile.email_conflict;}
  else if(extracted.profile.email_conflict===null&&typeof profile.email==='string'&&/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(profile.email))profile.email_conflict=null;
@@ -91,6 +91,6 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
   }
  }finally{await closeDecoder(decoder);}
  if(images.length){profile.photo_urls=images.map(x=>x.url);profile.hero_url=images[0].url;profile.photo_url=images[0].url;}
- if(!profile.phone&&!profile.email&&!images.length&&String(profile.description||'').length<80)throw Error('source_html_no_useful_fields');
+ if(!profile.phone&&!profile.email&&!images.length&&!['rooms','dining','venues','amenities'].some(k=>profile[k]?.length)&&String(profile.description||'').length<80)throw Error('source_html_no_useful_fields');
  return{schema:2,capture_kind:'source_html',source_scope:'official_site',listing_id:row.listing_id||row.id,website:row.website,source_fingerprint:row.source_fingerprint,html:publicHTML(source.text),collected_at:new Date().toISOString(),review_required:true,render:null,source:{url:source.url,title,http_status:source.status,sha256:sha256(source.text),...quality},extractor_sha256:extractorHash,profile,images,rejected_images:rejected,network:{...session.stats},aggregator:false,provenance:Object.fromEntries(Object.keys(profile).map(k=>[k,'official-source-html:'+source.url]))};
 }

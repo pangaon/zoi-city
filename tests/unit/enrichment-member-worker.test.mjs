@@ -1,3 +1,5 @@
+import {hospitalitySupplements,hospitalitySourceMatches,validHospitalityFields} from '../../supabase/functions/zoi-enrich/_hospitality.js';
+import {webcrypto} from 'node:crypto';
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {stripTypeScriptTypes} from 'node:module';
 import {inspectSourceDocument} from '../../supabase/functions/zoi-enrich/_document-quality.js';
 import {memberLeaseGuard} from '../../supabase/functions/zoi-enrich/_member.js';
@@ -6,7 +8,7 @@ const source=fs.readFileSync(new URL('../../supabase/functions/zoi-enrich/index.
 const memberURL='https://www.hellenicmedical.ca/profile/atzakis/';
 const row={slug:'ageliki-tzakis',website:memberURL,lease_id:'lease',name:'Ageliki Tzakis',entity_type:'professional',existing_enrich:{member:{name:'Ageliki Tzakis',profession:'Registered Nurse'}}};
 const doc='<h1>Ageliki (Angie) Tzakis, RN</h1><p>Associate</p><p>Profession: Registered Nurse</p><p>City: East York / Scarborough</p><footer>Practice Phone:9055812440</footer>';
-async function run(item,got,overrides={}){let handler,batch,generic=0,supplements=0;const deps={INVOCATION_MS:110000,RPC_MS:15000,TIMEOUT_MS:8000,boundedIO:async(_deadline,_maximum,work)=>work(new AbortController().signal),Deno:{serve:fn=>handler=fn},authorised:()=>true,ENABLED:true,BATCH:1,enrichmentSample,memberLeaseGuard,confirmedEnrichmentReceipts,inspectSourceDocument,Response,Date,URL,dnsState:()=>true,vet:async url=>({url:new URL(url)}),robotsAllows:async()=>true,fetchDoc:async()=>got,sbRpc:async(fn,args)=>{if(fn.endsWith('_lease'))return[item];batch=args.p_batch;return batch.map(x=>({slug:x.slug,applied:true}))},extract:()=>{generic++;return{profile:{menu:[{section:'Actual generic extraction delegated'}]},provenance:{},aggregator:false}},supplementaryPages:()=>{supplements++;return[]},imageIdentity:x=>x,...overrides};new Function(...Object.keys(deps),stripTypeScriptTypes(source.slice(source.indexOf('Deno.serve('))))(...Object.values(deps));const response=await handler(new Request('https://worker.test',{method:'POST',body:'{}'}));assert.equal(response.status,200);return{batch,generic,supplements,result:await response.json()}}
+async function run(item,got,overrides={}){let handler,batch,generic=0,supplements=0;const deps={hospitalitySupplements,hospitalitySourceMatches,validHospitalityFields,crypto:webcrypto,TextEncoder,INVOCATION_MS:110000,RPC_MS:15000,TIMEOUT_MS:8000,boundedIO:async(_deadline,_maximum,work)=>work(new AbortController().signal),Deno:{serve:fn=>handler=fn},authorised:()=>true,ENABLED:true,BATCH:1,enrichmentSample,memberLeaseGuard,confirmedEnrichmentReceipts,inspectSourceDocument,Response,Date,URL,dnsState:()=>true,vet:async url=>({url:new URL(url)}),robotsAllows:async()=>true,fetchDoc:async()=>got,sbRpc:async(fn,args)=>{if(fn.endsWith('_lease'))return[item];batch=args.p_batch;return batch.map(x=>({slug:x.slug,applied:true}))},extract:()=>{generic++;return{profile:{menu:[{section:'Actual generic extraction delegated'}]},provenance:{},aggregator:false}},supplementaryPages:()=>{supplements++;return[]},imageIdentity:x=>x,...overrides};new Function(...Object.keys(deps),stripTypeScriptTypes(source.slice(source.indexOf('Deno.serve('))))(...Object.values(deps));const response=await handler(new Request('https://worker.test',{method:'POST',body:'{}'}));assert.equal(response.status,200);return{batch,generic,supplements,result:await response.json()}}
 test('actual worker handler takes member branch before generic metadata and supplementary fetches',async()=>{const r=await run(row,{doc,finalUrl:memberURL});assert.equal(r.generic,0);assert.equal(r.supplements,0);assert.equal(r.batch[0].profile.member.profession,'Registered Nurse');assert.equal(r.batch[0].profile.phone,null);assert.deepEqual(r.batch[0].profile.social,{});assert.equal(r.result.stats['member-identity-matched'],1)});
 test('challenge and HTTP refusal select database preservation branch',async()=>{for(const got of [{doc:'One moment, please. Request being verified.',finalUrl:memberURL},{error:'http403'}]){const r=await run(row,got);assert.equal(r.generic,0);assert.equal(r.supplements,0);assert.equal(r.batch[0].profile.crawl_status,'error');assert(!('member' in r.batch[0].profile));assert(!('photo_url' in r.batch[0].profile));assert.equal({...row.existing_enrich,...r.batch[0].profile}.member.profession,'Registered Nurse')}});
 test('missing lease identity and redirect to unrelated organization fail closed',async()=>{for(const item of [{slug:'old-lease',website:memberURL,lease_id:'lease'},row]){const r=await run(item,{doc:'<h1>Association</h1><img src="banner.jpg">',finalUrl:'https://other-association.example/'});assert.equal(r.generic,0);assert.equal(r.supplements,0);assert.equal(r.batch[0].profile.crawl_status,'error')}});
@@ -38,5 +40,25 @@ test('supplementary contact extraction cannot refill a source email conflict',as
    extract:()=>{const home=++count===1;return {profile:home===conflictOnHome?{email:null,email_conflict:conflict}:{email:'other@bistro.test'},provenance:{email:home===conflictOnHome?'conflicting-source-emails':'mailto-link',email_conflict:'jsonld-and-anchor-review:'+item.website},aggregator:false};}
  });
  assert.equal(r.batch[0].profile.email,null);assert.deepEqual(r.batch[0].profile.email_conflict,conflict);assert.equal(r.batch[0].provenance.email,'conflicting-source-emails');
+ }
+});
+
+test('actual worker catalogue preserves original property scope across initial redirects',async()=>{
+ const item={...row,entity_type:'business',name:'Hotel A',website:'https://chain.test/hotel-a/'};
+ for(const property of ['hotel-a','hotel-b']){
+  const finalUrl='https://chain.test/'+property+'/';
+  const rooms=[{name:'Published Suite',detail:'',source:finalUrl+'rooms/suite/'}];
+  const r=await run(item,{doc:'Hotel source',finalUrl},{extract:()=>({profile:{rooms},provenance:{rooms:'source-hospitality:'+finalUrl},aggregator:false})});
+  assert.equal(Object.hasOwn(r.batch[0].profile,'rooms'),property==='hotel-a');
+  if(property==='hotel-a')assert.match(r.batch[0].provenance.rooms,/#sha256=[a-f0-9]{64}$/);
+ }
+});
+test('actual worker rejects sibling-property supplemental catalogue but accepts exact source with hash',async()=>{
+ const item={...row,entity_type:'business',name:'Hotel A',website:'https://chain.test/hotel-a/'};
+ for(const property of ['hotel-a','hotel-b']){
+  let calls=0;const extra='https://chain.test/'+property+'/rooms/';
+  const r=await run(item,{}, {fetchDoc:async()=>++calls===1?{doc:'Home',finalUrl:item.website}:{doc:'Rooms',finalUrl:extra},supplementaryPages:()=>[{purpose:'contact',url:item.website+'contact/'}],extract:(doc)=>({profile:doc==='Home'?{description:'Hotel A'}:{rooms:[{name:'Suite',detail:'',source:extra+'suite/'}]},provenance:{},aggregator:false})});
+  assert.equal(Object.hasOwn(r.batch[0].profile,'rooms'),property==='hotel-a');
+  if(property==='hotel-a')assert.match(r.batch[0].provenance.rooms,/#sha256=[a-f0-9]{64}$/);
  }
 });
