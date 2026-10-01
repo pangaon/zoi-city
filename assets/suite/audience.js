@@ -17,8 +17,9 @@
  *   - Honest consent note near import (no scraping, opt-in only).
  *
  * RPCs (all writes use auth:'require'):
+ *   audience_access(p_workspace) -> authoritative read/write capabilities
  *   audience_list(p_workspace,p_q,p_tag) -> contacts[]
- *   audience_upsert(p_workspace,p_name,p_email,p_phone,p_nameday,p_tags,p_notes,p_id) -> {ok,id}
+ *   audience_upsert(p_workspace,p_name,p_email,p_phone,p_nameday,p_tags,p_notes,p_id) -> UUID
  *   audience_delete(p_workspace,p_id)
  *   audience_import(p_workspace,p_rows) -> summary  (p_rows = jsonb array of {name,email,phone,tags,...})
  */
@@ -201,6 +202,15 @@
     var ws = ctx.ws;
     var rpc = (C.api && C.api.rpc) ? C.api.rpc.bind(C.api) : null;
 
+    function currentActor(){var session=C.auth&&C.auth.load&&C.auth.load();return session&&session.user_id;}
+    var actor=currentActor();
+    var disposed=false, loadEpoch=0, canWrite=false, canConsent=false, closeImport=null;
+    function active(){return !disposed && !!actor && ctx.ws===ws && currentActor()===actor && root.contains(wrap);}
+    function dispose(){if(disposed)return;disposed=true;loadEpoch++;clearTimeout(searchTimer);if(closeImport)closeImport();state.contacts=[];state.knownTags=[];state.q='';state.tag='';if(importState)importState.parsed=null;wrap.replaceChildren();global.removeEventListener('zoi:auth-change',authChanged);}
+    function authChanged(){if(!active())dispose();}
+    global.addEventListener('zoi:auth-change',authChanged);
+    function denied(e){return /not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission/.test(String(e&&e.message||e));}
+    function fail(e){if(!active())return;if(denied(e)){canWrite=false;canConsent=false;state.contacts=[];state.knownTags=[];state.error='Your permissions changed. Refresh contacts to check your access.';if(closeImport)closeImport();q('form').replaceChildren();q('form').style.display='none';renderTable();permissions();}toast(e&&e.message||'Request could not be confirmed.','error');}
     injectStyles(document);
 
     var state = {
@@ -208,7 +218,7 @@
       loading: true,
       q: '',
       tag: '',
-      knownTags: []   // distinct tags for the filter dropdown
+      error: '', knownTags: []   // distinct tags for the filter dropdown
     };
     var searchTimer = null;
 
@@ -218,6 +228,7 @@
 
     function q(id) { return wrap.querySelector('[data-z="' + id + '"]'); }
 
+    function permissions(){if(!active())return;q('add').hidden=!canWrite;q('add').style.display=canWrite?'':'none';q('import').hidden=!canWrite;q('import').style.display=canWrite?'':'none';q('export').disabled=state.loading||!state.contacts.length;q('permission').textContent=state.error||(!canWrite?'You have read-only access to these contacts.':'');}
     /* ---------- shell ---------- */
     function renderShell() {
       wrap.innerHTML =
@@ -229,7 +240,7 @@
           '<button class="zu-btn ghost" data-z="export">Export CSV</button>' +
           '<button class="zu-btn pri" data-z="add">+ Add contact</button>' +
         '</div>' +
-        '<div class="zu-toolbar">' +
+        '<p class="zu-sub" data-z="permission" role="status"></p>' + '<div class="zu-toolbar">' +
           '<div class="zu-search"><input class="zu-input" data-z="q" type="search" placeholder="Search name, email, phone…"></div>' +
           '<select class="zu-sel" data-z="tag"><option value="">All tags</option></select>' +
         '</div>' +
@@ -276,6 +287,7 @@
 
     /* ---------- table ---------- */
     function renderTable() {
+      if(!active())return;permissions();
       var host = q('table');
       if (!host) return;
       var cs = state.contacts;
@@ -288,6 +300,7 @@
       if (state.loading) { host.className = 'zu-loading'; host.textContent = 'Loading…'; return; }
       if (!cs.length) {
         host.className = 'zu-empty';
+        if(state.error){host.textContent=state.error;return;}
         host.innerHTML = (state.q || state.tag)
           ? 'No contacts match your search.'
           : 'No contacts yet.<br>Add one, or import a CSV of people who opted in.';
@@ -312,6 +325,7 @@
             '<button class="zu-btn ghost sm" data-act="edit">Edit</button>' +
             '<button class="zu-btn danger ghost sm" data-act="del">Delete</button>' +
           '</div></td>';
+        tr.querySelector('.zu-rowacts').hidden=!canWrite;tr.querySelector('.zu-rowacts').style.display=canWrite?'':'none';
         tr.querySelector('[data-act="edit"]').addEventListener('click', function () { openForm(c); });
         tr.querySelector('[data-act="del"]').addEventListener('click', function () { doDelete(c); });
         tb.appendChild(tr);
@@ -324,6 +338,7 @@
 
     /* ---------- add / edit form ---------- */
     function openForm(c) {
+      if(!active()||!canWrite)return;
       c = c || {};
       var editing = c.id != null;
       var host = q('form');
@@ -354,12 +369,13 @@
       q('f_cancel').addEventListener('click', function () { host.style.display = 'none'; host.innerHTML = ''; });
       var consentBox = el('div', 'zu-field');
       consentBox.innerHTML = '<label><input type="checkbox" data-z="f_consent"> Record explicit permission for marketing emails</label><input class="zu-input" data-z="f_consent_source" placeholder="Evidence: signup form, date, or written permission" maxlength="1000"><label>When permission was given <input class="zu-input" type="datetime-local" data-z="f_consent_date"></label><small>Leave unchecked unless you have permission. Previously unsubscribed recipients stay suppressed.</small>';
-      host.insertBefore(consentBox, q('f_save').parentNode);
+      if(canConsent)host.insertBefore(consentBox, q('f_save').parentNode);
       q('f_save').addEventListener('click', function () { doSave(c.id != null ? c.id : null); });
       if (q('f_name')) q('f_name').focus();
     }
 
     async function doSave(id) {
+      if(!active()||!canWrite)return;
       var name = (q('f_name') && q('f_name').value || '').trim();
       var email = (q('f_email') && q('f_email').value || '').trim();
       var phone = (q('f_phone') && q('f_phone').value || '').trim();
@@ -383,29 +399,35 @@
           p_workspace: ws, p_name: name, p_email: email, p_phone: phone,
           p_nameday: nameday, p_tags: tags, p_notes: notes, p_id: id || null
         }, { auth: 'require' });
+        if(!active())return;
         if (typeof contactReceipt !== 'string' || !/^[0-9a-f-]{36}$/i.test(contactReceipt)) throw new Error('The contact save was not confirmed. Your form is unchanged.');
         if (recordConsent) {
           var consent = await rpc('email_consent_record', { p_workspace: ws, p_email: email, p_name: name, p_tags: tags, p_source: consentSource, p_consented_at: consentAt.toISOString() }, { auth: 'require' });
+          if(!active())return;
           if (!consent || consent.ok !== true) throw new Error('Contact saved, but marketing consent was not confirmed. No marketing eligibility was added.');
         }
         q('form').style.display = 'none'; q('form').innerHTML = '';
         await reload(); renderTable();
+        if(!active()||state.error)return;
         toast(id ? 'Contact updated.' : 'Contact added.', 'success');
       } catch (e) {
-        toast((e && e.message) ? e.message : 'Could not save.', 'error');
+        if(!active())return;fail(e);
         btn.disabled = false; btn.textContent = prev;
       }
     }
 
     async function doDelete(c) {
+      if(!active()||!canWrite)return;
       if (!global.confirm('Delete ' + (c.name || c.email || 'this contact') + '? This cannot be undone.')) return;
       if (!rpc) { toast('Not connected.', 'error'); return; }
       try {
-        await rpc('audience_delete', { p_workspace: ws, p_id: c.id }, { auth: 'require' });
+        var deleted=await rpc('audience_delete', { p_workspace: ws, p_id: c.id }, { auth: 'require' });
+        if(!active())return;if(deleted!==true)throw Error('Contact deletion was not confirmed. Refresh the list.');
         await reload(); renderTable();
+        if(!active()||state.error)return;
         toast('Contact deleted.', 'success');
       } catch (e) {
-        toast((e && e.message) ? e.message : 'Could not delete.', 'error');
+        fail(e);
       }
     }
 
@@ -413,6 +435,7 @@
     var importState = { parsed: null };
 
     function openImport() {
+      if(!active()||!canWrite)return;if(closeImport)closeImport();
       var overlay = el('div', 'zu-modal');
       overlay.innerHTML =
         '<div class="zu-modal-card">' +
@@ -438,7 +461,8 @@
       document.body.appendChild(overlay);
 
       function mq(id) { return overlay.querySelector('[data-z="' + id + '"]'); }
-      function close() { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); importState.parsed = null; }
+      closeImport=close;
+      function close() { closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay); importState.parsed = null; }
 
       overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
       mq('cancel').addEventListener('click', close);
@@ -447,7 +471,7 @@
         var f = this.files && this.files[0];
         if (!f) return;
         var reader = new FileReader();
-        reader.onload = function () { mq('csv').value = String(reader.result || ''); doPreview(); };
+        reader.onload = function () { if(!active()||!overlay.isConnected)return;mq('csv').value = String(reader.result || ''); doPreview(); };
         reader.onerror = function () { toast('Could not read that file.', 'error'); };
         reader.readAsText(f);
       });
@@ -455,6 +479,7 @@
       mq('parse').addEventListener('click', doPreview);
 
       function doPreview() {
+        if(!active()||!canWrite)return;
         var text = mq('csv').value || '';
         if (!text.trim()) { toast('Paste CSV or choose a file first.', 'warn'); return; }
         var rows = parseCSV(text);
@@ -492,25 +517,24 @@
       }
 
       mq('do').addEventListener('click', function () {
+        if(!active()||!canWrite)return;
         var contacts = importState.parsed;
         if (!contacts || !contacts.length) { toast('Nothing to import.', 'warn'); return; }
         if (!rpc) { toast('Not connected.', 'error'); return; }
         var btn = mq('do'); btn.disabled = true; var prev = btn.textContent; btn.textContent = 'Importing…';
         rpc('audience_import', { p_workspace: ws, p_rows: contacts }, { auth: 'require' })
           .then(function (summary) {
-            var n = contacts.length;
-            if (summary && typeof summary === 'object') {
-              if (summary.imported != null) n = summary.imported;
-              else if (summary.count != null) n = summary.count;
-            } else if (typeof summary === 'number') { n = summary; }
+            if(!active())return;
+            if(!summary||!Number.isInteger(summary.added)||!Number.isInteger(summary.skipped)||summary.added<0||summary.skipped<0||summary.added+summary.skipped!==contacts.length)throw Error('Import result could not be verified. Refresh contacts before retrying.');
+            var n=summary.added;
             close();
             return reload().then(function () {
-              renderTable();
+              if(!active()||state.error)return;renderTable();
               toast('Imported ' + n + (n === 1 ? ' contact.' : ' contacts.'), 'success');
             });
           })
           .catch(function (e) {
-            toast((e && e.message) ? e.message : 'Import failed.', 'error');
+            if(!active())return;fail(e);
             btn.disabled = false; btn.textContent = prev;
           });
       });
@@ -518,6 +542,7 @@
 
     /* ---------- CSV export (client-side Blob) ---------- */
     function doExport() {
+      if(!active())return;
       var cs = state.contacts;
       if (!cs.length) { toast('Nothing to export.', 'warn'); return; }
       var header = ['name', 'email', 'phone', 'tags', 'nameday', 'notes'];
@@ -547,23 +572,32 @@
 
     /* ---------- data ---------- */
     async function reload() {
-      if (!rpc) { state.contacts = []; state.loading = false; return; }
+      if(!active())return;
+      var epoch=++loadEpoch;state.loading=true;state.error='';canWrite=false;canConsent=false;permissions();
       try {
-        var rows = await rpc('audience_list', {
-          p_workspace: ws, p_q: state.q || null, p_tag: state.tag || null
-        }, { auth: 'prefer' });
-        state.contacts = Array.isArray(rows) ? rows : (rows && rows.contacts) || [];
-      } catch (e) {
-        state.contacts = [];
-        toast((e && e.message) ? e.message : 'Could not load contacts.', 'error');
+        if(!rpc)throw Error('Not connected.');
+        var access=await rpc('audience_access',{p_workspace:ws},{auth:'require'});
+        if(!active()||epoch!==loadEpoch)return;
+        if(!access||access.ok!==true||access.workspace_id!==ws||typeof access.can_write!=='boolean'||typeof access.can_record_consent!=='boolean')throw Error('Contact permissions could not be verified.');
+        canWrite=access.can_write;canConsent=access.can_record_consent;
+        if(!canWrite){q('form').replaceChildren();q('form').style.display='none';if(closeImport)closeImport();}
+        var rows=await rpc('audience_list',{p_workspace:ws,p_q:state.q||null,p_tag:state.tag||null},{auth:'require'});
+        if(!active()||epoch!==loadEpoch)return;
+        if(!Array.isArray(rows))throw Error('Contacts could not be verified.');
+        state.contacts=rows;
+      } catch(e) {
+        if(!active()||epoch!==loadEpoch)return;
+        state.contacts=[];state.knownTags=[];state.error=e&&e.message||'Could not load contacts.';canWrite=false;canConsent=false;
+        q('form').replaceChildren();q('form').style.display='none';if(closeImport)closeImport();toast(state.error,'error');
       }
-      state.loading = false;
+      if(!active()||epoch!==loadEpoch)return;state.loading=false;
     }
 
     /* ---------- boot ---------- */
-    renderShell();
+    renderShell();permissions();
     await reload();
     renderTable();
+    return {destroy:dispose,unmount:dispose};
   }
 
   /* ---------- register ---------- */

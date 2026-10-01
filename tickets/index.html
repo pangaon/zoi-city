@@ -1817,7 +1817,7 @@ async function openTableInventory(eventId,name){
   openGen('Table inventory','Owner and administrator settings for existing venue tables.','<div id="tableInventoryMount">Loading editor…</div>');
   const epoch=tableInventoryEpoch;const root=document.getElementById('tableInventoryMount');
   const identity=()=>{try{return DASH.ws===workspace?gaIdentity().actor:null;}catch{return null;}};
-  try{const {mountTableInventory}=await import('/assets/tickets/table-inventory-operator.mjs?v=20260930-1');if(epoch!==tableInventoryEpoch||!root.isConnected||identity()!==actor)return;tableInventoryDispose=mountTableInventory(root,{workspace,event:eventId,eventName:name,getActor:identity,call:(fn,args)=>{if(identity()!==actor)throw Error('Your account changed. Reopen the editor.');return rpc(fn,args,getAuth()?.access_token);}});}
+  try{const {mountTableInventory}=await import('/assets/tickets/table-inventory-operator.mjs?v=20261001-inventory-draft');if(epoch!==tableInventoryEpoch||!root.isConnected||identity()!==actor)return;tableInventoryDispose=mountTableInventory(root,{workspace,event:eventId,eventName:name,getActor:identity,call:(fn,args)=>{if(identity()!==actor)throw Error('Your account changed. Reopen the editor.');return rpc(fn,args,getAuth()?.access_token);}});}
   catch{if(epoch===tableInventoryEpoch&&root.isConnected)root.textContent='The table editor could not load. Close this window and try again.';}
 }
 window.addEventListener('storage',e=>{if(e.key==='zoi_auth'&&tableInventoryDispose)closeGen();});
