@@ -35,3 +35,12 @@
 .signature-venue{background:var(--zr-bg)!important}.signature-venue[data-view=concert] .sv-tabs button[aria-pressed=true]{background:#294664;color:#f3f8ff;border-color:#a7d3ff55}.signature-venue .sv-heading h2{font-family:system-ui,sans-serif;letter-spacing:-.035em}
 [data-room-skin=zoi] :is(.fc-controls,.rs-toolbar) button:is([data-full],[data-room-full])[aria-pressed]{background:#c9ecff!important;color:#0b2037!important;border-color:#d6f0ff!important}
 [data-room-skin=zoi] .fc-controls [data-focus]{display:none!important}
+/* Keep every guest control visible on phones, including after fullscreen focus. */
+@media(max-width:700px){
+ [data-room-skin=zoi] :is(.fc-controls,.rs-toolbar){display:grid!important;grid-template-columns:repeat(6,minmax(0,1fr))!important;width:calc(100% - 20px)!important;max-height:none!important;overflow:visible!important}
+ [data-room-skin=zoi] :is(.fc-controls,.rs-toolbar) button{grid-column:span 2;min-width:0;padding:7px 4px!important;white-space:normal!important}
+ [data-room-skin=zoi] :is(.fc-controls,.rs-toolbar) [data-zoom]{grid-column:span 1}
+ [data-room-skin=zoi] .rs-finder{top:116px!important}
+ .signature-venue[data-view=concert] .fc-viewport>.sv-demo-tools{top:calc(max(10px,env(safe-area-inset-top)) + 112px)!important}
+ .signature-venue[data-fullscreen=true][data-view=concert] .fc-viewport{padding-top:118px!important}
+}
