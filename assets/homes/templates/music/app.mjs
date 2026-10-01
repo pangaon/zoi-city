@@ -3,7 +3,7 @@ import{createMusicPlayer}from'/assets/community/music-player.mjs?v=20260930-play
 import{mountListeningQueue}from'./queue.mjs';
 import{mountArtistDemand}from'/assets/music/demand.mjs';
 import{artistGallery}from'./layouts.mjs?v=20260930-horizon';
-import{renderMusic,showCards}from'./render.mjs?v=20261001-source-video';
+import{renderMusic,showCards}from'./render.mjs?v=20261001-home-brand';
 import{esc,UUID,safeHttps,spotifyEmbed,calendarReminder,confirmedShow,scopedRequest,youtubePlaylistEmbed}from'./model.mjs';
 const root=document.querySelector('#music-home'),C=window.ZoiCore,template=document.body.dataset.template;
 let player,data,dialog,shows=[],busy=false,actor=null,authIdentity=null,version=0;const identity=()=>{const s=C.auth.load();return C.auth.token()?s?.user_id||s?.email||null:null;};
