@@ -7,9 +7,9 @@
  *   ctx = { C:ZoiCore, ws, channels:[], avail:{publish,email,ai,payments,claims}, toast }
  *
  * RPCs used:
- *   workspace_rename(p_workspace, p_name)                                        (auth:'require')
- *   ai_profile_get(p_workspace) -> {business_name,about,tone,languages,sample}|null
- *   ai_profile_save(p_workspace, p_business, p_about, p_tone, p_languages, p_sample) (auth:'require')
+ *   workspace_settings_save / workspace_settings_request (versioned receipts)                                        (auth:'require')
+ *   workspace_settings_get(p_workspace) -> identity/voice revision snapshots
+ *   workspace_settings_request(p_workspace,p_request,p_section,p_cancel_if_missing) -> scoped receipt or cancellation
  *
  * Theme preference is local-only: sets document.documentElement[data-theme] and
  * localStorage 'zoi_theme'. Account/billing settings live elsewhere (noted, not faked).
@@ -174,27 +174,27 @@
 
     var fAbout = el('div', 'zs-field');
     fAbout.appendChild(el('label', null, 'About the business'));
-    var inAbout = el('textarea'); inAbout.maxLength = 1200; inAbout.placeholder = 'What you sell, who you serve, what makes you different…';
+    var inAbout = el('textarea'); inAbout.maxLength = 1200; inAbout.setAttribute('aria-label','About the business'); inAbout.placeholder = 'What you sell, who you serve, what makes you different…';
     fAbout.appendChild(inAbout);
     aiBody.appendChild(fAbout);
 
     var grid2 = el('div', 'zs-grid2');
     var fTone = el('div', 'zs-field');
     fTone.appendChild(el('label', null, 'Tone'));
-    var selTone = el('select');
+    var selTone = el('select'); selTone.setAttribute('aria-label','Writing tone');
     TONES.forEach(function (t) { var o = el('option'); o.value = t; o.textContent = t; selTone.appendChild(o); });
     fTone.appendChild(selTone);
     grid2.appendChild(fTone);
     var fLang = el('div', 'zs-field');
     fLang.appendChild(el('label', null, 'Languages'));
-    var inLang = el('input'); inLang.type = 'text'; inLang.maxLength = 120; inLang.placeholder = 'English, Greek';
+    var inLang = el('input'); inLang.type = 'text'; inLang.maxLength = 120; inLang.setAttribute('aria-label','Writing languages'); inLang.placeholder = 'English, Greek';
     fLang.appendChild(inLang);
     grid2.appendChild(fLang);
     aiBody.appendChild(grid2);
 
     var fSample = el('div', 'zs-field');
     fSample.appendChild(el('label', null, 'Sample of your voice (optional)'));
-    var inSample = el('textarea'); inSample.maxLength = 1200; inSample.placeholder = 'Paste a caption or two that sound like you.';
+    var inSample = el('textarea'); inSample.maxLength = 1200; inSample.setAttribute('aria-label','Writing sample'); inSample.placeholder = 'Paste a caption or two that sound like you.';
     fSample.appendChild(inSample);
     aiBody.appendChild(fSample);
 
@@ -277,39 +277,45 @@
 
     function controls() {
       if (!active()) return;
-      wsBtn.disabled = nameBusy || !['owner','admin'].includes(role); wsInput.disabled = nameBusy || !!namePending || !['owner','admin'].includes(role);
-      aiBtn.disabled = !aiLoaded || aiBusy || !['owner','admin','editor'].includes(role);
+      wsBtn.disabled = !aiLoaded || nameBusy || conflicts.identity.childElementCount>0 || !['owner','admin'].includes(role); wsInput.disabled = nameBusy || !!namePending || !['owner','admin'].includes(role);
+      aiBtn.disabled = !aiLoaded || aiBusy || conflicts.voice.childElementCount>0 || !['owner','admin','editor'].includes(role);
       [inBiz,inAbout,selTone,inLang,inSample].forEach(function(input){input.disabled=!aiLoaded || aiBusy || !!aiPending || !['owner','admin','editor'].includes(role);});
       wsBtn.textContent = nameBusy ? 'Checking…' : namePending ? 'Check saved name' : 'Save name';
       aiBtn.textContent = aiBusy ? 'Checking…' : aiPending ? 'Check saved AI voice' : 'Save AI voice';
     }
-    async function saveName() {
-      if (nameBusy || !active() || !['owner','admin'].includes(role)) return;
-      var name = namePending || (wsInput.value || '').trim();
-      if (!name) { toast('Enter a workspace name.'); wsInput.focus(); return; }
-      var first = !namePending; namePending = name; nameBusy = true; controls();
-      try {
-        if (first) { try { var renamed=await rpc('workspace_rename',{p_workspace:workspace,p_name:name}); if (renamed === false) { namePending=null; toast('The workspace was not renamed. Refresh settings before trying again.'); return; } } catch(e) { if (!active()) return; if (/invalid_workspace_name|name_required/i.test(String(e?.message || ''))) { namePending=null; toast('Check the workspace name and try again.'); return; } } }
-        var found = await membership();
-        if (found.name !== name) throw Error('The requested name is not confirmed. Check again before editing.');
-        namePending=null; wsInput.value=found.name; role=found.role;
-        ctx.onWorkspaceRenamed?.({workspaceId:workspace,name:found.name});
-        flashSaved(wsSaved); toast('Workspace name confirmed.');
-      } catch(e) { if (active()) toast('Name not confirmed: '+e.message); }
-      finally { nameBusy=false; controls(); }
+    var unsubmittedMarkers=[], revisions={identity:null,voice:null}, uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    var conflicts={identity:el('div'),voice:el('div')};Object.values(conflicts).forEach(function(box){box.style.marginTop='12px';}); wsCard.appendChild(conflicts.identity); aiBody.appendChild(conflicts.voice);
+    function key(section){return 'zoi_settings_request:'+actor+':'+workspace+':'+section;}
+    function pending(section,value){if(section==='identity')namePending=value;else aiPending=value;}
+    function marker(section,value){if(value){sessionStorage.setItem(key(section),JSON.stringify(value));if(sessionStorage.getItem(key(section))!==JSON.stringify(value))throw Error('Recovery reference could not be saved.');}else{sessionStorage.removeItem(key(section));if(sessionStorage.getItem(key(section))!==null)throw Error('Recovery reference could not be cleared.');}pending(section,value);}
+    function values(section){return section==='identity'?{name:wsInput.value.trim()}:{business_name:inBiz.value.trim(),about:inAbout.value.trim(),tone:selTone.value,languages:inLang.value.trim(),sample:inSample.value.trim()};}
+    function validValue(section,value){var keys=section==='identity'?['name']:['business_name','about','tone','languages','sample'];return value&&typeof value==='object'&&!Array.isArray(value)&&keys.every(function(k){return typeof value[k]==='string';})&&uuid.test(value.version||'');}
+    function setValues(section,value){if(!validValue(section,value))throw Error('Settings response could not be verified.');revisions[section]=value.version;if(section==='identity'){wsInput.value=value.name;ctx.onWorkspaceRenamed?.({workspaceId:workspace,name:value.name});}else{inBiz.value=value.business_name;inAbout.value=value.about;setTone(value.tone);inLang.value=value.languages;inSample.value=value.sample;}}
+    function conflict(section,current){if(!validValue(section,current))throw Error('Current settings could not be verified.');var box=conflicts[section];box.replaceChildren();var title=el('p',null,'Someone updated these settings. Your draft is still here. Review the current saved values before choosing what to keep.');var detail=el('div');detail.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;margin:12px 0';var labels={name:'Saved workspace name',business_name:'Business name',about:'About',tone:'Tone',languages:'Languages',sample:'Writing sample'};Object.keys(labels).forEach(function(field){if(typeof current[field]==='string'){var row=el('p');row.append(el('strong',null,labels[field]+': '),document.createTextNode(current[field]||'Not supplied'));detail.appendChild(row);}});var latest=el('button','zs-btn zs-ghost','Use latest saved values'),keep=el('button','zs-btn','Keep my draft for review');latest.type=keep.type='button';latest.onclick=function(){if(!active())return;setValues(section,current);box.replaceChildren();controls();};keep.onclick=function(){if(!active())return;revisions[section]=current.version;box.replaceChildren();toast('Your draft is ready. Save it when you have reviewed the differences.');controls();};var actions=el('div','zs-actions');actions.append(latest,keep);box.append(title,detail,actions);}
+    async function settle(section,request,outcome,desired){
+      if(!outcome||outcome.workspace_id!==workspace||outcome.request_id!==request.request||outcome.section!==section)throw Error('The save is not confirmed. Check again; do not repeat the request.');
+      if(outcome.ok===false&&outcome.error==='request_cancelled'){var latest=await rpc('workspace_settings_get',{p_workspace:workspace});if(latest?.ok!==true||latest.workspace_id!==workspace||!validValue(section,latest[section]))throw Error('Cancellation confirmed; current settings could not load. Check again.');marker(section,null);setValues(section,latest[section]);conflicts[section].replaceChildren();toast('Unconfirmed save cancelled. Current settings are shown.');return;}
+      if(outcome.ok===false&&outcome.error==='request_unknown'){showUnknown(section,request);toast('No completed save was found. Check again or cancel this request safely.');return;}
+      if(outcome.ok===false&&outcome.error==='version_conflict'){marker(section,null);conflict(section,outcome.current);toast('Newer settings were kept. Review the changes.');return;}
+      if(outcome.ok!==true||!uuid.test(outcome.version||'')||!validValue(section,outcome.value)||outcome.version!==outcome.value.version||desired&&!Object.keys(desired).every(function(field){return outcome.value[field]===desired[field];}))throw Error('The save is not confirmed. Check again.');
+      var current=await rpc('workspace_settings_get',{p_workspace:workspace});if(current?.ok!==true||current.workspace_id!==workspace||!validValue(section,current[section]))throw Error('Saved result received; current settings could not load. Check again.');
+      marker(section,null);setValues(section,current[section]);conflicts[section].replaceChildren();flashSaved(section==='identity'?wsSaved:aiSaved);toast(current[section].version===outcome.version?'Settings saved and confirmed.':'Your save completed. A newer change is now shown.');
     }
-    function aiValues() { return {business_name:inBiz.value.trim(),about:inAbout.value.trim(),tone:selTone.value,languages:inLang.value.trim(),sample:inSample.value.trim()}; }
-    async function saveAi() {
-      if (!aiLoaded || aiBusy || !active() || !['owner','admin','editor'].includes(role)) return;
-      var first=!aiPending; aiPending=aiPending || aiValues(); aiBusy=true; controls();
-      try {
-        if (first) { try { await rpc('ai_profile_save',{p_workspace:workspace,p_business:aiPending.business_name,p_about:aiPending.about,p_tone:aiPending.tone,p_languages:aiPending.languages,p_sample:aiPending.sample}); } catch(e) { if (!active()) return; } }
-        var actual=await rpc('ai_profile_get',{p_workspace:workspace});
-        if (!actual || !Object.keys(aiPending).every(function(key){return actual[key]===aiPending[key];})) throw Error('The requested voice is not confirmed. Check again before editing.');
-        aiPending=null; flashSaved(aiSaved); toast('AI voice confirmed.');
-      } catch(e) { if (active()) toast('AI voice not confirmed: '+e.message); }
-      finally { aiBusy=false; controls(); }
+    function showUnknown(section,request){var box=conflicts[section];box.replaceChildren();var text=el('p',null,'This save has no confirmed result. You can check again, or safely cancel it before editing.');var retry=el('button','zs-btn zs-ghost','Check save again'),cancel=el('button','zs-btn','Cancel unconfirmed save');retry.type=cancel.type='button';retry.onclick=function(){saveSection(section);};cancel.onclick=async function(){if(!active()||nameBusy||aiBusy)return;if(section==='identity')nameBusy=true;else aiBusy=true;retry.disabled=cancel.disabled=true;controls();try{var result=await rpc('workspace_settings_request',{p_workspace:workspace,p_request:request.request,p_section:section,p_cancel_if_missing:true});await settle(section,request,result);}catch(e){if(active())toast('Could not resolve this save: '+e.message);}finally{if(section==='identity')nameBusy=false;else aiBusy=false;if(active()){retry.disabled=cancel.disabled=false;controls();}}};var actions=el('div','zs-actions');actions.style.marginTop='12px';actions.append(retry,cancel);box.append(text,actions);}
+    async function saveSection(section){
+      var isName=section==='identity';if(!active()||(isName?nameBusy:aiBusy)||!aiLoaded||!(isName?['owner','admin']:['owner','admin','editor']).includes(role))return;
+      var request=isName?namePending:aiPending,first=!request;
+      if(first){var desired=values(section);if(isName&&(!desired.name||desired.name.length>120)){toast('Enter a workspace name.');return;}try{request={request:crypto.randomUUID(),section:section};marker(section,request);}catch(e){pending(section,null);unsubmittedMarkers.push(section);try{sessionStorage.removeItem(key(section));}catch(_){}aiLoaded=false;reloadBtn.hidden=false;controls();toast('Nothing was submitted. Browser recovery storage is unavailable. Retry loading settings when storage is available.');return;}}
+      if(isName)nameBusy=true;else aiBusy=true;controls();
+      try{
+        var outcome;
+        if(first){try{outcome=await rpc('workspace_settings_save',{p_workspace:workspace,p_request:request.request,p_section:section,p_expected_version:revisions[section],p_values:desired});}catch(e){if(denied(e)){try{sessionStorage.removeItem(key(section));}catch(_){}pending(section,null);return;}if(!active())return;if(/invalid_settings_values|settings_request_limit|settings_receipt_capacity/.test(String(e?.message||''))){marker(section,null);throw e;}}}
+        if(!outcome)outcome=await rpc('workspace_settings_request',{p_workspace:workspace,p_request:request.request,p_section:section});
+        await settle(section,request,outcome,desired);
+      }catch(e){if(active())toast('Settings not confirmed: '+e.message);}finally{if(isName)nameBusy=false;else aiBusy=false;controls();}
     }
+    function saveName(){return saveSection('identity');}
+    function saveAi(){return saveSection('voice');}
 
     wsBtn.addEventListener('click', saveName);
     aiBtn.addEventListener('click', saveAi);
@@ -330,18 +336,15 @@
     }
 
     var reloadBtn=el('button','zs-btn zs-ghost','Retry loading settings'); reloadBtn.type='button'; reloadBtn.hidden=true; wrap.appendChild(reloadBtn);
-    reloadBtn.onclick=function(){ if(active()) { destroy(); mountSettings(root,ctx); } };
+    reloadBtn.onclick=function(){ if(active()) { try{unsubmittedMarkers.forEach(function(section){sessionStorage.removeItem(key(section));if(sessionStorage.getItem(key(section))!==null)throw Error('Browser recovery storage is still unavailable.');});}catch(e){toast(e.message);return;}destroy(); mountSettings(root,ctx); } };
     controls();
     try {
-      var found = await membership(); role=found.role; wsInput.value=found.name || '';
-      var prof = await rpc('ai_profile_get', {p_workspace:workspace});
-      if (prof == null) prof = {};
-      if (typeof prof !== 'object' || Array.isArray(prof)) throw Error('Invalid AI profile response.');
-      {
-        aiLoaded=true; inBiz.value=prof.business_name || ''; inAbout.value=prof.about || '';
-        setTone(prof.tone); inLang.value=prof.languages || ''; inSample.value=prof.sample || '';
-      }
-    } catch(e) { if (active()) { toast('Could not load settings: '+e.message); reloadBtn.hidden=false; } }
+      var snapshot=await rpc('workspace_settings_get',{p_workspace:workspace});
+      if(snapshot?.ok!==true||snapshot.workspace_id!==workspace||!validValue('identity',snapshot.identity)||!validValue('voice',snapshot.voice))throw Error('Settings identity could not be confirmed.');
+      role=snapshot.role;setValues('identity',snapshot.identity);setValues('voice',snapshot.voice);aiLoaded=true;
+      ['identity','voice'].forEach(function(section){var raw=sessionStorage.getItem(key(section));if(raw){var value=JSON.parse(raw);if(!value||!uuid.test(value.request||'')||value.section!==section||Object.keys(value).length!==2)throw Error('Recovery reference could not be read.');pending(section,value);}});
+
+    } catch(e) { if (active()) { aiLoaded=false; toast('Could not load settings: '+e.message); reloadBtn.hidden=false; } }
     if (active()) { aiLoad.style.display='none'; aiBody.style.display=''; controls(); }
     return {destroy:destroy};
 
