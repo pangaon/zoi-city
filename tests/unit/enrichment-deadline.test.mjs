@@ -18,9 +18,9 @@ test('source deadline is rechecked after politeness wait before opening fetch',a
 test('DNS default remains compatible but a late first lookup cannot initiate a second lookup',async()=>{
  const guard=readFileSync(new URL('../../supabase/functions/zoi-enrich/_ssrf.ts',import.meta.url),'utf8');
  const fragment=guard.slice(guard.indexOf('export async function hostAddressesSafe'),guard.indexOf('/** Full pre-flight')).replace('export async','async');
- for(const expired of [false,true]){const calls=[];const Deno={resolveDns:async(_host,type)=>{calls.push(type);if(expired)await new Promise(r=>setTimeout(r,20));return['8.8.8.8'];}};
- const fn=new Function('Deno','REQUIRE_DNS','blockedV4','blockedV6',stripTypeScriptTypes('let dnsUsable=null;'+fragment)+';return hostAddressesSafe;')(Deno,true,()=>false,()=>false);
- const result=await fn('source.test',expired?Date.now()+5:undefined);assert.equal(result.ok,!expired);assert.deepEqual(calls,expired?['A']:['A','AAAA']);}
+ for(const expired of [false,true]){const calls=[];let clock=100;const Deno={resolveDns:async(_host,type)=>{calls.push(type);if(expired)clock=120;return['8.8.8.8'];}};
+ const fn=new Function('Deno','REQUIRE_DNS','blockedV4','blockedV6','Date',stripTypeScriptTypes('let dnsUsable=null;'+fragment)+';return hostAddressesSafe;')(Deno,true,()=>false,()=>false,{now:()=>clock});
+ const result=await fn('source.test',expired?105:undefined);assert.equal(result.ok,!expired);assert.deepEqual(calls,expired?['A']:['A','AAAA']);}
 });
 test('actual handler reports ambiguous apply outcome with original lease, without retry or false failed-write receipt',async()=>{
  let handler,applyCalls=0;const row={slug:'sample',website:'https://source.test',lease_id:'original-lease'};
