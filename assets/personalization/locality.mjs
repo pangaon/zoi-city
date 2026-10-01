@@ -1,4 +1,4 @@
-import {sessionIdentity} from '../community/session-state.mjs';
+import {sessionIdentity} from '../community/session-state.mjs?v=20261001-uuid-scope';
 import {TOPICS,UUID} from '../community/view-model.mjs';
 const text=value=>typeof value==='string'?value.replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,120):'';
 export function privateLocality(receipt){
@@ -30,11 +30,11 @@ export function createLocalityReader({core,onChange=()=>{},fetchImpl=fetch,event
  let account=sessionIdentity(core),epoch=0,controller=null,dead=false,state={status:'guest',home:null,topics:[],version:0};
  const emit=value=>{state=value;onChange({...state,home:state.home?{...state.home}:null,topics:[...state.topics]});};
  const clear=status=>emit({status,home:null,topics:[],version:0});
- const perform=read||(async(signal)=>{if(!await core.auth.ensureFresh())throw Error('signed_out');if(signal.aborted)throw Error('cancelled');const token=core.auth.token();if(!token)throw Error('signed_out');const r=await fetchImpl(core.BASE+'/rest/v1/rpc/community_me',{method:'POST',headers:{apikey:core.KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',signal,cache:'no-store',credentials:'omit'});if(!r.ok)throw Error('preferences_unavailable');return r.json();});
+ const perform=read||(async(signal,owner)=>{if(!await core.auth.ensureFresh())throw Error('signed_out');if(owner!==sessionIdentity(core))throw Error('session_changed');if(signal.aborted)throw Error('cancelled');const token=core.auth.token();if(!token)throw Error('signed_out');const r=await fetchImpl(core.BASE+'/rest/v1/rpc/community_me',{method:'POST',headers:{apikey:core.KEY,Authorization:'Bearer '+token,'Content-Type':'application/json'},body:'{}',signal,cache:'no-store',credentials:'omit'});if(!r.ok)throw Error('preferences_unavailable');return r.json();});
  async function refresh(){
   const mine=++epoch,previousAccount=account;controller?.abort();controller=null;account=sessionIdentity(core);if(dead)return;if(!account){clear('guest');return;}
   const owner=account;controller=new AbortController();const request=controller;if(previousAccount===owner&&(state.status==='ready'||state.status==='loading'))emit({...state,status:'loading'});else clear('loading');const timeout=setTimeout(()=>request.abort(),10000);
-  try{const receipt=await perform(request.signal);if(dead||mine!==epoch||owner!==sessionIdentity(core)||request.signal.aborted)return;emit({status:'ready',...privateLocality(receipt)});}catch(error){if(!dead&&mine===epoch&&owner===sessionIdentity(core))clear('error');}finally{clearTimeout(timeout);}
+  try{const receipt=await perform(request.signal,owner);if(dead||mine!==epoch||owner!==sessionIdentity(core)||request.signal.aborted)return;emit({status:'ready',...privateLocality(receipt)});}catch(error){if(!dead&&mine===epoch&&owner===sessionIdentity(core))clear('error');}finally{clearTimeout(timeout);}
  }
  function checkAccount(){if(dead)return;if(sessionIdentity(core)!==account){epoch++;controller?.abort();clear('guest');void refresh();}}
  const authChange=()=>{checkAccount();};const focus=()=>{if(dead)return;if(sessionIdentity(core)!==account)checkAccount();else if(account)void refresh();};const storage=event=>{if(!event.key||event.key===core.keys?.auth)checkAccount();};

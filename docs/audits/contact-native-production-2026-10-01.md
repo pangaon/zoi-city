@@ -1,0 +1,9 @@
+# Contact destinations and native event handoff release — 1 October 2026
+
+Commit `9a9d5231003ba2ea0d830a92b7593e4cafa5cc02` pushed to main. Vercel deployment `E9WskMncvdD1caLr6HpXr8LMQ1Vq` reports success. Downloaded production healthcare app/model/render and hospitality model/client match reviewed source byte-for-byte; `/tmp/contact-native-production-bytes.json` records hashes.
+
+Healthcare and hospitality preserve current owner website changes and explicit clears, including legitimate HTTP navigation. Healthcare shows the current published website and uses it in downloaded contact cards, retaining separate profile-source attribution. Media remains HTTPS-only. Independent evidence covers populated and sparse records, HTTP/HTTPS/clear, phone and desktop, real outbound clicks and vCard contents with controlled destinations: 24 cases plus 37 focused units. This is not proof of a successful production owner save; the database remains unavailable.
+
+Native selected-event handoff preserves the chosen event and selected organization, checks current owner/admin and event scope, and rejects held results after switching scope. Internal profile ID is deliberately distinct from Auth user ID; exact live zoi_me projection readback still times out. Six focused tests and four controlled Expo-web journeys passed independently. Root ran all214 native tests, type-check, and Expo web export successfully. No app-store binary was published or physical-device acceptance claimed.
+
+Exact staged tree `46d6d614f580fbe597cf291080cfd4dc2aa126d7` passed full local verification:268 node:test files and two standalone suites. CI run36853931778 completed successfully, including web verification, native tests/type-check and Expo export. Shared identity correction remains separate and uncommitted pending independent journey review.

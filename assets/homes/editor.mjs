@@ -1,5 +1,5 @@
 import {TEMPLATES,SECTIONS,COPY_FIELDS,UUID,clone,esc,normalizeDesign,displayOrder,moveItem,moveBy,requestPayload,confirmedReceipt,pendingStore,friendlyError} from './editor-model.mjs';
-import {sessionIdentity} from '../community/session-state.mjs';
+import {sessionIdentity} from '../community/session-state.mjs?v=20261001-uuid-scope';
 const LABELS={intro:'Introduction',offerings:'Services & offers',gallery:'Photos',calendar:'Calendar & plans',media:'Music & video',socials:'Social channels',contact:'Contact'};
 export async function mount(root,ctx,{listing}={}){
  root.__homeDesignAbort?.abort();const controller=new AbortController();root.__homeDesignAbort=controller;

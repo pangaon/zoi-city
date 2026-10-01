@@ -385,7 +385,7 @@ async function boot(){
   readUrl();
   applyExploreLang();
   runSearch(true);
-  import('/assets/personalization/locality.mjs').then(({mountLocalityControl})=>{if(!window.ZoiCore)return;exploreLocality=mountLocalityControl({core:window.ZoiCore,container:document.getElementById('discovery-locality'),onChange:value=>{const before=JSON.stringify(exploreHome);exploreHome=value.home;if(before!==JSON.stringify(exploreHome))runSearch(true);},onNavigate:href=>{history.pushState({},'',href);readUrl();runSearch(true);}});}).catch(()=>{});
+  import('/assets/personalization/locality.mjs?v=20261001-uuid-scope').then(({mountLocalityControl})=>{if(!window.ZoiCore)return;exploreLocality=mountLocalityControl({core:window.ZoiCore,container:document.getElementById('discovery-locality'),onChange:value=>{const before=JSON.stringify(exploreHome);exploreHome=value.home;if(before!==JSON.stringify(exploreHome))runSearch(true);},onNavigate:href=>{history.pushState({},'',href);readUrl();runSearch(true);}});}).catch(()=>{});
   await loadTypeFilters();
   try{
     const hs=await rpc('home_stats',{},true);

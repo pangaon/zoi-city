@@ -378,12 +378,14 @@
     var toast = ctx.toast || (C && C.toast) || function () {};
     var ws = ctx.ws;
     root.__bizPageDestroy && root.__bizPageDestroy();
-    var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
+    var identity = (await import('/assets/community/session-state.mjs?v=20261001-uuid-scope')).sessionIdentity;
     var ownerEntity = (await import('/assets/suite/owner-entity.mjs')).ownerEntity;
     var claimsModule = await import('/assets/suite/workspace-claims.mjs');
     var socialResolver = (await import('/assets/homes/social-links.mjs')).resolveSocialLinks;
+    var validScopeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if(!validScopeId.test(identity(C)) || !validScopeId.test(ws || '')){root.textContent='Sign in and select a workspace to manage your business home.';return;}
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false, selectedListingIntent = null;
-    function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
+    function scopeLive(){return validScopeId.test(account) && !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
     function destroyDesign(){mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
     function unsaved(){return contentDirty || state.saving || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
     function allowLeave(){return !unsaved() || global.confirm('Leave this business home? Unsaved content and private design changes will be lost.');}
@@ -416,12 +418,12 @@
     function rpcRead(fn, params) {
       if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('RPC unavailable'));
       if(!scopeLive())return Promise.reject(new Error('Your account or workspace changed.'));
-      return C.api.rpc(fn, params, { auth: 'require' }).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
+      return C.auth.ensureFresh().then(function(ok){if(!ok || !scopeLive())throw new Error('Your account or workspace changed.');return C.api.rpc(fn, params, {auth:'prefer'});}).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
     }
     function rpcWrite(fn, params) {
       if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('RPC unavailable'));
       if(!scopeLive())return Promise.reject(new Error('Your account or workspace changed.'));
-      return C.api.rpc(fn, params, { auth: 'require' }).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
+      return C.auth.ensureFresh().then(function(ok){if(!ok || !scopeLive())throw new Error('Your account or workspace changed.');return C.api.rpc(fn, params, {auth:'prefer'});}).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
     }
 
     /* ---- public link ---- */
