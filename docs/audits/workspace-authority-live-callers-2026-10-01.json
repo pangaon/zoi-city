@@ -1,0 +1,353 @@
+{
+  "captured_at": "2026-10-01",
+  "method": "read-only pg_get_functiondef and pg_proc ACL inventory; no customer RPC execution",
+  "functions": [
+    {
+      "schema": "public",
+      "proname": "asset_list",
+      "signature": "asset_list(uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.asset_list(p_workspace uuid)\n RETURNS TABLE(id uuid, url text, kind text, alt text, width integer, height integer, created_at timestamp with time zone)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nbegin perform zoi.assert_ws(p_workspace);\n  return query select a.id,a.url,a.kind,a.alt,a.width,a.height,a.created_at\n    from zoi.assets a where a.workspace_id=p_workspace order by a.created_at desc; end;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "audience_access",
+      "signature": "audience_access(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_access(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_role text;\nbegin\n perform zoi.assert_ws(p_workspace);\n v_role:=zoi.audience_asset_role(p_workspace,false);\n return jsonb_build_object('ok',true,'workspace_id',p_workspace,'role',v_role,'can_write',v_role in ('owner','admin','editor'),'can_record_consent',coalesce(zoi.ops_role(p_workspace) in ('owner','admin','editor'),false));\nend; $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "audience_list",
+      "signature": "audience_list(uuid,text,text)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_list(p_workspace uuid, p_q text DEFAULT NULL::text, p_tag text DEFAULT NULL::text)\n RETURNS SETOF zoi.audience_contacts\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN QUERY SELECT * FROM zoi.audience_contacts c\n  WHERE c.workspace_id=p_workspace\n    AND (p_q IS NULL OR c.name ILIKE '%'||p_q||'%' OR c.email ILIKE '%'||p_q||'%' OR c.phone ILIKE '%'||p_q||'%')\n    AND (p_tag IS NULL OR p_tag = ANY(c.tags))\n  ORDER BY c.created_at DESC LIMIT 500;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "bio_save",
+      "signature": "bio_save(uuid,text,text,text,text,jsonb,text,boolean)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.bio_save(p_workspace uuid, p_slug text, p_title text, p_tagline text DEFAULT NULL::text, p_theme text DEFAULT 'dark'::text, p_links jsonb DEFAULT '[]'::jsonb, p_photo text DEFAULT NULL::text, p_published boolean DEFAULT true)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE slg text; lnk jsonb := '[]'::jsonb; e jsonb; n int := 0;\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  slg := lower(btrim(p_slug));\n  IF slg !~ '^[a-z0-9][a-z0-9-]{2,39}$' THEN RAISE EXCEPTION 'slug_invalid_use_letters_numbers_dashes_3_40'; END IF;\n  IF COALESCE(btrim(p_title),'')='' THEN RAISE EXCEPTION 'title_required'; END IF;\n  IF jsonb_typeof(COALESCE(p_links,'[]'::jsonb))='array' THEN\n    FOR e IN SELECT * FROM jsonb_array_elements(p_links) LOOP\n      EXIT WHEN n >= 12;\n      IF COALESCE(e->>'label','')<>'' AND (e->>'url' LIKE 'http://%' OR e->>'url' LIKE 'https://%') THEN\n        lnk := lnk || jsonb_build_object('label', left(e->>'label',60), 'url', left(e->>'url',500));\n        n := n+1;\n      END IF;\n    END LOOP;\n  END IF;\n  INSERT INTO zoi.bio_pages(workspace_id, slug, title, tagline, theme, links, photo_url, published, updated_at)\n  VALUES (p_workspace, slg, left(btrim(p_title),80), NULLIF(left(btrim(COALESCE(p_tagline,'')),160),''),\n    CASE WHEN p_theme IN ('dark','light','gold') THEN p_theme ELSE 'dark' END, lnk, p_photo, COALESCE(p_published,true), now())\n  ON CONFLICT (workspace_id) DO UPDATE SET slug=EXCLUDED.slug, title=EXCLUDED.title, tagline=EXCLUDED.tagline,\n    theme=EXCLUDED.theme, links=EXCLUDED.links, photo_url=EXCLUDED.photo_url, published=EXCLUDED.published, updated_at=now();\n  RETURN jsonb_build_object('ok',true,'slug',slg,'url','https://www.zoi.city/b/'||slg);\nEXCEPTION WHEN unique_violation THEN\n  RAISE EXCEPTION 'slug_taken';\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "bio_status",
+      "signature": "bio_status(uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.bio_status(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE r zoi.bio_pages;\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  SELECT * INTO r FROM zoi.bio_pages WHERE workspace_id=p_workspace;\n  IF r.workspace_id IS NULL THEN RETURN 'null'::jsonb; END IF;\n  RETURN jsonb_build_object('slug',r.slug,'title',r.title,'tagline',r.tagline,'theme',r.theme,\n    'links',r.links,'photo_url',r.photo_url,'published',r.published,'views',r.views,'updated_at',r.updated_at);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "bizpage_get",
+      "signature": "bizpage_get(uuid,uuid)",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.bizpage_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF NOT zoi.bizpage_can_edit(p_workspace,p_listing) THEN RAISE EXCEPTION 'no_access_to_listing'; END IF;\n  RETURN (SELECT jsonb_build_object('id',l.id,'name',l.name,'slug',l.slug,'path',COALESCE(l.canonical_path,'/p/'||l.slug),\n    'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n    'hours',l.hours,'price_range',l.price_range,'photo_url',l.photo_url,'social_links',COALESCE(l.social_links,'{}'::jsonb))\n    FROM zoi.listings l WHERE l.id=p_listing);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "bizpage_save",
+      "signature": "bizpage_save(uuid,uuid,text,text,text,text,text,text,text,jsonb)",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.bizpage_save(p_workspace uuid, p_listing uuid, p_description text, p_phone text, p_email text, p_website text, p_hours text, p_price_range text, p_photo_url text, p_social jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.home_content_authorize(p_workspace,p_listing);\n  PERFORM zoi.assert_ws(p_workspace);\n  IF NOT zoi.bizpage_can_edit(p_workspace,p_listing) THEN RAISE EXCEPTION 'no_access_to_listing'; END IF;\n  UPDATE zoi.listings SET\n    description=NULLIF(btrim(p_description),''), phone=NULLIF(btrim(p_phone),''),\n    email=NULLIF(lower(btrim(p_email)),''), website=NULLIF(btrim(p_website),''),\n    hours=NULLIF(btrim(p_hours),''), price_range=NULLIF(btrim(p_price_range),''),\n    photo_url=NULLIF(btrim(p_photo_url),''),\n    social_links=COALESCE(p_social,'{}'::jsonb),\n    updated_at=now(), updated_by='suite-bizpage'\n  WHERE id=p_listing;\n  RETURN FOUND;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "bizpage_status",
+      "signature": "bizpage_status(uuid)",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.bizpage_status(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN jsonb_build_object(\n    'owned', COALESCE((SELECT jsonb_agg(jsonb_build_object('id',l.id,'name',l.name,'slug',l.slug,'city',l.city,'path',COALESCE(l.canonical_path,'/p/'||l.slug)))\n              FROM zoi.listings l WHERE l.owner_workspace_id=p_workspace),'[]'::jsonb),\n    'claims', COALESCE((SELECT jsonb_agg(jsonb_build_object('listing_id',c.listing_id,'status',c.claim_status,'name',l.name,'slug',l.slug,'submitted_at',c.submitted_at))\n              FROM zoi.listing_claims c JOIN zoi.listings l ON l.id=c.listing_id\n              WHERE c.workspace_id=p_workspace),'[]'::jsonb)\n  );\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "email_campaign_delete",
+      "signature": "email_campaign_delete(uuid,uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_delete(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  DELETE FROM zoi.email_campaigns WHERE id=p_id AND workspace_id=p_workspace AND status='draft';\n  RETURN FOUND;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "email_campaign_duplicate",
+      "signature": "email_campaign_duplicate(uuid,uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_duplicate(p_workspace uuid, p_id uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v uuid;\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  INSERT INTO zoi.email_campaigns(workspace_id,subject,body,preheader,from_name,audience_tag,status)\n  SELECT workspace_id, subject||' (copy)', body, preheader, from_name, audience_tag, 'draft'\n  FROM zoi.email_campaigns WHERE id=p_id AND workspace_id=p_workspace\n  RETURNING id INTO v;\n  RETURN v;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "email_campaign_list",
+      "signature": "email_campaign_list(uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_list(p_workspace uuid)\n RETURNS SETOF zoi.email_campaigns\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN QUERY SELECT * FROM zoi.email_campaigns WHERE workspace_id=p_workspace ORDER BY updated_at DESC LIMIT 200;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "email_campaign_save",
+      "signature": "email_campaign_save(uuid,text,text,text,text,text,uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_save(p_workspace uuid, p_subject text, p_body text, p_preheader text DEFAULT NULL::text, p_from_name text DEFAULT NULL::text, p_audience_tag text DEFAULT NULL::text, p_id uuid DEFAULT NULL::uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v uuid;\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF p_id IS NOT NULL THEN\n    UPDATE zoi.email_campaigns SET subject=COALESCE(p_subject,''), body=COALESCE(p_body,''), preheader=p_preheader,\n      from_name=p_from_name, audience_tag=NULLIF(trim(p_audience_tag),''), updated_at=now()\n    WHERE id=p_id AND workspace_id=p_workspace AND status='draft' RETURNING id INTO v;\n    IF v IS NULL THEN RAISE EXCEPTION 'not_editable'; END IF;\n  ELSE\n    INSERT INTO zoi.email_campaigns(workspace_id,subject,body,preheader,from_name,audience_tag)\n    VALUES(p_workspace,COALESCE(p_subject,''),COALESCE(p_body,''),p_preheader,p_from_name,NULLIF(trim(p_audience_tag),''))\n    RETURNING id INTO v;\n  END IF;\n  RETURN v;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "email_campaign_schedule",
+      "signature": "email_campaign_schedule(uuid,uuid,timestamp with time zone)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_schedule(p_workspace uuid, p_id uuid, p_at timestamp with time zone)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF p_at IS NULL OR p_at < now() THEN RAISE EXCEPTION 'pick_a_future_time'; END IF;\n  UPDATE zoi.email_campaigns SET status='scheduled', scheduled_at=p_at, updated_at=now()\n  WHERE id=p_id AND workspace_id=p_workspace AND status IN ('draft','scheduled');\n  RETURN FOUND;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "email_campaign_unschedule",
+      "signature": "email_campaign_unschedule(uuid,uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_unschedule(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  UPDATE zoi.email_campaigns SET status='draft', scheduled_at=NULL, updated_at=now()\n  WHERE id=p_id AND workspace_id=p_workspace AND status='scheduled';\n  RETURN FOUND;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "hashtag_delete",
+      "signature": "hashtag_delete(uuid,bigint)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.hashtag_delete(p_workspace uuid, p_id bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN PERFORM zoi.assert_ws(p_workspace);\n  DELETE FROM zoi.hashtag_sets WHERE id=p_id AND workspace_id=p_workspace;\n  RETURN jsonb_build_object('ok',true); END;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "hashtag_list",
+      "signature": "hashtag_list(uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.hashtag_list(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN COALESCE((SELECT jsonb_agg(to_jsonb(t) ORDER BY t.name)\n    FROM (SELECT id,name,tags FROM zoi.hashtag_sets WHERE workspace_id=p_workspace) t),'[]'::jsonb);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "hashtag_save",
+      "signature": "hashtag_save(uuid,text,text[],bigint)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.hashtag_save(p_workspace uuid, p_name text, p_tags text[], p_id bigint DEFAULT NULL::bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v zoi.hashtag_sets; cleaned text[];\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF COALESCE(btrim(p_name),'')='' THEN RAISE EXCEPTION 'name_required'; END IF;\n  SELECT array_agg(DISTINCT CASE WHEN t LIKE '#%' THEN t ELSE '#'||t END)\n    INTO cleaned FROM unnest(COALESCE(p_tags,'{}')) t WHERE btrim(t)<>'';\n  cleaned := COALESCE(cleaned,'{}');\n  IF p_id IS NULL THEN\n    INSERT INTO zoi.hashtag_sets(workspace_id,name,tags) VALUES(p_workspace,btrim(p_name),cleaned) RETURNING * INTO v;\n  ELSE\n    UPDATE zoi.hashtag_sets SET name=btrim(p_name),tags=cleaned,updated_at=now()\n    WHERE id=p_id AND workspace_id=p_workspace RETURNING * INTO v;\n  END IF;\n  RETURN jsonb_build_object('ok',true,'id',v.id);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "link_list",
+      "signature": "link_list(uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.link_list(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN PERFORM zoi.assert_ws(p_workspace);\n  RETURN COALESCE((SELECT jsonb_agg(to_jsonb(t) ORDER BY t.created_at DESC)\n    FROM (SELECT id,slug,label,long_url,utm,clicks,created_at,'https://www.zoi.city/l/'||slug AS short FROM zoi.link_items WHERE workspace_id=p_workspace) t),'[]'::jsonb); END;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "link_save",
+      "signature": "link_save(uuid,text,text,jsonb,text)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.link_save(p_workspace uuid, p_long_url text, p_label text DEFAULT NULL::text, p_utm jsonb DEFAULT '{}'::jsonb, p_slug text DEFAULT NULL::text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v zoi.link_items; slg text; final_url text; q text;\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF p_long_url NOT LIKE 'http://%' AND p_long_url NOT LIKE 'https://%' THEN RAISE EXCEPTION 'url_must_be_http'; END IF;\n  slg := COALESCE(NULLIF(lower(btrim(p_slug)),''), substr(md5(random()::text||clock_timestamp()::text),1,7));\n  IF slg !~ '^[a-z0-9][a-z0-9-]{2,31}$' THEN RAISE EXCEPTION 'slug_invalid'; END IF;\n  -- build final url with utm\n  q := '';\n  IF p_utm ? 'source' AND p_utm->>'source'<>'' THEN q := q||'&utm_source='||replace(p_utm->>'source',' ','%20'); END IF;\n  IF p_utm ? 'medium' AND p_utm->>'medium'<>'' THEN q := q||'&utm_medium='||replace(p_utm->>'medium',' ','%20'); END IF;\n  IF p_utm ? 'campaign' AND p_utm->>'campaign'<>'' THEN q := q||'&utm_campaign='||replace(p_utm->>'campaign',' ','%20'); END IF;\n  final_url := p_long_url || CASE WHEN q='' THEN '' WHEN position('?' in p_long_url)>0 THEN q ELSE '?'||substr(q,2) END;\n  INSERT INTO zoi.link_items(workspace_id,slug,label,long_url,utm)\n  VALUES(p_workspace,slg,p_label,final_url,COALESCE(p_utm,'{}'::jsonb)) RETURNING * INTO v;\n  RETURN jsonb_build_object('ok',true,'id',v.id,'slug',v.slug,'short','https://www.zoi.city/l/'||v.slug,'final_url',final_url);\nEXCEPTION WHEN unique_violation THEN RAISE EXCEPTION 'slug_taken';\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "slot_delete",
+      "signature": "slot_delete(uuid,bigint)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.slot_delete(p_workspace uuid, p_id bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN PERFORM zoi.assert_ws(p_workspace);\n  DELETE FROM zoi.posting_slots WHERE id=p_id AND workspace_id=p_workspace;\n  RETURN jsonb_build_object('ok',true); END;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "slot_list",
+      "signature": "slot_list(uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.slot_list(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN PERFORM zoi.assert_ws(p_workspace);\n  RETURN COALESCE((SELECT jsonb_agg(to_jsonb(t) ORDER BY t.weekday,t.minute)\n    FROM (SELECT id,weekday,minute,tz,active FROM zoi.posting_slots WHERE workspace_id=p_workspace) t),'[]'::jsonb); END;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "slot_save",
+      "signature": "slot_save(uuid,integer,integer,text,bigint)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.slot_save(p_workspace uuid, p_weekday integer, p_minute integer, p_tz text DEFAULT 'America/Toronto'::text, p_id bigint DEFAULT NULL::bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v zoi.posting_slots;\nBEGIN PERFORM zoi.assert_ws(p_workspace);\n  IF p_id IS NULL THEN\n    INSERT INTO zoi.posting_slots(workspace_id,weekday,minute,tz) VALUES(p_workspace,p_weekday,p_minute,COALESCE(p_tz,'America/Toronto')) RETURNING * INTO v;\n  ELSE\n    UPDATE zoi.posting_slots SET weekday=p_weekday,minute=p_minute,tz=COALESCE(p_tz,tz) WHERE id=p_id AND workspace_id=p_workspace RETURNING * INTO v;\n  END IF;\n  RETURN jsonb_build_object('ok',true,'id',v.id); END;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "social_post_approve",
+      "signature": "social_post_approve(uuid,uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.social_post_approve(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nbegin perform zoi.assert_ws(p_workspace);\n  if zoi.ws_role(p_workspace) not in ('owner','admin','editor') then raise exception 'not_permitted'; end if;\n  update zoi.social_posts set status=case when scheduled_at is not null then 'scheduled' else 'approved' end,\n    updated_at=now() where id=p_id and workspace_id=p_workspace and status='pending_approval'; return found; end;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "social_post_reject",
+      "signature": "social_post_reject(uuid,uuid,text)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.social_post_reject(p_workspace uuid, p_id uuid, p_note text DEFAULT NULL::text)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nbegin perform zoi.assert_ws(p_workspace);\n  if zoi.ws_role(p_workspace) not in ('owner','admin','editor') then raise exception 'not_permitted'; end if;\n  update zoi.social_posts set status='rejected',\n    meta=coalesce(meta,'{}'::jsonb)||jsonb_build_object('reject_note',left(coalesce(p_note,''),300)),\n    updated_at=now() where id=p_id and workspace_id=p_workspace and status='pending_approval'; return found; end;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "social_post_submit",
+      "signature": "social_post_submit(uuid,uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.social_post_submit(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nbegin perform zoi.assert_ws(p_workspace);\n  update zoi.social_posts set status='pending_approval', updated_at=now()\n    where id=p_id and workspace_id=p_workspace and status in ('draft','rejected'); return found; end;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "social_post_targets_list",
+      "signature": "social_post_targets_list(uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.social_post_targets_list(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN COALESCE((SELECT jsonb_object_agg(pid, tg) FROM (\n    SELECT t.post_id::text AS pid,\n      jsonb_agg(jsonb_build_object('platform',t.platform,'status',t.status,'url',t.external_url,'error',t.error) ORDER BY t.created_at) AS tg\n    FROM zoi.social_post_targets t\n    JOIN zoi.social_posts p ON p.id=t.post_id\n    WHERE p.workspace_id=p_workspace\n    GROUP BY t.post_id) s),'{}'::jsonb);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "template_delete",
+      "signature": "template_delete(uuid,bigint)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.template_delete(p_workspace uuid, p_id bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  DELETE FROM zoi.post_templates WHERE id=p_id AND workspace_id=p_workspace;\n  RETURN jsonb_build_object('ok',true);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "template_list",
+      "signature": "template_list(uuid)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.template_list(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN COALESCE((SELECT jsonb_agg(to_jsonb(t) ORDER BY t.updated_at DESC)\n    FROM (SELECT id,name,body,channels,media,category,updated_at FROM zoi.post_templates WHERE workspace_id=p_workspace) t),'[]'::jsonb);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "template_save",
+      "signature": "template_save(uuid,text,text,text[],jsonb,text,bigint)",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.template_save(p_workspace uuid, p_name text, p_body text, p_channels text[] DEFAULT '{}'::text[], p_media jsonb DEFAULT '[]'::jsonb, p_category text DEFAULT NULL::text, p_id bigint DEFAULT NULL::bigint)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v zoi.post_templates;\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF COALESCE(btrim(p_name),'')='' THEN RAISE EXCEPTION 'name_required'; END IF;\n  IF p_id IS NULL THEN\n    INSERT INTO zoi.post_templates(workspace_id,name,body,channels,media,category)\n    VALUES(p_workspace,btrim(p_name),COALESCE(p_body,''),COALESCE(p_channels,'{}'),COALESCE(p_media,'[]'::jsonb),p_category) RETURNING * INTO v;\n  ELSE\n    UPDATE zoi.post_templates SET name=btrim(p_name),body=COALESCE(p_body,''),channels=COALESCE(p_channels,'{}'),\n      media=COALESCE(p_media,'[]'::jsonb),category=p_category,updated_at=now()\n    WHERE id=p_id AND workspace_id=p_workspace RETURNING * INTO v;\n    IF v.id IS NULL THEN RAISE EXCEPTION 'not_found'; END IF;\n  END IF;\n  RETURN jsonb_build_object('ok',true,'id',v.id);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "tickets_event_stats",
+      "signature": "tickets_event_stats(uuid)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.tickets_event_stats(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN COALESCE((SELECT jsonb_object_agg(ev, st) FROM (\n    SELECT t.event_id::text AS ev,\n      jsonb_build_object(\n        'reservations', COALESCE(SUM(r.qty),0),\n        'paid', COALESCE(SUM(r.qty) FILTER (WHERE r.payment_status='paid'),0),\n        'revenue_cents', COALESCE(SUM(r.amount_cents) FILTER (WHERE r.payment_status='paid'),0),\n        'checked_in', COALESCE(SUM(r.qty) FILTER (WHERE r.checked_in_at IS NOT NULL),0)\n      ) AS st\n    FROM zoi.ticket_types t\n    LEFT JOIN zoi.ticket_reservations r ON r.ticket_type_id=t.id\n    WHERE t.workspace_id=p_workspace\n    GROUP BY t.event_id) s),'{}'::jsonb);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "zoi_create_workspace",
+      "signature": "zoi_create_workspace(text,text)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.zoi_create_workspace(p_name text, p_kind text DEFAULT 'business'::text)\n RETURNS json\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE v_prof uuid; v_ws uuid; v_kind text;\nBEGIN\n  IF auth.uid() IS NULL THEN\n    RETURN json_build_object('ok', false, 'error', 'not_signed_in');\n  END IF;\n  -- Was: fail with 'no_profile' if none existed. Now: create it. This single\n  -- line is the difference between a directory and a business.\n  v_prof := zoi.ensure_profile();\n  IF v_prof IS NULL THEN RETURN json_build_object('ok', false, 'error', 'no_profile'); END IF;\n\n  v_kind := lower(coalesce(p_kind, 'business'));\n  IF v_kind NOT IN ('business','creator','organization','community','personal','agency') THEN v_kind := 'business'; END IF;\n  INSERT INTO zoi.workspaces(name, kind, owner_profile_id, created_by_auth)\n  VALUES (p_name, v_kind, v_prof, auth.uid()) RETURNING id INTO v_ws;\n  INSERT INTO zoi.workspace_members(workspace_id, profile_id, role)\n  VALUES (v_ws, v_prof, 'owner');\n  RETURN json_build_object('ok', true, 'workspace_id', v_ws, 'name', p_name, 'kind', v_kind);\nEND$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "zoi_link_profile",
+      "signature": "zoi_link_profile(text,text,text,text)",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION public.zoi_link_profile(p_display text DEFAULT NULL::text, p_first text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_country text DEFAULT NULL::text)\n RETURNS json\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE v_uid uuid := auth.uid(); v_prof uuid; v_ws uuid; v_email text; v_name text;\nBEGIN\n  IF v_uid IS NULL THEN RETURN json_build_object('ok', false, 'error', 'not_authenticated'); END IF;\n  SELECT id INTO v_prof FROM zoi.user_profiles WHERE auth_user_id = v_uid LIMIT 1;\n  IF v_prof IS NULL THEN\n    SELECT email INTO v_email FROM auth.users WHERE id = v_uid;\n    v_name := coalesce(nullif(p_display,''), split_part(coalesce(v_email,'member'), '@', 1));\n    INSERT INTO zoi.user_profiles(auth_user_id, display_name, first_name, city, country)\n      VALUES (v_uid, v_name, p_first, p_city, p_country) RETURNING id INTO v_prof;\n    INSERT INTO zoi.workspaces(name, kind, owner_profile_id, created_by_auth)\n      VALUES (v_name || '''s space', 'personal', v_prof, v_uid) RETURNING id INTO v_ws;\n    INSERT INTO zoi.workspace_members(workspace_id, profile_id, role) VALUES (v_ws, v_prof, 'owner');\n  END IF;\n  RETURN public.zoi_me();\nEND$function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "assert_ws",
+      "signature": "zoi.assert_ws(uuid)",
+      "acl": null,
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_ws(p_ws uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE ok boolean;\nBEGIN\n  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'not_signed_in'; END IF;\n  SELECT EXISTS(\n    SELECT 1 FROM zoi.workspaces w\n    LEFT JOIN zoi.user_profiles up ON up.auth_user_id = auth.uid()\n    LEFT JOIN zoi.workspace_members m ON m.workspace_id = w.id AND m.profile_id = up.id\n    WHERE w.id = p_ws AND (w.created_by_auth = auth.uid() OR w.owner_profile_id = up.id OR m.id IS NOT NULL)\n  ) INTO ok;\n  IF NOT ok THEN RAISE EXCEPTION 'no_access_to_workspace'; END IF;\nEND;$function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "audience_asset_role",
+      "signature": "zoi.audience_asset_role(uuid,boolean)",
+      "acl": "{postgres=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.audience_asset_role(p_workspace uuid, p_lock boolean DEFAULT false)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_role text; v_creator uuid; v_owner uuid; v_profile uuid;\nbegin\n if auth.uid() is null then raise exception 'not_signed_in'; end if;\n if p_lock then\n  select w.created_by_auth,w.owner_profile_id into v_creator,v_owner from zoi.workspaces w where w.id=p_workspace for update;\n else\n  select w.created_by_auth,w.owner_profile_id into v_creator,v_owner from zoi.workspaces w where w.id=p_workspace;\n end if;\n if not found then raise exception 'no_access_to_workspace'; end if;\n select p.id into v_profile from zoi.user_profiles p where p.auth_user_id=auth.uid();\n if p_lock then\n  select m.role into v_role from zoi.workspace_members m where m.workspace_id=p_workspace and m.profile_id=v_profile for share;\n else\n  select m.role into v_role from zoi.workspace_members m where m.workspace_id=p_workspace and m.profile_id=v_profile;\n end if;\n -- Any explicit membership overrides historical owner/creator authority.\n if found then return coalesce(v_role,''); end if;\n if v_creator=auth.uid() or v_owner=v_profile then return 'owner'; end if;\n raise exception 'no_access_to_workspace';\nend; $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "bizpage_save_profile",
+      "signature": "zoi.bizpage_save_profile(uuid,uuid,jsonb)",
+      "acl": "{postgres=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.bizpage_save_profile(p_workspace uuid, p_listing uuid, p_profile jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\ndeclare v_clean jsonb;\nBEGIN\n  PERFORM zoi.home_content_authorize(p_workspace,p_listing);\n perform zoi.assert_ws(p_workspace);\n if not zoi.bizpage_can_edit(p_workspace,p_listing) then raise exception 'not permitted to edit this listing';end if;\n if p_profile is null or jsonb_typeof(p_profile)<>'object' then raise exception 'profile must be a JSON object';end if;\n if pg_column_size(p_profile)>262144 then raise exception 'profile too large (limit 256KB)';end if;\n if p_profile?'owner_media' then\n  if coalesce(zoi.org_role(p_workspace),'') not in('owner','admin','editor') then raise exception 'not_authorized' using errcode='42501';end if;\n  perform 1 from zoi.listings where id=p_listing and owner_workspace_id=p_workspace for update;if not found then raise exception 'owned_listing_required' using errcode='42501';end if;\n  if jsonb_typeof(p_profile->'owner_media') is distinct from 'object' or jsonb_typeof(p_profile#>'{owner_media,version}') is distinct from 'number' or coalesce(p_profile#>>'{owner_media,version}','')!~'^[1-9][0-9]{0,7}$' or not zoi.home_media_valid(p_profile#>'{owner_media,items}') then raise exception 'invalid_media_links';end if;\n end if;\n IF p_profile?'event_publicity' AND NOT zoi.event_publicity_valid(p_profile->'event_publicity') THEN RAISE EXCEPTION 'invalid_event_publicity';END IF;\n PERFORM zoi.assert_hospitality_catalog(p_profile);\nv_clean:=zoi.profile_strip(p_profile);\n update zoi.listings l set profile=coalesce(l.profile,'{}'::jsonb)||v_clean||jsonb_strip_nulls(jsonb_build_object('_enrich',l.profile->'_enrich','_geo',l.profile->'_geo'))||jsonb_build_object('_meta',jsonb_build_object('updated_at',to_char(now(),'YYYY-MM-DD\"T\"HH24:MI:SSOF'),'updated_by','owner')),updated_at=now() where l.id=p_listing;\n return found;\nend $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "settings_authorize",
+      "signature": "zoi.settings_authorize(uuid,text,boolean)",
+      "acl": "{postgres=X/postgres}",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.settings_authorize(p_workspace uuid, p_section text, p_write boolean)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare member_role text;legacy_owner boolean;\nbegin\n if auth.uid() is null then raise exception 'not_authorized' using errcode='42501';end if;\n select zoi.ops_role(p_workspace),exists(select 1 from zoi.workspaces w left join zoi.user_profiles up on up.auth_user_id=auth.uid() where w.id=p_workspace and(w.created_by_auth=auth.uid() or w.owner_profile_id=up.id)) into member_role,legacy_owner;\n if p_section not in('identity','voice') or p_section is null then raise exception 'invalid_settings_section';end if;\n if not p_write then\n  if member_role is null and not legacy_owner then raise exception 'not_authorized' using errcode='42501';end if;\n elsif p_section='identity' then\n  if coalesce(member_role,'') not in('owner','admin') and not legacy_owner then raise exception 'insufficient_permission' using errcode='42501';end if;\n elsif coalesce(member_role,'') not in('owner','admin','editor') then raise exception 'insufficient_permission' using errcode='42501';end if;\n return coalesce(member_role,case when legacy_owner then 'owner' end);\nend $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "ai_profile_save",
+      "signature": "ai_profile_save(uuid,text,text,text,text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.ai_profile_save(p_workspace uuid, p_business text, p_about text, p_tone text, p_languages text, p_sample text)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n perform zoi.settings_authorize(p_workspace,'voice',true);\n raise exception 'client_upgrade_required: refresh Zoi before editing workspace settings';\nend $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "workspace_rename",
+      "signature": "workspace_rename(uuid,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.workspace_rename(p_workspace uuid, p_name text)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n perform zoi.settings_authorize(p_workspace,'identity',true);\n raise exception 'client_upgrade_required: refresh Zoi before editing workspace settings';\nend $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "workspace_settings_get",
+      "signature": "workspace_settings_get(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.workspace_settings_get(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare r text;\nbegin\n r:=zoi.settings_authorize(p_workspace,'identity',false);\n return jsonb_build_object('ok',true,'workspace_id',p_workspace,'role',r,'identity',zoi.settings_section(p_workspace,'identity'),'voice',case when zoi.ops_role(p_workspace) is not null then zoi.settings_section(p_workspace,'voice') else null end);\nend $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "workspace_settings_request",
+      "signature": "workspace_settings_request(uuid,uuid,text,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION public.workspace_settings_request(p_workspace uuid, p_request uuid, p_section text, p_cancel_if_missing boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare receipt zoi.workspace_settings_receipts;result_value jsonb;\nbegin\n perform zoi.settings_authorize(p_workspace,p_section,true);\n if p_request is null then raise exception 'invalid_settings_request';end if;\n perform pg_advisory_xact_lock(hashtextextended('settings-actor:'||auth.uid()::text,0));\n perform zoi.settings_authorize(p_workspace,p_section,true);\n select * into receipt from zoi.workspace_settings_receipts where actor=auth.uid() and request_id=p_request;\n if found then\n  if receipt.workspace_id<>p_workspace or receipt.section<>p_section then raise exception 'settings_request_conflict';end if;\n  return receipt.result;\n end if;\n if not coalesce(p_cancel_if_missing,false) then return jsonb_build_object('ok',false,'error','request_unknown','workspace_id',p_workspace,'request_id',p_request,'section',p_section);end if;\n if (select count(*) from zoi.workspace_settings_receipts where actor=auth.uid())>=10000 then raise exception 'settings_receipt_capacity';end if;\n if (select count(*) from zoi.workspace_settings_receipts where actor=auth.uid() and created_at>=date_trunc('day',clock_timestamp()))>=500 then raise exception 'settings_request_limit';end if;\n result_value:=jsonb_build_object('ok',false,'error','request_cancelled','workspace_id',p_workspace,'request_id',p_request,'section',p_section);\n insert into zoi.workspace_settings_receipts(actor,request_id,workspace_id,section,input_hash,result) values(auth.uid(),p_request,p_workspace,p_section,'cancelled',result_value);\n return result_value;\nend $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "workspace_settings_save",
+      "signature": "workspace_settings_save(uuid,uuid,text,uuid,jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.workspace_settings_save(p_workspace uuid, p_request uuid, p_section text, p_expected_version uuid, p_values jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare receipt zoi.workspace_settings_receipts;input_hash text;current_value jsonb;result_value jsonb;field text;\nbegin\n perform zoi.settings_authorize(p_workspace,p_section,true);\n if p_request is null or jsonb_typeof(p_values) is distinct from 'object' then raise exception 'invalid_settings_values';end if;\n if p_section='identity' then\n  if (select count(*) from jsonb_object_keys(p_values))<>1 or jsonb_typeof(p_values->'name') is distinct from 'string' or length(btrim(p_values->>'name')) not between 1 and 120 or p_values->>'name'<>btrim(p_values->>'name') then raise exception 'invalid_settings_values';end if;\n else\n  if (select count(*) from jsonb_object_keys(p_values))<>5 then raise exception 'invalid_settings_values';end if;\n  foreach field in array array['business_name','about','tone','languages','sample'] loop\n   if jsonb_typeof(p_values->field) is distinct from 'string' or length(p_values->>field)>(case field when 'business_name' then 120 when 'about' then 1500 when 'tone' then 80 when 'languages' then 160 else 2000 end) then raise exception 'invalid_settings_values';end if;\n  end loop;\n end if;\n input_hash:=encode(sha256(convert_to(jsonb_build_array(p_workspace,p_section,p_expected_version,p_values)::text,'UTF8')),'hex');\n perform pg_advisory_xact_lock(hashtextextended('settings-actor:'||auth.uid()::text,0));\n perform zoi.settings_authorize(p_workspace,p_section,true);\n select * into receipt from zoi.workspace_settings_receipts where actor=auth.uid() and request_id=p_request;\n if found then\n  if receipt.workspace_id<>p_workspace or receipt.section<>p_section then raise exception 'settings_request_conflict';end if;\n  if receipt.result->>'error' is distinct from 'request_cancelled' and receipt.input_hash<>input_hash then raise exception 'settings_request_conflict';end if;\n  return receipt.result;\n end if;\n if (select count(*) from zoi.workspace_settings_receipts where actor=auth.uid())>=10000 then raise exception 'settings_receipt_capacity';end if;\n if (select count(*) from zoi.workspace_settings_receipts where actor=auth.uid() and created_at>=date_trunc('day',clock_timestamp()))>=500 then raise exception 'settings_request_limit';end if;\n if p_section='identity' then perform 1 from zoi.workspaces where id=p_workspace for update;\n else\n  -- Existing profile first, then persistent revision: same order as direct writes.\n  perform 1 from zoi.ai_profiles where workspace_id=p_workspace for update;\n  perform 1 from zoi.workspace_voice_revisions where workspace_id=p_workspace for update;\n end if;\n perform zoi.settings_authorize(p_workspace,p_section,true);\n current_value:=zoi.settings_section(p_workspace,p_section);\n if (current_value->>'version')::uuid is distinct from p_expected_version then\n  result_value:=jsonb_build_object('ok',false,'error','version_conflict','request_id',p_request,'workspace_id',p_workspace,'section',p_section,'current',current_value);\n else\n  if p_section='identity' then update zoi.workspaces set name=p_values->>'name' where id=p_workspace;\n  else insert into zoi.ai_profiles(workspace_id,business_name,about,tone,languages,sample,updated_at) values(p_workspace,p_values->>'business_name',p_values->>'about',p_values->>'tone',p_values->>'languages',p_values->>'sample',now()) on conflict(workspace_id) do update set business_name=excluded.business_name,about=excluded.about,tone=excluded.tone,languages=excluded.languages,sample=excluded.sample,updated_at=now();end if;\n  current_value:=zoi.settings_section(p_workspace,p_section);\n  result_value:=jsonb_build_object('ok',true,'request_id',p_request,'workspace_id',p_workspace,'section',p_section,'version',current_value->'version','value',current_value);\n end if;\n insert into zoi.workspace_settings_receipts(actor,request_id,workspace_id,section,input_hash,result) values(auth.uid(),p_request,p_workspace,p_section,input_hash,result_value);\n return result_value;\nend $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "assert_audience_asset_write",
+      "signature": "zoi.assert_audience_asset_write(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_audience_asset_write(p_workspace uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n if zoi.audience_asset_role(p_workspace,true) not in ('owner','admin','editor') then raise exception 'insufficient_permission'; end if;\nend; $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "bizpage_can_edit",
+      "signature": "zoi.bizpage_can_edit(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.bizpage_can_edit(p_workspace uuid, p_listing uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT EXISTS(\n    SELECT 1 FROM zoi.listings l WHERE l.id=p_listing AND l.owner_workspace_id=p_workspace\n    UNION ALL\n    SELECT 1 FROM zoi.listing_claims c WHERE c.listing_id=p_listing AND c.workspace_id=p_workspace AND c.claim_status IN ('approved','verified')\n  );\n$function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "home_content_authorize",
+      "signature": "zoi.home_content_authorize(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_authorize(p_workspace uuid, p_listing uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.org_actor();owner_ws uuid;\nBEGIN\n IF actor IS NULL THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n PERFORM 1 FROM zoi.user_profiles WHERE id=actor FOR UPDATE;\n PERFORM 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor AND role IN('owner','admin','editor')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n SELECT owner_workspace_id INTO owner_ws FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND OR (owner_ws IS NOT NULL AND owner_ws<>p_workspace) OR NOT zoi.bizpage_can_edit(p_workspace,p_listing)THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;\n IF owner_ws IS NULL THEN PERFORM 1 FROM zoi.listing_claims WHERE listing_id=p_listing AND workspace_id=p_workspace AND claim_status IN('approved','verified')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;END IF;\n RETURN actor;\nEND $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "ops_role",
+      "signature": "zoi.ops_role(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.ops_role(p_workspace uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$ SELECT wm.role FROM zoi.workspace_members wm JOIN zoi.user_profiles up ON up.id=wm.profile_id\n WHERE wm.workspace_id=p_workspace AND up.auth_user_id=auth.uid(); $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "org_role",
+      "signature": "zoi.org_role(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.org_role(p_workspace uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$ SELECT m.role FROM zoi.workspace_members m JOIN zoi.user_profiles p ON p.id=m.profile_id WHERE m.workspace_id=p_workspace AND p.auth_user_id=auth.uid() LIMIT 1 $function$\n"
+    },
+    {
+      "schema": "zoi",
+      "proname": "ws_role",
+      "signature": "zoi.ws_role(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.ws_role(p_workspace uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n   select role from zoi.workspace_members\n    where workspace_id=p_workspace and profile_id=zoi.current_profile() limit 1; $function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "asset_delete",
+      "signature": "asset_delete(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.asset_delete(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nbegin perform zoi.assert_audience_asset_write(p_workspace);\n  delete from zoi.assets where id=p_id and workspace_id=p_workspace; return found; end;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "asset_save",
+      "signature": "asset_save(uuid,text,text,text,integer,integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.asset_save(p_workspace uuid, p_url text, p_kind text DEFAULT 'image'::text, p_alt text DEFAULT NULL::text, p_bytes integer DEFAULT NULL::integer, p_width integer DEFAULT NULL::integer, p_height integer DEFAULT NULL::integer)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\ndeclare v_id uuid;\nbegin\n  perform zoi.assert_audience_asset_write(p_workspace);\n  if p_url not like 'https://csebihpaychdkanjjsmz.supabase.co/storage/v1/object/public/media/%' then\n    raise exception 'invalid_asset_url'; end if;\n  insert into zoi.assets(workspace_id, profile_id, url, kind, alt, bytes, width, height)\n    values(p_workspace, zoi.current_profile(), p_url, coalesce(p_kind,'image'), p_alt, p_bytes, p_width, p_height)\n    returning id into v_id;\n  return v_id;\nend;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "audience_delete",
+      "signature": "audience_delete(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_delete(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  perform zoi.assert_audience_asset_write(p_workspace);\n  DELETE FROM zoi.audience_contacts WHERE id=p_id AND workspace_id=p_workspace;\n  RETURN FOUND;\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "audience_import",
+      "signature": "audience_import(uuid,jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_import(p_workspace uuid, p_rows jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE r jsonb; added int:=0; skipped int:=0;\nBEGIN\n  perform zoi.assert_audience_asset_write(p_workspace);\n  IF jsonb_array_length(p_rows) > 1000 THEN RAISE EXCEPTION 'max_1000_rows'; END IF;\n  FOR r IN SELECT * FROM jsonb_array_elements(p_rows) LOOP\n    BEGIN\n      IF COALESCE(trim(r->>'name'),'')='' THEN skipped:=skipped+1; CONTINUE; END IF;\n      INSERT INTO zoi.audience_contacts(workspace_id,name,email,phone,nameday,tags)\n      VALUES(p_workspace, trim(r->>'name'), NULLIF(lower(trim(r->>'email')),''), NULLIF(trim(r->>'phone'),''), NULLIF(trim(r->>'nameday'),''),\n        CASE WHEN COALESCE(trim(r->>'tag'),'')='' THEN '{}'::text[] ELSE ARRAY[trim(r->>'tag')] END)\n      ON CONFLICT (workspace_id, lower(email)) WHERE email IS NOT NULL DO NOTHING;\n      IF FOUND THEN added:=added+1; ELSE skipped:=skipped+1; END IF;\n    EXCEPTION WHEN OTHERS THEN skipped:=skipped+1;\n    END;\n  END LOOP;\n  RETURN jsonb_build_object('added',added,'skipped',skipped);\nEND;$function$\n"
+    },
+    {
+      "schema": "public",
+      "proname": "audience_upsert",
+      "signature": "audience_upsert(uuid,text,text,text,text,text[],text,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_upsert(p_workspace uuid, p_name text, p_email text DEFAULT NULL::text, p_phone text DEFAULT NULL::text, p_nameday text DEFAULT NULL::text, p_tags text[] DEFAULT '{}'::text[], p_notes text DEFAULT NULL::text, p_id uuid DEFAULT NULL::uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v uuid;\nBEGIN\n  perform zoi.assert_audience_asset_write(p_workspace);\n  IF p_name IS NULL OR length(trim(p_name))=0 THEN RAISE EXCEPTION 'name_required'; END IF;\n  IF p_id IS NOT NULL THEN\n    UPDATE zoi.audience_contacts SET name=trim(p_name), email=NULLIF(lower(trim(p_email)),''), phone=NULLIF(trim(p_phone),''),\n      nameday=NULLIF(trim(p_nameday),''), tags=COALESCE(p_tags,'{}'), notes=p_notes, updated_at=now()\n    WHERE id=p_id AND workspace_id=p_workspace RETURNING id INTO v;\n  ELSE\n    INSERT INTO zoi.audience_contacts(workspace_id,name,email,phone,nameday,tags,notes)\n    VALUES(p_workspace, trim(p_name), NULLIF(lower(trim(p_email)),''), NULLIF(trim(p_phone),''), NULLIF(trim(p_nameday),''), COALESCE(p_tags,'{}'), p_notes)\n    ON CONFLICT (workspace_id, lower(email)) WHERE email IS NOT NULL\n    DO UPDATE SET name=EXCLUDED.name, phone=COALESCE(EXCLUDED.phone,zoi.audience_contacts.phone),\n      nameday=COALESCE(EXCLUDED.nameday,zoi.audience_contacts.nameday), updated_at=now()\n    RETURNING id INTO v;\n  END IF;\n  RETURN v;\nEND;$function$\n"
+    }
+  ]
+}
