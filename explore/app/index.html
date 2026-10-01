@@ -909,6 +909,8 @@ function scrClaims(b){
 function scrAdminClaims(b){
  setLiveBadge(null);
  if(!isAuthed()){renderBizGate(b);return;}
+ var reviewToken=auth.access_token;
+ function currentReview(){if(!b.isConnected)return false;if(!isAuthed()||!auth||auth.access_token!==reviewToken){b.replaceChildren(el('div','s-lead',lang==='en'?'Your account changed. Reopen claim review.':'Ο λογαριασμός άλλαξε. Άνοιξε ξανά τα αιτήματα.'));return false;}return true;}
  b.appendChild(el('div','s-sec',lang==='en'?'Pending claims':'Εκκρεμείς διεκδικήσεις'));
  var lead=el('div','s-lead');lead.textContent=lang==='en'?'Review ownership claims. Check the website, phone and claimant email, then approve or reject.':'Έλεγξε τα αιτήματα ιδιοκτησίας — ιστότοπο, τηλέφωνο και email αιτούντος — και ενέκρινε ή απόρριψε.';b.appendChild(lead);
  var count=el('div','s-sec s-note');count.style.margin='0 2px 12px';b.appendChild(count);
@@ -933,20 +935,21 @@ function scrAdminClaims(b){
   c.appendChild(contacts);
   var dt=fmtClaimDate(it.submitted_at);if(dt){var sm=el('div','lmeta');sm.style.marginTop='9px';sm.innerHTML=svIco('clock','#9a6f24',11)+(lang==='en'?'Submitted ':'Υποβλήθηκε ')+esc(dt);c.appendChild(sm);}
   var note=el('input','field');note.style.marginTop='11px';note.placeholder=lang==='en'?'Optional note (recorded with your decision)':'Προαιρετική σημείωση (καταγράφεται)';
-  c.appendChild(note);
+  note.setAttribute('aria-label',lang==='en'?'Decision note':'Σημείωση απόφασης');c.appendChild(note);
   var err=el('div','autherr');c.appendChild(err);
   var row=el('div','ctarow');row.style.marginTop='10px';
   var yes=el('button','btn go sm');yes.innerHTML=svIco('check','#fff',13)+(lang==='en'?'Approve':'Έγκριση');
   var no=el('button','btn glass sm');no.innerHTML=svIco('x','#0c2f4e',13)+(lang==='en'?'Reject':'Απόρριψη');
   var busy=false;
   function resolve(decision){
-   if(busy)return;busy=true;err.classList.remove('on');yes.disabled=no.disabled=true;
+   if(busy||!currentReview())return;busy=true;err.classList.remove('on');yes.disabled=no.disabled=true;
    var actEl=(decision==='approve')?yes:no;var oh=actEl.innerHTML;actEl.innerHTML=svIco('clock',(decision==='approve'?'#fff':'#0c2f4e'),13)+(lang==='en'?'Working…':'Γίνεται…');
    authRPC('zoi_resolve_claim',{p_claim:it.claim_id,p_decision:decision,p_note:(note.value.trim()||null)}).then(function(r){
+    if(!currentReview())return;
     var d=r?(Array.isArray(r)?r[0]:r):null;
-    if(d&&d.ok===true){
+    if(d&&d.ok===true&&d.claim_id===it.claim_id&&d.listing_id===it.listing_id&&d.workspace_id===it.workspace_id&&d.status===(decision==='approve'?'claimed':'claim_rejected')){
      c.style.transition='opacity .35s,transform .35s';c.style.opacity='0';c.style.transform='translateX(24px)';
-     setTimeout(function(){if(c.parentNode)c.parentNode.removeChild(c);load(true);},340);
+     setTimeout(function(){if(!currentReview())return;if(c.parentNode)c.parentNode.removeChild(c);load(true);},340);
      ZT(decision==='approve'?(lang==='en'?'Claim approved ✦':'Εγκρίθηκε ✦'):(lang==='en'?'Claim rejected':'Απορρίφθηκε'));
      return;
     }
@@ -960,13 +963,16 @@ function scrAdminClaims(b){
   return c;
  }
  function load(silent){
+  if(!currentReview())return;
   if(!silent)skel();
-  authRPC('zoi_admin_claims',{p_status:'pending'}).then(function(r){
+  authRPC('zoi_admin_claims',{p_status:'claim_pending'}).then(function(r){
+   if(!currentReview())return;
    var d=r?(Array.isArray(r)?r[0]:r):null;
    if(r==null){if(silent)return;count.textContent='';list.innerHTML='';list.appendChild(emptyState('explore',lang==='en'?'Couldn’t load claims':'Αδυναμία φόρτωσης',lang==='en'?'Something went wrong. Try again.':'Κάτι πήγε στραβά. Δοκίμασε ξανά.',lang==='en'?'Retry':'Δοκίμασε ξανά',function(){load(false);}));return;}
    if(d&&d.ok===false){isAdmin=false;_adminChecked=true;renderAccountChip();count.textContent='';list.innerHTML='';list.appendChild(emptyState('people',lang==='en'?'Not available':'Μη διαθέσιμο',lang==='en'?'You don’t have review access.':'Δεν έχεις πρόσβαση διαχείρισης.'));return;}
+   if(!d||d.ok!==true||!Array.isArray(d.claims)){count.textContent='';list.replaceChildren(emptyState('explore','Could not load claims','The review response was incomplete. Please retry.','Retry',function(){load(false);}));return;}
    isAdmin=true;_adminChecked=true;
-   var rows=(d&&d.claims)||[];
+   var rows=d.claims;
    list.innerHTML='';
    if(!rows.length){showEmpty();return;}
    count.textContent=(lang==='en'?(rows.length+' waiting for review'):(rows.length+' προς έγκριση'));

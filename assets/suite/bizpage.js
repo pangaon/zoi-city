@@ -380,6 +380,7 @@
     root.__bizPageDestroy && root.__bizPageDestroy();
     var identity = (await import('/assets/community/session-state.mjs')).sessionIdentity;
     var ownerEntity = (await import('/assets/suite/owner-entity.mjs')).ownerEntity;
+    var claimsModule = await import('/assets/suite/workspace-claims.mjs');
     var socialResolver = (await import('/assets/homes/social-links.mjs')).resolveSocialLinks;
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false, selectedListingIntent = null;
     function scopeLive(){return !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
@@ -472,6 +473,8 @@
       return head;
     }
 
+    function renderClaims(){claimsModule.renderWorkspaceClaims(wrap,{snapshot:state.claimsSnapshot,workspace:ws,role:ctx.role,current:scopeLive,refresh:function(){if(allowLeave())boot(selectedListingIntent);},edit:function(id){if(allowLeave())boot(id);}});}
+
     /* ---- loading ---- */
     function renderLoading() {
       wrap.innerHTML = '';
@@ -494,6 +497,7 @@
       retry.addEventListener('click', function () { boot(selectedListingIntent); });
       e.appendChild(retry);
       wrap.appendChild(e);
+      renderClaims();
     }
 
     function renderUnavailableListing() {
@@ -505,6 +509,7 @@
     function renderClaimFirst() {
       wrap.innerHTML = '';
       wrap.appendChild(renderHeader(''));
+      renderClaims();
 
       var card = el(doc, 'div', 'zp-claim');
       card.appendChild(el(doc, 'div', 'zp-ic', IC.store));
@@ -520,7 +525,8 @@
       var cta = el(doc, 'div', 'zp-cta');
       var explore = el(doc, 'a', 'zp-btn primary',
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg> Find & claim on Explore');
-      explore.setAttribute('href', '/explore');
+      explore.setAttribute('href', '/explore/?workspace=' + encodeURIComponent(ws));
+      explore.addEventListener('click', function(event){if(!scopeLive())event.preventDefault();});
       cta.appendChild(explore);
       card.appendChild(cta);
 
@@ -598,6 +604,7 @@
       }
       head.appendChild(tools);
       wrap.appendChild(head);
+      renderClaims();
       var designPanel=el(doc,'details','zp-design-panel');designPanel.style.cssText='margin:20px 0;max-width:100%;min-width:0';
       var designSummary=el(doc,'summary',null,'Design &amp; layout');designSummary.style.cssText='cursor:pointer;font-weight:700;padding:16px;border:1px solid var(--line2);border-radius:12px';designPanel.appendChild(designSummary);
       var designSlot=el(doc,'div');designPanel.appendChild(designSlot);wrap.appendChild(designPanel);
@@ -946,7 +953,7 @@
 
     /* ---- controller ---- */
     async function boot(listingId) {
-      if(!scopeLive())return;selectedListingIntent=listingId || null;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
+      if(!scopeLive())return;selectedListingIntent=listingId || null;state.claimsSnapshot=null;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
       state.vform=null;state.publicityForm=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
       state.loading = true;
       state.error = null;
@@ -955,6 +962,7 @@
       var statusRaw;
       try {
         statusRaw = await rpcRead('bizpage_status', { p_workspace: ws });
+        if(statusRaw?.ok!==true||statusRaw.workspace_id!==ws||!Array.isArray(statusRaw.owned)||!Array.isArray(statusRaw.claims))throw Error('Your workspace ownership status could not be confirmed.');
       } catch (e) {
         if(!scopeLive()||loadEpoch!==bootEpoch)return;
         state.loading = false;
@@ -963,6 +971,7 @@
       }
 
       if(!scopeLive()||loadEpoch!==bootEpoch)return;
+      state.claimsSnapshot=statusRaw;
       state.choices=editableListings(statusRaw);
       var chosen=listingId ? state.choices.find(function(r){return r.id.toLowerCase()===String(listingId).toLowerCase();}) : state.choices[0];
       if(listingId && !chosen){state.status=null;state.draft=null;state.loading=false;renderUnavailableListing();return;}

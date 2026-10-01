@@ -435,7 +435,11 @@ function readUrl(){
 }
 function writeUrl(push){
   const u=new URL(location.href);
+  const workspaceIntent=u.searchParams.getAll('workspace'),claimListing=u.searchParams.getAll('claim_listing'),claimSlug=u.searchParams.getAll('claim_slug');
   u.search='';
+  workspaceIntent.forEach(value=>u.searchParams.append('workspace',value));
+  claimListing.forEach(value=>u.searchParams.append('claim_listing',value));
+  claimSlug.forEach(value=>u.searchParams.append('claim_slug',value));
   const set=(k,v)=>{ if(v) u.searchParams.set(k,v); };
   set('scope',ST.scope); set('q',ST.q); set('type',ST.type); set('city',ST.city);
   set('country',ST.country); set('sort',ST.sort);
@@ -449,6 +453,11 @@ let debounceT=null,exploreAutocomplete=null;
 function submitExplore(){clearTimeout(debounceT);exploreAutocomplete?.close();ST.q=document.getElementById('q').value.trim();runSearch(true);}
 document.addEventListener('DOMContentLoaded',()=>{
   boot();
+  import('/assets/workspace/claim-return.mjs').then(module=>{
+    const intent=module.exploreClaimIntent(location.href);if(!intent)return;
+    const panel=document.createElement('section'),note=document.createElement('p'),action=document.createElement('button');panel.className='discovery-suggestions';note.setAttribute('role','status');note.textContent='Your listing is ready to review. Nothing has been submitted.';action.type='button';action.className='lbtn pri';action.textContent='Continue ownership request';const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='lbtn';dismiss.textContent='Dismiss request';dismiss.onclick=()=>{const url=new URL(location.href);url.searchParams.delete('claim_listing');url.searchParams.delete('claim_slug');history.replaceState(null,'',url.pathname+url.search);panel.remove();};panel.append(note,action,dismiss);document.getElementById('q').closest('.sbar').after(panel);
+    action.onclick=async()=>{const token=authToken();action.disabled=true;note.textContent='Checking the listing…';try{const entity=await rpc('home_entity',{p_slug:intent.slug},true);if(!panel.isConnected||authToken()!==token||JSON.stringify(module.exploreClaimIntent(location.href))!==JSON.stringify(intent)){note.textContent='Your account or listing link changed. Reload before continuing.';return;}if(!entity||entity.id!==intent.listing||entity.slug!==intent.slug||typeof entity.name!=='string'||!/^[a-z_]+$/.test(entity.entity_type||''))throw Error('unavailable');ST.view=ST.view||[];let index=ST.view.findIndex(r=>r.id===entity.id);if(index<0){index=ST.view.length;ST.view.push({...entity,claimable:true});}quickView(index);await claim(intent.slug,action);panel.remove();}catch{note.textContent='This listing could not be confirmed. Retry or search for it below.';action.disabled=false;}};
+  }).catch(()=>{});
   const q=document.getElementById('q');
   q.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(()=>{ ST.q=q.value.trim(); runSearch(true); },350); });
   import('/assets/discovery/autocomplete.mjs?v=20260930-search-recovery').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation()}),onSubmit:submitExplore});}).catch(()=>{});
@@ -841,7 +850,20 @@ function randomGreekSpot(){
 
 async function claim(slug,btn){
   const token=authToken();
-  if(!token){location.href='/social';return;}
+  const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  const listing=(ST.view||ST.rows||[]).find(row=>row.slug===slug);
+  if(!listing||!uuid(listing.id))return;
+  const requested=new URL(location.href).searchParams.getAll('workspace');
+  const intended=requested.length===1&&uuid(requested[0])?requested[0]:null;
+  if(!token){
+    const module=await import('/assets/workspace/claim-return.mjs');
+    if(authToken())return;
+    if(requested.length&&!intended){toast('This workspace link is invalid. Open Explore without its workspace parameter and choose your workspace after sign-in.');return;}
+    const destination=module.claimDestination({listing:listing.id,slug:listing.slug,workspace:intended});
+    if(destination)location.href='/social?claim_return='+encodeURIComponent(destination);
+    return;
+  }
+  const allowed=w=>uuid(w?.id)&&typeof w.name==='string'&&w.name&&['owner','admin'].includes(w.role);
   let container=document.getElementById('qv-details');
   if(document.getElementById('qv').hidden){const index=(ST.view||[]).findIndex(r=>r.slug===slug);if(index<0)return;quickView(index);container=document.getElementById('qv-details');}
   const version=++quickViewRequest;container.textContent='Loading your workspaces…';
@@ -849,20 +871,28 @@ async function claim(slug,btn){
   try{
     const me=await rpc('zoi_me',{});
     if(version!==quickViewRequest||authToken()!==token)return;
-    const workspaces=(me?.workspaces||[]).filter(w=>w.id&&w.name);
-    if(!workspaces.length){container.innerHTML='<p class="qv-desc">Create your business workspace to request ownership of this listing.</p><a class="lbtn" href="/social/bizpage">Open business tools →</a>';return;}
+    const workspaces=(Array.isArray(me?.workspaces)?me.workspaces:[]).filter(allowed);
+    if(!workspaces.length){container.innerHTML='<p class="qv-desc">An owner or administrator workspace is required to request this listing. Create a workspace or ask your workspace owner for access.</p><a class="lbtn" href="/social/bizpage">Open business tools →</a>';return;}
     container.innerHTML='<form id="qv-claim"><p class="qv-desc">Choose the workspace that should manage this listing. Ownership must be verified before access is granted.</p><label class="qv-cat" for="qv-workspace">Your workspace</label><select id="qv-workspace" class="city" required style="display:block;width:100%;min-height:44px;margin:8px 0 12px"><option value="">Choose a workspace</option>'+workspaces.map(w=>'<option value="'+esc(w.id)+'">'+esc(w.name)+'</option>').join('')+'</select><button class="lbtn pri" type="submit">Request ownership review</button><p role="status" id="qv-claim-status"></p></form>';
-    document.getElementById('qv-workspace').focus();
+    const chooser=document.getElementById('qv-workspace');
+    if(intended&&workspaces.some(w=>w.id===intended))chooser.value=intended;
+    else if(requested.length)document.getElementById('qv-claim-status').textContent='The requested workspace is unavailable or you do not manage it. Choose an authorized workspace.';
+    chooser.focus();
     document.getElementById('qv-claim').onsubmit=async event=>{
       event.preventDefault();const select=document.getElementById('qv-workspace'),submit=event.target.querySelector('button'),status=document.getElementById('qv-claim-status');
       if(authToken()!==token){status.textContent='Your account changed. Close this window and sign in again.';return;}
-      if(!workspaces.some(w=>w.id===select.value))return;
+      if(submit.disabled||!workspaces.some(w=>w.id===select.value))return;
+      const selectedWorkspace=select.value;
       submit.disabled=true;select.disabled=true;status.textContent='Submitting your request…';
-      try{const result=await rpc('zoi_claim_entity',{p_slug:slug,p_workspace:select.value,p_method:'owner_request'});
+      try{
+        const current=await rpc('zoi_me',{});
         if(version!==quickViewRequest||authToken()!==token)return;
-        if(result?.ok!==true||!['claim_pending','claimed'].includes(result.status))throw Error();
-        status.textContent=result.status==='claimed'?'Ownership verified. Open your business tools to manage this listing.':'Request submitted for ownership review. Track it in your business tools.';
-        const link=document.createElement('a');link.href='/social/bizpage';link.className='lbtn';link.textContent='Open business tools →';status.append(document.createElement('br'),link);
+        if(!Array.isArray(current?.workspaces)||!current.workspaces.some(w=>allowed(w)&&w.id===selectedWorkspace)){status.textContent='Your workspace access changed. Close this window and choose an authorized workspace.';return;}
+        const result=await rpc('zoi_claim_entity',{p_slug:slug,p_workspace:selectedWorkspace,p_method:'owner_request'});
+        if(version!==quickViewRequest||authToken()!==token)return;
+        if(result?.ok!==true||!['claim_pending','claimed'].includes(result.status)||result.workspace_id!==selectedWorkspace||result.listing_id!==listing.id||!uuid(result.claim_id))throw Error();
+        status.textContent=result.status==='claimed'?'Ownership verified. Open your business tools to manage this listing.':'Request submitted for ownership review. Editing remains locked until ownership is approved.';
+        const link=document.createElement('a');link.href='/social/bizpage?workspace='+encodeURIComponent(selectedWorkspace)+(result.status==='claimed'?'&listing='+encodeURIComponent(listing.id):'');link.className='lbtn';link.textContent='Open business tools →';status.append(document.createElement('br'),link);
       }catch{if(version!==quickViewRequest||authToken()!==token)return;status.textContent='We could not confirm the result. Check your business tools before trying again.';}
     };
   }catch{if(version===quickViewRequest)container.innerHTML='<p class="qv-desc">Your workspaces could not load. Please close this window and try again.</p>';}

@@ -138,7 +138,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
      module that mounts it. Order matters — bizpage.js reads both. -->
 <script src="/assets/suite/_vertical-forms.js?v=20261001-hospitality-catalog"></script>
 <script src="/assets/suite/_vertical-ui.js?v=20261001-hospitality-catalog"></script>
-<script src="/assets/suite/bizpage.js?v=20261001-exact-listing"></script>
+<script src="/assets/suite/bizpage.js?v=20261001-claim-handoff"></script>
 <script src="/assets/suite/connect.js?v=20260930c"></script>
 <script src="/assets/suite/settings.js?v=20261001-invitations"></script>
 <script src="/assets/suite/ai.js"></script>
@@ -153,6 +153,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   function esc(s){ return C? C.esc(s) : String(s==null?'':s); }
   var root = document.getElementById('root');
 
+  var claimReturnModule=null;
   var STATE = { me:null, ws:null, wsName:'', workspaces:[], avail:null, channels:[], active:null, ctx:null, navigation:null, focus:'all', role:null, shellAbort:null, epoch:0, handle:null, moduleEpoch:0, activeView:null, currentRoute:null, actor:null, sessionIdentity:null };
 
   function themeCurrent(){ try{ return document.documentElement.getAttribute('data-theme')||'dark'; }catch(e){ return 'dark'; } }
@@ -219,8 +220,8 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(event){window.addEventListener(event,clearPrivate);});
     async function go(){if(!controller||button.disabled||!current())return;err.textContent='';review.replaceChildren();try{await controller.create({name:ni.value,kind:kindSelect.value});}catch(e){if(current())err.textContent=e.message||'The creation result could not be confirmed. Check the previous request before trying again.';}}
     ni.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();go();}});button.onclick=go;
-    checkButton.onclick=async function(){if(!controller||checkButton.disabled||!current())return;err.textContent='';try{var result=await controller.check();if(!current())return;if(result.status==='unconfirmed'){err.textContent='The previous request has no confirmed receipt. Review your workspaces below. Creating again is paused to avoid a duplicate.';review.replaceChildren();result.workspaces.forEach(function(w){var link=document.createElement('a');link.className='btn';link.textContent='Open '+w.name;link.href='/social?workspace='+encodeURIComponent(w.id);review.appendChild(link);});}}catch(e){if(current())err.textContent=e.message||'Could not confirm the previous request.';}};
-    import('/assets/suite/workspace-creation.mjs?v=20261001-exact-workspace').then(async function(module){if(!current())return;var key='zoi_workspace_creation:'+actor;controller=module.createWorkspaceController({actor:actor,current:current,rpc:function(name,args){return C.api.rpc(name,args,{auth:'require'});},storage:{load:function(){var value=sessionStorage.getItem(key);return value===null?null:JSON.parse(value);},save:function(value){sessionStorage.setItem(key,JSON.stringify(value));},clear:function(){sessionStorage.removeItem(key);}},changed:paint,onConfirmed:function(value){if(!current())return;cleanupCreation();history.replaceState(null,'','/social?workspace='+encodeURIComponent(value.workspaceId));try{localStorage.setItem('zoi_ws',value.workspaceId);}catch(_){}boot();}});await controller.load();if(current()&&controller.state().pending)err.textContent='A previous workspace request needs checking before another can be created.';}).catch(function(e){if(current()){err.textContent=e.message||'Workspace setup could not load.';checkButton.hidden=!controller;}});
+    checkButton.onclick=async function(){if(!controller||checkButton.disabled||!current())return;err.textContent='';try{var result=await controller.check();if(!current())return;if(result.status==='unconfirmed'){err.textContent='The previous request has no confirmed receipt. Review your workspaces below. Creating again is paused to avoid a duplicate.';review.replaceChildren();result.workspaces.forEach(function(w){var link=document.createElement('a');link.className='btn';link.textContent='Open '+w.name;link.href=claimReturnModule?claimReturnModule.socialAfterCreation(location.href,w.id):'/social?workspace='+encodeURIComponent(w.id);review.appendChild(link);});}}catch(e){if(current())err.textContent=e.message||'Could not confirm the previous request.';}};
+    import('/assets/suite/workspace-creation.mjs?v=20261001-exact-workspace').then(async function(module){if(!current())return;var key='zoi_workspace_creation:'+actor;controller=module.createWorkspaceController({actor:actor,current:current,rpc:function(name,args){return C.api.rpc(name,args,{auth:'require'});},storage:{load:function(){var value=sessionStorage.getItem(key);return value===null?null:JSON.parse(value);},save:function(value){sessionStorage.setItem(key,JSON.stringify(value));},clear:function(){sessionStorage.removeItem(key);}},changed:paint,onConfirmed:function(value){if(!current())return;cleanupCreation();history.replaceState(null,'',claimReturnModule?claimReturnModule.socialAfterCreation(location.href,value.workspaceId):'/social?workspace='+encodeURIComponent(value.workspaceId));try{localStorage.setItem('zoi_ws',value.workspaceId);}catch(_){}boot();}});await controller.load();if(current()&&controller.state().pending)err.textContent='A previous workspace request needs checking before another can be created.';}).catch(function(e){if(current()){err.textContent=e.message||'Workspace setup could not load.';checkButton.hidden=!controller;}});
     ni.focus();
   }
 
@@ -380,12 +381,17 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   function loadMe(){
     STATE.gateToken=null;var generation=++STATE.epoch,requestedToken=C.auth.token();
     root.innerHTML='<div class="center"><div class="spin"></div></div>';
-    C.api.rpc('zoi_me',{},{auth:'require'}).then(function(me){
+    C.api.rpc('zoi_me',{},{auth:'require'}).then(async function(me){
       if(generation!==STATE.epoch)return;
       if(C.auth.token()!==requestedToken){destroyCurrent();boot();return;}
       if(!me || !me.authenticated){ C.auth.clear(); renderGate('email'); return; }
       STATE.me = me;var globalCta=document.getElementById('zoiCta');if(globalCta){globalCta.textContent='My workspace';globalCta.href='/social/';}
       STATE.workspaces = (me.workspaces||[]);
+      if(new URL(location.href).searchParams.has('claim_return')){
+        claimReturnModule=await import('/assets/workspace/claim-return.mjs');
+        if(generation!==STATE.epoch||C.auth.token()!==requestedToken)return;
+        if(claimReturnModule.renderClaimReturn({root:root,C:C,url:location.href,current:function(){return generation===STATE.epoch&&C.auth.token()===requestedToken;},create:renderCreate,signOut:function(){STATE.epoch++;C.auth.signOut().catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');});renderGate('email');}}))return;
+      }
       var saved=null,explicit=false;try{var params=new URL(location.href).searchParams;explicit=params.has('workspace')||params.has('ws');saved=params.has('workspace')?params.get('workspace'):params.has('ws')?params.get('ws'):localStorage.getItem('zoi_ws');}catch(e){}
       if(!STATE.workspaces.length&&!explicit){ renderCreate(); return; }
       var chosen=null;
