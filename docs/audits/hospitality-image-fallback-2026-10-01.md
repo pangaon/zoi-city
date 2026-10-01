@@ -1,0 +1,9 @@
+# Hospitality photograph failure handling — 2026-10-01
+
+The previous client installed only an error listener after module execution; photographs already failed before that point retained broken image glyphs/alt text. Gallery CSS also set display:block and could override the hidden attribute. The listener applied to unrelated brand images too.
+
+Updated only hospitality client/style. It scans completed failed images at mount and handles subsequent failures in hotel content/dialogs. Failed originals remain hidden with scoped explicit CSS. Hero, cards, gallery tiles and modal retain hotel identity and actions with a brief photograph-unavailable notice; no replacement image or invented content. The table design collapses its empty photo column. A successful later image load restores the original layout and removes the notice. The approved header logo is outside the failure handler.
+
+`node tests/browser/hospitality-image-fallback/verify.mjs`: eight scenarios passed, four designs at390/1440. The test delays the client until the hero has actually failed, then verifies mount recovery, brand preservation, gallery failure/modal, Escape/focus return, card actions, and successful image reload cleanup. External photograph requests are blocked. A small local test SVG exercises load recovery only; production does not substitute it. Screenshots `/tmp/hotel-image-fallback-{template}-{width}.png`; inspected Concierge390 and Table1440. No broken hero label, no horizontal overflow or JS page errors.
+
+15 existing hospitality/brand tests passed and client syntax checks passed. The first browser run incorrectly selected a card with no image in Parea; the harness now selects the first image-bearing card, and all eight pass. No production writes or deployment. API cache versions must be bumped by integration for this next batch; frozen branding API/renderer files were not edited.

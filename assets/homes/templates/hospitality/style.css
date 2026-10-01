@@ -2,3 +2,16 @@
 .hh-booking-state{display:inline-block;font-size:12px;font-weight:700;padding:8px 12px;border:1px solid currentColor;border-radius:5px;margin-bottom:20px}#hh-next-step{grid-column:1/-1;border-top:1px solid #b9c9c9;padding-top:22px}#hh-next-step h3{font:25px Georgia;margin:0 0 15px}#hh-next-step p{font-size:13px;line-height:1.7}#hh-next-step a{display:block;margin:16px 0;font-size:14px;font-weight:650;text-underline-offset:4px}#hh-next-step .hh-next-primary{padding:15px;background:#163c50;color:#fff;border-radius:8px;text-decoration:none}.hh-setup-steps{padding-left:22px}.hh-setup-steps li{margin-bottom:25px}.hh-setup-steps h3{font:23px Georgia}.hh-setup-steps p{font-size:14px}
 
 .hh-socials{display:flex;flex-wrap:wrap;gap:12px 24px;margin-top:24px}.hh-socials a{font-weight:650;text-underline-offset:4px;overflow-wrap:anywhere;padding:8px 0}
+
+/* Preserve the hotel's identity and actions when its original photograph cannot load. */
+.hh-home img[hidden],#hh-dialog img[hidden]{display:none!important}
+.hh-home .hh-hero.hh-image-unavailable{min-height:440px;background-image:radial-gradient(ellipse at top right,#72919b24,transparent 65%)}
+.hh-table .hh-hero.hh-image-unavailable{display:block}
+.hh-image-unavailable .hh-hero-copy{max-width:920px}
+.hh-image-notice{font-size:13px;line-height:1.6;font-weight:400;opacity:.85}
+.hh-grid article>.hh-image-notice{margin:0;padding:26px 22px;border-bottom:1px solid #87999d44;min-height:90px;display:flex;align-items:center}
+.hh-gallery button.hh-image-unavailable{color:#273f4b;border:1px solid #a7b2b5;background:#e8eceb;min-height:170px}
+.hh-gallery .hh-image-notice{margin:0;padding:24px;text-align:center}
+#hh-dialog .hh-image-notice{padding:20px;background:#e8eceb;border-radius:9px;color:#273f4b}
+@media(max-width:700px){.hh-home .hh-hero.hh-image-unavailable{min-height:420px}}
+.hh-hero-copy>p.hh-image-notice{font-size:13px}

@@ -1,0 +1,5 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Search recovery verification</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><button onclick="ZoiSearch.open()">Open search</button><form class="zoi-search"><input name="q" aria-label="Search places"><button>Search</button></form><script>
+window.qa={pending:[],timeout:false};
+const actualTimeout=window.setTimeout.bind(window);window.setTimeout=(fn,ms,...args)=>actualTimeout(fn,qa.timeout&&ms===12000?40:ms,...args);
+window.fetch=(url,options)=>new Promise((resolve,reject)=>{const entry={q:JSON.parse(options.body).p_q,signal:options.signal,reply:(status,rows)=>resolve({ok:status>=200&&status<300,status,json:()=>Promise.resolve(rows)})};qa.pending.push(entry);if(qa.timeout)options.signal.addEventListener('abort',()=>reject(new DOMException('Aborted','AbortError')));});
+</script><script src="/assets/zoi-search.js"></script></body></html>

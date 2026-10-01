@@ -116,10 +116,10 @@
       '  border:1px solid var(--line2);color:var(--gold)}',
       '.zk-ib svg{width:17px;height:17px}',
       '.zk-body{flex:1;min-width:0}',
-      '.zk-name{font-size:14.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;',
+      '.zk-name{display:block;font-size:14.5px;font-weight:600;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;',
       '  text-overflow:ellipsis}',
       '.zk-name b{color:var(--gold);font-weight:700}',
-      '.zk-meta{font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+      '.zk-meta{display:block;font-size:12px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
       '.zk-go{flex:none;color:var(--mut);opacity:0;transform:translateX(-4px);transition:.18s var(--ease,ease)}',
       '.zk-go svg{width:15px;height:15px}',
       '.zk-foot{display:flex;align-items:center;gap:16px;padding:10px 18px;border-top:1px solid var(--line);',
@@ -128,6 +128,8 @@
       '  padding:2px 6px;color:var(--mut)}',
       '.zk-empty{padding:34px 20px;text-align:center;color:var(--mut);font-size:13.5px;line-height:1.6}',
       '.zk-count{margin-left:auto;font-variant-numeric:tabular-nums}',
+      '.zk-empty button{display:block;margin:14px auto 0;padding:10px 16px;min-height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--card);color:var(--tx);font:inherit;cursor:pointer}',
+      '.zk-empty button:focus-visible{outline:2px solid var(--acc);outline-offset:3px}',
       '.zk-spin{width:15px;height:15px;border:2px solid var(--line2);border-top-color:var(--gold);',
       '  border-radius:50%;animation:zk-rot .7s linear infinite;flex:none}',
       '@keyframes zk-rot{to{transform:rotate(360deg)}}',
@@ -171,7 +173,7 @@
     scrim.innerHTML =
       '<div class="zk-box">' +
         '<div class="zk-top">' + svg(IC.search) +
-          '<input class="zk-input" type="text" autocomplete="off" spellcheck="false" ' +
+          '<input class="zk-input" type="text" maxlength="120" autocomplete="off" spellcheck="false" ' +
             'placeholder="Search 8,000+ Greek places, people and businesses…" aria-label="Search">' +
           '<span class="zk-esc">esc</span>' +
         '</div>' +
@@ -197,18 +199,22 @@
 
   function show() {
     if (!scrim) build();
+    invalidateSearch();
     open = true;
     scrim.style.display = 'flex';
     // force a frame so the transition runs
     global.requestAnimationFrame(function () { scrim.classList.add('on'); });
     input.value = '';
     lastQ = '';
+    foot.textContent = '';
     render(idle());
     input.focus();
     doc.documentElement.style.overflow = 'hidden';
   }
   function close() {
     if (!open) return;
+    invalidateSearch();
+    rows = [];
     open = false;
     scrim.classList.remove('on');
     doc.documentElement.style.overflow = '';
@@ -275,26 +281,53 @@
     });
   }
 
-  var timer = null;
+  var timer = null, request = null;
+  function invalidateSearch() {
+    seq++;
+    if (timer) { global.clearTimeout(timer); timer = null; }
+    if (request) { request.abort(); request = null; }
+  }
+  function unavailable(q, mine) {
+    if (mine !== seq || !open) return;
+    foot.textContent = 'search unavailable';
+    render([{ group: 'Everywhere' }, {
+      kind: 'link', href: '/explore?q=' + encodeURIComponent(q), ic: IC.search,
+      name: 'Open Explore', meta: 'Your search is kept'
+    }], q);
+    var status = doc.createElement('div');
+    status.className = 'zk-empty';
+    status.setAttribute('role', 'status');
+    status.textContent = 'Search could not load. Try again.';
+    var retry = doc.createElement('button');
+    retry.type = 'button'; retry.textContent = 'Retry search';
+    retry.addEventListener('click', function () { if (open && input.value.trim() === q) onType(); });
+    status.appendChild(retry); list.insertBefore(status, list.firstChild);
+  }
   function onType() {
     var q = input.value.trim();
     lastQ = q;
-    if (timer) global.clearTimeout(timer);
+    invalidateSearch();
+    var mine = seq;
     if (!q) { foot.textContent = ''; render(idle()); return; }
+    rows = []; sel = 0;
+    list.innerHTML = '<div class="zk-empty" role="status">Searching…</div>';
     foot.innerHTML = '<span class="zk-spin"></span>';
-    timer = global.setTimeout(function () { search(q); }, 170);
+    timer = global.setTimeout(function () { timer = null; search(q, mine); }, 170);
   }
 
-  function search(q) {
-    var mine = ++seq;
+  function search(q, mine) {
+    if (mine !== seq || !open) return;
+    var controller = new AbortController(); request = controller;
+    var timeout = global.setTimeout(function () { controller.abort(); }, 12000);
     global.fetch(BASE + '/rest/v1/rpc/explore_search', {
-      method: 'POST',
+      method: 'POST', signal: controller.signal,
       headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
       body: JSON.stringify({ p_q: q, p_type: null, p_city: null, p_country: null, p_limit: 24, p_offset: 0 })
-    }).then(function (r) { return r.ok ? r.json() : []; })
+    }).then(function (r) { if (!r.ok) throw Error('search_unavailable'); return r.json(); })
       .then(function (data) {
         if (mine !== seq || !open) return;             // a newer keystroke won
-        var found = Array.isArray(data) ? data : [];
+        if (!Array.isArray(data)) throw Error('search_unavailable');
+        var found = data.filter(function (row) { return row && typeof row.slug === 'string' && row.slug && typeof row.name === 'string' && row.name; });
         var items = [];
         if (found.length) {
           // group by category so a long list stays readable
@@ -326,13 +359,10 @@
           ? found.length + (found.length === 24 ? '+ matches' : ' match' + (found.length === 1 ? '' : 'es'))
           : 'no matches';
       })
-      .catch(function () {
-        if (mine !== seq || !open) return;
-        foot.textContent = 'search unavailable';
-        render([{ group: 'Everywhere' }, {
-          kind: 'link', href: '/explore?q=' + encodeURIComponent(q), ic: IC.search,
-          name: 'Open Explore', meta: 'Search there instead'
-        }], q);
+      .catch(function () { unavailable(q, mine); })
+      .finally(function () {
+        global.clearTimeout(timeout);
+        if (request === controller) request = null;
       });
   }
 
