@@ -3,6 +3,18 @@
    Any element with id="themeBtn" (or [data-theme-toggle]) becomes the toggle. */
 (function () {
   "use strict";
+  // Rapid/history navigation can cancel a browser-owned view transition.
+  // Observe only its ready promise; unrelated page errors remain untouched.
+  ["pageswap", "pagereveal"].forEach(function (type) {
+    window.addEventListener(type, function (event) {
+      if (!event.viewTransition) return;
+      event.viewTransition.ready.catch(function (error) {
+        if (error && error.name === "AbortError") return;
+        if (typeof window.reportError === "function") window.reportError(error);
+        else setTimeout(function () { throw error; }, 0);
+      });
+    });
+  });
   var THEMES = ["dark", "light", "gold"];
   var KEY = "zoi_theme";
   var root = document.documentElement;

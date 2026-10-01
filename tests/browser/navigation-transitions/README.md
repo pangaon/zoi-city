@@ -1,0 +1,1 @@
+Run `node tests/browser/navigation-transitions/verify.cjs`. Local actual Toronto document and shared theme, with exact308 redirect. Checks390/1440 normal/reduced motion, double navigation/back/forward, query/fragment, real room canvas and error observability. External requests blocked. No production changes.
