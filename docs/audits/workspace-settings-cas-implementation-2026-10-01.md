@@ -121,3 +121,28 @@ have spacing above them. Unknown recovery has no horizontal document overflow.
 These exercise actual module and stylesheet bytes in an isolated container, not
 the production authenticated shell or a live settings write. External fonts remain
 blocked by the fixture and fall back to the suite's system font stack.
+
+### Production asset and controlled journey readback — 02:56 UTC
+
+After root reported deployment a6874a52f6ce654b9e23a3978197f053464af7a2,
+independent readback at 2026-10-01T02:56:38Z returned:
+
+| Production asset | Bytes | SHA256 |
+| --- | ---: | --- |
+| `/assets/suite/settings.js?v=20261001-workspace-cas` | 28260 | `c0f4a5f56bad982a041eebdd2cdb0e924b35d94aebae8b1fdbc03a6ac017078c` |
+| `/social/index.html` | 44838 | `ca07ac8dac1c6400677aa222c28cd60865b569aac5b261f6e9d61edb8e506959` |
+| `/assets/zoi-theme.css` | 45267 | `fb431bf80f8d71cf20b8f237b6d0e5b1b514eb33813fc2732050c42be30b5537` |
+
+The temporary harness `/tmp/zoi-settings-production-verify.cjs` fetched those
+production bytes, required the accepted settings module hash, and ran the existing
+controlled RPC journeys at 390 and 1440 pixels. Both passed, including conflicts,
+explicit review before resubmission, lost receipt recovery, unknown cancellation
+following remount, voice latest-value choice, storage failure before submission,
+and account-change cleanup. Phone conflict and desktop unknown state screenshots
+were visually inspected again; screenshot prefix is `/tmp/settings-cas-production-`.
+
+This confirms deployed browser code/style bytes and controlled interaction behavior.
+It is not an authenticated production customer save. Root owns live migration,
+permissions readback, CI and the separate legacy-writer cutoff; this agent made no
+production writes or schema changes. Foundation application was reported by root,
+not independently applied here. Legacy cutoff was still pending at this readback.

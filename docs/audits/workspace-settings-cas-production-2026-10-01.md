@@ -1,0 +1,13 @@
+# Workspace settings production release
+
+Client release `a6874a52f6ce654b9e23a3978197f053464af7a2`; CI `36808102180` passed and Vercel deployed successfully. Clean release archive passed 254 node:test files and two standalone suites. Independent isolated PostgreSQL acceptance passed 20 checks. Styled controlled browser checks passed at 390 and 1440 pixels; production module and styles were fetched and exercised separately, as recorded in the implementation audit. No authenticated customer settings write was performed.
+
+Foundation applied once as remote ledger version `20261001025429`, name `workspace_settings_cas`, from reviewed CLI-created file `20261001022938_workspace_settings_cas.sql` (SHA-256 `5e6068fc80d4e59ee66c1a71bbcf982e4f87ff09c2cdc4b3639c896c1a51d2df`). The remote tool assigns its own application timestamp; this mapping prevents treating the local filename as an unapplied change.
+
+After client deployment and production-module checks, legacy cutoff applied once as remote ledger version `20261001025807`, from local file `20261001022939_workspace_settings_legacy_write_disable.sql`. Readback confirms both legacy writers return an authorized upgrade-required error rather than mutate. Do not replay either migration through blanket db push.
+
+Installed versioned RPCs deny anonymous execution and allow authenticated callers subject to their workspace/section checks. Both private ledger tables have RLS and no direct authenticated table privileges. An unauthenticated function invocation was rejected. Existing advisor categories remain; this release deliberately adds two private no-policy ledger tables and three authenticated, authorization-checked SECURITY DEFINER RPCs. No new anonymous grants or mutable function search paths were introduced by the foundation.
+
+During advisor review, the historical `ai_profile_read_srv` was independently confirmed to lack an authorization check while granting anonymous and authenticated execution. Separate reviewed migration `20261001025711_restrict_private_ai_profile_reader.sql` was applied once as remote ledger `20261001025846` and restricts it to service_role and an empty search path. Post-application privilege readback: anon false, authenticated false, service_role true. No private profile contents were retrieved. Broader legacy RPC review remains open.
+
+Remaining boundaries: actual authenticated production write lifecycle, physical native device verification, long-term receipt archival policy, and the original organization/platform scope. Direct privileged insertion racing initial voice creation may reject a transaction; the tested recovery flow handles uncertain outcomes without claiming every administrative write is transparently retried.
