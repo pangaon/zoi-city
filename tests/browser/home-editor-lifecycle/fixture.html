@@ -1,0 +1,8 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Isolated owner lifecycle acceptance</title><meta name="viewport" content="width=device-width,initial-scale=1"></head><body><div id="root"></div><script type="module">
+import {mount} from '/assets/homes/editor.mjs';
+const actor='00000000-0000-4000-8000-000000000001',workspace='10000000-0000-4000-8000-000000000001',listing=new URL(location.href).searchParams.get('listing');
+const C={auth:{load:()=>({user_id:actor}),token:()=>actor},api:{rpc:async(fn,args)=>{const r=await fetch('/rpc/'+fn,{method:'POST',headers:{Authorization:'Bearer '+actor,'Content-Type':'application/json'},body:JSON.stringify(args)});const value=await r.json();if(!r.ok)throw Object.assign(Error(value.error),{status:r.status,code:value.code});return value;}}};
+window.handle=await mount(document.querySelector('#root'),{C,ws:workspace},{listing});window.ready=true;
+</script>
+
+</body></html>
