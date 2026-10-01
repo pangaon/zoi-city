@@ -42,3 +42,17 @@ It returned **repair_required / source_render_timeout**, not usable enrichment. 
 No capture retry, worker dispatch, queue lease or apply followed. There are no successfully captured image-byte receipts to review from this failed run. Normal browser and permitted HTML evidence above remain useful source research but are **not** relabeled as protected rendered-source evidence. Existing failure receipt does not identify the timed-out phase, so exact renderer diagnosis still needs stage-timed instrumentation or a separately authorized source-HTML reviewed-capture path. Raising timeouts or weakening guards is not justified by this result.
 
 Independent read-only Marche verification after parent commit confirms website `https://comunitaellenicamarche.weebly.com/`, unchanged federation source_url `http://www.fccei.it/?page_id=7`, profile hash `c6c57e1563aea9951d36b0e75deb4e70`, published/clean. This confirms the narrow website correction; it does not claim machine enrichment or content review completion.
+
+## Stage-timed Melanthi diagnosis (one authorized diagnostic)
+
+A diagnostic-only wrapper injected timing around the existing source session and Playwright lifecycle; **no shared implementation changed**. Existing sandbox, DNS/TLS/robots guards, sequential fetches, one-second host spacing and byte/request/time budgets remained intact. `/tmp/melanthi-render-diagnostic.mjs` executed once; results `/tmp/melanthi-render-diagnostic.json`.
+
+Measured sequence:
+- Source document completed by1,701ms; sandbox launch completed1,842ms.
+- `page.goto(..., waitUntil:'domcontentloaded', timeout:30000)` started1,913ms and failed31,915ms. No `waitForFunction`/settling/DOM snapshot stage was reached.
+- Browser requested20 stylesheets,23 scripts,14 images,8 font resources (fonts rejected by existing allowlist) and1 document. Peak33 source-fetch operations queued. The guarded same-host network requests ran approximately one per second.
+-38 network requests completed,1,312,690 bytes; no recorded transport failure. At31,241ms the last completed resource was `wp-includes/js/imagesloaded.min.js`, while navigation still awaited DOMContentLoaded. Only the logo and slideshow `dummy.png` had reached actual image network fetching by the failure.
+
+This identifies the navigation-resource queue as the observed bottleneck: many blocking assets cannot drain within the navigation budget under required source spacing. It does **not** justify disabling spacing, sandbox, robots or TLS, and the sparse loaded-image set is not usable hotel photography. It also does not prove that changing one script would solve all sources.
+
+Concrete shared-change proposal for review: choose a distinct source-HTML path when `inspectSourceDocument` confirms substantive server HTML, reuse the existing extractor, then explicitly fetch a small bounded candidate image set through the same guarded session and require image-byte/type/dimension/visual review before proposing content. Keep JavaScript hydration for genuine shells and dynamic-only source needs. Record source-only versus rendered evidence honestly; do not call source HTML a browser render. A smaller alternative is scheduler prioritization, but it requires careful tests for CSS-background/lazy-image extraction and cannot manufacture missing script execution. No proposal is applied by this diagnostic, and no partial DOM was promoted.

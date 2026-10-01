@@ -1,4 +1,4 @@
-import {mount} from './studio.mjs?v=20261001-creator-access';
+import {mount} from './studio.mjs?v=20261001-creator-recovery';
 import {errorText} from './model.mjs';
 const root=document.querySelector('#creator-app'),C=window.ZoiCore;
 let generation=0,actor=C.auth.load()?.user_id||null;
