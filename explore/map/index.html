@@ -1075,6 +1075,16 @@
 
   function animateMap(options) { if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)map.jumpTo(options);else map.easeTo(options); }
 
+  // Fit searches and individual places into the same unobstructed map area.
+  // A fixed bottom padding leaves phone pins beneath the sheet/tool attribution.
+  function mapViewportInsets() {
+    var stage=$('map').getBoundingClientRect(), controls=document.querySelector('.m-controls').getBoundingClientRect(), panel=$('panel').getBoundingClientRect();
+    var mobile=window.matchMedia('(max-width:860px)').matches;
+    var rail=document.querySelector('.m-tools').getBoundingClientRect(), attribution=$('attrib').getBoundingClientRect();
+    var bottomEdge=Math.min(panel.top,rail.top,attribution.top);
+    return {width:stage.width,height:stage.height,left:mobile?16:controls.width+28,right:mobile?16:panel.width+28,top:mobile?controls.bottom-stage.top+16:28,bottom:mobile?stage.bottom-bottomEdge+24:28};
+  }
+
   function choose(p, keepSpider) {
     selectionVersion++;pendingPlace=null;
     setSheet(false);$('stage').classList.add('m-selected-view');
@@ -1089,11 +1099,7 @@
       showList([p], 'Selected place', [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
     }
     if(!mapTools.hasStreetPosition(p)){status('This place is available in the list. Its street position has not been established; check the published address.',false,6000);writeUrl();return;}
-    var stage=$('map').getBoundingClientRect(), controls=document.querySelector('.m-controls').getBoundingClientRect(), panel=$('panel').getBoundingClientRect();
-    var mobile=window.matchMedia('(max-width:860px)').matches;
-    var rail=document.querySelector('.m-tools').getBoundingClientRect(), attribution=$('attrib').getBoundingClientRect();
-    var bottomEdge=Math.min(panel.top,rail.top,attribution.top);
-    var focus=mapTools.focusOptions(p,{width:stage.width,height:stage.height,currentZoom:map.getZoom(),left:mobile?16:controls.width+28,right:mobile?16:panel.width+28,top:mobile?controls.bottom-stage.top+16:28,bottom:mobile?stage.bottom-bottomEdge+24:28,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches});
+    var focus=mapTools.focusOptions(p,Object.assign(mapViewportInsets(),{currentZoom:map.getZoom(),reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches}));
     if(focus.duration===0)map.jumpTo(focus);else map.easeTo(focus);
     status(precisionLabel(p) + (p.unknown ? ' — confirm the address before travelling' : ''),false,5000);
     writeUrl();
@@ -1168,7 +1174,7 @@
     if(!ready){status('The map is still loading. Try your search in a moment.',false,3500);return;}
     query=$('q').value.trim();$('clearq').hidden=!query;showAll();refresh();setSheet(false);
     var found=listState.items,bounds=mapTools.matchBounds(found);
-    if(bounds){var mobile=matchMedia('(max-width:860px)').matches;map.fitBounds(bounds,{padding:mobile?{top:document.querySelector('.m-controls').offsetHeight+30,bottom:Math.min(innerHeight*.29,220),left:25,right:25}:{top:35,bottom:35,left:410,right:410},maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else {
+    if(bounds){var inset=mapViewportInsets();if(matchMedia('(max-width:860px)').matches&&inset.height-inset.top-inset.bottom<120){setSheet(true);inset=mapViewportInsets();}var padding=mapTools.focusOptions({lng:bounds[0][0],lat:bounds[0][1]},inset).padding;map.fitBounds(bounds,{padding:padding,maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else {
       // No trusted scope bounds: discard the previous area's camera, never invent a listing pin.
       map.stop();map.jumpTo({center:[0,0],zoom:0.6,pitch:0,bearing:0});
       status('World view — no street-level positions in these loaded results. Browse the place list for details.',false,6000);
