@@ -33,3 +33,7 @@ Additional preselection measurement at 390×700: pin bounds x187,y376,16×16; co
 ### Final candidate accepted after short-phone correction
 
 The prior candidate was held. New hash `17524420ba93a211dee3654be99675e31ef5ef95af72d8ef12ef97c6c455319b` automatically collapses the phone sheet when less than 120 px remains, then recalculates camera insets. Independently reran all four scenarios above: ordinary pin clicks, correct previews, zero errors. At 390×700 the full pin is now y446–462, controls finish at380.828 and attribution begins533.609. Screenshot `/tmp/stalactites-short-before.png` was replaced with and visually checked against this final state. The collapsed sheet retains its Show places control; normal click reopens it (`aria-expanded` false→true) and reveals the actual Stalactites result. Candidate accepted; production deployment verification remains separate.
+
+## Production release007f65c
+
+Lead verified actual deployed HTML SHA256 `17524420ba93a211dee3654be99675e31ef5ef95af72d8ef12ef97c6c455319b`. CI36815372082 passed. Exact staged release passed258 test files plus2 standalone suites. Actual public map (no HTML/data overrides) passed390/1440 widths at900px normal and700px reduced motion; ordinary pin clicks, exact public coordinate response, short-phone full-pin clearance, manual sheet reopening and zero page errors. Report `/tmp/map-reviewed-pin.json`. Legacy placeholder Call remains visible in this release and is explicitly separate pending shared-family repair; no telephone call was placed.
