@@ -1,4 +1,4 @@
-import {UUID,esc,errorText} from './model.mjs';import {mount} from './workspace.mjs?v=20260930-inquiry-recovery';
+import {UUID,esc,errorText} from './model.mjs';import {mount} from './workspace.mjs?v=20261001-inquiry-access';
 const root=document.querySelector('#inquiries-app'),C=window.ZoiCore,listing=new URL(location.href).searchParams.get('listing');let email='',busy=false,generation=0,actor=C.auth.load()?.user_id||null;
 async function load(){
  const epoch=++generation;root.__zoiInquiryDispose?.();email='';busy=false;root.innerHTML='<p role="status">Loading enquiries…</p>';

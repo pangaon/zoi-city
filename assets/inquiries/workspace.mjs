@@ -7,7 +7,17 @@ export async function mount(root,{C,workspace=null,listing=null}){
  const operator=!!workspace;let data=null,detail=null,busy=false,offset=0,filter='',selected=null;const sendRequest=requestTracker(),startRequest=requestTracker();
  let wrapper=null;const life=inquiryLifetime({getActor:()=>C.auth.load()?.user_id||null,connected:()=>root.isConnected&&!events.signal.aborted&&(!wrapper||root.contains(wrapper))});
  const pending=inquiryPending({actor:life.actor,scope:workspace||'customer'});
- const rpc=(fn,args)=>life.read(()=>C.api.rpc(fn,args,{auth:'require'}));
+ // An unchanged actor can still lose workspace or conversation access.
+ const rpc=async(fn,args)=>{try{return await life.read(()=>C.api.rpc(fn,args,{auth:'require'}));}catch(error){
+  if(life.active()&&(error?.message==='inquiry_permission_denied'||error?.code==='42501'||[401,403].includes(Number(error?.status||error?.statusCode))))clearPrivateRead();
+  throw error;
+ }};
+ function clearPrivateRead(){data=null;detail=null;selected=null;offset=0;pending.dropPayload();sendRequest.clear();startRequest.clear();
+  for(const id of ['setup','list','detail']){const node=root.querySelector('[data-i="'+id+'"]');if(node)node.replaceChildren();}
+  for(const selector of ['[data-next]','[data-previous]']){const node=root.querySelector(selector);if(node)node.hidden=true;}
+  root.querySelector('[data-start]')?.reset();renderPending();
+ }
+
  if(!document.querySelector('link[data-inquiries-css]')){const link=document.createElement('link');link.rel='stylesheet';link.href='/assets/inquiries/inquiries.css?v=20260930';link.dataset.inquiriesCss='';document.head.append(link);}
  root.innerHTML=`<section class="zinq"><h${operator?'2':'1'}>${operator?'Customer inbox':'Your enquiries'}</h${operator?'2':'1'}><p>Private conversations between signed-in customers and the business team. Replies appear here; email notifications and attachments are not connected.</p><div role="status" aria-live="polite" data-i="status"></div><div data-i="setup"></div><div data-i="pending" role="status"></div>${!operator&&listing?'<form data-start class="card"><h2>Start an enquiry</h2><label>Subject<input name="subject" required maxlength="120"></label><label>Message<textarea name="body" required maxlength="4000"></textarea></label><p>Please avoid sending confidential documents, payment details or urgent requests here.</p><button class="primary">Send enquiry</button></form>':''}<div class="toolbar"><button data-refresh>Refresh</button>${operator?'<label>Status<select data-filter><option value="">All enquiries</option><option value="open">Open</option><option value="waiting">Waiting for customer</option><option value="resolved">Resolved</option></select></label>':''}</div><div class="columns"><section aria-label="Conversation list"><div data-i="list"></div><button data-previous hidden>Previous page</button><button data-next hidden>Next page</button></section><section aria-label="Selected conversation" data-i="detail"><p>Select a conversation to read and reply.</p></section></div></section>`;
  wrapper=root.firstElementChild;const observer=new MutationObserver(()=>{if(!root.contains(wrapper)){dispose();}});observer.observe(root,{childList:true});
