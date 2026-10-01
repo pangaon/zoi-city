@@ -420,13 +420,16 @@
   function precisionLabel(p) { return p&&p.unmapped?'Map position not available':(p&&p.position_conflict)||!precisionOf(p).exact?'Address awaiting map verification':precisionOf(p).label; }
 
   /* Directions route by postal address whenever we hold one, and only fall back
-   * to the pin when the pin is the better evidence. A city-centroid or
+   * to the pin when the pin is the better evidence. An independently reviewed
+   * point confirmed by the current public entity takes precedence over imports. A city-centroid or
    * unverified coordinate must never become a routing destination: the address
    * on the record is exact even when the coordinate derived from it is not. */
   function directionsUrl(p) {
     if (!p || p.areaResult) return null;
     var dest = null;
-    if (p.addr) {
+    if (p.reviewedPosition && mapTools.hasStreetPosition(p)) {
+      dest = p.lat + ',' + p.lng;
+    } else if (p.addr) {
       dest = [p.addr, p.city, p.country].filter(Boolean).join(', ');
     } else if (mapTools.hasStreetPosition(p)) {
       dest = p.lat + ',' + p.lng;
@@ -438,6 +441,7 @@
   }
   function directionsBasis(p) {
     if (!p || p.areaResult) return '';
+    if (p.reviewedPosition && mapTools.hasStreetPosition(p)) return 'pin';
     if (p.addr) return 'address';
     if (mapTools.hasStreetPosition(p)) return 'pin';
     return p.city ? 'name' : '';
@@ -551,8 +555,8 @@
 
   async function loadData() {
     status('Reading the directory…', true);
-    mapTools = await import('/assets/map-data/loader.mjs?v=20261001-area-results');
-    previewModule = await import('/assets/map-data/preview.mjs?v=20260930-profile-details');
+    mapTools = await import('/assets/map-data/loader.mjs?v=20261001-reviewed-directions');
+    previewModule = await import('/assets/map-data/preview.mjs?v=20261001-reviewed-directions');
     var result = await mapTools.loadMapPages(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
     }, { concurrency: 4, onProgress: function (progress) { status('Loaded ' + fmtN(progress.loaded) + ' places…', true); } });
@@ -960,7 +964,7 @@
   var listState = { items: [], shown: 0, mode: 'all' };
   function paint(reset) {
     var body = $('pbody');
-    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),loadDetails:function(slug){return selected&&selected.unmapped&&!selected.areaResult?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){selected.reviewedPosition=false;var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),resolveDirections:function(entity,place){place.reviewedPosition=mapTools.hasReviewedPosition(place,entity);return directionsUrl(place);},loadDetails:function(slug){return selected&&selected.unmapped&&!selected.areaResult?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}).then(async function(value){var entity=Array.isArray(value)?value[0]:value;if(!entity)return value;entity=Object.assign({},entity,{reviewed_destination:null});try{entity.reviewed_destination=await C.api.rpc('geography_reviewed_point',{p_listing:entity.id},{auth:'anon'});}catch(_){}return entity;});});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
     var slice = listState.items.slice(listState.shown, listState.shown + 60);
     var advance=slice.length;
     if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});
@@ -1113,7 +1117,7 @@
     writeUrl();
     $('pbody').innerHTML='<div class="m-empty" role="status">Loading this place’s details…</div>';
     try{
-      var entity=await mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'});});
+      var entity=await mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}).then(async function(value){var entity=Array.isArray(value)?value[0]:value;if(!entity)return value;entity=Object.assign({},entity,{reviewed_destination:null});try{entity.reviewed_destination=await C.api.rpc('geography_reviewed_point',{p_listing:entity.id},{auth:'anon'});}catch(_){}return entity;});});
       if(version!==selectionVersion)return;
       var place=mapTools.unmappedPlace(entity,slug);
       if(!place)throw Error('place_not_available');

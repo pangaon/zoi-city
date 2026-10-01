@@ -73,3 +73,12 @@ export function createMapAreaSearch(fetchPage,{changed=()=>{},pageSize=24}={}){
  return{state,more,setScope(next){const clean={q:String(next.q||'').trim(),city:String(next.city||'').trim(),country:String(next.country||'').trim(),actor:String(next.actor||'')},nextKey=JSON.stringify(clean);if(nextKey===key)return;generation++;key=nextKey;scope=clean.q||clean.city||clean.country?clean:null;rows=[];offset=0;busy=false;done=false;error=null;},clear(){generation++;key='';scope=null;rows=[];offset=0;busy=false;done=false;error=null;}};
 }
 export function areaResultPlace(row){const place=unmappedPlace(row,row?.slug);return place?{...place,areaResult:true,precision:'',unknown:true,exact:false}:null;}
+
+// Proof is returned by the receipt-backed public reader, never inferred from
+// editable profile metadata. Require the same fresh entity and feed point.
+export function hasReviewedPosition(place,entity){
+ if(Array.isArray(entity))entity=entity[0];
+ if(!place||!entity?.id||entity.marketplace_status==='hidden'||entity.publish_status&&entity.publish_status!=='published'||!place.s||(entity.slug!==place.s&&entity.canonical_slug!==place.s)||place.position_conflict||place.areaResult)return false;
+ const proof=entity.reviewed_destination;
+ return hasStreetPosition(place)&&proof?.listing_id===entity.id&&typeof proof.request_id==='string'&&proof.precision==='street'&&entity.geo_precision==='street'&&validCoordinates({lat:proof.latitude,lng:proof.longitude})&&Number(proof.latitude)===Number(entity.latitude)&&Number(proof.longitude)===Number(entity.longitude)&&Number(proof.latitude)===Number(place.lat)&&Number(proof.longitude)===Number(place.lng);
+}

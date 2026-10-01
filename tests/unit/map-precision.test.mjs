@@ -260,3 +260,18 @@ test('folding does not collapse distinct words', () => {
 test('conflicting street metadata never routes to rejected centroid coordinates',()=>{const p={n:'Community',city:'Brantford',country:'Canada',lat:43.6532,lng:-79.3832,precision:'street',position_conflict:true};assert.equal(directionsBasis(p),'name');assert.ok(!directionsUrl(p).includes('43.6532'));assert.match(decodeURIComponent(directionsUrl(p)),/Community, Brantford, Canada/);});
 
 test('invalid street coordinates cannot become directions destination',()=>{for(const lat of ['',false,91,0]){const p={n:'Place',city:'City',country:'Country',lat,lng:0,precision:'street'};assert.equal(directionsBasis(p),'name');assert.match(decodeURIComponent(directionsUrl(p)),/Place, City, Country/);}assert.equal(directionsBasis({lat:0,lng:12,precision:'street'}),'pin');});
+
+test('independent reviewed destination supersedes incomplete imported address',()=>{
+ const place={s:'amara-hotel-limassol',n:'Amara Hotel',addr:'Amathountos, Limassol',city:'Limassol',country:'Cyprus',lat:34.7136232,lng:33.1552567,precision:'street'};
+ const entity={id:'361c983b-29aa-4b4a-8bfa-ca4a17993e40',slug:place.s,latitude:place.lat,longitude:place.lng,geo_precision:'street',profile:{_geo:{method:'reviewed_official_source',precision:'street',request_id:'d219b185-fc97-4ca7-b5e4-65468172e435',report_sha256:'a'.repeat(64),source_sha256:'b'.repeat(64)}}};
+ assert.equal(mapTools.hasReviewedPosition(place,entity),false,'profile metadata alone is not proof');
+ entity.reviewed_destination={listing_id:entity.id,request_id:'review',latitude:place.lat,longitude:place.lng,precision:'street'};
+ assert.equal(mapTools.hasReviewedPosition(place,entity),true);
+ assert.equal(mapTools.hasReviewedPosition({...place,lat:35},{...entity,latitude:35}),false,'stale proof cannot certify later coordinates even when feed and entity match');
+ place.reviewedPosition=mapTools.hasReviewedPosition(place,entity);
+ assert.equal(directionsBasis(place),'pin');assert.equal(new URL(directionsUrl(place)).searchParams.get('destination'),'34.7136232,33.1552567');
+ for(const changed of [{...entity,slug:'other'}, {...entity,longitude:33.0226}, {...entity,reviewed_destination:null}, {...entity,reviewed_destination:{...entity.reviewed_destination,listing_id:'other'}}, {...entity,geo_precision:'city'}])assert.equal(mapTools.hasReviewedPosition(place,changed),false);
+ assert.equal(mapTools.hasReviewedPosition({...place,position_conflict:true},entity),false);
+ assert.equal(mapTools.hasReviewedPosition({...place,precision:'none'},entity),false);
+ const fallback={...place,reviewedPosition:false};assert.equal(directionsBasis(fallback),'address');assert.match(decodeURIComponent(directionsUrl(fallback)),/Amathountos/);
+});

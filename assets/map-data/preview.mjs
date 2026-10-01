@@ -5,12 +5,12 @@ export function readSavedPlaces(storage=safeStorage()){try{const x=JSON.parse(st
 export function toggleSavedPlace(storage,slug){if(typeof slug!=='string'||!slug||slug.length>240)throw Error('invalid_place');const old=readSavedPlaces(storage),saved=!old.includes(slug);if(saved&&old.length>=200)throw Error('saved_limit');const next=saved?[...old,slug]:old.filter(x=>x!==slug);storage.setItem(KEY,JSON.stringify(next));return{saved,slugs:next}}
 const plain=v=>String(v||'').replace(/<[^>]*>/g,'').replace(/\s+/g,' ').trim();
 export function placeSummary(place,precision){return [plain(place.n),[place.city,place.country].map(plain).filter(Boolean).join(', '),place.addr?'Address: '+plain(place.addr):'Check the address before travelling.',plain(precision),'This is a place summary, not route guidance.'].filter(Boolean).join('. ').slice(0,700)}
-export function mountPlacePreview(root,{place,home,directions,precision,onSaved=()=>{},storage=safeStorage(),speech=globalThis.speechSynthesis,utterance=globalThis.SpeechSynthesisUtterance,shareURL=()=>location.href,loadDetails=null}={}){
+export function mountPlacePreview(root,{place,home,directions,precision,onSaved=()=>{},storage=safeStorage(),speech=globalThis.speechSynthesis,utterance=globalThis.SpeechSynthesisUtterance,shareURL=()=>location.href,loadDetails=null,resolveDirections=null}={}){
  let alive=true,speaking=false,voiceId=0;const doc=root.ownerDocument;root.className='m-place-preview';root.setAttribute('aria-label','Selected place');root.setAttribute('role','region');
  const make=(tag,text,cls)=>{const e=doc.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e};
  const title=make('h3',place.n),location=make('p',[place.city,place.country].filter(Boolean).join(', '),'m-preview-location'),note=make('p',precision+(place.addr?' · '+place.addr:' · Confirm the address before travelling.'),'m-preview-note'),actions=make('div','','m-preview-actions'),status=make('p','','m-preview-status');status.setAttribute('role','status');
  const anchor=(label,url,external=false)=>{const a=make('a',label);a.href=url;if(external){a.target='_blank';a.rel='noopener noreferrer'}actions.append(a);return a};
- anchor('Open home ↗',home);if(directions)anchor('Directions ↗',directions,true);
+ anchor('Open home ↗',home);let directionsLink=directions?anchor('Directions ↗',directions,true):null;
  const button=label=>{const b=make('button',label);b.type='button';actions.append(b);return b};
  const save=button('Save on this device'),share=button('Share place'),read=speech&&utterance?button('Read place aloud'):null,stop=read?button('Stop reading'):null;if(stop)stop.hidden=true;
  const update=()=>{const saved=readSavedPlaces(storage).includes(place.s);save.textContent=saved?'Saved on this device ✓':'Save on this device';save.setAttribute('aria-pressed',String(saved));};update();
@@ -25,6 +25,7 @@ export function mountPlacePreview(root,{place,home,directions,precision,onSaved=
   Promise.resolve().then(()=>loadDetails(place.s)).then(value=>{
    if(!alive)return;const entity=Array.isArray(value)?value[0]:value;
    if(!entity||(entity.slug!==place.s&&entity.canonical_slug!==place.s))return;
+   if(typeof resolveDirections==='function'){const resolved=resolveDirections(entity,place);if(typeof resolved==='string'&&/^https:\/\/www\.google\.com\/maps\/dir\/\?/.test(resolved)){directions=resolved;if(directionsLink)directionsLink.href=resolved;else directionsLink=anchor('Directions ↗',resolved,true);}}
    const details=quickLookDetails(entity);
    if(details.description){const description=make('p',details.description,'m-preview-description');root.insertBefore(description,note);}
    if(details.address)note.textContent=precision+' · '+details.address;
