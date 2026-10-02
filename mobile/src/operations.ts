@@ -27,3 +27,11 @@ export function recordPayload(form: Record<string, string>, existing?: OpsRecord
   if (bytes > 30000) throw new Error('This record is too large. Shorten the notes before saving.');
   return payload;
 }
+
+/** Context from a saved record only; relationship IDs never become user identities. */
+export function linkedWorkForm(row:OpsRecord,workspace:string):{kind:RecordKind;form:Record<string,string>}{
+ if(!isOpsRecord(row,workspace)||row.archived_at||!['contact','project'].includes(row.kind))throw Error('Choose an active saved contact or project.');
+ const form=toForm();
+ if(row.kind==='contact'){form.contact_id=row.id;form.company_id=row.company_id||'';return{kind:'project',form};}
+ form.project_id=row.id;form.contact_id=row.contact_id||'';return{kind:'task',form};
+}
