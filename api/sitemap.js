@@ -1,3 +1,4 @@
+import {publicCountryRead} from './_public-country-read.js';
 // Dynamic sitemap of every indexable Zoi entity page (plus the home).
 const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
 const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -112,7 +113,7 @@ export default async function handler(req, res) {
     /* ---- places and categories ---- */
     if (part === 'places') {
       const [countries, regions, cities, cats, regionCats] = await Promise.all([
-        rpc('explore_countries', {}),
+        publicCountryRead({endpoint:SUPA+'/rest/v1/rpc/explore_countries',timeoutMs:8000,load:()=>rpc('explore_countries', {})}),
         rpc('explore_regions', {}),
         rpc('explore_region_cities', {}),
         rpc('explore_categories', {}),

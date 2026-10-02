@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { GeneralReservationGuard, generalReceipt, generalRecovery, generalSubmission, type GeneralAttempt } from './generalReservation';
 const generalGuard = new GeneralReservationGuard(AsyncStorage);
-import {guestEventHostLink, organiserEventHostLink} from './eventHostLink';
+import {guestEventHostLink, organiserEventHostLink, scopedEventHostRpc} from './eventHostLink';
 import {EventSeatMap} from './EventSeatMap';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, AppState, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -45,7 +45,7 @@ function EventTickets({ eventId, back, signIn }: { eventId: string; back: () => 
     const workspace = workspaceId;
     const stillCurrent = () => current() && (!organiser || selectedWorkspace.current === workspace);
     if (!stillCurrent()) throw Error('Your account or selected workspace changed.');
-    const url = organiser ? await organiserEventHostLink({event:eventId,workspace,actor:userId || '',current:stillCurrent,rpc:(name,args)=>client.rpc(name,args)}) : guestEventHostLink(eventId);
+    const url = organiser ? await organiserEventHostLink({event:eventId,workspace,actor:userId || '',current:stillCurrent,rpc:(name,args)=>scopedEventHostRpc(client,userId || '',stillCurrent,name,args)}) : guestEventHostLink(eventId);
     if (!stillCurrent()) return;
     await Linking.openURL(url);
   });

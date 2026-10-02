@@ -56,6 +56,9 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  if(!row?.source_fingerprint||typeof row.source_fingerprint!=='string'||!row.source_fingerprint.trim())throw Error('source_capture_fingerprint_missing');
  if(!Number.isFinite(timeoutMs)||timeoutMs<=0||timeoutMs>40000)throw Error('source_time_budget');
  if(memberLeaseGuard(row).handled)throw Error('source_identity_scope_review');
+ const publisher=row.source_scope==='record_label';
+ if(publisher&&(row.entity_type!=='artist'||row.source_kind!=='label_artist_profile'||!row.name?.trim()))throw Error('publisher_identity_required');
+ if(row.source_scope&&!['official_site','record_label'].includes(row.source_scope))throw Error('source_scope_unsupported');
  const url=sourceURL(row.website),deadline=Date.now()+timeoutMs;let imagePhase=false;
  session ||=createSourceSession({maxRequests:80,maxBytes:15000000,deadline,request:(target,limits)=>requestPage(target,{maxBytes:Math.min(!imagePhase||new URL(target).pathname==='/robots.txt'?1500000:8000000,limits.maxBytes),timeout:limits.timeout,onBytes:limits.onBytes})});
  const source=await bounded(deadline,()=>session.sourceFetch(url.href));
@@ -65,7 +68,7 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  if(quality.source_state==='source_challenge'||/cf-chl-/i.test(source.text))throw Error('source_challenge');
  if(quality.requires_rendering)throw Error('javascript_render_required');
  if(quality.visible_text_length<100)throw Error('source_html_sparse');
- const final=sourceURL(source.url);if(final.hostname.replace(/^www\./,'')!==url.hostname.replace(/^www\./,''))throw Error('source_cross_host_navigation');
+ const final=sourceURL(source.url);if(publisher&&(final.origin!==url.origin||final.pathname.replace(/\/$/,'')!==url.pathname.replace(/\/$/,'')))throw Error('publisher_source_path_changed');if(final.hostname.replace(/^www\./,'')!==url.hostname.replace(/^www\./,''))throw Error('source_cross_host_navigation');
  if(memberLeaseGuard(row,source.text,source.url).handled)throw Error('source_identity_scope_review');
  const extracted=extractRenderedSource(source.text,source.url),title=(source.text.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1]||'').replace(/<[^>]+>/g,' ').trim();
  if(extracted.aggregator||assessMachineSourceIdentity({website:row.website,finalUrl:source.url,name:row.name,title,description:extracted.profile.description}).outcome!=='continue')throw Error('source_identity_scope_review');
@@ -73,7 +76,10 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  // Preserve an explicit machine-contact quarantine; absence is not a clear.
  if(extracted.profile.email_conflict){profile.email=null;profile.email_conflict=extracted.profile.email_conflict;}
  else if(extracted.profile.email_conflict===null&&typeof profile.email==='string'&&/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(profile.email))profile.email_conflict=null;
- const candidates=[...new Set(extracted.profile.photo_urls||[])].slice(0,4),images=[],rejected=[];let decoder;
+ if(publisher){for(const key of Object.keys(profile))if(!['description','tagline','site_lang'].includes(key))delete profile[key];profile.source_kind='label_artist_profile';const spotify=extracted.profile.listen?.spotify;try{const u=new URL(spotify);if(u.protocol==='https:'&&u.hostname==='open.spotify.com'&&!u.username&&!u.password&&/^\/artist\/[A-Za-z0-9]{22}\/?$/.test(u.pathname))profile.listen={spotify:'https://open.spotify.com'+u.pathname.replace(/\/$/,'')};}catch{}}
+ let candidates=[...new Set(extracted.profile.photo_urls||[])].slice(0,4);
+ if(publisher&&row.publisher_photo_urls!==undefined){if(!Array.isArray(row.publisher_photo_urls)||!row.publisher_photo_urls.length||row.publisher_photo_urls.length>4||new Set(row.publisher_photo_urls).size!==row.publisher_photo_urls.length||row.publisher_photo_urls.some(url=>!(extracted.profile.photo_urls||[]).includes(url)))throw Error('publisher_photo_not_in_source');candidates=row.publisher_photo_urls;}
+ const images=[],rejected=[];let decoder;
  imagePhase=true;
  try{for(const candidate of candidates){
    try{
@@ -92,5 +98,5 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  }finally{await closeDecoder(decoder);}
  if(images.length){profile.photo_urls=images.map(x=>x.url);profile.hero_url=images[0].url;profile.photo_url=images[0].url;}
  if(!profile.phone&&!profile.email&&!images.length&&!['rooms','dining','venues','amenities'].some(k=>profile[k]?.length)&&String(profile.description||'').length<80)throw Error('source_html_no_useful_fields');
- return{schema:2,capture_kind:'source_html',source_scope:'official_site',listing_id:row.listing_id||row.id,website:row.website,source_fingerprint:row.source_fingerprint,html:publicHTML(source.text),collected_at:new Date().toISOString(),review_required:true,render:null,source:{url:source.url,title,http_status:source.status,sha256:sha256(source.text),...quality},extractor_sha256:extractorHash,profile,images,rejected_images:rejected,network:{...session.stats},aggregator:false,provenance:Object.fromEntries(Object.keys(profile).map(k=>[k,'official-source-html:'+source.url]))};
+ return{schema:2,capture_kind:'source_html',source_scope:publisher?'record_label':'official_site',...(publisher?{publisher_identity:{listing_id:row.listing_id||row.id,name:row.name,source_url:source.url,kind:'label_artist_profile'}}:{}),listing_id:row.listing_id||row.id,website:row.website,source_fingerprint:row.source_fingerprint,html:publicHTML(source.text),collected_at:new Date().toISOString(),review_required:true,render:null,source:{url:source.url,title,http_status:source.status,sha256:sha256(source.text),...quality},extractor_sha256:extractorHash,profile,images,rejected_images:rejected,network:{...session.stats},aggregator:false,provenance:Object.fromEntries(Object.keys(profile).map(k=>[k,'official-source-html:'+source.url]))};
 }

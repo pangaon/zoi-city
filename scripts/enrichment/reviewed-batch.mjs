@@ -24,15 +24,19 @@ export function reviewedEnrichmentBatch(report,review,lease){
 }
 
 function reviewedSourceHTML(report,review,lease){
- const source=report.source;
- if(report.schema!==2||report.source_scope!=='official_site'||report.render!==null||report.review_required!==true||report.aggregator||report.status==='repair_required'||source?.http_status!==200||source?.source_state!=='html_available'||source?.requires_rendering===true||!hashPattern.test(source?.sha256||'')||!hashPattern.test(report.extractor_sha256||'')||!object(report.profile))throw Error('source_not_approved');
+ const source=report.source,publisher=report.source_scope==='record_label';
+ if(publisher){const binding=report.publisher_identity;if(!object(binding)||binding.listing_id!==lease.listing_id||binding.name!==lease.name||lease.entity_type!=='artist'||binding.kind!=='label_artist_profile'||binding.source_url!==source?.url||review.publisher_scope_confirmed!==true||canonical(review.publisher_identity)!==canonical(binding)||report.profile?.source_kind!=='label_artist_profile')throw Error('publisher_identity_review_required');}
+
+ if(report.schema!==2||!['official_site','record_label'].includes(report.source_scope)||report.render!==null||report.review_required!==true||report.aggregator||report.status==='repair_required'||source?.http_status!==200||source?.source_state!=='html_available'||source?.requires_rendering===true||!hashPattern.test(source?.sha256||'')||!hashPattern.test(report.extractor_sha256||'')||!object(report.profile))throw Error('source_not_approved');
  let url,website;try{url=new URL(source.url);website=new URL(report.website);}catch{throw Error('source_not_approved');}
+ if(publisher&&(url.origin!==website.origin||url.pathname.replace(/\/$/,'')!==website.pathname.replace(/\/$/,'')))throw Error('publisher_source_path_changed');
  if(url.protocol!=='https:'||url.username||url.password||url.hostname.replace(/^www\./,'')!==website.hostname.replace(/^www\./,''))throw Error('source_not_approved');
  // The lease supplies the current prior machine profile. Approval is bound to it,
  // so a partial capture cannot silently erase another enrichment's useful fields.
  if(!object(lease.existing_enrich))throw Error('prior_machine_review_required');
  const {lease:ignored,...existing}=lease.existing_enrich;
  if(review.prior_machine_sha256!==sha256(canonical(existing)))throw Error('prior_machine_review_mismatch');
+ if(publisher&&['phone','email','social','address','address_parts','rooms','dining','venues','amenities'].some(k=>existing[k]&&Object.keys(Object(existing[k])).length))throw Error('publisher_prior_contact_review_required');
  const images=report.images;
  if(!Array.isArray(images)||!Array.isArray(review.approved_image_hashes)||new Set(review.approved_image_hashes).size!==review.approved_image_hashes.length)throw Error('source_image_review_required');
  const approved=new Set(review.approved_image_hashes),verified=new Map();
@@ -44,7 +48,9 @@ function reviewedSourceHTML(report,review,lease){
  if([...approved].some(hash=>!verified.has(hash)))throw Error('source_image_review_mismatch');
  const allowed=new Set(['description','tagline','phone','email','email_conflict','social','site_lang','photo_urls','photo_url','hero_url','rooms','dining','venues','amenities']);
  if(!validHospitalityFields(report.profile,source.url)||(['rooms','dining','venues','amenities'].some(k=>Object.hasOwn(report.profile,k))&&!hospitalitySourceMatches(source.url,report.website)))throw Error('source_hospitality_invalid');
+ if(publisher){allowed.add('source_kind');allowed.add('listen');}
  for(const key of Object.keys(report.profile))if(!allowed.has(key))throw Error('unapproved_source_html_field');
+ if(publisher){allowed.clear();for(const key of ['description','tagline','site_lang','photo_urls','photo_url','hero_url','source_kind','listen'])allowed.add(key);for(const key of Object.keys(report.profile))if(!allowed.has(key))throw Error('publisher_contact_scope_forbidden');const listen=report.profile.listen;if(listen!==undefined){if(!object(listen)||Object.keys(listen).some(k=>k!=='spotify')||typeof listen.spotify!=='string'||!/^https:\/\/open\.spotify\.com\/artist\/[A-Za-z0-9]{22}$/.test(listen.spotify))throw Error('publisher_listen_invalid');}}
  const conflict=report.profile.email_conflict;
  const email=value=>typeof value==='string'&&/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(value);
  if(conflict!==undefined&&conflict!==null){
@@ -61,7 +67,7 @@ function reviewedSourceHTML(report,review,lease){
  const {lease:oldLease,blocked,last_error,status,crawl_status,checked_at,last_attempt_at,source_url,provenance:oldProvenance,...previous}=existing;
  if(photos.length){fields.photo_urls=[...new Set([...photos,...(Array.isArray(previous.photo_urls)?previous.photo_urls:[])])];const hero=urls.has(report.profile.hero_url)?report.profile.hero_url:photos[0];fields.hero_url=hero;fields.photo_url=hero;}
  if(object(previous.social)&&object(fields.social))fields.social={...previous.social,...fields.social};
- const evidence={sha256:review.report_sha256,source_sha256:source.sha256,extractor_sha256:report.extractor_sha256,method:'reviewed_official_source_html',reviewer:review.reviewer,reviewed_at:review.reviewed_at,source_fingerprint:report.source_fingerprint,approved_image_hashes:[...approved],prior_machine_sha256:review.prior_machine_sha256,added_photo_urls:photos,preserved_photo_urls:(previous.photo_urls||[]).filter(url=>!photos.includes(url)),updated_social_channels:Object.keys(report.profile.social||{})};
+ const evidence={sha256:review.report_sha256,source_sha256:source.sha256,extractor_sha256:report.extractor_sha256,method:publisher?'reviewed_record_label_source_html':'reviewed_official_source_html',...(publisher?{publisher_identity:report.publisher_identity}:{}),reviewer:review.reviewer,reviewed_at:review.reviewed_at,source_fingerprint:report.source_fingerprint,approved_image_hashes:[...approved],prior_machine_sha256:review.prior_machine_sha256,added_photo_urls:photos,preserved_photo_urls:(previous.photo_urls||[]).filter(url=>!photos.includes(url)),updated_social_channels:Object.keys(report.profile.social||{})};
  const profile={...previous,...fields,crawl_status:'ok',source_html_evidence:evidence};
  const provenance={...(object(oldProvenance)?oldProvenance:{}),...Object.fromEntries(Object.keys(fields).map(key=>[key,'official-source-html:'+source.url])),source_html_evidence:'reviewed-official-source-html:'+source.url};
  for(const key of Object.keys(overrides))provenance[key]='reviewed-official-source-html:'+source.url;

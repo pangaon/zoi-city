@@ -19,3 +19,21 @@ export async function organiserEventHostLink({event, workspace, actor, current, 
   if (inventory?.ok !== true || inventory.event_id !== event || !Number.isSafeInteger(inventory.version) || inventory.version < 0 || !Array.isArray(inventory.tables)) throw Error('This event could not be verified for your selected workspace.');
   return guestLink + '&workspace=' + workspace.toLowerCase();
 }
+
+/** Fence refresh before any private handoff proof is dispatched. Credentials stay in memory. */
+export async function scopedEventHostRpc(client: {
+  session: {user: {id: string}} | null;
+  token: () => Promise<string>;
+  request: (path: string, body: unknown, token: string) => Promise<any>;
+}, actor: string, current: () => boolean, name: string, args: Record<string, unknown>): Promise<any> {
+  const check = () => {
+    if (!UUID.test(actor) || client.session?.user.id !== actor || !current()) throw Error('Your account or selected workspace changed.');
+  };
+  if (!['zoi_me', 'table_inventory_operator'].includes(name)) throw Error('Unsupported event handoff check.');
+  check();
+  const token = await client.token();
+  check();
+  const result = await client.request('/rest/v1/rpc/' + name, args, token);
+  check();
+  return result;
+}

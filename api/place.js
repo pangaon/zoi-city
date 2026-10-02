@@ -1,5 +1,6 @@
 import {categoryEditionBody,categoryEditorialRequest} from './_category-edition.js';
 import {faithHubBody} from './_faith-hub.js';
+import {publicCountryRead} from './_public-country-read.js';
 /**
  * api/place.js — server-rendered place and category hubs.
  *
@@ -215,7 +216,7 @@ export default async function handler(req, res) {
     // so a URL never has to be a guess about capitalisation or accents.
     const primaryEarly=wantCat&&!wantCountry&&!wantRegion&&!wantCity?rpc('explore_place_listings',{p_country:null,p_region:null,p_city:null,p_category:wantCat,p_limit:PER,p_offset:(page-1)*PER}).then(data=>({data}),error=>({error})):null;
     let countries = [];
-    try { countries = await rpc('explore_countries', {},wantCountry?4500:1200); } catch (err) {
+    try { const timeoutMs=wantCountry?4500:1200; countries = await publicCountryRead({endpoint:BASE+'/rest/v1/rpc/explore_countries',timeoutMs,load:()=>rpc('explore_countries',{},timeoutMs)}); } catch (err) {
       // Category and location pages can still render from their scoped query if
       // the global aggregate is temporarily slow.
       if(wantCountry)throw err;
