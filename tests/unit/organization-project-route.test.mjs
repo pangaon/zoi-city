@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{resolveWorkspaceRoute,moduleRoute}from'../../assets/suite/workspace-navigation.mjs';
+const id='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',modules=[{id:'operations'},{id:'documents'},{id:'audience'}];
+for(const tool of ['operations','documents'])test(tool+' project survives workspace query and canonical roundtrip',()=>{const path=moduleRoute(tool,'project:'+id);const url=new URL(path,'https://www.zoi.city');url.search='?workspace=bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';assert.deepEqual(resolveWorkspaceRoute(url,modules),{id:tool,view:'project:'+id});});
+for(const value of ['bad',id+'/extra',encodeURIComponent(id+'/extra'),'%2561'+id.slice(1),''])test('reject ambiguous project '+value,()=>{assert.deepEqual(resolveWorkspaceRoute('https://www.zoi.city/social#documents/project/'+value,modules),{id:'documents',view:'project:invalid'});});
+test('ordinary documents and audience retain ordinary routes',()=>{assert.deepEqual(resolveWorkspaceRoute('/social#documents',modules),{id:'documents',view:null});assert.equal(moduleRoute('audience'),'\/social/audience');});

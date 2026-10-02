@@ -47,11 +47,11 @@
     function assert(){if(!active())throw new Error('Operations account or workspace changed.');}
     async function rpc(name,args,options){assert();try{var fresh=await C.auth.ensureFresh();assert();if(!fresh){var error=new Error('Please sign in again.');error.status=401;throw error;}var result=await transport(name,args,Object.assign({},options,{auth:'prefer'}));assert();return result;}catch(error){if(active()&&helpers.operationsDenied(error)){clearPrivate();render();}throw error;}}
 
-    var state = {records:[],members:[],role:null,kind:'company',sector:'business',selected:null,busy:false,ready:false,dirty:false,events:[],archived:false};
+    var state = {records:[],members:[],role:null,kind:ctx.view==='contacts'?'contact':'company',draft:null,sector:'business',selected:null,busy:false,ready:false,dirty:false,events:[],archived:false};
     wrap.innerHTML = '<h2>Business Operations</h2><p class="zops-muted">Company records, relationships, projects and deadlines in your workspace.</p><div class="zops-status" role="status" aria-live="polite" data-o="status"></div><div data-o="recovery"></div><div data-o="content"></div>';
     var key='zoi:ops-pending:v1:'+actor+':'+workspace;
     recovery=helpers.createOperationsRecovery({actor,workspace,current:active,call:(name,args)=>rpc(name,args,{auth:'require'}),nonce:()=>crypto.randomUUID(),changed:()=>{if(active())renderRecovery();},storage:{load:async()=>JSON.parse(global.sessionStorage.getItem(key)||'null'),save:async value=>global.sessionStorage.setItem(key,JSON.stringify(value)),clear:async()=>global.sessionStorage.removeItem(key)}});
-    function clearPrivate(){if(state){state.records=[];state.members=[];state.role=null;state.selected=null;state.events=[];state.dirty=false;}recovery?.dropPayload();}
+    function clearPrivate(){if(state){state.records=[];state.members=[];state.role=null;state.selected=null;state.events=[];state.dirty=false;state.draft=null;}recovery?.dropPayload();}
     function destroy(){alive=false;abort.abort();observer?.disconnect();clearPrivate();wrap.replaceChildren();}
     function account(){if(active())return;destroy();if(root.contains(wrap))root.innerHTML='<p>Your account changed. Reload Operations to access the current workspace.</p>';}
     root.__zoiOpsDestroy=destroy;
@@ -60,7 +60,7 @@
       wrap.querySelectorAll('[data-o="form"] input,[data-o="form"] select,[data-o="form"] textarea,[data-o="form"] button,[data-o="new"]').forEach(function(node){if(p.blocked){if(!node.hasAttribute('data-ops-disabled'))node.dataset.opsDisabled=String(node.disabled);node.disabled=true;}else if(node.hasAttribute('data-ops-disabled')){node.disabled=node.dataset.opsDisabled==='true';delete node.dataset.opsDisabled;}});
       host.querySelectorAll('button').forEach(button=>{button.disabled=state.busy||p.busy;button.addEventListener('click',()=>busy(async()=>{if(button.dataset.opsRecovery==='load'){await recovery.load();return;}var value=await recovery.recover(button.dataset.opsRecovery);if(value.state==='missing'){status('No saved receipt yet. Retry the exact change or cancel if unsaved before starting another.');return;}await refreshSaved(value);}));});
     }
-    async function refreshSaved(value){state.selected=null;state.dirty=false;render();var message=value.state==='saved'?'Change saved. Reference '+value.record_id+'.':'Unsaved request cancelled. A delayed request cannot save it.';status(message);try{await load();state.selected=state.records.find(row=>row.id===value.record_id)||null;if(state.selected)state.kind=state.selected.kind;render();status(message);}catch(error){if(active())status(message+' Refresh to load current records.');}}
+    async function refreshSaved(value){state.draft=null;state.selected=null;state.dirty=false;render();var message=value.state==='saved'?'Change saved. Reference '+value.record_id+'.':'Unsaved request cancelled. A delayed request cannot save it.';status(message);try{await load();state.selected=state.records.find(row=>row.id===value.record_id)||null;if(state.selected)state.kind=state.selected.kind;render();status(message);}catch(error){if(active())status(message+' Refresh to load current records.');}}
     function q(name) { return wrap.querySelector('[data-o="' + name + '"]'); }
     function status(text) { if(active()&&q('status'))q('status').textContent = text || ''; }
     function canWrite(kind) { return ['owner','admin'].indexOf(state.role) !== -1 || (state.role === 'editor' && kind !== 'company'); }
@@ -110,7 +110,7 @@
       var records = state.records.filter(function (r) { return r.kind === state.kind; });
       host.innerHTML = '<div class="zops-card"><h3>' + esc(labels()[state.kind]) + '</h3>' + (canWrite(state.kind) ? '<button type="button" data-o="new" class="primary">+ Add ' + esc(singular(state.kind)) + '</button>' : '<p class="zops-muted">You have read-only access to these records.</p>') + '</div>' +
         (records.length ? records.map(function (r) { var overdue=r.due_at && new Date(r.due_at)<new Date() && r.status!=='completed' && !r.archived_at;return '<button type="button" class="zops-record zops-card" data-record="' + esc(r.id) + '"><strong>' + esc(r.title) + '</strong><span class="zops-muted">' + esc(r.archived_at?'Archived':r.status.replace(/_/g,' ')) + ' · v' + r.version + (r.company_id?' · '+esc(recordName(r.company_id)):'') + '</span>' + (r.due_at?'<span class="'+(overdue?'zops-overdue':'zops-muted')+'">'+(overdue?'Overdue · ':'Due · ')+esc(new Date(r.due_at).toLocaleString())+'</span>':'')+'</button>';}).join('') : '<div class="zops-card"><p>No ' + esc(labels()[state.kind].toLowerCase()) + ' yet.</p><p class="zops-muted">Start with a company record, add a project and contact, then create a task with a deadline.</p></div>');
-      if (q('new')) q('new').addEventListener('click',function () {if(!confirmDiscard())return;state.selected=null;state.dirty=false;renderEditor(true);renderRecovery();});
+      if (q('new')) q('new').addEventListener('click',function () {if(!confirmDiscard())return;state.selected=null;state.draft=null;state.dirty=false;renderEditor(true);renderRecovery();});
       host.querySelectorAll('[data-record]').forEach(function (button) {button.addEventListener('click',function () {if(!confirmDiscard())return;state.selected=state.records.find(function(r){return r.id===button.dataset.record;});state.dirty=false;renderEditor();renderRecovery();});});
     }
     function field(key,label,value,type) {return '<label>'+esc(label)+'<input data-field="'+key+'" type="'+(type||'text')+'" value="'+esc(value||'')+'" '+(key==='title'?'required maxlength="200"':'maxlength="2000"')+'></label>';}
@@ -121,7 +121,7 @@
       if(state.kind==='audit'){host.innerHTML='<div class="zops-card"><h3>Changes you can trace</h3><p>Every saved edit records the actor, timestamp, previous version and resulting version. Workspace permissions control access.</p></div>';return;}
       var record=state.selected;
       if(!record&&!create){host.innerHTML='<div class="zops-card"><h3>Your operations workspace</h3><p>Select a record to view its details or add a new one.</p><p class="zops-muted">Company registration information is maintained by your team. This workspace does not submit legal filings.</p></div>';return;}
-      var data=payload(record), editable=canWrite(state.kind)&&!(record&&record.archived_at);
+      var data=Object.assign(payload(record),record?{}:state.draft||{}), editable=canWrite(state.kind)&&!(record&&record.archived_at);
       var html='<form class="zops-card" data-o="form"><h3>'+esc(record?'Record details':'New '+singular(state.kind))+'</h3>'+field('title',state.kind==='company'?'Trading / display name':'Title / name',data.title);
       if(state.kind==='company')html+=select('sector','Profession',Object.keys(SECTORS).map(function(key){return[key,SECTORS[key]];}),data.sector||state.sector)+field('legal_name','Legal name',data.legal_name)+field('jurisdiction','Country / jurisdiction',data.jurisdiction)+field('registration_number','Registration number',data.registration_number)+field('website','Website',data.website,'url');
       if(state.kind==='contact')html+='<div class="zops-two">'+field('email','Email',data.email,'email')+field('phone','Phone',data.phone,'tel')+'</div>'+select('company_id','Company (optional)',linkOptions('company'),data.company_id);
@@ -132,12 +132,19 @@
         html+='<div class="zops-two">'+select('status','Status',[['open','Open'],['in_progress','In progress'],['blocked','Blocked'],['completed','Completed']],data.status)+field('due_at','Deadline (your timezone)',local,'datetime-local')+'</div>'+select('assignee_profile_id','Assigned team member',[['','Unassigned']].concat(state.members.map(function(member){return [member.profile_id,member.display_name];})),data.assignee_profile_id);
       }
       html+='<label>Notes<textarea data-field="notes" maxlength="20000">'+esc(data.notes||'')+'</textarea></label><div class="zops-actions">'+(editable?'<button class="primary" type="submit">Save record</button>':'')+(record?'<button type="button" data-o="history">View history</button>':'')+(record&&!record.archived_at&&isAdmin()?'<button type="button" data-o="archive">Archive</button>':'')+'</div></form>';
+      if(record&&!record.archived_at&&(state.kind==='contact'||state.kind==='project')){
+        var children=state.records.filter(function(r){return !r.archived_at&&(record.kind==='contact'?r.contact_id===record.id:r.project_id===record.id);});
+        html+='<section class="zops-card"><h3>'+esc(record.kind==='contact'?'Work with this contact':'Project follow-up')+'</h3><div class="zops-actions">'+(canWrite(record.kind==='contact'?'project':'task')?'<button type="button" data-o="linked-new">'+(record.kind==='contact'?'Start linked project':'Add follow-up task')+'</button>':'')+(record.kind==='project'&&['owner','admin','editor'].includes(state.role)&&ctx.navigate?'<button type="button" data-o="documents">Project documents</button>':'')+'</div>'+children.map(function(r){return '<button type="button" class="zops-record" data-linked="'+esc(r.id)+'"><strong>'+esc(r.title)+'</strong><span>'+esc(r.kind)+' · '+esc(r.status)+'</span></button>';}).join('')+(!children.length?'<p class="zops-muted">No linked work yet.</p>':'')+'</section>';
+      }
       host.innerHTML=html;
+      if(q('linked-new'))q('linked-new').onclick=function(){if(!active()||!confirmDiscard())return;state.draft=record.kind==='contact'?{contact_id:record.id,company_id:record.company_id}:{project_id:record.id,contact_id:record.contact_id};state.kind=record.kind==='contact'?'project':'task';state.selected=null;state.dirty=false;render();renderEditor(true);renderRecovery();};
+      if(q('documents'))q('documents').onclick=function(){if(active()&&confirmDiscard())ctx.navigate('documents','project:'+record.id);};
+      host.querySelectorAll('[data-linked]').forEach(function(button){button.onclick=function(){if(!active()||!confirmDiscard())return;var next=state.records.find(function(r){return r.id===button.dataset.linked;});if(!next)return;state.draft=null;state.selected=next;state.kind=next.kind;state.dirty=false;render();};});
       if(!editable)host.querySelectorAll('input,select,textarea').forEach(function(node){node.disabled=true;});
       q('form').addEventListener('input',function(){state.dirty=true;});
       q('form').addEventListener('change',function(){state.dirty=true;});
       q('form').addEventListener('submit',function(event){event.preventDefault();if(!editable)return;var form=q('form');if(!form.reportValidity())return;
-        var values=payload(record);form.querySelectorAll('[data-field]').forEach(function(node){values[node.dataset.field]=node.value;});
+        var values=Object.assign(payload(record),record?{}:state.draft||{});form.querySelectorAll('[data-field]').forEach(function(node){values[node.dataset.field]=node.value;});
         values.company_id=values.company_id||null;values.project_id=values.project_id||null;values.contact_id=values.contact_id||null;values.assignee_profile_id=values.assignee_profile_id||null;
         values.due_at=values.due_at?new Date(values.due_at).toISOString():null;
         busy(async function(){var value=await recovery.send('save',{p_kind:state.kind,p_data:values,p_id:record?record.id:null,p_expected_version:record?record.version:0});await refreshSaved(value);});
@@ -145,9 +152,10 @@
       if(q('archive'))q('archive').addEventListener('click',function(){if(!global.confirm('Archive this record? Its history will be retained.'))return;busy(async function(){await refreshSaved(await recovery.send('archive',{p_id:record.id,p_expected_version:record.version}));});});
       if(q('history'))q('history').addEventListener('click',function(){if(!confirmDiscard())return;busy(async function(){await loadAudit(record.id);state.kind='audit';state.dirty=false;render();});});
     }
+    function applyProjectContext(){if(typeof ctx.view!=='string'||!ctx.view.startsWith('project:'))return;var id=ctx.view.slice(8),project=state.records.find(function(r){return r.id===id&&r.kind==='project'&&!r.archived_at;});if(!uuid.test(id)||!project){state.records=[];state.role=null;throw Error('This project is unavailable in the current workspace. Open Projects & records to choose an authorized project.');}state.selected=project;state.kind='project';}
     status('Loading workspace records…');
-    try {await recovery.load();await load();render();status('');}catch(error){status(errorText(error));q('content').innerHTML='<div class="zops-card"><p>Operations records are unavailable. No local sample records are substituted.</p><button type="button" data-o="retry">Try again</button></div>';q('retry').addEventListener('click',function(){busy(async function(){if(!recovery.state().ready)await recovery.load();await load();render();status('');});});}
-    return {destroy:destroy};
+    try {await recovery.load();await load();applyProjectContext();render();status('');}catch(error){status(errorText(error));q('content').innerHTML='<div class="zops-card"><p>Operations records are unavailable. No local sample records are substituted.</p><button type="button" data-o="retry">Try again</button></div>';q('retry').addEventListener('click',function(){busy(async function(){if(!recovery.state().ready)await recovery.load();await load();applyProjectContext();render();status('');});});}
+    return {destroy:destroy,hasUnsavedChanges:function(){return active()&&(state.dirty||state.busy||!!recovery?.state().marker);}};
   }
   global.ZoiSuite=global.ZoiSuite||{modules:[]};
   global.ZoiSuite.modules.push({id:'operations',label:'Operations',order:65,icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 5V3h8v2M8 10h8M8 14h8M8 18h5"/></svg>',mount:mount});

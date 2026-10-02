@@ -1,0 +1,18 @@
+# Workspace history independent review — 2026-10-02
+
+Scope: actual Social shell browser navigation and account-bound workspace recovery. Controlled Auth/RPC fixtures; no customer records, messages or production writes.
+
+The producer's history candidate (`social/index.html` SHA256 `158d67d4387d717243620a855800be5c10f0cd204e28b3ee61d9a1c4147673cb`) passed its Back/Forward, dirty-cancel, invalid/duplicate/missing scope and held membership response tests at 390 and 1440 pixels. Source review found a separate privacy defect: `authScopeChanged` retained `STATE.workspaces`, while invalid workspace intent returned before fetching new membership. Switching accounts with an invalid URL displayed the previous account's workspace names in the recovery chooser. Actual-shell negative reproduction at 390 pixels retained “Old business” and “Other business”; `/tmp/workspace-history-actor-independent.log` records the failed assertion.
+
+Parent authorized a narrow correction in Social only. Sign-in/account transitions now clear membership, selected workspace and private context. The chooser only uses membership bound to its current token, and same-tab `zoi:auth-change` is observed immediately. Returning users obtain current membership again. This does not grant authority from browser state; selection still loads current membership before mounting.
+
+Dedicated retained regression: `tests/browser/workspace-history/independent.cjs`. It runs actual Social HTML with explicit controlled Auth/RPC and Overview mount seams, blocking external traffic. Both 390/1440 pass storage, focus and same-tab account changes with malformed intent, empty old roster/no mounted private tool, return to the original account with fresh viewer authority, and a held prior-account membership response. The held response cannot repopulate the old roster and dispatch count remains bounded. The standard history fixture passes both widths, including A→B→Back→Forward URL/header/context agreement, dirty cancellation and competing membership reads without extra hash-triggered fetches. Existing workspace-onboarding journeys also pass both widths.
+
+Logs: `/tmp/workspace-history-independent-fixed.log`, `/tmp/workspace-history-corrected-standard.log`, `/tmp/workspace-onboarding-history-correction.log`. Full-shell fixture was narrowly updated with parent authorization because immediate account transition removes the old creation form rather than leaving a disabled, blank old form. The test now supplies a distinct new-account workspace, verifies the old form/private name and roster disappear, deliberately selects the newly authorized workspace, and checks its exact name, viewer role and unchanged write count. Both widths pass, including the existing first/additional workspace creation, lost-response, ownership tracking and exact listing workflows. Log: `/tmp/workspace-shell-history-correction.log`.
+
+Current Social SHA256: `506d850a4e42c47a31a87b1d73dccfc50774c52283bae445784dfa951a02b439`.
+Independent fixture SHA256: `f19221e019ee83a6c2b071f8d70cb2760503962f4ab663faa9370acd79b509c4`.
+
+Evidence is local source and exercised controlled browser behavior. Production deployment, live authority readback and native history behavior are not established by this packet. Navigation-module and service-candidate files were not modified.
+
+Final status: corrected packet frozen for parent independent source inspection and release checks. The reviewer authored this narrow correction after reproducing the defect; these fresh regression runs are implementation validation, not a second independent approval of that correction.

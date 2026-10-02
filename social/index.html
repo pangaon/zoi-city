@@ -126,12 +126,12 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 <script src="/assets/suite/analytics.js?v=20260930"></script>
 <script src="/assets/suite/bio.js?v=20261001-session-fences"></script>
 <script src="/assets/suite/email.js?v=20261001-session-fences"></script>
-<script src="/assets/suite/audience.js?v=20261001-session-fences"></script>
-<script src="/assets/suite/operations.js?v=20261002-ops-surface"></script>
+<script src="/assets/suite/audience.js?v=20261002-organization-workflow"></script>
+<script src="/assets/suite/operations.js?v=20261002-organization-workflow"></script>
 <script src="/assets/suite/priorities.js?v=20260930c"></script>
 <script src="/assets/suite/bookings.js?v=20260930b"></script>
 <script src="/assets/suite/organizations.js?v=20261001-workspace-scope"></script>
-<script src="/assets/suite/documents.js?v=20261001-session-scope"></script>
+<script src="/assets/suite/documents.js?v=20261002-organization-workflow"></script>
 <script src="/assets/suite/inbox.js?v=20261001-inquiry-access"></script>
 <script src="/assets/suite/creator.js?v=20261001-creator-storage"></script><script src="/assets/suite/timekeeping.js?v=20261002-private-scope"></script><script src="/assets/suite/organization-calendar.js?v=20260930"></script><script src="/assets/suite/groups.js?v=20261001-workspace-scope"></script><script src="/assets/suite/festival.js?v=20261001-approved-sponsors"></script><script src="/assets/suite/appearances.js?v=20260930"></script><script src="/assets/suite/leagues.js?v=20260930"></script><script src="/assets/suite/properties.js?v=20261002-private-scope"></script>
 <!-- the per-vertical profile editor: schemas, then the renderer, then the
@@ -164,8 +164,9 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
   function destroyCurrent(){STATE.moduleEpoch++;var handle=STATE.handle;STATE.handle=null;if(handle&&typeof handle.destroy==='function')handle.destroy();}
   function mayLeave(){if(STATE.actor&&STATE.sessionIdentity&&STATE.sessionIdentity(C)!==STATE.actor){authScopeChanged();return false;}return !STATE.handle||typeof STATE.handle.hasUnsavedChanges!=='function'||!STATE.handle.hasUnsavedChanges()||confirm('Leave this tool? Unsaved changes will be lost.');}
   function restoreCurrentUrl(){if(STATE.currentRoute)history.replaceState(null,'',STATE.currentRoute);}
+  function clearAccountContext(){STATE.me=null;STATE.workspaces=[];STATE.membershipToken=null;STATE.ctx=null;STATE.ws=null;STATE.wsName='';STATE.role=null;STATE.actor=null;STATE.channels=[];STATE.avail=null;STATE.currentRoute=null;STATE.routeLoading=null;}
   function renderGate(step, email){
-    destroyCurrent();STATE.actor=null;
+    destroyCurrent();clearAccountContext();
     root.innerHTML =
     '<div class="center"><div class="card">'+
       '<div class="mono" style="margin-bottom:14px">The Greek business world, one desk</div>'+
@@ -368,6 +369,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     loadMe();
   }
   function renderUnavailableWorkspace(){
+    if(STATE.membershipToken!==C.auth.token())clearAccountContext();
     destroyCurrent();STATE.ctx=null;STATE.ws=null;STATE.role=null;STATE.actor=null;
     var token=C.auth.token(),generation=STATE.epoch;STATE.gateToken=token;
     root.innerHTML='<div class="center"><section class="card"><h1>Choose your workspace</h1><p class="sub">The workspace in this link is not available to your account. Choose an accessible workspace to continue.</p><div class="field"><label for="workspace-recovery">Your workspaces</label><select id="workspace-recovery" class="inp"><option value="">Choose a workspace</option>'+STATE.workspaces.map(function(w){return '<option value="'+esc(w.id)+'">'+esc(w.name||'Workspace')+' · '+esc(w.role||'Access not confirmed')+'</option>';}).join('')+'</select></div><div style="display:flex;flex-wrap:wrap;gap:10px"><button class="btn p" id="workspace-open" disabled>Open workspace</button><button class="btn" id="workspace-retry">Check access again</button><button class="btn" id="workspace-create">Create a workspace</button></div></section></div>';
@@ -378,26 +380,34 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     document.getElementById('workspace-retry').onclick=function(){if(current())loadMe();};
     document.getElementById('workspace-create').onclick=function(){if(!current())return;var u=new URL(location.href);u.searchParams.delete('workspace');u.searchParams.delete('ws');u.searchParams.delete('listing');history.replaceState(null,'',u.pathname+u.search+u.hash);renderCreate();};
   }
+  function workspaceIntent(url){
+    var params=new URL(url,location.origin).searchParams,values=params.getAll('workspace').concat(params.getAll('ws'));
+    return {explicit:values.length>0,valid:values.length===1&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(values[0]),id:values.length===1?values[0].toLowerCase():null};
+  }
   function loadMe(){
-    STATE.gateToken=null;var generation=++STATE.epoch,requestedToken=C.auth.token();
+    STATE.gateToken=null;var generation=++STATE.epoch,requestedToken=C.auth.token(),requestedRoute=location.href,intent=workspaceIntent(requestedRoute);
+    destroyCurrent();STATE.ctx=null;STATE.routeLoading=requestedRoute;
+    if(intent.explicit&&!intent.valid){renderUnavailableWorkspace();return;}
+
     root.innerHTML='<div class="center"><div class="spin"></div></div>';
     C.api.rpc('zoi_me',{},{auth:'require'}).then(async function(me){
       if(generation!==STATE.epoch)return;
+      if(location.href!==requestedRoute){restoreRoute();return;}
       if(C.auth.token()!==requestedToken){destroyCurrent();boot();return;}
       if(!me || !me.authenticated){ C.auth.clear(); renderGate('email'); return; }
       STATE.me = me;var globalCta=document.getElementById('zoiCta');if(globalCta){globalCta.textContent='My workspace';globalCta.href='/social/';}
-      STATE.workspaces = (me.workspaces||[]);
+      STATE.workspaces = (me.workspaces||[]);STATE.membershipToken=requestedToken;
       if(new URL(location.href).searchParams.has('claim_return')){
         claimReturnModule=await import('/assets/workspace/claim-return.mjs');
         if(generation!==STATE.epoch||C.auth.token()!==requestedToken)return;
         if(claimReturnModule.renderClaimReturn({root:root,C:C,url:location.href,current:function(){return generation===STATE.epoch&&C.auth.token()===requestedToken;},create:renderCreate,signOut:function(){STATE.epoch++;C.auth.signOut().catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');});renderGate('email');}}))return;
       }
-      var saved=null,explicit=false;try{var params=new URL(location.href).searchParams;explicit=params.has('workspace')||params.has('ws');saved=params.has('workspace')?params.get('workspace'):params.has('ws')?params.get('ws'):localStorage.getItem('zoi_ws');}catch(e){}
-      if(!STATE.workspaces.length&&!explicit){ renderCreate(); return; }
-      var chosen=null;
-      for(var i=0;i<STATE.workspaces.length;i++){ if(STATE.workspaces[i].id===saved){ chosen=STATE.workspaces[i]; break; } }
+      var saved=intent.id,explicit=intent.explicit;try{if(!explicit)saved=localStorage.getItem('zoi_ws');}catch(e){}
+      STATE.workspaces=STATE.workspaces.filter(function(w,index,all){return w&&['owner','admin','editor','viewer'].indexOf(w.role)!==-1&&all.filter(function(x){return x&&x.id===w.id;}).length===1;});
+      if(!STATE.workspaces.length&&!explicit){renderCreate();return;}
+      var chosen=STATE.workspaces.find(function(w){return w.id===saved;});
       if(!chosen&&explicit){renderUnavailableWorkspace();return;}
-      if(!chosen) chosen=STATE.workspaces[0];
+      if(!chosen)chosen=STATE.workspaces[0];
       STATE.ws=chosen.id; STATE.wsName=chosen.name||'Workspace';STATE.role=['owner','admin','editor','viewer'].indexOf(chosen.role)!==-1?chosen.role:null;try{STATE.focus=localStorage.getItem('zoi_nav_focus:'+STATE.ws)||'all';}catch(_){}
       try{ localStorage.setItem('zoi_ws', STATE.ws); }catch(e){}
       loadContext();
@@ -415,7 +425,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; }),
       import('/assets/suite/capabilities.mjs').then(async function(cap){
         var provider=await cap.loadProviderConfig(C.BASE,C.KEY).catch(function(){return null;});
-        var navigation=await import('/assets/suite/workspace-navigation.mjs');var session=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');return {cap:cap,provider:provider,navigation:navigation,sessionIdentity:session.sessionIdentity};
+        var navigation=await import('/assets/suite/workspace-navigation.mjs?v=20261002-organization-workflow');var session=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');return {cap:cap,provider:provider,navigation:navigation,sessionIdentity:session.sessionIdentity};
       })
     ]).then(function(res){
       if(generation!==STATE.epoch||requestedWs!==STATE.ws)return;
@@ -443,9 +453,20 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     });
   }
 
-  function restoreRoute(){if(!STATE.ctx||!STATE.navigation||!document.getElementById('mount'))return;var route=STATE.navigation.resolveWorkspaceRoute(location.href,window.ZoiSuite.modules);if(route.id)selectModule(route.id,route.view,true);}
+  function restoreRoute(){
+    var intent=workspaceIntent(location.href);
+    if(!STATE.ctx&&STATE.routeLoading===location.href)return;
+    if(!STATE.ctx||!intent.valid||intent.id!==STATE.ws){
+      if(STATE.ctx&&!mayLeave()){restoreCurrentUrl();return;}
+      destroyCurrent();STATE.epoch++;STATE.ctx=null;STATE.routeLoading=null;
+      if(!intent.valid){renderUnavailableWorkspace();return;}
+      loadMe();return;
+    }
+    if(!STATE.navigation||!document.getElementById('mount'))return;
+    var route=STATE.navigation.resolveWorkspaceRoute(location.href,window.ZoiSuite.modules);if(route.id)selectModule(route.id,route.view,true);
+  }
   function authScopeChanged(){if((STATE.gateToken&&C.auth.token()!==STATE.gateToken)||(STATE.actor&&STATE.sessionIdentity&&STATE.sessionIdentity(C)!==STATE.actor)){STATE.gateToken=null;destroyCurrent();STATE.epoch++;STATE.ctx=null;STATE.me=null;STATE.ws=null;renderGate('email');boot();}}
-  window.addEventListener('storage',authScopeChanged);window.addEventListener('focus',authScopeChanged);setInterval(authScopeChanged,250);
+  window.addEventListener('zoi:auth-change',authScopeChanged);window.addEventListener('storage',authScopeChanged);window.addEventListener('focus',authScopeChanged);setInterval(authScopeChanged,250);
   window.addEventListener('popstate',restoreRoute);window.addEventListener('hashchange',restoreRoute);
   boot();
 })();

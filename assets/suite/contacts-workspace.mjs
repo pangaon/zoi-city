@@ -1,0 +1,22 @@
+import {sessionIdentity} from '../community/session-state.mjs?v=20261001-uuid-scope';
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export async function mountContactsWorkspace(root,ctx,mountAudience){
+ if(!document.getElementById('contacts-workspace-style')){const style=document.createElement('style');style.id='contacts-workspace-style';style.textContent='.contacts-workspace{max-width:1200px;color:var(--tx);line-height:1.5}.contacts-workspace>h2{font-size:clamp(24px,4vw,32px);margin:0 0 8px}.contacts-workspace>[role=group]{background:var(--bg2);border:1px solid var(--line);border-radius:18px;padding:6px;width:fit-content;max-width:100%;box-sizing:border-box}.contacts-workspace [data-contact-tab]{min-height:44px;padding:10px 18px;border:1px solid transparent;border-radius:12px;background:transparent;color:var(--tx);font:600 14px/1.4 system-ui;cursor:pointer}.contacts-workspace [data-contact-tab][aria-pressed=true]{background:var(--acc);color:#fff;box-shadow:0 3px 12px #0002}.contacts-workspace [data-contact-tab]:focus-visible{outline:3px solid var(--acc);outline-offset:2px}.contacts-workspace>[data-contact-note]{color:var(--mut);max-width:75ch;font-size:14px;padding:0 2px 12px}@media(max-width:500px){.contacts-workspace>[role=group]{width:100%}.contacts-workspace [data-contact-tab]{flex:1;padding:10px 8px}}';document.head.append(style);}
+ const C=ctx.C||window.ZoiCore,actor=sessionIdentity(C),workspace=ctx.ws;
+ let dead=false,child=null,epoch=0;const events=new AbortController();
+ const surface=document.createElement('section');surface.className='contacts-workspace';
+ surface.innerHTML='<h2>People & work</h2><p>Keep customer relationships and their follow-up in one place.</p><div role="group" aria-label="Contact workspace" style="display:flex;flex-wrap:wrap;gap:8px;margin:16px 0"><button type="button" data-contact-tab="audience">Audience people</button><button type="button" data-contact-tab="work">Work relationships</button></div><p data-contact-note></p><div data-contact-body></div>';
+ root.replaceChildren(surface);const body=surface.querySelector('[data-contact-body]'),note=surface.querySelector('[data-contact-note]');
+ function dispose(){if(dead)return;dead=true;epoch++;events.abort();observer.disconnect();child?.destroy?.();surface.replaceChildren();}
+ function current(){if(!dead&&(!root.isConnected||!root.contains(surface)||sessionIdentity(C)!==actor||ctx.ws!==workspace))dispose();return !dead;}
+ const observer=new MutationObserver(records=>{if(records.some(r=>[...r.removedNodes].some(n=>n===surface||n===root||n.contains?.(surface))))dispose();else current();});observer.observe(document.documentElement,{childList:true,subtree:true});
+ for(const name of ['zoi:auth-change','zoi:authchange','storage','focus'])window.addEventListener(name,current,{signal:events.signal});
+ if(!UUID.test(actor||'')||!UUID.test(workspace||'')){dispose();return {destroy:dispose};}
+ async function select(tab){if(!current())return;if(child?.hasUnsavedChanges?.()&&!confirm('Discard the unsaved changes before switching contact views?'))return;const version=++epoch;child?.destroy?.();child=null;const childRoot=document.createElement('div');body.replaceChildren(childRoot);note.textContent=tab==='work'?'Work contacts link to projects, assigned tasks and private documents.':'Audience people keep their existing tags and consent records. Work relationships are separate records; switching views does not copy or contact anyone.';surface.querySelectorAll('[data-contact-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.contactTab===tab)));
+  const mount=tab==='audience'?mountAudience:window.ZoiSuite?.modules.find(m=>m.id==='operations')?.mount;
+  if(!mount){body.textContent='Work tools could not load. Reopen Contacts to try again.';return;}
+  try{const result=await mount(childRoot,Object.assign(Object.create(ctx),{view:tab==='work'?'contacts':null}));if(!current()||version!==epoch){result?.destroy?.();return;}child=result;}catch(e){if(current()&&version===epoch)body.textContent='This contact view could not load. Choose it again to retry.';}
+ }
+ surface.addEventListener('click',e=>{const tab=e.target.closest('[data-contact-tab]');if(tab)select(tab.dataset.contactTab);},{signal:events.signal});
+ await select('audience');return {destroy:dispose,unmount:dispose,hasUnsavedChanges:()=>current()&&!!child?.hasUnsavedChanges?.()};
+}

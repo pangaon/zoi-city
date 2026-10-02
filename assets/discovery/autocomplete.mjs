@@ -45,18 +45,22 @@ export function attachAutocomplete(input,{filters=()=>({}),search=searchSuggesti
  const note=doc.createElement('div');note.className='suggestion-status';note.setAttribute('role','status');note.setAttribute('aria-live','polite');
  const list=doc.createElement('div');list.id=id;list.setAttribute('role','listbox');list.setAttribute('aria-label','Suggested listings');
  box.append(note,list);input.setAttribute('role','combobox');input.setAttribute('aria-autocomplete','list');input.setAttribute('aria-controls',list.id);input.setAttribute('aria-expanded','false');
- let rows=[],active=-1,lastFilters="";
- const request=()=>{lastFilters=JSON.stringify(filters());queue.run(input.value,filters());};
+ let rows=[],active=-1,lastFilters="",restoringFocus=false;
+ const request=()=>{if(restoringFocus)return;lastFilters=JSON.stringify(filters());queue.run(input.value,filters());};
+ const focusInput=()=>{restoringFocus=true;input.focus();restoringFocus=false;};
  const close=()=>{queue.cancel();box.hidden=true;input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1;};
  const choose=i=>{if(rows[i]){close();if(onChoose)onChoose(rows[i]);else doc.defaultView.location.assign(rows[i].href);}};
  const select=i=>{active=i;Array.from(list.children).forEach((el,index)=>el.setAttribute('aria-selected',String(index===i)));if(i>=0){input.setAttribute('aria-activedescendant',id+'-option-'+i);list.children[i]?.scrollIntoView({block:'nearest'});}else input.removeAttribute('aria-activedescendant');};
  const queue=suggestionController({search,onState:state=>{rows=state.rows||[];active=-1;input.removeAttribute('aria-activedescendant');list.replaceChildren();box.hidden=state.status==='closed';input.setAttribute('aria-expanded',String(!box.hidden));note.replaceChildren();
  note.textContent=state.status==='loading'?'Finding matches…':state.status==='error'?'Suggestions could not load. ':rows.length?(state.outside?'Matches outside your selected filters — opening a page keeps your search filters.':suggestionLabel):'No matching pages. Press Search to explore or change your filters.';
- if(state.status==='error'){const retry=doc.createElement('button');retry.type='button';retry.textContent='Retry';retry.addEventListener('click',()=>queue.run(input.value,filters()));note.append(retry);}
+ if(state.status==='error'){const retry=doc.createElement('button');retry.type='button';retry.textContent='Retry';retry.addEventListener('click',()=>{focusInput();request();});note.append(retry);}
  rows.forEach((row,i)=>{const option=doc.createElement('div');option.id=id+'-option-'+i;option.setAttribute('role','option');option.setAttribute('aria-selected','false');const title=doc.createElement('strong');title.textContent=row.name;const sub=doc.createElement('span');sub.textContent=[row.type.replaceAll('_',' '),row.city,row.country].filter(Boolean).join(' · ');option.append(title,sub);option.addEventListener('pointerdown',e=>e.preventDefault());option.addEventListener('click',()=>choose(i));list.append(option);});
  }});
  input.addEventListener('input',request);input.addEventListener('focus',request);
- input.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();}else if(!box.hidden&&rows.length&&['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();select(event.key==='ArrowDown'?(active+1)%rows.length:(active<0?rows.length-1:(active-1+rows.length)%rows.length));}else if(event.key==='Enter'){event.preventDefault();if(!box.hidden&&active>=0)choose(active);else{close();onSubmit();}}else if(event.key==='Tab')close();});
+ input.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();}else if(!box.hidden&&rows.length&&['ArrowDown','ArrowUp'].includes(event.key)){event.preventDefault();select(event.key==='ArrowDown'?(active+1)%rows.length:(active<0?rows.length-1:(active-1+rows.length)%rows.length));}else if(event.key==='Enter'){event.preventDefault();if(!box.hidden&&active>=0)choose(active);else{close();onSubmit();}}else if(event.key==='Tab'){const retry=box.querySelector('button');if(!event.shiftKey&&!box.hidden&&retry){event.preventDefault();retry.focus();}else close();}});
+ box.addEventListener('keydown',event=>{if(event.key==='Escape'){event.preventDefault();close();focusInput();}});
+ const dismissAfterFocus=()=>setTimeout(()=>{if(doc.activeElement!==input&&!box.contains(doc.activeElement))close();},0);
+ input.addEventListener('focusout',dismissAfterFocus);box.addEventListener('focusout',dismissAfterFocus);
  doc.addEventListener('pointerdown',event=>{if(event.target!==input&&!box.contains(event.target))close();});
  return{close,refresh:()=>{if(doc.activeElement===input&&JSON.stringify(filters())!==lastFilters)request();}};
 }

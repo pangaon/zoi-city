@@ -1,0 +1,70 @@
+{
+  "base_commit": "03203481b3cd9868b2a9b9c63429ca07c0f00697",
+  "tested_tree": "e676b1cbf8a13025157bf253942580365ecefb62",
+  "snapshot": "/tmp/zoi-organization-parea-release-2ml2nspb",
+  "local_checks": "npm run verify:local:280node:testfiles+2standalone,passed",
+  "browser_checks": [
+    {
+      "fixture": "organization-workflow/verify.cjs",
+      "passed": true,
+      "log": "PASS organization workflow 390 contact/project/assigned task/lost receipt/doc version/back context\nPASS organization workflow 1440 contact/project/assigned task/lost receipt/doc version/back context\n"
+    },
+    {
+      "fixture": "organization-workflow/ownership.cjs",
+      "passed": true,
+      "log": "PASS ownership 390 import account uploads 0\nPASS ownership 390 import ancestor uploads 0\nPASS ownership 390 upload account uploads 1\nPASS ownership 390 upload ancestor uploads 1\nPASS ownership 1440 import account uploads 0\nPASS ownership 1440 import ancestor uploads 0\nPASS ownership 1440 upload account uploads 1\nPASS ownership 1440 upload ancestor uploads 1\n"
+    },
+    {
+      "fixture": "parea-roster/verify.cjs",
+      "passed": true,
+      "log": "PASS 390 dynamic quotas; 3 recipient plan; partial response freeze/recovery; exact links; account cleanup\nPASS 1440 dynamic quotas; 3 recipient plan; partial response freeze/recovery; exact links; account cleanup\n"
+    },
+    {
+      "fixture": "parea-roster/surface-independent.cjs",
+      "passed": true,
+      "log": "surface result 390 { writes: 0, replacement: 1, roster: 0 }\nsurface result 390 { writes: 0, replacement: 0, roster: 0 }\nPASS 390 dynamic quotas; 3 recipient plan; partial response freeze/recovery; exact links; account cleanup\nsurface result 1440 { writes: 0, replacement: 1, roster: 0 }\nsurface result 1440 { writes: 0, replacement: 0, roster: 0 }\nPASS 1440 dynamic quotas; 3 recipient plan; partial response freeze/recovery; exact links; account cleanup\n"
+    },
+    {
+      "fixture": "workspace-history/verify.cjs",
+      "passed": true,
+      "log": "PASS history 390 Back/Forward exactworkspace, pending edits, invalid/duplicate/missing/revoked selection and rapid held membership reads\nPASS history 1440 Back/Forward exactworkspace, pending edits, invalid/duplicate/missing/revoked selection and rapid held membership reads\n"
+    },
+    {
+      "fixture": "workspace-history/independent.cjs",
+      "passed": true,
+      "log": "PASS independent history 390 account transition with invalid route, empty roster, returning authority and held prior-account response\nPASS independent history 1440 account transition with invalid route, empty roster, returning authority and held prior-account response\n"
+    },
+    {
+      "fixture": "autocomplete-keyboard-recovery/verify.cjs",
+      "passed": true,
+      "log": "PASS explore 390 keyboard retry, focus continuity, results, Escape and outside dismissal\nPASS explore 1440 keyboard retry, focus continuity, results, Escape and outside dismissal\nPASS map 390 keyboard retry, focus continuity, results, Escape and outside dismissal\nPASS map 1440 keyboard retry, focus continuity, results, Escape and outside dismissal\n"
+    },
+    {
+      "fixture": "host-allocation-drafts/verify.cjs",
+      "passed": true,
+      "log": "PASS 390 grant/guest review draft preservation, denial/account clear, no writes\nPASS 1440 grant/guest review draft preservation, denial/account clear, no writes\n"
+    }
+  ],
+  "source_hashes": {
+    "assets/discovery/autocomplete.mjs": "9ad953b8cdb9300e721c7fa5e33e4388d0c9b7a7c4eb3f30ee7dec18312e756b",
+    "assets/documents/operator.mjs": "3c334f5b171c0bcec83e5b510f8875ecaebff90957e5ab6ba5c9139483b17a13",
+    "assets/suite/audience.js": "6d1414001d0504e3b71f31c83b60cc6401d231dcce6c59586019528b7405b79c",
+    "assets/suite/contacts-workspace.mjs": "3b56c7307166e183567d7b0bab83f2b9754a4aa01dfdce74e1d6cb92ee86a951",
+    "assets/suite/documents.js": "db0500186ca5a8dc1875327f5741285619cad636800e4e3b791d052aa0470f4e",
+    "assets/suite/operations.js": "9d299f4488400feda7cef6d9686e65f2cb98377387ee83380751a63cfb30d52d",
+    "assets/suite/workspace-navigation.mjs": "2eaeed499b88d32a796babb675835e0fb3999c916cc9c66eac7d596067afb960",
+    "assets/tickets/host-allocations.css": "054c6418a165bd985de7e6ae0ec6236131c4fdf0e77e5045204d43cebf0b9c95",
+    "assets/tickets/host-allocations.mjs": "bafeab4213c53c155a76725e401f7162541d7f0029911e48d9939b38197ead4a",
+    "assets/tickets/parea-roster-plan.mjs": "08c8fc7db0a6fe0c77dc72693eed91784d81b3d78499651d160dc55c12e10e60",
+    "explore/index.html": "60a5bcd12506c3dad5f231438a9ff62b590c44e60951606297eb642d8fc8f591",
+    "explore/map/index.html": "70dbb7d4750747cb7b208644a255395f9a9203b82724dba10b3102256e73d57f",
+    "social/index.html": "6a8ef106af112db3951f8ea0a27911570eda8b9ee046d3769c14fc274b3d9e4e",
+    "tickets/hosts/index.html": "580fc6a4cdfdfda938f7e8df41c3b5b20272955e2a19bbe99b950068b8868190"
+  },
+  "boundaries": [
+    "Browser API/file transports controlled, not production customer transactions",
+    "Native and sponsor fulfillment excluded; held service/geography/payment migrations excluded",
+    "Phone native-device distribution remains unverified",
+    "Latest Montreal canonical503 and backend SQL timeout unresolved"
+  ]
+}

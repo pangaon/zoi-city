@@ -204,7 +204,7 @@
 
     function currentActor(){var session=C.auth&&C.auth.load&&C.auth.load();return session&&session.user_id;}
     var actor=currentActor();
-    var disposed=false, loadEpoch=0, canWrite=false, canConsent=false, closeImport=null;
+    var disposed=false, loadEpoch=0, canWrite=false, canConsent=false, closeImport=null,formDirty=false,importDirty=false;
     function active(){return !disposed && !!actor && ctx.ws===ws && currentActor()===actor && root.contains(wrap);}
     function dispose(){if(disposed)return;disposed=true;loadEpoch++;clearTimeout(searchTimer);if(closeImport)closeImport();state.contacts=[];state.knownTags=[];state.q='';state.tag='';if(importState)importState.parsed=null;wrap.replaceChildren();global.removeEventListener('zoi:auth-change',authChanged);}
     function authChanged(){if(!active())dispose();}
@@ -339,6 +339,7 @@
     /* ---------- add / edit form ---------- */
     function openForm(c) {
       if(!active()||!canWrite)return;
+      if(formDirty&&!global.confirm('Discard the unsaved contact changes?'))return;formDirty=false;
       c = c || {};
       var editing = c.id != null;
       var host = q('form');
@@ -366,7 +367,8 @@
           '<button class="zu-btn ghost" data-z="f_cancel">Cancel</button>' +
         '</div>';
 
-      q('f_cancel').addEventListener('click', function () { host.style.display = 'none'; host.innerHTML = ''; });
+      host.oninput=host.onchange=function(){formDirty=true;};
+      q('f_cancel').addEventListener('click', function () { formDirty=false;host.style.display = 'none'; host.innerHTML = ''; });
       var consentBox = el('div', 'zu-field');
       consentBox.innerHTML = '<label><input type="checkbox" data-z="f_consent"> Record explicit permission for marketing emails</label><input class="zu-input" data-z="f_consent_source" placeholder="Evidence: signup form, date, or written permission" maxlength="1000"><label>When permission was given <input class="zu-input" type="datetime-local" data-z="f_consent_date"></label><small>Leave unchecked unless you have permission. Previously unsubscribed recipients stay suppressed.</small>';
       if(canConsent)host.insertBefore(consentBox, q('f_save').parentNode);
@@ -406,7 +408,7 @@
           if(!active())return;
           if (!consent || consent.ok !== true) throw new Error('Contact saved, but marketing consent was not confirmed. No marketing eligibility was added.');
         }
-        q('form').style.display = 'none'; q('form').innerHTML = '';
+        formDirty=false;q('form').style.display = 'none'; q('form').innerHTML = '';
         await reload(); renderTable();
         if(!active()||state.error)return;
         toast(id ? 'Contact updated.' : 'Contact added.', 'success');
@@ -461,15 +463,15 @@
       document.body.appendChild(overlay);
 
       function mq(id) { return overlay.querySelector('[data-z="' + id + '"]'); }
-      closeImport=close;
-      function close() { closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay); importState.parsed = null; }
+      closeImport=close;importDirty=false;overlay.addEventListener('input',function(){importDirty=true;});
+      function close() { importDirty=false;closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay); importState.parsed = null; }
 
       overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
       mq('cancel').addEventListener('click', close);
 
       mq('file').addEventListener('change', function () {
         var f = this.files && this.files[0];
-        if (!f) return;
+        if (!f) return;importDirty=true;
         var reader = new FileReader();
         reader.onload = function () { if(!active()||!overlay.isConnected)return;mq('csv').value = String(reader.result || ''); doPreview(); };
         reader.onerror = function () { toast('Could not read that file.', 'error'); };
@@ -597,7 +599,7 @@
     renderShell();permissions();
     await reload();
     renderTable();
-    return {destroy:dispose,unmount:dispose};
+    return {destroy:dispose,unmount:dispose,hasUnsavedChanges:function(){return active()&&(formDirty||importDirty);}};
   }
 
   /* ---------- register ---------- */
@@ -609,6 +611,10 @@
     icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' +
       '<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>' +
       '<path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>',
-    mount: mountAudience
+    mount: async function(root,ctx){
+      var C=ctx.C||global.ZoiCore,actor=C.auth.load()?.user_id,ws=ctx.ws,anchor=root.ownerDocument.createElement('div'),dead=false;
+      root.replaceChildren(anchor);var observer=new MutationObserver(function(records){if(records.some(function(r){return Array.from(r.removedNodes).some(function(n){return n===anchor||n===root||n.contains?.(anchor);});}))dead=true;});observer.observe(root.ownerDocument.documentElement,{childList:true,subtree:true});
+      try{var module=await import('/assets/suite/contacts-workspace.mjs?v=20261002-organization-workflow');if(dead||!root.isConnected||!root.contains(anchor)||C.auth.load()?.user_id!==actor||ctx.ws!==ws)return {destroy:function(){}};observer.disconnect();return module.mountContactsWorkspace(root,ctx,mountAudience);}finally{observer.disconnect();}
+    }
   });
 })(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this);
