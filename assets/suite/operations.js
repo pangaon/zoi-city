@@ -34,10 +34,14 @@
     root.__zoiOpsDestroy?.();var mountToken={};root.__zoiOpsMount=mountToken;
     var alive=true,abort=new AbortController(),recovery,observer;
     var helpers=await import('/assets/operations/recovery.mjs?v=20261001-ops-recovery');
+    var identity=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');
     if(root.__zoiOpsMount!==mountToken||!root.isConnected||C.auth.load()?.user_id!==actor||ctx.ws!==workspace)return {destroy:function(){}};
-    function active(){return alive&&root.isConnected&&root.contains(wrap)&&!!actor&&C.auth.load()?.user_id===actor&&ctx.ws===workspace;}
+    var uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if(!uuid.test(actor||'')||!uuid.test(workspace||'')||identity.sessionIdentity(C)!==actor.toLowerCase()){root.textContent='Sign in again to verify your account and workspace before opening Operations.';return {destroy:function(){}};}
+    actor=actor.toLowerCase();
+    function active(){return alive&&root.isConnected&&root.contains(wrap)&&identity.sessionIdentity(C)===actor&&ctx.ws===workspace;}
     function assert(){if(!active())throw new Error('Operations account or workspace changed.');}
-    async function rpc(name,args,options){assert();try{var result=await transport(name,args,options);assert();return result;}catch(error){if(active()&&helpers.operationsDenied(error)){clearPrivate();render();}throw error;}}
+    async function rpc(name,args,options){assert();try{var fresh=await C.auth.ensureFresh();assert();if(!fresh){var error=new Error('Please sign in again.');error.status=401;throw error;}var result=await transport(name,args,Object.assign({},options,{auth:'prefer'}));assert();return result;}catch(error){if(active()&&helpers.operationsDenied(error)){clearPrivate();render();}throw error;}}
 
     var state = {records:[],members:[],role:null,kind:'company',sector:'business',selected:null,busy:false,ready:false,dirty:false,events:[],archived:false};
     root.innerHTML = '<section class="zops"><h2>Business Operations</h2><p class="zops-muted">Company records, relationships, projects and deadlines in your workspace.</p><div class="zops-status" role="status" aria-live="polite" data-o="status"></div><div data-o="recovery"></div><div data-o="content"></div></section>';
