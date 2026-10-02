@@ -11,3 +11,17 @@ Shared-search actual account-isolation and independent session/expiry adversarie
 Logs: `/tmp/zoi-parea-final-{local,mobile,types,export,company,company-scope,native,web,host-regression,member-regression}.log`; shared-search `/tmp/zoi-parea-company-{search,session,palette}.log`. Initial Expo commands used the wrong working directory/path; rerun from the snapshot's mobile directory succeeded. These invocation failures are not product or CI failures.
 
 No backend migration is included in this packet. Volunteer installation evidence from the preceding release is recorded separately. No real guest invitations sent, no payments collected, no admitted tickets issued, no event inventory invented and no app credentials transferred to the browser. Physical iOS/Android execution and signed distribution remain unverified. Real organizer setup, provider checkout/delivery, family enrollment, service activation and all original scope requirements remain open unless individually evidenced.
+
+## Deployed evidence
+
+Main `8262b4fbc7617dc396cc4b847954eec645b21897`; final tree `412c47e42d5e515d575cbd46f1c7d62338ddc6b4` differs from tested runtime tree only in evidence/board files. CI37067091411 and bounded quality37067210449 succeeded. Vercel `dpl_FXKgD4pbYVU4SJonp14x7xvkorAX` READY aliases zoi.city/www.zoi.city with this exact commit.
+
+Production verification compares 12 public files with immutable main bytes and checks three existing permanent application redirects separately. Actual Parea signed-out entry at390/1440 shows sign-in, no private roster and no API/mutation requests; actual homepage palette keyboard open/focus/Escape close passes at both widths without customer search submission or page errors. Evidence `evidence/parea-company-production-2026-10-02.json`.
+
+Initial verification wrongly compared redirected application URLs with their original HTML and checked palette visibility before its200ms close animation finished. The corrected harness verifies the configured permanent redirects and awaits hidden state; no runtime change was required. These are harness errors, not ignored product failures.
+
+Shared-search cache consumers include the generic entity fallback. Actual OPA and Anna dedicated canonical homes returned200 in490/347ms but do not currently include that shared palette; wider typed-home autocomplete coverage stays open. This release does not establish site-wide profile enrichment or all guest transactions.
+
+## Actual search performance remains open
+
+Fresh production Explore SIGNAT suggestions selected the correct Signature Productions canonical home at390/1440 using real anonymous search responses. The first phone run took9842ms through selection, with two500 search responses before a200; desktop selection2391ms, all search responses200. Both navigation runs emitted `Transition was skipped`. A separate phone diagnostic got suggestions in1791ms with200 responses but reproduced the same transition error. These are remaining defects, not a fast-search acceptance. Evidence `evidence/real-autocomplete-production-2026-10-02.json`; shared transition investigation assigned to the repair specialist after freezing contextual organizer work.

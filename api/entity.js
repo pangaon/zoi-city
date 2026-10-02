@@ -1,3 +1,4 @@
+import {withHomeNavigation} from './_home-navigation.js';
 import {createPublicReadCoalescer} from './_public-read-coalescer.js';
 import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import {phoneHref} from '../assets/homes/phone.mjs';
@@ -540,7 +541,7 @@ export default async function handler(req, res) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');
       res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
-      res.end(withMonasteryNetwork(withPublicOwnerMedia(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/'+encodeURIComponent(typeSlug(e.entity_type))+'/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'),e,design),e));
+      res.end(withHomeNavigation(withMonasteryNetwork(withPublicOwnerMedia(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/'+encodeURIComponent(typeSlug(e.entity_type))+'/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'),e,design),e)));
       return;
     }
     const optional = await Promise.allSettled([publicRead('seo_related',{p_slug:slug,p_limit:8},2000),publicRead('listing_completeness',{p_slug:slug},2000)]);
@@ -549,7 +550,7 @@ export default async function handler(req, res) {
     res.statusCode=200;
     res.setHeader('Content-Type','text/html; charset=utf-8');
     res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
-    res.end(withMonasteryNetwork(withPublicOwnerMedia(page(e, related, completeness),e,design),e));
+    res.end(withHomeNavigation(withMonasteryNetwork(withPublicOwnerMedia(page(e, related, completeness),e,design),e)));
   } catch (err) {
     console.error(JSON.stringify({event:'public_home_unavailable', reason:/^(?:http_[0-9]{3}|network|timeout)$/.test(err?.publicReadReason || '') ? err.publicReadReason : 'response_or_render'}));
     res.statusCode=503; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
