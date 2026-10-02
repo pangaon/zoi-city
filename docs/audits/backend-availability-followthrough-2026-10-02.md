@@ -1,0 +1,9 @@
+# Backend availability followthrough — 2026-10-02
+
+At 2026-10-02T15:28:20.183018+00:00, a single bounded read-only connection/wait aggregate against pg_stat_activity failed with management connection timeout. It requested only aggregate connection states, wait categories, blocked counts and oldest query age, without SQL text, credentials or customer records. No retry, termination, restart, configuration change or write followed. No wait/resource root cause was learned from the failed read.
+
+Vercel runtime error clusters separately show recent public_home_unavailable timeout on /api/entity and place_hub_unavailable timeout on /api/place, last seen at15:25:40/15:25:34 UTC on5780ea2. The tool returned cluster first-seen timestamps outside the requested15:15-start window; its counts are not treated as a precise window denominator. The reviewer independently encountered a live503 on Montréal's canonical event route. Local retained-plan Montréal browser evidence therefore does not establish production availability.
+
+The country read coalescer code batche902187 passed GitHubCI37026443730, including mobile session tests, TypeScript and Expo web export; bounded listing audit37026558151 passed. Vercel EAJKS8rgmsqfyJXyd6ZBRkmJuQPJ remains queued as of the last read. Do not infer backend recovery from these checks. Service migration application and artist write replay remain withheld pending authoritative connection/row/receipt evidence.
+
+Subsequent deployment check confirmed EAJKS8rgmsqfyJXyd6ZBRkmJuQPJ READY and production aliases assigned to e902187. A bounded artist canonical request then returned503 in3.54seconds and the corrected /in/Canada country route returned503 in4.64seconds. An initial /places/Canada404 was a verification URL mistake, excluded from application acceptance. These are separate failed real reads, not evidence of code deployment failure or backend recovery. No artist data application or service schema changes followed.

@@ -1,7 +1,7 @@
 import {createLoungePlacementStream} from './lounge-placement-stream.mjs?v=20261001-approved-sponsors';
 import {mountSponsorPreview} from './sponsor-preview.mjs';
 import{mountLoungeScene}from'./lounge-scene.mjs?v=20261001-approved-sponsors';
-import{mountFurnishedConcert as mountConcertScene}from'./furnished-concert.mjs?v=20261001-camera';
+import{mountFurnishedConcert as mountConcertScene}from'./furnished-concert.mjs?v=20261002-safe-chrome';
 import{imageReference}from'../../tickets/venue-reference.mjs';
 import{SIGNATURE_EVENT}from'./source-facts.mjs';
 export const SOURCE_ID=SIGNATURE_EVENT.id;

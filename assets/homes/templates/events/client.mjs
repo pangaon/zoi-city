@@ -1,4 +1,4 @@
-import {mountEventRoom} from '../../../events/room-integration.mjs?v=20261001-camera';
+import {mountEventRoom} from '../../../events/room-integration.mjs?v=20261002-safe-chrome';
 import {openHighlights} from '../../../events/highlight-player.mjs';
 import {signatureHighlights} from '../../../events/signature-highlights.mjs';
 import {mountSocialTimeline} from '../../../events/publicity-view.mjs';

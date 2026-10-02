@@ -1,3 +1,4 @@
+import {createPublicReadCoalescer} from './_public-read-coalescer.js';
 import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import {phoneHref} from '../assets/homes/phone.mjs';
 import {readEntityWithRecovery} from './_public-entity-read.js';
@@ -22,6 +23,14 @@ import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } 
 const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
 const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const SITE = 'https://www.zoi.city';
+const coalescePublicRead=createPublicReadCoalescer();
+function publicRead(fn,body,timeoutMs,recovery=false){
+  // This handler always reads anonymously using the fixed public key, never request cookies/JWTs.
+  if(!['home_entity','seo_related','listing_completeness'].includes(fn))throw Error('Unsupported public projection');
+  const key=JSON.stringify([SUPA,fn,body,timeoutMs,recovery?'transient-once-100ms':'none']);
+  return coalescePublicRead(key,()=>recovery?readEntityWithRecovery(()=>rpc(fn,body,timeoutMs)):rpc(fn,body,timeoutMs));
+}
+
 
 async function rpc(fn, body, timeoutMs = 7000) {
   const controller = new AbortController();
@@ -511,7 +520,7 @@ export default async function handler(req, res) {
   var slug = (req.query && req.query.slug ? String(req.query.slug) : '').trim();
   try {
     if (!slug) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
-    var e = await readEntityWithRecovery(() => rpc('home_entity', { p_slug: slug }, 3400));
+    var e = await publicRead('home_entity', { p_slug: slug }, 3400, true);
     if (Array.isArray(e)) e = e[0];
     // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
     // live duplicates of every listing. Send the crawler to the one canonical URL.
@@ -534,7 +543,7 @@ export default async function handler(req, res) {
       res.end(withMonasteryNetwork(withPublicOwnerMedia(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/'+encodeURIComponent(typeSlug(e.entity_type))+'/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'),e,design),e));
       return;
     }
-    const optional = await Promise.allSettled([rpc('seo_related',{p_slug:slug,p_limit:8},2000),rpc('listing_completeness',{p_slug:slug},2000)]);
+    const optional = await Promise.allSettled([publicRead('seo_related',{p_slug:slug,p_limit:8},2000),publicRead('listing_completeness',{p_slug:slug},2000)]);
     var related=optional[0].status==='fulfilled'&&Array.isArray(optional[0].value)?optional[0].value:[];
     var completeness=optional[1].status==='fulfilled'?optional[1].value:null;
     res.statusCode=200;

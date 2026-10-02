@@ -44,3 +44,12 @@
  .signature-venue[data-view=concert] .fc-viewport>.sv-demo-tools{top:calc(max(10px,env(safe-area-inset-top)) + 112px)!important}
  .signature-venue[data-fullscreen=true][data-view=concert] .fc-viewport{padding-top:118px!important}
 }
+/* Reserve real phone chrome space: controls and sponsor opener never sit on artwork. */
+@media(max-width:700px){
+ [data-room-skin=zoi].room-scene .rs-surface{top:var(--zr-chrome-height,124px)!important}
+ .signature-venue[data-view=concert] .fc-room .fc-viewport{padding-top:var(--zr-chrome-height,180px)!important}
+ .signature-venue[data-view=concert] .fc-viewport>.sv-demo-tools{top:var(--zr-controls-bottom,120px)!important;bottom:auto!important;left:10px!important;right:10px!important;width:auto!important;max-width:none!important;padding:0 10px!important;border-radius:14px!important}
+ .signature-venue[data-view=concert] .sv-demo-tools>summary{box-sizing:border-box;min-height:44px;display:flex;align-items:center;gap:8px;padding:4px 2px!important;font-size:12px}
+ .signature-venue[data-view=concert] .sv-demo-tools>summary small{margin-left:auto}
+ [data-room-skin=zoi] .rs-finder{top:var(--zr-chrome-height,124px)!important}
+}
