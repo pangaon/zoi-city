@@ -2,5 +2,5 @@
 export function accountWorkspaceLinks(workspace:string|null|undefined){
  if(!workspace||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(workspace))return null;
  const query='?workspace='+encodeURIComponent(workspace.toLowerCase());
- return {settings:'https://www.zoi.city/social/settings'+query,home:'https://www.zoi.city/social/bizpage'+query};
+ return {settings:'https://www.zoi.city/social/settings'+query,home:'https://www.zoi.city/social/bizpage'+query,serviceMenu:'https://www.zoi.city/social/service-menu'+query,serviceQueue:'https://www.zoi.city/social/service-queue'+query};
 }

@@ -328,7 +328,7 @@ const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 let listingImageContext=null;
 const listingImageReady=import('/supabase/functions/zoi-enrich/_image-context.js').then(m=>{listingImageContext=m;}).catch(()=>{});
 let exploreLocality=null,exploreHome=null;
-function effectiveExploreLocation(){return (!ST.q&&!ST.city&&!ST.country&&ST.scope!=='global'&&exploreHome)?exploreHome:{city:ST.city,country:ST.country};}
+function effectiveExploreLocation(query=ST.q){return (!query&&!ST.city&&!ST.country&&ST.scope!=='global'&&exploreHome)?exploreHome:{city:ST.city,country:ST.country};}
 let TYPES=[['','All']];
 let ST={q:'',type:'',city:'',country:'',sort:'',offset:0,busy:false,done:false,counts:{},rows:[],countries:[]};
 
@@ -379,7 +379,7 @@ function buildTypes(rows){
     .forEach(c=>out.push([c.entity_type, typeLabel(c.entity_type)]));
   TYPES=out;
 }
-function setType(v){ ST.type=v; pillsRender(); runSearch(true); }
+function setType(v){ ST.type=v; pillsRender(); submitExplore(); }
 
 async function boot(){
   readUrl();
@@ -399,7 +399,7 @@ async function boot(){
     const cities=await rpc('explore_cities',{p_limit:14},true);
     const sel=document.getElementById('city-sel');
     cityOptions(cities).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country; o.textContent=c.label; sel.appendChild(o); });
-    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; ST.scope=ST.city?'':'global'; harvestCountries([]); runSearch(true); });
+    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; ST.scope=ST.city?'':'global'; harvestCountries([]); submitExplore(); });
   }catch(e){}
   try{
     const fresh=await rpc('explore_fresh',{p_limit:8},true);
@@ -447,10 +447,13 @@ function writeUrl(push){
   if(next===location.pathname+location.search) return;
   try{ push?history.pushState({},'',next):history.replaceState({},'',next); }catch(e){}
 }
-window.addEventListener('popstate',()=>{ readUrl(); runSearch(true); });
+window.addEventListener('popstate',()=>{ exploreAutocomplete?.close();readUrl(); runSearch(true); });
+function retireExploreRequests(){exploreAutocomplete?.close();++searchVersion;searchRequest?.abort();ST.busy=false;settledExplore=null;restoreSettledExplore();document.getElementById('more-btn').style.display='none';}
+window.addEventListener('zoi:auth-change',retireExploreRequests);
+window.addEventListener('storage',event=>{if(!event.key||event.key==='zoi_auth')retireExploreRequests();});
 
-let debounceT=null,exploreAutocomplete=null;
-function submitExplore(){clearTimeout(debounceT);exploreAutocomplete?.close();ST.q=document.getElementById('q').value.trim();runSearch(true);}
+let exploreAutocomplete=null;
+function submitExplore(){exploreAutocomplete?.close();ST.q=document.getElementById('q').value.trim();runSearch(true);}
 document.addEventListener('DOMContentLoaded',()=>{
   boot();
   import('/assets/workspace/claim-return.mjs').then(module=>{
@@ -459,11 +462,13 @@ document.addEventListener('DOMContentLoaded',()=>{
     action.onclick=async()=>{const token=authToken();action.disabled=true;note.textContent='Checking the listing…';try{const entity=await rpc('home_entity',{p_slug:intent.slug},true);if(!panel.isConnected||authToken()!==token||JSON.stringify(module.exploreClaimIntent(location.href))!==JSON.stringify(intent)){note.textContent='Your account or listing link changed. Reload before continuing.';return;}if(!entity||entity.id!==intent.listing||entity.slug!==intent.slug||typeof entity.name!=='string'||!/^[a-z_]+$/.test(entity.entity_type||''))throw Error('unavailable');ST.view=ST.view||[];let index=ST.view.findIndex(r=>r.id===entity.id);if(index<0){index=ST.view.length;ST.view.push({...entity,claimable:true});}quickView(index);await claim(intent.slug,action);panel.remove();}catch{note.textContent='This listing could not be confirmed. Retry or search for it below.';action.disabled=false;}};
   }).catch(()=>{});
   const q=document.getElementById('q');
-  q.addEventListener('input',()=>{ clearTimeout(debounceT); debounceT=setTimeout(()=>{ ST.q=q.value.trim(); runSearch(true); },350); });
-  import('/assets/discovery/autocomplete.mjs?v=20261002-keyboard-recovery').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation()}),onSubmit:submitExplore});}).catch(()=>{});
-  q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!exploreAutocomplete){clearTimeout(debounceT);ST.q=q.value.trim();runSearch(true);}});
+  // Typing requests suggestions only. Retire an older result request immediately,
+  // while keeping the already-rendered results until an explicit search action.
+  q.addEventListener('input',()=>{const pending=ST.busy;++searchVersion;searchRequest?.abort();ST.busy=false;if(pending)restoreSettledExplore();document.getElementById('more-btn').style.display='none';});
+  import('/assets/discovery/autocomplete.mjs?v=20261002-keyboard-recovery').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation(q.value.trim())}),onSubmit:submitExplore});}).catch(()=>{});
+  q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!exploreAutocomplete){submitExplore();}});
   const cs=document.getElementById('country-sel');
-  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; ST.scope=ST.country?'':'global'; document.getElementById('city-sel').value=''; runSearch(true); });
+  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; ST.scope=ST.country?'':'global'; document.getElementById('city-sel').value=''; submitExplore(); });
   const ss=document.getElementById('sort-sel');
   if(ss) ss.addEventListener('change',()=>{ ST.sort=ss.value; renderRows(); });
   const qv=document.getElementById('qv');
@@ -662,9 +667,23 @@ function card(r,idx){
     '</div></article>';
 }
 
-let searchVersion=0,searchRequest=null;
+let searchVersion=0,searchRequest=null,settledExplore=null;
+function restoreSettledExplore(){
+  const results=document.getElementById('results');
+  if(settledExplore){
+    ST.rows=settledExplore.rows.slice();ST.view=settledExplore.view.slice();ST.done=settledExplore.done;ST.offset=settledExplore.offset;
+    results.innerHTML=settledExplore.html;
+    document.getElementById('res-count').textContent=settledExplore.count;
+    document.getElementById('res-mode').textContent='Previous results · '+settledExplore.context;
+  }else{
+    ST.rows=[];ST.view=[];
+    results.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Ready when you are</h3><p>Choose a suggested page, or press Search to load matching results.</p></div>';
+    document.getElementById('res-count').textContent='Search to load results';
+    document.getElementById('res-mode').textContent='';
+  }
+}
 async function runSearch(reset){
-  exploreAutocomplete?.refresh();
+  exploreAutocomplete?.close();
   if(ST.busy&&!reset) return;
   const version=++searchVersion;
   searchRequest?.abort();
@@ -678,6 +697,7 @@ async function runSearch(reset){
   if(reset) writeUrl(true);
   exploreLocality?.refresh();
   const locality=effectiveExploreLocation();
+  const resultContext=[ST.q?'“'+ST.q+'”':'All listings',ST.type?typeLabel(ST.type):'',locality.city,locality.country].filter(Boolean).join(' · ');
   try{
     const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:locality.city||null,p_country:locality.country||null,p_limit:24,p_offset:ST.offset},true,request.signal);
     await listingImageReady;
@@ -692,6 +712,7 @@ async function runSearch(reset){
     document.getElementById('res-count').textContent = n
       ? (LANG === 'el' ? ('Προβολή ' + n + ' αποτελεσμάτων' + (ST.done ? '' : '+')) : ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+')))
       : (LANG === 'el' ? 'Χωρίς αποτελέσματα' : 'No results');
+    settledExplore={context:resultContext,rows:ST.rows.slice(),view:(ST.view||[]).slice(),done:ST.done,offset:ST.offset,html:document.getElementById('results').innerHTML,count:document.getElementById('res-count').textContent,mode:document.getElementById('res-mode').textContent};
   }catch(e){
     if(version!==searchVersion) return;
     // Never print database/schema details into the public UI. Besides being an
@@ -830,6 +851,7 @@ function quickViewKeyboard(e){
 function loadMore(){ ST.offset+=24; runSearch(false); }
 
 function clearExploreFilters(){
+  exploreAutocomplete?.close();
   ST.scope='global'; ST.q=''; ST.type=''; ST.city=''; ST.country=''; ST.sort='';
   const qEl=document.getElementById('q'); if(qEl) qEl.value='';
   const cEl=document.getElementById('city-sel'); if(cEl) cEl.value='';

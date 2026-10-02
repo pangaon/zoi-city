@@ -1,0 +1,709 @@
+{
+  "date": "2026-10-02",
+  "production": "csebihpaychdkanjjsmz",
+  "definitions": [
+    {
+      "signature": "kds_tickets_list(uuid,text)",
+      "definition_md5": "0a25f6cd62c2cdcf64a3fa660aa44a63",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "kds_ticket_advance(uuid,uuid,text)",
+      "definition_md5": "46b60f5be58a8d60b2bcad7da9297e68",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "menu_item_save(uuid,uuid,text,text,integer,text,boolean)",
+      "definition_md5": "f7e09eb506daaa82420906a154f2d711",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.suite_lock_session()",
+      "definition_md5": "04328c4d98e5f5671777a88435870c58",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.workspace_locked_role(uuid)",
+      "definition_md5": "d335c58b5e4a8c5d53155eaa93b605b9",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    }
+  ],
+  "tables": [
+    {
+      "schema": "public",
+      "name": "event_venues",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "event_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "blueprint_url",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "scale_meters_per_px",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "dimensions_w",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "dimensions_d",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        },
+        {
+          "name": "workspace_id",
+          "type": "uuid",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (workspace_id) REFERENCES zoi.workspaces(id) ON DELETE CASCADE"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "venue_tables_zones",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "venue_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "zone_type",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "capacity",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "pos_x",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "pos_y",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "pos_z",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "shape",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "sponsor_name",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "sponsor_logo_url",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "sponsor_tier",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "sponsor_pledge_amount",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "qr_slug",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "UNIQUE (qr_slug)",
+        "FOREIGN KEY (venue_id) REFERENCES event_venues(id) ON DELETE CASCADE"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "table_tabs",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "event_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "table_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "total_amount",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "paid_amount",
+          "type": "numeric",
+          "not_null": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (table_id) REFERENCES venue_tables_zones(id)"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "table_members",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "tab_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "user_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "guest_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "avatar_url",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "is_host",
+          "type": "boolean",
+          "not_null": false
+        },
+        {
+          "name": "joined_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (tab_id) REFERENCES table_tabs(id) ON DELETE CASCADE",
+        "FOREIGN KEY (user_id) REFERENCES auth.users(id)"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "event_orders",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "event_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "tab_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "table_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "member_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "customer_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "customer_phone",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "total_amount",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "payment_status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "fulfillment_status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "target_station",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "notes",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "FOREIGN KEY (member_id) REFERENCES table_members(id)",
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (tab_id) REFERENCES table_tabs(id) ON DELETE SET NULL",
+        "FOREIGN KEY (table_id) REFERENCES venue_tables_zones(id)"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "event_order_items",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "order_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "item_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "unit_price",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "special_instructions",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "FOREIGN KEY (order_id) REFERENCES event_orders(id) ON DELETE CASCADE",
+        "PRIMARY KEY (id)"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "tab_payments",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "tab_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "member_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "amount",
+          "type": "numeric",
+          "not_null": true
+        },
+        {
+          "name": "payment_method",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "payment_status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "collected_by_staff_id",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "FOREIGN KEY (collected_by_staff_id) REFERENCES auth.users(id)",
+        "FOREIGN KEY (member_id) REFERENCES table_members(id)",
+        "PRIMARY KEY (id)",
+        "FOREIGN KEY (tab_id) REFERENCES table_tabs(id) ON DELETE CASCADE"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "public",
+      "name": "menu_items",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "workspace_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "not_null": false
+        },
+        {
+          "name": "price_cents",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "station",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "is_available",
+          "type": "boolean",
+          "not_null": true
+        },
+        {
+          "name": "sort_order",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": false
+        }
+      ],
+      "constraints": [
+        "PRIMARY KEY (id)",
+        "CHECK ((price_cents >= 0))",
+        "FOREIGN KEY (workspace_id) REFERENCES zoi.workspaces(id) ON DELETE CASCADE"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "zoi",
+      "name": "event_host_allocations",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "event_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "table_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "workspace_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "host_profile_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "quota",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "pricing_version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "price_per_guest_cents",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "currency",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        }
+      ],
+      "constraints": [
+        "FOREIGN KEY (event_id) REFERENCES zoi.event_table_settings(event_id)",
+        "FOREIGN KEY (host_profile_id) REFERENCES zoi.user_profiles(id)",
+        "PRIMARY KEY (id)",
+        "CHECK (((quota >= 1) AND (quota <= 100)))",
+        "CHECK ((status = ANY (ARRAY['active'::text, 'released'::text])))",
+        "FOREIGN KEY (table_id) REFERENCES venue_tables_zones(id)",
+        "FOREIGN KEY (workspace_id) REFERENCES zoi.workspaces(id)"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    },
+    {
+      "schema": "zoi",
+      "name": "event_host_guests",
+      "relrowsecurity": true,
+      "estimated_rows": -1,
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "event_allocation_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "label",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "quantity",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "token_hash",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "claimed_by",
+          "type": "uuid",
+          "not_null": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true
+        }
+      ],
+      "constraints": [
+        "FOREIGN KEY (claimed_by) REFERENCES zoi.user_profiles(id)",
+        "FOREIGN KEY (event_allocation_id) REFERENCES zoi.event_host_allocations(id)",
+        "PRIMARY KEY (id)",
+        "CHECK (((quantity >= 1) AND (quantity <= 100)))",
+        "CHECK ((status = ANY (ARRAY['invited'::text, 'accepted'::text, 'revoked'::text])))",
+        "UNIQUE (token_hash)"
+      ],
+      "anon_access": false,
+      "authenticated_access": false
+    }
+  ]
+}
