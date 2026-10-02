@@ -1,0 +1,7 @@
+# Shared editor label association — root independent review, 2026-10-02
+
+Root did not implement this runtime. Reviewed specialist candidate _vertical-ui.js SHA-25672f30b66b91fa356295b2f02c4d74b6273274279188a702a57aecca044450b5a. Every top-level native field now receives a unique control ID and label.for; composites have a named group and tag entry names. Existing serialization, schema and writer remain intact. Source review confirmed associations are established before appending the control; monotonically increasing IDs distinguish simultaneous editor mounts.
+
+Root independently ran the actual Business home fixture at390/1440: source suggestions stay unpromoted on unrelated save, accepted room reorder retains IDs and exact source links, explicit clear[] survives reload, sparse owner room and booking link save/reload, label click focuses the booking input and Tab leaves it. Additional populated/sparse generic editors and unique IDs pass. No overflow or page errors.19 domain/schema/model tests also pass. These are controlled receipts/network and an actual mounted editor, not real hotel/provider transactions or all-family acceptance.
+
+Root adds only the Social loader cache version. Specialist source/journey audit is hospitality-owner-journey-followthrough-2026-10-02.md. Exact staged tree ac861bb2d411e65666858c88a568f085dc7dbc5c passed 273 node:test files, two standalone suites, JS/HTML checks and the actual owner browser journeys at 390/1440. Production verification remains pending.

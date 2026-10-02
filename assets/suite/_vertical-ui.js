@@ -18,6 +18,7 @@
 (function (global) {
   'use strict';
 
+  var fieldSequence = 0;
   var F = null;   // resolved at render time so load order does not matter
 
   function esc(s) {
@@ -276,6 +277,10 @@
       else if (f.type === F.T.REPEAT) { ctl = repeatControl(f, value); }
       else if (f.type === F.T.SELECT) { ctl = selectControl(f, value); }
       else { ctl = input(f.type, value, f.ph); if (f.max) ctl.maxLength = f.max; }
+      var controlId='zoi-vf-'+(++fieldSequence);
+      lab.id=controlId+'-label';
+      if(ctl.matches('input,select,textarea')){ctl.id=controlId;lab.htmlFor=controlId;}
+      else{ctl.setAttribute('role','group');ctl.setAttribute('aria-labelledby',lab.id);if(f.type===F.T.TAGS){var tagInput=ctl.querySelector('input');if(tagInput)tagInput.setAttribute('aria-label','Add '+f.label.toLowerCase());}}
       box.appendChild(ctl);
       if(f.k==='menu'){
         var menuPreview=el('details','vf-menu-preview'),menuSummary=el('summary',null,'Menu preview (not saved)'),menuBody=el('div');menuPreview.appendChild(menuSummary);menuPreview.appendChild(menuBody);box.appendChild(menuPreview);
