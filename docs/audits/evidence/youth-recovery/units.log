@@ -1,0 +1,22 @@
+✔ real auth event immediately clears private DOM and permanently fences old callbacks (2.094845ms)
+✔ workspace is checked before writes even before polling (0.320969ms)
+✔ late read cannot return old records after account change; role denial clears old UI (4.219416ms)
+✔ pending marker persists scope/nonce without sensitive fields and blocks a new nonce after remount (1.321243ms)
+✔ wrong workspace and unavailable persistence prevent writes; only matching receipt clears marker (0.433978ms)
+✔ only a recognized complete server refusal resolves a marker; network text or unknown HTTP stays uncertain (0.281695ms)
+✔ JWT-only identity works; contradictory or malformed token identity fails closed (0.35947ms)
+✔ same-actor token refresh preserves private scope; contradictory JWT clears it before writes (0.548162ms)
+✔ capability requires exact actor/internal guardian identity and numeric installed version (1.027376ms)
+✔ lost child save retains only identifiers, survives remount and checks same request (2.459695ms)
+✔ absent capability blocks mutation and startup recovery but preserves marker (0.377774ms)
+✔ known receipt clears before optional caller refresh and wrong nested child stays blocked (0.6864ms)
+✔ legacy marker can resolve scoped saved receipt without persisting private retry payload (0.271476ms)
+✔ scope mappings never include guardian consent details (0.819988ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73.619198

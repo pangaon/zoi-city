@@ -1,0 +1,8 @@
+import{youthCapability}from'../../assets/organizations/youth-recovery.mjs';
+export{createYouthRecovery,youthReaderIdentity}from'../../assets/organizations/youth-recovery.mjs';
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const methods=new Set(['youth_catalog','youth_family','youth_operator','youth_child_save','youth_program_save','youth_enrol','youth_registration_decide','youth_withdraw','youth_staff_set','youth_class_link','youth_attendance_set','youth_operation_request']);
+type Client={session:{user:{id:string}}|null;token:()=>Promise<string>;request:(path:string,args:unknown,token?:string)=>Promise<any>};
+export function youthDenied(e:any){return[401,403].includes(Number(e?.status||e?.statusCode))||e?.code==='42501'||/not_authorized|suite_session_unavailable|sign_in_required|no_access_to_workspace/.test(String(e?.message||''));}
+export async function youthRpc(client:Client,actor:string|undefined,current:()=>boolean,name:string,args:Record<string,unknown>){const check=()=>{if(!current()||client.session?.user.id!==actor)throw Error('Your account or programme workspace changed.');};check();if(!methods.has(name))throw Error('Unsupported programme request.');let token;if(actor){if(!UUID.test(actor))throw Error('Sign in to use these private tools.');token=await client.token();check();}else if(name!=='youth_catalog')throw Error('Sign in to use these private tools.');const value=await client.request('/rest/v1/rpc/'+name,args,token);check();return value;}
+export function youthNativeCapability(value:any,actor:string,workspace:string|null=null){return youthCapability(value,actor,workspace);}

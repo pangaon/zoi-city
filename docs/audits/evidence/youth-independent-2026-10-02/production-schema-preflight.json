@@ -1,0 +1,367 @@
+{
+  "ledger": [
+    {
+      "name": "guardian_youth_programmes",
+      "version": "20260930073344"
+    }
+  ],
+  "tables": [
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "youth_attendance",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "registration_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "event_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "marked_by",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        "FOREIGN KEY (event_id) REFERENCES zoi.org_calendar_events(id)",
+        "FOREIGN KEY (marked_by) REFERENCES zoi.user_profiles(id)",
+        "PRIMARY KEY (id)",
+        "UNIQUE (registration_id, event_id)",
+        "FOREIGN KEY (registration_id) REFERENCES zoi.youth_registrations(id)",
+        "CHECK ((status = ANY (ARRAY['present'::text, 'absent'::text, 'excused'::text])))"
+      ]
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "youth_children",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "guardian_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "archived",
+          "type": "boolean",
+          "not_null": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        "FOREIGN KEY (guardian_id) REFERENCES zoi.user_profiles(id)",
+        "CHECK (((length(name) >= 1) AND (length(name) <= 80)))",
+        "PRIMARY KEY (id)"
+      ]
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "youth_programs",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "workspace_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "listing_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "title",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "description",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "min_age",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "max_age",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "capacity",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "terms",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "policy_version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        "CHECK (((capacity >= 1) AND (capacity <= 500)))",
+        "CHECK (((max_age >= min_age) AND (max_age <= 17)))",
+        "CHECK ((length(description) <= 5000))",
+        "FOREIGN KEY (listing_id) REFERENCES zoi.listings(id)",
+        "CHECK (((min_age >= 0) AND (min_age <= 17)))",
+        "PRIMARY KEY (id)",
+        "CHECK ((status = ANY (ARRAY['draft'::text, 'published'::text, 'paused'::text, 'archived'::text])))",
+        "CHECK (((length(terms) >= 20) AND (length(terms) <= 10000)))",
+        "CHECK (((length(title) >= 1) AND (length(title) <= 200)))",
+        "FOREIGN KEY (workspace_id) REFERENCES zoi.workspaces(id)"
+      ]
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "youth_registrations",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "program_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "child_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "guardian_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "child_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "program_title",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "declared_age",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "guardian_name",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "contact_email",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "contact_phone",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "not_null": true
+        },
+        {
+          "name": "policy_version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "version",
+          "type": "integer",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        },
+        {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        "FOREIGN KEY (child_id) REFERENCES zoi.youth_children(id)",
+        "CHECK ((length(contact_email) <= 160))",
+        "CHECK ((length(contact_phone) <= 120))",
+        "CHECK (((declared_age >= 0) AND (declared_age <= 17)))",
+        "FOREIGN KEY (guardian_id) REFERENCES zoi.user_profiles(id)",
+        "CHECK (((length(guardian_name) >= 1) AND (length(guardian_name) <= 120)))",
+        "PRIMARY KEY (id)",
+        "UNIQUE (program_id, child_id)",
+        "FOREIGN KEY (program_id) REFERENCES zoi.youth_programs(id)",
+        "CHECK ((status = ANY (ARRAY['pending'::text, 'approved'::text, 'declined'::text, 'withdrawn'::text, 'removed'::text])))"
+      ]
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "youth_requests",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "actor_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "request_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "payload",
+          "type": "jsonb",
+          "not_null": true
+        },
+        {
+          "name": "receipt",
+          "type": "jsonb",
+          "not_null": true
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "not_null": true
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        "FOREIGN KEY (actor_id) REFERENCES zoi.user_profiles(id)",
+        "PRIMARY KEY (actor_id, request_id)"
+      ]
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres}",
+      "rls": true,
+      "name": "youth_staff",
+      "owner": "postgres",
+      "columns": [
+        {
+          "name": "program_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "profile_id",
+          "type": "uuid",
+          "not_null": true
+        },
+        {
+          "name": "enabled",
+          "type": "boolean",
+          "not_null": true
+        }
+      ],
+      "force_rls": false,
+      "constraints": [
+        "PRIMARY KEY (program_id, profile_id)",
+        "FOREIGN KEY (profile_id) REFERENCES zoi.user_profiles(id)",
+        "FOREIGN KEY (program_id) REFERENCES zoi.youth_programs(id)"
+      ]
+    }
+  ],
+  "existing_receipts": 0,
+  "existing_recovery_functions": 0
+}

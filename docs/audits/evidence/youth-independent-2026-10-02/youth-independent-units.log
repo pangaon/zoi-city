@@ -1,0 +1,28 @@
+✔ real auth event immediately clears private DOM and permanently fences old callbacks (3.141857ms)
+✔ workspace is checked before writes even before polling (0.340695ms)
+✔ late read cannot return old records after account change; role denial clears old UI (1.714186ms)
+✔ pending marker persists scope/nonce without sensitive fields and blocks a new nonce after remount (1.763006ms)
+✔ wrong workspace and unavailable persistence prevent writes; only matching receipt clears marker (0.560044ms)
+✔ only a recognized complete server refusal resolves a marker; network text or unknown HTTP stays uncertain (0.328502ms)
+✔ JWT-only identity works; contradictory or malformed token identity fails closed (0.444949ms)
+✔ same-actor token refresh preserves private scope; contradictory JWT clears it before writes (0.653468ms)
+✔ youth_family does not send after workspace changes during refresh (3.200897ms)
+✔ youth_program_save does not send after workspace changes during refresh (0.485295ms)
+✔ organization_groups_list does not send after workspace changes during refresh (0.354701ms)
+✔ detached surface cannot send its queued request (1.268755ms)
+✔ unchanged scope preserves exact request and does not requeue authentication (1.289596ms)
+✔ failed refresh clears private state and sends nothing (0.426295ms)
+✔ capability requires exact actor/internal guardian identity and numeric installed version (1.254048ms)
+✔ lost child save retains only identifiers, survives remount and checks same request (2.787566ms)
+✔ absent capability blocks mutation and startup recovery but preserves marker (0.510782ms)
+✔ known receipt clears before optional caller refresh and wrong nested child stays blocked (0.926858ms)
+✔ legacy marker can resolve scoped saved receipt without persisting private retry payload (0.404174ms)
+✔ scope mappings never include guardian consent details (0.82095ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 89.581477

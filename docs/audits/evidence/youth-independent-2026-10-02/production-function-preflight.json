@@ -1,0 +1,212 @@
+[
+  {
+    "schema": "public",
+    "proname": "youth_operator",
+    "args": "p_workspace uuid, p_program uuid, p_offset integer",
+    "body_md5": "ca8185c920ffe0211501f00fbb09c890",
+    "definition_md5": "b7a8e03d18a0f047bcd7ff19881d2e7a",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_child_save",
+    "args": "p_id uuid, p_expected_version integer, p_request uuid, p_name text, p_archived boolean",
+    "body_md5": "121025dd4fc2d4c5873d54503359ff26",
+    "definition_md5": "e802521502f6596b8e7147d310e6be2c",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_program_save",
+    "args": "p_workspace uuid, p_id uuid, p_expected_version integer, p_request uuid, p_data jsonb",
+    "body_md5": "19741893b245b18d8d73c1fab641c985",
+    "definition_md5": "ee4218247b100345798b89fa261937df",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_enrol",
+    "args": "p_program uuid, p_child uuid, p_expected_version integer, p_program_version integer, p_request uuid, p_data jsonb",
+    "body_md5": "7ed6443a4e98fad7928352b0a101d83b",
+    "definition_md5": "cbecd1fdfcaf48a8a3d9dfc3d17efa31",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_registration_decide",
+    "args": "p_workspace uuid, p_registration uuid, p_expected_version integer, p_request uuid, p_status text",
+    "body_md5": "2d43c7afc5f040dc91902e020c8eb07d",
+    "definition_md5": "497089ea4054f9b6087ea4f3c49bfda2",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_withdraw",
+    "args": "p_registration uuid, p_expected_version integer, p_request uuid",
+    "body_md5": "e8789c1c748c374f03e5e33430f226b4",
+    "definition_md5": "a9c7cc1bf830894ad700af5991f66777",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_staff_set",
+    "args": "p_workspace uuid, p_program uuid, p_profile uuid, p_enabled boolean, p_request uuid",
+    "body_md5": "95899286b2113345c29cb25b89ccaf23",
+    "definition_md5": "d64e9e7299671e8e6d37d54f7f98cc8e",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_class_link",
+    "args": "p_workspace uuid, p_program uuid, p_event uuid, p_enabled boolean, p_request uuid",
+    "body_md5": "7cb4d83c4ae0e2c991b36231f60b4ea6",
+    "definition_md5": "23544a4332f07716fa6d0ecfda179e2a",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_attendance_set",
+    "args": "p_workspace uuid, p_registration uuid, p_event uuid, p_expected_version integer, p_request uuid, p_status text",
+    "body_md5": "4b103a00e88f6998a0a605b2f7ef799e",
+    "definition_md5": "fc06807c6b158ae39e228f0f50d53b5b",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "public",
+    "proname": "youth_family",
+    "args": "",
+    "body_md5": "fc11c2abb4c9aac02995804a9d362356",
+    "definition_md5": "cad3cb2cd969b8d927ac4631ce95bf15",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": true
+  },
+  {
+    "schema": "zoi",
+    "proname": "workspace_locked_role",
+    "args": "p_workspace uuid",
+    "body_md5": "0c25b1e04d01e5866b58d009fa1f50b9",
+    "definition_md5": "d335c58b5e4a8c5d53155eaa93b605b9",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  {
+    "schema": "zoi",
+    "proname": "suite_current_session",
+    "args": "",
+    "body_md5": "70cb927f126f251f229c450bf9f792e8",
+    "definition_md5": "8ceef7877aeb972d09d8694f6c85dff7",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  {
+    "schema": "zoi",
+    "proname": "suite_lock_session",
+    "args": "",
+    "body_md5": "ab5f8703ced5f96c0ac69257281ffe00",
+    "definition_md5": "04328c4d98e5f5671777a88435870c58",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  {
+    "schema": "zoi",
+    "proname": "org_actor",
+    "args": "",
+    "body_md5": "43b65c8982e13d0601f133359266bee1",
+    "definition_md5": "515ab7320037e90481376431822a6e37",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres}",
+    "anon_execute": false,
+    "authenticated_execute": false
+  }
+]

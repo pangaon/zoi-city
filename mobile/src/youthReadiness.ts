@@ -1,4 +1,3 @@
-/** Backend exists; native unresolved-write persistence and device lifecycle are not accepted.
- * Keep private forms unmounted. Never infer readiness from RPC presence alone.
- */
-export function nativeYouthReady():boolean{return false;}
+import{youthCapability}from'../../assets/organizations/youth-recovery.mjs';
+/** Server-installed current identity/scope capability; absence stays read-only. */
+export function nativeYouthReady(value?:unknown,actor='',workspace:string|null=null):boolean{return youthCapability(value,actor,workspace);}

@@ -1,0 +1,479 @@
+{
+  "ledger": [
+    {
+      "name": "youth_enrollment_recovery",
+      "version": "20261002224806"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "",
+      "name": "youth_actor_lock",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "0e06b5aacb9adae1284ba595243d94ff",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_registration uuid, p_event uuid, p_expected_version integer, p_request uuid, p_status text",
+      "name": "youth_attendance_set",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "1f8349e12386f1e978913ccd22466b4b",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_registration uuid, p_event uuid, p_expected_version integer, p_request uuid, p_status text",
+      "name": "youth_attendance_set_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "4b103a00e88f6998a0a605b2f7ef799e",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_program uuid, p_manage boolean",
+      "name": "youth_authorized",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "11bd659f6b001168664c981d51d0347a",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "anon": true,
+      "args": "p_listing uuid",
+      "name": "youth_catalog",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "15943c01b1a781dead411f27aab962f8",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_id uuid, p_expected_version integer, p_request uuid, p_name text, p_archived boolean",
+      "name": "youth_child_save",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "0687d69c2eb3e025df711a25ab34386b",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_id uuid, p_expected_version integer, p_request uuid, p_name text, p_archived boolean",
+      "name": "youth_child_save_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "121025dd4fc2d4c5873d54503359ff26",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_program uuid, p_event uuid, p_enabled boolean, p_request uuid",
+      "name": "youth_class_link",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "827e77d8e4af91b27529195171775f91",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_program uuid, p_event uuid, p_enabled boolean, p_request uuid",
+      "name": "youth_class_link_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "7cb4d83c4ae0e2c991b36231f60b4ea6",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_program uuid, p_child uuid, p_expected_version integer, p_program_version integer, p_request uuid, p_data jsonb",
+      "name": "youth_enrol",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "ab0da0aed9b46b303cf87c75de839bfb",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_program uuid, p_child uuid, p_expected_version integer, p_program_version integer, p_request uuid, p_data jsonb",
+      "name": "youth_enrol_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "7ed6443a4e98fad7928352b0a101d83b",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "",
+      "name": "youth_family",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "f06b533517bf1a38520819f657416be7",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "",
+      "name": "youth_family_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "fc11c2abb4c9aac02995804a9d362356",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_operation text, p_scope jsonb, p_recovery boolean",
+      "name": "youth_operation_authorize",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "036db500ead7a7f55756feaba8c76a02",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_operation text, p_request uuid, p_scope jsonb",
+      "name": "youth_operation_begin",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "c1b1e55bf3f5f7e50d286b10651e93ae",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_request uuid, p_operation text, p_scope jsonb, p_state text, p_value jsonb",
+      "name": "youth_operation_envelope",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "eca27305040b1b820f29c84bfe32ede6",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_request uuid, p_operation text, p_scope jsonb, p_cancel_if_missing boolean, p_legacy_workspace uuid",
+      "name": "youth_operation_request",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "2194451dc3d886ba7b838d91aea8659d",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_program uuid, p_offset integer",
+      "name": "youth_operator",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "a47ecfa05c39dea56ab633e0270e7a24",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_program uuid, p_offset integer",
+      "name": "youth_operator_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "ca8185c920ffe0211501f00fbb09c890",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_payload jsonb",
+      "name": "youth_payload_operation",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "c4d64fa5f5dfda505be7b4c0f14b148c",
+      "authenticated": false,
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_id uuid, p_expected_version integer, p_request uuid, p_data jsonb",
+      "name": "youth_program_save",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "f56bf14dd37799d04e9b7b44167a0e07",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_id uuid, p_expected_version integer, p_request uuid, p_data jsonb",
+      "name": "youth_program_save_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "19741893b245b18d8d73c1fab641c985",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_actor uuid, p_request uuid, p_payload jsonb, p_receipt jsonb, p_program uuid, p_entity uuid, p_action text",
+      "name": "youth_receipt",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "3cd82b59c8b0dd6c578a7cdb70aab68a",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_registration uuid, p_expected_version integer, p_request uuid, p_status text",
+      "name": "youth_registration_decide",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "1895596a346fa7078542d324dce8da77",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_registration uuid, p_expected_version integer, p_request uuid, p_status text",
+      "name": "youth_registration_decide_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "2d43c7afc5f040dc91902e020c8eb07d",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_operation text, p_payload jsonb",
+      "name": "youth_request_scope",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "b7306b1ffbedb1851d07bd33acb61640",
+      "authenticated": false,
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "anon": false,
+      "args": "p_actor uuid, p_request uuid, p_payload jsonb",
+      "name": "youth_retry",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "dd5e31f258ec4a4b0b6ccdd5e6673c98",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_program uuid, p_profile uuid, p_enabled boolean, p_request uuid",
+      "name": "youth_staff_set",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "6796fa09cfae511903d63d12c256a165",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_workspace uuid, p_program uuid, p_profile uuid, p_enabled boolean, p_request uuid",
+      "name": "youth_staff_set_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "95899286b2113345c29cb25b89ccaf23",
+      "authenticated": false,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "anon": false,
+      "args": "p_registration uuid, p_expected_version integer, p_request uuid",
+      "name": "youth_withdraw",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "c1c91df19a02b957058e2049897c73da",
+      "authenticated": true,
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "anon": false,
+      "args": "p_registration uuid, p_expected_version integer, p_request uuid",
+      "name": "youth_withdraw_retained",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "e8789c1c748c374f03e5e33430f226b4",
+      "authenticated": false,
+      "security_definer": true
+    }
+  ],
+  "private_tables": [
+    {
+      "rls": true,
+      "name": "youth_attendance",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_audit",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_children",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_classes",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_consents",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_programs",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_registrations",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_requests",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    },
+    {
+      "rls": true,
+      "name": "youth_staff",
+      "anon_read": false,
+      "authenticated_read": false,
+      "authenticated_write": false
+    }
+  ],
+  "existing_receipts": 0
+}
