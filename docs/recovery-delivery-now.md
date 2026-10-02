@@ -1,19 +1,18 @@
 # What is being delivered now
 
-Updated 2 October 2026. This view summarizes the full [delivery board](recovery-delivery-board.json); the original [scope](recovery-scope.json) remains authoritative.
+Updated 2 October 2026. The full [delivery board](recovery-delivery-board.json) retains the original [scope](recovery-scope.json).
 
 | Workstream | Concrete outcome | Current state |
 | --- | --- | --- |
-| Company administration | Company → linked project → assigned task → private document versions → completion/readback | Full web workflow independently accepted locally; next release. Native company start is actively being extended. |
-| Programs & volunteers | Program → shift → signup → staff attendance, exact save recovery | Web/native and database candidate independently accepted locally. Source release and installed backend capability are separate gates. |
-| Concert/Parea operations | Host table quota → individual whole-ticket quantities → individual secure guest links and allowed payment choices | Existing roster source released earlier; real organizer inventory, payment/delivery setup and held service activation remain open. Next major suite work. |
-| Shared fixes and reviews | One lane handles repeated defects across affected families and verifies completed workflows | Food provider clears/promotions accepted for next release. Map, autocomplete and listing coverage backlog retained. |
-| Lead integration | Package accepted features, preserve concurrent work, pass checks, push main, verify deployed behavior | Latest productbfd15e4 is deployed; latestmain40c2d22 requests one backend restart. |
+| Company administration | Company → linked project → assigned task → private document versions → completion/readback | Web is on main and deployed in `415986b`. Native Company is independently accepted locally for the next release. |
+| Programs & volunteers | Program → shift → signup → staff attendance, with interrupted-save recovery | Web/native source deployed. Reviewed database upgrade installed as `20261002210511`; definitions and permissions verified. Real authenticated production transaction acceptance remains open. |
+| Concert/Parea operations | Table host quota → individual whole-ticket quantities → secure guest links → event-approved payment choices | Roster source deployed earlier. Current readiness and guest follow-through independently accepted locally; native preview/handoff independently accepted for this release. Real organizer inventory, settlement and delivery configuration remain separate gates. |
+| Family and organization enrollment | Guardian enrollment → staff approval → assigned instructor attendance → family status | Existing request recovery and disabled native forms are the concrete blockers now being implemented by the larger organization lane. |
+| Shared fixes and reviews | Repeated defects across affected families and independent workflow acceptance | Food owner clears/promotions deployed in `415986b`. Search history isolation repair independently accepted by lead. Map, autocomplete and listing coverage backlog retained. |
+| Lead integration | Exact release checks, main push, deployed artifacts and usable entry checks | `415986b` CI and bounded quality green; deployment READY; 11 production assets match main. Signed-out Operations/Organizations entries verified at 390/1440. |
 
-The artist owner catalogue, promoter show-specific sales updates and native assigned-work source reached main inbfd15e4. Those claims cover deployed code and controlled completed journeys, not verified real provider checkout or signed mobile distribution.
+The next coherent packet combines Parea web readiness, native Company, native Parea preview/browser handoff and shared search privacy. All are independently accepted; exact release checks are passing. Source/build verification does not mean signed iOS/Android distribution, and controlled fixtures do not prove a real payment, message delivery or customer transaction.
 
-After a current site-wide outage, one restart was accepted. Anna Vissi and OPA canonical pages subsequently returned200 in858/541ms; current function reads also succeeded. This is recovery evidence for those reads, not sustained acceptance of every profile.
+Volunteer operations means organization programs, volunteer shifts, signups and staff attendance. Concert table hosts and their Parea tickets are a separate workflow.
 
-Specialist workers briefly returned usage-limit errors after freezing the accepted packets. On the user’s instruction they were retried and all three handles resumed; the lead continues integration. The intended four-lane arrangement is one repair/review specialist, two larger-suite specialists and the integration lead. No incomplete feature is reclassified as complete because a worker stops.
-
-Each release records three distinct states: on main; deployed; customer journey verified. New reported defects remain part of the original backlog instead of replacing it. The next packet combines Company, Volunteer and shared food-owner work rather than publishing isolated minor fixes.
+Four lanes remain assigned: one consolidated repair/review specialist, two larger workflow specialists, and the integration lead. Each release distinguishes on main, deployed, and customer journey verified. No current worker usage limit is observed. All 30 original scope areas and nested requirements remain tracked.

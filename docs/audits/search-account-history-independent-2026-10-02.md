@@ -1,0 +1,11 @@
+# Independent shared-search account history review
+
+Root reviewed the repair produced by the consolidated repair specialist. Runtime SHA256 `09886e3712f8ccf5e9320bb58ac1cf92820044fd253fcd64e4cc4b785fcabadf`.
+
+The previous global recent-search key could expose one signed-in person's search history to another person using the same browser. The repair removes ambiguous legacy history, namespaces saved queries by the current valid account, and retires the open palette and pending results on account/session changes. Local stored identity only controls personalization; it is not evidence of server authorization. Anonymous, expired or contradictory identity keeps public search available without persisting history. Same-session token rotation keeps the current account's history.
+
+Root reran the actual account-isolation fixture at 390/1440 and the existing search-palette regression. Root additionally wrote and exercised independent replacement-session and expiry adversaries: without an auth notification, clicking an old session's result does not navigate or save its query; expiration while results are open blocks Enter, clears the input/results and writes no history. Both widths passed. Logs: `/tmp/zoi-search-history-root.log`, `/tmp/zoi-search-palette-root.log`; new evidence `/tmp/search-session-boundary-independent.json`.
+
+Review checks the actual classic-script callbacks before input, row click, keyboard navigation and response rendering. Sequence invalidation prevents delayed results from reappearing after retirement. Scope-specific history returns only when its own account becomes current again. This is browser-local history isolation; it does not claim encryption or a server-managed preference service.
+
+Affected consumers include the shared homepage, Explore, Social, Tickets, application tools and canonical server-rendered entity pages. Root updates their script cache references together; staged-release and production artifact checks remain separate from this local acceptance. Event host page cache edits are staged from HEAD so held table-service work is preserved and excluded.

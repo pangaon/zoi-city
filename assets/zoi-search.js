@@ -17,7 +17,35 @@
 
   var BASE = 'https://csebihpaychdkanjjsmz.supabase.co';
   var KEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
-  var RECENT_KEY = 'zoi_recent_searches';
+  var RECENT_KEY = 'zoi_recent_searches_v2:';
+  var UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  // History is local personalization, never evidence of server authorization.
+  function principal(raw) {
+    try {
+      var a = JSON.parse(raw || 'null');
+      if (!a || !UUID.test(a.user_id || '') || typeof a.access_token !== 'string' || !a.access_token || (!Number.isFinite(Number(a.expires_at)) || Number(a.expires_at) * 1000 <= Date.now())) return '';
+      var actor = a.user_id.toLowerCase(), claims = {};
+      try { claims = JSON.parse(global.atob(a.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))) || {}; } catch (_) {}
+      if (claims.sub && (!UUID.test(claims.sub) || claims.sub.toLowerCase() !== actor)) return '';
+      return actor + (UUID.test(claims.session_id || '') ? ':' + claims.session_id.toLowerCase() : '');
+    } catch (_) { return ''; }
+  }
+  function currentPrincipal() { try { return principal(global.localStorage.getItem('zoi_auth')); } catch (_) { return ''; } }
+  var historyScope = currentPrincipal();
+  try { global.localStorage.removeItem('zoi_recent_searches'); } catch (_) {}
+  function retireHistory() {
+    invalidateSearch(); rows = []; lastQ = '';
+    if (input) input.value = '';
+    if (list) list.replaceChildren();
+    if (foot) foot.textContent = '';
+    close();
+  }
+  function checkHistory(event) {
+    var next = currentPrincipal();
+    var transition = event && event.type === 'storage' && (event.key === null || event.key === 'zoi_auth' && principal(event.oldValue) !== principal(event.newValue));
+    if (next !== historyScope || transition) { historyScope = next; retireHistory(); return false; }
+    return true;
+  }
   var STYLE_ID = 'zk-styles';
 
   /* Jumps that are always available, so the palette is useful before you type. */
@@ -147,16 +175,17 @@
 
   /* ---------- recent searches ---------- */
   function recents() {
-    try { return (JSON.parse(global.localStorage.getItem(RECENT_KEY) || '[]') || []).slice(0, 5); }
+    try { if (!checkHistory() || !historyScope) return []; var value = JSON.parse(global.localStorage.getItem(RECENT_KEY + historyScope.split(':')[0]) || '[]'); return Array.isArray(value) ? value.filter(function(q) { return typeof q === 'string' && q.trim().length >= 2 && q.length <= 200; }).slice(0, 5) : []; }
     catch (e) { return []; }
   }
   function remember(q) {
-    q = String(q || '').trim();
+    if (!checkHistory() || !historyScope) return;
+    q = String(q || '').trim().slice(0, 200);
     if (q.length < 2) return;
     try {
       var list = recents().filter(function (x) { return x.toLowerCase() !== q.toLowerCase(); });
       list.unshift(q);
-      global.localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0, 5)));
+      global.localStorage.setItem(RECENT_KEY + historyScope.split(':')[0], JSON.stringify(list.slice(0, 5)));
     } catch (e) {}
   }
 
@@ -198,6 +227,7 @@
   }
 
   function show() {
+    checkHistory();
     if (!scrim) build();
     invalidateSearch();
     open = true;
@@ -268,6 +298,7 @@
       el.addEventListener('mouseenter', function () { sel = +el.getAttribute('data-i'); paint(); });
       el.addEventListener('click', function (ev) {
         var r = rows[+el.getAttribute('data-i')];
+        if (!checkHistory()) { ev.preventDefault(); return; }
         if (r && r.kind === 'query') { ev.preventDefault(); input.value = r.q; onType(); }
         else if (r) { remember(lastQ); }
       });
@@ -288,7 +319,7 @@
     if (request) { request.abort(); request = null; }
   }
   function unavailable(q, mine) {
-    if (mine !== seq || !open) return;
+    if (!checkHistory() || mine !== seq || !open) return;
     foot.textContent = 'search unavailable';
     render([{ group: 'Everywhere' }, {
       kind: 'link', href: '/explore?q=' + encodeURIComponent(q), ic: IC.search,
@@ -304,6 +335,7 @@
     status.appendChild(retry); list.insertBefore(status, list.firstChild);
   }
   function onType() {
+    if (!checkHistory()) return;
     var q = input.value.trim();
     lastQ = q;
     invalidateSearch();
@@ -316,7 +348,7 @@
   }
 
   function search(q, mine) {
-    if (mine !== seq || !open) return;
+    if (!checkHistory() || mine !== seq || !open) return;
     var controller = new AbortController(); request = controller;
     var timeout = global.setTimeout(function () { controller.abort(); }, 12000);
     global.fetch(BASE + '/rest/v1/rpc/explore_search', {
@@ -325,7 +357,7 @@
       body: JSON.stringify({ p_q: q, p_type: null, p_city: null, p_country: null, p_limit: 24, p_offset: 0 })
     }).then(function (r) { if (!r.ok) throw Error('search_unavailable'); return r.json(); })
       .then(function (data) {
-        if (mine !== seq || !open) return;             // a newer keystroke won
+        if (!checkHistory() || mine !== seq || !open) return;             // a newer keystroke won
         if (!Array.isArray(data)) throw Error('search_unavailable');
         var found = data.filter(function (row) { return row && typeof row.slug === 'string' && row.slug && typeof row.name === 'string' && row.name; });
         var items = [];
@@ -367,6 +399,7 @@
   }
 
   function onKey(e) {
+    if (!checkHistory()) { e.preventDefault(); return; }
     if (e.key === 'Escape') { e.preventDefault(); close(); return; }
     if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(sel + 1, rows.length - 1); paint(); return; }
     if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(sel - 1, 0); paint(); return; }
@@ -382,6 +415,7 @@
 
   /* ---------- wire up ---------- */
   function init() {
+    ['zoi:auth-change', 'zoi:authchange', 'storage', 'focus'].forEach(function(name) { global.addEventListener(name, checkHistory); });
     // ⌘K / Ctrl-K from anywhere, and "/" when not already typing
     doc.addEventListener('keydown', function (e) {
       var k = (e.key || '').toLowerCase();

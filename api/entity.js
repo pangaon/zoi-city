@@ -394,7 +394,7 @@ function socialIcon(k){
      +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'</nav>'
    +'</div></footer>'
    +'<script src="/assets/zoi-emblem.js"></script>'
-   +'<script src="/assets/zoi-search.js"></script>'
+   +'<script src="/assets/zoi-search.js?v=20261002-account-history"></script>'
    +'<script>(function(){var h=document.getElementById("epCover");if(!h)return;'
      +'var src=h.getAttribute("data-img");'
      // A remote logo that fails to load must not leave a blank frame: fall

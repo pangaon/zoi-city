@@ -1,0 +1,229 @@
+{
+  "project_id": "csebihpaychdkanjjsmz",
+  "migration_name": "volunteer_shift_operations",
+  "ledger_version": "20261002210511",
+  "commit": "415986bc5d7951f8d7f631aeb2c2a140407fcb74",
+  "migration_sha256": "0e4ca5b114919c71ae3f908b4497426197134ad1c984daec32daf2140054f21e",
+  "applied": true,
+  "functions": [
+    {
+      "name": "zoi.org_operation_authorize",
+      "expected": "19c0a0fcba4104926955acece7c5c36f",
+      "signature": "zoi.org_operation_authorize(uuid)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "zoi.org_shift_save_retained",
+      "expected": "ff74069f87d4068754f82d9b559da862",
+      "signature": "zoi.org_shift_save_retained(uuid,uuid,text,text,timestamp with time zone,timestamp with time zone,text,integer,text,uuid,integer)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "zoi.org_program_save_retained",
+      "expected": "d034d507336f3b43cfc632a3480a7fbf",
+      "signature": "zoi.org_program_save_retained(uuid,text,text,text,uuid,integer)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "zoi.org_registration_revision",
+      "expected": "854f20426c477171e91edae768bd0433",
+      "signature": "zoi.org_registration_revision()",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_programs_list",
+      "expected": "a01c23008c83041f0d7630c3257adca4",
+      "signature": "org_programs_list(uuid)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_signup_cancel",
+      "expected": "383b187f93ea38165b8e5c8ef0be0853",
+      "signature": "org_signup_cancel(uuid)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_signup",
+      "expected": "5cd0ca27c223ddf62ce45babdfa512b9",
+      "signature": "org_signup(uuid)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_roster",
+      "expected": "33df5f2ae3165869c823ea78671ecc98",
+      "signature": "org_roster(uuid,uuid)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_operation_save",
+      "expected": "e2f225f0bf876678172d6e0a01e2625b",
+      "signature": "org_operation_save(uuid,uuid,text,uuid,integer,jsonb)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_operation_request",
+      "expected": "d8cdc2929804004e0d565514477c2b8e",
+      "signature": "org_operation_request(uuid,uuid,text,uuid,boolean)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_shift_save",
+      "expected": "933d3b9b79785930773106b4a19c6919",
+      "signature": "org_shift_save(uuid,uuid,text,text,timestamp with time zone,timestamp with time zone,text,integer,text,uuid,integer)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "name": "public.org_program_save",
+      "expected": "3d7d02a0a125c285506894332313c348",
+      "signature": "org_program_save(uuid,text,text,text,uuid,integer)",
+      "source_matches": true,
+      "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ]
+    }
+  ],
+  "table_permissions": {
+    "tables": [
+      "org_programs",
+      "org_shifts",
+      "org_registrations",
+      "org_audit",
+      "org_operation_receipts"
+    ],
+    "rls_enabled": true,
+    "anon_select": false,
+    "authenticated_select": false,
+    "authenticated_insert": false,
+    "authenticated_update": false
+  },
+  "private_helpers_exposed": 0,
+  "public_functions_anon_exposed": 0,
+  "advisories": [
+    {
+      "name": "rls_enabled_no_policy",
+      "count": 252,
+      "level": "INFO",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "count": 17,
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable"
+    },
+    {
+      "name": "extension_in_public",
+      "count": 3,
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public"
+    },
+    {
+      "name": "anon_security_definer_function_executable",
+      "count": 177,
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "count": 441,
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "count": 1,
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+    }
+  ],
+  "targeted_advisories": [
+    {
+      "lint": "rls_enabled_no_policy",
+      "name": "org_operation_receipts",
+      "schema": "zoi",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "lint": "authenticated_security_definer_function_executable",
+      "name": "org_operation_request",
+      "schema": "public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "lint": "authenticated_security_definer_function_executable",
+      "name": "org_operation_save",
+      "schema": "public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "lint": "authenticated_security_definer_function_executable",
+      "name": "org_program_save",
+      "schema": "public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "lint": "authenticated_security_definer_function_executable",
+      "name": "org_programs_list",
+      "schema": "public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "lint": "authenticated_security_definer_function_executable",
+      "name": "org_roster",
+      "schema": "public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "lint": "authenticated_security_definer_function_executable",
+      "name": "org_shift_save",
+      "schema": "public",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    }
+  ],
+  "boundary": "Installed definitions, ACL, RLS and ledger verified. Real authenticated production signup/attendance transaction and signed native distribution unverified."
+}
