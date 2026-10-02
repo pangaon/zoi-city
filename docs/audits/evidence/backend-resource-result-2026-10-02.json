@@ -1,0 +1,102 @@
+{
+  "commit": "2317bb6c8c306c977b4bb75c8e708aef4e0a8760",
+  "run": 37039381048,
+  "conclusion": "failure",
+  "requests": [
+    {
+      "kind": "health",
+      "status": 400,
+      "milliseconds": 2072
+    },
+    {
+      "kind": "metrics",
+      "status": 500,
+      "milliseconds": 11519
+    },
+    {
+      "kind": "disk_utilization",
+      "status": 500,
+      "milliseconds": 1040
+    },
+    {
+      "kind": "disk_configuration",
+      "status": 200,
+      "milliseconds": 1561,
+      "attributes": {
+        "type": "gp3",
+        "iops": 3000,
+        "size_gb": 8,
+        "throughput_mibps": 125
+      }
+    }
+  ],
+  "database_query": false,
+  "restart": false,
+  "retry": false,
+  "schema_apply": false,
+  "log_window": [
+    "2026-10-02T17:10:00Z",
+    "2026-10-02T17:17:00Z"
+  ],
+  "log_groups": [
+    {
+      "application": "PostgREST14.5",
+      "severity": "ERROR",
+      "sql_state": "57014",
+      "events": 70
+    },
+    {
+      "application": "postgres_exporter",
+      "severity": "ERROR",
+      "sql_state": "57014",
+      "events": 3
+    }
+  ],
+  "root_cause": "unknown",
+  "boundary": "Configuration is not actual usage. No current safe schema activation or production transaction acceptance established.",
+  "narrow_activity_followthrough": {
+    "first_rows": [
+      {
+        "pid": 929,
+        "state": "active",
+        "active_seconds": 14,
+        "wait_event_type": null,
+        "wait_event": null,
+        "blocking_pids": []
+      },
+      {
+        "pid": 150707,
+        "state": "active",
+        "active_seconds": 1,
+        "wait_event_type": null,
+        "wait_event": null,
+        "blocking_pids": []
+      },
+      {
+        "pid": 150717,
+        "state": "active",
+        "active_seconds": 2,
+        "wait_event_type": null,
+        "wait_event": null,
+        "blocking_pids": []
+      }
+    ],
+    "following_operation_class_read": [],
+    "public_rechecks": [
+      {
+        "url": "https://www.zoi.city/event/giannis-ploutarchos-andromache-montreal-2027",
+        "status": 503,
+        "milliseconds": 3509,
+        "refreshing_profile": false,
+        "bytes": 606
+      },
+      {
+        "url": "https://www.zoi.city/business/signatureproductions-6aa61d",
+        "status": 503,
+        "milliseconds": 3554,
+        "refreshing_profile": false,
+        "bytes": 606
+      }
+    ]
+  }
+}

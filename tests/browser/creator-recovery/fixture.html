@@ -2,7 +2,7 @@
 import {mount} from '/assets/creator/studio.mjs';
 const A='11111111-1111-4111-8111-111111111111',W='55555555-5555-4555-8555-555555555555',ID='22222222-2222-4222-8222-222222222222';
 window.qa={actor:A,mode:'ok',label:'PRIVATE OLD CAMPAIGN',held:null,otp:null,writeMode:'lost-saved',writes:[],receipts:{},created:0};
-const C={auth:{load:()=>qa.actor?{user_id:qa.actor}:null,isSignedIn:()=>!!qa.actor,token:()=>qa.actor},otp:{send:()=>new Promise(resolve=>qa.otp=resolve),verify:()=>new Promise(resolve=>qa.otp=resolve)},api:{rpc:async(fn,args)=>{
+const C={auth:{ensureFresh:async()=>true,load:()=>qa.actor?{user_id:qa.actor}:null,isSignedIn:()=>!!qa.actor,token:()=>qa.actor},otp:{send:()=>new Promise(resolve=>qa.otp=resolve),verify:()=>new Promise(resolve=>qa.otp=resolve)},api:{rpc:async(fn,args)=>{
  if(fn==='creator_mutation_execute'){qa.writes.push(structuredClone(args));if(qa.mode==='deny')throw Object.assign(Error('creator_permission_denied'),{status:403});let r=qa.receipts[args.p_request];if(!r&&qa.writeMode!=='lost-missing'){r={ok:true,state:'saved',request_id:args.p_request,action:args.p_action,campaign_id:ID,entity_id:args.p_args.p_id||ID,version:1};qa.receipts[args.p_request]=r;qa.created++;}if(qa.writeMode.startsWith('lost'))throw Error('lost response');return r;}
  if(fn==='creator_request_status'){if(qa.mode==='deny')throw Object.assign(Error('creator_permission_denied'),{status:403});return qa.receipts[args.p_request]||{ok:true,state:args.p_cancel_if_missing?'cancelled':'missing',request_id:args.p_request};}
 

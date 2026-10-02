@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import{handoffTarget}from'../../assets/festival/handoff.mjs';
+const ws='92000000-0000-4000-8000-000000000002',event='92000000-0000-4000-8000-000000000003',app='92000000-0000-4000-8000-000000000005';const route=`https://www.zoi.city/social/festival?workspace=${ws}&sponsor_event=${event}&sponsor_application=${app}&sponsor_offset=0`;
+test('exact opaque application context and ordinary suite route',()=>{assert.deepEqual(handoffTarget(route),{workspace:ws,event,application:app,offset:0});assert.equal(handoffTarget('/social/festival'),null);});
+for(const key of['workspace','sponsor_event','sponsor_application','sponsor_offset'])test('duplicate '+key+' denied',()=>{const u=new URL(route);u.searchParams.append(key,u.searchParams.get(key));assert.throws(()=>handoffTarget(u));});
+for(const value of['','1e2','-1','1.5','01','100001'])test('noncanonical offset '+value+' denied',()=>{const u=new URL(route);u.searchParams.set('sponsor_offset',value);assert.throws(()=>handoffTarget(u));});
