@@ -21,10 +21,19 @@ export function logoContentStyle(bounds,url){
  if(![x,y,w,h,iw,ih].every(Number.isFinite)||x<0||y<0||w<1||h<1||iw>16000||ih>16000||x+w>iw||y+h>ih||w/iw<.1||h/ih<.1)return '';
  return `--logo-ratio:${w/h};--logo-width:${100*iw/w}%;--logo-height:${100*ih/h}%;--logo-left:${-100*x/w}%;--logo-top:${-100*y/h}%`;
 }
+// Actual owner editor aliases replace all older machine/provider representations.
+export function ownerFoodProfile(entity,profile={}){
+ const raw=entity?.profile||{},op=entity?.owner_content?.profile||{},out={...profile,...op};
+ const find=key=>Object.hasOwn(op,key)?op:Object.hasOwn(raw,key)?raw:null;
+ for(const key of ['order_url','reserve_url']){const layer=find(key);if(!layer)continue;const url=safeUrl(layer[key],Object.hasOwn(entity?.owner_content||{},'website')?entity.owner_content.website:entity?.website);out[key]=url;if(key==='order_url'){out.order=url?[{url,label:'Order with provider'}]:[];out.preorder=null;}else{out.reserve=url;out.booking_url=null;}}
+ const catering=find('catering');if(catering){out.catering=catering.catering;out.wholesale=catering.catering;}
+ const specials=find('specials');if(specials){out.specials=specials.specials;out.seasonal=(Array.isArray(specials.specials)?specials.specials:[]).map(v=>text(typeof v==='string'?v:[v?.name||v?.label,v?.when,v?.price,v?.note].map(text).filter(Boolean).join(' · '))).filter(Boolean);}
+ return out;
+}
 export function restaurantData(entity,profile={},media={}){
  const owner=entity.owner_content&&typeof entity.owner_content==='object'&&!Array.isArray(entity.owner_content)?entity.owner_content:{},ownerProfile=owner.profile&&typeof owner.profile==='object'&&!Array.isArray(owner.profile)?owner.profile:{};
  // Server-projected owner writes use presence, including null clears; source fields stay fallback only.
- entity={...entity};profile={...profile,...ownerProfile};for(const key of ['description','phone','email','website','hours','price_range'])if(Object.hasOwn(owner,key)){entity[key]=owner[key];profile[key]=owner[key];}
+ entity={...entity};profile=ownerFoodProfile(entity,profile);for(const key of ['description','phone','email','website','hours','price_range'])if(Object.hasOwn(owner,key)){entity[key]=owner[key];profile[key]=owner[key];}
  const reviewed=reviewedRestaurantBrand(entity),owned={...(entity.profile||{}),...ownerProfile};if(reviewed){const merged={...profile};for(const[k,v]of Object.entries(reviewed.profile))if(!Object.hasOwn(owner,k)&&!Object.hasOwn(owned,k)&&!(['menu','menu_url'].includes(k)&&['menu','menu_url'].some(x=>Object.hasOwn(owned,x)))&&!(k==='order'&&Object.hasOwn(owned,'order_url'))&&(!merged[k]||Array.isArray(merged[k])&&!merged[k].length))merged[k]=v;profile=merged;if(!Object.hasOwn(owner,'photo_url')&&!['photos','photo_urls','hero','hero_image','gallery','photo_url'].some(k=>Object.hasOwn(owned,k)))media={...media,hero:reviewed.photos[0].url,gallery:reviewed.photos.map(x=>x.url)};}
  const website=safeUrl(entity.website),links=[],sections=[],seen=new Set(),add=(url,label)=>{const href=safeUrl(url,website);if(href&&!seen.has(href)){seen.add(href);links.push({url:href,label:text(label)||'View menu',kind:/\.(?:png|jpe?g|webp)(?:[?#]|$)/i.test(href)?'image':'document'});}};
  if(text(profile.menu_url))add(profile.menu_url,'Full menu');

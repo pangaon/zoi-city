@@ -1,7 +1,7 @@
-import{restaurantData,safeUrl,localToday}from'../restaurant/model.mjs';
+import{restaurantData,ownerFoodProfile,safeUrl,localToday}from'../restaurant/model.mjs';
 export{esc,UUID,safeUrl,localToday}from'../restaurant/model.mjs';
 const text=v=>typeof v==='string'?v.trim():'';
-export function bakeryData(entity,profile={},media={}){const d=restaurantData(entity,profile,media);return {...d,reserve:null,order:[...d.order,...(safeUrl(profile.preorder||profile.order_url,d.website)?[{url:safeUrl(profile.preorder||profile.order_url,d.website),label:'Pre-order with the bakery’s provider'}]:[])].filter((v,i,a)=>a.findIndex(x=>x.url===v.url)===i),specials:(Array.isArray(profile.seasonal)?profile.seasonal:[]).map(v=>text(typeof v==='string'?v:v?.name)).filter(Boolean),catering:text(profile.wholesale)||text(profile.catering)};}
+export function bakeryData(entity,profile={},media={}){profile=ownerFoodProfile(entity,profile);const d=restaurantData(entity,profile,media);return {...d,reserve:null,order:[...d.order,...(safeUrl(profile.preorder||profile.order_url,d.website)?[{url:safeUrl(profile.preorder||profile.order_url,d.website),label:'Pre-order with the bakery’s provider'}]:[])].filter((v,i,a)=>a.findIndex(x=>x.url===v.url)===i),specials:(Array.isArray(profile.seasonal)?profile.seasonal:[]).map(v=>text(typeof v==='string'?v:v?.name)).filter(Boolean),catering:text(profile.wholesale)||text(profile.catering)};}
 export const OCCASIONS=['Everyday treats','A celebration','A gift','An event','Wholesale enquiry'];
 export function bakeryRequest(b,input,today=localToday(b.timezone)){
  const date=text(input.date),occasion=text(input.occasion),details=text(input.details),quantity=Number(input.quantity);

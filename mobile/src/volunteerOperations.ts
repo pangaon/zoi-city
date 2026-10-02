@@ -1,0 +1,17 @@
+import{validOperation,operationReceipt}from'../../assets/organizations/volunteer-operation-model.mjs';
+const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+type Client={session:{user:{id:string}}|null;token:()=>Promise<string>;request:(path:string,body:unknown,token?:string)=>Promise<any>};
+export async function volunteerRpc(client:Client,actor:string|undefined,current:()=>boolean,name:string,args:Record<string,unknown>){
+ const check=()=>{if(!current()||client.session?.user.id!==actor||(actor&&!UUID.test(actor)))throw Error('Your account or workspace changed.');};
+ if(!['org_programs_list','org_roster','org_operation_save','org_operation_request','org_opportunities','org_signup','org_signup_cancel'].includes(name))throw Error('Unsupported volunteer request.');check();if(!actor&&name!=='org_opportunities')throw Error('Sign in to continue.');const token=actor?await client.token():undefined;check();const result=await client.request('/rest/v1/rpc/'+name,args,token);check();return result;
+}
+export const volunteerDenied=(e:any)=>[401,403].includes(Number(e?.status||e?.statusCode))||String(e?.code)==='42501';
+type Store={load:(actor:string)=>Promise<unknown>;save:(actor:string,value:unknown)=>Promise<unknown>;clear:(actor:string)=>Promise<unknown>};
+export function createVolunteerRecovery({actor,workspace,current,call,store,nonce,changed,available=()=>false}:{actor:string;workspace:string;current:()=>boolean;call:(name:string,args:any)=>Promise<any>;store:Store;nonce:()=>string;changed:()=>void;available?:()=>boolean}){
+ let pending:any=null,ready=false;const check=()=>{if(!UUID.test(actor)||!UUID.test(workspace)||!current())throw Error('Your account or workspace changed.');};
+ async function load(){check();ready=false;const value=await store.load(actor);check();if(value&&!validOperation(value,workspace))throw Error('The saved volunteer request could not be verified.');pending=value;ready=true;changed();}
+ async function settle(result:any){check();const value=operationReceipt(result,pending);await store.clear(actor);check();pending=null;changed();return value;}
+ async function save(operation:string,target:string|null,version:number,values:Record<string,unknown>){check();if(!available())throw Error('Volunteer operations are not available yet. Refresh programs.');if(!ready||pending)throw Error('Check the previous save before making another change.');const next={p_workspace:workspace,p_request:nonce(),p_operation:operation,p_target:target,p_expected_version:version,p_values:values};if(!validOperation(next,workspace))throw Error('Invalid volunteer save.');await store.save(actor,next);check();pending=next;changed();return settle(await call('org_operation_save',next));}
+ async function recover(cancel=false){check();if(!available())throw Error('Volunteer operations are not available yet. Refresh programs.');if(!ready||!pending)throw Error('No saved request is ready to recover.');const p=pending,r=await call('org_operation_request',{p_workspace:workspace,p_request:p.p_request,p_operation:p.p_operation,p_target:p.p_target,p_cancel_if_missing:cancel});check();if(r?.ok!==true||r.workspace_id!==workspace||r.request_id!==p.p_request||r.operation!==p.p_operation||r.target_id!==p.p_target||typeof r.found!=='boolean')throw Error('The recovery response could not be verified.');return r.found?settle(r.receipt):null;}
+ return{load,save,recover,pending:()=>pending,ready:()=>ready};
+}

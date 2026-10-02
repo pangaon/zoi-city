@@ -1,3 +1,4 @@
+import {ownerFoodProfile} from '../assets/homes/templates/restaurant/model.mjs';
 import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../assets/enrichment/branch-contact-scope.mjs';
 /**
@@ -473,6 +474,8 @@ export function profileForVertical(vertical, profile, entity = {}) {
       p.patronal_feast = { saint: str(p.patronal_feast) };
     }
   }
+
+  if (key === 'restaurant' || key === 'bakery') Object.assign(p,ownerFoodProfile(entity,p));
 
   if (key === 'restaurant') {
     if (!str(p.reserve)) p.reserve = firstText(p, ['reserve_url', 'booking_url']);
