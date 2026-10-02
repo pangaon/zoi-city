@@ -33,26 +33,28 @@
     var C = ctx.C || {}, transport = C.api && C.api.rpc && C.api.rpc.bind(C.api), actor=C.auth&&C.auth.load()?.user_id, workspace=ctx.ws;
     root.__zoiOpsDestroy?.();var mountToken={};root.__zoiOpsMount=mountToken;
     var alive=true,abort=new AbortController(),recovery,observer;
-    var helpers=await import('/assets/operations/recovery.mjs?v=20261001-ops-recovery');
-    var identity=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');
-    if(root.__zoiOpsMount!==mountToken||!root.isConnected||C.auth.load()?.user_id!==actor||ctx.ws!==workspace)return {destroy:function(){}};
+    var wrap=doc.createElement('section');wrap.className='zops';root.replaceChildren(wrap);
+    function removed(records){return records.some(function(record){return Array.from(record.removedNodes).some(function(node){return node===root||node===wrap||node.contains?.(root)||node.contains?.(wrap);});});}
+    observer=new MutationObserver(function(records){if(removed(records)||!root.isConnected||!root.contains(wrap))destroy();});
+    observer.observe(doc.documentElement,{childList:true,subtree:true});
+    var helpers,identity;
+    try{helpers=await import('/assets/operations/recovery.mjs?v=20261001-ops-recovery');identity=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');}catch(error){destroy();throw error;}
+    if(!alive||removed(observer.takeRecords())||root.__zoiOpsMount!==mountToken||!root.isConnected||!root.contains(wrap)||C.auth.load()?.user_id!==actor||ctx.ws!==workspace){destroy();return {destroy:destroy};}
     var uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if(!uuid.test(actor||'')||!uuid.test(workspace||'')||identity.sessionIdentity(C)!==actor.toLowerCase()){root.textContent='Sign in again to verify your account and workspace before opening Operations.';return {destroy:function(){}};}
+    if(!uuid.test(actor||'')||!uuid.test(workspace||'')||identity.sessionIdentity(C)!==actor.toLowerCase()){destroy();root.textContent='Sign in again to verify your account and workspace before opening Operations.';return {destroy:destroy};}
     actor=actor.toLowerCase();
-    function active(){return alive&&root.isConnected&&root.contains(wrap)&&identity.sessionIdentity(C)===actor&&ctx.ws===workspace;}
+    function active(){if(alive&&(!root.isConnected||!root.contains(wrap)||identity.sessionIdentity(C)!==actor||ctx.ws!==workspace||removed(observer?.takeRecords()||[])))destroy();return alive;}
     function assert(){if(!active())throw new Error('Operations account or workspace changed.');}
     async function rpc(name,args,options){assert();try{var fresh=await C.auth.ensureFresh();assert();if(!fresh){var error=new Error('Please sign in again.');error.status=401;throw error;}var result=await transport(name,args,Object.assign({},options,{auth:'prefer'}));assert();return result;}catch(error){if(active()&&helpers.operationsDenied(error)){clearPrivate();render();}throw error;}}
 
     var state = {records:[],members:[],role:null,kind:'company',sector:'business',selected:null,busy:false,ready:false,dirty:false,events:[],archived:false};
-    root.innerHTML = '<section class="zops"><h2>Business Operations</h2><p class="zops-muted">Company records, relationships, projects and deadlines in your workspace.</p><div class="zops-status" role="status" aria-live="polite" data-o="status"></div><div data-o="recovery"></div><div data-o="content"></div></section>';
-    var wrap = root.firstElementChild;
+    wrap.innerHTML = '<h2>Business Operations</h2><p class="zops-muted">Company records, relationships, projects and deadlines in your workspace.</p><div class="zops-status" role="status" aria-live="polite" data-o="status"></div><div data-o="recovery"></div><div data-o="content"></div>';
     var key='zoi:ops-pending:v1:'+actor+':'+workspace;
     recovery=helpers.createOperationsRecovery({actor,workspace,current:active,call:(name,args)=>rpc(name,args,{auth:'require'}),nonce:()=>crypto.randomUUID(),changed:()=>{if(active())renderRecovery();},storage:{load:async()=>JSON.parse(global.sessionStorage.getItem(key)||'null'),save:async value=>global.sessionStorage.setItem(key,JSON.stringify(value)),clear:async()=>global.sessionStorage.removeItem(key)}});
-    function clearPrivate(){state.records=[];state.members=[];state.role=null;state.selected=null;state.events=[];state.dirty=false;recovery.dropPayload();}
-    function destroy(){alive=false;abort.abort();observer?.disconnect();clearPrivate();}
+    function clearPrivate(){if(state){state.records=[];state.members=[];state.role=null;state.selected=null;state.events=[];state.dirty=false;}recovery?.dropPayload();}
+    function destroy(){alive=false;abort.abort();observer?.disconnect();clearPrivate();wrap.replaceChildren();}
     function account(){if(active())return;destroy();if(root.contains(wrap))root.innerHTML='<p>Your account changed. Reload Operations to access the current workspace.</p>';}
     root.__zoiOpsDestroy=destroy;
-    observer=new MutationObserver(()=>{if(!root.contains(wrap))destroy();});observer.observe(root,{childList:true});
     ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(name=>global.addEventListener(name,account,{signal:abort.signal}));
     function renderRecovery(){var host=q('recovery');if(!host)return;var p=recovery.state();host.innerHTML=(!p.ready?'<p>Load your recovery reference before making changes.</p><button type="button" data-ops-recovery="load">Load recovery reference</button>':'')+(p.marker?'<section class="zops-card"><h3>Check your previous change</h3><p>Private record content is not stored on this device.</p><button type="button" data-ops-recovery="check">Check saved receipt</button>'+(p.payload?'<button type="button" data-ops-recovery="retry">Retry exact change</button>':'')+'<button type="button" data-ops-recovery="cancel">Cancel if not saved</button><p>Cancellation preserves any change that already saved.</p></section>':'');
       wrap.querySelectorAll('[data-o="form"] input,[data-o="form"] select,[data-o="form"] textarea,[data-o="form"] button,[data-o="new"]').forEach(function(node){if(p.blocked){if(!node.hasAttribute('data-ops-disabled'))node.dataset.opsDisabled=String(node.disabled);node.disabled=true;}else if(node.hasAttribute('data-ops-disabled')){node.disabled=node.dataset.opsDisabled==='true';delete node.dataset.opsDisabled;}});
