@@ -12,7 +12,7 @@ if (mode === 'request') {
   if (process.env.GITHUB_RUN_ATTEMPT && process.env.GITHUB_RUN_ATTEMPT !== '1') throw new Error('Committed recovery requests cannot be automatically replayed');
   mode = request.action;
 }
-if (!['inspect', 'restart', 'recover', 'review'].includes(mode)) throw new Error('Invalid recovery mode');
+if (!['inspect', 'resources', 'restart', 'recover', 'review'].includes(mode)) throw new Error('Invalid recovery mode');
 const token = process.env.SUPABASE_ACCESS_TOKEN;
 if (!token) throw new Error('SUPABASE_ACCESS_TOKEN is required');
 if (process.env.GITHUB_ACTIONS) console.log(`::add-mask::${token}`);
@@ -46,7 +46,8 @@ async function health() {
   // The Management API documents repeated services parameters as its array encoding.
   // All values are documented enums; a 400 alone does not establish an unhealthy service.
   const params = new URLSearchParams();
-  for (const service of ['db', 'auth', 'rest']) params.append('services', service);
+  if (mode === 'resources') params.set('services', 'db,auth,rest');
+  else for (const service of ['db', 'auth', 'rest']) params.append('services', service);
   params.set('timeout_ms', '5000');
   const result=await request('/health?' + params.toString());
   const rows=json(result.text);
@@ -70,11 +71,27 @@ if (metrics.ok) {
     return match && Number.isFinite(Number(match[1]));
   });
   console.log('# Resource metric sample; cumulative CPU/I/O counters are not utilization rates');
-  console.log(valid.join('\n'));
+  // Labels can contain arbitrary application content even on resource series.
+  // Emit numeric observations without any provider-controlled label values.
+  const samples = valid.map(line => ({metric:line.match(/^[a-zA-Z_:][a-zA-Z0-9_:]*/)[0],value:Number(line.match(/^[a-zA-Z_:][a-zA-Z0-9_:]*(?:\{[^\r\n]*\})?\s+([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?)/)[1])}));
+  console.log(JSON.stringify({resource_samples:samples}));
   console.log(JSON.stringify({selected_series:valid.length}));
   if (!valid.length) {console.error('Resource metrics contain no usable resource samples.');process.exitCode=1;}
 }
-if (mode==='restart') {
+if (mode==='resources') {
+  // Alternative documented health encoding and disk control-plane reads only.
+  // No SQL query, restart, resizing, configuration write, or request retry.
+  const utilization = await request('/config/disk/util');
+  const value = json(utilization.text), fields = ['fs_size_bytes','fs_avail_bytes','fs_used_bytes'];
+  const timestamp = Date.parse(value?.timestamp);
+  const usable = utilization.ok && Number.isFinite(timestamp) && fields.every(k => typeof value?.metrics?.[k] === 'number' && Number.isFinite(value.metrics[k]) && value.metrics[k] >= 0) && value.metrics.fs_size_bytes > 0 && value.metrics.fs_avail_bytes <= value.metrics.fs_size_bytes && value.metrics.fs_used_bytes <= value.metrics.fs_size_bytes;
+  console.log(JSON.stringify({disk_utilization:usable ? {timestamp:new Date(timestamp).toISOString(), ...Object.fromEntries(fields.map(k=>[k,value.metrics[k]]))} : null}));
+  if (!usable) process.exitCode = 1;
+  const configuration = await request('/config/disk'), attributes = json(configuration.text)?.attributes;
+  const configured = configuration.ok && ['gp3','io2'].includes(attributes?.type) && ['iops','size_gb'].every(k=>Number.isSafeInteger(attributes?.[k]) && attributes[k] > 0) && (attributes.throughput_mibps === undefined || Number.isSafeInteger(attributes.throughput_mibps) && attributes.throughput_mibps > 0);
+  console.log(JSON.stringify({disk_configuration:configured ? {type:attributes.type,iops:attributes.iops,size_gb:attributes.size_gb,...(attributes.throughput_mibps === undefined ? {} : {throughput_mibps:attributes.throughput_mibps})} : null}));
+  if (!configured) process.exitCode = 1;
+} else if (mode==='restart') {
   // This response can be ambiguous on timeout. Never automatically retry it.
   const result=await request('/restart', {});
   if (!result.ok) {

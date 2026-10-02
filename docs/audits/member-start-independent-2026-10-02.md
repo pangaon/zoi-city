@@ -1,0 +1,21 @@
+# Member start independent review — 2026-10-02
+
+Accepted local candidate after the captured-surface navigation correction. No production writes, invitation delivery, or database probes.
+
+Source: current team reader supplies the internal actor_profile_id, deliberately distinct from Auth UUID. Assigned-work projection requires matching workspace, recognized identical current roles, task record IDs and revisions. Existing ops_records_list returns all matching workspace tasks without a limit, so no-deadline assigned tasks are not truncated by the global priorities ranking. Completion uses the existing Operations revision/request receipt writer. Invitation accepted-membership action targets exact workspace Overview; no new invitation authority or writer.
+
+Exercised actual Social at 390/1440: editor has no owner setup cards, own no-deadline task opens exact saved task URL, completion loses its response and recovers the existing receipt, returning Overview shows completed state. Viewer has no Save, and membership denial clears personal task data. Logs /tmp/member-start-independent.log and /tmp/member-final-independent.log. Actual Core invitation regression at both widths passes (/tmp/member-invitation-regression-independent.log). Sixteen focused units pass. Phone light screenshot /tmp/member-start-390.png inspected: legible task and access hierarchy; general shell Design your home action remains pre-existing scope, not a claim that every colleague control has been redesigned.
+
+Independent adversarial cases: producer's 12 held refresh/read actor/workspace/replacement cases pass; retained-independent.cjs adds four real asynchronous remove/reinsert cases, all passing. Observer delivery precedes awaited continuation in those cases; absence of synchronous takeRecords alone was not reported as a stale RPC failure.
+
+Two review corrections: parent initially compared raw token before/after member load, which rejected legitimate refresh; producer replaced that with captured identity/workspace/owned surface. refresh-independent.cjs passes both widths. Workspace activity sibling really dispatched three stale RPCs after held refresh/workspace change: /tmp/member-activity-independent.log. Corrected scoped adapter in priorities/view.mjs SHA256 6544baa96b94b4148c2e247037310f75191124074b48698dbbbed07034ad3f98 blocks all four workspace/replacement cases; /tmp/member-activity-fixed-independent.log. Unchanged sources.mjs is invoked through the scoped transport.
+
+Final review finding: navigation-retirement-independent.cjs removes/reinserts captured member section then clicks its existing People & work control in the same task. The old handler navigates once before observer delivery; /tmp/member-navigation-retirement-independent.log. Producer owns synchronous captured-removal check correction. This is a navigation retirement defect, not evidence of a private write. Final acceptance awaits that correction and repeated positive/negative evidence.
+
+Native Overview parity, actual invitation delivery, and production task mutation are not claimed by controlled web tests. No new SQL is part of this packet.
+
+## Final acceptance
+
+Producer corrected synchronous removal retirement before member navigation and wrapper post-import/current checks. Final member-start SHA256 `3b361f5365dc1522f41a2636d012ee2fca76b26d9038830f30e88c9689b64b0c`; priorities wrapper `92fca3391db9acbd75fca43a5c68863cbffa8267e58c178e490a8d014ab6c96f`; view remains `6544baa96b94b4148c2e247037310f75191124074b48698dbbbed07034ad3f98`. Independent final navigation retirement2, held reattachment4, full Social journey2 all pass (/tmp/member-navigation-fixed-independent.log, /tmp/member-retained-final-independent.log, /tmp/member-final2-independent.log). Prior same-session refresh2 and sibling predispatch scope4 pass; unchanged identity/route16 units and actual invitation2 regressions pass. The navigation finding above is resolved. All other runtime hashes remain those in producer audit.
+
+Reviewer retained three reproducible added harnesses plus the positive rotation harness under tests/browser/member-start. They use controlled transports and actual modules; no production availability or physical-device acceptance inferred.

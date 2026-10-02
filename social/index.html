@@ -127,8 +127,8 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
 <script src="/assets/suite/bio.js?v=20261001-session-fences"></script>
 <script src="/assets/suite/email.js?v=20261001-session-fences"></script>
 <script src="/assets/suite/audience.js?v=20261002-organization-workflow"></script>
-<script src="/assets/suite/operations.js?v=20261002-organization-workflow"></script>
-<script src="/assets/suite/priorities.js?v=20260930c"></script>
+<script src="/assets/suite/operations.js?v=20261002-member-start"></script>
+<script src="/assets/suite/priorities.js?v=20261002-member-start"></script>
 <script src="/assets/suite/bookings.js?v=20260930b"></script>
 <script src="/assets/suite/organizations.js?v=20261001-workspace-scope"></script>
 <script src="/assets/suite/documents.js?v=20261002-organization-workflow"></script>
@@ -344,7 +344,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     if(keep)return true;
     var moduleEpoch=STATE.moduleEpoch;
     mount.innerHTML='';
-    if(id==='priorities'){var setup=document.createElement('section');setup.className='workspace-start';setup.innerHTML='<div><h2>Your next steps</h2><p>Keep your public home, customer work and publishing connected.</p></div><div class="setup-grid">'+STATE.navigation.setupSteps({channels:STATE.channels,role:STATE.role}).map(function(step){return '<button type="button" data-setup="'+step.id+'"><strong>'+esc(step.label)+'</strong><span>'+esc(step.detail)+'</span><b>Open →</b></button>';}).join('')+'</div>';setup.addEventListener('click',function(e){var b=e.target.closest('[data-setup]');if(b)selectModule(b.dataset.setup);});mount.appendChild(setup);}
+    if(id==='priorities'&&['owner','admin'].includes(STATE.role)){var setup=document.createElement('section');setup.className='workspace-start';setup.innerHTML='<div><h2>Your next steps</h2><p>Keep your public home, customer work and publishing connected.</p></div><div class="setup-grid">'+STATE.navigation.setupSteps({channels:STATE.channels,role:STATE.role}).map(function(step){return '<button type="button" data-setup="'+step.id+'"><strong>'+esc(step.label)+'</strong><span>'+esc(step.detail)+'</span><b>Open →</b></button>';}).join('')+'</div>';setup.addEventListener('click',function(e){var b=e.target.closest('[data-setup]');if(b)selectModule(b.dataset.setup);});mount.appendChild(setup);}
     var surface=document.createElement('div');surface.className='suite-surface';mount.appendChild(surface);surface.innerHTML='<div class="spin"></div>';
     try{
       var r = mod.mount(surface, Object.assign({},STATE.ctx,{view:view||null}));
@@ -425,7 +425,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
       C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; }),
       import('/assets/suite/capabilities.mjs').then(async function(cap){
         var provider=await cap.loadProviderConfig(C.BASE,C.KEY).catch(function(){return null;});
-        var navigation=await import('/assets/suite/workspace-navigation.mjs?v=20261002-organization-workflow');var session=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');return {cap:cap,provider:provider,navigation:navigation,sessionIdentity:session.sessionIdentity};
+        var navigation=await import('/assets/suite/workspace-navigation.mjs?v=20261002-member-start');var session=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');return {cap:cap,provider:provider,navigation:navigation,sessionIdentity:session.sessionIdentity};
       })
     ]).then(function(res){
       if(generation!==STATE.epoch||requestedWs!==STATE.ws)return;
