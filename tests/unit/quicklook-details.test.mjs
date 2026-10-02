@@ -7,3 +7,19 @@ import {publicText} from '../../assets/discovery/profile-preview.mjs';
 test('public descriptions remove imported markup including unfinished source fragments',()=>{assert.equal(publicText('<span class='),'');assert.equal(publicText('Fresh <b>Greek</b> food &amp; company'),'Fresh Greek food & company');});
 
 test('explicit poster role applies only to its current photo and respects owner replacement or clear',()=>{const url='https://example.com/art.jpg',e={photo_url:url,profile:{hero_url:url,hero_kind:'event_poster'}};assert.equal(quickLookDetails(e).imageKind,'event_poster');assert.equal(quickLookDetails({...e,photo_url:'https://example.com/room.jpg'}).imageKind,null);assert.equal(quickLookDetails({...e,owner_content:{profile:{hero_kind:''}}}).imageKind,null);assert.equal(quickLookDetails({...e,owner_content:{photo_url:null}}).imageKind,null);assert.equal(quickLookDetails({photo_url:'https://example.com/poster.jpg',profile:{}}).imageKind,null);});
+
+test('photo authority distinguishes omitted fields from explicit owner and projected clears',()=>{
+ const omitted={name:'Sparse listing',profile:{}};assert.equal(quickLookDetails(omitted).photoAuthoritative,false);
+ for(const patch of [{photo_url:null},{profile:{photo_url:null}},{owner_content:{photo_url:null}},{owner_content:{profile:{photo_url:''}}},{owner_content:{photo_url:'javascript:bad'}}]){const d=quickLookDetails({...omitted,photo_url:'https://example.com/old.jpg',...patch});assert.equal(d.photo,null);assert.equal(d.photoAuthoritative,true);}
+ const changed=quickLookDetails({...omitted,photo_url:'https://example.com/old.jpg',owner_content:{photo_url:'https://example.com/new.jpg'}});assert.equal(changed.photo,'https://example.com/new.jpg');assert.equal(changed.photoAuthoritative,true);
+});
+
+// These cases reflect home_entity's nullable base projection, not a simulated
+// owner deletion inferred from a null database column.
+test('trusted source hero survives nullable base and gallery clear but not explicit hero clears',()=>{
+ const url='https://place.example/interior.jpg',e={website:'https://place.example/',photo_url:null,profile:{_enrich:{source_url:'https://place.example/',hero_url:url,photo_urls:[url]}}};
+ for(const candidate of [e,{...e,photo_url:undefined},{...e,owner_content:{profile:{photos:[]}}}])assert.equal(quickLookDetails(candidate).photo,url);
+ for(const candidate of [{...e,owner_content:{photo_url:null}},{...e,profile:{...e.profile,photo_url:null}},{...e,profile:{...e.profile,hero_url:null}},{...e,owner_content:{profile:{hero_url:null}}}]){const d=quickLookDetails(candidate);assert.equal(d.photo,null);assert.equal(d.photoAuthoritative,true);}
+ const omitted={...e};delete omitted.photo_url;assert.equal(quickLookDetails(omitted).photo,url);
+ assert.equal(quickLookDetails({...omitted,profile:{...e.profile,hero_url:null}}).photoAuthoritative,true);
+});

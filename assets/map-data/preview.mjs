@@ -1,4 +1,4 @@
-import {quickLookDetails} from '../discovery/profile-preview.mjs';
+import {quickLookDetails} from '../discovery/profile-preview.mjs?v=20261002-photo-authority';
 const KEY='zoi.map.saved-places.v1';
 function safeStorage(){try{return globalThis.localStorage}catch{return{getItem:()=>null,setItem:()=>{throw Error('storage_unavailable')}}}}
 export function readSavedPlaces(storage=safeStorage()){try{const x=JSON.parse(storage.getItem(KEY)||'[]');return Array.isArray(x)?[...new Set(x.filter(v=>typeof v==='string'&&v.length>0&&v.length<=240))].slice(0,200):[]}catch{return []}}

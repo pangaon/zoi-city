@@ -797,13 +797,13 @@ function quickView(i){
 async function loadQuickViewDetails(row,version){
   const target=document.getElementById('qv-details');
   try{
-    const [entity,model]=await Promise.all([rpc('home_entity',{p_slug:row.slug},true),import('/assets/discovery/profile-preview.mjs?v=20260930-poster-fit')]);
+    const [entity,model]=await Promise.all([rpc('home_entity',{p_slug:row.slug},true),import('/assets/discovery/profile-preview.mjs?v=20261002-photo-authority')]);
     if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
     if(!entity||entity.id!==row.id)throw Error('unavailable');
     const details=model.quickLookDetails(entity),desc=document.querySelector('#qv-body .qv-desc');
     if(desc)desc.textContent=details.description||'Explore the full page for more about this place.';
     target.innerHTML=(details.address?'<p class="qv-desc">'+esc(details.address)+'</p>':'')+(details.links.length?'<div class="qv-acts">'+details.links.map(link=>'<a class="lbtn" href="'+esc(link.href)+'"'+(link.href.startsWith('http')?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(link.label)+' ↗</a>').join('')+'</div>':'');
-    if(details.photo){const cover=document.querySelector('#qv-body .qv-cover');cover.className='qv-cover'+(details.imageKind==='event_poster'?' is-event-poster':'');cover.innerHTML=listingCover(global_ZE(),{name:entity.name,type:entity.entity_type,slug:entity.slug,photo:details.photo});}
+    if(details.photoAuthoritative){const cover=document.querySelector('#qv-body .qv-cover');cover.className='qv-cover'+(details.photo?'':' is-identity')+(details.imageKind==='event_poster'?' is-event-poster':'');cover.innerHTML=listingCover(global_ZE(),{name:entity.name,type:entity.entity_type,slug:entity.slug,photo:details.photo});}
   }catch{
     if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
     target.innerHTML='<p class="qv-cat">More details could not load.</p><button class="lbtn" type="button" id="qv-retry">Try again</button>';

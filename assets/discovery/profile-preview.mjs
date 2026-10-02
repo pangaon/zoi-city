@@ -20,10 +20,15 @@ export function quickLookDetails(e){
  const website=publicURL(value('website')),address=text(value('address'))||(!has('address')&&locationSource?[text(q.address_parts?.street),text(q.address_parts?.postcode)].filter(Boolean).join(', '):''),phone=phoneHref((own(o,'phone')||own(op,'phone')||own(p,'phone'))?value('phone'):(!placeholderPhone(value('phone'))&&value('phone')||source.phone));
  const description=text(value('description'))||(!own(o,'description')&&!own(op,'description')&&!own(p,'description')&&trusted?text(q.description):'');
  const menu=publicURL(value('menu_url'))||(!has('menu_url')&&!has('menu')&&trusted?publicURL(q.menu_url):null);
- const photoKeys=['photo_url','photos','photo_urls','hero_url','hero_image','hero','gallery'];
- const photo=has('photo_url')?publicURL(value('photo_url')):publicURL(e.photo_url)||((!photoKeys.some(has)&&trusted)?[q.hero_url,...(Array.isArray(q.photo_urls)?q.photo_urls:[]),...(Array.isArray(q.photos)?q.photos:[])].map(sourcePhoto).find(Boolean)||null:null);
+ // home_entity always projects nullable base photo_url: null alone is not an
+ // owner deletion. Explicit hero fields suppress source fallback; clearing a
+ // gallery suppresses gallery fallback only, matching canonical profile media.
+ const galleryKey=['photos','photo_urls','gallery'].find(has);
+ const gallery=galleryKey?value(galleryKey):[...(Array.isArray(q.photo_urls)?q.photo_urls:[]),...(Array.isArray(q.photos)?q.photos:[])];
+ const photo=has('photo_url')?publicURL(value('photo_url')):publicURL(e.photo_url)||(has('hero_url')?publicURL(value('hero_url')):(trusted?[q.hero_url,...(Array.isArray(gallery)?gallery:[])].map(sourcePhoto).find(Boolean)||null:null));
  const links=[];if(menu)links.push({href:menu,label:'View menu'});if(website)links.push({href:website,label:'Official website'});if(phone)links.push({href:phone,label:'Call'});
  if(address)links.push({href:'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent([e.name,address,e.city,e.country].filter(Boolean).join(', ')),label:'Directions'});
  const imageKind=value('hero_kind')==='event_poster'&&photo&&photo===publicURL(value('hero_url'))?'event_poster':null;
- return {description,address,photo,imageKind,links};
+ const photoAuthoritative=!!photo||has('hero_url')||!!galleryKey||[o,op,p,e].some(record=>own(record,'photo_url'));
+ return {description,address,photo,imageKind,photoAuthoritative,links};
 }
