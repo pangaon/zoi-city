@@ -1,0 +1,41 @@
+{
+  "read_only": true,
+  "functions": [
+    {
+      "signature": "dir_browse(text,text,integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.dir_browse(p_type text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_limit integer DEFAULT 30, p_offset integer DEFAULT 0)\n RETURNS TABLE(id uuid, name text, entity_type text, city text, country text, category text, website text, phone text, logo text, colors jsonb, tagline text, rating numeric, rating_count integer, bookable boolean, sells_products boolean, claim_status text, verification_status text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select\n    l.id, coalesce(l.display_name, l.name) as name, l.entity_type, l.city, l.country,\n    c.label_en as category, l.website, l.phone,\n    nullif(l.profile #>> '{brand,logo}', '') as logo,\n    coalesce(l.profile #> '{brand,colors}', '[]'::jsonb) as colors,\n    nullif(l.profile #>> '{brand,tagline}', '') as tagline,\n    l.rating, l.rating_count,\n    coalesce(l.bookable,false), coalesce(l.sells_products,false), l.claim_status, l.verification_status\n  from zoi.listings l\n  left join zoi.categories c on c.id = l.primary_category_id\n  where l.publish_status = 'published' and l.moderation_status = 'clean'\n    and (p_type is null or l.entity_type = p_type)\n    and (p_city is null or l.city ilike '%'||p_city||'%')\n  order by (l.rating is not null) desc, l.rating desc nulls last,\n           (nullif(l.profile #>> '{brand,logo}','') is not null) desc,\n           l.completeness_score desc nulls last, l.name asc\n  limit greatest(1, least(coalesce(p_limit,30), 60))\n  offset greatest(0, coalesce(p_offset,0));\n$function$\n",
+      "definition_md5": "ff3ccdfec15af114903090ac43bce4ad",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "explore_geo(text,text,text,text,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_geo(p_q text DEFAULT NULL::text, p_type text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_country text DEFAULT NULL::text, p_limit integer DEFAULT 600)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT COALESCE(jsonb_agg(to_jsonb(r)),'[]'::jsonb) FROM(\n SELECT l.id,l.name,COALESCE(l.canonical_path,'/p/'||l.slug) AS path,l.latitude AS lat,l.longitude AS lng,l.entity_type,l.city,(l.verification_status='verified') AS verified\n FROM zoi.listings l WHERE l.publish_status='published' AND COALESCE(l.marketplace_status,'')<>'hidden' AND l.latitude IS NOT NULL AND l.longitude IS NOT NULL\n AND(p_type IS NULL OR l.entity_type=p_type) AND(p_city IS NULL OR l.city ILIKE p_city) AND(p_country IS NULL OR l.country ILIKE p_country)\n AND(p_q IS NULL OR l.name ILIKE '%'||p_q||'%' OR l.search_tsv @@ pg_catalog.plainto_tsquery('pg_catalog.simple',p_q))\n ORDER BY(l.verification_status='verified') DESC,l.trust_score DESC NULLS LAST,l.id\n LIMIT LEAST(GREATEST(p_limit,1),1200))r\n$function$\n",
+      "definition_md5": "28142c68da9516ffcfcde28451bd683c",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "explore_geo(integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_geo(p_limit integer DEFAULT 5000, p_offset integer DEFAULT 0)\n RETURNS TABLE(slug text, entity_type text, name text, city text, country text, category_slug text, lat double precision, lng double precision, geo_precision text, address text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT e.slug::text,e.entity_type::text,e.name::text,e.city::text,zoi.geo_country_canon(e.country)::text,e.category_slug::text,e.latitude::double precision,e.longitude::double precision,zoi.geo_precision_canon(COALESCE(NULLIF(l.geo_precision::text,'none'),l.profile->'_geo'->>'precision'))::text,l.address::text\n FROM zoi.v_public_listings e JOIN zoi.listings l ON l.id=e.id\n WHERE e.latitude IS NOT NULL AND e.longitude IS NOT NULL AND l.publish_status='published' AND COALESCE(l.marketplace_status,'')<>'hidden'\n ORDER BY e.id LIMIT LEAST(GREATEST(COALESCE(p_limit,5000),1),5000) OFFSET GREATEST(COALESCE(p_offset,0),0)\n$function$\n",
+      "definition_md5": "41ce05085c701536e06d3ef7303c6304",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    }
+  ]
+}

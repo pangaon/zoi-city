@@ -1,0 +1,128 @@
+{
+  "schema": 1,
+  "status": "producer_proposal_requires_independent_review_not_lease_bound_not_applied",
+  "listing": {
+    "id": "5a1da680-196d-465b-acd1-25bfb6059df8",
+    "name": "Giorgos Kakosaios",
+    "slug": "giorgos-kakosaios-athens-5a1da6",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.minosemi.gr/artists/%CE%B3%CE%B9%CF%8E%CF%81%CE%B3%CE%BF%CF%82-%CE%BA%CE%B1%CE%BA%CE%BF%CF%83%CE%B1%CE%AF%CE%BF%CF%82/",
+  "source_artifact": "docs/audits/evidence/kakosaios/refresh-2026-10-02/raw-page.html",
+  "source_sha256": "a6b1509da486c90a087e624622cc5b82f826e1cfefd1fa07a47fed8e63e80b24",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 3545
+  },
+  "identity_basis": "ΓΙΩΡΓΟΣ ΚΑΚΟΣΑΙΟΣ",
+  "images": [
+    {
+      "requested_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/10/image00012-1000x1000.jpeg",
+      "checked_at": "2026-10-02T22:39:09.770Z",
+      "status": 200,
+      "url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/10/image00012-1000x1000.jpeg",
+      "mime": "image/jpeg",
+      "bytes": 92587,
+      "sha256": "559f50a1d7542d229c5d4e5d3578c49696784a774c5cd1be639a8d38dfc9a8e4",
+      "network": {
+        "requests": 2,
+        "cache_hits": 0,
+        "bytes": 92735
+      },
+      "dimensions": {
+        "mime": "image/jpeg",
+        "width": 1000,
+        "height": 1000
+      },
+      "artifact": "docs/audits/evidence/kakosaios/refresh-2026-10-02/portrait.jpeg",
+      "visually_inspected": true,
+      "inspection": "Exact source-linked artist portrait; no unrelated publisher imagery."
+    }
+  ],
+  "proposed_machine_fields": {
+    "site_lang": "en-us",
+    "source_kind": "label_artist_profile",
+    "description": "Giorgos Kakosaios is a Greek singer and composer. His releases include Monaxia, Ti Na Sas Po and the album Mathe Mou Ton Erota, released by Minos EMI. He has collaborated with Giannis Ploutarchos, Elli Kokkinou and Vasilis Karras.",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/4uyuai6Pqgz3kSx1Jme2PJ"
+    },
+    "crawl_status": "ok",
+    "photo_urls": [
+      "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/10/image00012-1000x1000.jpeg"
+    ],
+    "photo_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/10/image00012-1000x1000.jpeg",
+    "hero_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/10/image00012-1000x1000.jpeg"
+  },
+  "prior_whole_row_hash": "fc2cce08b7558ef82ec98c5bd20b1e7e",
+  "prior_machine_profile": {},
+  "preserve": [
+    "owner_content and all top-level fields except source assignment/trigger timestamp",
+    "entire nonmachine profile including original biography and geography",
+    "canonical ID, slug, ownership, moderation, publication and marketplace state"
+  ],
+  "excluded": [
+    "Relative age25 and undated “this summer” tour are not current facts or dated shows.",
+    "Publisher navigation images, corporate contact channels, copyright/rights link and news sidebar are excluded."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "independent exact artifact and identity approval",
+    "bounded atomic ROLLBACK dry run with real lease/apply and protected-field assertions",
+    "lead-reviewed commit variant only after dry-run/readback",
+    "public seo_entity and deployed home projection",
+    "actual390/1440 listening/gallery/source/owner-clear journeys",
+    "native handoff/device acceptance"
+  ]
+}

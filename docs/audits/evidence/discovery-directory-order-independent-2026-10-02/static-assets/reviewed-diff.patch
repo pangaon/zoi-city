@@ -1,0 +1,15 @@
+diff --git a/tests/unit/static-assets.test.mjs b/tests/unit/static-assets.test.mjs
+index 2143334..4911d34 100644
+--- a/tests/unit/static-assets.test.mjs
++++ b/tests/unit/static-assets.test.mjs
+@@ -1,6 +1,9 @@
+ import test from 'node:test';import assert from 'node:assert/strict';import{readdirSync,readFileSync,statSync}from'node:fs';import{join,dirname,resolve}from'node:path';import{fileURLToPath}from'node:url';
+ const root=fileURLToPath(new URL('../../',import.meta.url));
+-function pages(dir){return readdirSync(dir,{withFileTypes:true}).flatMap(e=>{if(['node_modules','.git','mobile'].includes(e.name)||e.name.startsWith('.'))return[];const p=join(dir,e.name);return e.isDirectory()?pages(p):e.name.endsWith('.html')?[p]:[];});}
++// Source captures retain the publisher's HTML and paths; they are audit evidence,
++// not application pages whose assets belong to this deployment.
++const sourceEvidence=join(root,'docs','audits','evidence');
++function pages(dir){if(resolve(dir)===resolve(sourceEvidence))return[];return readdirSync(dir,{withFileTypes:true}).flatMap(e=>{if(['node_modules','.git','mobile'].includes(e.name)||e.name.startsWith('.'))return[];const p=join(dir,e.name);return e.isDirectory()?pages(p):e.name.endsWith('.html')?[p]:[];});}
+ test('every local stylesheet and script referenced by a web page exists in the deployed source',()=>{
+  const missing=[];for(const page of pages(root))for(const tag of readFileSync(page,'utf8').matchAll(/<(script|link)\b[^>]*>/gi)){
+   if(tag[1].toLowerCase()==='link'&&!/\brel=["']stylesheet["']/i.test(tag[0]))continue;

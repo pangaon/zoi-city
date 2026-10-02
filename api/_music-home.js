@@ -10,6 +10,7 @@ import{ARTIST_SOURCES}from'../assets/homes/templates/music/sources.mjs';
 import{renderMusic}from'../assets/homes/templates/music/render.mjs';
 import{esc,safeHttps,TEMPLATES}from'../assets/homes/templates/music/model.mjs';
 const json=value=>JSON.stringify(value).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026').replace(/\u2028/g,'\\u2028').replace(/\u2029/g,'\\u2029');
+const providerURL=(value,platform)=>{const media=publicMedia(value);return media?.platform===platform?media.url:'';};
 function sameSource(url,source){try{const a=new URL(url),b=new URL(source);return officialURL(url)&&officialURL(source)&&a.port===b.port&&a.hostname.replace(/^www\./,'')===b.hostname.replace(/^www\./,'')&&(b.pathname==='/'||a.pathname.replace(/\/$/,'')===b.pathname.replace(/\/$/,''));}catch{return false;}}
 // Store links are navigation, never an imported checkout or inventory connection.
 function artistStore(entity,curated=null){
@@ -33,7 +34,12 @@ export function musicHomeContent(entity){if(!eligiblePerson(entity,'artist'))ret
  const machine=sourceBound?q:{},media=profileMedia({...safeEntity,profile:{...p,_enrich:machine}},{...machine,...p});
  const social=resolveSocialLinks(safeEntity,sourceBound?{social:q.social}: {});
  const sourceListen={};if(sourceBound&&!hasSocialOverride(safeEntity))for(const key of ['spotify','youtube']){const media=publicMedia(machine.listen?.[key]);if(media?.platform===key)sourceListen[key]=media.url;}
- const spotify=Object.hasOwn(op,'spotify_url')?op.spotify_url:Object.hasOwn(p,'spotify_url')?p.spotify_url:social.spotify||(!hasSocialOverride(safeEntity)?p.listen?.spotify||sourceListen.spotify:'');
+ // Imported provider homepages are not artist destinations. Explicit owner
+ // dictionaries/fields still replace imports, including deliberate clears.
+ const socialOverride=hasSocialOverride(safeEntity);
+ const spotify=Object.hasOwn(op,'spotify_url')?op.spotify_url:Object.hasOwn(p,'spotify_url')?p.spotify_url:providerURL(social.spotify,'spotify')||(!socialOverride?providerURL(p.listen?.spotify,'spotify')||sourceListen.spotify:'');
+ const youtube=providerURL(social.youtube,'youtube')||providerURL(p.youtube_url,'youtube')||(!socialOverride?sourceListen.youtube:'');
+ const automaticSocials=d.socials.map(link=>['spotify','youtube'].includes(link.id)?{...link,url:providerURL(link.url,link.id)}:link).filter(link=>link.url);
  const reviewed=!quarantine?reviewedArtistMedia(entity):null;
  const hasPortrait=Object.hasOwn(o,'photo_url')||Object.hasOwn(p,'photo_url')||Object.hasOwn(p,'hero_url')||Object.hasOwn(p,'portrait_url');
  const portrait=(!hasPortrait?reviewed?.portrait:'')||media.hero||(d.portrait&&!interfaceArtwork(d.portrait)&&(hasPortrait||!(Array.isArray(machine.photo_roles)&&machine.photo_roles.some(r=>r?.url===d.portrait&&r.role==='gallery_only')))?d.portrait:'')||'';
@@ -42,7 +48,7 @@ export function musicHomeContent(entity){if(!eligiblePerson(entity,'artist'))ret
  const gallerySource=personURL(entity.website)||'https://www.zoi.city/artist/'+encodeURIComponent(d.slug);
  const images=[media.hero,...media.gallery].filter((v,i,a)=>v&&a.indexOf(v)===i);
  const publisherImage=url=>labelSource&&!Object.hasOwn(o,'website')&&!hasPortrait&&!Object.hasOwn(op,'photos')&&!Object.hasOwn(p,'photos')&&!Object.hasOwn(p,'photo_urls')&&[machine.hero_url,machine.photo_url,...(Array.isArray(machine.photo_urls)?machine.photo_urls:[])].includes(url);
- const content=ownerHomeContent({...d,...(labelSource?{email:'',phone:'',phoneLabel:''}:{}),portrait,story,description:story,...(explicitDescription?{owner_description:true}:{}),greek_name:'',portrait_credit:portrait===reviewed?.portrait?'Spotify artist photograph':media.hero?(publisherImage(media.hero)?sourceLabel:'Published artist profile image'):'',portrait_sources:[],gallery:images.map(url=>({url,caption:d.name+' · profile photograph',credit:publisherImage(url)?sourceLabel:sourceBound?'Artist website / published profile':'Published profile',source:gallerySource})),releases:[],shows:[],spotify:personURL(spotify)||(!hasSpotify?reviewed?.spotify||'':''),youtube:personURL(social.youtube||p.youtube_url||sourceListen.youtube)||(!hasYoutube?reviewed?.video||'':''),instagram:personURL(social.instagram),facebook:personURL(social.facebook),video_playlist:personURL(p.video_playlist),contact:personURL(p.booking_url),programme:'',checked_at:sourceBound?q.checked_at||'':'',source_method:'Details from the public artist profile, source-matched website and authorized owner edits.',source_label:sourceLabel},entity,'music');return {...content,shop_url:artistStore(entity),description:content.story};}
+ const content=ownerHomeContent({...d,socials:automaticSocials,...(labelSource?{email:'',phone:'',phoneLabel:''}:{}),portrait,story,description:story,...(explicitDescription?{owner_description:true}:{}),greek_name:'',portrait_credit:portrait===reviewed?.portrait?'Spotify artist photograph':media.hero?(publisherImage(media.hero)?sourceLabel:'Published artist profile image'):'',portrait_sources:[],gallery:images.map(url=>({url,caption:d.name+' · profile photograph',credit:publisherImage(url)?sourceLabel:sourceBound?'Artist website / published profile':'Published profile',source:gallerySource})),releases:[],shows:[],spotify:personURL(spotify)||(!hasSpotify?reviewed?.spotify||'':''),youtube:personURL(youtube)||(!hasYoutube?reviewed?.video||'':''),instagram:personURL(social.instagram),facebook:personURL(social.facebook),video_playlist:personURL(p.video_playlist),contact:personURL(p.booking_url),programme:'',checked_at:sourceBound?q.checked_at||'':'',source_method:'Details from the public artist profile, source-matched website and authorized owner edits.',source_label:sourceLabel},entity,'music');return {...content,shop_url:artistStore(entity),description:content.story};}
  if(entity.id==='a558f28d-6c8f-4079-9730-838f483867fc'&&!sameSource(entity.website,source.website))return null;
  // Petrelis is an existing sparse artist record. Label/Spotify sources were
  // independently reviewed; never invent an official website on the entity.

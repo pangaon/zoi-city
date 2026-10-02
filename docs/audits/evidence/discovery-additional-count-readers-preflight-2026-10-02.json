@@ -1,0 +1,29 @@
+{
+  "read_only": true,
+  "functions": [
+    {
+      "signature": "explore_region_cities(text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_region_cities(p_country text DEFAULT NULL::text, p_region text DEFAULT NULL::text)\n RETURNS TABLE(country text, region text, city text, listings bigint)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n  select zoi.geo_country_canon(l.country), l.region, l.city, count(*)\n    from zoi.listings l\n   where l.publish_status='published'\n     and zoi.geo_country_canon(l.country) is not null\n     and l.city is not null and l.city <> ''\n     and (p_country is null or p_country='' or zoi.geo_country_canon(l.country) ilike p_country)\n     and (p_region is null or p_region='' or l.region ilike p_region\n          or l.region_native ilike p_region or upper(l.region_code)=upper(p_region))\n   group by zoi.geo_country_canon(l.country), l.region, l.city\n   order by count(*) desc;\n$function$\n",
+      "definition_md5": "9a29f951942e3cd3a525ff85c57e3c58",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=zoi, public"
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "explore_cities(integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_cities(p_limit integer DEFAULT 24)\n RETURNS TABLE(city text, country text, n bigint)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n  select l.city, zoi.geo_country_canon(l.country), count(*)\n    from zoi.listings l\n   where l.publish_status = 'published'\n     and l.city is not null and l.city <> ''\n   group by l.city, zoi.geo_country_canon(l.country)\n   order by count(*) desc, l.city\n   limit least(greatest(coalesce(p_limit, 24), 1), 100);\n$function$\n",
+      "definition_md5": "e599c251e0f1db639055d6f99a2e8812",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=zoi, public"
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    }
+  ]
+}

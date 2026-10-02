@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "status": "producer_proposal_requires_independent_review_not_lease_bound_not_applied",
+  "listing": {
+    "id": "b2ccabbb-bf1c-4b01-b0b3-bd6e88beadab",
+    "name": "Giorgos Sabanis",
+    "slug": "giorgos-sabanis-athens-b2ccab",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.universalmusic.fr/artistes/30792301385",
+  "source_artifact": "docs/audits/evidence/kakosaios/other-official-2026-10-02/sabanis-universal.html",
+  "source_sha256": "b8cb23ee6ef5b6fab1041fe4eb699414000e9c56c08239df9f2dea225f89de26",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 1903
+  },
+  "identity_basis": "Γεώργιος Σαμπάνης",
+  "images": [],
+  "proposed_machine_fields": {
+    "site_lang": "fr-fr",
+    "source_kind": "label_artist_profile",
+    "description": "Giorgos Sabanis is a Greek singer and songwriter. His recordings include Haramata, Mistirio Treno, Logia Pou Kaine and Paraxena Demenoi. Universal Music France’s artist page links his Spotify catalogue.",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/6ZGwdAmu91r8mpA6SXodzd"
+    },
+    "crawl_status": "ok"
+  },
+  "prior_whole_row_hash": "6fce561305bf476412020028a6a7829b",
+  "prior_machine_profile": {},
+  "preserve": [
+    "owner_content and all top-level fields except source assignment/trigger timestamp",
+    "entire nonmachine profile including original biography and geography",
+    "canonical ID, slug, ownership, moderation, publication and marketplace state"
+  ],
+  "excluded": [
+    "No source-matched portrait: extracted image URLs belong to unrelated publisher news releases. No images are approved.",
+    "Publisher social/contact/store links are excluded. No current record-label contract, residence, dated shows, prices or booking availability inferred.",
+    "Votanikos lists the2026–27 programme with Friday/Saturday23:00 but no dated start/end; no calendar occurrences synthesized."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "independent exact artifact and identity approval",
+    "bounded atomic ROLLBACK dry run with real lease/apply and protected-field assertions",
+    "lead-reviewed commit variant only after dry-run/readback",
+    "public seo_entity and deployed home projection",
+    "actual390/1440 listening/gallery/source/owner-clear journeys",
+    "native handoff/device acceptance"
+  ]
+}

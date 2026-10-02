@@ -1,0 +1,41 @@
+{
+  "captured_at": "2026-10-02T22:49:36.325Z",
+  "read_only": true,
+  "rows": [
+    {
+      "nspname": "public",
+      "proname": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION public.enrich_apply(p_batch jsonb)\n RETURNS TABLE(slug text, applied boolean)\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$ SELECT * FROM zoi.enrich_apply(p_batch); $function$\n",
+      "definition_hash": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "nspname": "public",
+      "proname": "seo_entity",
+      "args": "p_slug text",
+      "definition": "CREATE OR REPLACE FUNCTION public.seo_entity(p_slug text)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n WITH me AS (\n  SELECT l.* FROM zoi.listings l WHERE l.slug=p_slug AND l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n   AND coalesce(l.marketplace_status,'')<>'hidden' LIMIT 1\n ), canon AS (\n  SELECT l2.slug FROM zoi.listings l2,me\n  WHERE l2.publish_status='published' AND l2.moderation_status IN ('clean','cleared') AND coalesce(l2.marketplace_status,'')<>'hidden' AND nullif(btrim(l2.slug),'') IS NOT NULL\n   AND l2.entity_type=me.entity_type\n   AND md5(zoi.seo_name(l2.name,l2.city))=md5(zoi.seo_name(me.name,me.city))\n   AND md5(zoi.seo_text(l2.city))=md5(zoi.seo_text(me.city)) AND zoi.seo_name(l2.name,l2.city)=zoi.seo_name(me.name,me.city)\n   AND zoi.seo_text(l2.city)=zoi.seo_text(me.city) AND zoi.seo_text(l2.region)=zoi.seo_text(me.region)\n   AND zoi.seo_text(l2.country)=zoi.seo_text(me.country) AND zoi.seo_text(l2.address)=zoi.seo_text(me.address)\n  ORDER BY (((l2.address IS NOT NULL)::int)+((l2.phone IS NOT NULL)::int)+((l2.website IS NOT NULL)::int)+((l2.latitude IS NOT NULL)::int)+((l2.description IS NOT NULL)::int)) DESC,\n   (l2.slug ~ '-[0-9a-f]{6}$')::int,coalesce(l2.updated_at,l2.created_at) DESC,l2.slug LIMIT 1\n )\n SELECT jsonb_build_object('id',me.id,'name',me.name,'entity_type',me.entity_type,'slug',me.slug,\n  'canonical_slug',(SELECT slug FROM canon),'city',me.city,'country',me.country,'address',me.address,'phone',me.phone,\n  'email',me.email,'photo_url',me.photo_url,'publish_status',me.publish_status,'moderation_status',me.moderation_status,'marketplace_status',me.marketplace_status,'website',me.website,'description',me.description,'latitude',me.latitude,'longitude',me.longitude,\n  'rating',me.rating,'rating_count',me.rating_count,'price_range',me.price_range,'meta_title',me.meta_title,'meta_description',me.meta_description,\n  'geo_precision',me.geo_precision,'social_links',me.social_links,'profile',me.profile,'category_slug',(SELECT c.slug FROM zoi.categories c WHERE c.id=me.primary_category_id),\n  'place_path',CASE WHEN me.place_id IS NOT NULL THEN zoi.place_path(me.place_id) ELSE NULL END,'updated_at',coalesce(me.updated_at,me.created_at)) || zoi.public_home_actions(me.id) || jsonb_build_object('owner_content',zoi.public_owner_content(me.id)) FROM me;\n$function$\n",
+      "definition_hash": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "nspname": "zoi",
+      "proname": "enrich_timestamp",
+      "args": "p_text text",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.enrich_timestamp(p_text text)\n RETURNS timestamp with time zone\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$ BEGIN RETURN nullif(p_text,'')::timestamptz;EXCEPTION WHEN invalid_datetime_format OR datetime_field_overflow THEN RETURN NULL;END $function$\n",
+      "definition_hash": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "nspname": "zoi",
+      "proname": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality_state(l zoi.listings)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$\nDECLARE visible boolean:=l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden';\n source text:=coalesce(nullif(l.website,''),nullif(l.source_url,''),nullif(l.profile#>>'{_enrich,source_url}',''));fingerprint text:=zoi.listing_quality_fingerprint(l);task text;v jsonb;tasks jsonb:='{}';stored jsonb:=coalesce(l.profile->'_coverage','{}');\nBEGIN\n FOREACH task IN ARRAY ARRAY['classification','enrichment','design','verification'] LOOP\n  v:=jsonb_build_object('status',CASE WHEN NOT coalesce(visible,false) THEN 'blocked_visibility' WHEN source IS NULL THEN 'source_missing' WHEN task='enrichment' AND l.profile#>>'{_enrich,blocked}'='true' THEN 'blocked_existing' ELSE 'pending' END);\n  IF coalesce(visible,false) AND source IS NOT NULL AND stored->>'fingerprint'=fingerprint AND stored#>>ARRAY['tasks',task,'status'] IN('verified','retry','blocked','fetched') AND (stored#>>ARRAY['tasks',task,'status']<>'verified' OR coalesce(zoi.enrich_timestamp(stored#>>ARRAY['tasks',task,'recorded_at']),'-infinity')>now()-interval '7 days') AND NOT(task='enrichment' AND coalesce(l.profile#>>'{_enrich,blocked}','false')='true') THEN v:=stored#>ARRAY['tasks',task];END IF;\n  tasks:=tasks||jsonb_build_object(task,v);\n END LOOP;\n RETURN jsonb_build_object('version',1,'fingerprint',fingerprint,'public_eligible',coalesce(visible,false),'source_available',source IS NOT NULL,'source_kind',CASE WHEN source IS NULL THEN 'source_missing' WHEN source~*'/(profile|members?|directory|people|team|staff)(/|\\?|$)' THEN 'member_or_directory' WHEN source~*'^https?://[^/]+/?$' THEN 'root_identity_unverified' ELSE 'source_identity_unverified' END,'owner_managed',l.owner_workspace_id IS NOT NULL,'tasks',tasks,'audit',CASE WHEN stored->>'fingerprint'=fingerprint THEN stored->'audit' ELSE NULL END);\nEND $function$\n",
+      "definition_hash": "ea1641facea45c788f8e6ca84feaf6d4"
+    },
+    {
+      "nspname": "zoi",
+      "proname": "profile_strip",
+      "args": "p jsonb",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.profile_strip(p jsonb)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT coalesce(\n    (SELECT jsonb_object_agg(k, v)\n       FROM jsonb_each(coalesce(p, '{}'::jsonb)) AS t(k, v)\n      WHERE k NOT IN ('rating','rating_count','review','reviews','reviewCount',\n                      'aggregateRating','score','stars','ranking','provider_stats',\n                      '_enrich','_geo','_coverage')\n        AND k NOT LIKE 'rating%'\n        AND k NOT LIKE 'review%'),\n    '{}'::jsonb);\n$function$\n",
+      "definition_hash": "8b20fc1c36fca6647a69e155fbeb377f"
+    }
+  ]
+}

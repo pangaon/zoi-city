@@ -1,0 +1,397 @@
+{
+  "read_only": true,
+  "explain_only": true,
+  "analyze": false,
+  "captured_at": "2026-10-02T23:01:22.932Z",
+  "definition": "CREATE OR REPLACE FUNCTION public.dir_browse(p_type text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_limit integer DEFAULT 30, p_offset integer DEFAULT 0)\n RETURNS TABLE(id uuid, name text, entity_type text, city text, country text, category text, website text, phone text, logo text, colors jsonb, tagline text, rating numeric, rating_count integer, bookable boolean, sells_products boolean, claim_status text, verification_status text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n  select\n    l.id, coalesce(l.display_name, l.name) as name, l.entity_type, l.city, l.country,\n    c.label_en as category, l.website, l.phone,\n    nullif(l.profile #>> '{brand,logo}', '') as logo,\n    coalesce(l.profile #> '{brand,colors}', '[]'::jsonb) as colors,\n    nullif(l.profile #>> '{brand,tagline}', '') as tagline,\n    l.rating, l.rating_count,\n    coalesce(l.bookable,false), coalesce(l.sells_products,false), l.claim_status, l.verification_status\n  from zoi.listings l\n  left join zoi.categories c on c.id = l.primary_category_id\n  where l.publish_status = 'published' and l.moderation_status IN ('clean','cleared')\n    and coalesce(l.marketplace_status,'')<>'hidden'\n    and (p_type is null or l.entity_type = p_type)\n    and (p_city is null or l.city ilike '%'||p_city||'%')\n  order by (l.rating is not null) desc, l.rating desc nulls last,\n           (nullif(l.profile #>> '{brand,logo}','') is not null) desc,\n           l.completeness_score desc nulls last, l.name asc\n  limit greatest(1, least(coalesce(p_limit,30), 60))\n  offset greatest(0, coalesce(p_offset,0));\n$function$\n",
+  "md5": "e279764dcf6230973418c810c14732dd",
+  "indexes": [
+    {
+      "name": "listings_pkey",
+      "definition": "CREATE UNIQUE INDEX listings_pkey ON zoi.listings USING btree (id)"
+    },
+    {
+      "name": "listings_slug_key",
+      "definition": "CREATE UNIQUE INDEX listings_slug_key ON zoi.listings USING btree (slug)"
+    },
+    {
+      "name": "idx_zoi_listings_type",
+      "definition": "CREATE INDEX idx_zoi_listings_type ON zoi.listings USING btree (entity_type)"
+    },
+    {
+      "name": "idx_zoi_listings_city",
+      "definition": "CREATE INDEX idx_zoi_listings_city ON zoi.listings USING btree (city)"
+    },
+    {
+      "name": "idx_zoi_listings_country",
+      "definition": "CREATE INDEX idx_zoi_listings_country ON zoi.listings USING btree (country)"
+    },
+    {
+      "name": "idx_zoi_listings_publish",
+      "definition": "CREATE INDEX idx_zoi_listings_publish ON zoi.listings USING btree (publish_status)"
+    },
+    {
+      "name": "idx_zoi_listings_verif",
+      "definition": "CREATE INDEX idx_zoi_listings_verif ON zoi.listings USING btree (verification_status)"
+    },
+    {
+      "name": "idx_zoi_listings_claim",
+      "definition": "CREATE INDEX idx_zoi_listings_claim ON zoi.listings USING btree (claim_status)"
+    },
+    {
+      "name": "idx_zoi_listings_dupe",
+      "definition": "CREATE INDEX idx_zoi_listings_dupe ON zoi.listings USING btree (duplicate_status)"
+    },
+    {
+      "name": "idx_zoi_listings_region",
+      "definition": "CREATE INDEX idx_zoi_listings_region ON zoi.listings USING btree (region_id)"
+    },
+    {
+      "name": "idx_zoi_listings_tsv",
+      "definition": "CREATE INDEX idx_zoi_listings_tsv ON zoi.listings USING gin (search_tsv)"
+    },
+    {
+      "name": "idx_zoi_listings_name_trgm",
+      "definition": "CREATE INDEX idx_zoi_listings_name_trgm ON zoi.listings USING gin (lower(name) gin_trgm_ops)"
+    },
+    {
+      "name": "idx_zoi_listings_cat",
+      "definition": "CREATE INDEX idx_zoi_listings_cat ON zoi.listings USING btree (primary_category_id)"
+    },
+    {
+      "name": "idx_zoi_listings_source",
+      "definition": "CREATE INDEX idx_zoi_listings_source ON zoi.listings USING btree (source_id)"
+    },
+    {
+      "name": "listings_place_idx",
+      "definition": "CREATE INDEX listings_place_idx ON zoi.listings USING btree (place_id)"
+    },
+    {
+      "name": "idx_listings_website_notnull",
+      "definition": "CREATE INDEX idx_listings_website_notnull ON zoi.listings USING btree (website) WHERE (website IS NOT NULL)"
+    },
+    {
+      "name": "idx_listings_phone_notnull",
+      "definition": "CREATE INDEX idx_listings_phone_notnull ON zoi.listings USING btree (phone) WHERE (phone IS NOT NULL)"
+    },
+    {
+      "name": "idx_listings_pub_created",
+      "definition": "CREATE INDEX idx_listings_pub_created ON zoi.listings USING btree (publish_status, created_at DESC)"
+    },
+    {
+      "name": "idx_listings_enrich_due",
+      "definition": "CREATE INDEX idx_listings_enrich_due ON zoi.listings USING btree ((((profile -> '_enrich'::text) ->> 'checked_at'::text))) WHERE ((website IS NOT NULL) AND (website <> ''::text))"
+    },
+    {
+      "name": "idx_listings_region",
+      "definition": "CREATE INDEX idx_listings_region ON zoi.listings USING btree (lower(region)) WHERE (region IS NOT NULL)"
+    },
+    {
+      "name": "idx_listings_region_code",
+      "definition": "CREATE INDEX idx_listings_region_code ON zoi.listings USING btree (upper(region_code)) WHERE (region_code IS NOT NULL)"
+    },
+    {
+      "name": "idx_listings_region_native",
+      "definition": "CREATE INDEX idx_listings_region_native ON zoi.listings USING btree (lower(region_native)) WHERE (region_native IS NOT NULL)"
+    },
+    {
+      "name": "listings_published_city_idx",
+      "definition": "CREATE INDEX listings_published_city_idx ON zoi.listings USING btree (city, country) WHERE ((publish_status = 'published'::text) AND (city IS NOT NULL) AND (city <> ''::text))"
+    },
+    {
+      "name": "listings_public_discovery_counts_idx",
+      "definition": "CREATE INDEX listings_public_discovery_counts_idx ON zoi.listings USING btree (entity_type) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+    },
+    {
+      "name": "listings_public_region_trgm_idx",
+      "definition": "CREATE INDEX listings_public_region_trgm_idx ON zoi.listings USING gin (lower(region) gin_trgm_ops, lower(region_native) gin_trgm_ops) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+    },
+    {
+      "name": "listings_public_canonical_identity_idx",
+      "definition": "CREATE INDEX listings_public_canonical_identity_idx ON zoi.listings USING btree (entity_type, md5(zoi.seo_name(name, city)), md5(zoi.seo_text(city))) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+    },
+    {
+      "name": "listings_public_locality_name_idx",
+      "definition": "CREATE INDEX listings_public_locality_name_idx ON zoi.listings USING btree (lower(city), lower(zoi.geo_country_canon(country))) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+    },
+    {
+      "name": "listings_public_geography_counts_idx",
+      "definition": "CREATE INDEX listings_public_geography_counts_idx ON zoi.listings USING btree (country, region, city) INCLUDE (region_code, region_native) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+    }
+  ],
+  "metadata": {
+    "signature": "dir_browse(text,text,integer,integer)",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "prosecdef": true,
+    "provolatile": "s",
+    "arguments": "p_type text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_limit integer DEFAULT 30, p_offset integer DEFAULT 0",
+    "returns": "TABLE(id uuid, name text, entity_type text, city text, country text, category text, website text, phone text, logo text, colors jsonb, tagline text, rating numeric, rating_count integer, bookable boolean, sells_products boolean, claim_status text, verification_status text)"
+  },
+  "global_plan": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "Limit",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Startup Cost": 20356.68,
+            "Total Cost": 20356.75,
+            "Plan Rows": 30,
+            "Plan Width": 306,
+            "Output": [
+              "l.id",
+              "(COALESCE(l.display_name, l.name))",
+              "l.entity_type",
+              "l.city",
+              "l.country",
+              "c.label_en",
+              "l.website",
+              "l.phone",
+              "(NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text))",
+              "(COALESCE((l.profile #> '{brand,colors}'::text[]), '[]'::jsonb))",
+              "(NULLIF((l.profile #>> '{brand,tagline}'::text[]), ''::text))",
+              "l.rating",
+              "l.rating_count",
+              "(COALESCE(l.bookable, false))",
+              "(COALESCE(l.sells_products, false))",
+              "l.claim_status",
+              "l.verification_status",
+              "((l.rating IS NOT NULL))",
+              "((NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text) IS NOT NULL))",
+              "l.completeness_score",
+              "l.name"
+            ],
+            "Plans": [
+              {
+                "Node Type": "Sort",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Startup Cost": 20356.68,
+                "Total Cost": 20436.31,
+                "Plan Rows": 31851,
+                "Plan Width": 306,
+                "Output": [
+                  "l.id",
+                  "(COALESCE(l.display_name, l.name))",
+                  "l.entity_type",
+                  "l.city",
+                  "l.country",
+                  "c.label_en",
+                  "l.website",
+                  "l.phone",
+                  "(NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text))",
+                  "(COALESCE((l.profile #> '{brand,colors}'::text[]), '[]'::jsonb))",
+                  "(NULLIF((l.profile #>> '{brand,tagline}'::text[]), ''::text))",
+                  "l.rating",
+                  "l.rating_count",
+                  "(COALESCE(l.bookable, false))",
+                  "(COALESCE(l.sells_products, false))",
+                  "l.claim_status",
+                  "l.verification_status",
+                  "((l.rating IS NOT NULL))",
+                  "((NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text) IS NOT NULL))",
+                  "l.completeness_score",
+                  "l.name"
+                ],
+                "Sort Key": [
+                  "((l.rating IS NOT NULL)) DESC",
+                  "l.rating DESC NULLS LAST",
+                  "((NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text) IS NOT NULL)) DESC",
+                  "l.completeness_score DESC NULLS LAST",
+                  "l.name"
+                ],
+                "Plans": [
+                  {
+                    "Node Type": "Hash Join",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Join Type": "Left",
+                    "Startup Cost": 277.38,
+                    "Total Cost": 19415.98,
+                    "Plan Rows": 31851,
+                    "Plan Width": 306,
+                    "Output": [
+                      "l.id",
+                      "COALESCE(l.display_name, l.name)",
+                      "l.entity_type",
+                      "l.city",
+                      "l.country",
+                      "c.label_en",
+                      "l.website",
+                      "l.phone",
+                      "NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text)",
+                      "COALESCE((l.profile #> '{brand,colors}'::text[]), '[]'::jsonb)",
+                      "NULLIF((l.profile #>> '{brand,tagline}'::text[]), ''::text)",
+                      "l.rating",
+                      "l.rating_count",
+                      "COALESCE(l.bookable, false)",
+                      "COALESCE(l.sells_products, false)",
+                      "l.claim_status",
+                      "l.verification_status",
+                      "(l.rating IS NOT NULL)",
+                      "(NULLIF((l.profile #>> '{brand,logo}'::text[]), ''::text) IS NOT NULL)",
+                      "l.completeness_score",
+                      "l.name"
+                    ],
+                    "Inner Unique": true,
+                    "Hash Cond": "(l.primary_category_id = c.id)",
+                    "Plans": [
+                      {
+                        "Node Type": "Bitmap Heap Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Relation Name": "listings",
+                        "Schema": "zoi",
+                        "Alias": "l",
+                        "Startup Cost": 272.01,
+                        "Total Cost": 18767.24,
+                        "Plan Rows": 31851,
+                        "Plan Width": 547,
+                        "Output": [
+                          "l.id",
+                          "l.entity_type",
+                          "l.name",
+                          "l.slug",
+                          "l.legal_name",
+                          "l.display_name",
+                          "l.description",
+                          "l.primary_category_id",
+                          "l.tags",
+                          "l.language_support",
+                          "l.greek_language_available",
+                          "l.city",
+                          "l.region",
+                          "l.province_state",
+                          "l.country",
+                          "l.neighborhood",
+                          "l.address",
+                          "l.latitude",
+                          "l.longitude",
+                          "l.region_id",
+                          "l.phone",
+                          "l.email",
+                          "l.website",
+                          "l.source_id",
+                          "l.source_url",
+                          "l.source_type",
+                          "l.source_trust_tier",
+                          "l.source_last_checked_at",
+                          "l.first_seen_at",
+                          "l.last_seen_at",
+                          "l.last_verified_at",
+                          "l.verification_status",
+                          "l.claim_status",
+                          "l.owner_user_id",
+                          "l.duplicate_status",
+                          "l.moderation_status",
+                          "l.publish_status",
+                          "l.freshness_score",
+                          "l.completeness_score",
+                          "l.trust_score",
+                          "l.profile",
+                          "l.field_meta",
+                          "l.trust_badges",
+                          "l.created_at",
+                          "l.updated_at",
+                          "l.created_by",
+                          "l.updated_by",
+                          "l.search_tsv",
+                          "l.meta_title",
+                          "l.meta_description",
+                          "l.canonical_path",
+                          "l.schema_type",
+                          "l.og_image",
+                          "l.hreflang_alt",
+                          "l.sells_products",
+                          "l.offers_services",
+                          "l.is_professional",
+                          "l.bookable",
+                          "l.booking_type",
+                          "l.service_on_demand",
+                          "l.marketplace_status",
+                          "l.price_range",
+                          "l.hours",
+                          "l.rating",
+                          "l.rating_count",
+                          "l.photo_url",
+                          "l.amenities",
+                          "l.geo_precision",
+                          "l.embedding",
+                          "l.keywords",
+                          "l.onboarding_path",
+                          "l.social_links",
+                          "l.ingestion_source",
+                          "l.owner_workspace_id",
+                          "l.place_id",
+                          "l.region_code",
+                          "l.region_native"
+                        ],
+                        "Recheck Cond": "((l.publish_status = 'published'::text) AND (l.moderation_status = ANY ('{clean,cleared}'::text[])) AND (COALESCE(l.marketplace_status, ''::text) <> 'hidden'::text))",
+                        "Plans": [
+                          {
+                            "Node Type": "Bitmap Index Scan",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Index Name": "listings_public_discovery_counts_idx",
+                            "Startup Cost": 0,
+                            "Total Cost": 264.04,
+                            "Plan Rows": 31851,
+                            "Plan Width": 0
+                          }
+                        ]
+                      },
+                      {
+                        "Node Type": "Hash",
+                        "Parent Relationship": "Inner",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Startup Cost": 3.5,
+                        "Total Cost": 3.5,
+                        "Plan Rows": 150,
+                        "Plan Width": 25,
+                        "Output": [
+                          "c.label_en",
+                          "c.id"
+                        ],
+                        "Plans": [
+                          {
+                            "Node Type": "Seq Scan",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Relation Name": "categories",
+                            "Schema": "zoi",
+                            "Alias": "c",
+                            "Startup Cost": 0,
+                            "Total Cost": 3.5,
+                            "Plan Rows": 150,
+                            "Plan Width": 25,
+                            "Output": [
+                              "c.label_en",
+                              "c.id"
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          "Query Identifier": 6391265754289409000
+        }
+      ]
+    }
+  ],
+  "global_query": "  select\n    l.id, coalesce(l.display_name, l.name) as name, l.entity_type, l.city, l.country,\n    c.label_en as category, l.website, l.phone,\n    nullif(l.profile #>> '{brand,logo}', '') as logo,\n    coalesce(l.profile #> '{brand,colors}', '[]'::jsonb) as colors,\n    nullif(l.profile #>> '{brand,tagline}', '') as tagline,\n    l.rating, l.rating_count,\n    coalesce(l.bookable,false), coalesce(l.sells_products,false), l.claim_status, l.verification_status\n  from zoi.listings l\n  left join zoi.categories c on c.id = l.primary_category_id\n  where l.publish_status = 'published' and l.moderation_status IN ('clean','cleared')\n    and coalesce(l.marketplace_status,'')<>'hidden'\n    and (NULL::text is null or l.entity_type = NULL::text)\n    and (NULL::text is null or l.city ilike '%'||NULL::text||'%')\n  order by (l.rating is not null) desc, l.rating desc nulls last,\n           (nullif(l.profile #>> '{brand,logo}','') is not null) desc,\n           l.completeness_score desc nulls last, l.name asc\n  limit greatest(1, least(coalesce(30,30), 60))\n  offset greatest(0, coalesce(0,0));"
+}

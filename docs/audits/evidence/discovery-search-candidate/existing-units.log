@@ -1,0 +1,35 @@
+✔ public autocomplete preserves filters and explicitly separates cross-category fallback (1.666797ms)
+✔ in-filter results avoid fallback, unsafe records and private fields never leave projection (0.349661ms)
+✔ short query makes no requests and failure does not invent results (1.127041ms)
+✔ cancelled and stale responses cannot reopen or replace newer suggestions (13.42747ms)
+✔ a temporary transport failure recovers without asking the visitor to retry (3.228699ms)
+✔ hung transport is bounded and retried, and persistent failure stays honest (12.218957ms)
+✔ closing suggestions cancels a scheduled automatic retry (41.244543ms)
+✔ strict map scope never expands an empty suggestion result into another city (0.316741ms)
+✔ map suggestions omit disabled categories when several categories remain selected (0.451692ms)
+✔ multi-category selection reaches RPC before its limit with one scoped request (0.524598ms)
+✔ no selected types means no fetch and malformed selections fail closed (0.279381ms)
+✔ multi-category request keeps cancellation signal and cannot broaden an empty category response (0.26287ms)
+✔ minimal own projection requires confirmed receipt and explicit locality opt-in (2.042978ms)
+✔ explicit destination and global choice win; category browsing may use saved home (1.360766ms)
+✔ account switch aborts prior read and late response cannot expose previous home (5.374068ms)
+✔ guest makes no private request and failure leaves no stale preferences (0.539896ms)
+✔ private read calls only existing own RPC, no-store and abort signal; never a preference writer (0.708721ms)
+✔ map Back/Forward restores browse intent without leaking saved home into history (0.329434ms)
+✔ returning from preferences refreshes the same account without flashing global, but direct account changes clear home (4.042837ms)
+✔ latest migration removes the ambiguous explore_search overload (1.431619ms)
+✔ directory does not render raw backend errors to visitors (0.65439ms)
+✔ community feed does not render raw backend errors to visitors (1.27665ms)
+✔ mobile header constrains navigation and removes the secondary CTA (0.479223ms)
+✔ community feed migration removes the ambiguous scoped overload (0.258312ms)
+✔ Vercel preserves browser protections with only the public widget frame exception (0.741392ms)
+✔ Event OS SECURITY DEFINER functions pin an empty search_path (0.270093ms)
+✔ zoi-core handles auth expiry and token freshness checks (1.00873ms)
+ℹ tests 27
+ℹ suites 0
+ℹ pass 27
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 132.694409

@@ -1,0 +1,5 @@
+{
+  "read_only": true,
+  "definition": "CREATE OR REPLACE FUNCTION zoi.geo_country_canon(p_raw text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case lower(nullif(trim(coalesce(p_raw, '')), ''))\n    when 'us' then 'United States'\n    when 'usa' then 'United States'\n    when 'u.s.' then 'United States'\n    when 'u.s.a.' then 'United States'\n    when 'united states of america' then 'United States'\n    when 'uk' then 'United Kingdom'\n    when 'great britain' then 'United Kingdom'\n    when 'gb' then 'United Kingdom'\n    when 'uae' then 'United Arab Emirates'\n    when 'gr' then 'Greece'\n    when 'el' then 'Greece'\n    when 'ca' then 'Canada'\n    when 'au' then 'Australia'\n    when 'nz' then 'New Zealand'\n    when 'cy' then 'Cyprus'\n    else nullif(trim(p_raw), '')\n  end\n$function$\n",
+  "definition_md5": "a4610e0eee4af255cbc37d228b248be9"
+}

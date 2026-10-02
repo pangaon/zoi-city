@@ -1,0 +1,111 @@
+[
+  {
+    "QUERY PLAN": [
+      {
+        "Plan": {
+          "Node Type": "Aggregate",
+          "Strategy": "Plain",
+          "Partial Mode": "Simple",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 4410.92,
+          "Total Cost": 4410.93,
+          "Plan Rows": 1,
+          "Plan Width": 32,
+          "Actual Startup Time": 1087.525,
+          "Actual Total Time": 1087.527,
+          "Actual Rows": 1,
+          "Actual Loops": 1,
+          "Shared Hit Blocks": 4251,
+          "Shared Read Blocks": 0,
+          "Shared Dirtied Blocks": 0,
+          "Shared Written Blocks": 0,
+          "Local Hit Blocks": 0,
+          "Local Read Blocks": 0,
+          "Local Dirtied Blocks": 0,
+          "Local Written Blocks": 0,
+          "Temp Read Blocks": 0,
+          "Temp Written Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Sort",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Startup Cost": 4092.41,
+              "Total Cost": 4172.04,
+              "Plan Rows": 31851,
+              "Plan Width": 19,
+              "Actual Startup Time": 1072.604,
+              "Actual Total Time": 1075.079,
+              "Actual Rows": 32074,
+              "Actual Loops": 1,
+              "Sort Key": [
+                "city"
+              ],
+              "Sort Method": "quicksort",
+              "Sort Space Used": 1957,
+              "Sort Space Type": "Memory",
+              "Shared Hit Blocks": 4251,
+              "Shared Read Blocks": 0,
+              "Shared Dirtied Blocks": 0,
+              "Shared Written Blocks": 0,
+              "Local Hit Blocks": 0,
+              "Local Read Blocks": 0,
+              "Local Dirtied Blocks": 0,
+              "Local Written Blocks": 0,
+              "Temp Read Blocks": 0,
+              "Temp Written Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Index Only Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Scan Direction": "Forward",
+                  "Index Name": "listings_public_geography_counts_idx",
+                  "Relation Name": "listings",
+                  "Alias": "l",
+                  "Startup Cost": 0.41,
+                  "Total Cost": 1710.11,
+                  "Plan Rows": 31851,
+                  "Plan Width": 19,
+                  "Actual Startup Time": 1.711,
+                  "Actual Total Time": 1046.172,
+                  "Actual Rows": 32074,
+                  "Actual Loops": 1,
+                  "Heap Fetches": 4104,
+                  "Shared Hit Blocks": 4248,
+                  "Shared Read Blocks": 0,
+                  "Shared Dirtied Blocks": 0,
+                  "Shared Written Blocks": 0,
+                  "Local Hit Blocks": 0,
+                  "Local Read Blocks": 0,
+                  "Local Dirtied Blocks": 0,
+                  "Local Written Blocks": 0,
+                  "Temp Read Blocks": 0,
+                  "Temp Written Blocks": 0
+                }
+              ]
+            }
+          ]
+        },
+        "Planning": {
+          "Shared Hit Blocks": 611,
+          "Shared Read Blocks": 0,
+          "Shared Dirtied Blocks": 0,
+          "Shared Written Blocks": 0,
+          "Local Hit Blocks": 0,
+          "Local Read Blocks": 0,
+          "Local Dirtied Blocks": 0,
+          "Local Written Blocks": 0,
+          "Temp Read Blocks": 0,
+          "Temp Written Blocks": 0
+        },
+        "Planning Time": 9.946,
+        "Triggers": [],
+        "Execution Time": 1088.024
+      }
+    ]
+  }
+]

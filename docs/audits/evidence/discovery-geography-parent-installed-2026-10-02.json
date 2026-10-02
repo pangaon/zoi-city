@@ -1,0 +1,61 @@
+{
+  "index": {
+    "bytes": 2023424,
+    "ready": true,
+    "valid": true,
+    "definition": "CREATE INDEX listings_public_geography_counts_idx ON zoi.listings USING btree (country, region, city) INCLUDE (region_code, region_native) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+  },
+  "stats": {
+    "cities": 7661,
+    "listings": 32074,
+    "countries": 86
+  },
+  "ledger": [
+    {
+      "name": "discovery_public_geography_counts",
+      "version": "20261002225247"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "hash": "18cc96d405f93d9abe4abfbf979206f2",
+      "owner": "postgres",
+      "signature": "home_stats()",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_stats()\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n SELECT jsonb_build_object('listings',count(*),'cities',count(DISTINCT l.city),\n  'countries',count(DISTINCT l.country))\n FROM zoi.listings l\n WHERE l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n  AND coalesce(l.marketplace_status,'')<>'hidden';\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "hash": "be3a56eaef90c90a567b8aac5b6fc7e1",
+      "owner": "postgres",
+      "signature": "explore_regions(text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_regions(p_country text DEFAULT NULL::text)\n RETURNS TABLE(country text, region text, region_code text, listings bigint, cities bigint)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n WITH eligible AS MATERIALIZED (\n  SELECT l.country,l.region,l.city,l.region_code,count(*) AS n\n  FROM zoi.listings l\n  WHERE l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n   AND coalesce(l.marketplace_status,'')<>'hidden'\n   AND l.region IS NOT NULL AND l.region<>''\n  GROUP BY l.country,l.region,l.city,l.region_code\n ), names AS MATERIALIZED (SELECT DISTINCT country FROM eligible),\n canonical AS MATERIALIZED (\n  SELECT country AS original,zoi.geo_country_canon(country) AS name FROM names\n )\n SELECT c.name,l.region,max(l.region_code),sum(l.n)::bigint,count(DISTINCT l.city)\n FROM eligible l JOIN canonical c ON c.original=l.country\n WHERE c.name IS NOT NULL\n  AND (p_country IS NULL OR p_country='' OR c.name ILIKE p_country)\n GROUP BY c.name,l.region ORDER BY sum(l.n) DESC;\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "hash": "8b87e02e65d94d1617f01cf068777628",
+      "owner": "postgres",
+      "signature": "explore_countries()",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_countries()\n RETURNS TABLE(country text, listings bigint, regions bigint, cities bigint)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n WITH eligible AS MATERIALIZED (\n  SELECT l.country,l.region,l.city,count(*) AS n FROM zoi.listings l\n  WHERE l.publish_status='published'\n   AND l.moderation_status IN ('clean','cleared')\n   AND coalesce(l.marketplace_status,'')<>'hidden'\n   AND nullif(l.country,'') IS NOT NULL\n  GROUP BY l.country,l.region,l.city\n ), names AS MATERIALIZED (SELECT DISTINCT country FROM eligible),\n canonical AS MATERIALIZED (\n  SELECT country AS original,zoi.geo_country_canon(country) AS name FROM names\n )\n SELECT c.name,sum(l.n)::bigint,count(DISTINCT l.region),count(DISTINCT l.city)\n FROM eligible l JOIN canonical c ON c.original=l.country\n WHERE c.name IS NOT NULL GROUP BY c.name ORDER BY sum(l.n) DESC,c.name;\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "hash": "cd3b4dad30c8f8aaa8629f88416def19",
+      "owner": "postgres",
+      "signature": "explore_region_cities(text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_region_cities(p_country text DEFAULT NULL::text, p_region text DEFAULT NULL::text)\n RETURNS TABLE(country text, region text, city text, listings bigint)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n WITH eligible AS MATERIALIZED (\n  SELECT l.country,l.region,l.city,count(*) AS n FROM zoi.listings l\n  WHERE l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n   AND coalesce(l.marketplace_status,'')<>'hidden'\n   AND l.city IS NOT NULL AND l.city<>''\n   AND (p_region IS NULL OR p_region='' OR l.region ILIKE p_region\n    OR l.region_native ILIKE p_region OR upper(l.region_code)=upper(p_region))\n  GROUP BY l.country,l.region,l.city\n ), names AS MATERIALIZED (SELECT DISTINCT country FROM eligible),\n canonical AS MATERIALIZED (\n  SELECT country AS original,zoi.geo_country_canon(country) AS name FROM names\n )\n SELECT c.name,l.region,l.city,sum(l.n)::bigint\n FROM eligible l JOIN canonical c ON c.original=l.country\n WHERE c.name IS NOT NULL\n  AND (p_country IS NULL OR p_country='' OR c.name ILIKE p_country)\n GROUP BY c.name,l.region,l.city ORDER BY sum(l.n) DESC;\n$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "hash": "8355bf6e44081bde70207786b027e822",
+      "owner": "postgres",
+      "signature": "explore_cities(integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_cities(p_limit integer DEFAULT 24)\n RETURNS TABLE(city text, country text, n bigint)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n WITH eligible AS MATERIALIZED (\n  SELECT l.country,l.city,count(*) AS n FROM zoi.listings l\n  WHERE l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n   AND coalesce(l.marketplace_status,'')<>'hidden'\n   AND l.city IS NOT NULL AND l.city<>''\n  GROUP BY l.country,l.city\n ), names AS MATERIALIZED (SELECT DISTINCT country FROM eligible),\n canonical AS MATERIALIZED (\n  SELECT country AS original,zoi.geo_country_canon(country) AS name FROM names\n )\n SELECT l.city,c.name,sum(l.n)::bigint\n FROM eligible l LEFT JOIN canonical c ON c.original=l.country\n GROUP BY l.city,c.name ORDER BY sum(l.n) DESC,l.city\n LIMIT least(greatest(coalesce(p_limit,24),1),100);\n$function$\n"
+    }
+  ],
+  "reference_stats": {
+    "cities": 7661,
+    "listings": 32074,
+    "countries": 86
+  }
+}

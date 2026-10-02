@@ -1,0 +1,35 @@
+✖ every local stylesheet and script referenced by a web page exists in the deployed source (3.237425ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 65.528018
+
+✖ failing tests:
+
+test at tests/unit/static-assets.test.mjs:7:1
+✖ every local stylesheet and script referenced by a web page exists in the deployed source (3.237425ms)
+  AssertionError [ERR_ASSERTION]: Missing deployed assets:
+  docs/audits/evidence-like/product.html → /publisher/missing.js
+  + actual - expected
+  
+  + [
+  +   'docs/audits/evidence-like/product.html → /publisher/missing.js'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///tmp/zoi-static-assets-independent-8ffpruyg/tests/unit/static-assets.test.mjs:13:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'docs/audits/evidence-like/product.html → /publisher/missing.js' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

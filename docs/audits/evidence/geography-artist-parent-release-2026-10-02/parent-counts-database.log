@@ -1,0 +1,14 @@
+PASS isolated PostgreSQL matches exact installed definitions, signatures and ACLs
+PASS installed countries agrees with independent eligible-row reference on 48,004 wide rows
+PASS body, grant and country-normalization drift reject migration before any index or reader mutation
+PASS migration preserves installed owner/ACL/config/defaults/returns and countries body
+PASS country aliases, NULL/empty/Unicode, region codes, duplicate cities and country ILIKE filters remain exact
+PASS cities preserve aliases including NULL canonical country groups, ordering and NULL/min/max limit contract
+PASS region cities preserve country/region/native/code/escaped-pattern filters and NULL/empty regional groups
+PASS regions/stats exclude hidden/moderated/draft rows; stats retain raw country and empty-string distinct semantics
+PASS public readers work through existing definer rights without granting direct private-table access
+PASS all five readers choose covering index-only scans without planner forcing or heap fetches; buffers decrease
+PASS fresh counts change immediately with current visibility; NULL moderation is excluded
+PASS empty table returns zero-valued stats and empty option arrays; test rolls back original corpus
+PASS replay fails closed rather than silently replacing changed readers
+13 discovery geography database groups passed
