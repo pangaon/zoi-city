@@ -574,7 +574,8 @@
           profile: state.ownerProfile || e.profile,
           onDirty: function () { contentDirty=true; }
         });
-        if(['event','venue'].includes(e.entity_type)||e.id==='9d969028-74cb-4b49-97f1-58eba8fc0e69'){var publicityModule=await import('/assets/events/publicity-editor.mjs');if(!scopeLive()||!slot.isConnected||state.entity?.id!==e.id)return;var publicitySlot=doc.createElement('section');slot.appendChild(publicitySlot);state.publicityForm=publicityModule.mountPublicityEditor(publicitySlot,{value:state.ownerProfile?.event_publicity||null,onDirty:function(){contentDirty=true;}});}
+        var publicityProfile=state.ownerProfile||e.profile||{};var promoterPublicity=e.entity_type==='business'&&(publicityProfile.business_type==='concert_promoter'||e.id==='9d969028-74cb-4b49-97f1-58eba8fc0e69'&&!Object.prototype.hasOwnProperty.call(publicityProfile,'business_type'));
+        if(['event','venue'].includes(e.entity_type)||promoterPublicity){var publicityModule=await import('/assets/events/publicity-editor.mjs');if(!scopeLive()||!slot.isConnected||state.entity?.id!==e.id)return;var publicitySlot=doc.createElement('section');slot.appendChild(publicitySlot);state.publicityForm=publicityModule.mountPublicityEditor(publicitySlot,{value:state.ownerProfile?.event_publicity||null,onDirty:function(){contentDirty=true;}});}
       } catch (err) {
         if(!scopeLive()||!slot.isConnected)return;
         // Never block the basics on this.

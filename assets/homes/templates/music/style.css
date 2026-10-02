@@ -48,3 +48,8 @@ body,body.atelier,body.concierge,body.table,body.parea{--paper:#f7fbff;--ink:#10
 
 /* Keep upstream failure visible without leaving a blank portrait column. */
 .music-hero .hero-photo-status{grid-column:1/-1;position:relative;margin:0;padding:18px 5vw;font-size:12px;line-height:1.6;color:var(--ink);background:var(--paper);border-top:1px solid var(--line);max-width:100%;overflow-wrap:anywhere}.hero-photo-status a{display:inline-block;margin-left:8px;text-underline-offset:4px}
+
+/* Owner catalogues carry title/date/provider, not an invented date tile or city. */
+.owner-catalogue-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:center;padding:24px 0;border-top:1px solid var(--line)}
+.owner-catalogue-row h3{font-size:22px;line-height:1.35;margin:0 0 10px;overflow-wrap:anywhere}.owner-catalogue-row p{margin:0 0 8px}.owner-catalogue-row small{color:var(--muted);line-height:1.5}.owner-catalogue-row .show-actions{grid-column:auto}
+@media(max-width:760px){.owner-catalogue-row{grid-template-columns:minmax(0,1fr);gap:18px}.owner-catalogue-row h3{font-size:21px}.owner-catalogue-row .show-actions{justify-content:flex-start}.owner-catalogue-row .outline{min-height:46px;border-radius:10px}}

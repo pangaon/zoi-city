@@ -1,0 +1,11 @@
+# Client owner and native member release — 2 October 2026
+
+Three independently accepted workflows: existing artist editor recordings/shows/merch → versioned save/readback → canonical public provider actions → explicit clears; existing concert-promoter announcements editor → saved dated exact-show count/source/expiry → public clear; native member internal profile assignment → exact existing task completion → lost-response recovery → refreshed assigned work. No parallel writer/store was introduced.
+
+Exact runtime snapshot tree89c8697bade9e4aba5c6e7feb6034e728febb377 at /tmp/zoi-client-member-release-yn7vkcwj passed full286node-test files plus2standalone suites.267mobile tests, TypeScript and Expo web export passed the byte-identical mobile tree in /tmp/zoi-artist-member-release-5zzy2ewj. Actual compiled Expo output /tmp/zoi-artist-member-expo served locally exercised completion/recovery/readback/viewer/held scope/denial at390/1440. Exact final snapshot artist catalogue/store and promoter save/public/clear/sparse/expiry journeys passed both widths. Phone member list and artist public rows visually inspected. Independent producer/reviewer audits retain separate evidence.
+
+Cache integration versions browser entry/app/style consumers. An initial query added to the shared server/browser render import failed the required API import tracing checks; restored query-free imports and reran the full checks successfully. Do not query cache-bust server imports. Official website HTML captures are retained compressed, preserving decompressed original hashes; vendor HTML/scripts are evidence, not app pages.
+
+Volunteer is deliberately excluded: lead caught missing installed operation capability before deploying the new writer forms. Producer is reopening the web/native/server contract; unapplied migration and pending recovery startup must remain gated. Other service/geography/customer data proposals remain unstaged.
+
+Production deployment and CI results must be appended after terminal evidence. No actual production owner save, provider checkout, real300-ticket claim, automatic social feed, signed native distribution, physical-device run or Volunteer schema application is established here. Artist shared projection is improved; all-artist source coverage and sparse actual production records remain open.

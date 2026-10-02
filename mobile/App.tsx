@@ -131,7 +131,7 @@ function Grow({ open }: { open: (path: string) => void }) {
   const {session,workspaceId}=useAuth();
   const tools=[
     {id:'appearances',category:'Create',title:'Confirmed artist appearances',text:'Agree exact show dates between artist and event owners.',node:<AppearanceOperator/>},
-    {id:'priorities',category:'Business',title:'Today’s priorities',text:'Review real tasks, bookings and publishing issues.',node:<PrioritiesPanel/>},
+    {id:'priorities',category:'Business',title:'Your work & priorities',text:'Open your assigned tasks and review current workspace activity.',node:<PrioritiesPanel/>},
     {id:'operations',category:'Business',title:'Business operations',text:'Companies, contacts, projects, matters and tasks.',node:<OperationsPanel/>},
     {id:'time',category:'Business',title:'Time and approvals',text:'Private work records, server timers and timesheets.',node:<TimekeepingPanel/>},
     {id:'documents',category:'Business',title:'Private documents',text:'Secure project files, versions and access history.',node:<DocumentsPanel/>},
