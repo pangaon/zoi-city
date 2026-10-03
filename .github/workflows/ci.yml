@@ -28,6 +28,9 @@ jobs:
       - name: Syntax-check every inline <script> block
         run: npm run check
 
+      - name: Check tracked source and evidence for credential signatures
+        run: node scripts/check-source-credentials.mjs .
+
       - name: Lint HTML well-formedness
         run: npm run lint:html
 
