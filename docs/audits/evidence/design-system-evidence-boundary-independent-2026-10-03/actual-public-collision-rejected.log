@@ -1,0 +1,39 @@
+✖ no page silently inherits design-system styling through a reused class name (30.398163ms)
+✔ the recorded collision baseline is still accurate (13.477302ms)
+✔ the hidden attribute is guarded globally (0.47096ms)
+✔ the shared shell exposes the continuity utilities needed for a consistent product (0.517316ms)
+✔ every page that styles the globe container also ships the loader (6.828549ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 4
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 123.087862
+
+✖ failing tests:
+
+test at tests/unit/design-system.test.mjs:83:1
+✖ no page silently inherits design-system styling through a reused class name (30.398163ms)
+  AssertionError [ERR_ASSERTION]: NEW class collision with the design system. Namespace it (see the map page's m-* prefix), or add it to SHARED if the reuse is deliberate:
+    public-regression/index.html restyles .field
+  + actual - expected
+  
+  + [
+  +   'public-regression/index.html restyles .field'
+  + ]
+  - []
+  
+      at TestContext.<anonymous> (file:///tmp/zoi-design-scanner-independent-ewpfkz9d/tests/unit/design-system.test.mjs:101:10)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: [ 'public-regression/index.html restyles .field' ],
+    expected: [],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }

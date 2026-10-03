@@ -1,0 +1,266 @@
+{
+  "started_at": "2026-10-03T09:09:17.269Z",
+  "expected_ready_commit": "1fa1b8486c64971b29abd991bfc60ab3f78cbdb6",
+  "actual_production": true,
+  "no_routes_or_fixtures": true,
+  "no_account": true,
+  "no_writes": true,
+  "no_messages_or_composers": true,
+  "scope": "Exactly two widths for Toronto and canonical Montréal, once each; one explicit public ticket-setup check per loaded planner",
+  "cases": [
+    {
+      "kind": "toronto",
+      "width": 390,
+      "event_id": "4546481e-8995-482a-a0af-f0017613f187",
+      "errors": [],
+      "rpcs": [
+        {
+          "url": "https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/home_entity",
+          "status": 503,
+          "latency_ms": 7179,
+          "name": "home_entity",
+          "code": "PGRST002",
+          "message": "Could not query the database for the schema cache. Retrying."
+        },
+        {
+          "url": "https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/home_entity",
+          "status": 503,
+          "latency_ms": 8389,
+          "name": "home_entity",
+          "code": "PGRST002",
+          "message": "Could not query the database for the schema cache. Retrying."
+        }
+      ],
+      "assets": [
+        {
+          "url": "https://www.zoi.city/assets/events/signature/customer-a.css?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 191,
+          "path": "/assets/events/signature/customer-a.css",
+          "bytes": 22298,
+          "actual_sha256": "ebd898cd4acbd39c0bce9b512fc43fd08e727b85bbee302982ef5b760d0e3cf7",
+          "expected_sha256": "ebd898cd4acbd39c0bce9b512fc43fd08e727b85bbee302982ef5b760d0e3cf7",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/signature/experience.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 191,
+          "path": "/assets/events/signature/experience.mjs",
+          "bytes": 3606,
+          "actual_sha256": "e070fb1f0cd302d3ae50ab02b31a48073b0c735c538d3ecc5d9370da0dd5c159",
+          "expected_sha256": "e070fb1f0cd302d3ae50ab02b31a48073b0c735c538d3ecc5d9370da0dd5c159",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/signature/customer-a.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 66,
+          "path": "/assets/events/signature/customer-a.mjs",
+          "bytes": 28653,
+          "actual_sha256": "4cd9cf0aaf7c645bb281e620b32de714e68e779313f698af3ede818d9f25341b",
+          "expected_sha256": "4cd9cf0aaf7c645bb281e620b32de714e68e779313f698af3ede818d9f25341b",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/guest-planning.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 84,
+          "path": "/assets/events/guest-planning.mjs",
+          "bytes": 10536,
+          "actual_sha256": "f38529ed5bc2403e8953ea00ddcea41058f2c71c3db387dab78f93b10438d9d0",
+          "expected_sha256": "f38529ed5bc2403e8953ea00ddcea41058f2c71c3db387dab78f93b10438d9d0",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/signature/private-plan.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 34,
+          "path": "/assets/events/signature/private-plan.mjs",
+          "bytes": 7362,
+          "actual_sha256": "2e616dbf1db6899fcf7679bfedd05d61e7febda381f4885e34be07f90fa67cff",
+          "expected_sha256": "2e616dbf1db6899fcf7679bfedd05d61e7febda381f4885e34be07f90fa67cff",
+          "matches": true
+        }
+      ],
+      "request_failures": [],
+      "non_read_requests": [],
+      "checks": [
+        "actual source Table9 selection reaches guest planner",
+        "one deliberate public setup check; unavailable versus verified configured:false kept distinct",
+        "3/1/5 anonymous group preserved through public setup result; no contacts, composers or private save"
+      ],
+      "status": "degraded_guest_usable",
+      "document": {
+        "url": "https://www.zoi.city/events/giannis-ploutarchos-andromache-toronto-2027/",
+        "status": 200,
+        "bytes_sha256": "454f7986cddfff40b30513e05dab49a1bb3e624c882d0fbce02570e81389bfb0",
+        "charset": "UTF-8"
+      },
+      "title": "Giannis\nPloutarchos\n& Andromache",
+      "setup_before": "Ready for the organizer?\n\nEvent details are temporarily unavailable. This does not mean tickets are unconfigured. Your parea stays here; retry or use the organizer contact.\n\nRetry event setup\n\nPlanning messages create no allocation, ticket, hold or payment.",
+      "setup_after": "Ready for the organizer?\n\nEvent details are temporarily unavailable. This does not mean tickets are unconfigured. Your parea stays here; retry or use the organizer contact.\n\nRetry event setup\n\nPlanning messages create no allocation, ticket, hold or payment.",
+      "setup_classification": "service_unavailable",
+      "render": {
+        "overflow": 390,
+        "planner_text": "1\nYour night\n2\nYour group\n3\nReview\nBring my usual group\n20 MARCH 2027\nTable 9\n$200.00 per guest · 9 whole tickets\nExplore the room ↗\n\nPreference only · No seats held\n\nYour people.\nTheir tickets.\nGroup tickets\n\nGive each person one ticket or several. Contacts are optional; add one to prepare a text or email.\n\n1\nName\nTickets\n×\nEmail or mobile (optional)\nAdd contact ↗\n$600.00\n2\nName\nTickets\n×\nEmail or mobile (optional)\nAdd contact ↗\n$200.00\n3\nName\nTickets\n×\nEmail or mobile (optional)\nAdd contact ↗\n$1,000.00\n\n9 of 9 tickets assigned · Your parea is ready to review\n\n+ Add someone\nGroup ticket subtotal\n$1,800.00\n9 whole tickets · Currency, taxes & fees to confirm\nSeating & occasion\n\nThese assignments are private drafts. Contacts stay in this page’s memory. Saved groups reuse names and quantities, without saving email or phone details.\n\nReview & share →",
+        "private_panel": {
+          "background": "linear-gradient(145deg, rgb(20, 47, 71), rgb(11, 29, 50))",
+          "text": "rgb(243, 247, 252)"
+        },
+        "canvas_count": 2
+      },
+      "elapsed_ms": 16664
+    },
+    {
+      "kind": "toronto",
+      "width": 1440,
+      "event_id": "4546481e-8995-482a-a0af-f0017613f187",
+      "errors": [],
+      "rpcs": [
+        {
+          "url": "https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/home_entity",
+          "status": 503,
+          "latency_ms": 4202,
+          "name": "home_entity",
+          "code": "PGRST002",
+          "message": "Could not query the database for the schema cache. Retrying."
+        },
+        {
+          "url": "https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/home_entity",
+          "status": 503,
+          "latency_ms": 3907,
+          "name": "home_entity",
+          "code": "PGRST002",
+          "message": "Could not query the database for the schema cache. Retrying."
+        }
+      ],
+      "assets": [
+        {
+          "url": "https://www.zoi.city/assets/events/signature/customer-a.css?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 31,
+          "path": "/assets/events/signature/customer-a.css",
+          "bytes": 22298,
+          "actual_sha256": "ebd898cd4acbd39c0bce9b512fc43fd08e727b85bbee302982ef5b760d0e3cf7",
+          "expected_sha256": "ebd898cd4acbd39c0bce9b512fc43fd08e727b85bbee302982ef5b760d0e3cf7",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/signature/experience.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 64,
+          "path": "/assets/events/signature/experience.mjs",
+          "bytes": 3606,
+          "actual_sha256": "e070fb1f0cd302d3ae50ab02b31a48073b0c735c538d3ecc5d9370da0dd5c159",
+          "expected_sha256": "e070fb1f0cd302d3ae50ab02b31a48073b0c735c538d3ecc5d9370da0dd5c159",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/guest-planning.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 8,
+          "path": "/assets/events/guest-planning.mjs",
+          "bytes": 10536,
+          "actual_sha256": "f38529ed5bc2403e8953ea00ddcea41058f2c71c3db387dab78f93b10438d9d0",
+          "expected_sha256": "f38529ed5bc2403e8953ea00ddcea41058f2c71c3db387dab78f93b10438d9d0",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/signature/customer-a.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 12,
+          "path": "/assets/events/signature/customer-a.mjs",
+          "bytes": 28653,
+          "actual_sha256": "4cd9cf0aaf7c645bb281e620b32de714e68e779313f698af3ede818d9f25341b",
+          "expected_sha256": "4cd9cf0aaf7c645bb281e620b32de714e68e779313f698af3ede818d9f25341b",
+          "matches": true
+        },
+        {
+          "url": "https://www.zoi.city/assets/events/signature/private-plan.mjs?v=20261003-guest-plans",
+          "status": 200,
+          "latency_ms": 12,
+          "path": "/assets/events/signature/private-plan.mjs",
+          "bytes": 7362,
+          "actual_sha256": "2e616dbf1db6899fcf7679bfedd05d61e7febda381f4885e34be07f90fa67cff",
+          "expected_sha256": "2e616dbf1db6899fcf7679bfedd05d61e7febda381f4885e34be07f90fa67cff",
+          "matches": true
+        }
+      ],
+      "request_failures": [],
+      "non_read_requests": [],
+      "checks": [
+        "actual source Table9 selection reaches guest planner",
+        "one deliberate public setup check; unavailable versus verified configured:false kept distinct",
+        "3/1/5 anonymous group preserved through public setup result; no contacts, composers or private save"
+      ],
+      "status": "degraded_guest_usable",
+      "document": {
+        "url": "https://www.zoi.city/events/giannis-ploutarchos-andromache-toronto-2027/",
+        "status": 200,
+        "bytes_sha256": "454f7986cddfff40b30513e05dab49a1bb3e624c882d0fbce02570e81389bfb0",
+        "charset": "UTF-8"
+      },
+      "title": "Giannis\nPloutarchos\n& Andromache",
+      "setup_before": "Ready for the organizer?\n\nEvent details are temporarily unavailable. This does not mean tickets are unconfigured. Your parea stays here; retry or use the organizer contact.\n\nRetry event setup\n\nPlanning messages create no allocation, ticket, hold or payment.",
+      "setup_after": "Ready for the organizer?\n\nEvent details are temporarily unavailable. This does not mean tickets are unconfigured. Your parea stays here; retry or use the organizer contact.\n\nRetry event setup\n\nPlanning messages create no allocation, ticket, hold or payment.",
+      "setup_classification": "service_unavailable",
+      "render": {
+        "overflow": 1440,
+        "planner_text": "1\nYour night\n2\nYour group\n3\nReview\nBring my usual group\n20 MARCH 2027\nTable 9\n$200.00 per guest · 9 whole tickets\nExplore the room ↗\n\nPreference only · No seats held\n\nYour people.\nTheir tickets.\nGroup tickets\n\nGive each person one ticket or several. Contacts are optional; add one to prepare a text or email.\n\n1\nName\nTickets\n×\nEmail or mobile (optional)\nAdd contact ↗\n$600.00\n2\nName\nTickets\n×\nEmail or mobile (optional)\nAdd contact ↗\n$200.00\n3\nName\nTickets\n×\nEmail or mobile (optional)\nAdd contact ↗\n$1,000.00\n\n9 of 9 tickets assigned · Your parea is ready to review\n\n+ Add someone\nGroup ticket subtotal\n$1,800.00\n9 whole tickets · Currency, taxes & fees to confirm\nSeating & occasion\n\nThese assignments are private drafts. Contacts stay in this page’s memory. Saved groups reuse names and quantities, without saving email or phone details.\n\nReview & share →",
+        "private_panel": {
+          "background": "linear-gradient(145deg, rgb(20, 47, 71), rgb(11, 29, 50))",
+          "text": "rgb(243, 247, 252)"
+        },
+        "canvas_count": 2
+      },
+      "elapsed_ms": 17039
+    },
+    {
+      "kind": "montreal",
+      "width": 390,
+      "event_id": "9b241a00-f0c9-5748-8e22-79e2e0b57f79",
+      "errors": [],
+      "rpcs": [],
+      "assets": [],
+      "request_failures": [],
+      "non_read_requests": [],
+      "checks": [
+        "canonical document did not load; no guest capability inferred"
+      ],
+      "status": "public_service_unavailable",
+      "document": {
+        "url": "https://www.zoi.city/event/giannis-ploutarchos-andromache-montreal-2027",
+        "status": 503,
+        "bytes_sha256": "a31282895199df0f28603c8b21492342c576d6b5ceae24ee75396a95d599554b",
+        "charset": "UTF-8"
+      },
+      "dom": "Zoi\n\nThis profile couldn’t load\n\nWe couldn’t retrieve the latest details. Please try this page again.\n\nBack to Explore",
+      "elapsed_ms": 1528
+    },
+    {
+      "kind": "montreal",
+      "width": 1440,
+      "event_id": "9b241a00-f0c9-5748-8e22-79e2e0b57f79",
+      "errors": [],
+      "rpcs": [],
+      "assets": [],
+      "request_failures": [],
+      "non_read_requests": [],
+      "checks": [
+        "canonical document did not load; no guest capability inferred"
+      ],
+      "status": "public_service_unavailable",
+      "document": {
+        "url": "https://www.zoi.city/event/giannis-ploutarchos-andromache-montreal-2027",
+        "status": 503,
+        "bytes_sha256": "a31282895199df0f28603c8b21492342c576d6b5ceae24ee75396a95d599554b",
+        "charset": "UTF-8"
+      },
+      "dom": "Zoi\n\nThis profile couldn’t load\n\nWe couldn’t retrieve the latest details. Please try this page again.\n\nBack to Explore",
+      "elapsed_ms": 2226
+    }
+  ],
+  "status": "partial",
+  "completed_at": "2026-10-03T09:10:00.262Z"
+}

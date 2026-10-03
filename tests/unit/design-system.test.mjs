@@ -34,6 +34,8 @@ function html(dir, out = []) {
   for (const e of readdirSync(dir)) {
     if (e === 'node_modules' || e === '.git' || e === 'tests') continue;
     const p = join(dir, e);
+    // Immutable audit snapshots are not deployed pages; keep public pages checked.
+    if (relative(ROOT, p) === join('docs', 'audits', 'evidence')) continue;
     if (statSync(p).isDirectory()) html(p, out);
     else if (e.endsWith('.html')) out.push(p);
   }
