@@ -1,5 +1,6 @@
+import {publicPublicity} from '../publicity.mjs';
 import {openPosterDialog} from '../../sharing/poster-dialog.mjs';
-import {mountSignatureCustomer} from './customer-a.mjs?v=20261003-company-parea-rooms';
+import {mountSignatureCustomer} from './customer-a.mjs?v=20261003-host-authority';
 import {mountVenueExperience} from './venue-experience.mjs?v=20261003-company-parea-rooms';
 import {createPrivatePlan} from './private-plan.mjs';
 const C=window.ZoiCore,customerRoot=document.querySelector('#signature-customer'),venueRoot=document.querySelector('#signature-room'),saveRoot=document.querySelector('#signature-save');
@@ -29,7 +30,7 @@ function requestContact(data){
  name.focus({preventScroll:true});
 }
 function mount(){adapter=createPrivatePlan({C,onState:state});customer=mountSignatureCustomer({root:customerRoot,onPlanSave:async data=>{requestContact(data);saveRoot.scrollIntoView({block:'center'});}});venue=mountVenueExperience({root:venueRoot,onSelection:selection=>customer.setTableSelection(selection.table_ids),onRequest:selection=>{customer.setTableSelection(selection.table_ids);customer.showGroupSetup();document.querySelector('#sig-request').scrollIntoView({block:'start'});}});
- const mountedVenue=venue,eventSlug=location.pathname.split('/').filter(Boolean).at(-1);if(eventSlug==='giannis-ploutarchos-andromache-toronto-2027')C.api.rpc('home_entity',{p_slug:eventSlug},{auth:'anon'}).then(entity=>{if(disposed||venue!==mountedVenue||entity?.entity_type!=='event'||(entity.canonical_slug||entity.slug)!==eventSlug||!entity.id)return;customer.setEventId(entity.id);mountedVenue.connectPlacements(entity.id,(fn,args)=>C.api.rpc(fn,args,{auth:'anon'}));}).catch(()=>{});
+ const mountedVenue=venue,eventSlug=location.pathname.split('/').filter(Boolean).at(-1);if(eventSlug==='giannis-ploutarchos-andromache-toronto-2027')C.api.rpc('home_entity',{p_slug:eventSlug},{auth:'anon'}).then(entity=>{if(disposed||venue!==mountedVenue||entity?.entity_type!=='event'||(entity.canonical_slug||entity.slug)!==eventSlug||!entity.id)return;customer.setEventId(entity.id);customer.setPublicity(publicPublicity(entity),['https://www.zoi.city/event/'+encodeURIComponent(eventSlug),'https://www.zoi.city/events/'+encodeURIComponent(eventSlug)+'/',entity.website]);mountedVenue.connectPlacements(entity.id,(fn,args)=>C.api.rpc(fn,args,{auth:'anon'}));}).catch(()=>{});
  customerRoot.querySelector('[data-share-event]')?.addEventListener('click',event=>{shareDialog?.destroy();shareDialog=openPosterDialog({title:'Giannis Ploutarchos & Andromache · Toronto · 20 March 2027',url:'https://www.zoi.city/events/giannis-ploutarchos-andromache-toronto-2027/',poster:'/assets/events/signature/poster.jpg'},{opener:event.currentTarget});});
  customerRoot.querySelectorAll('.sig-a-nav a[href="#sig-request"],.sig-a-title a[href="#sig-request"]').forEach(link=>link.addEventListener('click',event=>{event.preventDefault();document.querySelector('#sig-request').scrollIntoView({block:'start'});customer.showGroupSetup();}));
  const explore=customerRoot.querySelector('[data-floor]');explore.textContent='Explore tables & lounges ↓';explore.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();venue.enterFullscreen();venueRoot.querySelector('h2')?.setAttribute('tabindex','-1');venueRoot.querySelector('[data-theater]')?.focus({preventScroll:true});});

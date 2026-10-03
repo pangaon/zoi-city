@@ -217,7 +217,7 @@
     wrap.appendChild(aiCard);
 
     var teamRoot=el('section','zs-card');teamRoot.textContent='Loading your team…';wrap.appendChild(teamRoot);
-    import('/assets/suite/workspace-team.mjs?v=20261001-invites').then(function(module){if(active())teamController=module.mountWorkspaceTeam(teamRoot,{C:C,ws:workspace,active:active,onAccessLost:function(){destroy();wrap.textContent='Your workspace access changed. Reopen Settings to continue.';}});}).catch(function(){if(active())teamRoot.textContent='Team tools could not load. Reopen Settings to retry.';});
+    import('/assets/suite/workspace-team.mjs?v=20261003-current-suite-authority').then(function(module){if(active())teamController=module.mountWorkspaceTeam(teamRoot,{C:C,ws:workspace,active:active,onAccessLost:function(){destroy();wrap.textContent='Your workspace access changed. Reopen Settings to continue.';}});}).catch(function(){if(active())teamRoot.textContent='Team tools could not load. Reopen Settings to retry.';});
 
     /* ===== 3) Appearance / theme ===== */
     var thCard = el('div', 'zs-card');

@@ -1,0 +1,13 @@
+# Additive correction to actual map acceptance wording
+
+The immutable map packet `7651b986b4e59629c56ff72504125ed1d16ebe4ddcc62699b7de537ae65257b6` remains unchanged. Its Kenya bullet incorrectly says Yamas has no published address and no address lookup. That sentence confuses the base record with the shared profile projection.
+
+Both original actual 390px and 1440px journeys render **“Map position not selected · Ground Floor, Westgate Shopping Mall, Mwanzi Rd”** and **“Find published address ↗”**. The actual link searches that published address and listing identity in Google Maps; it is not a numerical Directions destination. The preview explicitly states that the exact location is not verified. The base address, latitude and longitude are null and precision is `none`; no Nairobi pin or verified route is invented.
+
+A separate current public read at 07:25:06 UTC retains the exact Yamas identity `84bdafb9-966b-489a-a4d3-0dc3dc92acf9`, absent owner/profile address overrides, and `profile._enrich.address_parts.street` containing that exact street address, associated with `https://www.yamas.co.ke/`. The shared Quick look selector uses these source address parts when the source passes its identity/contact-scope checks and no authoritative address edit or clear exists. Map preview converts the address into an explicitly unverified provider lookup. This is an enriched address projection, not reviewed GIS coordinates.
+
+The first attempted additive public read returned HTTP500. Its body and exact time were not retained by that diagnostic script, so no cause/code is claimed. A later diagnostic read returned HTTP200 in 342 ms and supplied the field provenance above; it does not erase the first failure or prove future reliability. Neither read mutated data. The original map runs remain separate evidence.
+
+The accepted rendered frames are in **`settled-final/`**, not `run-final-v2/`. The latter phone Australia blank frame remains negative visual evidence. All six accepted preview frames were personally inspected: Kenya shows the global map with its unlocated profile; Cyprus and Australia show actual street basemaps and selected pins at both widths. The original settled report records actual loaded tiles, idle camera and nonempty rendered features for all six frames. Root independently confirmed the accepted phone Australia image. No additional renderer correctness or global GIS accuracy claim is made.
+
+Evidence is retained in `docs/audits/evidence/map-feed-index-production-render-addendum-2026-10-03/`: the original-render extract with source report hash, current field-provenance read, diagnostic reader and first failure. This additive correction contains no runtime, schema or source-data changes.

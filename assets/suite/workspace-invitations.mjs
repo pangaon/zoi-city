@@ -1,4 +1,4 @@
-import{UUID,TOKEN,secret,element as el,save,denied,rejected,validInvitation}from'/assets/workspace/invitation-shared.mjs?v=20261001-invites';
+import{UUID,TOKEN,secret,element as el,save,denied,rejected,validInvitation}from'/assets/workspace/invitation-shared.mjs?v=20261003-current-suite-authority';
 export function mountWorkspaceInvitations(root,{C,ws,active=()=>true,onAccessLost=()=>{}}){
  const actor=C.auth.load?.()?.user_id,key=`zoi_workspace_invites:${actor}:${ws}`;let ended=false,busy=false,snapshot=null,local={pending:null,links:{}};
  const current=()=>!ended&&active()&&root.isConnected&&C.auth.load?.()?.user_id===actor;

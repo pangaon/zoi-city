@@ -1,0 +1,20 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Controlled current owner authority</title><link rel="stylesheet" href="/assets/zoi-theme.css"><style>body{margin:0;background:var(--bg);color:var(--tx);font:14px system-ui}#root{padding:20px;max-width:1220px;margin:auto;box-sizing:border-box}*{box-sizing:border-box}</style></head><body><main id="root"></main><script src="/assets/suite/bizpage.js"></script><script>
+const actor='11111111-1111-4111-8111-111111111111',ws='22222222-2222-4222-8222-222222222222',listing='44444444-4444-4444-8444-444444444444';
+window.qa={actor,reads:[],writes:[],version:'a'.repeat(32),type:'business',mode:'ok',base:{description:'Owner page description',website:'https://old.example/business'},profile:{_enrich:{source_url:'https://old.example/business',blocked_reason:'source_scope_mismatch'}},owner_content:{},receipts:{}};
+qa.rpcCalls=[];qa.failure=null;qa.failureFn=null;qa.statusRevoked=false;qa.fresh=true;qa.readCalls=[];
+const C={auth:{load:()=>({user_id:qa.actor}),token:()=>qa.actor?'fixture':'',ensureFresh:async()=>!!qa.actor&&qa.fresh},api:{rpc:async(name,args)=>{
+ qa.rpcCalls.push({name,args:structuredClone(args)});qa.readCalls.push(name);if(qa.failure&&qa.failureFn===name)throw Object.assign(Error(qa.failure),{status:400,code:'P0001'});
+ if(name==='bizpage_status'&&qa.statusRevoked)return{ok:true,workspace_id:ws,claims:[],owned:[]};
+ if(name==='bizpage_status')return{ok:true,workspace_id:ws,claims:[],owned:[{id:listing,name:'Owner’s Ελληνική business',slug:'controlled-owner',claimed:true}]};
+ if(name==='home_content_get'){if(qa.mode==='read-fail')throw Error('not_authorized');qa.reads.push(args.p_listing);return{ok:true,workspace_id:ws,listing_id:listing,version:qa.version,entity_type:qa.type,category_slug:'shops',base:structuredClone(qa.base),profile:structuredClone(qa.profile),owner_content:structuredClone(qa.owner_content)};}
+ if(name==='home_content_save'){
+  qa.writes.push(structuredClone(args));if(qa.receipts[args.p_request])return structuredClone(qa.receipts[args.p_request]);
+  if(qa.mode==='conflict'||args.p_expected_version!==qa.version)throw Error('version_conflict');
+  if(qa.mode==='refuse')throw Error('not_authorized');
+  qa.base={...qa.base,...args.p_base};qa.owner_content={...qa.owner_content,...args.p_base};qa.profile={...qa.profile,...args.p_profile};qa.version=(qa.version[0]==='a'?'b':'a').repeat(32);
+  const receipt={ok:true,workspace_id:ws,listing_id:listing,request_id:args.p_request,version:qa.version};qa.receipts[args.p_request]=receipt;
+  if(qa.mode==='lost'){qa.mode='ok';throw Error('Response lost');}return receipt;
+ }throw Error('Unexpected RPC '+name);
+}}};
+qa.mount=()=>ZoiSuite.modules.find(x=>x.id==='bizpage').mount(document.querySelector('#root'),{C,ws});qa.mount();
+</script></body></html>

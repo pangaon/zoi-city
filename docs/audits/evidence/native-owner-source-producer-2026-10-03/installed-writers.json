@@ -1,0 +1,65 @@
+[
+  {
+    "name": "public.bizpage_save",
+    "args": "p_workspace uuid, p_listing uuid, p_description text, p_phone text, p_email text, p_website text, p_hours text, p_price_range text, p_photo_url text, p_social jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION public.bizpage_save(p_workspace uuid, p_listing uuid, p_description text, p_phone text, p_email text, p_website text, p_hours text, p_price_range text, p_photo_url text, p_social jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.home_content_authorize(p_workspace,p_listing);\n  PERFORM zoi.assert_ws(p_workspace);\n  IF NOT zoi.bizpage_can_edit(p_workspace,p_listing) THEN RAISE EXCEPTION 'no_access_to_listing'; END IF;\n  UPDATE zoi.listings SET\n    description=NULLIF(btrim(p_description),''), phone=NULLIF(btrim(p_phone),''),\n    email=NULLIF(lower(btrim(p_email)),''), website=NULLIF(btrim(p_website),''),\n    hours=NULLIF(btrim(p_hours),''), price_range=NULLIF(btrim(p_price_range),''),\n    photo_url=NULLIF(btrim(p_photo_url),''),\n    social_links=COALESCE(p_social,'{}'::jsonb),\n    updated_at=now(), updated_by='suite-bizpage'\n  WHERE id=p_listing;\n  RETURN FOUND;\nEND;$function$\n",
+    "sha256": "feab538bb54cb9310f0729d7b749501b40ff4359bbb7a08899fa0d1dc00b8c3b",
+    "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+  },
+  {
+    "name": "public.bizpage_save_profile",
+    "args": "p_workspace uuid, p_listing uuid, p_profile jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION public.bizpage_save_profile(p_workspace uuid, p_listing uuid, p_profile jsonb)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$ SELECT zoi.bizpage_save_profile(p_workspace, p_listing, p_profile); $function$\n",
+    "sha256": "76cb722c047d2c34dc9cb8abd95b3cf2575555aa322bea6d6497537a3b1f3458",
+    "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+  },
+  {
+    "name": "zoi.assert_hospitality_catalog",
+    "args": "p_profile jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.assert_hospitality_catalog(p_profile jsonb)\n RETURNS void\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE k text;\nBEGIN\n FOREACH k IN ARRAY ARRAY['rooms','dining','venues','amenities']LOOP\n IF p_profile?k AND NOT zoi.hospitality_catalog_valid(k,p_profile->k) THEN RAISE EXCEPTION 'invalid_hospitality_catalog';END IF;\n END LOOP;\nEND $function$\n",
+    "sha256": "b2898c1e0fc6bfb6aa9806fd553adba7dfc10053f389722e7d9e50ec1e120b17",
+    "proacl": "{postgres=X/postgres}"
+  },
+  {
+    "name": "zoi.assert_ws",
+    "args": "p_ws uuid",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.assert_ws(p_ws uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin perform zoi.workspace_current_role(p_ws);end $function$\n",
+    "sha256": "b6062c8002a5d9e2386f6b47a649bb7aa9f858cb13800fb4cf2f90c5e20f0e18",
+    "proacl": null
+  },
+  {
+    "name": "zoi.bizpage_can_edit",
+    "args": "p_workspace uuid, p_listing uuid",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.bizpage_can_edit(p_workspace uuid, p_listing uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT EXISTS(\n    SELECT 1 FROM zoi.listings l WHERE l.id=p_listing AND l.owner_workspace_id=p_workspace\n    UNION ALL\n    SELECT 1 FROM zoi.listing_claims c WHERE c.listing_id=p_listing AND c.workspace_id=p_workspace AND c.claim_status IN ('approved','verified')\n  );\n$function$\n",
+    "sha256": "629c268bc4892169f9d321f4841b5929aca76469953b73af42a171d1229e273c",
+    "proacl": null
+  },
+  {
+    "name": "zoi.bizpage_save_profile",
+    "args": "p_workspace uuid, p_listing uuid, p_profile jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.bizpage_save_profile(p_workspace uuid, p_listing uuid, p_profile jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\ndeclare v_clean jsonb;\nBEGIN\n  PERFORM zoi.home_content_authorize(p_workspace,p_listing);\n perform zoi.assert_ws(p_workspace);\n if not zoi.bizpage_can_edit(p_workspace,p_listing) then raise exception 'not permitted to edit this listing';end if;\n if p_profile is null or jsonb_typeof(p_profile)<>'object' then raise exception 'profile must be a JSON object';end if;\n if pg_column_size(p_profile)>262144 then raise exception 'profile too large (limit 256KB)';end if;\n if p_profile?'owner_media' then\n  if coalesce(zoi.org_role(p_workspace),'') not in('owner','admin','editor') then raise exception 'not_authorized' using errcode='42501';end if;\n  perform 1 from zoi.listings where id=p_listing and owner_workspace_id=p_workspace for update;if not found then raise exception 'owned_listing_required' using errcode='42501';end if;\n  if jsonb_typeof(p_profile->'owner_media') is distinct from 'object' or jsonb_typeof(p_profile#>'{owner_media,version}') is distinct from 'number' or coalesce(p_profile#>>'{owner_media,version}','')!~'^[1-9][0-9]{0,7}$' or not zoi.home_media_valid(p_profile#>'{owner_media,items}') then raise exception 'invalid_media_links';end if;\n end if;\n IF p_profile?'event_publicity' AND NOT zoi.event_publicity_valid(p_profile->'event_publicity') THEN RAISE EXCEPTION 'invalid_event_publicity';END IF;\n PERFORM zoi.assert_hospitality_catalog(p_profile);\nv_clean:=zoi.profile_strip(p_profile);\n update zoi.listings l set profile=coalesce(l.profile,'{}'::jsonb)||v_clean||jsonb_strip_nulls(jsonb_build_object('_enrich',l.profile->'_enrich','_geo',l.profile->'_geo'))||jsonb_build_object('_meta',jsonb_build_object('updated_at',to_char(now(),'YYYY-MM-DD\"T\"HH24:MI:SSOF'),'updated_by','owner')),updated_at=now() where l.id=p_listing;\n return found;\nend $function$\n",
+    "sha256": "d4e40872dca3f1a363ae2852ba138dac4c244f087bba310ab7286a2a1152bc10",
+    "proacl": "{postgres=X/postgres}"
+  },
+  {
+    "name": "zoi.event_publicity_valid",
+    "args": "v jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.event_publicity_valid(v jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE s jsonb; item jsonb; k text; a timestamptz; e timestamptz; ids text[]; u text;\nBEGIN\n IF v='null'::jsonb THEN RETURN true; END IF;\n IF jsonb_typeof(v) IS DISTINCT FROM 'object' OR octet_length(v::text)>40000 OR jsonb_typeof(v->'event_url') IS DISTINCT FROM 'string' OR coalesce(v->>'event_url','') !~ '^https://[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(/[^[:space:]]*)?$' THEN RETURN false; END IF;\n IF EXISTS(SELECT 1 FROM jsonb_object_keys(v) x WHERE x NOT IN('event_url','sales','highlights','posts')) THEN RETURN false;END IF;\n s:=v->'sales';IF s IS NOT NULL AND s<>'null'::jsonb THEN\n IF jsonb_typeof(s) IS DISTINCT FROM 'object' OR jsonb_typeof(s->'enabled') IS DISTINCT FROM 'boolean' OR jsonb_typeof(s->'count') IS DISTINCT FROM 'number' OR coalesce(s->>'count','')!~'^[0-9]{1,8}$' OR (s->>'count')::numeric>10000000 OR length(coalesce(s->>'label',''))>100 OR coalesce(s->>'source_url','')!~'^https://[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(/[^[:space:]]*)?$' THEN RETURN false; END IF;\n IF EXISTS(SELECT 1 FROM jsonb_object_keys(s) x WHERE x NOT IN('enabled','count','label','source_url','as_of','expires_at')) OR EXISTS(SELECT 1 FROM jsonb_each(s) x(key_name,val) WHERE x.key_name IN('label','source_url','as_of','expires_at') AND jsonb_typeof(val) IS DISTINCT FROM 'string') THEN RETURN false; END IF;\n IF coalesce(s->>'as_of','')!~'^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$' OR coalesce(s->>'expires_at','')!~'^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$' THEN RETURN false; END IF;\n a:=(s->>'as_of')::timestamptz;e:=(s->>'expires_at')::timestamptz;IF e<=a OR e-a>interval '31 days' THEN RETURN false; END IF;\n END IF;\n FOREACH k IN ARRAY ARRAY['highlights','posts'] LOOP\n IF jsonb_typeof(v->k) IS DISTINCT FROM 'array' OR jsonb_array_length(v->k)>12 THEN RETURN false; END IF;ids:=ARRAY[]::text[];\n FOR item IN SELECT value FROM jsonb_array_elements(v->k) LOOP\n IF jsonb_typeof(item) IS DISTINCT FROM 'object' OR coalesce(item->>'id','')!~'^[A-Za-z0-9_-]{1,80}$' OR item->>'id'=ANY(ids) OR length(trim(coalesce(item->>'title',''))) NOT BETWEEN 1 AND 140 OR length(coalesce(item->>'context',''))>240 THEN RETURN false; END IF;ids:=array_append(ids,item->>'id');u:=coalesce(item->>'url','');\n IF EXISTS(SELECT 1 FROM jsonb_object_keys(item) x WHERE x NOT IN('id','title','context','url','poster','image','published_at','kind','provider')) OR EXISTS(SELECT 1 FROM jsonb_each(item) x(key_name,val) WHERE x.key_name IN('id','title','context','url','poster','image','kind','provider') AND jsonb_typeof(val) IS DISTINCT FROM 'string') OR (item?'published_at' AND jsonb_typeof(item->'published_at') NOT IN('string','null')) THEN RETURN false; END IF;\n IF u !~ '^https://www\\.youtube\\.com/watch\\?v=[A-Za-z0-9_-]{11}$' AND u !~ '^https://vimeo\\.com/[0-9]{1,20}$' AND u !~ '^https://www\\.instagram\\.com/(p|reel)/[A-Za-z0-9_-]{1,100}$' AND u !~ '^https://www\\.facebook\\.com/([A-Za-z0-9_.-]{1,100}/(posts|videos)/[A-Za-z0-9_-]{1,100}|reel/[0-9]{1,30})$' AND u !~ '^https://www\\.tiktok\\.com/@[A-Za-z0-9_.]{1,100}/video/[0-9]{1,30}$' AND u !~ '^https://x\\.com/[A-Za-z0-9_]{1,30}/status/[0-9]{1,30}$' THEN RETURN false; END IF;\n IF coalesce(item->>'poster','')<>'' AND item->>'poster'!~'^https://[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(/[^[:space:]]*)?$' THEN RETURN false; END IF;\n IF coalesce(item->>'image','')<>'' AND item->>'image'!~'^https://[A-Za-z0-9.-]+\\.[A-Za-z]{2,}(/[^[:space:]]*)?$' THEN RETURN false; END IF;\n IF coalesce(item->>'published_at','')<>'' THEN IF item->>'published_at'!~'^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$' THEN RETURN false;END IF;PERFORM (item->>'published_at')::timestamptz;END IF;\n END LOOP;END LOOP;RETURN true;\n EXCEPTION WHEN OTHERS THEN RETURN false;\nEND $function$\n",
+    "sha256": "168a9bd17d2b813748903fc7b8831d637e6946c230ff209e76fafaef70de68c8",
+    "proacl": "{postgres=X/postgres}"
+  },
+  {
+    "name": "zoi.org_actor",
+    "args": "",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.org_actor()\n RETURNS uuid\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$ SELECT id FROM zoi.user_profiles WHERE auth_user_id=auth.uid() LIMIT 1 $function$\n",
+    "sha256": "50507e56d8bccdfefc6403e7bd8d8db9645d30742d7c2b9e8480ccb6c062a7ff",
+    "proacl": "{postgres=X/postgres}"
+  },
+  {
+    "name": "zoi.public_owner_content",
+    "args": "p_listing uuid",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.public_owner_content(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN l.updated_by='suite-bizpage' THEN jsonb_build_object(\n 'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n 'photo_url',l.photo_url,'social_links',coalesce(l.social_links,'{}'::jsonb))\n ELSE '{}'::jsonb END\n || CASE WHEN l.profile#>>'{_meta,updated_by}'='owner' THEN jsonb_build_object('profile',\n coalesce((SELECT jsonb_object_agg(k,v) FROM jsonb_each(l.profile) x(k,v)\n WHERE k IN ('photos','bio','spotify_url','apple_music_url','youtube_url','bandcamp_url','soundcloud_url','booking_name','booking_email','press','press_kit_url','merch','embeds','releases','tour','event_publicity','rooms','dining','venues','amenities')),'{}'::jsonb))\n ELSE '{}'::jsonb END FROM zoi.listings l WHERE l.id=p_listing;\n$function$\n",
+    "sha256": "35e3ae9d8def2acc1aae5204ac9e9746766b21120fe1f47ddf74a687b2234902",
+    "proacl": "{postgres=X/postgres}"
+  }
+]

@@ -1,0 +1,41 @@
+[
+  {
+    "name": "zoi.home_media_valid",
+    "args": "p_items jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.home_media_valid(p_items jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\ndeclare x jsonb;u text;k text;\nbegin\n if jsonb_typeof(p_items) is distinct from 'array' or jsonb_array_length(p_items)>24 or length(p_items::text)>20000 then return false;end if;\n for x in select value from jsonb_array_elements(p_items) loop\n if jsonb_typeof(x) is distinct from 'object' or (select count(*) from jsonb_object_keys(x))<>4 or not(x?'id' and x?'kind' and x?'url' and x?'label') or coalesce(x->>'id','')!~*'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' or jsonb_typeof(x->'label') is distinct from 'string' or length(x->>'label')>100 or btrim(x->>'label')<>x->>'label' then return false;end if;\n u:=x->>'url';k:=x->>'kind';\n if not coalesce((k='video' and (u~'^https://www[.]youtube[.]com/watch[?]v=[A-Za-z0-9_-]{11}$' or u~'^https://www[.]youtube[.]com/playlist[?]list=[A-Za-z0-9_-]{10,80}$')) or (k='audio' and u~'^https://open[.]spotify[.]com/(artist|album|track|playlist|episode|show)/[A-Za-z0-9]{22}$') or (k='link' and (u~'^https://vimeo[.]com/([0-9]{1,20}|[A-Za-z][A-Za-z0-9_-]{1,100})(/[A-Za-z0-9_-]{1,100})?$' or u~'^https://soundcloud[.]com/[A-Za-z0-9_-]{1,100}(/[A-Za-z0-9_-]{1,150})?$' or u~'^https://podcasts[.]apple[.]com/[a-z]{2}/podcast/[A-Za-z0-9%_.-]{1,200}/id[0-9]{1,20}$' or u~'^https://www[.]instagram[.]com/(p|reel)/[A-Za-z0-9_-]{1,100}$' or u~'^https://www[.]tiktok[.]com/@[A-Za-z0-9_.]{1,100}/video/[0-9]{1,30}$')) or (k='channel' and (u~'^https://www[.]youtube[.]com/(@[A-Za-z0-9_.-]{1,100}|channel/[A-Za-z0-9_-]{10,100}|(c|user)/[A-Za-z0-9_.-]{1,100})$' or u~'^https://www[.]instagram[.]com/[A-Za-z0-9_.]{1,50}$' or u~'^https://www[.]facebook[.]com/[A-Za-z0-9.-]{1,100}$' or u~'^https://www[.]tiktok[.]com/@[A-Za-z0-9_.]{1,100}$' or u~'^https://www[.]linkedin[.]com/(in|company)/[A-Za-z0-9_-]{1,100}$' or u~'^https://x[.]com/[A-Za-z0-9_]{1,30}$' or u~'^https://www[.]threads[.]net/@[A-Za-z0-9_.]{1,100}$')),false) then return false;end if;\n end loop;\n if exists(select 1 from jsonb_array_elements(p_items) as entries(value) group by entries.value->>'id' having count(*)>1) or exists(select 1 from jsonb_array_elements(p_items) as entries(value) group by entries.value->>'url' having count(*)>1) then return false;end if;\n return true;\nend $function$\n",
+    "sha256": "012b4bdfb40f842dc0f524270a5ccff3903fa3f7cccf437ca8d622e266a6c9b2",
+    "proacl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "prosecdef": false,
+    "provolatile": "i",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "zoi.org_role",
+    "args": "p_workspace uuid",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.org_role(p_workspace uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$ SELECT m.role FROM zoi.workspace_members m JOIN zoi.user_profiles p ON p.id=m.profile_id WHERE m.workspace_id=p_workspace AND p.auth_user_id=auth.uid() LIMIT 1 $function$\n",
+    "sha256": "61336a678f723500fd65dad72e8f28c06ecdbfcc5a1493edfc70f1c895eb1fe6",
+    "proacl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "prosecdef": true,
+    "provolatile": "s",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "zoi.profile_strip",
+    "args": "p jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.profile_strip(p jsonb)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT coalesce(\n    (SELECT jsonb_object_agg(k, v)\n       FROM jsonb_each(coalesce(p, '{}'::jsonb)) AS t(k, v)\n      WHERE k NOT IN ('rating','rating_count','review','reviews','reviewCount',\n                      'aggregateRating','score','stars','ranking','provider_stats',\n                      '_enrich','_geo','_coverage')\n        AND k NOT LIKE 'rating%'\n        AND k NOT LIKE 'review%'),\n    '{}'::jsonb);\n$function$\n",
+    "sha256": "763fca2723fabec2634ccedbce010a932917a199652e5f2e4e14f592c07dd35b",
+    "proacl": null,
+    "owner": "postgres",
+    "prosecdef": false,
+    "provolatile": "i",
+    "proconfig": [
+      "search_path=zoi, public"
+    ]
+  }
+]

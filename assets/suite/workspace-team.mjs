@@ -1,4 +1,4 @@
-import{mountWorkspaceInvitations}from'/assets/suite/workspace-invitations.mjs?v=20261001-invites';
+import{mountWorkspaceInvitations}from'/assets/suite/workspace-invitations.mjs?v=20261003-current-suite-authority';
 // Existing organization members. Invitations and delivery are separate capabilities.
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const roles=['owner','admin','editor','viewer'];

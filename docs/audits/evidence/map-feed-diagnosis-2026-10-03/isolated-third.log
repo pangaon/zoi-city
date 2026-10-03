@@ -1,0 +1,45 @@
+PASS exact installed two reader bodies, view, helpers, owner, ACL and empty search path hydrated
+PASS 13 complete-field visibility/pagination/default/clamp oracle cases on 32000 wide rows
+PASS four actual concurrent read connections produce complete ordered page receipts
+ERROR:  explore_geo_order_prerequisite_changed
+CONTEXT:  PL/pgSQL function inline_code_block line 13 at RAISE
+ERROR:  explore_geo_order_prerequisite_changed
+CONTEXT:  PL/pgSQL function inline_code_block line 13 at RAISE
+PASS both reader public grant drift rejects migration
+ERROR:  explore_geo_order_prerequisite_changed
+CONTEXT:  PL/pgSQL function inline_code_block line 13 at RAISE
+PASS reader source drift rejects migration
+ERROR:  explore_geo_order_prerequisite_changed
+CONTEXT:  PL/pgSQL function inline_code_block line 19 at RAISE
+PASS view duplicate predicate drift rejects migration
+ERROR:  explore_geo_order_prerequisite_changed
+CONTEXT:  PL/pgSQL function inline_code_block line 19 at RAISE
+PASS index collision rejects replacement
+PASS index-only install leaves every listing byte and both reader/helper/view authority contracts unchanged
+PASS unforced deep offset and near-end plans use covering id index without disk sort; no vacuum/analyze or planner forcing
+PASS all complete row objects and ordering remain identical across boundary/default/clamp/empty pages
+PASS four real concurrent post-index readers match every pre-index object
+ERROR:  permission denied for schema zoi
+LINE 1: SET ROLE anon;SELECT id FROM zoi.listings LIMIT 1
+                                     ^
+ERROR:  permission denied for schema zoi
+LINE 1: SET ROLE authenticated;SELECT id FROM zoi.listings LIMIT 1
+                                              ^
+ERROR:  permission denied for schema zoi
+LINE 1: SET ROLE service_role;SELECT id FROM zoi.listings LIMIT 1
+                                             ^
+PASS public role output unchanged while direct base-table access remains denied
+PASS legacy geo overload full JSON, rank and visibility also unchanged
+PASS owner-clear updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS hide updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS unhide-and-cleared updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS draft updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS republish-null-duplicate updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS confirmed-duplicate updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS valid-null-point updates keep paged indexed oracle identical without changing existing eligibility policy
+PASS valid-point-version-archive updates keep paged indexed oracle identical without changing existing eligibility policy
+ERROR:  explore_geo_order_prerequisite_changed
+CONTEXT:  PL/pgSQL function inline_code_block line 19 at RAISE
+PASS replay rejects accidental replacement
+PASS both empty-corpus output contracts unchanged
+23 geo covering-order database groups passed

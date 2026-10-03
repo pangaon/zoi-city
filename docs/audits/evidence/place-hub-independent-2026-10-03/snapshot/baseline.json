@@ -1,0 +1,149 @@
+{
+  "reader": {
+    "signature": "explore_place_listings(text,text,text,text,integer,integer)",
+    "body_md5": "26527f1ad65042427a5ad77e08b95eb9",
+    "body": "CREATE OR REPLACE FUNCTION public.explore_place_listings(p_country text DEFAULT NULL::text, p_region text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_category text DEFAULT NULL::text, p_limit integer DEFAULT 60, p_offset integer DEFAULT 0)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n with country_filter as materialized (select coalesce(zoi.geo_country_canon(p_country),p_country) as pattern), country_names as materialized (\n  select distinct country from zoi.listings where nullif(p_country,'') is not null and publish_status='published' and moderation_status in ('clean','cleared') and coalesce(marketplace_status,'')<>'hidden'\n ), matched_countries as materialized (select country from country_names cross join country_filter where zoi.geo_country_canon(country) ilike country_filter.pattern),\n eligible as materialized (\n  select l.id,l.name,l.verification_status,l.trust_score\n  from zoi.listings l left join zoi.categories c on c.id=l.primary_category_id\n  where l.publish_status='published' and l.moderation_status in ('clean','cleared') and coalesce(l.marketplace_status,'')<>'hidden'\n   and (nullif(p_country,'') is null or l.country in (select country from matched_countries))\n   and (nullif(p_region,'') is null or l.region ilike p_region or l.region_native ilike p_region or upper(l.region_code)=upper(p_region))\n   and (nullif(p_city,'') is null or l.city ilike p_city)\n   and (nullif(p_category,'') is null or c.slug=p_category)\n ), page as materialized (\n  select * from eligible order by (verification_status='verified') desc,trust_score desc nulls last,name,id\n  limit least(greatest(coalesce(p_limit,60),1),120) offset greatest(coalesce(p_offset,0),0)\n )\n select jsonb_build_object('total',(select count(*) from eligible),'rows',coalesce((\n  select jsonb_agg(to_jsonb(r)-'_verified'-'_trust' order by r._verified desc,r._trust desc nulls last,r.name,r.id)\n  from (select l.id,l.slug,l.name,l.entity_type,l.city,l.region,zoi.geo_country_canon(l.country) as country,c.slug as category_slug,coalesce(c.label_en,c.slug) as category,\n   left(coalesce(nullif(l.description,''),nullif(l.profile->>'description',''),nullif(l.profile->'_enrich'->>'description',''),''),150) as description,\n   l.latitude,l.longitude,\n   coalesce(nullif(l.photo_url,''),nullif(l.profile->>'photo_url',''),nullif(l.profile->>'logo_url',''),nullif(l.profile->'_enrich'->>'photo_url',''),nullif(l.profile->'_enrich'->>'logo_url',''),nullif(l.profile->'_enrich'->'fields'->>'logo','')) as photo,\n   l.verification_status,(p.verification_status='verified') as _verified,p.trust_score as _trust\n   from page p join zoi.listings l on l.id=p.id left join zoi.categories c on c.id=l.primary_category_id\n  )r),'[]'::jsonb));\n$function$\n",
+    "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+  },
+  "helpers": [
+    {
+      "schema": "zoi",
+      "signature": "zoi.geo_country_canon(text)",
+      "body_md5": "a4610e0eee4af255cbc37d228b248be9",
+      "body": "CREATE OR REPLACE FUNCTION zoi.geo_country_canon(p_raw text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case lower(nullif(trim(coalesce(p_raw, '')), ''))\n    when 'us' then 'United States'\n    when 'usa' then 'United States'\n    when 'u.s.' then 'United States'\n    when 'u.s.a.' then 'United States'\n    when 'united states of america' then 'United States'\n    when 'uk' then 'United Kingdom'\n    when 'great britain' then 'United Kingdom'\n    when 'gb' then 'United Kingdom'\n    when 'uae' then 'United Arab Emirates'\n    when 'gr' then 'Greece'\n    when 'el' then 'Greece'\n    when 'ca' then 'Canada'\n    when 'au' then 'Australia'\n    when 'nz' then 'New Zealand'\n    when 'cy' then 'Cyprus'\n    else nullif(trim(p_raw), '')\n  end\n$function$\n",
+      "acl": null
+    },
+    {
+      "schema": "zoi",
+      "signature": "zoi.public_owner_content(uuid)",
+      "body_md5": "132a50666860f8dee5d4f33b3a3fdfa0",
+      "body": "CREATE OR REPLACE FUNCTION zoi.public_owner_content(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN l.updated_by='suite-bizpage' THEN jsonb_build_object(\n 'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n 'photo_url',l.photo_url,'social_links',coalesce(l.social_links,'{}'::jsonb))\n ELSE '{}'::jsonb END\n || CASE WHEN l.profile#>>'{_meta,updated_by}'='owner' THEN jsonb_build_object('profile',\n coalesce((SELECT jsonb_object_agg(k,v) FROM jsonb_each(l.profile) x(k,v)\n WHERE k IN ('photos','bio','spotify_url','apple_music_url','youtube_url','bandcamp_url','soundcloud_url','booking_name','booking_email','press','press_kit_url','merch','embeds','releases','tour','event_publicity','rooms','dining','venues','amenities')),'{}'::jsonb))\n ELSE '{}'::jsonb END FROM zoi.listings l WHERE l.id=p_listing;\n$function$\n",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.public_listing_card_description(text,jsonb)",
+      "body_md5": "04ad1df70e7dbca72fcadb45ad4b2d2e",
+      "body": "CREATE OR REPLACE FUNCTION zoi.public_listing_card_description(p_type text, p_input jsonb)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE raw jsonb:=p_input->'profile'; owner jsonb:=p_input->'owner_content'; op jsonb:=owner->'profile'; source jsonb:=raw->'_enrich';\n website text; source_url text; wa text; sa text; wp text; sp text; trusted boolean:=false; machine text; value text; layer jsonb;\nBEGIN\n FOREACH layer IN ARRAY ARRAY[owner,op,raw] LOOP\n  IF layer ? 'description' THEN RETURN left(coalesce(layer->>'description',''),170); END IF;\n END LOOP;\n trusted:=zoi.public_listing_card_source_bound(p_input);\n machine:=CASE WHEN trusted THEN coalesce(nullif(source->>'description',''),nullif(source->>'biography',''),nullif(source->>'bio',''),nullif(source->>'excerpt',''),'') ELSE '' END;\n value:=CASE WHEN p_type='artist' THEN coalesce(nullif(machine,''),p_input->>'description','') ELSE coalesce(nullif(p_input->>'description',''),machine,'') END;\n RETURN left(value,170);\nEND\n$function$\n",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.public_listing_card_image(text,boolean)",
+      "body_md5": "fe48dca6592b8916769e65d39139df0f",
+      "body": "CREATE OR REPLACE FUNCTION zoi.public_listing_card_image(p_value text, p_explicit boolean DEFAULT false)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE url text:=btrim(p_value); authority text; path text;\nBEGIN\n IF url IS NULL OR length(url)>3000 OR url!~*'^https://[^/?#[:space:]]+' THEN RETURN NULL; END IF;\n authority:=substring(url FROM '(?i)^https://([^/?#]+)');\n IF position('@' IN authority)>0 THEN RETURN NULL; END IF;\n IF p_explicit THEN RETURN url; END IF;\n path:=coalesce(substring(url FROM '(?i)^https://[^/?#]+([^?#]*)'),'');\n IF path IN('','/') AND url!~'\\?' THEN RETURN NULL; END IF;\n IF path~*'(?:^|[/[:space:]_.+-])(?:(?:web[-_]?)?logos?|advert(?:isement)?|anzeige|flyer|poster|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_]rating|app[-_]?store|google[-_]?play|payment|placeholder)(?:[/[:space:]_.+-]|$)'\n  OR path~*'/(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\\d+w)?\\.(?:png|svg|webp)$'\n  OR path~*'/wp-content/plugins/(?:qtranslate(?:-x)?|polylang|wpglobus|sitepress-multilingual-cms)/(?:[^/]+/)*flags?/'\n  OR url~*'^https://(?:lh\\d+\\.)?googleusercontent\\.com/(?:a|a-)/'\n  OR url~*'^https://(?:[a-z0-9-]+\\.)?gravatar\\.com/avatar/'\n  OR url~*'^https://maps\\.googleapis\\.com/maps/api/staticmap(?:[/?]|$)'\n  OR url~*'^https://(?:[a-z0-9-]+\\.)?tile\\.openstreetmap\\.org/'\n  OR url~*'^https://api\\.mapbox\\.com/styles/v1/[^?]+/static/'\n  OR path~*'/maps/[^?#]+/\\d+/\\d+\\.(?:png|jpe?g|webp)$'\n THEN RETURN NULL; END IF;\n RETURN url;\nEND\n$function$\n",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.public_listing_card_input(uuid,text,text,text,jsonb)",
+      "body_md5": "16c10d23ac9afd8c9bcde5d1d1ca7021",
+      "body": "CREATE OR REPLACE FUNCTION zoi.public_listing_card_input(p_id uuid, p_website text, p_photo text, p_description text, p_profile jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$\nDECLARE raw jsonb:=CASE WHEN jsonb_typeof(p_profile)='object' THEN p_profile ELSE '{}'::jsonb END;\n source jsonb; owner jsonb; layer jsonb; compact jsonb; compact_raw jsonb:='{}'::jsonb; compact_source jsonb:='{}'::jsonb; compact_owner jsonb:='{}'::jsonb;\n k text; v jsonb; i integer; compact_owner_profile jsonb:='{}'::jsonb;\nBEGIN\n source:=CASE WHEN jsonb_typeof(raw->'_enrich')='object' THEN raw->'_enrich' ELSE '{}'::jsonb END;\n owner:=coalesce(zoi.public_owner_content(p_id),'{}'::jsonb);\n FOR i IN 1..4 LOOP\n  layer:=CASE i WHEN 1 THEN raw WHEN 2 THEN source WHEN 3 THEN owner ELSE coalesce(owner->'profile','{}'::jsonb) END;\n  compact:='{}'::jsonb;\n  FOR k,v IN SELECT x.key,x.value FROM jsonb_each(layer) x WHERE x.key IN ('description','biography','bio','excerpt','photo_url','hero_url','hero_kind','logo_url','logo','business_type','website','source_url','source_kind','identity_scope','blocked_reason') LOOP\n   compact:=compact||jsonb_build_object(k,CASE WHEN jsonb_typeof(v)='string' THEN CASE WHEN k IN ('description','biography','bio','excerpt') THEN to_jsonb(left(v#>>'{}',2000)) WHEN length(v#>>'{}')<=3000 THEN v ELSE 'null'::jsonb END ELSE 'null'::jsonb END);\n  END LOOP;\n  IF layer ? 'brand' AND (layer->'brand') ? 'logo' THEN\n   compact:=compact||jsonb_build_object('brand',jsonb_build_object('logo',CASE WHEN jsonb_typeof(layer#>'{brand,logo}')='string' AND length(layer#>>'{brand,logo}')<=3000 THEN to_jsonb(left(layer#>>'{brand,logo}',3000)) ELSE 'null'::jsonb END));\n  END IF;\n  FOR k IN SELECT unnest(ARRAY['photos','photo_urls','gallery']) LOOP\n   IF layer ? k THEN\n    compact:=compact||jsonb_build_object(k,coalesce((SELECT jsonb_agg(to_jsonb(left(url,3000)) ORDER BY ordinality) FROM (SELECT CASE WHEN jsonb_typeof(a.value)='string' THEN a.value#>>'{}' ELSE a.value->>'url' END AS url,a.ordinality FROM jsonb_array_elements(CASE WHEN jsonb_typeof(layer->k)='array' THEN layer->k ELSE '[]'::jsonb END) WITH ORDINALITY a WHERE a.ordinality<=12) images WHERE url IS NOT NULL AND length(url)<=3000),'[]'::jsonb));\n   END IF;\n  END LOOP;\n  IF i=1 THEN compact_raw:=compact;\n  ELSIF i=2 THEN\n   FOR k IN SELECT unnest(ARRAY['organization_identity_quarantine','scope_review_required','source_affiliation','association_member']) LOOP\n    IF layer ? k THEN compact:=compact||jsonb_build_object(k,layer->k NOT IN ('null'::jsonb,'false'::jsonb,'\"\"'::jsonb)); END IF;\n   END LOOP;\n   IF source#>'{member,affiliation}' IS NOT NULL THEN compact:=compact||jsonb_build_object('member',jsonb_build_object('affiliation',source#>'{member,affiliation}' NOT IN ('null'::jsonb,'false'::jsonb,'\"\"'::jsonb))); END IF;\n   IF source ? 'fields' THEN compact:=compact||jsonb_build_object('fields',coalesce((SELECT jsonb_object_agg(key,CASE WHEN jsonb_typeof(value)='string' AND length(value#>>'{}')<=3000 THEN value ELSE 'null'::jsonb END) FROM jsonb_each(CASE WHEN jsonb_typeof(source->'fields')='object' THEN source->'fields' ELSE '{}'::jsonb END) WHERE key IN('photo_url','hero_url','logo_url','logo')),'{}'::jsonb)); END IF;\n   IF source ? 'photo_roles' THEN compact:=compact||jsonb_build_object('photo_roles',coalesce((SELECT jsonb_agg(jsonb_build_object('url',left(a.value->>'url',3000),'role',a.value->>'role') ORDER BY a.ordinality) FROM jsonb_array_elements(CASE WHEN jsonb_typeof(source->'photo_roles')='array' THEN source->'photo_roles' ELSE '[]'::jsonb END) WITH ORDINALITY a WHERE a.ordinality<=12 AND a.value->>'role'='gallery_only' AND length(a.value->>'url')<=3000),'[]'::jsonb)); END IF;\n   compact_source:=compact;\n  ELSIF i=3 THEN compact_owner:=compact;\n  ELSE compact_owner_profile:=compact;\n  END IF;\n END LOOP;\n IF owner ? 'profile' THEN compact_owner:=compact_owner||jsonb_build_object('profile',compact_owner_profile); END IF;\n RETURN jsonb_build_object('website',CASE WHEN length(p_website)<=3000 THEN p_website ELSE NULL END,'photo_url',CASE WHEN length(p_photo)<=3000 THEN p_photo ELSE NULL END,'description',left(p_description,2000),'profile',compact_raw||jsonb_build_object('_enrich',compact_source),'owner_content',compact_owner);\nEND\n$function$\n",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.public_listing_card_photo(jsonb)",
+      "body_md5": "fdbdd9f3d89bba2ac17fd81b9163f00f",
+      "body": "CREATE OR REPLACE FUNCTION zoi.public_listing_card_photo(p_input jsonb)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE raw jsonb:=p_input->'profile'; owner jsonb:=p_input->'owner_content'; op jsonb:=owner->'profile'; source jsonb:=raw->'_enrich';\n layer jsonb; k text; selected_url text; gallery jsonb; explicit_gallery boolean:=false; trusted boolean:=zoi.public_listing_card_source_bound(p_input);\nBEGIN\n FOREACH layer IN ARRAY ARRAY[owner,op,raw] LOOP\n  FOREACH k IN ARRAY ARRAY['photo_url','hero_url'] LOOP\n   IF layer ? k THEN RETURN zoi.public_listing_card_image(layer->>k,true); END IF;\n  END LOOP;\n END LOOP;\n FOREACH layer IN ARRAY ARRAY[op,owner,raw] LOOP\n  FOREACH k IN ARRAY ARRAY['photo_urls','photos','gallery'] LOOP\n   IF layer ? k THEN gallery:=layer->k;explicit_gallery:=true;EXIT; END IF;\n  END LOOP;\n  EXIT WHEN explicit_gallery;\n END LOOP;\n IF trusted OR (coalesce(source->>'source_url','')='' AND coalesce(source->>'source_kind','') NOT IN('association_directory','association_member') AND coalesce(source->>'identity_scope','')<>'organization' AND coalesce(source->>'blocked_reason','')<>'source_scope_mismatch' AND NOT coalesce((source->>'organization_identity_quarantine')::boolean,false) AND NOT coalesce((source->>'scope_review_required')::boolean,false) AND NOT coalesce((source->>'source_affiliation')::boolean,false) AND NOT coalesce((source->>'association_member')::boolean,false) AND NOT coalesce((source#>>'{member,affiliation}')::boolean,false)) THEN\n  selected_url:=zoi.public_listing_card_image(p_input->>'photo_url');IF selected_url IS NOT NULL AND (explicit_gallery OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(source->'photo_roles','[]')) AS r(role) WHERE r.role->>'url'=selected_url AND r.role->>'role'='gallery_only')) THEN RETURN selected_url; END IF;\n END IF;\n IF trusted THEN\n  FOREACH selected_url IN ARRAY ARRAY[source->>'hero_url',source->>'photo_url',source#>>'{fields,hero_url}',source#>>'{fields,photo_url}'] LOOP\n   selected_url:=zoi.public_listing_card_image(selected_url);\n   IF selected_url IS NOT NULL AND (explicit_gallery OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(source->'photo_roles','[]')) AS r(role) WHERE r.role->>'url'=selected_url AND r.role->>'role'='gallery_only')) THEN RETURN selected_url; END IF;\n  END LOOP;\n END IF;\n IF NOT explicit_gallery AND trusted THEN gallery:=coalesce(source->'photo_urls',source->'photos','[]'); END IF;\n FOR selected_url IN SELECT a.value#>>'{}' FROM jsonb_array_elements(coalesce(gallery,'[]')) a LOOP\n  selected_url:=zoi.public_listing_card_image(selected_url);\n  IF selected_url IS NOT NULL AND (explicit_gallery OR NOT EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(source->'photo_roles','[]')) AS r(role) WHERE r.role->>'url'=selected_url AND r.role->>'role'='gallery_only')) THEN RETURN selected_url; END IF;\n END LOOP;\n RETURN NULL;\nEND\n$function$\n",
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.public_listing_card_source_bound(jsonb)",
+      "body_md5": "02cc71fea32df26294be186d5cbceea0",
+      "body": "CREATE OR REPLACE FUNCTION zoi.public_listing_card_source_bound(p_input jsonb)\n RETURNS boolean\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nDECLARE raw jsonb:=p_input->'profile'; owner jsonb:=p_input->'owner_content'; op jsonb:=owner->'profile'; source jsonb:=raw->'_enrich';\n website text; source_url text; wa text; sa text; wp text; sp text; trusted boolean:=false;\nBEGIN\n website:=CASE WHEN owner ? 'website' THEN owner->>'website' WHEN op ? 'website' THEN op->>'website' WHEN raw ? 'website' THEN raw->>'website' ELSE p_input->>'website' END;\n source_url:=source->>'source_url';\n IF website~*'^https?://[^/?#]+([/?#]|$)' AND source_url~*'^https?://[^/?#]+([/?#]|$)' THEN\n  wa:=lower(substring(website FROM '(?i)^https?://([^/?#]+)'));sa:=lower(substring(source_url FROM '(?i)^https?://([^/?#]+)'));\n  wa:=regexp_replace(regexp_replace(wa,'^www\\.',''),CASE WHEN website~*'^https://' THEN ':443$' ELSE ':80$' END,'');sa:=regexp_replace(regexp_replace(sa,'^www\\.',''),CASE WHEN source_url~*'^https://' THEN ':443$' ELSE ':80$' END,'');\n  wp:=coalesce(nullif(substring(website FROM '(?i)^https?://[^/?#]+([^?#]*)'),''),'/');sp:=coalesce(nullif(substring(source_url FROM '(?i)^https?://[^/?#]+([^?#]*)'),''),'/');\n  trusted:=position('@' IN wa)=0 AND position('@' IN sa)=0 AND wa=sa AND (wp='/' OR regexp_replace(wp,'/$','')=regexp_replace(sp,'/$',''));\n END IF;\n trusted:=trusted AND coalesce(source->>'source_kind','') NOT IN('association_directory','association_member') AND coalesce(source->>'identity_scope','')<>'organization' AND coalesce(source->>'blocked_reason','')<>'source_scope_mismatch'\n  AND NOT coalesce((source->>'organization_identity_quarantine')::boolean,false) AND NOT coalesce((source->>'scope_review_required')::boolean,false)\n  AND NOT coalesce((source->>'source_affiliation')::boolean,false) AND NOT coalesce((source->>'association_member')::boolean,false) AND NOT coalesce((source#>>'{member,affiliation}')::boolean,false);\n RETURN trusted;\nEND\n$function$\n",
+      "acl": "{postgres=X/postgres}"
+    }
+  ],
+  "metadata": [
+    {
+      "signature": "explore_place_listings(text,text,text,text,integer,integer)",
+      "body_md5": "01b00edff900d936323a03cf8eb05293",
+      "definition_md5": "26527f1ad65042427a5ad77e08b95eb9",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.public_owner_content(uuid)",
+      "body_md5": "3e0c2c40cb341e3c72aed3dadf30cfd1",
+      "definition_md5": "132a50666860f8dee5d4f33b3a3fdfa0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.public_listing_card_input(uuid,text,text,text,jsonb)",
+      "body_md5": "31b1ef5d4218c2ac07ad92ce9f7e8fef",
+      "definition_md5": "16c10d23ac9afd8c9bcde5d1d1ca7021",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.public_listing_card_source_bound(jsonb)",
+      "body_md5": "c7848c89ee1db993abaf75d8f374ae22",
+      "definition_md5": "02cc71fea32df26294be186d5cbceea0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "i"
+    },
+    {
+      "signature": "zoi.public_listing_card_description(text,jsonb)",
+      "body_md5": "42821cc3cc32ebe64a83b530404fb64e",
+      "definition_md5": "04ad1df70e7dbca72fcadb45ad4b2d2e",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "i"
+    },
+    {
+      "signature": "zoi.public_listing_card_image(text,boolean)",
+      "body_md5": "c1efc8f917ec435c8af895cb762cdf31",
+      "definition_md5": "fe48dca6592b8916769e65d39139df0f",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "i"
+    },
+    {
+      "signature": "zoi.public_listing_card_photo(jsonb)",
+      "body_md5": "91e06e8ed3706d33e7ba30a9ca48ab9b",
+      "definition_md5": "fdbdd9f3d89bba2ac17fd81b9163f00f",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "i"
+    },
+    {
+      "signature": "zoi.geo_country_canon(text)",
+      "definition_md5": "a4610e0eee4af255cbc37d228b248be9",
+      "owner": "postgres",
+      "acl": null,
+      "prosecdef": false,
+      "provolatile": "i",
+      "proconfig": null
+    }
+  ]
+}

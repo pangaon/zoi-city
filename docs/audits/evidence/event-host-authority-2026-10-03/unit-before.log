@@ -1,0 +1,34 @@
+✔ event identity, editorial scope and scalar version must all match (2.230745ms)
+✔ narrow dated publicity patch preserves all source and booking fields; explicit removal (4.224848ms)
+✔ uncertain save reloads exact immutable request and response; account isolates it (2.94639ms)
+✔ wrong receipt stays pending; refusal/CAS clears request; malformed reference blocks replacement (2.156536ms)
+✔ adapter refuses broad patches and source inventory mutation before sending (0.753066ms)
+✔ same public reader renders saved report, explicit clear, future/expired and wrong event for generic families (40.350164ms)
+✖ current-session authority refusals clear the exact pending request while transient transport keeps it (2.031212ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 351.307139
+
+✖ failing tests:
+
+test at tests/unit/event-host-controls.test.mjs:15:1
+✖ current-session authority refusals clear the exact pending request while transient transport keeps it (2.031212ms)
+  AssertionError [ERR_ASSERTION]: invitation_unavailable
+  
+  true !== false
+  
+      at TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/event-host-controls-20261003/tests/unit/event-host-controls.test.mjs:15:768)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: true,
+    expected: false,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

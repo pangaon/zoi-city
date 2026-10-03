@@ -1,0 +1,44 @@
+PASS exact installed two reader bodies, view, helpers, owner, ACL and empty search path hydrated
+PASS 13 complete-field visibility/pagination/default/clamp oracle cases on 32000 wide rows
+ERROR:  column "nan" does not exist
+LINE 4:  ORDER BY e.id LIMIT 1000 OFFSET NaN
+                                         ^
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c EXPLAIN(ANALYZE,BUFFERS,SETTINGS,FORMAT JSON) SELECT e.slug::text,e.entity_type::text,e.name::text,e.city::text,zoi.geo_country_canon(e.country)::text,e.category_slug::text,e.latitude::double precision,e.longitude::double precision,zoi.geo_precision_canon(COALESCE(NULLIF(l.geo_precision::text,'none'),l.profile->'_geo'->>'precision'))::text,l.address::text
+ FROM zoi.v_public_listings e JOIN zoi.listings l ON l.id=e.id
+ WHERE e.latitude IS NOT NULL AND e.longitude IS NOT NULL AND l.publish_status='published' AND COALESCE(l.marketplace_status,'')<>'hidden'
+ ORDER BY e.id LIMIT 1000 OFFSET NaN
+ERROR:  column "nan" does not exist
+LINE 4:  ORDER BY e.id LIMIT 1000 OFFSET NaN
+                                         ^
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at q (file:///workspaces/zoi-city/.recovery/map-feed-diagnosis-2026-10-03/tests/database/explore-geo-covering-order.integration.mjs:4:54)
+    at json (file:///workspaces/zoi-city/.recovery/map-feed-diagnosis-2026-10-03/tests/database/explore-geo-covering-order.integration.mjs:4:174)
+    at plan (file:///workspaces/zoi-city/.recovery/map-feed-diagnosis-2026-10-03/tests/database/explore-geo-covering-order.integration.mjs:10:127)
+    at file:///workspaces/zoi-city/.recovery/map-feed-diagnosis-2026-10-03/tests/database/explore-geo-covering-order.integration.mjs:26:109
+    at ModuleJob.run (node:internal/modules/esm/module_job:430:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:661:26) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '',
+    'ERROR:  column "nan" does not exist\n' +
+      'LINE 4:  ORDER BY e.id LIMIT 1000 OFFSET NaN\n' +
+      '                                         ^\n'
+  ],
+  pid: 353454,
+  stdout: '',
+  stderr: 'ERROR:  column "nan" does not exist\n' +
+    'LINE 4:  ORDER BY e.id LIMIT 1000 OFFSET NaN\n' +
+    '                                         ^\n'
+}
+
+Node.js v24.14.0

@@ -1,0 +1,63 @@
+✔ actual bridge reads nested saved notes safely without treating review as form restoration (4.081315ms)
+✔ actual bridge clears private view on storage account switch and remounts from fresh Core state (1.152183ms)
+✔ BFCache hide destroys private view; persisted show restores controls without stale form (1.005649ms)
+✔ save-only contact form uses entered contact and preserves group snapshot until valid submission (1.358908ms)
+✔ old contact form cannot submit into a different account even before auth event arrives (1.110094ms)
+✔ Parea hero links reach the group planner; explicit Explore still opens the room (0.93655ms)
+✖ canonical entry binds anonymous public event identity separately from private saves (1.60062ms)
+✔ per-guest quote and uneven group shares conserve cents without claiming payment (2.249161ms)
+✔ currency input refuses rounding, exponents, negative values and unsupported group size (0.553404ms)
+✔ prepayment gate stays closed until every operational prerequisite is configured (0.294811ms)
+✔ sponsors require approval, exact placement and active campaign; links cannot execute code (0.32078ms)
+✔ one reusable Parea context does not transplant Toronto source pricing into other events (0.803421ms)
+✔ planning invitations carry only the intended whole-ticket share and public event, never guest tokens or contacts (0.457906ms)
+✖ first HTML includes the same real concert shell used by client hydration (5.099286ms)
+✔ scene styles are available before the room is rendered (0.227645ms)
+✔ actual numbered choices derive their published perguest tier without a second space selector (1.489843ms)
+✔ mixed alternatives never invent a single price and empty choices do not imply selection (0.453738ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 15
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 91.370193
+
+✖ failing tests:
+
+test at tests/unit/signature-experience.test.mjs:19:1
+✖ canonical entry binds anonymous public event identity separately from private saves (1.60062ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  0 !== 1
+  
+      at TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/event-host-controls-20261003/tests/unit/signature-experience.test.mjs:19:376)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 0,
+    expected: 1,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/unit/signature-startup.test.mjs:6:1
+✖ first HTML includes the same real concert shell used by client hydration (5.099286ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(html.includes(renderSignatureCustomerShell()))
+  
+      at TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/event-host-controls-20261003/tests/unit/signature-startup.test.mjs:6:93)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -38,7 +38,7 @@
     observer=new MutationObserver(function(records){if(removed(records)||!root.isConnected||!root.contains(wrap))destroy();});
     observer.observe(doc.documentElement,{childList:true,subtree:true});
     var helpers,identity,companyTools,companyView,consoleTools,consoleView;
-    try{helpers=await import('/assets/operations/recovery.mjs?v=20261001-ops-recovery');identity=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');companyTools=await import('/assets/operations/company-workspace.mjs?v=20261003-company-console');consoleTools=await import('/assets/operations/company-console.mjs?v=20261003-company-console');}catch(error){destroy();throw error;}
+    try{helpers=await import('/assets/operations/recovery.mjs?v=20261003-current-suite-authority');identity=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');companyTools=await import('/assets/operations/company-workspace.mjs?v=20261003-company-console');consoleTools=await import('/assets/operations/company-console.mjs?v=20261003-company-console');}catch(error){destroy();throw error;}
     if(!alive||removed(observer.takeRecords())||root.__zoiOpsMount!==mountToken||!root.isConnected||!root.contains(wrap)||C.auth.load()?.user_id!==actor||ctx.ws!==workspace){destroy();return {destroy:destroy};}
     var uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if(!uuid.test(actor||'')||!uuid.test(workspace||'')||identity.sessionIdentity(C)!==actor.toLowerCase()){destroy();root.textContent='Sign in again to verify your account and workspace before opening Operations.';return {destroy:destroy};}

@@ -1,0 +1,26 @@
+place_hub_unavailable {
+  kind: 'upstream',
+  reader: 'explore_place_listings',
+  status: null,
+  elapsedMs: 1
+}
+place_hub_unavailable {
+  kind: 'upstream',
+  reader: 'explore_countries',
+  status: null,
+  elapsedMs: 0
+}
+✔ category starts primary lookup without waiting for optional countries and publishes readable canonical (40.180507ms)
+✔ primary failure returns branded retryable uncached503 with no source error exposed (1.737694ms)
+✔ country lookup outage is not mislabeled missing country404 (0.466711ms)
+✔ unavailable hub diagnostics name the public reader without leaking provider details (1.011238ms)
+✔ genuine empty category is noindex404 and cannot be cached (0.836181ms)
+✔ Orthodox landing has a composed shell and useful journeys without catalogue dependency (7.608595ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 122.949763

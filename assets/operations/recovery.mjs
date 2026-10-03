@@ -1,5 +1,6 @@
 const uuid=v=>typeof v==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);
-export const operationsDenied=e=>['not_authorized','insufficient_permission','ops_permission_denied'].includes(e?.message)||e?.code==='42501'||[401,403].includes(Number(e?.status));
+const operationsAuthorityErrors=new Set(['not_authorized','insufficient_permission','ops_permission_denied','suite_session_unavailable','company_permission_denied','invitation_unavailable','verified_account_required','no_access_to_workspace','not_signed_in']);
+export const operationsDenied=e=>operationsAuthorityErrors.has(e?.code)||operationsAuthorityErrors.has(e?.message)||e?.code==='42501'||[401,403].includes(Number(e?.status));
 // One actor/workspace recovery marker. Private record contents never enter storage.
 export function createOperationsRecovery({actor,workspace,storage,current,call,nonce,changed=()=>{}}){
  let marker=null,payload=null,ready=false,busy=false;

@@ -1,4 +1,4 @@
-import{UUID,TOKEN,element as el,save,denied,rejected}from'./invitation-shared.mjs?v=20261001-invites';
+import{UUID,TOKEN,element as el,save,denied,rejected}from'./invitation-shared.mjs?v=20261003-current-suite-authority';
 const C=window.ZoiCore,root=document.getElementById('invitation'),status=document.getElementById('status');let epoch=0,actor='',token='',key='',pending=null,preview=null,busy=false;
 function button(text,fn,secondary=false){const b=el('button',text,secondary?'secondary':'');b.type='button';b.disabled=busy;b.onclick=fn;return b;}
 function current(run){return run===epoch&&actor===(C.auth.load?.()?.user_id||'');}

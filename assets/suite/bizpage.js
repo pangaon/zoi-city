@@ -395,9 +395,31 @@
     function destroy(){if(lifecycle.signal.aborted)return;lifecycle.abort();bootEpoch++;destroyDesign();clearInterval(scopeTimer);observer.disconnect();root.replaceChildren();}
     root.__bizPageDestroy=destroy;
     function checkScope(){if(!scopeLive()){destroy();if(root.isConnected)root.textContent='Your account or workspace changed. Reopen Business home.';}}
+    function accessRefused(error){return [401,403].includes(Number(error?.status)) || error?.code==='42501' || ['suite_session_unavailable','invitation_unavailable','not_authorized','no_access_to_listing','insufficient_permission'].includes(error?.code) || ['suite_session_unavailable','invitation_unavailable','not_authorized','no_access_to_listing','insufficient_permission'].includes(error?.message);}
+    function retireAccess(){
+      state.draft=null;state.entity=null;state.ownerProfile=null;state.claimsSnapshot=null;state.choices=[];state.status=null;state.vform=null;state.publicityForm=null;state.pendingContent=null;state.contentVersion=null;state.unlock=null;state.saving=false;contentDirty=false;
+      destroy();if(root.isConnected)root.textContent='Your current access could not be confirmed. Sign in and reopen Business home before editing.';
+    }
+    var authorityChecking=false;
+    async function verifyAuthority(){
+      checkScope();if(!scopeLive()||authorityChecking||state.loading||!state.status?.listingId)return;
+      authorityChecking=true;var turn=bootEpoch,listing=state.status.listingId;
+      try{
+        var currentStatus=await rpcRead('bizpage_status',{p_workspace:ws});
+        if(!scopeLive()||turn!==bootEpoch)return;
+        if(!editableListings(currentStatus).some(function(row){return row.id===listing;}))throw Error('no_access_to_listing');
+        var currentPage=await rpcRead('home_content_get',{p_workspace:ws,p_listing:listing});
+        if(!scopeLive()||turn!==bootEpoch)return;
+        if(currentPage?.ok!==true||currentPage.workspace_id!==ws||currentPage.listing_id!==listing)throw Error('no_access_to_listing');
+        if(currentPage.version!==state.contentVersion){state.contentVersion=null;var note=wrap.querySelector('[data-current-access-note]');if(!note){note=el(doc,'p','zp-note');note.dataset.currentAccessNote='';note.setAttribute('role','status');wrap.prepend(note);}note.textContent='This page changed elsewhere. Your unsaved text is still here. Reload the saved details before publishing.';var reload=wrap.querySelector('[data-current-access-reload]');if(!reload){reload=el(doc,'button','zp-btn','Reload saved details');reload.type='button';reload.dataset.currentAccessReload='';reload.onclick=function(){if(global.confirm('Reload the latest saved details? Your unsaved changes here will be replaced.'))boot(listing);};note.after(reload);}}
+      }catch(error){if(scopeLive()&&turn===bootEpoch&&accessRefused(error))retireAccess();}
+      finally{authorityChecking=false;}
+    }
     var scopeTimer=setInterval(checkScope,250);
     var observer=new MutationObserver(function(){if(!root.isConnected)destroy();});observer.observe(doc.body,{childList:true,subtree:true});
     ['storage','focus'].forEach(function(name){global.addEventListener(name,checkScope,{signal:lifecycle.signal});});
+    global.addEventListener('focus',verifyAuthority,{signal:lifecycle.signal});
+    doc.addEventListener('visibilitychange',function(){if(doc.visibilityState==='visible')verifyAuthority();},{signal:lifecycle.signal});
     global.addEventListener('beforeunload',function(e){if(scopeLive()&&unsaved()){e.preventDefault();e.returnValue='';}},{signal:lifecycle.signal});
     doc.addEventListener('click',function(e){if(!scopeLive())return;var target=e.target.closest('a,[data-ws],.nitem[data-id],[data-tab],[data-module],#signout,#ws-new');if(!target||target.id==='signout'||(ctx.managedNavigation&&(target.matches('.nitem,[data-ws],#ws-new,[data-design-link]')))||target.target==='_blank'||(root.contains(target)&&target.tagName!=='A')||(target.getAttribute('href')||'').startsWith('#'))return;if(!allowLeave()){e.preventDefault();e.stopImmediatePropagation();}},{capture:true,signal:lifecycle.signal});
     injectStyle(doc);
@@ -421,12 +443,12 @@
     function rpcRead(fn, params) {
       if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('RPC unavailable'));
       if(!scopeLive())return Promise.reject(new Error('Your account or workspace changed.'));
-      return C.auth.ensureFresh().then(function(ok){if(!ok || !scopeLive())throw new Error('Your account or workspace changed.');return C.api.rpc(fn, params, {auth:'prefer'});}).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
+      return C.auth.ensureFresh().then(function(ok){if(!scopeLive())throw new Error('Your account or workspace changed.');if(!ok){var error=Error('suite_session_unavailable');error.status=401;throw error;}return C.api.rpc(fn, params, {auth:'prefer'});}).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;}).catch(function(error){if(scopeLive()&&accessRefused(error))retireAccess();throw error;});
     }
     function rpcWrite(fn, params) {
       if (!C.api || typeof C.api.rpc !== 'function') return Promise.reject(new Error('RPC unavailable'));
       if(!scopeLive())return Promise.reject(new Error('Your account or workspace changed.'));
-      return C.auth.ensureFresh().then(function(ok){if(!ok || !scopeLive())throw new Error('Your account or workspace changed.');return C.api.rpc(fn, params, {auth:'prefer'});}).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;});
+      return C.auth.ensureFresh().then(function(ok){if(!scopeLive())throw new Error('Your account or workspace changed.');if(!ok){var error=Error('suite_session_unavailable');error.status=401;throw error;}return C.api.rpc(fn, params, {auth:'prefer'});}).then(function(value){if(!scopeLive())throw new Error('Your account or workspace changed.');return value;}).catch(function(error){if(scopeLive()&&accessRefused(error))retireAccess();throw error;});
     }
 
     /* ---- public link ---- */

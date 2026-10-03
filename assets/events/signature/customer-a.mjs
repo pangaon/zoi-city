@@ -1,3 +1,4 @@
+import {renderSalesMilestone} from '../publicity-view.mjs';
 import {renderPareaPlannerShell} from './parea-shell.mjs';
 export {renderPareaPlannerShell} from './parea-shell.mjs';
 import { TABLES, tablePreference } from './venue-experience.mjs?v=20261003-company-parea-rooms';
@@ -73,6 +74,7 @@ export function mountSignatureCustomer({root,poster=POSTER,floorplan=FLOOR,onPla
  dispose.getPlan=()=>{if(disposed)throw Error('view_closed');read();return{title:ctx.title,kind:'other',timezone:ctx.timezone,private_notes:summary(),selections:[]};};
  dispose.applyGroup=group=>{if(disposed)return;const incoming=group.members.map(m=>({id:'recipient-'+nextMemberId++,name:text(m.first_name,60),email:'',tel:'',ticket_quantity:m.ticket_quantity??1}));const requested=incoming.reduce((n,m)=>n+m.ticket_quantity,0);ticketAllocations({guestCount:requested,members:incoming});members=incoming;count=requested;knownNames=[...new Set(incoming.map(m=>m.name).filter(Boolean))];arrangement=group.arrangement==='nearby'?'nearby':'together';step=ctx.requireTable&&!tables.length?0:1;render();status('Your usual parea is applied. Confirm this event’s table and price; contacts have not been carried over.');};
  dispose.setTableSelection=ids=>{if(disposed)return;read();tables=ctx.validateTables(ids);render();};
+ dispose.setPublicity=(publicity,urls=[])=>{if(disposed)return;let node=root.querySelector('[data-event-sales]');if(!node){const title=root.querySelector('.sig-a-title');if(!title)return;node=document.createElement('div');node.dataset.eventSales='';node.setAttribute('aria-live','polite');const fine=title.querySelector('.sig-a-fine');fine?fine.before(node):title.append(node);}node.innerHTML=renderSalesMilestone(publicity,urls);};
  dispose.setEventId=id=>{if(disposed||!UUID.test(id||''))return;ctx.eventId=id;if(step===2)render();};
  dispose.showGroupSetup=()=>{if(disposed)return;read();step=0;render();const heading=$('[data-content] h3');heading.tabIndex=-1;heading.focus({preventScroll:true});};return dispose;
 }

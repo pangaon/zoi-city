@@ -1,0 +1,62 @@
+{
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "1abb7e538894bedf71984134d22c3701",
+      "signature": "explore_geo(integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_geo(p_limit integer DEFAULT 5000, p_offset integer DEFAULT 0)\n RETURNS TABLE(slug text, entity_type text, name text, city text, country text, category_slug text, lat double precision, lng double precision, geo_precision text, address text)\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT e.slug::text,e.entity_type::text,e.name::text,e.city::text,zoi.geo_country_canon(e.country)::text,e.category_slug::text,e.latitude::double precision,e.longitude::double precision,zoi.geo_precision_canon(COALESCE(NULLIF(l.geo_precision::text,'none'),l.profile->'_geo'->>'precision'))::text,l.address::text\n FROM zoi.v_public_listings e JOIN zoi.listings l ON l.id=e.id\n WHERE e.latitude IS NOT NULL AND e.longitude IS NOT NULL AND l.publish_status='published' AND COALESCE(l.marketplace_status,'')<>'hidden'\n ORDER BY e.id LIMIT LEAST(GREATEST(COALESCE(p_limit,5000),1),5000) OFFSET GREATEST(COALESCE(p_offset,0),0)\n$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "c332bbe56099a438028cfb1ff25c50d3",
+      "signature": "explore_geo(text,text,text,text,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.explore_geo(p_q text DEFAULT NULL::text, p_type text DEFAULT NULL::text, p_city text DEFAULT NULL::text, p_country text DEFAULT NULL::text, p_limit integer DEFAULT 600)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT COALESCE(jsonb_agg(to_jsonb(r)),'[]'::jsonb) FROM(\n SELECT l.id,l.name,COALESCE(l.canonical_path,'/p/'||l.slug) AS path,l.latitude AS lat,l.longitude AS lng,l.entity_type,l.city,(l.verification_status='verified') AS verified\n FROM zoi.listings l WHERE l.publish_status='published' AND l.moderation_status IN ('clean','cleared') AND COALESCE(l.marketplace_status,'')<>'hidden' AND l.latitude IS NOT NULL AND l.longitude IS NOT NULL\n AND(p_type IS NULL OR l.entity_type=p_type) AND(p_city IS NULL OR l.city ILIKE p_city) AND(p_country IS NULL OR l.country ILIKE p_country)\n AND(p_q IS NULL OR l.name ILIKE '%'||p_q||'%' OR l.search_tsv @@ pg_catalog.plainto_tsquery('pg_catalog.simple',p_q))\n ORDER BY(l.verification_status='verified') DESC,l.trust_score DESC NULLS LAST,l.id\n LIMIT LEAST(GREATEST(p_limit,1),1200))r\n$function$\n",
+      "security_definer": true
+    }
+  ],
+  "view": " SELECT l.id,\n    l.entity_type,\n    l.name,\n    l.slug,\n    l.description,\n    c.slug AS category_slug,\n    c.label_en AS category,\n    l.city,\n    l.region,\n    l.province_state,\n    l.country,\n    l.latitude,\n    l.longitude,\n    l.website,\n    l.trust_badges,\n    l.verification_status,\n    l.updated_at\n   FROM zoi.listings l\n     LEFT JOIN zoi.categories c ON c.id = l.primary_category_id\n  WHERE l.publish_status = 'published'::text AND (l.moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND l.duplicate_status <> 'confirmed_duplicate'::text;",
+  "view_md5": "2b46539e1df515c212845c391a322f74",
+  "helpers": [
+    {
+      "body": "CREATE OR REPLACE FUNCTION zoi.geo_country_canon(p_raw text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case lower(nullif(trim(coalesce(p_raw, '')), ''))\n    when 'us' then 'United States'\n    when 'usa' then 'United States'\n    when 'u.s.' then 'United States'\n    when 'u.s.a.' then 'United States'\n    when 'united states of america' then 'United States'\n    when 'uk' then 'United Kingdom'\n    when 'great britain' then 'United Kingdom'\n    when 'gb' then 'United Kingdom'\n    when 'uae' then 'United Arab Emirates'\n    when 'gr' then 'Greece'\n    when 'el' then 'Greece'\n    when 'ca' then 'Canada'\n    when 'au' then 'Australia'\n    when 'nz' then 'New Zealand'\n    when 'cy' then 'Cyprus'\n    else nullif(trim(p_raw), '')\n  end\n$function$\n",
+      "signature": "zoi.geo_country_canon(text)",
+      "volatility": "i"
+    },
+    {
+      "body": "CREATE OR REPLACE FUNCTION zoi.geo_precision_canon(p_raw text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\r\n  select case lower(nullif(trim(coalesce(p_raw, '')), ''))\r\n    when 'rooftop' then 'street'\r\n    when 'address' then 'street'\r\n    when 'street' then 'street'\r\n    when 'neighborhood' then 'neighbourhood'\r\n    when 'neighbourhood' then 'neighbourhood'\r\n    when 'suburb' then 'neighbourhood'\r\n    when 'locality' then 'city'\r\n    when 'town' then 'city'\r\n    when 'city' then 'city'\r\n    when 'region' then 'region'\r\n    when 'country' then 'region'\r\n    when 'approx' then 'approximate'\r\n    when 'approximate' then 'approximate'\r\n    else 'unknown'\r\n  end\r\n$function$\n",
+      "signature": "zoi.geo_precision_canon(text)",
+      "volatility": "i"
+    }
+  ],
+  "roles": [
+    {
+      "name": "anon",
+      "config": [
+        "statement_timeout=3s"
+      ]
+    },
+    {
+      "name": "authenticated",
+      "config": [
+        "statement_timeout=8s"
+      ]
+    },
+    {
+      "name": "authenticator",
+      "config": [
+        "session_preload_libraries=supautils, safeupdate",
+        "statement_timeout=8s",
+        "lock_timeout=8s"
+      ]
+    }
+  ]
+}

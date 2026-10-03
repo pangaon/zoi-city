@@ -1,0 +1,37 @@
+PASS 21 actual installed definitions, owner metadata and ACLs reconstructed
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role authenticated;select set_config('test.auth','30000000-0000-4000-8000-000000000001',false);select set_config('test.session','60000000-0000-4000-8000-000000000001',false);select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','af65d2c3849ccddfbda112b4168a6fd3','50000000-0000-4000-8000-000000000001','{"website":"https://owner.example/"}'::jsonb,'{}'::jsonb)
+ERROR:  function zoi.hospitality_catalog_valid(text, jsonb) does not exist
+LINE 1: p_profile?k AND NOT zoi.hospitality_catalog_valid(k,p_profil...
+                            ^
+HINT:  No function matches the given name and argument types. You might need to add explicit type casts.
+QUERY:  p_profile?k AND NOT zoi.hospitality_catalog_valid(k,p_profile->k)
+CONTEXT:  PL/pgSQL function zoi.assert_hospitality_catalog(jsonb) line 5 at IF
+SQL statement "SELECT zoi.assert_hospitality_catalog(p_profile)"
+PL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 17 at PERFORM
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at ChildProcess.exithandler (node:child_process:417:12)
+    at ChildProcess.emit (node:events:508:28)
+    at maybeClose (node:internal/child_process:1100:16)
+    at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
+  code: 1,
+  killed: false,
+  signal: null,
+  cmd: `/usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role authenticated;select set_config('test.auth','30000000-0000-4000-8000-000000000001',false);select set_config('test.session','60000000-0000-4000-8000-000000000001',false);select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','af65d2c3849ccddfbda112b4168a6fd3','50000000-0000-4000-8000-000000000001','{"website":"https://owner.example/"}'::jsonb,'{}'::jsonb)`,
+  stdout: '30000000-0000-4000-8000-000000000001\n60000000-0000-4000-8000-000000000001\n',
+  stderr: 'ERROR:  function zoi.hospitality_catalog_valid(text, jsonb) does not exist\n' +
+    'LINE 1: p_profile?k AND NOT zoi.hospitality_catalog_valid(k,p_profil...\n' +
+    '                            ^\n' +
+    'HINT:  No function matches the given name and argument types. You might need to add explicit type casts.\n' +
+    'QUERY:  p_profile?k AND NOT zoi.hospitality_catalog_valid(k,p_profile->k)\n' +
+    'CONTEXT:  PL/pgSQL function zoi.assert_hospitality_catalog(jsonb) line 5 at IF\n' +
+    'SQL statement "SELECT zoi.assert_hospitality_catalog(p_profile)"\n' +
+    'PL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 17 at PERFORM\n'
+}
+
+Node.js v24.14.0

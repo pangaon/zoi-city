@@ -1,0 +1,386 @@
+{
+  "checks": 42,
+  "port": "15675",
+  "observed_lock_waits": [
+    {
+      "label": "profile wait then session removal",
+      "held_lock": "select 1 from zoi.user_profiles where id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "delete from auth.sessions",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374520,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_0"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 10 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "membership wait then session removal",
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "delete from auth.sessions",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374530,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_1"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 12 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "listing wait then session removal",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "delete from auth.sessions",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374546,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_2"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "claim wait then session removal",
+      "held_lock": "select 1 from zoi.listing_claims where listing_id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "delete from auth.sessions",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374560,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_3"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 17 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "profile wait then actor account remapping",
+      "held_lock": "select 1 from zoi.user_profiles where id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update zoi.user_profiles set auth_user_id='30000000-0000-4000-8000-000000000002'where id='10000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374572,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_4"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  not_authorized\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 8 at RAISE\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "membership wait then NULL role",
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update zoi.workspace_members set role=null where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374582,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_5"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  not_authorized\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 11 at RAISE\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "membership wait then viewer downgrade",
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update zoi.workspace_members set role='viewer'where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374592,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_6"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  not_authorized\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 11 at RAISE\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "membership wait then removal",
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "delete from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374603,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_7"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  not_authorized\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 11 at RAISE\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "listing wait then ownership transfer",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update zoi.listings set owner_workspace_id='20000000-0000-4000-8000-000000000002'where id='40000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374613,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_8"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  no_access_to_listing\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 14 at RAISE\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "claim wait then approved claim revocation",
+      "held_lock": "select 1 from zoi.listing_claims where listing_id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update zoi.listing_claims set claim_status='submitted'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374625,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_9"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  no_access_to_listing\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 16 at RAISE\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "listing wait then account ban",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update auth.users set banned_until=clock_timestamp()+interval '1 hour' where id='30000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374635,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_10"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "listing wait then account deletion",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update auth.users set deleted_at=clock_timestamp()where id='30000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374647,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_11"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "listing wait then anonymous account",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update auth.users set is_anonymous=true where id='30000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374657,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_12"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "listing wait then unverified account",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "update auth.users set email_confirmed_at=null where id='30000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374669,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_13"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "natural clock expiry during membership wait",
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','f2b7b756a3a5d0fb6501fb1ae00784e1','50000000-0000-4000-8000-000000000002','{\"website\":null}'::jsonb,'{}'::jsonb)",
+      "revoke": "",
+      "natural": true,
+      "wait": [
+        {
+          "pid": 374683,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_14"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 12 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    },
+    {
+      "label": "private snapshot after profile wait and session revocation",
+      "held_lock": "select 1 from zoi.user_profiles where id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_get('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001')",
+      "revoke": "delete from auth.sessions",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374702,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_15"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 10 at PERFORM\nSQL statement \"SELECT zoi.home_content_authorize(p_workspace,p_listing)\"\nPL/pgSQL function public.home_content_get(uuid,uuid) line 3 at PERFORM\n"
+      }
+    },
+    {
+      "label": "private snapshot after membership wait and role removal",
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_get('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001')",
+      "revoke": "delete from zoi.workspace_members where workspace_id='20000000-0000-4000-8000-000000000001'and profile_id='10000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374714,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_16"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  not_authorized\nCONTEXT:  PL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 11 at RAISE\nSQL statement \"SELECT zoi.home_content_authorize(p_workspace,p_listing)\"\nPL/pgSQL function public.home_content_get(uuid,uuid) line 3 at PERFORM\n"
+      }
+    },
+    {
+      "label": "legacy profile write after listing wait and session revocation",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.bizpage_save_profile('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','{\"about\":null}')",
+      "revoke": "delete from auth.sessions",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374724,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_17"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nSQL statement \"SELECT zoi.home_content_authorize(p_workspace,p_listing)\"\nPL/pgSQL function bizpage_save_profile(uuid,uuid,jsonb) line 4 at PERFORM\nSQL function \"bizpage_save_profile\" statement 1\n"
+      }
+    },
+    {
+      "label": "legacy base write after profile wait and account ban",
+      "held_lock": "select 1 from zoi.user_profiles where id='10000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.bizpage_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001',null,null,null,'https://never-legacy.example/',null,null,null,'{}')",
+      "revoke": "update auth.users set banned_until=clock_timestamp()+interval '1 hour'where id='30000000-0000-4000-8000-000000000001'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374736,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_18"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 10 at PERFORM\nSQL statement \"SELECT zoi.home_content_authorize(p_workspace,p_listing)\"\nPL/pgSQL function bizpage_save(uuid,uuid,text,text,text,text,text,text,text,jsonb) line 3 at PERFORM\n"
+      }
+    },
+    {
+      "label": "new save after final listing wait and session expiry",
+      "held_lock": "select 1 from zoi.listings where id='40000000-0000-4000-8000-000000000001'for update",
+      "request_sql": "select public.home_content_save('20000000-0000-4000-8000-000000000001','40000000-0000-4000-8000-000000000001','3090e8efb6245d2a9afa812c87936ec4','50000000-0000-4000-8000-000000000040','{\"website\":\"https://never-saved.example/\"}'::jsonb,'{}'::jsonb)",
+      "revoke": "update auth.sessions set not_after=clock_timestamp()-interval '1 second'",
+      "natural": false,
+      "wait": [
+        {
+          "pid": 374760,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "home_authority_19"
+        }
+      ],
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  invitation_unavailable\nCONTEXT:  PL/pgSQL function zoi.workspace_invitation_email(boolean) line 10 at RAISE\nSQL statement \"SELECT zoi.workspace_invitation_email(false)\"\nPL/pgSQL function zoi.home_content_authorize(uuid,uuid) line 15 at PERFORM\nPL/pgSQL function public.home_content_save(uuid,uuid,text,uuid,jsonb,jsonb) line 4 at assignment\n"
+      }
+    }
+  ]
+}

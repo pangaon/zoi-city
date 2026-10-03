@@ -1,0 +1,86 @@
+[
+  {
+    "name": "public.bizpage_get",
+    "args": "p_workspace uuid, p_listing uuid",
+    "definition": "CREATE OR REPLACE FUNCTION public.bizpage_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF NOT zoi.bizpage_can_edit(p_workspace,p_listing) THEN RAISE EXCEPTION 'no_access_to_listing'; END IF;\n  RETURN (SELECT jsonb_build_object('id',l.id,'name',l.name,'slug',l.slug,'path',COALESCE(l.canonical_path,'/p/'||l.slug),\n    'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n    'hours',l.hours,'price_range',l.price_range,'photo_url',l.photo_url,'social_links',COALESCE(l.social_links,'{}'::jsonb))\n    FROM zoi.listings l WHERE l.id=p_listing);\nEND;$function$\n",
+    "sha256": "3f12b842eace56b1fd1e3db1ba2aadd6a31b028bd9ebea9a20b96abf99425545",
+    "prosecdef": true,
+    "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=zoi, public"
+    ]
+  },
+  {
+    "name": "public.bizpage_status",
+    "args": "p_workspace uuid",
+    "definition": "CREATE OR REPLACE FUNCTION public.bizpage_status(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;owner_id uuid;member_role text;\nBEGIN\n IF auth.uid() IS NULL THEN RAISE EXCEPTION 'not_signed_in' USING errcode='42501';END IF;\n SELECT id INTO actor FROM zoi.user_profiles WHERE auth_user_id=auth.uid();\n IF actor IS NULL THEN RAISE EXCEPTION 'no_access_to_workspace' USING errcode='42501';END IF;\n -- Match workspace\u2192membership lock ordering used by organization authority writers.\n SELECT owner_profile_id INTO owner_id FROM zoi.workspaces WHERE id=p_workspace FOR SHARE;\n IF NOT FOUND THEN RAISE EXCEPTION 'no_access_to_workspace' USING errcode='42501';END IF;\n SELECT role INTO member_role FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor FOR SHARE;\n IF owner_id IS DISTINCT FROM actor AND (member_role IS NULL OR member_role NOT IN('owner','admin','editor','viewer')) THEN\n  RAISE EXCEPTION 'no_access_to_workspace' USING errcode='42501';\n END IF;\n -- Reuse the deployed current verified Auth/session guard after all authority waits.\n BEGIN PERFORM zoi.workspace_invitation_email();\n EXCEPTION WHEN insufficient_privilege THEN RAISE EXCEPTION 'verified_account_required' USING errcode='42501';END;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,\n  'owned',COALESCE((SELECT jsonb_agg(jsonb_build_object('id',l.id,'name',l.name,'slug',l.slug,'city',l.city,'path',COALESCE(l.canonical_path,'/p/'||l.slug))) FROM zoi.listings l WHERE l.owner_workspace_id=p_workspace),'[]'::jsonb),\n  'claims',COALESCE((SELECT jsonb_agg(jsonb_build_object('listing_id',c.listing_id,'status',c.claim_status,'name',l.name,'slug',l.slug,'submitted_at',c.submitted_at)) FROM zoi.listing_claims c JOIN zoi.listings l ON l.id=c.listing_id WHERE c.workspace_id=p_workspace),'[]'::jsonb));\nEND;$function$\n",
+    "sha256": "c7d01c9c37bbe107e308892fdbe37d872278652438191fac4599700b06ac000e",
+    "prosecdef": true,
+    "proacl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "public.home_content_get",
+    "args": "p_workspace uuid, p_listing uuid",
+    "definition": "CREATE OR REPLACE FUNCTION public.home_content_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;p jsonb;\nBEGIN PERFORM zoi.home_content_authorize(p_workspace,p_listing);SELECT * INTO l FROM zoi.listings WHERE id=p_listing;\n p:=coalesce(l.profile,'{}')-'_coverage';IF p?'_enrich' THEN p:=jsonb_set(p,'{_enrich}',(p->'_enrich')-'lease');END IF;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'version',zoi.home_content_version(l),'base',public.bizpage_get(p_workspace,p_listing),'profile',p,'owner_content',coalesce(zoi.public_owner_content(l.id),'{}'::jsonb),'entity_type',l.entity_type,'category_slug',(SELECT slug FROM zoi.categories WHERE id=l.primary_category_id));\nEND $function$\n",
+    "sha256": "a731720f19b762d00ccfa9cd692b3440151a53e3f0db137b9c8d64b85322468b",
+    "prosecdef": true,
+    "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "public.home_content_save",
+    "args": "p_workspace uuid, p_listing uuid, p_expected_version text, p_request uuid, p_base jsonb, p_profile jsonb",
+    "definition": "CREATE OR REPLACE FUNCTION public.home_content_save(p_workspace uuid, p_listing uuid, p_expected_version text, p_request uuid, p_base jsonb DEFAULT '{}'::jsonb, p_profile jsonb DEFAULT '{}'::jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;l zoi.listings;prior zoi.home_content_requests;payload jsonb;receipt jsonb;b jsonb;k text;sec jsonb;item jsonb;\nBEGIN\n actor:=zoi.home_content_authorize(p_workspace,p_listing);SELECT * INTO l FROM zoi.listings WHERE id=p_listing;\n IF p_request IS NULL THEN RAISE EXCEPTION 'request_required';END IF;\n payload:=jsonb_build_object('workspace',p_workspace,'listing',p_listing,'expected_version',p_expected_version,'base',p_base,'profile',p_profile);\n SELECT * INTO prior FROM zoi.home_content_requests WHERE actor_id=actor AND request_id=p_request;\n IF FOUND THEN IF prior.payload IS DISTINCT FROM payload THEN RAISE EXCEPTION 'request_payload_conflict';END IF;RETURN prior.receipt;END IF;\n IF p_expected_version IS NULL OR p_expected_version IS DISTINCT FROM zoi.home_content_version(l) THEN RAISE EXCEPTION 'version_conflict';END IF;\n IF jsonb_typeof(p_base) IS DISTINCT FROM 'object' OR jsonb_typeof(p_profile) IS DISTINCT FROM 'object' OR octet_length(payload::text)>200000 THEN RAISE EXCEPTION 'invalid_content';END IF;\n FOR k IN SELECT jsonb_object_keys(p_base)LOOP\n IF k NOT IN('description','phone','email','website','hours','price_range','photo_url','social_links')THEN RAISE EXCEPTION 'unsupported_base_field';END IF;\n IF k<>'social_links' AND p_base->k<>'null'::jsonb AND (jsonb_typeof(p_base->k)<>'string' OR length(p_base->>k)>6000)THEN RAISE EXCEPTION 'invalid_base_value';END IF;\n END LOOP;\n IF p_base?'social_links' AND jsonb_typeof(p_base->'social_links') NOT IN('object','null')THEN RAISE EXCEPTION 'invalid_social_links';END IF;\n -- Profile keys are limited to actual currently supported vertical form fields.\n PERFORM zoi.assert_hospitality_catalog(p_profile);\nFOR k IN SELECT jsonb_object_keys(p_profile)LOOP\n IF k NOT IN('hero_url','logo_url','hero_position','logo_fit','photo_urls','tagline','tagline_el','about','about_el','languages','service_areas','hours','services','patronal_feast','clergy','ministries','sacraments','stewardship_url','festival','cuisine','menu','menu_url','menu_updated','specials','reserve_url','order_url','catering','price_range','practice_areas','registrations','consult','consult_fee','booking_url','programs','enrolment','tuition','exam_prep','enrol_url','origin','founded','membership','membership_url','meetings','scholarships','give_url','spotify_url','apple_music_url','youtube_url','bandcamp_url','soundcloud_url','embeds','releases','tour','booking_name','booking_email','press','press_kit_url','merch','message','featured_content','upcoming','work','rate_card_url','collab_email','spaces','hire_enquiry_url','catering_model','starts','ends','venue_name','tickets_url','lineup','admission','highlights','event_publicity','rooms','dining','venues','amenities') THEN RAISE EXCEPTION 'unsupported_profile_field';END IF;\n END LOOP;\n IF p_profile?'event_publicity' AND NOT zoi.event_publicity_valid(p_profile->'event_publicity') THEN RAISE EXCEPTION 'invalid_event_publicity';END IF;\n IF p_profile?'menu' AND p_profile->'menu'<>'null'::jsonb THEN\n IF jsonb_typeof(p_profile->'menu')<>'array' OR jsonb_array_length(p_profile->'menu')>20 THEN RAISE EXCEPTION 'invalid_menu_sections';END IF;\n FOR sec IN SELECT value FROM jsonb_array_elements(p_profile->'menu')LOOP\n IF jsonb_typeof(sec)<>'object' OR length(coalesce(sec->>'section','')) NOT BETWEEN 1 AND 100 OR jsonb_typeof(sec->'items') IS DISTINCT FROM 'array' OR jsonb_array_length(sec->'items')>100 THEN RAISE EXCEPTION 'invalid_menu_section';END IF;\n FOR item IN SELECT value FROM jsonb_array_elements(sec->'items')LOOP\n IF jsonb_typeof(item)<>'object' OR length(coalesce(item->>'name','')) NOT BETWEEN 1 AND 160 OR length(coalesce(item->>'price',''))>100 OR length(coalesce(item->>'note',''))>600 THEN RAISE EXCEPTION 'invalid_menu_item';END IF;\n END LOOP;END LOOP;END IF;\n IF p_profile?'specials' AND p_profile->'specials'<>'null'::jsonb THEN\n IF jsonb_typeof(p_profile->'specials')<>'array' OR jsonb_array_length(p_profile->'specials')>50 THEN RAISE EXCEPTION 'invalid_promotions';END IF;\n FOR item IN SELECT value FROM jsonb_array_elements(p_profile->'specials')LOOP\n IF jsonb_typeof(item)<>'object' OR length(coalesce(item->>'name','')) NOT BETWEEN 1 AND 160 OR length(coalesce(item->>'when',''))>160 OR length(coalesce(item->>'price',''))>100 OR length(coalesce(item->>'note',''))>600 THEN RAISE EXCEPTION 'invalid_promotion';END IF;\n END LOOP;END IF;\n IF (SELECT count(*)FROM zoi.home_content_requests WHERE actor_id=actor AND created_at>now()-interval '1 hour')>=120 THEN RAISE EXCEPTION 'content_save_rate_limit';END IF;\n IF p_base<>'{}'::jsonb THEN\n b:=jsonb_build_object('description',l.description,'phone',l.phone,'email',l.email,'website',l.website,'hours',l.hours,'price_range',l.price_range,'photo_url',l.photo_url,'social_links',l.social_links)||p_base;\n IF public.bizpage_save(p_workspace,p_listing,b->>'description',b->>'phone',b->>'email',b->>'website',b->>'hours',b->>'price_range',b->>'photo_url',CASE WHEN b->'social_links'='null'::jsonb THEN '{}'::jsonb ELSE b->'social_links' END) IS DISTINCT FROM true THEN RAISE EXCEPTION 'base_save_not_confirmed';END IF;END IF;\n IF p_profile<>'{}'::jsonb AND public.bizpage_save_profile(p_workspace,p_listing,p_profile) IS DISTINCT FROM true THEN RAISE EXCEPTION 'profile_save_not_confirmed';END IF;\n SELECT * INTO l FROM zoi.listings WHERE id=p_listing;\n PERFORM zoi.assert_hospitality_catalog(p_profile);\nFOR k IN SELECT jsonb_object_keys(p_profile)LOOP IF l.profile->k IS DISTINCT FROM p_profile->k THEN RAISE EXCEPTION 'profile_save_not_confirmed';END IF;END LOOP;\n receipt:=jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'request_id',p_request,'version',zoi.home_content_version(l));\n INSERT INTO zoi.home_content_requests(actor_id,request_id,workspace_id,listing_id,payload,receipt)VALUES(actor,p_request,p_workspace,p_listing,payload,receipt);RETURN receipt;\nEND $function$\n",
+    "sha256": "b186e4b57bce14e1bc5a1f50d97419664133a87733dbe9616d3d09301f6eb744",
+    "prosecdef": true,
+    "proacl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "zoi.home_content_authorize",
+    "args": "p_workspace uuid, p_listing uuid",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_authorize(p_workspace uuid, p_listing uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.org_actor();owner_ws uuid;\nBEGIN\n IF actor IS NULL THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n PERFORM 1 FROM zoi.user_profiles WHERE id=actor FOR UPDATE;\n PERFORM 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor AND role IN('owner','admin','editor')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n SELECT owner_workspace_id INTO owner_ws FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND OR (owner_ws IS NOT NULL AND owner_ws<>p_workspace) OR NOT zoi.bizpage_can_edit(p_workspace,p_listing)THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;\n IF owner_ws IS NULL THEN PERFORM 1 FROM zoi.listing_claims WHERE listing_id=p_listing AND workspace_id=p_workspace AND claim_status IN('approved','verified')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;END IF;\n RETURN actor;\nEND $function$\n",
+    "sha256": "ef3027480ddc738173aa489a64ad90f963a8f199755cd38ddae83e9a0209842d",
+    "prosecdef": true,
+    "proacl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "zoi.home_content_version",
+    "args": "l zoi.listings",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_version(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(l.description,l.phone,l.email,l.website,l.hours,l.price_range,l.photo_url,l.social_links,l.owner_workspace_id,(coalesce(l.profile,'{}')-'_coverage'-'_geo'-'_meta'-'_enrich'),coalesce(l.profile->'_enrich','{}')-'lease')::text)\n$function$\n",
+    "sha256": "e2d52cd9c98c2337d8a93f35721fcfcb197ee7315b3094330883d0ec2102a51d",
+    "prosecdef": false,
+    "proacl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  },
+  {
+    "name": "zoi.suite_current_session",
+    "args": "",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.suite_current_session()\n RETURNS void\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n",
+    "sha256": "97dd5f16ad6c2164e8204e5ab4fac3cc4df773a3380d99a276c125e219df59d8",
+    "prosecdef": true,
+    "proacl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "proconfig": [
+      "search_path=\"\""
+    ]
+  }
+]
