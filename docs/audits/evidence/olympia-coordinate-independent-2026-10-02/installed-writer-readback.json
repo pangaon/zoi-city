@@ -1,0 +1,77 @@
+{
+  "functions": [
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_fingerprint(zoi.listings)",
+      "body_sha256": "0bf2410cb7868ba289527ead59a8e10f7b3a59113d7511ea86e416f3b8a48f12",
+      "security_definer": false
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "geography_review_apply(uuid,uuid,text,text,jsonb)",
+      "body_sha256": "196349acadaf3fb6894b28ec20419f923a216293af32ea03c84be5cfb147081e",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "geography_review_revert(uuid,text)",
+      "body_sha256": "95d98702de5b444fc197b221e3f2721be2da9ff1eaf2ad88e27bc7e67f9d570c",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres",
+        "anon=X/postgres",
+        "authenticated=X/postgres",
+        "service_role=X/postgres"
+      ],
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "geography_reviewed_point(uuid)",
+      "body_sha256": "a9b9fc02e56cc9475198e3e98693b9cac741d58964e0de89e871501cfa796622",
+      "security_definer": true
+    },
+    {
+      "acl": [
+        "postgres=X/postgres"
+      ],
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_url_component(text)",
+      "body_sha256": "3c6ab14577e20bf21dad386afe146ae7d75528a5ec6d1695999dda2697bc3955",
+      "security_definer": false
+    }
+  ],
+  "migration": [
+    {
+      "name": "reviewed_named_place_shortlink",
+      "version": "20261002235152"
+    }
+  ],
+  "ledger_count": 2
+}

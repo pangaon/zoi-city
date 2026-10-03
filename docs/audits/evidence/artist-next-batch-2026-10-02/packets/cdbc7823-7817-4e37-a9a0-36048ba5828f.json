@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "status": "producer_requires_independent_review_not_applied",
+  "listing": {
+    "id": "cdbc7823-7817-4e37-a9a0-36048ba5828f",
+    "name": "Thug Slime",
+    "slug": "thug-slime-athens",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.minosemi.gr/artists/thug-slime/",
+  "source_artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/profiles/cdbc7823-7817-4e37-a9a0-36048ba5828f.html",
+  "source_sha256": "791045fa06b2e90976461a8ec15fc232dd633c57574bedfe44751b22c34102d6",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 2193
+  },
+  "identity_basis": {
+    "roster_identity": "Thug Slime",
+    "exact_primary_heading": "Thug Slime",
+    "unique_roster_match": true
+  },
+  "fact_basis": "Primary identity heading, artist-specific Spotify destination and primary photo only; no substantive biography.",
+  "source_biography_present": false,
+  "images": [
+    {
+      "listing_id": "cdbc7823-7817-4e37-a9a0-36048ba5828f",
+      "name": "Thug Slime",
+      "checked_at": "2026-10-02T23:09:26.270Z",
+      "requested_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2025/04/Untitled-design-6-1000x1000.png",
+      "source_sha256": "791045fa06b2e90976461a8ec15fc232dd633c57574bedfe44751b22c34102d6",
+      "scope": "original_source_image_bytes_only_not_visual_acceptance",
+      "visual_inspection": "producer_viewed_original",
+      "accepted_raster": true,
+      "http_status": 200,
+      "url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2025/04/Untitled-design-6-1000x1000.png",
+      "mime": "image/png",
+      "bytes": 817903,
+      "sha256": "68839885fc6f46650f07a522e5a2172565767135709db576d63cff0dccf6c8b4",
+      "dimensions": {
+        "mime": "image/png",
+        "width": 1000,
+        "height": 1000
+      },
+      "actual_browser_decode": {
+        "width": 1000,
+        "height": 1000
+      },
+      "artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/portraits/cdbc7823-7817-4e37-a9a0-36048ba5828f.png",
+      "visual_note": "Man looking downward in black outfit, green accent lighting.",
+      "identity_basis": "Exact primary artist page photo block and visually inspected original; independent publisher/identity review pending."
+    }
+  ],
+  "proposed_machine_fields": {
+    "site_lang": "en-US",
+    "source_kind": "label_artist_profile",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/2CeSpJpSDU42CUgPdGfyo0"
+    },
+    "crawl_status": "ok",
+    "photo_urls": [
+      "https://www.minosemi.gr/wp-content/uploads/sites/946/2025/04/Untitled-design-6-1000x1000.png"
+    ],
+    "photo_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2025/04/Untitled-design-6-1000x1000.png",
+    "hero_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2025/04/Untitled-design-6-1000x1000.png"
+  },
+  "prior_whole_row_hash": "f13362772173950f887e51c451b8ab07",
+  "prior_machine_profile": {},
+  "prior_source_url": null,
+  "preserve": [
+    "All owner overrides and top-level fields except exact source assignment/trigger timestamp",
+    "Entire nonmachine profile, including original biography, geography and unknown prior claims",
+    "Canonical identity, ownership, publication and marketplace state"
+  ],
+  "excluded": [
+    "Primary biography block empty: no biography invented.",
+    "All corporate/publisher contact routes, news/sidebar images and navigation excluded.",
+    "No geography, booking availability, dated shows, prices, account integration or playback inferred."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "Independent exact per-record source/fact/image approval",
+    "Production current-row and writer-definition recheck",
+    "DefaultROLLBACK actual genuine lease/apply with protected content/evidence assertions",
+    "Lead-controlled explicit commit variant only after accepted dry run",
+    "Public seo_entity readback and actual390/1440 guest listening/gallery/source journey",
+    "Native/device handoff acceptance"
+  ]
+}

@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "status": "producer_requires_independent_review_not_applied",
+  "listing": {
+    "id": "accc5252-87e6-4ce7-8088-e43dccdac8d9",
+    "name": "Bossikan",
+    "slug": "bossikan-athens",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.minosemi.gr/artists/bossikan/",
+  "source_artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/profiles/accc5252-87e6-4ce7-8088-e43dccdac8d9.html",
+  "source_sha256": "c2db49ffb891414b47866d4c6f0a3e8dc5e8eb1b3604232e9fcfa81e9fab53a0",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 2992
+  },
+  "identity_basis": {
+    "roster_identity": "BOSSIKAN",
+    "exact_primary_heading": "BOSSIKAN",
+    "unique_roster_match": true
+  },
+  "fact_basis": "Greek trap scene; named recordings; ALEQUAN summer2024; named collaborations.",
+  "source_biography_present": true,
+  "images": [
+    {
+      "listing_id": "accc5252-87e6-4ce7-8088-e43dccdac8d9",
+      "name": "Bossikan",
+      "checked_at": "2026-10-02T23:09:16.755Z",
+      "requested_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2020/10/bossikan-photo-2048x2048.png",
+      "source_sha256": "c2db49ffb891414b47866d4c6f0a3e8dc5e8eb1b3604232e9fcfa81e9fab53a0",
+      "scope": "original_source_image_bytes_only_not_visual_acceptance",
+      "visual_inspection": "producer_viewed_original",
+      "accepted_raster": true,
+      "http_status": 200,
+      "url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2020/10/bossikan-photo-2048x2048.png",
+      "mime": "image/png",
+      "bytes": 3339050,
+      "sha256": "d2096055109d6077d92cbcc00b376d74a34804b013a23c66e7826312c1d4e1dc",
+      "dimensions": {
+        "mime": "image/png",
+        "width": 2048,
+        "height": 2048
+      },
+      "actual_browser_decode": {
+        "width": 2048,
+        "height": 2048
+      },
+      "artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/portraits/accc5252-87e6-4ce7-8088-e43dccdac8d9.png",
+      "visual_note": "Man in black shirt and sunglasses seated, tattoos visible.",
+      "identity_basis": "Exact primary artist page photo block and visually inspected original; independent publisher/identity review pending."
+    }
+  ],
+  "proposed_machine_fields": {
+    "site_lang": "en-US",
+    "source_kind": "label_artist_profile",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/2Iy8kK89T3l62dJcAkflqM"
+    },
+    "crawl_status": "ok",
+    "description": "Bossikan is a Greek trap artist. His releases include Full Press with FLY LO and Ricta, XCM, S’agapw and the 2024 album ALEQUAN. He has collaborated with VLOSPA and Hawk.",
+    "photo_urls": [
+      "https://www.minosemi.gr/wp-content/uploads/sites/946/2020/10/bossikan-photo-2048x2048.png"
+    ],
+    "photo_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2020/10/bossikan-photo-2048x2048.png",
+    "hero_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2020/10/bossikan-photo-2048x2048.png"
+  },
+  "prior_whole_row_hash": "afd730477900ca37fe81f794a4386e57",
+  "prior_machine_profile": {},
+  "prior_source_url": null,
+  "preserve": [
+    "All owner overrides and top-level fields except exact source assignment/trigger timestamp",
+    "Entire nonmachine profile, including original biography, geography and unknown prior claims",
+    "Canonical identity, ownership, publication and marketplace state"
+  ],
+  "excluded": [
+    "Views, chart rankings, certifications and popularity superlatives omitted.",
+    "All corporate/publisher contact routes, news/sidebar images and navigation excluded.",
+    "No geography, booking availability, dated shows, prices, account integration or playback inferred."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "Independent exact per-record source/fact/image approval",
+    "Production current-row and writer-definition recheck",
+    "DefaultROLLBACK actual genuine lease/apply with protected content/evidence assertions",
+    "Lead-controlled explicit commit variant only after accepted dry run",
+    "Public seo_entity readback and actual390/1440 guest listening/gallery/source journey",
+    "Native/device handoff acceptance"
+  ]
+}

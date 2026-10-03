@@ -1,0 +1,108 @@
+{
+  "schema": 1,
+  "status": "producer_requires_independent_review_not_applied",
+  "listing": {
+    "id": "b5a1fb8a-1ffd-41cb-ad87-218479ec0952",
+    "name": "Akylas",
+    "slug": "akylas-athens",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.minosemi.gr/artists/5017/",
+  "source_artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/profiles/b5a1fb8a-1ffd-41cb-ad87-218479ec0952.html",
+  "source_sha256": "97982b583bdf65235401f3ac8b830a9337aa207bf5a57671948e4522c7f4c99e",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 3293
+  },
+  "identity_basis": {
+    "roster_identity": "AKYLAS",
+    "exact_primary_heading": "AKYLAS",
+    "unique_roster_match": true
+  },
+  "fact_basis": "Originally from Serres; electronic pop with Greek/Balkan influences; Atelie and Ferto named in primary biography.",
+  "source_biography_present": true,
+  "images": [],
+  "proposed_machine_fields": {
+    "site_lang": "en-US",
+    "source_kind": "label_artist_profile",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/0ryXG4cu4Ac81CojYsKcTL"
+    },
+    "crawl_status": "ok",
+    "description": "Akylas is a Greek pop artist originally from Serres. His music combines electronic pop with Greek and Balkan influences. His releases include Atelie and Ferto."
+  },
+  "prior_whole_row_hash": "ac967ae58f8c8c81d16d1f15793101c2",
+  "prior_machine_profile": {},
+  "prior_source_url": "https://en.wikipedia.org/wiki/Akylas",
+  "preserve": [
+    "All owner overrides and top-level fields except exact source assignment/trigger timestamp",
+    "Entire nonmachine profile, including original biography, geography and unknown prior claims",
+    "Canonical identity, ownership, publication and marketplace state"
+  ],
+  "excluded": [
+    "Debut album release timing and relative promotional claims are excluded. Eurovision2026 history retained as evidence only; no future show inferred.",
+    "All corporate/publisher contact routes, news/sidebar images and navigation excluded.",
+    "No geography, booking availability, dated shows, prices, account integration or playback inferred."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "Independent exact per-record source/fact/image approval",
+    "Production current-row and writer-definition recheck",
+    "DefaultROLLBACK actual genuine lease/apply with protected content/evidence assertions",
+    "Lead-controlled explicit commit variant only after accepted dry run",
+    "Public seo_entity readback and actual390/1440 guest listening/gallery/source journey",
+    "Native/device handoff acceptance"
+  ]
+}

@@ -1,0 +1,9 @@
+--- ops/olympia-reviewed-coordinate-rollback.sql
++++ ops/olympia-reviewed-coordinate-commit.sql
+@@ -21,5 +21,5 @@
+  IF point IS NULL OR (point->>'latitude')::double precision IS DISTINCT FROM a.latitude OR (point->>'longitude')::double precision IS DISTINCT FROM a.longitude THEN RAISE EXCEPTION 'public_point_missing';END IF;
+  IF NOT EXISTS(SELECT 1 FROM zoi.geography_reviews WHERE request_id='20e503d8-7879-482c-9fac-38875684337d'::uuid AND receipt=r AND after_fingerprint=zoi.geography_fingerprint(a)) THEN RAISE EXCEPTION 'private_receipt_missing';END IF;
+ END $reviewed$;
+-ROLLBACK;
++COMMIT;
+ SELECT id,name,md5(to_jsonb(l)::text) current_row_hash,latitude,longitude,geo_precision,public.geography_reviewed_point(id) public_point,(SELECT count(*) FROM zoi.geography_reviews) ledger_count,EXISTS(SELECT 1 FROM zoi.geography_reviews WHERE request_id='20e503d8-7879-482c-9fac-38875684337d'::uuid) request_installed FROM zoi.listings l WHERE id='eed95c0e-ef1d-4376-9335-418b56227e99'::uuid;

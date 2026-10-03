@@ -1,0 +1,141 @@
+{
+  "schema": 1,
+  "status": "producer_requires_independent_review_not_applied",
+  "listing": {
+    "id": "bd3ed9f5-1c9e-4235-8468-c0bb03febb98",
+    "name": "HGEMONA$",
+    "slug": "hgemona-athens",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.minosemi.gr/artists/hgemona/",
+  "source_artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/profiles/bd3ed9f5-1c9e-4235-8468-c0bb03febb98.html",
+  "source_sha256": "4fc266d60c0dedf30ed49f741c70efb7c309be7da8be75d5675b833213b8b6eb",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 2849
+  },
+  "identity_basis": {
+    "roster_identity": "HGEMONA$",
+    "exact_primary_heading": "HGEMONA$",
+    "unique_roster_match": true
+  },
+  "fact_basis": "Greek rap; named albums/EPs and collaborators in exact biography.",
+  "source_biography_present": true,
+  "images": [
+    {
+      "listing_id": "bd3ed9f5-1c9e-4235-8468-c0bb03febb98",
+      "name": "HGEMONA$",
+      "checked_at": "2026-10-02T23:09:20.300Z",
+      "requested_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/04/hgemonas.png",
+      "source_sha256": "4fc266d60c0dedf30ed49f741c70efb7c309be7da8be75d5675b833213b8b6eb",
+      "scope": "original_source_image_bytes_only_not_visual_acceptance",
+      "visual_inspection": "producer_viewed_original",
+      "accepted_raster": true,
+      "http_status": 200,
+      "url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/04/hgemonas.png",
+      "mime": "image/png",
+      "bytes": 1033910,
+      "sha256": "9685cb30288a6fdcae4747b2ce96930fd1f9786b9dfd8a3424e9a0e5e5977fc8",
+      "dimensions": {
+        "mime": "image/png",
+        "width": 1000,
+        "height": 1000
+      },
+      "actual_browser_decode": {
+        "width": 1000,
+        "height": 1000
+      },
+      "artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/portraits/bd3ed9f5-1c9e-4235-8468-c0bb03febb98.png",
+      "visual_note": "Red hoodie and black mask; do not infer uncovered identity from this portrait.",
+      "identity_basis": "Exact primary artist page photo block and visually inspected original; independent publisher/identity review pending."
+    }
+  ],
+  "proposed_machine_fields": {
+    "site_lang": "en-US",
+    "source_kind": "label_artist_profile",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/1POlf5v8Q8ciCcWlAcxnEm"
+    },
+    "crawl_status": "ok",
+    "description": "HGEMONA$ is a Greek rap artist. His recordings include Dope Sport, Dope Sport Vol. 2, 4Seasons and DOPE BOYZ. He has collaborated with LEX, FLY LO, Bossikan and Mente Fuerte.",
+    "photo_urls": [
+      "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/04/hgemonas.png"
+    ],
+    "photo_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/04/hgemonas.png",
+    "hero_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2024/04/hgemonas.png"
+  },
+  "prior_whole_row_hash": "a9bc94951bab1ceffb76978af3392290",
+  "prior_machine_profile": {},
+  "prior_source_url": null,
+  "preserve": [
+    "All owner overrides and top-level fields except exact source assignment/trigger timestamp",
+    "Entire nonmachine profile, including original biography, geography and unknown prior claims",
+    "Canonical identity, ownership, publication and marketplace state"
+  ],
+  "excluded": [
+    "Promotional claims and unsupported current events excluded.",
+    "All corporate/publisher contact routes, news/sidebar images and navigation excluded.",
+    "No geography, booking availability, dated shows, prices, account integration or playback inferred."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "Independent exact per-record source/fact/image approval",
+    "Production current-row and writer-definition recheck",
+    "DefaultROLLBACK actual genuine lease/apply with protected content/evidence assertions",
+    "Lead-controlled explicit commit variant only after accepted dry run",
+    "Public seo_entity readback and actual390/1440 guest listening/gallery/source journey",
+    "Native/device handoff acceptance"
+  ]
+}

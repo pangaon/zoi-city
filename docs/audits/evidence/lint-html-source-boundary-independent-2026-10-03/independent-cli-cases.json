@@ -1,0 +1,38 @@
+[
+  {
+    "case": "exact source evidence ignored",
+    "status": 0,
+    "stdout": "lint-html: OK \u2014 1 HTML file(s) passed.\n",
+    "stderr": ""
+  },
+  {
+    "case": "malformed actual page fails",
+    "status": 1,
+    "stdout": "",
+    "stderr": "FAIL  business/client.html\n      - expected exactly one <head>, found 0\n      - missing <meta name=\"viewport\">\n      - missing <title>\n\nlint-html: 1 of 2 HTML file(s) failed.\n"
+  },
+  {
+    "case": "production TODO still fails",
+    "status": 1,
+    "stdout": "",
+    "stderr": "FAIL  business/client.html\n      - literal \"TODO\" leaking (line 1)\n\nlint-html: 1 of 2 HTML file(s) failed.\n"
+  },
+  {
+    "case": "lookalike evidence name fails",
+    "status": 1,
+    "stdout": "",
+    "stderr": "FAIL  docs/audits/evidence-extra/a.html\n      - expected exactly one <head>, found 0\n      - missing <meta name=\"viewport\">\n      - missing <title>\n\nlint-html: 1 of 2 HTML file(s) failed.\n"
+  },
+  {
+    "case": "nested same directory name fails",
+    "status": 1,
+    "stdout": "",
+    "stderr": "FAIL  elsewhere/docs/audits/evidence/a.html\n      - expected exactly one <head>, found 0\n      - missing <meta name=\"viewport\">\n      - missing <title>\n\nlint-html: 1 of 2 HTML file(s) failed.\n"
+  },
+  {
+    "case": "other docs still checked",
+    "status": 1,
+    "stdout": "",
+    "stderr": "FAIL  docs/source/a.html\n      - expected exactly one <head>, found 0\n      - missing <meta name=\"viewport\">\n      - missing <title>\n\nlint-html: 1 of 2 HTML file(s) failed.\n"
+  }
+]

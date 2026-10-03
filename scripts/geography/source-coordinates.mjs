@@ -21,6 +21,51 @@ function addressMatches(a,row,review){
  return norm(row.address)===norm(source.street)||norm(row.address)===norm(full);
 }
 const finitePoint=(lat,lng)=>Number.isFinite(lat)&&Number.isFinite(lng)&&lat>=-90&&lat<=90&&lng>=-180&&lng<=180&&(lat!==0||lng!==0);
+// Offline, explicitly reviewed capture only. This does not follow arbitrary URLs
+// or turn a shortlink / camera position into coordinate evidence automatically.
+function namedPlaceShortlinkCandidate(html,row,review,sourceUrl){
+ if(!review||review.publisher_contact_scope!==true||review.destination_purpose!=='place_location'||host(sourceUrl)!==host(row.website))return null;
+ const capture=review.shortlink_capture,card=review.contact_card_html;
+ if(!capture||typeof card!=='string'||card.length>50000||review.contact_card_sha256!==sha256(card))return null;
+ const doc=String(html).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style|noscript|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
+ const cards=[...doc.matchAll(/<details\b[^>]*>[\s\S]*?<\/details\s*>/gi)].map(m=>m[0]);
+ if(cards.filter(c=>c===card).length!==1)return null;
+ const summary=card.match(/<summary\b[^>]*>([\s\S]*?)<\/summary\s*>/i)?.[1]?.replace(/<[^>]+>/g,' ');
+ if(!summary||!sourceNameMatches(summary,row,review))return null;
+ const text=norm(card.replace(/<[^>]+>/g,' ')),a=review.source_address;
+ if(/\b(parking|car\s?park|garage|nearby|recommended)\b/i.test(text)||![a.street,a.city,a.postal_code].filter(Boolean).every(v=>text.includes(norm(v))))return null;
+ let short,final;try{short=new URL(capture.url);final=new URL(capture.final_url)}catch{return null}
+ if(short.protocol!=='https:'||short.hostname!=='maps.app.goo.gl'||short.username||short.password||short.search||short.hash||!/^\/[A-Za-z0-9]+$/.test(short.pathname))return null;
+ const links=[...card.matchAll(/<a\b[^>]*href\s*=\s*["']([^"']+)["'][^>]*>([\s\S]*?)<\/a\s*>/gi)].filter(m=>m[1]===capture.url);
+ if(links.length!==1||!/^driving directions$/i.test(links[0][2].replace(/<[^>]+>/g,' ').trim()))return null;
+ if(final.protocol!=='https:'||final.hostname!=='www.google.com'||final.username||final.password||final.hash||[...final.searchParams.keys()].some(k=>!['entry','g_ep','skid'].includes(k)))return null;
+ if(!Array.isArray(capture.redirects)||capture.redirects.length!==1)return null;
+ const redirect=capture.redirects[0];
+ if(redirect.url!==capture.url||redirect.location!==capture.final_url||![301,302,303,307,308].includes(redirect.status)||capture.final_status!==200)return null;
+ if(typeof capture.final_html!=='string'||capture.final_html.length>2000000||!capture.final_html.length||capture.final_sha256!==sha256(capture.final_html)||!Number.isFinite(Date.parse(capture.captured_at)))return null;
+ const match=final.pathname.match(/^\/maps\/place\/([^/]+)\/@[^/]+\/data=!4m9!3m8!1s(0x[0-9a-f]+:0x[0-9a-f]+)!5m2!4m1!1i2!8m2!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)!16s[^!]+$/i);
+ if(!match)return null;
+ let name;try{name=decodeURIComponent(match[1].replace(/\+/g,' '))}catch{return null}
+ if(norm(name)!==norm(row.name)||capture.place_id!==match[2]||!capture.final_html.includes(capture.place_id)||!capture.final_html.includes(name))return null;
+ const latitude=Number(match[3]),longitude=Number(match[4]),b=review.destination_locality;
+ if(!finitePoint(latitude,longitude)||!b||!host(b.source_url)||![b.south,b.north,b.west,b.east].every(Number.isFinite)||b.south>=b.north||b.west>=b.east||b.south< -90||b.north>90||b.west< -180||b.east>180||b.north-b.south>5||b.east-b.west>5||latitude<b.south||latitude>b.north||longitude<b.west||longitude>b.east)return null;
+ return{latitude,longitude,precision:'source_published',name:row.name,address:a,evidence_kind:'reviewed_named_place_shortlink',evidence_url:capture.final_url,shortlink_url:capture.url,place_id:capture.place_id,capture_sha256:sha256(canonical(capture)),contact_card_sha256:review.contact_card_sha256,destination_locality:b};
+}
+export function namedPlaceReviewMatches(report,review,website){
+ const c=report?.candidate;
+ if(c?.evidence_kind!=='reviewed_named_place_shortlink'||host(report.source_url)!==host(website)||!host(website)||review?.publisher_contact_scope!==true||review?.named_place_confirmed!==true||review?.destination_purpose!=='place_location')return false;
+ for(const key of ['source_sha256','identity_review_sha256'])if(!/^[a-f0-9]{64}$/.test(report[key]||'')||review[key]!==report[key])return false;
+ for(const key of ['capture_sha256','contact_card_sha256'])if(!/^[a-f0-9]{64}$/.test(c[key]||'')||review[key]!==c[key])return false;
+ for(const [a,b]of [['destination_url','evidence_url'],['shortlink_url','shortlink_url'],['place_id','place_id']])if(review[a]!==c[b])return false;
+ try{
+  const u=new URL(c.evidence_url),m=u.pathname.match(/^\/maps\/place\/([^/]+)\/@[^/]+\/data=!4m9!3m8!1s(0x[0-9a-f]+:0x[0-9a-f]+)!5m2!4m1!1i2!8m2!3d(-?\d+(?:\.\d+)?)!4d(-?\d+(?:\.\d+)?)!16s[^!]+$/i);
+  if(u.protocol!=='https:'||u.hostname!=='www.google.com'||u.username||u.password||u.hash||[...u.searchParams.keys()].some(k=>!['entry','g_ep','skid'].includes(k))||!m||norm(decodeURIComponent(m[1].replace(/\+/g,' ')))!==norm(c.name)||m[2]!==c.place_id||Number(m[3])!==c.latitude||Number(m[4])!==c.longitude||!/^https:\/\/maps\.app\.goo\.gl\/[A-Za-z0-9]+$/.test(c.shortlink_url))return false;
+ }catch{return false;}
+ return canonical(review.locality_extent)===canonical(c.destination_locality);
+}
+export function reviewedContactSource(row,review){
+ return review?.publisher_contact_scope===true&&host(review.source_url)===host(row.website)&&host(row.website)&&/^[a-f0-9]{64}$/.test(review.source_sha256||'')&&reviewedIdentity(review,row,review.source_url,review.source_sha256)?review.source_url:row.website;
+}
 function destinationCandidate(html,row,review){
  html=String(html).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|style|noscript|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
  if(!review||review.destination_purpose!=='place_location'||typeof review.destination_url!=='string')return null;
@@ -73,13 +118,18 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
  if(row.public_eligible!==true)return refuse('not_public_eligible');
  if(!row.source_fingerprint||!row.owner_hash||!norm(row.name))return refuse('snapshot_incomplete');
  if(httpStatus!==200)return refuse('source_http_'+String(httpStatus));
- if(!host(row.website)||!sourceWithin(sourceUrl,row.website))return refuse('source_identity_mismatch');
+ if(!host(row.website)||host(sourceUrl)!==host(row.website))return refuse('source_identity_mismatch');
  if(row.source_kind!=='official_website')return refuse('official_source_review_required');
  if(!norm(row.address)||!norm(row.city)||!norm(row.country))return refuse('address_components_missing');
  const identity=reviewedIdentity(identityReview,row,sourceUrl,result.source_sha256)?identityReview:null;
  if(identityReview&&!identity)return refuse('identity_review_mismatch');
  if(identity)result.identity_review_sha256=sha256(canonical(identity));
+ const namedPlace=namedPlaceShortlinkCandidate(html,row,identity,sourceUrl);
+ // A parent publisher contact page may supply only the explicitly bound card,
+ // never its other hotels' structured data or unreviewed links.
+ if(!sourceWithin(sourceUrl,row.website))return namedPlace?{...result,reason:'coordinate_plausibility_review_required',candidate:namedPlace}:refuse('source_identity_mismatch');
  const candidates=[];let addressMismatch=false;
+ if(namedPlace)candidates.push(namedPlace);
  const structuredDoc=String(html).replace(/<!--[\s\S]*?-->/g,'').replace(/<(template|noscript|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
  for(const m of structuredDoc.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)){
   let data;try{data=JSON.parse(m[1])}catch{continue}
@@ -103,7 +153,8 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
 }
 export function reviewCoordinateCandidate(report,review,current){
  if(report.listing_id!==current.id||report.snapshot_sha256!==coordinateSnapshot(current)||report.source_fingerprint!==current.source_fingerprint||current.owner_managed||current.owner_workspace_id||current.public_eligible!==true)throw Error('coordinate_snapshot_changed');
- if(report.schema!==1||report.kind!=='official_coordinate_dry_run'||report.status!=='review_required'||report.reason!=='coordinate_plausibility_review_required'||report.http_status!==200||!sourceWithin(report.source_url,current.website)||!finitePoint(report.candidate?.latitude,report.candidate?.longitude))throw Error('coordinate_report_invalid');
+ if(report.schema!==1||report.kind!=='official_coordinate_dry_run'||report.status!=='review_required'||report.reason!=='coordinate_plausibility_review_required'||report.http_status!==200||(!sourceWithin(report.source_url,current.website)&&!namedPlaceReviewMatches(report,review,current.website))||!finitePoint(report.candidate?.latitude,report.candidate?.longitude))throw Error('coordinate_report_invalid');
+ if(report.candidate?.evidence_kind==='reviewed_named_place_shortlink'&&!namedPlaceReviewMatches(report,review,current.website))throw Error('named_place_review_required');
  if(!report.candidate||review.report_sha256!==sha256(canonical(report))||typeof review.reviewer!=='string'||!review.reviewer.trim()||!review.reviewed_at||!Number.isFinite(Date.parse(review.reviewed_at))||review.exact_address_confirmed!==true||review.not_area_centroid!==true)throw Error('coordinate_review_required');
  if(report.collector&&norm(report.collector)===norm(review.reviewer))throw Error('independent_coordinate_review_required');
  // An independently reviewed locality envelope is necessary to catch swapped

@@ -1,0 +1,17 @@
+{
+  "verdict": "APPROVED exact migration for lead production preflight/install; production journey retest required",
+  "migration_sha256": "ff12d818a2773f804feb98174fa9a2002a2f4d10d7ae1f673d4bc68ce23b70b2",
+  "candidate_manifest_sha256": "e59f81e5bbc691ac00ca97ef8902f47af37ccd8816dc8ac574b5d6513c0d476f",
+  "dependency_manifest_sha256": "0616ba147385cfb0291c4f570bd8425a063da59af35cca250476b531af415bc0",
+  "isolated_original_groups": 10,
+  "isolated_extended_groups": 15,
+  "rows": 32014,
+  "production_applied_by_reviewer": false,
+  "customer_writes": 0,
+  "limitations": [
+    "Index benefit depends on visibility map; all-dirty controlled experiment naturally selected sequential scan.",
+    "Final ranking sort and deep OFFSET remain; no keyset pagination claim.",
+    "Ordinary CREATE INDEX can block writes; guarded timeouts bound but do not eliminate lock impact.",
+    "Separate shared media/owner-clear runtime packet remains outside this index acceptance."
+  ]
+}

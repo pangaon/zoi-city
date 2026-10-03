@@ -1,0 +1,9 @@
+# Independent HTML source-evidence boundary review — 2026-10-03
+
+Approved exact scripts/lint-html.mjs SHA256 51f8c113a4348b330ee9d75a93484bf507cc73ce6a5b5f35c2b63c9ad6f8bc68 and its retained unit-test change. The correction excludes only resolve(target,"docs/audits/evidence") during CLI recursion, matching the already reviewed raw-capture static-asset boundary. The production document checks and direct lintHtml function are unchanged. It does not disable CI, failure notifications, TODO checks on actual pages or other documentation validation.
+
+Fresh independent execution passed the seven retained unit tests and six separate CLI cases: exact raw-source evidence fragment ignored, malformed real page rejected, production TODO rejected, similarly named evidence-extra directory rejected, nested elsewhere/docs/audits/evidence rejected, and other docs rejected. A frozen current tracked-HTML snapshot passed114 actual pages. The full shared worktree CLI initially failed60 untracked temporary .qa/.recovery/fixture fragments; that failure is retained and distinguished from the tracked release snapshot, rather than broadening the exclusions to make it pass.
+
+The actual captured publisher source bytes/manifests remain untouched. A caller explicitly targeting a different root gets an exact root-relative evidence boundary, not a blanket path-name exemption. The lead's full staged verification remains a separate release gate. Independent reviewer edited only evidence/audit files and tests owned by this lane, no root-owned runtime or linter source, commit or deployment.
+
+Evidence: evidence/lint-html-source-boundary-independent-2026-10-03/manifest.json. The retained script can be exercised against any temporary target; the tracked-HTML snapshot manifest records each input hash. Source-specific stage logs and first failed release verification remain with the lead.

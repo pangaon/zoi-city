@@ -1,0 +1,76 @@
+import {mkdtempSync,readFileSync,rmSync,writeFileSync} from 'node:fs';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFileSync,execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+const execAsync=promisify(execFile);
+import {createHash} from 'node:crypto';
+import assert from 'node:assert/strict';
+import {extractSourceCoordinates,coordinateSnapshot} from '../../scripts/geography/source-coordinates.mjs';
+import {prepareCoordinateRequest} from '../../scripts/geography/reviewed-coordinate-request.mjs';
+import {canonical,sha256} from '../../scripts/quality/evidence.mjs';
+const dir=mkdtempSync(join(tmpdir(),'zoi-geography-')),bin='/usr/lib/postgresql/16/bin';
+const env={...process.env,PGHOST:dir,PGPORT:'15687',PGDATABASE:'postgres'};
+const id='40000000-0000-4000-8000-000000000001';let started=false,serial=0,passed=0;
+const q=s=>execFileSync(join(bin,'psql'),['-X','-qAt','-v','ON_ERROR_STOP=1','-c',s],{env,encoding:'utf8',stdio:['pipe','pipe','pipe']}).trim();
+const quote=s=>"'"+s.replaceAll("'","''")+"'",j=x=>quote(JSON.stringify(x))+'::jsonb';
+const request=()=> '50000000-0000-4000-8000-'+String(++serial).padStart(12,'0');
+const snapshot=()=>q(`select zoi.geography_fingerprint(l) from zoi.listings l where id='${id}'`);
+const pass=s=>{passed++;console.log('PASS '+s)};
+function proposal(){
+ const report={schema:1,kind:'official_coordinate_dry_run',http_status:200,snapshot_sha256:'b'.repeat(64),listing_id:id,status:'review_required',reason:'coordinate_plausibility_review_required',source_fingerprint:q(`select zoi.listing_quality_fingerprint(l) from zoi.listings l where id='${id}'`),source_url:'https://example.org/location/',source_sha256:'a'.repeat(64),candidate:{name:'QA exact place',evidence_kind:'jsonld',address:{street:'1 Test Street',city:'Melbourne',country:'Australia'},latitude:-37.8110808,longitude:144.9670491,precision:'source_published'}};
+ const text=JSON.stringify(report),expected=snapshot();
+ const review={official_source_confirmed:true,stored_address:'1 Test Street',stored_city:'Melbourne',stored_country:'Australia',candidate_address:report.candidate.address,database_snapshot:expected,report_sha256:createHash('sha256').update(text).digest('hex'),specialist:'source-specialist',reviewer:'independent-reviewer',reviewed_at:new Date().toISOString(),exact_address_confirmed:true,not_area_centroid:true,locality_extent:{south:-38,north:-37,west:144,east:145,source_url:'https://example.org/locality/'}};
+ return {report,text,expected,review,request:request()};
+}
+const sql=p=>`select public.geography_review_apply('${p.request}','${id}',${quote(p.expected)},${quote(p.text)},${j(p.review)})`;
+const apply=p=>JSON.parse(q('set role service_role;'+sql(p)));
+try{
+ execFileSync(join(bin,'initdb'),['-D',join(dir,'data'),'-A','trust','--no-locale'],{stdio:'ignore'});
+ execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-l',join(dir,'log'),'-o',`-k ${dir} -p 15687 -c listen_addresses=''`,'-w','start'],{stdio:'ignore'});started=true;
+ q(`create schema zoi;create schema extensions;create extension pgcrypto with schema extensions;create role anon;create role authenticated;create role service_role;
+ create table zoi.listings(id uuid primary key,name text,address text,city text,country text,entity_type text,website text,source_url text,primary_category_id bigint,owner_workspace_id uuid,owner_user_id uuid,publish_status text,moderation_status text,marketplace_status text,profile jsonb,latitude double precision,longitude double precision,geo_precision text,updated_at timestamptz);
+ insert into zoi.listings values('${id}','QA exact place','1 Test Street','Melbourne','Australia','business','https://example.org','https://example.org',1,null,null,'published','clean',null,'{"_enrich":{"rooms":[{"name":"Keep"}]},"owner_note":"Preserve","_geo":{"precision":"approx","old":true}}',-37.8136,144.9631,'approx',now());`);
+ const source=readFileSync(new URL('../../supabase/migrations/20260930053625_listing_quality_coverage.sql',import.meta.url),'utf8');
+ q(source.match(/CREATE FUNCTION zoi\.listing_quality_fingerprint\(l zoi\.listings\)[\s\S]*?\$\$;/)[0]);
+ q(readFileSync(new URL('../../supabase/migrations/20261001035423_reviewed_geography_apply.sql',import.meta.url),'utf8'));
+ const migration=readFileSync(new URL('../../supabase/migrations/20261002152932_reviewed_named_place_shortlink.sql',import.meta.url),'utf8');
+ q(migration);
+ assert.throws(()=>q(migration),/geography_writer_definition_changed/);pass('migration refuses changed retained writer definition');
+ q(readFileSync(new URL('../../supabase/migrations/20261001103000_public_reviewed_geography_point.sql',import.meta.url),'utf8'));
+ q(`update zoi.listings set website='https://example.org/hotels/qa',latitude=null,longitude=null,geo_precision='none' where id='${id}'`);
+ function named(){
+  const current=JSON.parse(q(`select to_jsonb(l) from zoi.listings l where id='${id}'`));
+  const row={...current,source_fingerprint:q(`select zoi.listing_quality_fingerprint(l) from zoi.listings l where id='${id}'`),owner_hash:'frozen-unowned',public_eligible:true,source_kind:'official_website',database_snapshot:snapshot()};
+  const url='https://maps.app.goo.gl/Actual123',final='https://www.google.com/maps/place/QA+exact+place/@0,0,17z/data=!4m9!3m8!1s0x123:0x456!5m2!4m1!1i2!8m2!3d-37.8110808!4d144.9670491!16s%2Fg%2Factual?entry=tts';
+  const card=`<details><summary>QA exact place</summary><p>1 Test Street Melbourne Australia</p><a href="${url}">Driving Directions</a></details>`,body='QA exact place 0x123:0x456';
+  const locality={south:-38,north:-37,west:144,east:145,source_url:'https://locality.example.gov/boundaries'};
+  const identity={listing_id:id,snapshot_sha256:coordinateSnapshot(row),source_url:'https://example.org/contact/',source_sha256:sha256(card),reviewer:'source-reviewer',reviewed_at:new Date().toISOString(),exact_address_confirmed:true,source_address:{street:row.address,city:row.city,country:row.country},publisher_contact_scope:true,destination_purpose:'place_location',contact_card_html:card,contact_card_sha256:sha256(card),destination_locality:locality,shortlink_capture:{url,redirects:[{url,status:302,location:final}],final_url:final,final_status:200,final_html:body,final_sha256:sha256(body),captured_at:new Date().toISOString(),place_id:'0x123:0x456'}};
+  const report=extractSourceCoordinates(card,row,{sourceUrl:identity.source_url,identityReview:identity});assert.ok(report.candidate);
+  const text=JSON.stringify(report),review={official_source_confirmed:true,stored_address:row.address,stored_city:row.city,stored_country:row.country,candidate_address:report.candidate.address,database_snapshot:row.database_snapshot,report_sha256:sha256(text),specialist:'source-specialist',reviewer:'independent-reviewer',reviewed_at:new Date().toISOString(),exact_address_confirmed:true,not_area_centroid:true,locality_extent:locality,publisher_contact_scope:true,named_place_confirmed:true,destination_purpose:'place_location',source_sha256:report.source_sha256,identity_review_sha256:report.identity_review_sha256,capture_sha256:report.candidate.capture_sha256,contact_card_sha256:report.candidate.contact_card_sha256,place_id:report.candidate.place_id,destination_url:final,shortlink_url:url};
+  const p={report,text,review,expected:row.database_snapshot,request:request(),row};
+  const prepared=prepareCoordinateRequest({requestId:p.request,reportText:text,review,snapshot:row});assert.equal(prepared.arguments.p_expected,p.expected);return p;
+ }
+ let p=named();
+ for(const alter of [v=>v.review.named_place_confirmed=false,v=>v.review.publisher_contact_scope=false,v=>v.review.contact_card_sha256='c'.repeat(64),v=>v.review.capture_sha256='c'.repeat(64),v=>v.review.identity_review_sha256='c'.repeat(64),v=>v.review.source_sha256='c'.repeat(64),v=>v.review.place_id='different',v=>v.review.locality_extent={...v.review.locality_extent,west:0}]){const bad=structuredClone(p);alter(bad);assert.throws(()=>apply(bad),/geography_named_place_review_required/);}pass('independent exact source/card/capture/place/locality bindings required');
+ for(const value of [p.report.candidate.evidence_url.replace('QA+exact+place','Wrong+place'),p.report.candidate.evidence_url.replace('!3d-37.8110808','!3d-36'),p.report.candidate.evidence_url+'&destination=Other',p.report.candidate.evidence_url.replace('www.google.com','evil.example')]){const bad=structuredClone(p);bad.report.candidate.evidence_url=value;bad.review.destination_url=value;bad.text=JSON.stringify(bad.report);bad.review.report_sha256=sha256(bad.text);assert.throws(()=>apply(bad),/geography_named_destination_mismatch/);}pass('server parses actual destination and denies swapped point/name/host/query');
+ for(const role of ['anon','authenticated'])assert.throws(()=>q(`set role ${role};`+sql(p)),/permission denied/);
+ const before=JSON.parse(q(`select to_jsonb(l) from zoi.listings l where id='${id}'`));
+ let receipt=apply(p);assert.deepEqual(apply(p),receipt);
+ const after=JSON.parse(q(`select to_jsonb(l) from zoi.listings l where id='${id}'`));
+ const proof=JSON.parse(q(`set role anon;select public.geography_reviewed_point('${id}')`));
+ assert.equal(proof.latitude,-37.8110808);assert.equal(proof.longitude,144.9670491);
+ for(const key of ['name','address','city','country','website','owner_user_id','owner_workspace_id'])assert.deepEqual(after[key],before[key]);
+ assert.deepEqual({...after.profile,_geo:null},{...before.profile,_geo:null});
+ writeFileSync(process.env.QA_PROJECTED_POINT||'/tmp/named-place-geography-projection.json',JSON.stringify({controlled:true,entity:{...after,slug:'qa-exact-place',canonical_slug:'qa-exact-place'},proof},null,2));
+ pass('actual extractor → request → service writer → anonymous safe projection, with idempotence and unrelated fields preserved');
+ q(`update zoi.listings set name='Moved' where id='${id}'`);assert.equal(q(`set role anon;select public.geography_reviewed_point('${id}')`),'');assert.throws(()=>apply(p),/geography_snapshot_changed/);q(`update zoi.listings set name='QA exact place' where id='${id}'`);pass('changed row invalidates public proof and old receipt replay');
+ q(`set role service_role;select public.geography_review_revert('${p.request}','${receipt.after_snapshot}')`);assert.equal(q(`set role anon;select public.geography_reviewed_point('${id}')`),'');assert.equal(q(`select latitude is null and longitude is null from zoi.listings where id='${id}'`),'t');pass('exact reversal restores sparse unmapped state and removes public proof');
+ p=named();q(`update zoi.listings set owner_user_id='90000000-0000-4000-8000-000000000001' where id='${id}'`);assert.throws(()=>apply(p),/geography_listing_unavailable/);pass('owner transfer after review remains refused');
+ q(`update zoi.listings set owner_user_id=null where id='${id}'`);p=named();
+ const concurrent=s=>execAsync(join(bin,'psql'),['-X','-qAt','-v','ON_ERROR_STOP=1','-c','set role service_role;'+s],{env,encoding:'utf8'});
+ const copies=await Promise.all([concurrent(sql(p)),concurrent(sql(p))]);assert.deepEqual(JSON.parse(copies[0].stdout),JSON.parse(copies[1].stdout));pass('concurrent named-place retries retain a single idempotent receipt');
+ assert.equal(q("select has_function_privilege('anon','zoi.geography_url_component(text)','execute')"),'f');
+ for(const role of ['anon','authenticated'])assert.throws(()=>q(`set role ${role};select * from zoi.geography_reviews`),/permission denied/);pass('new decoder and existing evidence ledger remain private');
+ console.log(passed+' named-place geography database groups passed');
+}finally{if(started)execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-m','immediate','stop'],{stdio:'ignore'});rmSync(dir,{recursive:true,force:true});}

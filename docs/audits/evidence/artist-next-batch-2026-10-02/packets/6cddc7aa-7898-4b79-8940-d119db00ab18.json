@@ -1,0 +1,140 @@
+{
+  "schema": 1,
+  "status": "producer_requires_independent_review_not_applied",
+  "listing": {
+    "id": "6cddc7aa-7898-4b79-8940-d119db00ab18",
+    "name": "Giorgos Tsalikis",
+    "slug": "giorgos-tsalikis-ioannina-6cddc7",
+    "entity_type": "artist"
+  },
+  "source_scope": "record_label",
+  "source_kind": "label_artist_profile",
+  "source_url": "https://www.minosemi.gr/artists/%ce%b3%ce%b9%cf%89%cf%81%ce%b3%ce%bf%cf%82-%cf%84%cf%83%ce%b1%ce%bb%ce%b9%ce%ba%ce%b7%cf%82/",
+  "source_artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/profiles/6cddc7aa-7898-4b79-8940-d119db00ab18.html",
+  "source_sha256": "deca0d9d0be49a6b28fc62a9764383cd1c9447a0fed298735f6e830b009cb0fc",
+  "source_quality": {
+    "requires_rendering": false,
+    "source_state": "html_available",
+    "visible_text_length": 2199
+  },
+  "identity_basis": {
+    "roster_identity": "ΓΙΩΡΓΟΣ ΤΣΑΛΙΚΗΣ",
+    "exact_primary_heading": "ΓΙΩΡΓΟΣ ΤΣΑΛΙΚΗΣ",
+    "unique_roster_match": true
+  },
+  "fact_basis": "Primary identity heading, artist-specific Spotify destination and primary photo only; no substantive biography.",
+  "source_biography_present": false,
+  "images": [
+    {
+      "listing_id": "6cddc7aa-7898-4b79-8940-d119db00ab18",
+      "name": "Giorgos Tsalikis",
+      "checked_at": "2026-10-02T23:10:27.801Z",
+      "requested_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2026/08/711695774_18591560482054129_7748260434817798528_n-scaled-e1787562420792-1000x1000.jpg",
+      "source_sha256": "deca0d9d0be49a6b28fc62a9764383cd1c9447a0fed298735f6e830b009cb0fc",
+      "scope": "original_source_image_bytes_only_not_visual_acceptance",
+      "visual_inspection": "producer_viewed_original",
+      "accepted_raster": true,
+      "http_status": 200,
+      "url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2026/08/711695774_18591560482054129_7748260434817798528_n-scaled-e1787562420792-1000x1000.jpg",
+      "mime": "image/jpeg",
+      "bytes": 70178,
+      "sha256": "c7bb27a32321198fde5a3334e79dfa67cffcee6d746f606bd261fc2bd08b39df",
+      "dimensions": {
+        "mime": "image/jpeg",
+        "width": 1000,
+        "height": 1000
+      },
+      "actual_browser_decode": {
+        "width": 1000,
+        "height": 1000
+      },
+      "artifact": "docs/audits/evidence/artist-next-batch-2026-10-02/portraits/6cddc7aa-7898-4b79-8940-d119db00ab18.jpg",
+      "visual_note": "Man in white blazer and patterned scarf, neutral background.",
+      "identity_basis": "Exact primary artist page photo block and visually inspected original; independent publisher/identity review pending."
+    }
+  ],
+  "proposed_machine_fields": {
+    "site_lang": "en-US",
+    "source_kind": "label_artist_profile",
+    "listen": {
+      "spotify": "https://open.spotify.com/artist/7wdFPENV7NBZ4o3tHqsWhD"
+    },
+    "crawl_status": "ok",
+    "photo_urls": [
+      "https://www.minosemi.gr/wp-content/uploads/sites/946/2026/08/711695774_18591560482054129_7748260434817798528_n-scaled-e1787562420792-1000x1000.jpg"
+    ],
+    "photo_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2026/08/711695774_18591560482054129_7748260434817798528_n-scaled-e1787562420792-1000x1000.jpg",
+    "hero_url": "https://www.minosemi.gr/wp-content/uploads/sites/946/2026/08/711695774_18591560482054129_7748260434817798528_n-scaled-e1787562420792-1000x1000.jpg"
+  },
+  "prior_whole_row_hash": "32ad475463f0b7d850c6cf5c2aeb6cb2",
+  "prior_machine_profile": {},
+  "prior_source_url": null,
+  "preserve": [
+    "All owner overrides and top-level fields except exact source assignment/trigger timestamp",
+    "Entire nonmachine profile, including original biography, geography and unknown prior claims",
+    "Canonical identity, ownership, publication and marketplace state"
+  ],
+  "excluded": [
+    "Primary biography block empty: no biography invented.",
+    "All corporate/publisher contact routes, news/sidebar images and navigation excluded.",
+    "No geography, booking availability, dated shows, prices, account integration or playback inferred."
+  ],
+  "function_guards": [
+    {
+      "schema": "public",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "396c9e8ef6e7a19cb7e2c361a21bccbb"
+    },
+    {
+      "schema": "public",
+      "name": "enrich_sample_lease",
+      "args": "p_ids uuid[]",
+      "definition_md5": "16a53918d76c896492c47dcca32806ca"
+    },
+    {
+      "schema": "public",
+      "name": "seo_entity",
+      "args": "p_slug text",
+      "definition_md5": "e01c20df827c18865a0bfaadff2a9d49"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_apply",
+      "args": "p_batch jsonb",
+      "definition_md5": "8e41b35a16426573b5867436e60f0abf"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_fingerprint",
+      "args": "l zoi.listings",
+      "definition_md5": "cc69353ab17d09e06846eb90c1ee34cd"
+    },
+    {
+      "schema": "zoi",
+      "name": "profile_strip",
+      "args": "p jsonb",
+      "definition_md5": "8b20fc1c36fca6647a69e155fbeb377f"
+    },
+    {
+      "schema": "zoi",
+      "name": "enrich_timestamp",
+      "args": "p_text text",
+      "definition_md5": "281a90ff6e44c1a64b2d3c8977f1c38c"
+    },
+    {
+      "schema": "zoi",
+      "name": "listing_quality_state",
+      "args": "l zoi.listings",
+      "definition_md5": "ea1641facea45c788f8e6ca84feaf6d4"
+    }
+  ],
+  "pending": [
+    "Independent exact per-record source/fact/image approval",
+    "Production current-row and writer-definition recheck",
+    "DefaultROLLBACK actual genuine lease/apply with protected content/evidence assertions",
+    "Lead-controlled explicit commit variant only after accepted dry run",
+    "Public seo_entity readback and actual390/1440 guest listening/gallery/source journey",
+    "Native/device handoff acceptance"
+  ]
+}

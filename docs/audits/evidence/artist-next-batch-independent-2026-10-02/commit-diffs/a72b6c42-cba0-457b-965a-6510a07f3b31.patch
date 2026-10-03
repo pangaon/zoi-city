@@ -1,0 +1,18 @@
+--- docs/audits/evidence/artist-next-batch-2026-10-02/packets/a72b6c42-cba0-457b-965a-6510a07f3b31-rollback.sql
++++ ops/artist-next-reviewed/a72b6c42-cba0-457b-965a-6510a07f3b31-commit.sql
+@@ -2,6 +2,8 @@
+ -- Independent reviewer supplies actual actor and this packet hash in transaction settings.
+ -- File docs/audits/evidence/artist-next-batch-2026-10-02/packets/a72b6c42-cba0-457b-965a-6510a07f3b31.json; SHA256 fdfbe83397bf90da368df18cd016bb0135c80f91a56a493eabb58851f15a6a33; source SHA256 56b2c831788ebe5413ee8664ba53970bcf4ae95c4c0dcd8eb2e6125f21a95685.
+ BEGIN;
++SET LOCAL zoi.publisher_review_actor = 'Codex independent reviewer /root/youth_review';
++SET LOCAL zoi.publisher_review_packet_sha256 = 'fdfbe83397bf90da368df18cd016bb0135c80f91a56a493eabb58851f15a6a33';
+ SET LOCAL lock_timeout='3s';
+ SET LOCAL statement_timeout='15s';
+ DO $reviewed$
+@@ -36,4 +38,5 @@
+  IF a.profile#>>'{_enrich,publisher_source_evidence,packet_sha256}' IS DISTINCT FROM 'fdfbe83397bf90da368df18cd016bb0135c80f91a56a493eabb58851f15a6a33' OR a.profile#>>'{_enrich,publisher_source_evidence,source_sha256}' IS DISTINCT FROM '56b2c831788ebe5413ee8664ba53970bcf4ae95c4c0dcd8eb2e6125f21a95685' OR a.profile#>>'{_enrich,publisher_source_evidence,reviewer}' IS DISTINCT FROM reviewer OR a.profile#>>'{_enrich,publisher_source_evidence,prior_row_hash}' IS DISTINCT FROM '695de3ef995a133e8157946d53f53486' OR a.profile#>>'{_enrich,publisher_source_evidence,source_fingerprint}' IS DISTINCT FROM fp OR a.profile#>'{_enrich,publisher_source_evidence,approved_image_hashes}' IS DISTINCT FROM '["591366cbc85a005c535a4c20f6cceb38c0fc4baeb50233d0d2c7e1312fbb9f6e"]'::jsonb OR a.profile#>>'{_enrich,source_kind}' IS DISTINCT FROM 'label_artist_profile' OR a.profile#>'{_enrich,listen}' IS DISTINCT FROM machine->'listen' OR a.profile#>>'{_enrich,description}' IS DISTINCT FROM machine->>'description' OR a.profile#>>'{_enrich,source_url}' IS DISTINCT FROM source OR a.profile#>>'{_enrich,hero_url}' IS DISTINCT FROM machine->>'hero_url' THEN RAISE EXCEPTION 'publisher_projection_fields_missing';END IF;
+ END $reviewed$;
+ SELECT id,slug,website,source_url,profile->'_enrich' machine_readback,profile#>'{_coverage,tasks}' coverage_readback,md5(to_jsonb(l)::text) after_row_hash FROM zoi.listings l WHERE id='a72b6c42-cba0-457b-965a-6510a07f3b31';
+-ROLLBACK;
++COMMIT;
++

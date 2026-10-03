@@ -1,0 +1,79 @@
+{
+  "verdict": "APPROVED pipeline migration installation only",
+  "migration_sha256": "c28836055c0e300298f561ee43ff8bd9d4179301800ad045a81b1d89b9ddcfd3",
+  "fresh_production_preflight": {
+    "ledger": {
+      "acl": [
+        "postgres=arwdDxtm/postgres"
+      ],
+      "rls": true,
+      "count": 2,
+      "owner": "postgres"
+    },
+    "decoder": null,
+    "functions": [
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres"
+        ],
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_fingerprint(zoi.listings)",
+        "body_sha256": "0bf2410cb7868ba289527ead59a8e10f7b3a59113d7511ea86e416f3b8a48f12",
+        "security_definer": false
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres"
+        ],
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_review_apply(uuid,uuid,text,text,jsonb)",
+        "body_sha256": "40584122364ab00beddaf6e458cd190d49e00d8a13c38b0560ad9ffbeb212765",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres"
+        ],
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_review_revert(uuid,text)",
+        "body_sha256": "95d98702de5b444fc197b221e3f2721be2da9ff1eaf2ad88e27bc7e67f9d570c",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "anon=X/postgres",
+          "authenticated=X/postgres",
+          "service_role=X/postgres"
+        ],
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_reviewed_point(uuid)",
+        "body_sha256": "a9b9fc02e56cc9475198e3e98693b9cac741d58964e0de89e871501cfa796622",
+        "security_definer": true
+      }
+    ],
+    "migration": null
+  },
+  "runtime_hashes_match_prior_independent_review": true,
+  "lead_fresh_units": 36,
+  "lead_fresh_isolated_pg_groups": 9,
+  "lead_fresh_controlled_map_journeys": 4,
+  "reviewer_live_writes": 0,
+  "real_olympia_coordinates_approved": false,
+  "record_apply_approved": false
+}

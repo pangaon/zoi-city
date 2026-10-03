@@ -1,0 +1,13 @@
+# Reviewed artist batch: production application and journeys
+
+Sixteen exact independently approved publisher proposals were applied through the existing lease/enrichment writer. The concrete approval binds manifest `568aa6578dece4241707a35d6f858422061ca5d7d149dfcc844c5c8c484912ae`; fresh full-row hashes matched the accepted rollback receipts immediately before application. All source, ownership, protected-field and provenance assertions remained active. Stavento was excluded because its inherited provider identity conflicts with the publisher link.
+
+The batch adds fifteen original publisher portraits and ten bounded source biographies. Six records remain without a new source biography; the pipeline does not invent one. Every installed record retains its exact publisher/source/prior-row/reviewer evidence under `profile._enrich.publisher_source_evidence`. Existing top-level social and biography fields retain their authority. The artist renderer already deployed in `e039133` exposes the new records without a fabricated profile fixture.
+
+Thirty-two actual canonical production journeys passed at 390 and 1440 pixels: qualified Spotify link, exact source attribution, source biography when available, portrait dimensions, gallery open/Escape/unload, explicit music-player open/compact/expand/close, no early iframe, no horizontal overflow or page errors, and no private customer writes. Actual public availability reads were allowed. Spotify iframe requests were blocked after explicit action, so playback and provider account connection were not exercised. The Antigoni phone screenshot was visually inspected.
+
+Thirteen publisher image responses match the approved byte hashes. Slogan and Antigoni now return different JPEG bytes, but both decoded RGB pixel buffers and original dimensions exactly match the captured independently reviewed images. The initial strict byte-hash failure is retained alongside the subsequent pixel comparison and successful journeys; the original source approval hashes are unchanged.
+
+Evidence is under `docs/audits/evidence/artist-next-production-parent-2026-10-02/`, with installed commit receipt `artist-next-batch-parent-installed-2026-10-02.json` and correct stored-field readback `artist-next-batch-parent-correct-path-readback-2026-10-02.json`. Earlier diagnostic readbacks used an absent website column and then the wrong profile path; those failures are retained and do not constitute acceptance. Actual canonical pages and the correct `_enrich` path are the acceptance evidence.
+
+This is acceptance of sixteen named records. Artist-wide enrichment, current show sources, shared discovery-card projection, authenticated owner changes, provider playback and native distribution remain separate work.

@@ -1,0 +1,19 @@
+
+> zoi-city@0.1.0 verify:local
+> npm run check && npm run lint:html && npm run test:local
+
+
+> zoi-city@0.1.0 check
+> node scripts/check-inline-js.mjs .
+
+check-inline-js: OK — 310 inline script block(s) in 141 HTML file(s) parsed cleanly.
+
+> zoi-city@0.1.0 lint:html
+> node scripts/lint-html.mjs .
+
+FAIL  docs/audits/evidence/olympia-current-source-2026-10-02/contact-card.html
+      - expected exactly one <head>, found 0
+      - missing <meta name="viewport">
+      - missing <title>
+
+lint-html: 1 of 141 HTML file(s) failed.

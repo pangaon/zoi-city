@@ -1,5 +1,5 @@
 import{isOpsRecord,type OpsRecord}from'./operations.ts';
-import{companyWork}from'../../assets/operations/company-workspace.mjs';
+import{companyWork}from'../../assets/operations/company-journey.mjs';
 export function nativeCompanyWork(records:OpsRecord[],workspace:string,companyId:string):{company:OpsRecord;projects:OpsRecord[];tasks:OpsRecord[];contacts:OpsRecord[]}{
  if(!records.every(r=>isOpsRecord(r,workspace)))throw Error('Company records could not be verified.');
  return companyWork(records,workspace,companyId);

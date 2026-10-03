@@ -1,0 +1,11 @@
+# Independent Olympia concrete COMMIT approval — 2026-10-03
+
+Approved only `ops/olympia-reviewed-coordinate-commit.sql` SHA256 b115add6cb8446c53564ddad6534ab313473f5b6c557919ce9a14503e66e807c for lead application. The exact independently approved request remains ede869e046c2d654230ceb6a7706525adb74f6ad809c4046a1fb03bf79a9d858. Listing eed95c0e-ef1d-4376-9335-418b56227e99, request20e503d8-7879-482c-9fac-38875684337d, current whole-row fingerprint f01a53599068c3e3b7ff6abbe93fbdee are unchanged.
+
+Both invocation argument sets in both SQL files were decoded independently and exactly equal the approved report bytes, current CAS fingerprint, UUIDs and review JSON. The sole transformation from the successful live rollback SHA8d0ecb0ddc859e5cacb6c6f66404d0c6194fc8d6e3ed7acf7e092c33cc92138e is final ROLLBACK→COMMIT; all authority, data, receipt and replay assertions remain identical. The fresh transaction guards exact installed writer body, postgres owner, SECURITY DEFINER, empty search path and exact postgres/service-only ACL. It locks the exact current row, verifies all non-geography fields and non-geography profile keys, requires the source-bound coordinates, current after-fingerprint, identical replay receipt, public point and private ledger receipt before COMMIT.
+
+The raw lead live rollback tool response reports isError=false. Its final read confirms original whole-row hash, null coordinates, none precision, null public point, ledger count2 and request_installed=false. This trial is lead production evidence, separately inspected; the reviewer performed no live writes. Prior independent exact source/card/name reconciliation, actual NSW polygon containment and current snapshot review remain prerequisites and are retained separately.
+
+Lead application must retain final real public/readback receipts and actual map selection/precision/numeric Directions at390/1440 before claiming the pin works in production. The point is an official-source-linked named destination, not a surveyed entrance or a confirmed route. No other listing, general location batch or provider operation is approved by this single transaction review.
+
+Evidence: evidence/olympia-commit-independent-2026-10-03/manifest.json. No runtime edits, commits, deployment or customer writes by this reviewer.

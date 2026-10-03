@@ -1,6 +1,7 @@
 import {readFile,writeFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
+import {namedPlaceReviewMatches} from './source-coordinates.mjs';
 import {canonical} from '../quality/evidence.mjs';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const hash=text=>createHash('sha256').update(text,'utf8').digest('hex');
@@ -18,7 +19,8 @@ export function prepareCoordinateRequest({requestId,reportText,review,snapshot,n
  for(const field of ['official_source_confirmed','exact_address_confirmed','not_area_centroid'])if(review[field]!==true)throw Error('coordinate_review_incomplete');
  for(const field of ['address','city','country'])if(review['stored_'+field]!==snapshot[field])throw Error('coordinate_address_mismatch');
  const c=report.candidate,b=review.locality_extent;
- if(!['jsonld','official_destination'].includes(c.evidence_kind)||!c.address||Array.isArray(c.address)||typeof c.address!=='object'||!['street','city','country'].every(k=>typeof c.address[k]==='string'&&c.address[k].trim())||!review.candidate_address||canonical(review.candidate_address)!==canonical(c.address))throw Error('coordinate_candidate_identity_review_required');
+ if(!['jsonld','official_destination','reviewed_named_place_shortlink'].includes(c.evidence_kind)||!c.address||Array.isArray(c.address)||typeof c.address!=='object'||!['street','city','country'].every(k=>typeof c.address[k]==='string'&&c.address[k].trim())||!review.candidate_address||canonical(review.candidate_address)!==canonical(c.address))throw Error('coordinate_candidate_identity_review_required');
+ if(c.evidence_kind==='reviewed_named_place_shortlink'&&!namedPlaceReviewMatches(report,review,snapshot.website))throw Error('named_place_review_required');
  if(c.evidence_kind==='official_destination'&&(review.destination_purpose!=='place_location'||typeof c.evidence_url!=='string'||!/^https:\/\/(www\.)?google\.com\/maps\/dir\//.test(c.evidence_url)||review.destination_url!==c.evidence_url))throw Error('coordinate_destination_review_required');
  if(!b||![c.latitude,c.longitude,b.south,b.north,b.west,b.east].every(Number.isFinite)||b.south>=b.north||b.west>=b.east||b.south< -90||b.north>90||b.west< -180||b.east>180||b.north-b.south>5||b.east-b.west>5||c.latitude<b.south||c.latitude>b.north||c.longitude<b.west||c.longitude>b.east)throw Error('coordinate_locality_mismatch');
  return {rpc:'geography_review_apply',arguments:{p_request:requestId,p_listing:snapshot.id,p_expected:snapshot.database_snapshot,p_report_text:reportText,p_review:review},coordinate_writes:0};

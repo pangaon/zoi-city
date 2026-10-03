@@ -3,13 +3,13 @@ import path from 'node:path';
 import {createSourceSession} from '../quality/source-fetch.mjs';
 import {canonical,sha256} from '../quality/evidence.mjs';
 import {sourceFailureReason} from '../enrichment/source-errors.mjs';
-import {extractSourceCoordinates} from './source-coordinates.mjs';
+import {extractSourceCoordinates,reviewedContactSource} from './source-coordinates.mjs';
 async function retain(directory,body,suffix){const hash=sha256(body),file=path.join(directory,hash+suffix);try{await writeFile(file,body,{flag:'wx',mode:0o600})}catch(e){if(e.code!=='EEXIST'||await readFile(file,'utf8')!==body)throw e;}return{sha256:hash,file:path.basename(file)};}
 export async function auditCoordinateSources(rows,{directory='coordinate-evidence',sourceFetch=null,identityReviews={}}={}){
  if(!Array.isArray(rows)||rows.length<1||rows.length>3||new Set(rows.map(r=>r.id)).size!==rows.length)throw Error('coordinate_canary_limit');
  const session=createSourceSession({maxRequests:18,maxBytes:4500000,deadline:Date.now()+60000});const fetchSource=sourceFetch||session.sourceFetch;
  await mkdir(directory,{recursive:true,mode:0o700});const reports=[];
- for(const row of rows){let report,page=null,source=null;const pre=extractSourceCoordinates('',row);if(pre.reason!=='matching_structured_coordinates_missing')report={...pre,http_status:null};else try{page=await fetchSource(row.website);report=extractSourceCoordinates(page.text,row,{sourceUrl:page.url,httpStatus:page.status,identityReview:identityReviews[row.id]||null})}catch(e){report={...pre,http_status:null,reason:sourceFailureReason(e)}}
+ for(const row of rows){let report,page=null,source=null;const pre=extractSourceCoordinates('',row);if(pre.reason!=='matching_structured_coordinates_missing')report={...pre,http_status:null};else try{page=await fetchSource(reviewedContactSource(row,identityReviews[row.id]));report=extractSourceCoordinates(page.text,row,{sourceUrl:page.url,httpStatus:page.status,identityReview:identityReviews[row.id]||null})}catch(e){report={...pre,http_status:null,reason:sourceFailureReason(e)}}
  // Persist the same decoded source text used by the extractor. Storage failures
  // are fatal, never misreported as unavailable source or a reviewable capture.
  if(page&&typeof page.text==='string')source=await retain(directory,page.text,'.source.html');

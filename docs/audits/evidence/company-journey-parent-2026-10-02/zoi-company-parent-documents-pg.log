@@ -1,0 +1,16 @@
+PASS viewer cannot read confidential document metadata
+PASS editor reserves private version; retry reuses exact immutable object key
+PASS client cannot finalize fabricated uploads
+PASS finalization rejects missing stored bytes
+PASS competing document uploads cannot claim same next version
+PASS verified stored bytes commit exactly one ready version
+PASS restrictive storage RLS defeats broad permissive policy for editor reads and writes
+PASS download authorization limited to document roles
+PASS editor cannot archive documents
+PASS stale upload version cannot overwrite document
+PASS real concurrent version reservations produce one winner
+PASS cleanup requires age and fenced failed state; never deletes ready versions
+PASS version history and actor audit survive failed replacement
+PASS archive blocks new download links without destroying history
+PASS cross-workspace matter links and document lookups rejected even for dual owner
+# 15 document database checks passed
