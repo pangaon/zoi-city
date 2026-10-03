@@ -1,0 +1,9 @@
+# Independent payment validator boundary review
+
+Approved the lead's pure-module move for integration. `validatedGuestPaymentOptions` is exactly the prior 1073-byte function, SHA256 `fffe11dd27ff8004d6f94ac470f41a215546dcbe6f3acbbae024e81d980f6412`. Reversing its move, web re-export, import membership, cache query and two blank separators reproduces the prior accepted frozen DOM module and pure client byte for byte. No authority, quote, deadline, recovery or payment behavior changed.
+
+Final reviewed web module SHA256 `34c27b6988b7748222de428160d0a37cef2127bc55add7d5fbe9f664f5e98722`; pure client SHA256 `7d45e9e52ee8eaccd16d517ef9381f45b1bc24c7d6d8d48e24034b7b3938d87e`. The web module imports/re-exports the same validator; native can consume the pure client without importing a DOM module's cache-query dependency. Prior three cache substitutions and fixture structural inverse proof remain in the host-clone/cache audit.
+
+Independent 12 policy units passed. Four actual mounted component/host-shell journeys at 390/1440 passed: set and clear UTC deadline, lost response and remount receipt recovery, cancellation of an unsent attempt, confirmed save followed by read failure, and guest closed/open unpaid preferences. The first incomplete reviewer snapshot lacked a shared contact import and timed out before mounting; retained failure is not attributed to product code. Added exact dependency bytes and reran successfully. No production customer writes, payment collection, ticket issuance or native physical-device claim.
+
+Snapshot `/tmp/zoi-payment-pure-independent-44aso6b4`; 17 artifacts in `docs/audits/evidence/payment-pure-boundary-independent-2026-10-03/manifest.json`, SHA256 `bdb7bf98899d2ce68c5c80ee88532611bca79bd53d540d2746163cc5be745d05`. Lead owns derivative freeze, complete imported cache chain and served production proof.

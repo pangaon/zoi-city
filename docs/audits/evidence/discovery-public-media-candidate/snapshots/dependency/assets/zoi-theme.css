@@ -1,0 +1,725 @@
+/* ============================================================
+   ZOI DESIGN SYSTEM — zoi-theme.css  (v1)
+   The single source of truth for how every Zoi page looks.
+   Link this on EVERY page:  <link rel="stylesheet" href="/assets/zoi-theme.css">
+   Matches the zoi.city homepage: dark-first, Fraunces italic display,
+   Hanken Grotesk UI, gold accent, light + gold theme variants.
+   ============================================================ */
+
+/* ---- Fonts (load in <head> too for preconnect) ---- */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..600;1,9..144,300..500&family=Hanken+Grotesk:wght@400..800&display=swap');
+
+/* ---- Theme tokens ---- */
+/* The hidden attribute is only display:none by UA default, which any class
+   rule that sets a display value silently beats. That leaves an "invisible"
+   overlay sitting on top of the page eating clicks — it cost us a completely
+   unclickable map once. Guard it once, here, for every page. */
+[hidden]{display:none!important}
+
+:root{
+  /* Zoi: Aegean blue, white light and midnight; client homes retain their own identity. */
+  color-scheme:dark;
+  --bg:#061426; --bg2:#091e36; --card:#102943; --card2:#173550;
+  --line:rgba(165,208,255,.18); --line2:rgba(165,208,255,.34);
+  --tx:#f5faff; --mut:#bed1e7; --dim:#a9c2df;
+  --acc:#76c6ff; --aegean:#58dce8; --med-blue:#1684f8; --med-deep:#082e66; --sea:#58dce8;
+  --gold:#88cfff; --green:#76d6b0; --red:#ffacaf;
+  --btn-fg:#ffffff; --btn-bg:#1465d7; --on-text:#061426; --on-gold:#061426;
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --r:16px; --r-sm:10px; --maxw:1200px;
+  --shadow:0 18px 42px -26px rgba(0,20,60,.42);
+}
+[data-theme="light"]{
+  color-scheme:light;
+  --bg:#f6faff; --bg2:#eaf4ff; --card:#ffffff; --card2:#e5f0ff;
+  --line:rgba(17, 70,140,.17); --line2:rgba(17, 70,140,.31);
+  --tx:#10294d; --mut:#435c7c; --dim:#4e6683;
+  --acc:#075dcc; --aegean:#007c94; --med-blue:#075dcc; --med-deep:#092e68; --sea:#007c94;
+  --gold:#075dcc; --green:#187447; --red:#b53141;
+  --btn-fg:#ffffff; --btn-bg:#075dcc; --on-text:#ffffff; --on-gold:#ffffff;
+}
+/* Preserve existing saved theme keys while retiring the brown/gold palette. */
+[data-theme="gold"]{
+  color-scheme:dark;
+  --bg:#041c37; --bg2:#062b53; --card:#0b355b; --card2:#10436d;
+  --line:rgba(151,218,255,.2); --line2:rgba(151,218,255,.36);
+  --tx:#ffffff; --mut:#c2ddf2; --dim:#acd0eb;
+  --acc:#7adfff; --aegean:#69e1e3; --med-blue:#3299ff; --med-deep:#082e66; --sea:#69e1e3;
+  --gold:#8ddfff; --green:#76d6b0; --red:#ffacaf;
+  --btn-fg:#052645; --btn-bg:#81dfff; --on-text:#041c37; --on-gold:#052645;
+}
+
+/* ---- Base ---- */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:88px}
+body{
+  margin:0; color:var(--tx);
+  font-family:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  line-height:1.55; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
+  background:var(--bg);
+  background-image:radial-gradient(1000px 650px at 100% 0,color-mix(in srgb,var(--gold) 5%,transparent),transparent 70%),linear-gradient(180deg,var(--bg2),var(--bg) 65%);
+  background-attachment:fixed; min-height:100vh;
+  transition:background-color .5s var(--ease), color .5s var(--ease);
+}
+[data-theme="light"] body{background-image:radial-gradient(1100px 700px at 100% 0,rgba(0,112,240,.08),transparent 70%),linear-gradient(180deg,white,var(--bg) 65%)}
+a{color:inherit;text-decoration:none}
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible{
+  outline:2px solid var(--acc)!important;
+  outline-offset:2px!important;
+}
+img{max-width:100%;display:block}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 clamp(18px, 4vw, 48px)}
+.serif{font-family:"Fraunces",Georgia,serif;font-style:italic;font-weight:400;letter-spacing:-.01em}
+
+/* ---- Type scale ---- */
+h1,.h1{font-family:"Fraunces",Georgia,serif;font-weight:300;font-size:clamp(38px,6.4vw,76px);line-height:1.02;letter-spacing:-.02em;margin:0}
+h1 em,.h1 em,.accent{font-style:italic;color:var(--gold);font-weight:400}
+h2,.h2{font-size:clamp(26px,3.4vw,40px);font-weight:700;letter-spacing:-.02em;margin:0}
+h3,.h3{font-size:20px;font-weight:700;letter-spacing:-.015em;margin:0}
+.lede{color:var(--mut);font-size:clamp(16px,2vw,19px);max-width:56ch}
+.muted{color:var(--mut)} .dim{color:var(--dim)}
+
+/* ---- Header / nav ---- */
+.zoi-header{position:sticky;top:0;z-index:60;border-bottom:1px solid var(--line);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  background:color-mix(in srgb, var(--bg) 72%, transparent);}
+.zoi-bar{display:flex;align-items:center;justify-content:space-between;gap:18px;height:68px}
+.zoi-brand{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.zoi-seal{width:36px;height:36px;flex:0 0 36px;border-radius:10px;display:grid;place-items:center;
+  font-family:"Fraunces",serif;font-style:italic;font-weight:500;font-size:21px;color:#fff;
+  background:linear-gradient(150deg,#0563e5,#0084df);line-height:1}
+.zoi-brand b{font-weight:800;font-size:19px;letter-spacing:-.02em}
+.zoi-nav{display:flex;gap:26px;flex-shrink:0}
+.zoi-nav a{white-space:nowrap;color:var(--mut);font-size:15px;transition:color .25s var(--ease)}
+.zoi-nav a:hover{color:var(--tx)}
+@media(max-width:720px){.zoi-nav{display:none}}
+
+/* ---- Eyebrow pill ---- */
+.eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:12.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mut);border:1px solid var(--line);border-radius:999px;padding:7px 15px}
+.eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 4px color-mix(in srgb,var(--gold) 22%,transparent)}
+
+/* ---- Buttons ---- */
+.btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:15px;
+  padding:13px 22px;border-radius:var(--r-sm);border:1px solid transparent;cursor:pointer;
+  min-height:46px;transition:transform .25s var(--ease),background .25s var(--ease),border-color .25s var(--ease)}
+.btn svg{width:16px;height:16px}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--btn-bg);color:var(--btn-fg);border:1px solid transparent;box-shadow:0 5px 14px -8px rgba(23,29,27,.3)}
+.btn-primary:hover{background:color-mix(in srgb,var(--btn-bg) 94%,var(--tx));color:var(--btn-fg);transform:translateY(-1px);box-shadow:0 8px 18px -10px rgba(23,29,27,.35)}
+.btn-ghost{background:transparent;color:var(--tx);border-color:var(--line2)}
+.btn-ghost:hover{border-color:var(--acc);transform:translateY(-2px)}
+.btn-gold{background:var(--gold);color:var(--on-gold)}
+
+/* ---- Cards ---- */
+.card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r);
+  padding:26px;transition:transform .4s var(--ease),border-color .4s var(--ease),box-shadow .4s var(--ease);overflow:hidden}
+a.card:hover,.card.hoverable:hover{transform:translateY(-2px);border-color:var(--line2);box-shadow:var(--shadow)}
+.card .ico{width:48px;height:48px;border-radius:13px;border:1px solid var(--line2);display:grid;place-items:center;
+  color:var(--acc);background:color-mix(in srgb,var(--acc) 8%,transparent);margin-bottom:18px}
+.card .ico svg{width:24px;height:24px}
+.chip{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim);
+  border:1px solid var(--line);border-radius:999px;padding:5px 11px}
+
+/* ---- Stat row (homepage style) ---- */
+.stat-row{display:flex;flex-wrap:wrap;gap:34px;align-items:baseline}
+.stat b{font-size:26px;font-weight:800;letter-spacing:-.01em}
+.stat span{display:block;color:var(--mut);font-size:13px;margin-top:2px}
+
+/* ---- Inputs ---- */
+.field{width:100%;background:var(--card2);border:1px solid var(--line2);border-radius:var(--r-sm);
+  color:var(--tx);padding:12px 14px;font:inherit;font-size:15px}
+.field:focus{outline:2px solid var(--acc);outline-offset:1px}
+
+/* ---- Footer ---- */
+.zoi-footer{border-top:1px solid var(--line);margin-top:64px;padding:38px 0 46px;color:var(--mut)}
+.zoi-footer a{color:var(--mut)} .zoi-footer a:hover{color:var(--tx)}
+
+/* ---- Global search (header) ----
+   Plain GET form to the Directory, which already reads ?q= — works with JS off. */
+.zoi-search{display:flex;align-items:center;gap:8px;flex:1;min-width:0;max-width:340px;margin:0 6px;
+  background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:0 6px 0 12px}
+.zoi-search:focus-within{border-color:var(--acc)}
+.zoi-search svg{width:15px;height:15px;flex:none;fill:none;stroke:var(--mut);stroke-width:2}
+.zoi-search input{flex:1;min-width:0;background:none;border:0;outline:none;color:var(--tx);
+  font:500 14px "Hanken Grotesk",system-ui,sans-serif;padding:9px 0}
+.zoi-search input::placeholder{color:var(--dim)}
+.zoi-search button{flex:none;background:none;border:0;color:var(--mut);cursor:pointer;
+  font:700 12.5px "Hanken Grotesk",system-ui,sans-serif;padding:6px 10px;border-radius:999px}
+.zoi-search button:hover{color:var(--tx)}
+@media(max-width:1200px){.zoi-search{display:none}}
+@media(min-width:721px) and (max-width:1200px){.zoi-bar{flex-wrap:wrap;height:auto;min-height:68px;padding-top:10px;padding-bottom:10px;row-gap:10px}.zoi-nav{order:3;flex:1 0 100%;justify-content:space-between;gap:18px}.zoi-actions{margin-left:auto}}
+
+/* ---- Global header variants + actions ----
+   One header, identical links/labels/order on every route. */
+.zoi-header.static{position:static}            /* app shells keep their own sticky chrome */
+.zoi-header.wide>.wrap{max-width:none}         /* full-bleed app shells */
+.zoi-actions{display:flex;align-items:center;gap:10px;flex:none}
+.zoi-actions .btn{padding:9px 16px;min-height:40px;font-size:14px}
+.zoi-nav a[aria-current="page"]{color:var(--tx);font-weight:600}
+.zoi-nav a[aria-current="page"]::after{content:"";display:block;height:2px;margin-top:5px;
+  border-radius:2px;background:var(--gold)}
+/* The core pillars must stay reachable on small screens, so the nav scrolls
+   instead of disappearing. */
+@media(max-width:720px){
+  .zoi-nav{display:flex;gap:18px;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;margin:0 10px;padding-bottom:2px;flex:1;min-width:0}
+  .zoi-nav::-webkit-scrollbar{display:none}
+  .zoi-nav a{white-space:nowrap;font-size:14px}
+  .zoi-bar{height:60px;gap:6px}
+  .zoi-actions .btn span{display:none}
+}
+@media(max-width:520px){
+  .wrap{padding-left:16px;padding-right:16px}
+  .zoi-brand b{display:none}
+  .zoi-actions .btn{display:none}
+  .zoi-actions{gap:0}
+}
+/* ---- Shared product shell ---- */
+.zoi-shell{display:grid;gap:24px}
+.zoi-surface{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.zoi-panel{min-width:0;padding:24px;border:1px solid var(--line);border-radius:var(--r);background:color-mix(in srgb, var(--card) 90%, transparent)}
+.zoi-kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);margin-bottom:16px}
+.zoi-kicker::before{content:"";display:block;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb, var(--gold) 22%, transparent)}
+.zoi-section-head{display:flex;align-items:end;justify-content:space-between;gap:22px;flex-wrap:wrap;margin-bottom:22px}
+.zoi-section-head h2{margin:0}
+.zoi-section-head p{margin:8px 0 0;color:var(--mut);max-width:62ch}
+.zoi-trust{display:flex;flex-wrap:wrap;gap:10px 16px;margin-top:18px;padding-top:18px;border-top:1px solid var(--line)}
+.zoi-pill{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid var(--line);border-radius:999px;background:color-mix(in srgb, var(--card2) 94%, transparent);color:var(--mut);font-size:12px}
+.zoi-pill::before{content:"";display:block;width:7px;height:7px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 4px color-mix(in srgb, var(--gold) 18%, transparent)}
+.zoi-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden;list-style:none;padding:0;margin:0}
+.zoi-step{background:var(--bg);padding:26px 24px;border:none;display:block}
+.zoi-step .mono{margin-bottom:12px}
+.zoi-step h3{font-size:19px;font-weight:700;letter-spacing:-.02em;margin:0 0 6px}
+.zoi-step p{font-size:14px;color:var(--mut);margin:0}
+
+.zoi-platform{display:grid;grid-template-columns:minmax(0,1fr);gap:24px;margin:clamp(40px,6vw,72px) auto}
+.zoi-platform-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:18px}
+.zoi-platform-card{padding:26px 24px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg, color-mix(in srgb, var(--card) 92%, transparent), color-mix(in srgb, var(--card2) 92%, transparent));}
+.zoi-platform-card .mono{margin-bottom:10px}
+.zoi-platform-card h3{margin:0 0 8px;font-size:22px;letter-spacing:-.02em}
+.zoi-platform-card p{margin:0;color:var(--mut)}
+.zoi-platform-card .zoi-pill{margin-top:18px}
+.zoi-maturity{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px;margin-top:8px}
+.zoi-maturity .zoi-metric{padding:18px 18px 16px;border:1px solid var(--line);border-radius:16px;background:var(--card2)}
+.zoi-maturity .zoi-metric-label{display:block;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--mut);margin-bottom:8px}
+.zoi-maturity .zoi-metric-value{display:flex;align-items:center;gap:8px;font-weight:700;font-size:18px}
+.zoi-maturity .zoi-dot{width:8px;height:8px;border-radius:50%;display:inline-block;background:var(--gold)}
+.zoi-maturity .zoi-live .zoi-dot{background:var(--green)}
+.zoi-maturity .zoi-roadmap .zoi-dot{background:var(--acc)}
+.zoi-ops{display:grid;gap:12px;margin-top:12px}
+.zoi-op{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.zoi-op strong{display:block;margin-bottom:4px}
+.zoi-op span{display:block;color:var(--mut);font-size:14px}
+.zoi-op .zoi-state{margin-left:auto;padding:6px 10px;border-radius:999px;border:1px solid var(--line);font-size:11px;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.zoi-op .zoi-state.zoi-live{color:var(--green);border-color:color-mix(in srgb, var(--green) 28%, transparent);background:color-mix(in srgb, var(--green) 12%, transparent)}
+.zoi-op .zoi-state.zoi-beta{color:var(--gold);border-color:color-mix(in srgb, var(--gold) 26%, transparent);background:color-mix(in srgb, var(--gold) 12%, transparent)}
+.zoi-op .zoi-state.zoi-roadmap{color:var(--acc);border-color:color-mix(in srgb, var(--acc) 26%, transparent);background:color-mix(in srgb, var(--acc) 10%, transparent)}
+
+/* ---- Global footer ---- */
+.zoi-footer .zoi-fnav{display:flex;flex-wrap:wrap;gap:18px}
+.zoi-footer .zoi-fmeta{font-size:12.5px;color:var(--dim)}
+
+/* ---- Theme toggle button ---- */
+.theme-btn{width:44px;height:44px;border-radius:12px;border:1px solid var(--line2);background:var(--card);
+  color:var(--tx);display:grid;place-items:center;cursor:pointer}
+.theme-btn svg{width:20px;height:20px}
+.theme-btn:hover{border-color:var(--acc)}
+
+/* ---- Preview / sample-data bar ----
+   Any route that shows illustrative data instead of the visitor's real data
+   MUST carry this at the top of <body>, and must link to the live product.
+   Never present sample figures as real. */
+.zoi-preview{display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:9px clamp(16px,4vw,32px);font-size:12.5px;line-height:1.45;
+  color:var(--gold);background:color-mix(in srgb, var(--gold) 12%, transparent);
+  border-bottom:1px solid color-mix(in srgb, var(--gold) 30%, transparent)}
+.zoi-preview svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2}
+.zoi-preview b{color:var(--gold);font-weight:800;letter-spacing:.01em}
+.zoi-preview span{color:var(--tx);opacity:.9}
+.zoi-preview a{color:var(--tx);text-decoration:underline;text-underline-offset:2px;font-weight:700;white-space:nowrap}
+.zoi-preview a:hover{color:var(--acc)}
+
+/* ---- Motion ----
+   Restrained on purpose: a staggered reveal on entry, depth on hover, and a
+   gold hairline that tracks scroll. All of it collapses under
+   prefers-reduced-motion, which is honoured at the bottom of this file. */
+@media (prefers-reduced-motion: no-preference) {
+  /* reveal rules now live in the MOTION & LIGHT layer at the end of this file */
+  .zoi-header{transition:box-shadow .3s var(--ease), background .3s var(--ease)}
+  .zoi-header.stuck{box-shadow:0 10px 30px -18px rgba(0,0,0,.55)}
+}
+/* scroll progress — one gold hairline under the header */
+.zoi-prog{position:fixed;top:0;left:0;height:2px;width:0;z-index:70;
+  background:linear-gradient(90deg, var(--gold), var(--acc));
+  transition:width .12s linear;pointer-events:none}
+/* the brand seal reacts to the pointer, so the header never feels dead */
+.zoi-seal{transition:transform .35s var(--ease), box-shadow .35s var(--ease)}
+.zoi-brand:hover .zoi-seal{transform:rotate(-6deg) scale(1.06);
+  box-shadow:0 8px 22px -10px color-mix(in srgb, var(--gold) 70%, transparent)}
+
+/* ---- Accessibility ---- */
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* ---------- hero globe ----------
+   A container that looks finished before the globe arrives, because the globe
+   is lazy-loaded and may never arrive at all (no WebGL, slow link, blocked
+   third party). Nothing here depends on it. */
+.zoi-globe{position:relative;overflow:hidden;border-radius:var(--r);
+  border:1px solid var(--line);background:
+    radial-gradient(120% 90% at 50% 8%, color-mix(in srgb,var(--acc) 12%, transparent), transparent 62%),
+    var(--card2);
+  min-height:var(--gh,420px);isolation:isolate}
+.zoi-globe canvas{display:block}
+.zoi-globe .maplibregl-map{background:transparent!important}
+.zoi-globe::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 120% at 50% 50%, transparent 52%, color-mix(in srgb,var(--bg) 72%, transparent) 100%)}
+.zoi-globe[data-live="1"]::after{opacity:.9}
+.zoi-globe .gcap{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:20px 22px;
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px 22px;
+  background:linear-gradient(to top, color-mix(in srgb,var(--bg) 88%, transparent), transparent)}
+.zoi-globe .gcap h2{font-family:"Fraunces",serif;font-size:clamp(19px,2.4vw,26px);font-weight:600;
+  letter-spacing:-.02em;margin:0;flex:1 1 240px;line-height:1.15}
+.zoi-globe .gcap .gsub{display:block;font-family:"Hanken Grotesk",sans-serif;font-size:13px;
+  font-weight:500;color:var(--mut);letter-spacing:0;margin-top:5px}
+.zoi-globe .gstats{display:flex;gap:20px;flex:0 0 auto}
+.zoi-globe .gstats div{min-width:64px}
+.zoi-globe .gstats b{display:block;font-family:"Fraunces",serif;font-size:20px;font-weight:600;
+  font-variant-numeric:tabular-nums;line-height:1.1}
+.zoi-globe .gstats span{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim)}
+.zoi-globe .gname{position:absolute;top:14px;left:16px;z-index:3;font-size:12.5px;font-weight:600;
+  color:var(--tx);background:color-mix(in srgb,var(--card) 84%,transparent);
+  border:1px solid var(--line);border-radius:999px;padding:5px 12px;
+  opacity:0;transform:translateY(-4px);transition:.18s var(--ease);pointer-events:none}
+.zoi-globe .gname.on{opacity:1;transform:none}
+@media (max-width:720px){
+  .zoi-globe{--gh:320px}
+  .zoi-globe .gcap{padding:15px 16px}
+  .zoi-globe .gstats{gap:14px}
+  .zoi-globe .gstats b{font-size:17px}
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   MOTION & LIGHT
+   ───────────────────────────────────────────────────────────────────────────
+   Everything below is progressive: each block is wrapped in @supports or a
+   reduced-motion guard, so a browser that lacks a feature — or a person who has
+   asked for stillness — gets the plain site with nothing broken and nothing
+   invisible.
+
+   Three rules this layer follows, because breaking them is how motion goes bad:
+
+   1. Reveals animate `translate` and `opacity`, never `transform`. `transform`
+      belongs to hover and press states. Animating both from two places means the
+      animation wins and hover silently dies.
+   2. Only compositor properties. No animated width, height, top, left, filter
+      or box-shadow anywhere in a loop.
+   3. Anything decorative is pointer-events:none and aria-hidden, and is
+      `contain`ed so it cannot trigger layout on the rest of the page.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root{
+  /* One easing vocabulary, so the whole site moves like one product.
+     --ease is the existing house curve; these are its siblings. */
+  --ease-out:cubic-bezier(.16,1,.3,1);        /* entrances: fast then settle */
+  --ease-spring:cubic-bezier(.34,1.56,.64,1); /* press/release: slight overshoot */
+  --ease-in-out:cubic-bezier(.65,0,.35,1);    /* moves between two rest states */
+  --t-fast:.16s; --t:.28s; --t-slow:.5s;
+}
+
+/* ── 1. Cross-document view transitions ────────────────────────────────────
+   Navigating between pages stops looking like a page load. The header and the
+   brand mark are named, so they persist across the navigation instead of
+   flickering out and back in. */
+@view-transition{ navigation:auto; }
+@media (prefers-reduced-motion: reduce){ @view-transition{ navigation:none; } }
+
+@media (prefers-reduced-motion: no-preference){
+  ::view-transition-old(root){
+    animation:vt-out .18s var(--ease-in-out) both;
+  }
+  ::view-transition-new(root){
+    animation:vt-in .34s var(--ease-out) both;
+  }
+  @keyframes vt-out{ to{ opacity:0; translate:0 -6px; } }
+  @keyframes vt-in{ from{ opacity:0; translate:0 10px; } }
+
+  /* Persist the shell. A shared name means the browser morphs the element
+     between documents rather than cross-fading the whole viewport. */
+  .zoi-header{ view-transition-name:zoi-header; }
+  .zoi-brand{ view-transition-name:zoi-brand; }
+  .zoi-prog{ view-transition-name:zoi-prog; }
+  ::view-transition-group(zoi-header),
+  ::view-transition-group(zoi-brand){ animation-duration:.3s; }
+}
+
+/* Content remains fully opaque throughout motion: nested scroll timelines
+   must never multiply opacity or make search results unreadable. */
+/* ── 2. Scroll-driven reveals, in CSS ──────────────────────────────────────
+   The old version was an IntersectionObserver that toggled a class, which meant
+   content was opacity:0 until JavaScript ran. This runs on the compositor, needs
+   no JS at all, and is tied to actual scroll position rather than a one-shot
+   trigger — so scrolling back up plays it back. */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    [data-reveal],
+    .zoi-rise{
+      animation:rise-in linear both;
+      animation-timeline:view();
+      /* `cover`, not `entry` — a correctness point, not taste. `entry` progress
+         can sit at 0% for an element that is already on screen: one taller than
+         the viewport, or one inside a nested scroller that has not been
+         scrolled. That leaves real content at opacity 0 with nothing to advance
+         it, which is precisely the intermittent blank-card bug this replaces.
+         `cover` spans the whole time the element overlaps its scrollport, so
+         anything visible is always past 0%. Settling by 22% means it has
+         finished moving long before you read it. */
+      animation-range:cover 0% cover 22%;
+    }
+    /* Belt and braces. The watchdog in zoi-theme.js sets this on anything that
+       is still transparent once the page has settled, whatever the cause. No
+       visitor is ever shown blank space where content should be. */
+    [data-reveal][data-reveal-off], .zoi-rise[data-reveal-off],
+    .zoi-stagger > [data-reveal-off], .zoi-wipe[data-reveal-off]{
+      animation:none !important; opacity:1 !important;
+      translate:none !important; clip-path:none !important;
+    }
+    @keyframes rise-in{
+      from{ opacity:1; translate:0 10px; }
+      to  { opacity:1; translate:0 0; }
+    }
+
+    /* Children cascade instead of arriving as one block. --i is set by
+       zoi-theme.js; without it every child simply shares the parent's range. */
+    .zoi-stagger > *{
+      animation:rise-in linear both;
+      animation-timeline:view();
+      animation-range:cover calc(0% + var(--i,0) * 2%) cover calc(24% + var(--i,0) * 2%);
+    }
+
+    /* Section headings get a mask wipe rather than a fade — it reads as
+       deliberate typesetting instead of a generic fade-in. */
+    .zoi-wipe{
+      animation:wipe linear both;
+      animation-timeline:view();
+      animation-range:cover 0% cover 24%;
+    }
+    @keyframes wipe{
+      from{ clip-path:inset(0); opacity:1; }
+      to  { clip-path:inset(0 0 0 0);    opacity:1; }
+    }
+
+    /* Slow parallax drift for anything marked as a backdrop. */
+    .zoi-parallax{
+      animation:drift linear both;
+      animation-timeline:view();
+      animation-range:cover;
+    }
+    @keyframes drift{ from{ translate:0 -3%; } to{ translate:0 3%; } }
+  }
+}
+
+/* Fallback for browsers without scroll-driven animations: keep the old
+   JS-driven class, but ONLY when the CSS path is unavailable, so the two can
+   never fight over the same element. */
+@supports not (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    [data-reveal]{ opacity:1; translate:0 10px;
+      transition:opacity .5s var(--ease-out), translate .5s var(--ease-out); }
+    [data-reveal].in{ opacity:1; translate:0 0; }
+  }
+}
+
+/* ── 3. The light field ───────────────────────────────────────────────────
+   Replaces a `.glow` div that rendered nothing. Three soft brand-coloured
+   lights drifting behind the page: it gives black a sense of depth and stops
+   large dark areas reading as empty.
+
+   Deliberately no `filter: blur()` — a blurred 1200px layer is expensive on
+   every frame. Radial gradients with soft stops are already smooth and cost
+   nothing to composite. */
+.zoi-light{
+  position:fixed; inset:0; z-index:-1; pointer-events:none;
+  contain:strict; overflow:hidden;
+}
+.zoi-light i{
+  position:absolute; display:block; border-radius:50%;
+  opacity:var(--o,.5); will-change:transform;
+}
+.zoi-light i:nth-child(1){
+  width:76vmax; height:76vmax; left:-24vmax; top:-30vmax; --o:.5;
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--acc) 42%, transparent) 0%,
+    color-mix(in oklab, var(--acc) 12%, transparent) 38%, transparent 68%);
+}
+.zoi-light i:nth-child(2){
+  width:62vmax; height:62vmax; right:-22vmax; top:-6vmax; --o:.42;
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--gold) 46%, transparent) 0%,
+    color-mix(in oklab, var(--gold) 12%, transparent) 40%, transparent 70%);
+}
+.zoi-light i:nth-child(3){
+  width:54vmax; height:54vmax; left:18vmax; bottom:-30vmax; --o:.3;
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--green) 40%, transparent) 0%,
+    transparent 66%);
+}
+[data-theme="light"] .zoi-light i{ opacity:calc(var(--o) * .5); }
+[data-theme="gold"] .zoi-light i:nth-child(1){
+  background:radial-gradient(circle at 50% 50%,
+    color-mix(in oklab, var(--gold) 34%, transparent) 0%, transparent 66%);
+}
+@media (prefers-reduced-motion: no-preference){
+  .zoi-light i:nth-child(1){ animation:float-a 34s var(--ease-in-out) infinite alternate; }
+  .zoi-light i:nth-child(2){ animation:float-b 44s var(--ease-in-out) infinite alternate; }
+  .zoi-light i:nth-child(3){ animation:float-c 52s var(--ease-in-out) infinite alternate; }
+  @keyframes float-a{ to{ transform:translate3d(9vmax,7vmax,0) scale(1.14); } }
+  @keyframes float-b{ to{ transform:translate3d(-11vmax,5vmax,0) scale(1.08); } }
+  @keyframes float-c{ to{ transform:translate3d(7vmax,-8vmax,0) scale(1.18); } }
+}
+/* No stacking override needed on page content: a negative z-index child paints
+   above its parent's background and below in-flow content, which is exactly
+   where a backdrop belongs. Forcing position:relative on every body child would
+   have quietly changed stacking on pages that never asked for it. */
+
+/* ── 4. Grain ─────────────────────────────────────────────────────────────
+   A single inline SVG turbulence tile. It costs one small decode and stops
+   large flat fills and gradients from banding, which is most of why a dark
+   site looks cheap. */
+.zoi-grain{
+  position:fixed; inset:0; z-index:2; pointer-events:none; contain:strict;
+  opacity:.032; mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+[data-theme="light"] .zoi-grain{ opacity:.05; mix-blend-mode:multiply; }
+
+/* ── 5. Surfaces that respond ─────────────────────────────────────────────
+   A specular highlight that follows the pointer. --mx/--my are written by one
+   delegated listener in zoi-theme.js; with no JS the card is simply a card. */
+.zoi-lit{ position:relative; isolation:isolate; }
+.zoi-lit::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; z-index:0;
+  pointer-events:none; opacity:0; transition:opacity var(--t) var(--ease-out);
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),
+    color-mix(in oklab, var(--tx) 9%, transparent), transparent 62%);
+}
+.zoi-lit:hover::before, .zoi-lit:focus-within::before{ opacity:1; }
+[data-theme="light"] .zoi-lit::before{
+  background:radial-gradient(300px circle at var(--mx,50%) var(--my,50%),
+    color-mix(in oklab, var(--acc) 10%, transparent), transparent 62%);
+}
+/* Keep real content above the highlight. */
+.zoi-lit > *{ position:relative; z-index:1; }
+
+/* Press states. Cheap, and it is most of what makes an interface feel physical
+   rather than like a document. */
+@media (hover:hover){
+  .btn, .zoi-lit, .chip, button, [role="button"]{
+    transition:transform var(--t-fast) var(--ease-spring),
+               border-color var(--t) var(--ease-out),
+               background-color var(--t) var(--ease-out),
+               color var(--t) var(--ease-out),
+               box-shadow var(--t) var(--ease-out);
+  }
+  .btn:active, button:active, [role="button"]:active{ transform:scale(.97); }
+}
+
+/* Focus that looks designed rather than defaulted. */
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:2px solid color-mix(in oklab, var(--acc) 80%, transparent);
+  outline-offset:2px; border-radius:6px;
+}
+
+/* ── 6. Entrances for content that arrives after load ─────────────────────
+   Anything inserted by script animates in on its own, with no class to add and
+   no timer to coordinate. */
+@supports (transition-behavior: allow-discrete){
+  @media (prefers-reduced-motion: no-preference){
+    .zoi-pop{
+      transition:opacity var(--t) var(--ease-out), translate var(--t) var(--ease-out),
+                 display var(--t) allow-discrete;
+    }
+    @starting-style{ .zoi-pop{ opacity:0; translate:0 8px; } }
+  }
+}
+
+/* ── 7. The meander ───────────────────────────────────────────────────────
+   The Greek key, drawn as a stroke that writes itself in. It is the one piece
+   of ornament here that could not belong to any other product. */
+.zoi-meander{ display:block; width:100%; height:14px; overflow:visible; }
+.zoi-meander path{
+  fill:none; stroke:color-mix(in oklab, var(--gold) 62%, transparent);
+  stroke-width:1.4; stroke-linecap:square; stroke-linejoin:miter;
+  vector-effect:non-scaling-stroke;
+}
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .zoi-meander path{
+      stroke-dasharray:var(--len,1400); stroke-dashoffset:var(--len,1400);
+      animation:draw linear both; animation-timeline:view(); animation-range:cover 0% cover 55%;
+    }
+    @keyframes draw{ to{ stroke-dashoffset:0; } }
+  }
+}
+
+/* ── 8. Editorial layout ──────────────────────────────────────────────────
+   A uniform grid of equal cards reads as a template. This gives a run of cells
+   deliberate rhythm — one lead, then supporting pairs — without anyone having
+   to hand-place anything. */
+.zoi-mosaic{
+  display:grid; gap:14px;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  grid-auto-rows:minmax(0,auto);
+}
+@media (min-width:900px){
+  .zoi-mosaic{ grid-template-columns:repeat(6,1fr); }
+  .zoi-mosaic > *{ grid-column:span 2; }
+  .zoi-mosaic > :nth-child(6n+1){ grid-column:span 4; }
+  .zoi-mosaic > :nth-child(6n+4){ grid-column:span 3; }
+  .zoi-mosaic > :nth-child(6n+5){ grid-column:span 3; }
+}
+
+/* ── 9. Typography in motion ──────────────────────────────────────────────
+   Words are wrapped by zoi-theme.js and rise from behind a mask. The mask is
+   what separates this from a fade: the letters look set, not faded up. */
+.zoi-words{ display:inline; }
+.zoi-words .zoi-w{ display:inline-block; overflow:hidden; vertical-align:top; }
+.zoi-words .zoi-w > span{ display:inline-block; will-change:transform; }
+@media (prefers-reduced-motion: no-preference){
+  .zoi-words .zoi-w > span{
+    animation:word-up .78s var(--ease-out) both;
+    animation-delay:calc(var(--i,0) * 42ms + 60ms);
+  }
+  @keyframes word-up{ from{ translate:0 105%; } to{ translate:0 0; } }
+}
+
+/* Long headings should not break into a one-word orphan line. */
+h1,h2,.hlead,.hsub{ text-wrap:balance; }
+p{ text-wrap:pretty; }
+
+/* ── 10. Long pages ───────────────────────────────────────────────────────
+   Skip rendering work for sections far off screen. Sizes are contained so this
+   cannot cause scrollbar jumping. */
+.zoi-defer{ content-visibility:auto; contain-intrinsic-size:auto 600px; }
+
+/* ── opting the existing pages in ────────────────────────────────────────────
+   The motion layer above is opt-in, and no page was opting in. Rather than
+   hand-tag markup on six pages — which would also miss anything rendered by
+   script — the real container classes are mapped onto the behaviour here. One
+   place to change, and it covers content that does not exist until a fetch
+   returns.
+
+   Grid CHILDREN are targeted, not the grids themselves: the child is the card,
+   and the grid must keep its own layout untouched. --i comes from :nth-child so
+   the cascade works with JavaScript disabled and for nodes inserted later. */
+@supports (animation-timeline: view()){
+  @media (prefers-reduced-motion: no-preference){
+    .cgrid > *, .dcats > *, .apps-grid > *, .grid > *, .crow > *,
+    .ev-stats > *, .flag-row > *, .lgrid > *, .plans > *, .mods > *{
+      animation:rise-in linear both;
+      animation-timeline:view();
+      animation-range:cover calc(0% + var(--i,0) * 2%) cover calc(24% + var(--i,0) * 2%);
+    }
+    /* Cap the stagger at eight: past that the last card is still arriving when
+       you have finished reading the first, which reads as lag, not polish. */
+    .cgrid > *:nth-child(1),.dcats > *:nth-child(1),.grid > *:nth-child(1){--i:0}
+    .cgrid > *:nth-child(2),.dcats > *:nth-child(2),.grid > *:nth-child(2){--i:1}
+    .cgrid > *:nth-child(3),.dcats > *:nth-child(3),.grid > *:nth-child(3){--i:2}
+    .cgrid > *:nth-child(4),.dcats > *:nth-child(4),.grid > *:nth-child(4){--i:3}
+    .cgrid > *:nth-child(5),.dcats > *:nth-child(5),.grid > *:nth-child(5){--i:4}
+    .cgrid > *:nth-child(6),.dcats > *:nth-child(6),.grid > *:nth-child(6){--i:5}
+    .cgrid > *:nth-child(7),.dcats > *:nth-child(7),.grid > *:nth-child(7){--i:6}
+    .cgrid > *:nth-child(n+8),.dcats > *:nth-child(n+8),.grid > *:nth-child(n+8){--i:7}
+    /* and the release valve the watchdog uses, extended to these */
+    .cgrid > [data-reveal-off], .dcats > [data-reveal-off], .grid > [data-reveal-off],
+    .crow > [data-reveal-off], .apps-grid > [data-reveal-off]{
+      animation:none !important; opacity:1 !important; translate:none !important;
+    }
+  }
+}
+
+/* The pointer highlight, on the surfaces that are actually cards. ::before is
+   free on all of these — checked against every page stylesheet. */
+.cgrid > *, .dcats > *, .apps-grid > *, .grid > *, .lcard, .relcard, .ecard{
+  position:relative; isolation:isolate;
+}
+@media (hover:hover){
+  .cgrid > *::before, .dcats > *::before, .apps-grid > *::before, .grid > *::before{
+    content:""; position:absolute; inset:0; border-radius:inherit; z-index:0;
+    pointer-events:none; opacity:0; transition:opacity var(--t) var(--ease-out);
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),
+      color-mix(in oklab, var(--tx) 8%, transparent), transparent 60%);
+  }
+  .cgrid > *:hover::before, .dcats > *:hover::before,
+  .apps-grid > *:hover::before, .grid > *:hover::before{ opacity:1 }
+  [data-theme="light"] .cgrid > *::before, [data-theme="light"] .dcats > *::before,
+  [data-theme="light"] .apps-grid > *::before, [data-theme="light"] .grid > *::before{
+    background:radial-gradient(280px circle at var(--mx,50%) var(--my,50%),
+      color-mix(in oklab, var(--acc) 9%, transparent), transparent 60%);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DIASPORA MESSENGER & ETHICAL SPOTLIGHT SYSTEM
+   ═══════════════════════════════════════════════════════════════════════════ */
+.zoi-msg-fab{position:fixed;bottom:24px;right:24px;z-index:900;display:flex;align-items:center;gap:10px;padding:12px 18px;border-radius:999px;background:var(--btn-bg);color:var(--btn-fg);border:1px solid rgba(255,255,255,.2);box-shadow:0 12px 32px -8px rgba(23,29,27,.3);cursor:pointer;font-weight:750;font-size:13.5px;transition:transform .3s var(--ease-spring),box-shadow .3s}
+.zoi-msg-fab:hover{transform:translateY(-3px) scale(1.03);box-shadow:0 18px 40px -8px rgba(2,132,199,.85)}
+.zoi-msg-fab svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2}
+.zoi-msg-drawer{position:fixed;right:24px;bottom:84px;width:380px;max-width:calc(100vw - 32px);height:540px;max-height:calc(100vh - 120px);z-index:901;border-radius:20px;background:rgba(10,18,32,.88);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);border:1px solid var(--line2);box-shadow:0 30px 80px -20px rgba(0,0,0,.8);display:none;flex-direction:column;overflow:hidden;animation:zoiSlideUp .3s var(--ease-out)}
+.zoi-msg-drawer.open{display:flex}
+@keyframes zoiSlideUp{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+.zoi-msg-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--line);background:color-mix(in srgb,var(--card) 80%,transparent)}
+.zoi-msg-hdr b{font-size:15px;color:var(--tx);display:flex;align-items:center;gap:8px}
+.zoi-msg-close{background:none;border:none;color:var(--mut);cursor:pointer;font-size:18px;padding:4px}
+.zoi-msg-threads{flex:1;overflow-y:auto;padding:8px;display:flex;flex-direction:column;gap:6px}
+.zoi-msg-item{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:var(--card2);border:1px solid var(--line);cursor:pointer;transition:all .18s}
+.zoi-msg-item:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--card2))}
+.zoi-msg-av{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;background:var(--card2);color:var(--tx);font-weight:800;font-size:14px;flex:none}
+.zoi-msg-body{flex:1;min-width:0}
+.zoi-msg-name{font-weight:700;font-size:13px;color:var(--tx);margin-bottom:2px}
+.zoi-msg-snippet{font-size:11.5px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.zoi-msg-chatview{flex:1;display:none;flex-direction:column}
+.zoi-msg-chatview.active{display:flex}
+.zoi-msg-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.zoi-msg-bubble{max-width:82%;padding:9px 13px;border-radius:14px;font-size:13px;line-height:1.4}
+.zoi-msg-bubble.sent{align-self:flex-end;background:var(--btn-bg);color:var(--btn-fg);border-bottom-right-radius:4px}
+.zoi-msg-bubble.recv{align-self:flex-start;background:var(--card2);border:1px solid var(--line);color:var(--tx);border-bottom-left-radius:4px}
+.zoi-msg-footer{display:flex;gap:8px;padding:12px 14px;border-top:1px solid var(--line);background:color-mix(in srgb,var(--card) 90%,transparent)}
+.zoi-msg-in{flex:1;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--tx);font-size:13px;outline:none}
+.zoi-msg-in:focus{border-color:var(--acc)}
+.zoi-msg-stickers{display:flex;gap:6px;padding:6px 12px;overflow-x:auto;border-top:1px solid var(--line);background:var(--bg)}
+.zoi-sticker-btn{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:4px 9px;font-size:11px;color:var(--tx);cursor:pointer;white-space:nowrap}
+.zoi-sticker-btn:hover{border-color:var(--gold);color:var(--gold)}
+
+/* Ethical Spotlight & Sponsor Placement Card */
+.zoi-spotlight-box{background:linear-gradient(135deg,color-mix(in srgb,var(--card) 92%,transparent),color-mix(in srgb,var(--card2) 92%,transparent));border:1px solid var(--line2);border-radius:18px;padding:22px;margin:28px 0;position:relative;overflow:hidden;box-shadow:var(--shadow)}
+.zoi-spotlight-box::after{content:"";position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(212,175,95,.2),transparent 65%);pointer-events:none}
+.zoi-spotlight-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.35);color:var(--gold);margin-bottom:10px}
+.zoi-spotlight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:14px}
+.zoi-spotlight-card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;justify-content:space-between;transition:transform .2s var(--ease),border-color .2s}
+.zoi-spotlight-card:hover{transform:translateY(-2px);border-color:var(--acc)}
+.zoi-spotlight-title{font-size:15px;font-weight:750;color:var(--tx);margin-bottom:4px}
+.zoi-spotlight-sub{font-size:12.5px;color:var(--mut);line-height:1.45;margin-bottom:12px}
+
+
+/* The enhanced mobile menu preserves the scrollable no-script navigation. */
+.zoi-menu-toggle{display:none}
+@media(max-width:720px){
+  .zoi-menu-ready .zoi-menu-toggle{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border:1px solid var(--line2);border-radius:12px;background:var(--card);color:var(--tx);font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+  .zoi-menu-ready .zoi-actions{gap:8px;margin-left:auto}
+  .zoi-menu-ready .zoi-brand b{display:block}
+  .zoi-menu-ready .zoi-nav{display:none}
+  .zoi-menu-ready.zoi-menu-open .zoi-nav{display:flex;position:absolute;left:0;right:0;top:100%;flex-direction:column;gap:0;margin:0;padding:12px 20px;background:var(--bg2);border-bottom:1px solid var(--line);box-shadow:0 14px 28px rgba(11,37,69,.1)}
+  .zoi-menu-ready .zoi-nav a{display:block;padding:14px 12px;border-radius:8px;min-height:48px}
+  .zoi-menu-ready .zoi-nav a[aria-current="page"]{background:var(--card2)}
+  .zoi-menu-ready .zoi-nav a[aria-current="page"]::after{display:none}
+}
+
+/* Quiet material depth: a light field must never compete with text or photography. */
+.zoi-light{opacity:.18}
+[data-theme="light"] .zoi-light{opacity:.12}
+.zoi-grain{opacity:.025}
+::selection{background:var(--btn-bg);color:var(--btn-fg)}
+@media(prefers-reduced-motion:reduce){body{transition:none}.btn,.card{transition:none}.zoi-light i{animation:none!important}}

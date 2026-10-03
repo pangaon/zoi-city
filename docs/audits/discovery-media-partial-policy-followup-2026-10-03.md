@@ -1,0 +1,15 @@
+# Partial detail media policy follow-up
+
+This is a separate follow-up to the immutable 74-entry repair receipt; that receipt remains unchanged. The new partial-payload negative test fails against its frozen profile-preview module (false versus true authority), retained in before-negative-test.log. A detail response with an explicit owner/profile website change or clear, source quarantine, or source mismatch must replace a previously loaded image even when photo_url is omitted. Otherwise Quick look resurrects a cover deliberately blocked by the shared selector.
+
+Only profile-preview authority changes: explicit website fields, quarantined source metadata, and rejected source identity are media policy receipts. No-policy genuinely sparse responses still report false authority. No selector, SQL, source writer, entity handler or navigation runtime changes in this follow-up. SourceQuarantined's truthy metadata result is converted to a boolean.
+
+New unit cases exercise all three owner/raw profile website layers (clear, empty and edit), nine quarantine flags, source mismatch, and false quarantine with genuinely omitted photo. Original explicit-clear/poster assertions remain unchanged. Focused suite: 30 passed. Clean copy of lead exact staged archive, prior five repair overrides, current two follow-up overrides and exact retained before-source fixture: 1722 tests, 1707 passed, 15 skipped, zero failures. Standalone page/unit suites pass.
+
+Ten controlled actual-browser journeys begin with the retained Yamas card's original photo, then return deliberately partial details at 390/1440: owner website clear, profile website edit, source quarantine, source mismatch, and truly sparse payload. The first four remove the old cover; the final case preserves it. All ten pass, exactly one home_entity request per opened Quick look, no pageerrors/overflow, Escape closes. Owner-clear and genuinely-sparse phone screenshots were visually inspected. API fixtures are controlled; no live owner writes or deployed partial API claims.
+
+Reviewer found the home-navigation harness consumes api/entity.js and its imports absent from the original browser-focused freeze. This receipt freezes all 93 actual static import paths consumed by the four focused tests, including the 14 previously absent baseline paths. They are dependencies only, not owned runtime edits. Original base manifest plus 74-entry repair plus this follow-up reconstructs the focused and browser candidate. The source/API fixture and Explore HTML remain exact original media-manifest dependencies.
+
+Reproduction: node --test tests/unit/explore-geography-ui.test.mjs tests/unit/home-navigation.test.mjs tests/unit/quicklook-details.test.mjs tests/unit/public-listing-media.test.mjs; FROZEN_ROOT=$PWD NODE_PATH=$PWD/node_modules QA_DISCOVERY_MEDIA_DIR=/tmp/partial-policy node tests/browser/discovery-public-media/partial-policy.cjs. Chromium path is pinned in the browser harness.
+
+No production writes/deploy. The lead still owns exact full stage, independent approval and actual deployed readback. Shared source conflict and individual old-media reattachment holds remain open.

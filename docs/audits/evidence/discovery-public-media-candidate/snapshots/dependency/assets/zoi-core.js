@@ -1,0 +1,348 @@
+/*!
+ * zoi-core.js — shared foundation for zoi.city pages
+ * Version 1.0.0 (2026-08-22)
+ *
+ * Classic script (no ES modules). Exposes ONE global: ZoiCore, with the
+ * helpers every page previously inlined: BASE/KEY, esc(), relTime(),
+ * toast(), theme {init,flip,current}, auth {load,save,clear,token,
+ * ensureFresh,isSignedIn}, api.rpc(fn, params, {auth:'require'|'prefer'|
+ * 'anon'}), otp {send,verify} (Supabase GoTrue email-code sign-in).
+ * Storage keys: zoi_auth, zoi_ws, zoi_theme, zoi_pending_email.
+ * Semantics (matching the existing pages):
+ *   - token considered usable when expires_at*1000 > Date.now()+5000
+ *   - ensureFresh(): fresh when expires_at*1000 > Date.now()+30000, else
+ *     POST /auth/v1/token?grant_type=refresh_token; on success stores
+ *     expires_at = floor(now/1000) + (expires_in||3600). Resolves false
+ *     (never throws) when refresh is impossible or fails.
+ *   - rpc() throws Error with the server's message (message|msg|
+ *     error_description|error|hint), falling back to the raw body.
+ * Defensive: localStorage denial never throws anywhere.
+ *
+ * Usage: <script src="/assets/zoi-core.js"></script>
+ */
+(function (global) {
+  'use strict';
+
+  var BASE = 'https://csebihpaychdkanjjsmz.supabase.co';
+  var KEY = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+  var K_AUTH = 'zoi_auth', K_THEME = 'zoi_theme', K_PENDING = 'zoi_pending_email', K_WS = 'zoi_ws';
+
+  /* ---- safe localStorage (never throws) ---- */
+  function lsGet(k){ try { return global.localStorage.getItem(k); } catch (e) { return null; } }
+  function lsSet(k, v){ try { global.localStorage.setItem(k, v); } catch (e) {} }
+  function lsDel(k){ try { global.localStorage.removeItem(k); } catch (e) {} }
+
+  /* ---- pure helpers ---- */
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+    });
+  }
+
+  function relTime(iso){
+    if (!iso) return '';
+    var d = (Date.now() - new Date(iso).getTime()) / 1000;
+    if (d < 60) return 'just now';
+    if (d < 3600) return Math.floor(d / 60) + 'm';
+    if (d < 86400) return Math.floor(d / 3600) + 'h';
+    if (d < 604800) return Math.floor(d / 86400) + 'd';
+    return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  /* ---- toast (creates its own element if the page has none) ---- */
+  var _toastTimer = null;
+  function toast(msg, mountId){
+    var doc = global.document; if (!doc) return;
+    var t = doc.getElementById(mountId || 'toast');
+    if (!t) {
+      t = doc.createElement('div');
+      t.id = mountId || 'toast'; t.className = 'toast'; t._zoiOwned = true;
+      t.style.cssText = 'position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#10314f;color:#fff;padding:10px 18px;border-radius:10px;font:13px/1.4 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.25);opacity:0;transition:opacity .25s;z-index:9999;pointer-events:none;max-width:88vw';
+      if (doc.body) doc.body.appendChild(t);
+    }
+    t.textContent = String(msg == null ? '' : msg);
+    t.classList.add('show');
+    if (t._zoiOwned) t.style.opacity = '1';
+    clearTimeout(_toastTimer);
+    _toastTimer = setTimeout(function () {
+      t.classList.remove('show');
+      if (t._zoiOwned) t.style.opacity = '0';
+    }, 2600);
+  }
+
+  /* ---- theme (data-theme attr + zoi_theme key) ---- */
+  var theme = {
+    init: function (def) {
+      var t = lsGet(K_THEME) || def || 'dark';
+      try { global.document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+      return t;
+    },
+    current: function () {
+      var t = null;
+      try { t = global.document.documentElement.getAttribute('data-theme'); } catch (e) {}
+      return t || lsGet(K_THEME) || 'dark';
+    },
+    flip: function () {
+      var t = theme.current() === 'light' ? 'dark' : 'light';
+      try { global.document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+      lsSet(K_THEME, t);
+      return t;
+    }
+  };
+
+  /* Read the whole API response within one deadline; no mutation retries. */
+  function request(url, options) {
+    var controller = new AbortController();
+    var timer = setTimeout(function(){ controller.abort(); }, 15000);
+    return global.fetch(url, Object.assign({}, options, {signal:controller.signal})).then(function(response){
+      return response.text().then(function(body){
+        return {ok:response.ok,status:response.status,
+          text:function(){return Promise.resolve(body);},
+          json:function(){return Promise.resolve().then(function(){return JSON.parse(body);});}};
+      });
+    }).catch(function(error){
+      if(controller.signal.aborted){var timeout=new Error('The service took too long. Please try again.');timeout.code='REQUEST_TIMEOUT';throw timeout;}
+      throw error;
+    }).finally(function(){clearTimeout(timer);});
+  }
+
+  /* ---- auth session {access_token, refresh_token, expires_at, email} ---- */
+  var _auth = null, _loaded = false, _authVersion = 0, _sessionEpoch = 0, _authStorage = null, _refreshPromise = null;
+  function authLoad(){
+    var previous = _auth, wasLoaded = _loaded, next = null;
+    var raw = lsGet(K_AUTH); _authStorage = raw;
+    if (raw) { try { var parsed = JSON.parse(raw); if (parsed && parsed.access_token) next = parsed; } catch (e) {} }
+    if (wasLoaded && JSON.stringify(previous) !== JSON.stringify(next)) { _authVersion++; if(!sameAuthSession(previous,next))_sessionEpoch++; }
+    _auth = next; _loaded = true;
+    return _auth;
+  }
+  function cur(){ if(_loaded && lsGet(K_AUTH)!==_authStorage)authLoad();return _loaded ? _auth : authLoad(); }
+  function authClaims(a){
+    try{var claims=JSON.parse(global.atob(a.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));return claims && typeof claims==='object' && !Array.isArray(claims) ? claims : {};}catch(_){return {};}
+  }
+  function authActor(a){
+    var stored=a && a.user_id ? String(a.user_id).toLowerCase() : '', subject=authClaims(a).sub;
+    subject=typeof subject==='string'?subject.toLowerCase():'';
+    return stored && subject && stored!==subject ? '' : subject || stored;
+  }
+  function sameAuthSession(a,b){
+    var actor=authActor(a), session=authClaims(a).session_id;
+    return !!actor && actor===authActor(b) && typeof session==='string' && !!session && session===authClaims(b).session_id;
+  }
+  function storeAuth(a, refreshed){
+    if(!refreshed || !authActor(_auth) || authActor(_auth)!==authActor(a) || (authClaims(_auth).session_id || '') !== (authClaims(a).session_id || '')) _sessionEpoch++;
+    _authVersion++;
+    _auth = a || null; _loaded = true;
+    if (a) lsSet(K_AUTH, JSON.stringify(a)); else lsDel(K_AUTH);
+    _authStorage = lsGet(K_AUTH);
+    // Identity-only notification; never expose session tokens in event detail.
+    try { global.dispatchEvent(new global.CustomEvent('zoi:auth-change')); } catch (_) {}
+    return _auth;
+  }
+  function authSave(a){return storeAuth(a,false);}
+  if(global.addEventListener)global.addEventListener('storage',function(event){
+    if(event.key === K_AUTH || event.key === null){
+      // A storage event is an external transition even if a rapid logout/login
+      // has restored an identical final snapshot before this listener runs.
+      var before=null,after=null;
+      try{before=JSON.parse(event.oldValue);after=JSON.parse(event.newValue);}catch(_){}
+      _authVersion++; if(!sameAuthSession(before,after))_sessionEpoch++; authLoad();
+      try { global.dispatchEvent(new global.CustomEvent('zoi:auth-change')); } catch (_) {}
+    }
+  });
+  function authClear(){ authSave(null); }
+  function token(){
+    var a = cur();
+    if (a && a.access_token && a.expires_at && Number(a.expires_at) * 1000 > Date.now() + 5000) return a.access_token;
+    return null;
+  }
+  function isSignedIn(){ return !!token(); }
+  function ensureFresh(){
+    var a = cur();
+    if (!a || !a.access_token) return Promise.resolve(false);
+    if (Number(a.expires_at) * 1000 > Date.now() + 30000) return Promise.resolve(true);
+    if (!a.refresh_token) return Promise.resolve(false);
+    if (_refreshPromise) return _refreshPromise;
+    var version = _authVersion;
+    _refreshPromise = request(BASE + '/auth/v1/token?grant_type=refresh_token', {
+      method:'POST', headers:{apikey:KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({refresh_token:a.refresh_token})
+    }).then(function(response){
+      return response.json().then(function(j){
+        cur();
+        if(version !== _authVersion) return false;
+        if(response.ok && j && typeof j.access_token === 'string' && j.access_token){
+          var refreshedSession = {access_token:j.access_token,refresh_token:j.refresh_token||a.refresh_token,
+            expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),
+            email:(j.user&&j.user.email)||a.email||null,user_id:(j.user&&j.user.id)||a.user_id||null};
+          if(!authActor(a) || authActor(a)!==authActor(refreshedSession) || (authClaims(a).session_id||'')!==(authClaims(refreshedSession).session_id||''))return false;
+          storeAuth(refreshedSession,true);
+          return true;
+        }
+        if(response.status===400 || response.status===401 || response.status===403) authClear();
+        return false;
+      });
+    }).catch(function(){return false;}).finally(function(){_refreshPromise=null;});
+    return _refreshPromise;
+  }
+  function signOut(){
+    var a=cur(), tk=a&&a.access_token;
+    authClear(); lsDel(K_PENDING); lsDel(K_WS);
+    if(!tk) return Promise.resolve();
+    return request(BASE+'/auth/v1/logout?scope=local',{method:'POST',headers:{apikey:KEY,Authorization:'Bearer '+tk}})
+      .then(function(r){if(!r.ok) throw new Error('Signed out on this device; server revocation was not confirmed.');});
+  }
+
+  /* ---- RPC: POST /rest/v1/rpc/<fn> ---- */
+  function errMsg(txt, status){
+    var m = '';
+    try { var j = JSON.parse(txt); m = (j && (j.message || j.msg || j.error_description || j.error || j.hint)) || ''; } catch (e) {}
+    return m || txt || ('Request failed (' + status + ')');
+  }
+  function rpc(fn, params, opts){
+    var mode = (opts && opts.auth) || 'prefer';
+    var initialToken = mode === 'anon' ? null : token();
+    var requestEpoch = _sessionEpoch, protectedRequest = mode === 'require' || !!initialToken;
+    function checkSession(){if(lsGet(K_AUTH)!==_authStorage)authLoad();if(protectedRequest && requestEpoch !== _sessionEpoch)throw new Error('Your session changed. Reload this view to check the result.');}
+    var p;
+    if (mode === 'require') {
+      p = ensureFresh().then(function (ok) {
+        checkSession();
+        if (!ok) throw new Error('Please sign in.');
+        return cur().access_token;
+      });
+    } else if (mode === 'anon') {
+      p = Promise.resolve(null);
+    } else {
+      p = Promise.resolve(initialToken);
+    }
+    return p.then(function (tk) {
+      checkSession();
+      return request(BASE + '/rest/v1/rpc/' + fn, {
+        method: 'POST',
+        headers: { apikey: KEY, Authorization: 'Bearer ' + (tk || KEY), 'Content-Type': 'application/json' },
+        body: JSON.stringify(params || {})
+      });
+    }).then(function (r) {
+      return r.text().then(function (t) {
+        checkSession();
+        if (!r.ok) {var error=new Error(errMsg(t,r.status));error.status=r.status;throw error;}
+        var result=t?JSON.parse(t):null;
+        if(result && (result.error || result.ok===false)) throw new Error(String(result.error||result.message||'The request was not completed.'));
+        return result;
+      });
+    });
+  }
+
+  /* ---- OTP sign-in (email 6-digit code) ---- */
+  var otp = {
+    send: function (email) {
+      email = String(email || '').trim();
+      return request(BASE + '/auth/v1/otp', {
+        method: 'POST',
+        headers: { apikey: KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, create_user: true })
+      }).then(function (r) {
+        if (r.ok) { lsSet(K_PENDING, email); return true; }
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          throw new Error(j.msg || j.error_description || j.error || j.message || 'Could not send the code.');
+        });
+      });
+    },
+    verify: function (email, code) {
+      var version = _authVersion;
+      email = String(email || lsGet(K_PENDING) || '').trim();
+      return request(BASE + '/auth/v1/verify', {
+        method: 'POST',
+        headers: { apikey: KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'email', email: email, token: String(code == null ? '' : code).trim() })
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, body: j }; });
+      }).then(function (x) {
+        var j = x.body || {};
+        if (!x.ok || !j.access_token) throw new Error(j.msg || j.error_description || j.error || j.message || 'Wrong or expired code.');
+        var sess = {
+          access_token: j.access_token,
+          refresh_token: j.refresh_token || null,
+          expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600),
+          email: email,
+          user_id: (j.user && j.user.id) || null
+        };
+        cur();
+        if(version !== _authVersion) throw new Error('Sign-in was cancelled. Please try again.');
+        authSave(sess);
+        lsDel(K_PENDING);
+        return sess;
+      });
+    }
+  };
+
+  /* ---- Modal Focus Trap (Accessibility Helper) ---- */
+  var _activeFocusTrap = null;
+  function trapFocus(container) {
+    if (!container) return;
+    releaseFocus();
+    var focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+    if (!focusables.length) return;
+    var first = focusables[0], last = focusables[focusables.length - 1];
+    first.focus();
+    function handleTab(e) {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey) {
+        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+      } else {
+        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+    }
+    container.addEventListener('keydown', handleTab);
+    _activeFocusTrap = { container: container, handler: handleTab };
+  }
+  function releaseFocus() {
+    if (_activeFocusTrap && _activeFocusTrap.container && _activeFocusTrap.handler) {
+      _activeFocusTrap.container.removeEventListener('keydown', _activeFocusTrap.handler);
+      _activeFocusTrap = null;
+    }
+  }
+
+  /* ---- Rate Limiting Helper (Abuse Guard) ---- */
+  var _rateLimitStore = {};
+  function checkRateLimit(key, maxCalls, windowMs) {
+    key = String(key || 'default');
+    maxCalls = maxCalls || 5;
+    windowMs = windowMs || 60000;
+    var now = Date.now();
+    if (!_rateLimitStore[key]) _rateLimitStore[key] = [];
+    _rateLimitStore[key] = _rateLimitStore[key].filter(function(t) { return now - t < windowMs; });
+    if (_rateLimitStore[key].length >= maxCalls) return false;
+    _rateLimitStore[key].push(now);
+    return true;
+  }
+
+  var ZoiCore = {
+    version: '1.0.0',
+    BASE: BASE,
+    KEY: KEY,
+    keys: { auth: K_AUTH, theme: K_THEME, pendingEmail: K_PENDING, workspace: K_WS },
+    esc: esc,
+    relTime: relTime,
+    toast: toast,
+    theme: theme,
+    auth: { load: authLoad, save: authSave, clear: authClear, signOut: signOut, token: token, ensureFresh: ensureFresh, isSignedIn: isSignedIn },
+    api: { rpc: rpc },
+    otp: otp,
+    trapFocus: trapFocus,
+    releaseFocus: releaseFocus,
+    checkRateLimit: checkRateLimit
+  };
+
+  global.ZoiCore = ZoiCore;
+})(typeof window !== 'undefined' ? window : typeof globalThis !== 'undefined' ? globalThis : this);
+
+/* Shared source-bound identity; an unconfigured source preserves existing marks. */
+(function(){
+ if(typeof window==='undefined'||typeof document==='undefined')return;
+ if(window.__zoiIdentityBoot)return;
+ window.__zoiIdentityBoot=true;
+ function apply(){import('/assets/brand/site-identity.mjs?v=20260930').then(function(m){return m.applySiteIdentity();}).catch(function(){});}
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply,{once:true});else apply();
+})();

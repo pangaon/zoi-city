@@ -1,0 +1,559 @@
+import {withHomeNavigation} from './_home-navigation.js';
+import {createPublicReadCoalescer} from './_public-read-coalescer.js';
+import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
+import {phoneHref} from '../assets/homes/phone.mjs';
+import {readEntityWithRecovery} from './_public-entity-read.js';
+import {renderHospitalityHome} from './_hospitality-home.js';
+import {withMonasteryNetwork} from './_monastery-network.js';
+import {withPublicOwnerMedia} from './_owner-media.js';
+import {publishedHomeDesign} from './_home-design.js';
+import {profileMedia} from './_profile-media.js';
+import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
+import {renderChurchHome} from './_church-home.js';
+import {renderRestaurantHome} from './_restaurant-home.js';
+import {renderCreatorCanonicalHome} from './_creator-home.js';
+import {renderEventCanonicalHome} from './_event-home.js';
+import {renderMusicHome} from './_music-home.js';
+import {renderBakeryHome} from './_bakery-home.js';
+import {renderProfessionalHome} from './_professional-home.js';
+import {renderHealthHome} from './_health-home.js';
+import {renderSocietyHome} from './_society-home.js';
+import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
+
+// Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
+const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
+const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+const SITE = 'https://www.zoi.city';
+const coalescePublicRead=createPublicReadCoalescer();
+function publicRead(fn,body,timeoutMs,recovery=false){
+  // This handler always reads anonymously using the fixed public key, never request cookies/JWTs.
+  if(!['home_entity','seo_related','listing_completeness'].includes(fn))throw Error('Unsupported public projection');
+  const key=JSON.stringify([SUPA,fn,body,timeoutMs,recovery?'transient-once-100ms':'none']);
+  return coalescePublicRead(key,()=>recovery?readEntityWithRecovery(()=>rpc(fn,body,timeoutMs)):rpc(fn,body,timeoutMs));
+}
+
+
+async function rpc(fn, body, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
+      method: 'POST', headers: {apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},
+      body: JSON.stringify(body || {}), signal:controller.signal,
+    });
+    if (!r.ok) {
+      const error = new Error('Public data is temporarily unavailable');
+      error.transientPublicRead = r.status === 502;
+      error.publicReadReason = 'http_' + r.status;
+      throw error;
+    }
+    return await r.json();
+  } catch (error) {
+    if (error?.name === 'TypeError') {
+      error.transientPublicRead = true;
+      error.publicReadReason = 'network';
+    }
+    if (error?.name === 'AbortError') error.publicReadReason = 'timeout';
+    throw error;
+  } finally { clearTimeout(timer); }
+}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];});}
+function attr(s){return esc(s);}
+function safeActionHref(value){
+  if(typeof value!=='string'||/[\x00-\x20\\]/.test(value))return false;
+  if(/^\/(?!\/)/.test(value))return true;
+  if(value.startsWith('tel:')&&phoneHref(value.slice(4))===value||/^mailto:[^@]+@[^@]+$/i.test(value))return true;
+  try{const url=new URL(value);return ['https:','http:'].includes(url.protocol)&&!url.username&&!url.password;}catch{return false;}
+}
+function pretty(slug){return (slug||'').replace(/-/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function cleanPublicText(value) {
+  var text = String(value == null ? '' : value)
+    .replace(/&nbsp;/gi, ' ').replace(/&amp;/gi, '&').replace(/&quot;/gi, '"')
+    .replace(/&#0*39;|&apos;/gi, "'").replace(/&middot;|&#183;|&bull;/gi, '·')
+    .replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  if (/^https?:\/\/\S+$/i.test(text)) return '';
+  if (/^(home|welcome|website|official website|visit the post for more|cargo\.site)$/i.test(text)) return '';
+  return text;
+}
+/* schema.org type per vertical. Collapsing five entity types into
+ * LocalBusiness was throwing away the structured data that makes these pages
+ * eligible for rich results at all. Refined by entity_type first, then by
+ * category_slug. */
+/* Public URLs never contain underscores. `travel_place` is the only offender
+ * in the taxonomy; the underscore form 301s to this. */
+function typeSlug(t){ t=String(t||'p'); return t==='travel_place' ? 'travel-place' : t; }
+
+function schemaType(e){
+  var t=String(e.entity_type||'').toLowerCase(), c=String(e.category_slug||'').toLowerCase();
+  // category wins where it is more specific than the type
+  if(/restaurant|taverna|meze|ouzer|grill|souvla|estiatorio|dining/.test(c)) return 'Restaurant';
+  if(/baker|patisserie|zaxarop|pastry/.test(c)) return 'Bakery';
+  if(/cafe|coffee|kafeneio/.test(c)) return 'CafeOrCoffeeShop';
+  if(/hotel|resort|guesthouse/.test(c)) return 'Hotel';
+  if(/villa|rooms|apartment|accommodation/.test(c)) return 'LodgingBusiness';
+  if(/law|legal|attorney|solicitor|barrister/.test(c)) return 'Attorney';
+  if(/dental|dentist/.test(c)) return 'Dentist';
+  if(/doctor|medical|clinic|physio|health/.test(c)) return 'MedicalClinic';
+  if(/account|tax|book-?keep/.test(c)) return 'AccountingService';
+  if(/real-?estate|realtor/.test(c)) return 'RealEstateAgent';
+  if(/insur/.test(c)) return 'InsuranceAgency';
+  if(/financ|mortgage|invest/.test(c)) return 'FinancialService';
+  if(/architect|engineer/.test(c)) return 'ProfessionalService';
+  if(/jewel/.test(c)) return 'JewelryStore';
+  if(/wine|liquor|spirits/.test(c)) return 'LiquorStore';
+  if(/market|grocer|deli|butcher|fish|olive|honey|specialty|food|import/.test(c)) return 'GroceryStore';
+  if(/music|singer|band|bouzouki|composer|\bdj\b|djs/.test(c)) return 'MusicGroup';
+  if(/radio|podcast|broadcast/.test(c)) return 'RadioStation';
+  // then the entity type
+  if(t==='church') return 'Church';
+  if(t==='school') return 'School';
+  if(t==='event') return /festival|panigiri/.test(c) ? 'Festival' : 'Event';
+  if(t==='organization') return 'NGO';
+  if(t==='venue') return 'EventVenue';
+  if(t==='sports') return 'SportsTeam';
+  if(t==='travel_place') return 'TouristAttraction';
+  if(t==='vendor') return 'Store';
+  if(t==='artist') return 'MusicGroup';
+  if(t==='creator') return 'Person';
+  if(t==='professional') return 'ProfessionalService';
+  return 'LocalBusiness';
+}
+
+/* Reviews and ratings are a hard NO for whole verticals, not a preference:
+ * AHPRA bans patient testimonials in health advertising (AU/NZ), legal
+ * advertising rules bite on outcome-implying testimonials, and the financial
+ * regimes require conflict disclosure we do not have. Enforced in the
+ * renderer so no data path can turn them on. */
+function reviewsAllowed(e){
+  var t=String(e.entity_type||'').toLowerCase(), c=String(e.category_slug||'').toLowerCase();
+  if(/dental|dentist|doctor|medical|clinic|physio|health|pharmac/.test(c)) return false;
+  if(/law|legal|attorney|solicitor|barrister/.test(c)) return false;
+  if(/insur|financ|mortgage|invest|advis/.test(c)) return false;
+  if(t==='church') return false;
+  return true;
+}
+
+function socialArr(e){
+  var sl=resolveSocialLinks(e,profileOf(e)), a=[]; if(e.website) a.push(e.website);
+  ['instagram','facebook','tiktok','youtube','twitter','x','linkedin','spotify','soundcloud','telegram','whatsapp'].forEach(function(k){ if(sl[k]){ var v=sl[k]; if(/^https?:/.test(v)) a.push(v); } });
+  return a;
+}
+function jsonld(e,url){
+  var o={ '@context':'https://schema.org', '@type':schemaType(e), name:e.name, url:url };
+  var picked = verticalFor(e), profile = profileForVertical(picked.v, profileOf(e), e);
+  var description = cleanPublicText(e.description || profile.about || profile.description);
+  if(description) o.description=description;
+  if(e.address||e.city){
+    o.address={ '@type':'PostalAddress' };
+    if(e.address) o.address.streetAddress=e.address;
+    if(e.city) o.address.addressLocality=e.city;
+    if(e.country) o.address.addressCountry=e.country;
+  }
+  if(e.latitude!=null&&e.longitude!=null) o.geo={ '@type':'GeoCoordinates', latitude:e.latitude, longitude:e.longitude };
+  if(e.phone) o.telephone=e.phone;
+  if(e.price_range) o.priceRange=e.price_range;
+  if(reviewsAllowed(e) && e.rating!=null && e.rating_count!=null && e.rating_count>0){
+    o.aggregateRating={ '@type':'AggregateRating', ratingValue:e.rating, reviewCount:e.rating_count };
+  }
+  // Languages are the diaspora conversion mechanism — a Greek-speaking lawyer is
+  // *why* someone picks this listing. First-class, not a chip.
+  var langs=Array.isArray(profile.languages)?profile.languages:[];
+  if(langs.length){
+    o.knowsLanguage=langs.map(function(l){
+      if(typeof l==='string') return { '@type':'Language', name:l };
+      return { '@type':'Language', name:String(l.name||l.code||''), alternateName:String(l.code||'') };
+    }).filter(function(l){ return l.name; });
+  }
+  var areas=Array.isArray(profile.service_areas)?profile.service_areas:[];
+  if(areas.length){
+    o.areaServed=areas.map(function(a){ return { '@type':'Place', name:String(a) }; });
+  }
+  var sa=socialArr(e); if(sa.length) o.sameAs=sa;
+  return JSON.stringify(o).replace(/</g,'\\u003c');
+}
+function completionLabel(key, e) {
+  var c = String(e.category_slug || '').toLowerCase();
+  var labels = {
+    description: 'a clear introduction',
+    image: 'a real image or logo',
+    contact: 'a direct contact method',
+    location: 'a complete location',
+    hours: 'current opening hours',
+    menu: /restaurant|bakery|cafe|food|grocery/.test(c) ? 'an interactive menu' : 'service details',
+    services: 'a service list',
+    booking: /event|venue|hotel|travel/.test(c) ? 'booking or reservation details' : 'an enquiry path',
+  };
+  return labels[key] || key;
+}
+
+function completionPanel(e, completeness) {
+  if (!completeness || completeness.complete || !Array.isArray(completeness.missing) || !completeness.missing.length) return '';
+  var missing = completeness.missing.slice(0, 5).map(function(k){ return '<li>'+esc(completionLabel(k, e))+'</li>'; }).join('');
+  var checked = completeness.checked_at ? ' Last checked '+esc(String(completeness.checked_at)) + '.' : '';
+  return '<details class="profile-progress"><summary>About this page</summary>'
+    + '<div class="progress-head"><div><span class="ctag">In progress</span>'
+    + '<h2>Information available</h2>'
+    + '<p>Get in touch for more information.'+checked+'</p></div>'
+    + '<strong>'+esc(String(completeness.score || 0))+'%</strong></div>'
+    + '<p class="progress-next">Still needed</p><ul class="progress-list">'+missing+'</ul>'
+    + '<a class="btn btn-ghost btn-xs" href="/explore?q='+encodeURIComponent(e.name || '')+'">Find related places and people</a></details>';
+}
+
+function page(e, related, completeness){
+  var slug = e.canonical_slug || e.slug;
+  var url = SITE + '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' + encodeURIComponent(slug);
+  var picked = verticalFor(e), V = picked.v, sub = picked.sub;
+  var p = profileForVertical(V, profileOf(e), e);
+  var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
+  var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
+  var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
+  var publicDescription = cleanPublicText(e.description || p.about || p.description);
+  var desc = cleanPublicText(e.meta_description) || publicDescription || (e.name + (e.city?(' in '+e.city):'') + ' — connect with the Greek world on Zoi.');
+  var destination = e.address ? [e.address,e.city,e.country].filter(Boolean).join(', ') :
+    ['rooftop','entrance','building','parcel','exact'].includes(String(e.geo_precision||'').toLowerCase()) && Number.isFinite(Number(e.latitude)) && Number.isFinite(Number(e.longitude)) && e.latitude!=null && e.longitude!=null
+      ? e.latitude+','+e.longitude : e.city ? [e.name,e.city,e.country].filter(Boolean).join(', ') : null;
+  if (['music','creator'].includes(V.key) && !e.address) destination=null;
+  var mapHref = destination ? 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination) : null;
+
+  /* ---- primary actions: the vertical's own, then the universally real ones ---- */
+  var acts = [];
+  if (/^\/book\/\?listing=[0-9a-f-]{36}$/i.test(e.booking_url||'')) acts.push({label:'Book on Zoi',href:e.booking_url,icon:IC.cal,primary:true});
+  if (/^\/inquiries\/\?listing=[0-9a-f-]{36}$/i.test(e.inquiry_url||'')) acts.push({label:'Send an enquiry',href:e.inquiry_url,icon:IC.mail});
+  if (/^\/organization-calendar\/\?listing=[0-9a-f-]{36}$/i.test(e.calendar_url||'')) acts.push({label:'Organization calendar',href:e.calendar_url,icon:IC.cal});
+  if (/^\/festival\/\?event=[0-9a-f-]{36}$/i.test(e.offer_url||'')) acts.push({label:'Sponsorships & vendor places',href:e.offer_url,icon:IC.cal});
+  if (/^\/groups\/\?listing=[0-9a-f-]{36}$/i.test(e.group_url||'')) acts.push({label:'Join this group',href:e.group_url,icon:IC.people||IC.cal});
+  if (/^\/volunteer\/\?workspace=[0-9a-f-]{36}$/i.test(e.volunteer_url||'')) acts.push({label:'Volunteer opportunities',href:e.volunteer_url,icon:IC.cal});
+  (V.actions ? V.actions(e, p) : []).forEach(function(a){ acts.push(a); });
+  var contactPhone = e.phone || p.phone;
+  if(phoneHref(contactPhone)) acts.push({ label:'Call', href: phoneHref(contactPhone), icon: IC.phone });
+  if(e.website) acts.push({ label:'Website', href: e.website, icon: IC.globe, external:true });
+  if(mapHref)   acts.push({ label:'Directions', href: mapHref, icon: IC.pin, external:true });
+  /* Contact was simply absent. An email is the one action a visitor wants that
+     does not need a phone call, and 40% of enriched listings have one. */
+  var contactEmail = e.email || (p && p.email) || '';
+  if(contactEmail && /.+@.+\..+/.test(contactEmail)) {
+    acts.push({ label:'Contact', href:'mailto:'+contactEmail
+      + '?subject=' + encodeURIComponent('Enquiry via Zoi \u2014 ' + (e.name||'')),
+      icon: IC.mail || IC.globe });
+  }
+  acts=acts.filter(function(a){return safeActionHref(a.href);});
+  var actHtml = acts.length ? '<div class="acts">' + acts.map(function(a,i){
+      var cls = (a.primary || (i===0 && !acts.some(function(x){return x.primary;}))) ? 'btn btn-primary' : 'btn btn-ghost';
+      return '<a class="'+cls+'" href="'+attr(a.href)+'"'+(a.external?' rel="nofollow noopener" target="_blank"':'')+'>'+
+             (a.icon?icon(a.icon):'')+esc(a.label)+'</a>';
+    }).join('') + '</div>' : '';
+
+  /* ---- contact card ---- */
+  var rows=[];
+
+/* Brand marks, as paths rather than an icon font or a sprite sheet: no extra
+   request, no flash of missing glyph, and they inherit currentColor so they work
+   in all three themes. */
+var SOCIAL_ICON = {
+  instagram:'<rect x="2.5" y="2.5" width="19" height="19" rx="5.5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none"/>',
+  facebook:'<path d="M14.5 8.5h2.2V5.4h-2.6c-2.4 0-3.9 1.5-3.9 4v2.1H8v3.1h2.2V22h3.3v-7.4h2.3l.4-3.1h-2.7V9.7c0-.8.3-1.2 1-1.2Z"/>',
+  x:'<path d="M4 4l7.1 9.2L4.3 20h2.2l5.5-5.7 4.3 5.7H20l-7.3-9.5L19.5 4h-2.2l-5.1 5.3L8 4H4Z"/>',
+  youtube:'<rect x="2.5" y="5.5" width="19" height="13" rx="4"/><path d="M10.4 9.6l5 2.4-5 2.4V9.6Z" fill="currentColor" stroke="none"/>',
+  linkedin:'<rect x="2.5" y="2.5" width="19" height="19" rx="3"/><path d="M7 10v7M7 7v.01M11.5 17v-4a2.2 2.2 0 0 1 4.4 0v4"/>',
+  tiktok:'<path d="M14.4 3v9.6a3.2 3.2 0 1 1-3.2-3.2c.3 0 .6 0 .9.1"/><path d="M14.4 3c.4 2.3 2 3.9 4.3 4.1"/>',
+  spotify:'<circle cx="12" cy="12" r="9.3"/><path d="M7.6 9.4c2.9-.8 6-.5 8.6 1M8.2 12.4c2.3-.6 4.8-.4 6.9.8M8.8 15.2c1.8-.4 3.6-.3 5.2.6"/>',
+  soundcloud:'<path d="M4 15v-4M7 16V9M10 16V7.5M13 16v-6"/><path d="M16 16h3.2a2.4 2.4 0 0 0 0-4.8c-.2 0-.4 0-.6.1A4 4 0 0 0 13 9.4V16h3Z"/>',
+  telegram:'<path d="M21 4L2.8 11.2l5 1.6L19.4 6 9.7 14.6l-.2 4.6 2.9-2.6 4.4 3.2L21 4Z"/>',
+  whatsapp:'<path d="M20.5 11.7a8.5 8.5 0 0 1-12.6 7.4L3.5 20.5l1.4-4.3A8.5 8.5 0 1 1 20.5 11.7Z"/><path d="M8.9 8.6c.6-.2 1 .1 1.2.6l.5 1.2c.1.3 0 .6-.2.8l-.4.4c.5 1 1.3 1.8 2.3 2.3l.4-.4c.2-.2.5-.3.8-.2l1.2.5c.5.2.8.6.6 1.2-.2.7-1 1.2-1.8 1.1-2.6-.3-5-2.7-5.3-5.3-.1-.8.4-1.6 1.1-1.8"/>'
+};
+function socialIcon(k){
+  var d = SOCIAL_ICON[k];
+  if(!d) return '';
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" '
+    + 'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+d+'</svg>';
+}
+  function row(label, value){ rows.push('<div class="row"><span>'+esc(label)+'</span><b>'+value+'</b></div>'); }
+  if(e.address) row('Address', esc(e.address));
+  else if(e.city) row('Location', esc(e.city)+(e.country?(', '+esc(e.country)):''));
+  if(e.place_path) row('Area', esc(e.place_path));
+  /* Phone stays — it is worth reading as text, and it is what a visitor copies.
+     Website does NOT: there is a Website button directly above, and repeating a
+     URL in a table row is the 2006 pattern that made this page look like a spec
+     sheet. Category is already the eyebrow above the title. */
+  if(contactPhone) row('Phone', phoneHref(contactPhone)?'<a href="'+attr(phoneHref(contactPhone))+'">'+esc(contactPhone)+'</a>':esc(contactPhone));
+  if(e.price_range) row('Price', esc(e.price_range));
+  /* social_links is empty on every listing in the directory today, so fall back
+     to whatever the business links to from its own site. Owner-set values still
+     win: the column is merged over the enriched set, not under it. */
+  /* Owner photo first, then whatever the business publishes on its own site.
+     https only — a mixed-content image would be blocked and leave a hole. */
+  var media = profileMedia(e,p);
+  var coverImg = media.hero || '';
+  var logoImg = media.logo || '';
+  var heroPosition = ({top:'top',bottom:'bottom',left:'left',right:'right',center:'center'})[p && p.hero_position] || 'center';
+  var logoFit = p && p.logo_fit === 'cover' ? 'cover' : 'contain';
+  var galleryImgs = media.gallery;
+
+  var sl = resolveSocialLinks(e,p);
+  var socLinks=[], seenSoc={};
+  [['instagram','Instagram'],['facebook','Facebook'],['tiktok','TikTok'],['youtube','YouTube'],
+   ['twitter','X'],['x','X'],['linkedin','LinkedIn'],['spotify','Spotify'],
+   ['soundcloud','SoundCloud'],['telegram','Telegram'],['whatsapp','WhatsApp']].forEach(function(pp){
+    var v=sl[pp[0]]; if(!v) return;
+    if(seenSoc[pp[1]]) return; seenSoc[pp[1]]=1;            // X appears under two keys
+    var href=/^https?:/.test(v)?v:('https://'+pp[0]+'.com/'+(''+v).replace(/^@/,''));
+    var ic=socialIcon(pp[0]);
+    socLinks.push('<a class="socbtn" href="'+attr(href)+'" rel="nofollow noopener" target="_blank" '
+      + 'title="'+attr(pp[1])+'" aria-label="'+attr(pp[1])+'">'
+      + (ic || '<span>'+esc(pp[1])+'</span>') + '</a>');
+  });
+  /* A row of real marks rather than a text list. Each keeps its accessible name,
+     so a screen reader still hears "Instagram", and the visible label is the icon. */
+  var socHtml = socLinks.length
+    ? '<div class="socbar" aria-label="Social channels">' + socLinks.join('') + '</div>'
+    : '';
+  /* Things the business itself links to. These are the actions a visitor came
+     for, and none of them existed on the page before. */
+  [['booking_url','Book'],['menu_url','Menu'],['order_url','Order'],['give_url','Give']].forEach(function(pp){
+    var v = p && p[pp[0]];
+    if (v && /^https?:/.test(v)) {
+      row(pp[1], '<a href="'+attr(v)+'" rel="nofollow noopener" target="_blank">'+
+        esc(String(v).replace(/^https?:\/\//,'').slice(0,48))+'</a>');
+    }
+  });
+
+  /* ---- the vertical's own content, real data only ---- */
+  var verticalHtml = V.sections ? V.sections(e, p) : '';
+  var progressHtml = completionPanel(e, completeness);
+  /* If anything on this page was read from their website rather than typed by
+     them, say so plainly, once, and offer the fix. */
+  var provHtml = provenanceNote(p);
+
+  /* ---- claim panel: names exactly what THIS kind of listing unlocks ---- */
+  var unlock = (V.unlock||[]).map(function(u){
+    return '<li><b>'+esc(u[0])+'</b><span>'+esc(u[1])+'</span></li>';
+  }).join('');
+  var claim = '<details class="home-manage"><summary>Manage '+esc(e.name)+' on Zoi</summary><p>Bring your services, updates and customer connections together in your own home on Zoi.</p><a class="btn btn-primary" href="/explore?q='+encodeURIComponent(e.name||'')+'">Find your page to claim or manage it</a></details>';
+
+
+  /* ---- related, linked by slug ---- */
+  var rel='';
+  if(related && related.length){
+    rel='<section class="sec"><h2>'+icon(IC.pin,'sech')+'Explore more of the Greek world'+'</h2><div class="relgrid">';
+    related.forEach(function(r){
+      if(!r.slug) return;
+      var rh = SITE + '/' + encodeURIComponent(typeSlug(r.entity_type)) + '/' + encodeURIComponent(r.canonical_slug || r.slug);
+      rel+='<a class="relcard" href="'+attr(rh)+'"><b>'+esc(r.name)+'</b>'+(r.city?('<span>'+esc(r.city)+'</span>'):'')+'</a>';
+    });
+    rel+='</div></section>';
+  }
+
+  var NAV = [['/explore','Discover'],['/community','Community'],['/tickets','Events'],['/shop/','Marketplace'],['/business','For Business']];
+  var nav = NAV.map(function(n){ return '<a href="'+n[0]+'">'+n[1]+'</a>'; }).join('');
+  var MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>';
+
+  return '<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8">'
+   +'<meta name="viewport" content="width=device-width, initial-scale=1">'
+   +'<meta name="color-scheme" content="dark light">'
+   +'<title>'+esc(title)+'</title>'
+   +'<meta name="description" content="'+attr(desc)+'">'
+   +'<link rel="canonical" href="'+attr(url)+'">'
+   +'<meta property="og:type" content="business.business"><meta property="og:site_name" content="Zoi">'
+   +'<meta property="og:title" content="'+attr(title)+'"><meta property="og:description" content="'+attr(desc)+'"><meta property="og:url" content="'+attr(url)+'">'
+   +'<meta name="twitter:card" content="summary"><meta name="twitter:title" content="'+attr(title)+'"><meta name="twitter:description" content="'+attr(desc)+'">'
+   +'<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+   +'<link rel="stylesheet" href="/assets/zoi-theme.css">'
+   +'<script type="application/ld+json">'+jsonld(e,url).replace(/</g,'\\u003c')+'</script>'
+   +'<style>'+PAGE_CSS+'</style><link rel="stylesheet" href="/assets/homes/experience.css"></head><body class="home-page">'
+   +'<header class="zoi-header"><div class="wrap zoi-bar">'
+     +'<a class="zoi-brand" href="/" aria-label="Zoi home"><span class="zoi-seal">&#918;</span><b>Zoi</b></a>'
+     +'<nav class="zoi-nav" aria-label="Zoi">'+nav+'</nav>'
+     +'<div class="zoi-actions">'
+       +'<button class="theme-btn" id="themeBtn" title="Theme &mdash; dark / light / gold" aria-label="Switch theme">'+MOON+'</button>'
+       +'<a class="btn btn-primary" id="zoiCta" href="/social">Start free</a>'
+     +'</div>'
+   +'</div></header>'
+   +'<main class="wrap home-main">'
+   +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Discover</a> &rsaquo; '
+     +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
+   +'<div class="ep-cover '+(coverImg?'has-img':'no-photo')+'" id="epCover"'
+     + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
+     + ' data-position="'+heroPosition+'"'
+     + '>' + (coverImg ? '<img id="epCoverImage" src="'+attr(coverImg)+'" alt="'+attr(e.name||'')+'" width="1600" height="600" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" style="object-position:'+heroPosition+'">' : '') + '<div class="ep-brand">'
+     + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer" style="object-fit:'+logoFit+'">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
+     + '</div></div>'
+   +'<section class="home-intro" id="about"><div class="home-heading"><span class="ep-type">'+esc(eyebrow)+'</span>'
+   +'<h1>'+esc(e.name)+'</h1>'
+   +(e.city?('<div class="ep-loc">'+icon(IC.pin)+esc(e.city)+(e.country?(', '+esc(e.country)):'')+'</div>'):'')
+   +socHtml+'</div><div class="home-connect"><p class="home-connect-label">Connect with '+esc(e.name)+'</p>'+actHtml+'</div></section>'
+   +'<nav class="home-section-nav" aria-label="Explore this home"><a href="#about">Overview</a>'+(galleryImgs.length?'<a href="#gallery">Photos</a>':'')+(verticalHtml?'<a href="#offerings">Explore more</a>':'')+(rows.length?'<a href="#contact">Contact & details</a>':'')+'</nav>'
+   +'<div class="home-content"><div class="home-story">'
+   +(publicDescription?('<section class="home-about"><h2>A little about us</h2><p class="desc">'+esc(publicDescription)+'</p></section>'):'')
+  + (galleryImgs.length ? '<section class="sec ep-gallery" id="gallery"><div class="home-section-heading"><h2>Photos from '+esc(e.name)+'</h2><span>'+galleryImgs.length+(galleryImgs.length===1?' photo':' photos')+'</span></div><div class="gal">'+galleryImgs.map(function(u,i){ return '<a href="'+attr(u)+'" data-home-photo="'+i+'" aria-label="Open photo '+(i+1)+' of '+attr(e.name)+'"><img src="'+attr(u)+'" alt="Photo from '+attr(e.name||'')+'" loading="lazy" decoding="async" referrerpolicy="no-referrer"></a>'; }).join('')+'</div></section>' : '')
+  +'<div id="offerings">'+verticalHtml+'</div></div>'
+   +'<aside class="home-details" id="contact">'+(rows.length?'<section class="card"><h2>Good to know</h2>'+rows.join('')+'</section>':'')+provHtml+claim+'</aside></div>'
+   +rel
+   +'</main>'
+   +'<script type="module" src="/assets/homes/experience.mjs"></script>'
+   +'<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">'
+     +'<span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>'
+     +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'</nav>'
+   +'</div></footer>'
+   +'<script src="/assets/zoi-emblem.js"></script>'
+   +'<script src="/assets/zoi-search.js?v=20261002-account-history"></script>'
+   +'<script>(function(){var h=document.getElementById("epCover");if(!h)return;'
+     +'var src=h.getAttribute("data-img");'
+     // A remote logo that fails to load must not leave a blank frame: fall
+     // straight through to the generated emblem.
+     +'function emblem(){if(window.ZoiEmblem){h.innerHTML=ZoiEmblem.emblem('
+       +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}}'
+     +'if(src){var im=document.getElementById("epCoverImage")||new Image();im.alt=h.getAttribute("data-alt")||"";'
+       +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
+       +'im.style.objectPosition=h.getAttribute("data-position")||"center";'
+      +'im.onload=function(){var ratio=im.naturalWidth/im.naturalHeight;if(ratio>3.2||ratio<.8||im.naturalWidth<640){h.classList.add("contained-media");im.style.objectFit="scale-down";}if(!im.parentNode)h.insertBefore(im,h.firstChild);h.classList.add("has-img");};'
+       +'im.onerror=function(){im.remove();emblem();};if(im.complete){if(im.naturalWidth)im.onload();else im.onerror();}else if(!im.src)im.src=src;}else{emblem();}'
+     +'})();</script>'
+   +'<script src="/assets/zoi-theme.js"></script>'
+   +'</body></html>';
+}
+
+var PAGE_CSS = [
+  '.wrap{max-width:920px}',
+  /* A real photograph earns the full band. A generated monogram does not — it
+     was taking 280px of vertical space to say nothing, pushing the actual
+     business below the fold. */
+  '.ep-cover{aspect-ratio:16/6;border-radius:var(--r);overflow:hidden;border:1px solid var(--line);position:relative;'
+    +'background:linear-gradient(135deg,color-mix(in oklab,var(--acc) 24%,var(--card)),var(--card2));margin:20px 0 0}',
+  '.ep-cover.has-img{aspect-ratio:16/6;background:var(--card2)}',
+  '@media (max-width:640px){.ep-cover{aspect-ratio:16/4.4}.ep-cover.has-img{aspect-ratio:4/3}}',
+  '.ep-cover svg{display:block;width:100%;height:100%}',
+  '.ep-cover img{display:block;width:100%;height:100%;object-fit:cover}',
+  '.ep-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,24,48,.78),transparent 64%),linear-gradient(0deg,rgba(5,24,48,.48),transparent 55%);pointer-events:none}',
+  '.ep-cover.contained-media>img{padding:24px;box-sizing:border-box}.ep-cover.contained-media:after{display:none}.ep-cover.contained-media .ep-brand{display:none}',
+  '.ep-brand{position:absolute;z-index:2;left:24px;bottom:22px;width:94px;height:94px;border-radius:22px;padding:10px;background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.8);box-shadow:0 18px 36px rgba(3,32,61,.28);display:grid;place-items:center}',
+  '.ep-brand img{width:100%;height:100%;object-fit:contain;border-radius:13px}',
+  '.ep-monogram{font-family:Fraunces,Georgia,serif;font-size:52px;line-height:1;color:var(--med-deep);font-weight:600}',
+  '.socbar{display:flex;gap:9px;flex-wrap:wrap;margin:14px 0 0}',
+  '.socbtn{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;'
+    +'border:1px solid var(--line);color:var(--mut);background:var(--card2);'
+    +'transition:.18s var(--ease)}',
+  '.socbtn svg{width:17px;height:17px}',
+  '.socbtn:hover{color:var(--tx);border-color:var(--line2);transform:translateY(-1px)}',
+  '.socbtn span{font-size:11px;font-weight:700}',
+  '.ep-cover.has-img{background:var(--card2)}',
+  /* One quiet line where a detail came from a website rather than its owner. */
+  '.prov{font-size:12px;color:var(--dim);line-height:1.55;margin:18px 0 0;'
+    +'padding:9px 12px;border-left:2px solid var(--line2);background:var(--card2);border-radius:0 8px 8px 0}',
+  '.prov a{color:var(--acc)}',
+  '.bc{font-size:12.5px;color:var(--dim);margin:22px 0 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center}',
+  '.bc a{color:var(--mut)}.bc a:hover{color:var(--tx)}',
+  '.ep-type{font-size:10.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-top:20px;display:block}',
+  'h1{font-size:clamp(30px,4.6vw,46px);margin:8px 0 0}',
+  '.ep-gallery{margin-top:34px}.ep-gallery .gal{grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.ep-gallery .gal img{aspect-ratio:4/3;box-shadow:0 12px 30px -20px rgba(3,32,61,.5)}',
+  '.ep-loc{color:var(--mut);font-size:14.5px;margin-top:8px;display:flex;align-items:center;gap:7px}',
+  '.ic{width:15px;height:15px;flex:none}',
+  'p.desc{font-size:16.5px;color:var(--mut);line-height:1.65;margin:16px 0 0;max-width:64ch}',
+  '.acts{display:flex;flex-wrap:wrap;gap:10px;margin:22px 0 0}',
+  '.btn-xs{padding:6px 12px;min-height:32px;font-size:12.5px}',
+  '.card{margin:22px 0 0;padding:6px 20px}',
+  '.row{display:flex;justify-content:space-between;gap:18px;padding:13px 0;border-bottom:1px solid var(--line)}',
+  '.row:last-child{border-bottom:0}.row span{color:var(--mut);font-size:13.5px;flex:none}',
+  '.row b{text-align:right;font-weight:600;font-size:14px;min-width:0;overflow-wrap:anywhere}.row b a{color:var(--acc)}',
+  /* vertical sections */
+  '.sec{margin:40px 0 0}',
+  '.sec h2{font-size:20px;margin:0 0 12px;display:flex;align-items:center;gap:9px}',
+  '.sec h2 .sech{width:18px;height:18px;color:var(--gold);flex:none}',
+  '.secsub{color:var(--mut);font-size:13px;margin:-6px 0 12px}',
+  '.secp{color:var(--mut);font-size:15px;line-height:1.65;margin:0;max-width:64ch}',
+  '.sched{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
+  '.schrow{display:grid;grid-template-columns:120px 1fr auto;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);align-items:baseline}',
+  '.schrow:last-child{border-bottom:0}',
+  '.schday{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--gold)}',
+  '.schlabel{font-size:14.5px;font-weight:600}.schlabel em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);font-weight:400;margin-top:2px}',
+  '.schtime{font-size:14px;color:var(--mut);font-variant-numeric:tabular-nums;white-space:nowrap}',
+  '@media(max-width:560px){.schrow{grid-template-columns:1fr auto}.schday{grid-column:1/-1}}',
+  '.chips{display:flex;flex-wrap:wrap;gap:8px}',
+  '.pill{font-size:13px;font-weight:600;color:var(--tx);background:var(--card);border:1px solid var(--line2);border-radius:999px;padding:7px 14px}',
+  '.ppl{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}',
+  '.pcard{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:12px 14px}',
+  '.pcard img,.pcard .pav{width:44px;height:44px;border-radius:50%;flex:none;object-fit:cover}',
+  '.pcard .pav{display:grid;place-items:center;background:var(--card2);border:1px solid var(--line2);font-family:Fraunces,Georgia,serif;font-style:italic;font-size:19px;color:var(--gold)}',
+  '.pcard b{display:block;font-size:14.5px}.pcard span{display:block;font-size:12.5px;color:var(--mut)}',
+  '.mgroup{margin:0 0 22px}.mgroup h3{font-size:13px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--gold);margin:0 0 8px}',
+  '.mitem{display:flex;justify-content:space-between;gap:16px;padding:10px 0;border-bottom:1px solid var(--line);align-items:baseline}',
+  '.mitem b{font-weight:600;font-size:15px}.mitem em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);margin-top:2px}',
+  '.mprice{font-variant-numeric:tabular-nums;color:var(--gold);font-weight:700;white-space:nowrap}',
+  '.dates{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
+  '.drow{display:grid;grid-template-columns:140px 1fr auto;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:center}',
+  '.drow:last-child{border-bottom:0}',
+  '.dwhen{font-size:12.5px;font-weight:700;color:var(--gold);font-variant-numeric:tabular-nums}',
+  '.dwhat b{font-size:14.5px;font-weight:600}.dwhat em{display:block;font-style:normal;font-size:12.5px;color:var(--mut);margin-top:2px}',
+  '@media(max-width:560px){.drow{grid-template-columns:1fr}}',
+  '.gal{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}',
+  '.gal img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line)}',
+  '.embeds{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}.embed{margin:0;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--line)}.embed iframe{display:block;width:100%;aspect-ratio:16/9;border:0}',
+  '.lit{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}',
+  '.litrow{display:grid;grid-template-columns:130px 1fr;gap:14px;padding:13px 18px;border-bottom:1px solid var(--line);align-items:baseline}',
+  '.litrow:last-child{border-bottom:0}',
+  '.litk{font-size:11.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}',
+  '.litv{font-size:14.5px;line-height:1.5}.litv b{color:var(--gold)}',
+  '@media(max-width:560px){.litrow{grid-template-columns:1fr;gap:3px}}',
+  /* claim */
+  '.claim{margin:48px 0 0;padding:22px;border-radius:var(--r);border:1px solid color-mix(in srgb, var(--gold) 34%, transparent);background:color-mix(in srgb, var(--gold) 8%, transparent)}',
+  '.claimhead{display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between}',
+  '.ctag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);border:1px solid color-mix(in srgb, var(--gold) 40%, transparent);border-radius:999px;padding:3px 9px}',
+  '.claimhead h2{font-size:22px;margin:10px 0 4px}',
+  '.claimhead p{margin:0;color:var(--mut);font-size:14.5px}',
+  '.unlock{list-style:none;padding:0;margin:22px 0 0;display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}',
+  '.unlock li{background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px}',
+  '.unlock b{display:block;font-size:14px;font-weight:700;margin-bottom:3px}',
+  '.unlock span{font-size:12.5px;color:var(--mut);line-height:1.5}',
+  '.claimfoot{margin:18px 0 0;font-size:12px;color:var(--dim)}',
+  '.profile-progress{margin:34px 0 0;padding:20px 22px;border:1px solid var(--line);border-radius:var(--r);background:var(--card2)}',
+  '.progress-head{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}',
+  '.progress-head h2{font-size:20px;margin:9px 0 4px}.progress-head p{margin:0;color:var(--mut);font-size:13px;line-height:1.5}',
+  '.progress-head strong{font-size:24px;color:var(--gold);white-space:nowrap}',
+  '.progress-next{margin:18px 0 7px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}',
+  '.progress-list{margin:0 0 16px;padding-left:20px;color:var(--mut);line-height:1.8;font-size:14px}',
+  '.relgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}',
+  '.relcard{display:flex;flex-direction:column;gap:3px;background:var(--card);border:1px solid var(--line);border-radius:var(--r-sm);padding:13px 15px;transition:.25s var(--ease)}',
+  '.relcard:hover{border-color:var(--acc);transform:translateY(-2px)}',
+  '.relcard b{font-size:14px;font-weight:600;letter-spacing:-.01em}.relcard span{font-size:12px;color:var(--dim)}'
+].join('');
+// ESM: package.json sets "type":"module", so a CommonJS export leaves this
+// function with no handler at all — which is what made every listing page 500.
+export default async function handler(req, res) {
+  var slug = (req.query && req.query.slug ? String(req.query.slug) : '').trim();
+  try {
+    if (!slug) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.end('<!doctype html><title>Not found</title><h1>Not found</h1><p><a href="'+SITE+'/">Go to Zoi</a></p>'); return; }
+    var e = await publicRead('home_entity', { p_slug: slug }, 3400, true);
+    if (Array.isArray(e)) e = e[0];
+    // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
+    // live duplicates of every listing. Send the crawler to the one canonical URL.
+    if (e && e.name && req.query && req.query.canon) {
+      var target = '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' +
+        encodeURIComponent(e.canonical_slug || e.slug);
+      res.statusCode = 301;
+      res.setHeader('Location', target);
+      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300');
+      res.end('');
+      return;
+    }
+    if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
+    const design = publishedHomeDesign(e);
+    const designedHome = renderHospitalityHome(e, design) || renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
+    if (designedHome) {
+      res.statusCode=200;
+      res.setHeader('Content-Type','text/html; charset=utf-8');
+      res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
+      res.end(withHomeNavigation(withMonasteryNetwork(withPublicOwnerMedia(designedHome.includes('application/ld+json') ? designedHome : designedHome.replace('</head>','<script type="application/ld+json">'+jsonld(e,SITE+'/'+encodeURIComponent(typeSlug(e.entity_type))+'/'+encodeURIComponent(e.canonical_slug||e.slug))+'</script></head>'),e,design),e)));
+      return;
+    }
+    const optional = await Promise.allSettled([publicRead('seo_related',{p_slug:slug,p_limit:8},2000),publicRead('listing_completeness',{p_slug:slug},2000)]);
+    var related=optional[0].status==='fulfilled'&&Array.isArray(optional[0].value)?optional[0].value:[];
+    var completeness=optional[1].status==='fulfilled'?optional[1].value:null;
+    res.statusCode=200;
+    res.setHeader('Content-Type','text/html; charset=utf-8');
+    res.setHeader('Cache-Control','public, max-age=0, s-maxage=60');
+    res.end(withHomeNavigation(withMonasteryNetwork(withPublicOwnerMedia(page(e, related, completeness),e,design),e)));
+  } catch (err) {
+    console.error(JSON.stringify({event:'public_home_unavailable', reason:/^(?:http_[0-9]{3}|network|timeout)$/.test(err?.publicReadReason || '') ? err.publicReadReason : 'response_or_render'}));
+    res.statusCode=503; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('Retry-After','10'); res.setHeader('X-Robots-Tag','noindex');
+    res.end('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Profile temporarily unavailable — Zoi</title><link rel="stylesheet" href="/assets/zoi-theme.css"></head><body><main style="max-width:720px;margin:15vh auto;padding:24px"><p style="color:var(--gold)">Zoi</p><h1>This profile couldn’t load</h1><p style="color:var(--mut);line-height:1.6">We couldn’t retrieve the latest details. Please try this page again.</p><p><a class="btn btn-primary" href="'+SITE+'/explore">Back to Explore</a></p></main></body></html>');
+  }
+}

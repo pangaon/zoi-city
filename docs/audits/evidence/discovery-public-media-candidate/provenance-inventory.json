@@ -1,0 +1,152 @@
+{
+  "captured_at": "2026-10-03T00:19:54.421Z",
+  "read_only": true,
+  "query": "WITH rows AS (\n SELECT entity_type,updated_by,photo_url,website,profile,\n CASE WHEN jsonb_typeof(profile->'_enrich')='object' THEN profile->'_enrich' ELSE '{}'::jsonb END q\n FROM zoi.listings WHERE publish_status='published' AND moderation_status IN ('clean','cleared') AND coalesce(marketplace_status,'')<>'hidden'\n), classified AS (\n SELECT *,\n (coalesce(q->>'hero_url','')<>'' OR coalesce(q->>'photo_url','')<>'' OR coalesce(q->>'logo_url','')<>'' OR (jsonb_typeof(q->'photo_urls')='array' AND q->'photo_urls'<>'[]')) AS machine_media,\n (coalesce(q->>'source_url','')<>'') AS source_present,\n (q->>'source_kind' IN ('association_directory','association_member') OR q->>'identity_scope'='organization'\n OR q->>'blocked_reason'='source_scope_mismatch' OR coalesce(q->>'organization_identity_quarantine','false') NOT IN ('false','null','')\n OR coalesce(q->>'scope_review_required','false') NOT IN ('false','null','') OR coalesce(q->>'source_affiliation','false') NOT IN ('false','null','')\n OR coalesce(q->>'association_member','false') NOT IN ('false','null','') OR coalesce(q#>>'{member,affiliation}','false') NOT IN ('false','null','')) AS quarantine,\n CASE WHEN updated_by='suite-bizpage' THEN website WHEN profile ? 'website' THEN profile->>'website' ELSE website END effective_website\n FROM rows\n), binding AS (\n SELECT *, coalesce(\n effective_website ~* '^https?://[^/?#@]+([/?#]|$)' AND q->>'source_url' ~* '^https?://[^/?#@]+([/?#]|$)'\n AND regexp_replace(lower(substring(effective_website FROM '(?i)^https?://([^/?#]+)')),'^www[.]','')=regexp_replace(lower(substring(q->>'source_url' FROM '(?i)^https?://([^/?#]+)')),'^www[.]','')\n AND (coalesce(nullif(substring(effective_website FROM '(?i)^https?://[^/?#]+([^?#]*)'),''),'/')='/' OR regexp_replace(coalesce(nullif(substring(effective_website FROM '(?i)^https?://[^/?#]+([^?#]*)'),''),'/'),'/$','')=regexp_replace(coalesce(nullif(substring(q->>'source_url' FROM '(?i)^https?://[^/?#]+([^?#]*)'),''),'/'),'/$','')),false) AS source_bound_estimate FROM classified\n)\nSELECT entity_type,count(*) eligible,\ncount(*) FILTER(WHERE machine_media) machine_media,\ncount(*) FILTER(WHERE machine_media AND NOT source_present) unbound_machine_media,\ncount(*) FILTER(WHERE machine_media AND source_bound_estimate AND NOT coalesce(quarantine,false)) bound_machine_media,\ncount(*) FILTER(WHERE machine_media AND source_present AND NOT source_bound_estimate AND NOT coalesce(quarantine,false)) mismatched_machine_media,\ncount(*) FILTER(WHERE machine_media AND coalesce(quarantine,false)) quarantined_machine_media,\ncount(*) FILTER(WHERE updated_by='suite-bizpage') suite_owner_base,\ncount(*) FILTER(WHERE profile->>'hero_kind'='event_poster') authored_event_poster,\ncount(*) FILTER(WHERE (profile ? 'hero_url' OR profile ? 'photo_url') AND (profile->>'hero_url' IS NULL AND profile->>'photo_url' IS NULL)) explicit_image_clear\nFROM binding GROUP BY entity_type ORDER BY entity_type;",
+  "source_binding_scope": "Inventory estimate normalizes www and compares host/port/path; public selector also canonicalizes default ports and checks exact owner layers. Counts classify compatibility cohorts; do not claim source content correctness.",
+  "families": [
+    {
+      "entity_type": "artist",
+      "eligible": 949,
+      "machine_media": 203,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 200,
+      "mismatched_machine_media": 3,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "business",
+      "eligible": 7066,
+      "machine_media": 1394,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 1338,
+      "mismatched_machine_media": 55,
+      "quarantined_machine_media": 1,
+      "suite_owner_base": 0,
+      "authored_event_poster": 1,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "church",
+      "eligible": 9653,
+      "machine_media": 569,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 556,
+      "mismatched_machine_media": 13,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "creator",
+      "eligible": 1055,
+      "machine_media": 197,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 180,
+      "mismatched_machine_media": 17,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "event",
+      "eligible": 1487,
+      "machine_media": 394,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 388,
+      "mismatched_machine_media": 6,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 2,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "organization",
+      "eligible": 4351,
+      "machine_media": 739,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 718,
+      "mismatched_machine_media": 21,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "professional",
+      "eligible": 3360,
+      "machine_media": 683,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 661,
+      "mismatched_machine_media": 22,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "school",
+      "eligible": 1598,
+      "machine_media": 534,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 520,
+      "mismatched_machine_media": 14,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "sports",
+      "eligible": 245,
+      "machine_media": 52,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 52,
+      "mismatched_machine_media": 0,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "travel_place",
+      "eligible": 841,
+      "machine_media": 199,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 195,
+      "mismatched_machine_media": 4,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "vendor",
+      "eligible": 1328,
+      "machine_media": 619,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 604,
+      "mismatched_machine_media": 15,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    },
+    {
+      "entity_type": "venue",
+      "eligible": 306,
+      "machine_media": 93,
+      "unbound_machine_media": 0,
+      "bound_machine_media": 92,
+      "mismatched_machine_media": 1,
+      "quarantined_machine_media": 0,
+      "suite_owner_base": 0,
+      "authored_event_poster": 0,
+      "explicit_image_clear": 0
+    }
+  ]
+}

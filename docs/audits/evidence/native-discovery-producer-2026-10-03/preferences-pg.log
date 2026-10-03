@@ -1,0 +1,11 @@
+PASS sparse account defaults do not infer a home and public profile ID differs from auth ID
+PASS actual writer persists explicit private home without copying to public identity
+PASS another account does not inherit the saved home
+PASS concurrent preference changes cannot overwrite a newer home version
+PASS lost response replay of stale expected version cannot create another mutation
+PASS explicit null/empty clears persist and do not alter public identity
+PASS locality cannot be enabled without an explicit area
+PASS unknown interests rejected by existing writer
+PASS anonymous private home reads and writes denied
+PASS private preference table cannot be directly read by another account
+10 actual preference database checks passed

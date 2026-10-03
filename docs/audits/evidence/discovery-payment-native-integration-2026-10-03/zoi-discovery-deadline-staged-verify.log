@@ -1,0 +1,18 @@
+
+> zoi-city@0.1.0 verify:local
+> npm run check && npm run lint:html && npm run test:local
+
+
+> zoi-city@0.1.0 check
+> node scripts/check-inline-js.mjs .
+
+check-inline-js: OK — 319 inline script block(s) in 144 HTML file(s) parsed cleanly.
+
+> zoi-city@0.1.0 lint:html
+> node scripts/lint-html.mjs .
+
+FAIL  tests/browser/event-payment-deadline/fixture.html
+      - expected exactly one <head>, found 0
+      - missing <title>
+
+lint-html: 1 of 115 HTML file(s) failed.

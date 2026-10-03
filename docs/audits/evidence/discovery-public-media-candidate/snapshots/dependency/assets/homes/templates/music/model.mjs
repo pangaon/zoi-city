@@ -1,0 +1,17 @@
+export{officialURL}from'../../official-url.mjs';
+export const TEMPLATES=['atelier','concierge','table','parea'];
+export const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function safeHttps(value){try{const u=new URL(value);return u.protocol==='https:'&&!u.username&&!u.password?u.href:null;}catch{return null;}}
+export function spotifyEmbed(url){try{const u=new URL(url);if(u.hostname!=='open.spotify.com'||u.protocol!=='https:')return null;const m=u.pathname.match(/^\/(artist|album|track)\/([A-Za-z0-9]{22})$/);return m?'https://open.spotify.com/embed/'+m[1]+'/'+m[2]:null;}catch{return null;}}
+export function validDay(value){try{return /^\d{4}-\d{2}-\d{2}$/.test(value||'')&&new Date(value+'T12:00:00Z').toISOString().slice(0,10)===value;}catch{return false;}}
+export function visibleShows(shows,{today=new Date().toISOString().slice(0,10),city=''}={}){return shows.filter(x=>validDay(x.date)&&x.date>=today&&(!city||x.city===city)&&safeHttps(x.source)).sort((a,b)=>a.date.localeCompare(b.date)||a.id.localeCompare(b.id));}
+const icsText=value=>String(value??'').replace(/\\/g,'\\\\').replace(/[\r\n]+/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');
+export function calendarReminder(show,artist,stamp=new Date()){
+ if(!validDay(show?.date)||!safeHttps(show.source)||!show.id||!artist)throw Error('invalid_show');const end=new Date(show.date+'T12:00:00Z');end.setUTCDate(end.getUTCDate()+1);const compact=d=>d.replace(/-/g,'');
+ return ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Zoi//Artist date reminder//EN','CALSCALE:GREGORIAN','BEGIN:VEVENT','UID:'+encodeURIComponent(show.id)+'@music.zoi','DTSTAMP:'+stamp.toISOString().replace(/[-:]/g,'').replace(/\.\d{3}Z$/,'Z'),'DTSTART;VALUE=DATE:'+compact(show.date),'DTEND;VALUE=DATE:'+compact(end.toISOString().slice(0,10)),'SUMMARY:'+icsText(artist+' · '+show.city+' (date reminder)'),'LOCATION:'+icsText(show.venue+', '+show.city),'DESCRIPTION:'+icsText('Personal all-day date reminder, not the performance time or a reservation. Confirm details and tickets with the artist’s official programme. Source: '+show.source),'URL:'+show.source,'TRANSP:TRANSPARENT','END:VEVENT','END:VCALENDAR',''].join('\r\n');
+}
+export function confirmedShow(row,artist){return !!row&&UUID.test(row.id||'')&&row.artist_id===artist&&UUID.test(row.event_id||'')&&Number.isFinite(Date.parse(row.starts_at))&&Date.parse(row.ends_at)>Date.parse(row.starts_at)&&typeof row.timezone==='string'&&safeHttps(row.source_url);}
+export function scopedRequest(storage,actor,kind,payload){if(!UUID.test(actor))throw Error('sign_in_required');const key='zoi_music_'+actor+'_'+kind;let prior;try{prior=JSON.parse(storage.getItem(key)||'null');}catch{throw Error('retry_storage_unavailable');}if(prior){if(JSON.stringify(prior.payload)!==JSON.stringify(payload))throw Error('pending_request_conflict');return prior;}const value={id:crypto.randomUUID(),payload};try{storage.setItem(key,JSON.stringify(value));if(storage.getItem(key)!==JSON.stringify(value))throw Error();}catch{throw Error('retry_storage_unavailable');}return value;}
+
+export {youtubePlaylistEmbed,youtubeVideoEmbed,artistVideo} from './artist-video.mjs';

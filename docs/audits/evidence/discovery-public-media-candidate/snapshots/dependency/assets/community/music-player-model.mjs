@@ -1,0 +1,2 @@
+export function boundedPlayerPosition(value,viewport,box){const maxX=Math.max(12,viewport.width-box.width-12),maxY=Math.max(76,viewport.height-box.height-12);return{x:Math.min(maxX,Math.max(12,Number.isFinite(value?.x)?value.x:maxX)),y:Math.min(maxY,Math.max(76,Number.isFinite(value?.y)?value.y:92))};}
+export function movedPlayerPosition(position,key,step=10){const delta={ArrowLeft:[-step,0],ArrowRight:[step,0],ArrowUp:[0,-step],ArrowDown:[0,step]}[key];return delta?{x:position.x+delta[0],y:position.y+delta[1]}:position;}

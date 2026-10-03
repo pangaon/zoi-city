@@ -1,0 +1,108 @@
+{
+  "approved_sql_sha256": "b30d719ba7fc306c7b907712efcd6191445ecf9c8e6429664b0186d0cb557d66",
+  "approved_ui_sha256": "b003160dddf6e97cf149d78dff48418e767ff164f946873e93c8b65c3c725d21",
+  "prior_accepted_ui_sha256_after_exact_fence_removal": "972f1f6f5166c1aa76f2794de2ff61226f02f40d2c8cc11b60a3cd3bc806c1aa",
+  "preflight": {
+    "locks": 0,
+    "guards": [
+      {
+        "acl": [
+          "postgres=X/postgres"
+        ],
+        "owner": "postgres",
+        "actual": "e47614082fc35f473da4481caa59e108",
+        "config": [
+          "search_path=\"\""
+        ],
+        "expected": "e47614082fc35f473da4481caa59e108",
+        "signature": "zoi.event_payment_policy_view(uuid,uuid)",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "owner": "postgres",
+        "actual": "950a2c73162310a0d9946a72724216ee",
+        "config": [
+          "search_path=\"\""
+        ],
+        "expected": "950a2c73162310a0d9946a72724216ee",
+        "signature": "public.event_payment_policy_get(uuid,uuid)",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "owner": "postgres",
+        "actual": "86a0dc9c8010b8e280f9ff710a42110a",
+        "config": [
+          "search_path=\"\""
+        ],
+        "expected": "86a0dc9c8010b8e280f9ff710a42110a",
+        "signature": "public.event_payment_policy_save(uuid,uuid,integer,uuid,boolean,boolean)",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "owner": "postgres",
+        "actual": "549cbca2f79c10cdb3bbb88863e89f6d",
+        "config": [
+          "search_path=\"\""
+        ],
+        "expected": "549cbca2f79c10cdb3bbb88863e89f6d",
+        "signature": "public.event_guest_payment_options(uuid)",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "owner": "postgres",
+        "actual": "8c3ccf3cb146a546fbd4c0940a9e3031",
+        "config": [
+          "search_path=\"\""
+        ],
+        "expected": "8c3ccf3cb146a546fbd4c0940a9e3031",
+        "signature": "public.event_guest_payment_choose(uuid,text,integer,integer,uuid)",
+        "security_definer": true
+      },
+      {
+        "acl": [
+          "postgres=X/postgres",
+          "service_role=X/postgres",
+          "authenticated=X/postgres"
+        ],
+        "owner": "postgres",
+        "actual": "456aa9e77ced13851af4469d4b3547cf",
+        "config": [
+          "search_path=\"\""
+        ],
+        "expected": "456aa9e77ced13851af4469d4b3547cf",
+        "signature": "public.event_payment_operator_report(uuid,uuid)",
+        "security_definer": true
+      }
+    ],
+    "new_functions": null,
+    "deadline_column": false
+  },
+  "fresh_independent_results": {
+    "units": 12,
+    "pg_groups": 11,
+    "controlled_host_component_cases": 4,
+    "mounted_account_cases": 14
+  },
+  "live_installed": false,
+  "live_customer_journey": false
+}

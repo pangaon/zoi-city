@@ -1,0 +1,19 @@
+# Shared Discovery, native maps and response deadlines
+
+Lead integration candidate. This report separates actual schema installation from frontend delivery and physical-device acceptance.
+
+The approved media reader migration installed with actual ledger version `20261003005245`. Fresh preflight definitions, owners and ACLs matched; private media helpers remain private, and both public readers retain their reviewed ACLs. Source conflicts remain excluded. No owner content or source assignments were modified. Installation receipt: `evidence/discovery-public-media-independent-2026-10-03/actual-installed-readback.json`.
+
+The approved response deadline migration installed with actual ledger version `20261003004953`. Fresh six-function preflight matched. All ten installed functions retain reviewed ownership/ACLs, and the nullable deadline has zero populated production rows. No organizer policy, customer choice or table hold was changed. This is an arrangement response cutoff, not payment collection or a reservation. Installation receipts: `evidence/event-payment-deadline-parent-2026-10-03/actual-installed-readback.json` and `actual-additional-readback.json`.
+
+Matching web frontend files and native personal Discovery/maps are integrated as one reviewed release. Specialist and independent reports retain source, rendered and exercised-journey evidence separately. Native 339-unit, type, ten PostgreSQL and three-platform export acceptance is documented in `native-discovery-parent-independent-2026-10-03.md`. Physical devices, app distribution, connected online payment and actual host configuration remain open.
+
+Security production boundary is already accepted on 55066e6:36 capture variants blocked across both aliases; four normal signed-out client journeys passed. Original captured strings remain in historic commits/old deployments; provider revocation and GitHub alert disposition are not claimed.
+
+Internal `docs/` is also excluded from future deployment artifacts with `.vercelignore`, in addition to the already verified pre-filesystem denial middleware. The ordinary API/assets do not load documentation at runtime. This follows https://vercel.com/docs/deployments/vercel-ignore; actual final production denial and canonical journeys remain required. Exact historical builds are not removed by this change.
+
+Final integration acceptance: full exact staged301 root test files and two standalone suites pass, with15 explicit skips. Native339 units/type/three-platform exports and36 API syntax checks pass. Media replacement and partial-owner/source-policy follow-up passed independent30focused/18card-Quick look/8settledcanonical/10partial-payload cases. Lead reran pure shared deadline validation12units/four owner-guest browser cases/14 account-token-detach cases. Web cache versions traverse the full module chain; native uses the exact unchanged validator from the pure client rather than a web DOM module. Optional shared host cloning is independently accepted with unchanged web default and nested immutable nonce-retry/adverse guards.
+
+Actual offline worker test reproduced the old cached synthetic source, then verified real controller replacement, removal of the previous cache, four internal docs URL variants blocked while offline and the public offline shell preserved, at390/1440. Initial harness checked cache activation before controller replacement; those failures and diagnosis remain retained. Worker source has no test globals. Internal docs are also excluded from new deployment artifacts. Current live artifact and CI must still be checked after the push.
+
+The native Parea specialist found an actual expired-session authority gap in retained and installed host definitions. Its UI/SQL hardening candidate is deliberately separate and not accepted by this release. No organizer ownership, inventory, payment collection or message delivery is invented. Full original scope remains open.

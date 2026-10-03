@@ -1,0 +1,17 @@
+GUARD zoi.event_payment_policy_view(uuid,uuid) e47614082fc35f473da4481caa59e108
+GUARD public.event_payment_policy_get(uuid,uuid) 950a2c73162310a0d9946a72724216ee
+GUARD public.event_payment_policy_save(uuid,uuid,integer,uuid,boolean,boolean) 86a0dc9c8010b8e280f9ff710a42110a
+GUARD public.event_guest_payment_options(uuid) 549cbca2f79c10cdb3bbb88863e89f6d
+GUARD public.event_guest_payment_choose(uuid,text,integer,integer,uuid) 8c3ccf3cb146a546fbd4c0940a9e3031
+GUARD public.event_payment_operator_report(uuid,uuid) 456aa9e77ced13851af4469d4b3547cf
+PASS nullable response deadline, exact instant, bounds, CAS and immutable replay
+PASS legacy save preserves deadline and version conflict prevents stale clearing
+PASS cutoff enforced by server and historical replay remains unpaid
+PASS explicit clear reopens choices at new policy version
+PASS unknown request cancellation fences delayed policy and exact claimant recovery
+PASS current operator role and enabled session
+PASS deadline extension, explicit clear and equality boundary closed
+PASS operator/settings/team concurrent lock order has no cycle
+PASS session expiry during actor wait rejects save and cancellation
+PASS guest deadline rechecked after waiting on current policy
+PASS no money/ticket/inventory mutation and anonymous writer denied

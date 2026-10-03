@@ -1,0 +1,44 @@
+✔ actual reviewed Signature/Parkview identity matches canonical hero/logo across search and Quick look without per-card RPC (7.550775ms)
+✔ actual Yamas and artist source imagery retained, reviewed base summaries retained for sparse families (2.338059ms)
+✔ canonical reviewed IDs alone cannot bypass owner website/identity change or source scope quarantine (0.809369ms)
+✔ owner nullable photo/logo and gallery clears suppress imported or reviewed defaults consistently (2.089675ms)
+✔ artist biography is source-bound, owner description clears authoritative, nonartist summary base-first (0.40241ms)
+✔ bounded projected media and complete canonical entity select the same hero/logo/clear state (1.960845ms)
+✔ gallery roles/interface artwork and credential/protocol checks apply to batch resolver (0.666843ms)
+✔ HTTP official-source biography keeps outbound compatibility while every image remains HTTPS only (0.234637ms)
+✔ event poster remains fully identified across imported page and owner edit then clear (0.699193ms)
+✔ current base photo replaces a legacy profile poster without retaining its role; clears remain authoritative (1.330139ms)
+✔ sparse Quick look retains omitted-photo semantics for every listing family while explicit clears replace a cover (3.82478ms)
+✖ partial Quick look identity policies clear a loaded cover even when the photo field is omitted (1.214253ms)
+✔ reviewed artist catalog identity remains source-bound and owner edit then clear wins (0.85841ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 12
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 103.8054
+
+✖ failing tests:
+
+test at tests/unit/public-listing-media.test.mjs:37:1
+✖ partial Quick look identity policies clear a loaded cover even when the photo field is omitted (1.214253ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///tmp/zoi-media-regression-stage-fjqhgojr/tests/unit/public-listing-media.test.mjs:41:93)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:787:18)
+      at Test.postRun (node:internal/test_runner/test:1247:19)
+      at Test.run (node:internal/test_runner/test:1175:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

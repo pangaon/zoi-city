@@ -1,0 +1,12 @@
+{
+  "captured_at": "2026-10-03T00:27:20.932Z",
+  "read_only": true,
+  "query": "SELECT pg_get_functiondef(p.oid) definition,md5(pg_get_functiondef(p.oid)) definition_md5,p.proowner::regrole::text owner,p.proacl::text acl,p.provolatile volatility,p.prosecdef security_definer,p.proconfig config FROM pg_proc p WHERE p.oid='zoi.public_owner_content(uuid)'::regprocedure",
+  "owner": "postgres",
+  "acl": "{postgres=X/postgres}",
+  "volatility": "s",
+  "security_definer": true,
+  "config": ["search_path=\"\""],
+  "definition": "CREATE OR REPLACE FUNCTION zoi.public_owner_content(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN l.updated_by='suite-bizpage' THEN jsonb_build_object(\n 'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n 'photo_url',l.photo_url,'social_links',coalesce(l.social_links,'{}'::jsonb))\n ELSE '{}'::jsonb END\n || CASE WHEN l.profile#>>'{_meta,updated_by}'='owner' THEN jsonb_build_object('profile',\n coalesce((SELECT jsonb_object_agg(k,v) FROM jsonb_each(l.profile) x(k,v)\n WHERE k IN ('photos','bio','spotify_url','apple_music_url','youtube_url','bandcamp_url','soundcloud_url','booking_name','booking_email','press','press_kit_url','merch','embeds','releases','tour','event_publicity','rooms','dining','venues','amenities')),'{}'::jsonb))\n ELSE '{}'::jsonb END FROM zoi.listings l WHERE l.id=p_listing;\n$function$\n",
+  "definition_md5": "132a50666860f8dee5d4f33b3a3fdfa0"
+}
