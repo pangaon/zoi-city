@@ -1,5 +1,6 @@
 import {ownerFoodProfile} from '../assets/homes/templates/restaurant/model.mjs';
 import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
+import {officialSourceEntity,sourceIdentityContentHeld} from '../assets/enrichment/official-source-policy.mjs';
 import {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../assets/enrichment/branch-contact-scope.mjs';
 /**
  * _verticals.js — what each kind of listing actually needs.
@@ -100,8 +101,9 @@ const ENRICH_META_KEYS = new Set(['provenance', 'source_url', 'checked_at',
  * machine writes are stored separately.
  */
 export function safeProfile(e) {
+  e = officialSourceEntity(e);
   const raw = (e && e.profile && typeof e.profile === 'object' && !Array.isArray(e.profile)) ? e.profile : {};
-  const enr = (raw._enrich && typeof raw._enrich === 'object' && !Array.isArray(raw._enrich)) ? raw._enrich : {};
+  const enr = !sourceIdentityContentHeld(e) && (raw._enrich && typeof raw._enrich === 'object' && !Array.isArray(raw._enrich)) ? raw._enrich : {};
   const out = {};
 
   // Enrichment first, so an owner key written afterwards overwrites it.

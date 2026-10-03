@@ -1,0 +1,8 @@
+{
+  "isolated_postgres_only": true,
+  "production_writes": false,
+  "stage": "loading actual full public record fixtures",
+  "error": "unsupported Unicode escape sequence: Unicode escape value could not be translated to the server's encoding SQL_ASCII",
+  "cause": "The old minimal fixture suite initialized no-locale PostgreSQL without explicit UTF8. Real current public names and metadata include Unicode.",
+  "correction": "New isolated initdb explicitly selects UTF8; actual source JSON and fingerprint assertions remain unchanged."
+}

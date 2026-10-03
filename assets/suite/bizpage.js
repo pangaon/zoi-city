@@ -384,9 +384,12 @@
     var socialResolver = (await import('/assets/homes/social-links.mjs')).resolveSocialLinks;
     var validScopeId = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if(!validScopeId.test(identity(C)) || !validScopeId.test(ws || '')){root.textContent='Sign in and select a workspace to manage your business home.';return;}
+    var sourceReview=null;try{sourceReview=await import('/assets/suite/source-health.mjs');}catch(_){}
+    if(!doc.querySelector('link[data-source-review-style]')){var sourceStyle=doc.createElement('link');sourceStyle.rel='stylesheet';sourceStyle.href='/assets/suite/source-health.css';sourceStyle.dataset.sourceReviewStyle='';doc.head.appendChild(sourceStyle);}
+    var sourceReviewHandle=null;
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false, selectedListingIntent = null;
     function scopeLive(){return validScopeId.test(account) && !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
-    function destroyDesign(){mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
+    function destroyDesign(){if(sourceReviewHandle)sourceReviewHandle.dispose();sourceReviewHandle=null;mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
     function unsaved(){return contentDirty || state.saving || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
     function allowLeave(){return !unsaved() || global.confirm('Leave this business home? Unsaved content and private design changes will be lost.');}
     function destroy(){if(lifecycle.signal.aborted)return;lifecycle.abort();bootEpoch++;destroyDesign();clearInterval(scopeTimer);observer.disconnect();root.replaceChildren();}
@@ -689,6 +692,12 @@
       fHours.appendChild(inHours);
       rowWH.appendChild(fWeb); rowWH.appendChild(fHours);
       form.appendChild(rowWH);
+      inWeb.setAttribute('aria-label','Official website address');
+      var sourceReviewSlot=el(doc,'div');form.appendChild(sourceReviewSlot);
+      function mountSourceTools(){if(!scopeLive()||!sourceReviewSlot.isConnected||state.entity?.id!==s.listingId)return;
+        if(sourceReview){sourceReviewHandle=sourceReview.mountSourceReview(sourceReviewSlot,{entity:state.entity,getDraft:function(){return inWeb.value;},isCurrent:scopeLive,onFocus:function(){inWeb.focus();inWeb.scrollIntoView({block:'center',behavior:'auto'});},onUse:function(value){inWeb.value=value;inWeb.dispatchEvent(new Event('input',{bubbles:true}));}});return;}
+        sourceReviewSlot.replaceChildren(el(doc,'p','zp-note','Website review could not load. You can still edit the address in Page details.'));var retrySource=el(doc,'button','zp-btn','Retry website review');retrySource.type='button';sourceReviewSlot.appendChild(retrySource);retrySource.onclick=async function(){if(!scopeLive())return;retrySource.disabled=true;try{sourceReview=await import('/assets/suite/source-health.mjs?retry='+global.crypto.randomUUID());mountSourceTools();}catch(_){if(scopeLive()&&retrySource.isConnected)retrySource.disabled=false;}};
+      }
 
       // price + photo
       var rowPP = el(doc, 'div', 'zp-row2');
@@ -892,6 +901,7 @@
         d.hours = inHours.value;
         d.price_range = selPrice.value;
         d.photo_url = inPhoto.value;
+        if(sourceReviewHandle)sourceReviewHandle.update();
         // social rows already write into d.social directly
         var c = completeness(d);
         meterFill.style.width = c.pct + '%';
@@ -919,6 +929,7 @@
       form.addEventListener('change',function(){contentDirty=true;});
       // initial paint
       sync();
+      mountSourceTools();
     }
 
     /* ---- save ---- */
@@ -938,7 +949,7 @@
       rpcWrite('home_content_save',payload).then(function(res){
         if(!scopeLive())return;
         if(res?.ok!==true||res.workspace_id!==ws||res.listing_id!==s.listingId||res.request_id!==payload.p_request||!/^([a-f0-9]{32})$/.test(res.version||''))throw Error('Save confirmation was incomplete. Retry to confirm the same changes.');
-        state.contentVersion=res.version;if(state.vform?.acceptSaved)state.vform.acceptSaved(payload.p_profile);if(state.publicityForm?.acceptSaved)state.publicityForm.acceptSaved();state.ownerProfile=Object.assign({},state.ownerProfile||{},payload.p_profile);state.pendingContent=null;state.saving=false;contentDirty=false;finishSave(saveBtn,savedNote);savedNote.textContent='Saved. Your page details and menu are updated.';toast('Business home saved.');
+        state.contentVersion=res.version;if(state.vform?.acceptSaved)state.vform.acceptSaved(payload.p_profile);if(state.publicityForm?.acceptSaved)state.publicityForm.acceptSaved();state.ownerProfile=Object.assign({},state.ownerProfile||{},payload.p_profile);state.entity=Object.assign({},state.entity,{website:payload.p_base.website,owner_content:Object.assign({},state.entity.owner_content||{},{website:payload.p_base.website})});if(sourceReviewHandle)sourceReviewHandle.update(state.entity);state.pendingContent=null;state.saving=false;contentDirty=false;finishSave(saveBtn,savedNote);savedNote.textContent='Saved. Your page details and menu are updated.';toast('Business home saved.');
       }).catch(function(err){
         if(!scopeLive())return;state.saving=false;var message=String(err?.message||'The response could not be confirmed.');
         if(/version_conflict|not_authorized|no_access_to_listing|invalid_|unsupported_|rate_limit/.test(message)){

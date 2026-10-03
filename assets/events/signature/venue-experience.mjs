@@ -1,7 +1,7 @@
 import {createLoungePlacementStream} from './lounge-placement-stream.mjs?v=20261001-approved-sponsors';
-import {mountSponsorPreview} from './sponsor-preview.mjs';
+import {mountSponsorPreview} from './sponsor-preview.mjs?v=20261003-room-finishing';
 import{mountLoungeScene}from'./lounge-scene.mjs?v=20261001-approved-sponsors';
-import{mountFurnishedConcert as mountConcertScene}from'./furnished-concert.mjs?v=20261003-company-parea-rooms';
+import{mountFurnishedConcert as mountConcertScene}from'./furnished-concert.mjs?v=20261003-room-finishing';
 import{imageReference}from'../../tickets/venue-reference.mjs';
 import{SIGNATURE_EVENT}from'./source-facts.mjs';
 export const SOURCE_ID=SIGNATURE_EVENT.id;

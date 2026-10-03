@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import assert from 'node:assert/strict';
+import {selectedOfficialWebsite,officialSourceQuarantined,officialSourceEntity} from '../../../../assets/enrichment/official-source-policy.mjs';
+const out='docs/audits/evidence/source-health-owner-independent-fresh14-2026-10-03';await fs.mkdir(out,{recursive:true});
+const installed=JSON.parse(await fs.readFile('docs/audits/evidence/source-takeover-fresh14-installed-2026-10-03/installed-readback.json','utf8'));const targets=installed.readback[0].snapshot;
+const source=await fs.readFile('api/entity.js','utf8'),key=source.match(/const KEY\s*=\s*['"]([^'"]+)['"]/)[1],base=source.match(/const SUPA\s*=\s*['"]([^'"]+)['"]/)[1];
+const report={captured_at:new Date().toISOString(),anonymous_public_RPC:true,no_live_writes:true,source:'Actual home_entity anonymous public projection after installed fresh14 packet; all shared outward helpers tested against actual rows.',cases:[]};
+for(const target of targets){const response=await fetch(base+'/rest/v1/rpc/home_entity',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({p_slug:target.slug}),signal:AbortSignal.timeout(15000)});const text=await response.text();const raw=JSON.parse(text);await fs.writeFile(path.join(out,target.slug+'.json'),JSON.stringify({status:response.status,response:raw},null,2)+'\n');assert.equal(response.status,200);const entity=Array.isArray(raw)?raw[0]:raw;assert.equal(entity.id,target.id);assert.equal(entity.slug,target.slug);assert(officialSourceQuarantined(entity));assert.equal(selectedOfficialWebsite(entity),'');assert.equal(officialSourceEntity(entity).website,'');report.cases.push({id:target.id,slug:target.slug,family:target.family,name:entity.name,http_status:response.status,source_held:true,outward_website:'',passed:true});}
+report.status='passed';await fs.writeFile(path.join(out,'public-helper-report.json'),JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({status:report.status,cases:report.cases.length}));

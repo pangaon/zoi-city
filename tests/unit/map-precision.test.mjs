@@ -26,9 +26,9 @@ function lift(startMarker, endMarker) {
 }
 
 const block = lift('var PRECISION = {', '/* ---------- state ---------- */');
-const sandbox = new Function('mapTools', block + `
+const sandbox = new Function('mapTools','mapPositionsComplete', block + `
   return { PRECISION, UNKNOWN_PRECISION, precisionOf, precisionLabel, directionsUrl, directionsBasis };
-`)(mapTools);
+`)(mapTools,true);
 const { PRECISION, precisionOf, precisionLabel, directionsUrl, directionsBasis } = sandbox;
 
 // Every raw value observed in production on 2026-09-13, with its row count.
@@ -97,19 +97,18 @@ test('rank orders the tiers monotonically', () => {
 // The two records from the report: same business, same coordinate, precision
 // never recorded, but a real street address on file.
 const MELANI = {
-  n: 'Meláni – Modern Greek Dining', addr: '2537 Yonge St',
+  s:'melani', n: 'Meláni – Modern Greek Dining', addr: '2537 Yonge St',
   city: 'Toronto', country: 'Canada',
   lat: 43.712972, lng: -79.399514, precision: 'none',
 };
 
-test('directions route by address when one exists, even at unknown precision', () => {
+test('published-address search uses exact record name/address while coordinates remain unverified', () => {
   // The address is exact even though the coordinate it produced is unverified.
   // Routing by address is the whole fix for the reported bug.
   const url = directionsUrl(MELANI);
   assert.ok(url, 'no directions url produced');
-  assert.equal(directionsBasis(MELANI), 'address');
-  assert.ok(url.includes(encodeURIComponent('2537 Yonge St, Toronto, Canada')),
-    `address missing from ${url}`);
+  assert.equal(directionsBasis(MELANI), 'published-address');
+  assert.equal(new URL(url).pathname,'/maps/search/');assert.equal(new URL(url).searchParams.get('query'),'Meláni – Modern Greek Dining, 2537 Yonge St, Toronto, Canada');assert(!new URL(url).searchParams.has('destination'));
   assert.ok(!url.includes('43.712972'), 'must not route to the unverified pin');
 });
 
@@ -119,17 +118,13 @@ test('an unverified coordinate is never a routing destination', () => {
   const noAddr = { n: 'Messinian Spa', city: 'Kalamata', country: 'Greece',
                    lat: -7.770503, lng: 28.235353, precision: 'none' };
   const url = directionsUrl(noAddr);
-  assert.equal(directionsBasis(noAddr), 'name');
-  assert.ok(!url.includes('-7.770503'), 'routed to an unverified coordinate');
-  assert.ok(url.includes(encodeURIComponent('Messinian Spa, Kalamata, Greece')),
-    `expected a name search, got ${url}`);
+  assert.equal(directionsBasis(noAddr), '');assert.equal(url,null,'name/city alone cannot create a location action');
 });
 
-test('an exact pin with no address routes by coordinate', () => {
+test('a street tag without reviewed proof cannot route by coordinate', () => {
   const p = { n: 'St Anthony', city: 'Reno', country: 'United States',
               lat: 39.469934, lng: -119.807927, precision: 'street' };
-  assert.equal(directionsBasis(p), 'pin');
-  assert.ok(directionsUrl(p).includes(encodeURIComponent('39.469934,-119.807927')));
+  assert.equal(directionsBasis(p), '');assert.equal(directionsUrl(p),null);
 });
 
 test('a record with neither address nor city yields no directions link', () => {
@@ -140,11 +135,11 @@ test('a record with neither address nor city yields no directions link', () => {
 
 test('directions destinations are url-encoded', () => {
   // Greek names and comma-separated addresses both break a raw query string.
-  const p = { n: 'Ταβέρνα', addr: 'Λεωφ. Συγγρού 12', city: 'Αθήνα',
+  const p = { s:'taverna',n: 'Ταβέρνα', addr: 'Λεωφ. Συγγρού 12', city: 'Αθήνα',
               country: 'Greece', lat: 37.97, lng: 23.72, precision: 'none' };
   const url = directionsUrl(p);
   assert.ok(!/[ ]/.test(url), `unencoded space in ${url}`);
-  assert.ok(url.startsWith('https://www.google.com/maps/dir/?api=1&destination='));
+  assert.equal(new URL(url).pathname,'/maps/search/');assert.equal(new URL(url).searchParams.get('query'),'Ταβέρνα, Λεωφ. Συγγρού 12, Αθήνα, Greece');
 });
 
 /* ---------- geolocation accuracy ---------- */
@@ -257,9 +252,9 @@ test('folding does not collapse distinct words', () => {
   assert.notEqual(fold('Αθήνα'), fold('Πάτρα'));
 });
 
-test('conflicting street metadata never routes to rejected centroid coordinates',()=>{const p={n:'Community',city:'Brantford',country:'Canada',lat:43.6532,lng:-79.3832,precision:'street',position_conflict:true};assert.equal(directionsBasis(p),'name');assert.ok(!directionsUrl(p).includes('43.6532'));assert.match(decodeURIComponent(directionsUrl(p)),/Community, Brantford, Canada/);});
+test('conflicting street metadata and missing address supply no numerical or guessed name destination',()=>{const p={s:'community',n:'Community',city:'Brantford',country:'Canada',lat:43.6532,lng:-79.3832,precision:'street',position_conflict:true};assert.equal(directionsBasis(p),'');assert.equal(directionsUrl(p),null);const address={...p,addr:'20 Published Road'};assert.equal(directionsBasis(address),'published-address');assert(!new URL(directionsUrl(address)).searchParams.has('destination'));});
 
-test('invalid street coordinates cannot become directions destination',()=>{for(const lat of ['',false,91,0]){const p={n:'Place',city:'City',country:'Country',lat,lng:0,precision:'street'};assert.equal(directionsBasis(p),'name');assert.match(decodeURIComponent(directionsUrl(p)),/Place, City, Country/);}assert.equal(directionsBasis({lat:0,lng:12,precision:'street'}),'pin');});
+test('invalid street coordinates cannot become directions destination',()=>{for(const lat of ['',false,91,0]){const p={s:'place',n:'Place',city:'City',country:'Country',lat,lng:0,precision:'street',reviewedPosition:true};assert.equal(directionsBasis(p),'');assert.equal(directionsUrl(p),null);}assert.equal(directionsBasis({s:'real',lat:0,lng:12,precision:'street',reviewedPosition:true}),'pin');assert.equal(directionsBasis({s:'real',lat:0,lng:12,precision:'street'}),'');});
 
 test('independent reviewed destination supersedes incomplete imported address',()=>{
  const place={s:'amara-hotel-limassol',n:'Amara Hotel',addr:'Amathountos, Limassol',city:'Limassol',country:'Cyprus',lat:34.7136232,lng:33.1552567,precision:'street'};
@@ -273,5 +268,7 @@ test('independent reviewed destination supersedes incomplete imported address',(
  for(const changed of [{...entity,slug:'other'}, {...entity,longitude:33.0226}, {...entity,reviewed_destination:null}, {...entity,reviewed_destination:{...entity.reviewed_destination,listing_id:'other'}}, {...entity,geo_precision:'city'}])assert.equal(mapTools.hasReviewedPosition(place,changed),false);
  assert.equal(mapTools.hasReviewedPosition({...place,position_conflict:true},entity),false);
  assert.equal(mapTools.hasReviewedPosition({...place,precision:'none'},entity),false);
- const fallback={...place,reviewedPosition:false};assert.equal(directionsBasis(fallback),'address');assert.match(decodeURIComponent(directionsUrl(fallback)),/Amathountos/);
+ const fallback={...place,reviewedPosition:false};assert.equal(directionsBasis(fallback),'published-address');assert.match(new URL(directionsUrl(fallback)).searchParams.get('query'),/Amathountos/);
 });
+
+test('incomplete global cohorts suppress ordinary plot eligibility while exact reviewed routing remains independent',()=>{const partial=new Function('mapTools','mapPositionsComplete',block+'return {mapPositionEligible,precisionLabel,directionsUrl}')(mapTools,false),point={s:'proof',n:'Proof',precision:'street',lat:43.7,lng:-79.4,reviewedPosition:true};assert.equal(partial.mapPositionEligible(point),false);assert.match(partial.precisionLabel(point),/awaiting complete checks/);assert.equal(new URL(partial.directionsUrl(point)).searchParams.get('destination'),'43.7,-79.4');});

@@ -1,0 +1,56 @@
+✔ map loader bounds concurrency at four and stops after the first short page (15.80714ms)
+✔ an outage stops after the first page probe and never becomes an empty success (1.056664ms)
+✔ failed or malformed pages remain explicit holes in partial results (1.922962ms)
+✔ a full configured cap is marked truncated and not complete (0.712321ms)
+✔ known empty first page is a real empty dataset; out-of-range failures do not invent holes (0.340195ms)
+✔ selection focus respects precision, viewport occlusion and reduced motion (0.383667ms)
+✔ invalid coordinates never enter MapLibre while valid zero coordinates remain valid (0.429783ms)
+✔ search bounds use only finite street-level coordinates, keep zero and never invent an empty destination (0.806817ms)
+✔ selecting a city-positioned place preserves a closer manual zoom instead of jumping back out (0.454309ms)
+✔ transient page failures retry at most twice inside the four worker slots (1.340394ms)
+✔ exhausted network retries remain explicit partial coverage and invalid responses are not retried (1.452804ms)
+✔ unmapped deep links preserve exact identity without inventing any coordinates (0.408834ms)
+✖ unmapped identity survives resize moveend and late response cannot replace a new selection (12.016429ms)
+✔ coarse and unknown coordinates never become premises or move search bounds (0.525913ms)
+✔ false street labels reused across cities or many addresses remain unplotted (0.981123ms)
+✔ coordinate guards reject coercion values and dual-zero while retaining real zero-axis locations (0.580765ms)
+✔ area search retains scoped unmapped results, paginates truthfully and never supplies coordinates (1.240938ms)
+✔ area responses cannot overwrite changed account/location, and failure stays retryable (0.598698ms)
+✔ scoped area response rejects wrong country and private rows without promoting returned coordinates (0.595222ms)
+✔ service outage retries only the health probe, never starts parallel directory reads (0.45525ms)
+✔ unlocated published address search keeps exact place identity and never routes by coordinates (0.773395ms)
+✔ address lookup refuses city-only, country-only, absent, non-text and oversized addresses (0.460991ms)
+✔ fresh explicit address edit and clear override earlier place without using map scope as locality (0.359041ms)
+✔ actual map directions refuse unreviewed numeric points and recover published address search (2.957164ms)
+✔ actual map numeric directions require exact identity and coordinate receipt, and fresh clear cannot retain old action (3.025823ms)
+✔ device saves persist exact public slug, remove without duplicate and sanitize corrupt storage (2.774794ms)
+✔ storage denial cannot fabricate saved completion and storage cap is bounded (0.934917ms)
+✔ spoken summary preserves public facts and precision, never implies turn-by-turn directions (0.691973ms)
+✔ read-aloud starts only on explicit action, stops on hide/destroy and ignores superseded callbacks (2.016817ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 28
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 155.499369
+
+✖ failing tests:
+
+test at tests/unit/map-data.test.mjs:31:1
+✖ unmapped identity survives resize moveend and late response cannot replace a new selection (12.016429ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(fn)
+  
+      at TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/tests/unit/map-data.test.mjs:33:169)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

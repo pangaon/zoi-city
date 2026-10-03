@@ -1,5 +1,5 @@
 // @ts-ignore Shared pure official-site authority and quarantine contract.
-import {selectedOfficialWebsite} from '../../assets/enrichment/official-source-policy.mjs';
+import {selectedOfficialWebsite,officialSourceEntity,sourceIdentityContentHeld} from '../../assets/enrichment/official-source-policy.mjs';
 // @ts-ignore Shared conservative phone placeholder guard.
 import {placeholderPhone} from '../../supabase/functions/zoi-enrich/_phone.js';
 // @ts-ignore Shared reviewed branch contact scope.
@@ -23,9 +23,9 @@ export function profileAction(value: unknown, kind: 'booking' | 'volunteer' | 'i
   return pattern.exec(value)?.[1].toLowerCase() || '';
 }
 export function normalizeProfile(input: unknown) {
-  const e = object(Array.isArray(input) ? input[0] : input);
+  const e = object(officialSourceEntity(object(Array.isArray(input) ? input[0] : input)));
   if (!plain(e.name)) return null;
-  const raw = object(e.profile), enrichment = object(raw._enrich), owner=object(e.owner_content), ownerProfile=object(owner.profile);
+  const raw = object(e.profile), enrichment = sourceIdentityContentHeld(e)?{}:object(raw._enrich), owner=object(e.owner_content), ownerProfile=object(owner.profile);
   const banned = /^(rating|rating_count|ratingvalue|reviewcount|aggregaterating|reviews?|stars|score|_enrich|_geo|_meta|provenance|source_url|checked_at|blocked|blocked_reason|last_error)$/i;
   const profile: RecordValue = {};
   for (const source of [enrichment, raw, ownerProfile]) for (const key of Object.keys(source)) if (!banned.test(key)) {

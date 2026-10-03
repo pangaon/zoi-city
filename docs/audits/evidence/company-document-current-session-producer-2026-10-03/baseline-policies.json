@@ -1,0 +1,22 @@
+[
+  {
+    "schemaname": "zoi",
+    "tablename": "ops_audit",
+    "policyname": "ops_audit_member_read",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(zoi.ops_role(workspace_id) IS NOT NULL)",
+    "with_check": null
+  },
+  {
+    "schemaname": "zoi",
+    "tablename": "ops_records",
+    "policyname": "ops_records_member_read",
+    "permissive": "PERMISSIVE",
+    "roles": "{authenticated}",
+    "cmd": "SELECT",
+    "qual": "(zoi.ops_role(workspace_id) IS NOT NULL)",
+    "with_check": null
+  }
+]

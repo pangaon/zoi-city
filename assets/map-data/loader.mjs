@@ -60,7 +60,7 @@ export function validatePositionCohorts(points){
 }
 
 // Public area search supplements the coordinate feed; it never supplies pins.
-export function createMapAreaSearch(fetchPage,{changed=()=>{},pageSize=24}={}){
+export function createMapAreaSearch(fetchPage,{changed=()=>{},pageSize=24,allowGlobal=false}={}){
  let generation=0,key='',scope=null,rows=[],offset=0,busy=false,done=false,error=null;
  const fold=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
  const state=()=>({key,rows:rows.slice(),offset,busy,done,error,active:!!scope});
@@ -71,9 +71,19 @@ export function createMapAreaSearch(fetchPage,{changed=()=>{},pageSize=24}={}){
   const seen=new Set(rows.map(r=>r.slug));for(const row of valid)if(!seen.has(row.slug)){seen.add(row.slug);rows.push(row);}
   offset+=result.length;done=result.length<pageSize;
  }catch(e){if(token===generation)error='Additional places could not be loaded. Retry this area.';}finally{if(token===generation){busy=false;changed(state());}}}
- return{state,more,setScope(next){const clean={q:String(next.q||'').trim(),city:String(next.city||'').trim(),country:String(next.country||'').trim(),actor:String(next.actor||'')},nextKey=JSON.stringify(clean);if(nextKey===key)return;generation++;key=nextKey;scope=clean.q||clean.city||clean.country?clean:null;rows=[];offset=0;busy=false;done=false;error=null;},clear(){generation++;key='';scope=null;rows=[];offset=0;busy=false;done=false;error=null;}};
+ return{state,more,setScope(next){const clean={q:String(next.q||'').trim(),city:String(next.city||'').trim(),country:String(next.country||'').trim(),actor:String(next.actor||'')},nextKey=JSON.stringify(clean);if(nextKey===key)return;generation++;key=nextKey;scope=clean.q||clean.city||clean.country||allowGlobal?clean:null;rows=[];offset=0;busy=false;done=false;error=null;},clear(){generation++;key='';scope=null;rows=[];offset=0;busy=false;done=false;error=null;}};
 }
 export function areaResultPlace(row){const place=unmappedPlace(row,row?.slug);return place?{...place,areaResult:true,precision:'',unknown:true,exact:false}:null;}
+
+// This searches a published postal address; it never supplies a Zoi pin,
+// inferred distance, provider place ID or numerical routing destination.
+export function publishedAddressLookup(place,{address=place?.addr,name=place?.n,city=place?.city,country=place?.country}={}){
+ const clean=(value,limit)=>typeof value==='string'&&value.length<=limit?value.replace(/<[^>]*(?:>|$)/g,' ').replace(/\s+/g,' ').trim():'';
+ const label=clean(name,300),postal=clean(address,500),locality=clean(city,160),nation=clean(country,160),fold=value=>value.normalize('NFKC').toLocaleLowerCase();
+ if(!place?.s||!label||!postal||!nation||[locality,nation,[locality,nation].filter(Boolean).join(', ')].filter(Boolean).some(v=>fold(v)===fold(postal)))return null;
+ const query=[label,postal,locality,nation].filter(Boolean).join(', '),url=new URL('https://www.google.com/maps/search/');url.searchParams.set('api','1');url.searchParams.set('query',query);
+ return url.href.length<=2048?{href:url.href,label:'Find published address ↗',basis:'published-address',address:postal}:null;
+}
 
 // Proof is returned by the receipt-backed public reader, never inferred from
 // editable profile metadata. Require the same fresh entity and feed point.

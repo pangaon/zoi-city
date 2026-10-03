@@ -1,0 +1,329 @@
+{
+  "checks": 33,
+  "port": "15567",
+  "observed_lock_waits": [
+    {
+      "label": "legacy contact update after membership downgrade",
+      "wait": [
+        {
+          "pid": 198582,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_0"
+        }
+      ],
+      "held_lock": "select 1 from zoi.ops_records where id='d15f8529-9765-46d7-b36f-86719fb02686' for update",
+      "request_sql": "select public.ops_record_save('10000000-0000-4000-8000-000000000001','contact','{\"title\":\"Wait must roll back\",\"company_id\":\"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\"}'::jsonb,'d15f8529-9765-46d7-b36f-86719fb02686',1)",
+      "revoke": "update zoi.workspace_members set role='viewer' where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,CASE WHEN p_kind='company' THEN 'ops_manage' ELSE 'ops_write' END,authority_actor,true)\"\nPL/pgSQL function public.ops_record_save(uuid,text,jsonb,uuid,integer) line 61 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "legacy contact update after clock expiry",
+      "wait": [
+        {
+          "pid": 198596,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_1"
+        }
+      ],
+      "held_lock": "select 1 from zoi.ops_records where id='d15f8529-9765-46d7-b36f-86719fb02686' for update",
+      "request_sql": "select public.ops_record_save('10000000-0000-4000-8000-000000000001','contact','{\"title\":\"Wait must roll back\",\"company_id\":\"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\"}'::jsonb,'d15f8529-9765-46d7-b36f-86719fb02686',1)",
+      "revoke": "update auth.sessions set not_after=clock_timestamp()-interval '1 second' where user_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_lock_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,CASE WHEN p_kind='company' THEN 'ops_manage' ELSE 'ops_write' END,authority_actor,true)\"\nPL/pgSQL function public.ops_record_save(uuid,text,jsonb,uuid,integer) line 61 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "legacy archive after profile account remapping",
+      "wait": [
+        {
+          "pid": 198608,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_2"
+        }
+      ],
+      "held_lock": "select 1 from zoi.ops_records where id='d15f8529-9765-46d7-b36f-86719fb02686' for update",
+      "request_sql": "select public.ops_record_archive('10000000-0000-4000-8000-000000000001','d15f8529-9765-46d7-b36f-86719fb02686',1)",
+      "revoke": "update zoi.user_profiles set auth_user_id=null where id='00000000-0000-4000-8000-000000000001';update zoi.user_profiles set auth_user_id='00000000-0000-4000-8000-000000000001' where id='00000000-0000-4000-8000-000000000002';update zoi.workspace_members set role='owner' where profile_id='00000000-0000-4000-8000-000000000002' and workspace_id='10000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'ops_manage',authority_actor,true)\"\nPL/pgSQL function public.ops_record_archive(uuid,uuid,integer) line 17 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "receipt read after session removal",
+      "wait": [
+        {
+          "pid": 198620,
+          "wait_event_type": "Lock",
+          "wait_event": "advisory",
+          "application_name": "company_authority_3"
+        }
+      ],
+      "held_lock": "select pg_advisory_xact_lock(hashtextextended('ops-request:00000000-0000-4000-8000-000000000001:80000000-0000-4000-8000-000000000001',0))",
+      "request_sql": "select public.ops_request_status('10000000-0000-4000-8000-000000000001','80000000-0000-4000-8000-000000000001',false)",
+      "revoke": "delete from auth.sessions where user_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_lock_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'ops_write',authority_actor,true)\"\nPL/pgSQL function public.ops_request_status(uuid,uuid,boolean) line 12 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "missing-request cancellation after membership removal",
+      "wait": [
+        {
+          "pid": 198632,
+          "wait_event_type": "Lock",
+          "wait_event": "advisory",
+          "application_name": "company_authority_4"
+        }
+      ],
+      "held_lock": "select pg_advisory_xact_lock(hashtextextended('ops-request:00000000-0000-4000-8000-000000000001:80000000-0000-4000-8000-000000000030',0))",
+      "request_sql": "select public.ops_request_status('10000000-0000-4000-8000-000000000001','80000000-0000-4000-8000-000000000030',true)",
+      "revoke": "delete from zoi.workspace_members where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'ops_write',authority_actor,true)\"\nPL/pgSQL function public.ops_request_status(uuid,uuid,boolean) line 18 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "new mutation after actor budget lock and expiry",
+      "wait": [
+        {
+          "pid": 198646,
+          "wait_event_type": "Lock",
+          "wait_event": "advisory",
+          "application_name": "company_authority_5"
+        }
+      ],
+      "held_lock": "select pg_advisory_xact_lock(hashtextextended('ops-actor:00000000-0000-4000-8000-000000000001',0))",
+      "request_sql": "select public.ops_mutation_execute('10000000-0000-4000-8000-000000000001','80000000-0000-4000-8000-000000000031','save','{\"p_kind\":\"contact\",\"p_data\":{\"title\":\"Receipt QA\",\"company_id\":\"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\"},\"p_id\":null,\"p_expected_version\":0}'::jsonb)",
+      "revoke": "update auth.sessions set not_after=clock_timestamp()-interval '1 second' where user_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_current_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_current_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nPL/pgSQL function public.ops_record_save(uuid,text,jsonb,uuid,integer) line 5 at assignment\nPL/pgSQL function public.ops_mutation_execute(uuid,uuid,text,jsonb) line 20 at assignment\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "private upload after profile lock and role downgrade",
+      "wait": [
+        {
+          "pid": 198660,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_6"
+        }
+      ],
+      "held_lock": "select 1 from zoi.user_profiles where id='00000000-0000-4000-8000-000000000001' for update",
+      "request_sql": "select public.document_upload_begin('10000000-0000-4000-8000-000000000001','81dbf239-e768-4c29-bfb3-ebefccae9af8',null,0,'Authority file','80000000-0000-4000-8000-000000000032','proof.pdf','application/pdf',12,'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')",
+      "revoke": "update zoi.workspace_members set role='viewer' where profile_id='00000000-0000-4000-8000-000000000001' and workspace_id='10000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'document_read',authority_actor,true)\"\nPL/pgSQL function public.document_upload_begin(uuid,uuid,uuid,integer,text,uuid,text,text,integer,text) line 36 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "private archive after document lock and session removal",
+      "wait": [
+        {
+          "pid": 198674,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_7"
+        }
+      ],
+      "held_lock": "select 1 from zoi.workspace_documents where id='db6b85db-ea15-404f-9ed0-2206dd6a9243' for update",
+      "request_sql": "select public.document_archive('10000000-0000-4000-8000-000000000001','db6b85db-ea15-404f-9ed0-2206dd6a9243',1)",
+      "revoke": "delete from auth.sessions where user_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_lock_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'document_manage',authority_actor,true)\"\nPL/pgSQL function public.document_archive(uuid,uuid,integer) line 13 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "private history blocked in read then membership removed",
+      "wait": [
+        {
+          "pid": 198688,
+          "wait_event_type": "Lock",
+          "wait_event": "relation",
+          "application_name": "company_authority_8"
+        }
+      ],
+      "held_lock": "lock table zoi.document_versions in access exclusive mode",
+      "request_sql": "select public.document_history('10000000-0000-4000-8000-000000000001','db6b85db-ea15-404f-9ed0-2206dd6a9243')",
+      "revoke": "delete from zoi.workspace_members where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'document_read',authority_actor,true)\"\nPL/pgSQL function public.document_history(uuid,uuid) line 10 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "private catalogue blocked in read then session expired",
+      "wait": [
+        {
+          "pid": 198700,
+          "wait_event_type": "Lock",
+          "wait_event": "relation",
+          "application_name": "company_authority_9"
+        }
+      ],
+      "held_lock": "lock table zoi.workspace_documents in access exclusive mode",
+      "request_sql": "select public.documents_list('10000000-0000-4000-8000-000000000001',null)",
+      "revoke": "update auth.sessions set not_after=clock_timestamp()-interval '1 second' where user_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_lock_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'document_read',authority_actor,true)\"\nPL/pgSQL function public.documents_list(uuid,uuid) line 8 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "download audit blocked then current permission removed",
+      "wait": [
+        {
+          "pid": 198712,
+          "wait_event_type": "Lock",
+          "wait_event": "relation",
+          "application_name": "company_authority_10"
+        }
+      ],
+      "held_lock": "lock table zoi.document_audit in access exclusive mode",
+      "request_sql": "select public.document_download_authorize('10000000-0000-4000-8000-000000000001','83f41755-0df3-461f-b75e-1c0de3cc9971')",
+      "revoke": "delete from zoi.workspace_members where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'document_read',authority_actor,true)\"\nPL/pgSQL function public.document_download_authorize(uuid,uuid) line 10 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "Operations records blocked then session removed",
+      "wait": [
+        {
+          "pid": 198724,
+          "wait_event_type": "Lock",
+          "wait_event": "relation",
+          "application_name": "company_authority_11"
+        }
+      ],
+      "held_lock": "lock table zoi.ops_records in access exclusive mode",
+      "request_sql": "select public.ops_records_list('10000000-0000-4000-8000-000000000001',null,false)",
+      "revoke": "delete from auth.sessions where user_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_lock_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'ops_read',authority_actor,true)\"\nPL/pgSQL function public.ops_records_list(uuid,text,boolean) line 11 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "Operations audit blocked then account banned",
+      "wait": [
+        {
+          "pid": 198736,
+          "wait_event_type": "Lock",
+          "wait_event": "relation",
+          "application_name": "company_authority_12"
+        }
+      ],
+      "held_lock": "lock table zoi.ops_audit in access exclusive mode",
+      "request_sql": "select public.ops_audit_list('10000000-0000-4000-8000-000000000001',null,50)",
+      "revoke": "update auth.users set banned_until=clock_timestamp()+interval '1 hour' where id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 6 at RAISE\nSQL statement \"SELECT zoi.suite_lock_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 5 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'ops_read',authority_actor,true)\"\nPL/pgSQL function public.ops_audit_list(uuid,uuid,integer) line 9 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "natural session expiry during final membership lock",
+      "wait": [
+        {
+          "pid": 198751,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_13"
+        }
+      ],
+      "held_lock": "select 1 from zoi.workspace_members where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001' for update",
+      "request_sql": "select public.ops_records_list('10000000-0000-4000-8000-000000000001',null,false)",
+      "revoke": "select pg_sleep(1.2)",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function zoi.suite_current_session() line 8 at RAISE\nSQL statement \"SELECT zoi.suite_current_session()\"\nPL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 15 at PERFORM\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'ops_read',authority_actor,true)\"\nPL/pgSQL function public.ops_records_list(uuid,text,boolean) line 11 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    },
+    {
+      "label": "Operations read refreshes role after downgrade",
+      "wait": [
+        {
+          "pid": 198770,
+          "wait_event_type": "Lock",
+          "wait_event": "relation",
+          "application_name": "company_authority_14"
+        }
+      ],
+      "held_lock": "lock table zoi.ops_records in access exclusive mode",
+      "request_sql": "select public.ops_records_list('10000000-0000-4000-8000-000000000001',null,false)",
+      "revoke": "update zoi.workspace_members set role='viewer' where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": true,
+        "output": "00000000-0000-4000-8000-000000000001\n00000000-0000-4000-8000-000000000001\n{\"ok\": true, \"role\": \"viewer\", \"members\": [{\"role\": \"viewer\", \"profile_id\": \"00000000-0000-4000-8000-000000000003\", \"display_name\": \"Team member\"}, {\"role\": \"viewer\", \"profile_id\": \"00000000-0000-4000-8000-000000000001\", \"display_name\": \"Team member\"}, {\"role\": \"editor\", \"profile_id\": \"00000000-0000-4000-8000-000000000002\", \"display_name\": \"Team member\"}], \"records\": [{\"id\": \"d15f8529-9765-46d7-b36f-86719fb02686\", \"data\": {\"email\": \"\", \"notes\": \"\", \"phone\": \"\", \"sector\": \"business\", \"website\": \"\", \"legal_name\": \"\", \"jurisdiction\": \"\", \"registration_number\": \"\"}, \"kind\": \"contact\", \"title\": \"Receipt QA\", \"due_at\": null, \"status\": \"open\", \"version\": 1, \"company_id\": \"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\", \"contact_id\": null, \"created_at\": \"2026-10-03T03:55:10.799075+00:00\", \"project_id\": null, \"updated_at\": \"2026-10-03T03:55:10.799075+00:00\", \"archived_at\": null, \"workspace_id\": \"10000000-0000-4000-8000-000000000001\", \"assignee_profile_id\": null}, {\"id\": \"618b2b48-ed1f-4d33-aa56-009001922e8e\", \"data\": {\"email\": \"\", \"notes\": \"\", \"phone\": \"\", \"sector\": \"business\", \"website\": \"\", \"legal_name\": \"\", \"jurisdiction\": \"\", \"registration_number\": \"\"}, \"kind\": \"task\", \"title\": \"Authority task\", \"due_at\": null, \"status\": \"open\", \"version\": 2, \"company_id\": \"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\", \"contact_id\": null, \"created_at\": \"2026-10-03T03:55:10.756428+00:00\", \"project_id\": \"81dbf239-e768-4c29-bfb3-ebefccae9af8\", \"updated_at\": \"2026-10-03T03:55:10.771104+00:00\", \"archived_at\": null, \"workspace_id\": \"10000000-0000-4000-8000-000000000001\", \"assignee_profile_id\": null}, {\"id\": \"81dbf239-e768-4c29-bfb3-ebefccae9af8\", \"data\": {\"email\": \"\", \"notes\": \"\", \"phone\": \"\", \"sector\": \"business\", \"website\": \"\", \"legal_name\": \"\", \"jurisdiction\": \"\", \"registration_number\": \"\"}, \"kind\": \"project\", \"title\": \"Authority project\", \"due_at\": null, \"status\": \"open\", \"version\": 1, \"company_id\": \"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\", \"contact_id\": null, \"created_at\": \"2026-10-03T03:55:10.74195+00:00\", \"project_id\": null, \"updated_at\": \"2026-10-03T03:55:10.74195+00:00\", \"archived_at\": null, \"workspace_id\": \"10000000-0000-4000-8000-000000000001\", \"assignee_profile_id\": null}, {\"id\": \"c4eb5d4c-f8ba-4f4e-986e-ca08adf7f59f\", \"data\": {\"email\": \"\", \"notes\": \"\", \"phone\": \"\", \"sector\": \"business\", \"website\": \"\", \"legal_name\": \"Original\", \"jurisdiction\": \"\", \"registration_number\": \"\"}, \"kind\": \"company\", \"title\": \"Authority QA\", \"due_at\": null, \"status\": \"open\", \"version\": 1, \"company_id\": null, \"contact_id\": null, \"created_at\": \"2026-10-03T03:55:10.727003+00:00\", \"project_id\": null, \"updated_at\": \"2026-10-03T03:55:10.727003+00:00\", \"archived_at\": null, \"workspace_id\": \"10000000-0000-4000-8000-000000000001\", \"assignee_profile_id\": null}]}\n"
+      },
+      "expected": "current role success"
+    },
+    {
+      "label": "trusted worker finish after document lock and uploader removal",
+      "wait": [
+        {
+          "pid": 198794,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_15"
+        }
+      ],
+      "held_lock": "select 1 from zoi.workspace_documents where id='3a9c664a-31ed-4cfe-af5b-521384db4354' for update",
+      "request_sql": "reset role;set role service_role;select public.document_upload_finish('0c1ff01e-63a8-4101-9a96-d76fe5429d1f')",
+      "revoke": "delete from zoi.workspace_members where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  upload_permission_changed\nCONTEXT:  PL/pgSQL function public.document_upload_finish(uuid) line 10 at RAISE\n"
+      },
+      "expected": "/upload_permission_changed/"
+    },
+    {
+      "label": "cleanup prepare after document lock and manage-role loss",
+      "wait": [
+        {
+          "pid": 198806,
+          "wait_event_type": "Lock",
+          "wait_event": "transactionid",
+          "application_name": "company_authority_16"
+        }
+      ],
+      "held_lock": "select 1 from zoi.workspace_documents where id='3a9c664a-31ed-4cfe-af5b-521384db4354' for update",
+      "request_sql": "select public.document_cleanup_prepare('10000000-0000-4000-8000-000000000001','0c1ff01e-63a8-4101-9a96-d76fe5429d1f')",
+      "revoke": "update zoi.workspace_members set role='editor' where workspace_id='10000000-0000-4000-8000-000000000001' and profile_id='00000000-0000-4000-8000-000000000001'",
+      "outcome": {
+        "ok": false,
+        "error": "ERROR:  company_permission_denied\nCONTEXT:  PL/pgSQL function zoi.company_document_authority(uuid,text,uuid,boolean) line 13 at RAISE\nSQL statement \"SELECT zoi.company_document_authority(p_workspace,'document_manage',authority_actor,true)\"\nPL/pgSQL function public.document_cleanup_prepare(uuid,uuid) line 14 at PERFORM\n"
+      },
+      "expected": "/company_permission_denied|suite_session_unavailable/"
+    }
+  ]
+}

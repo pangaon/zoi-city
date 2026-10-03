@@ -1,0 +1,7 @@
+# Independent progressive Map acceptance — 2026-10-03
+
+Root reconstructed all 5,880 frozen dependencies, checked the three candidate runtime bytes, reviewed source and fixture changes and independently exercised the actual MapLibre renderer. 61 units, six controlled slow/outage/missing-page recovery cases and four actual anonymous public-data candidate journeys passed. Selected profile, manual camera and scope were preserved; incomplete cohorts supplied no ordinary pins or distances, while a fresh separately reviewed receipt could provide numerical Directions.
+
+First public result measured 1.309–1.870 seconds and first useful Maps action 2.423–2.793 seconds in the independent run. These are individual observed candidate timings, not performance guarantees. The producer's real intermittent feed500/retry evidence remains recorded. Prior36–47second verifier totals included30seconds waiting for a nonexistent selector, and are not a product performance baseline. Some tiles/styles were still loading at action time; full street GIS correctness and physical-device acceptance remain open.
+
+Root inspected the390px selected-place screenshot and actual address/provider links. Static overlays with real RPC reads are candidate evidence; actual production verification is separate. Two entry import query stamps are a root-only derivative recorded with before/after hashes; no unrelated module churn.

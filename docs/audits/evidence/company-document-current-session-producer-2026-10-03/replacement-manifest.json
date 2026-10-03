@@ -1,0 +1,94 @@
+{
+  "migration_path": "supabase/migrations/20261003032635_company_document_current_session.sql",
+  "migration_sha256": "b060b2ffae9bce61330282b61933c3741e133abadfe33f865901d4d6846f32fa",
+  "retained_functions": 19,
+  "replacements": [
+    {
+      "signature": "public.ops_records_list(uuid,text,boolean)",
+      "baseline_md5": "82044bcfccaa6f8ab41de65335465ad6",
+      "replacement_sha256": "5938d64a5a91fbe542304613b50887c26200790e7ba0ee9ba58a28676557f53a",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.ops_audit_list(uuid,uuid,integer)",
+      "baseline_md5": "36a1a671e336f64db2b728463a0ab96f",
+      "replacement_sha256": "b907f31d9dd6f9a868d1cc7e45a0eeb761c2abfe39cc7ed8c8822b660ac5e0db",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.ops_record_save(uuid,text,jsonb,uuid,integer)",
+      "baseline_md5": "7430f92b2de1c9275dce53fe3c42e505",
+      "replacement_sha256": "df4f8a9540f88f70ad46cf0b2b44e7840c73cd29b1ea5ce2b50b44930c82fc18",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.ops_record_archive(uuid,uuid,integer)",
+      "baseline_md5": "6ab05dddd0db62baabf8d1d2e324cf34",
+      "replacement_sha256": "1ac8b7a3553d1b10418f027531f8bc68d2653e457d17233ecaf6e4cf480ef6cf",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.ops_mutation_execute(uuid,uuid,text,jsonb)",
+      "baseline_md5": "e726a6ebbd1d5806ef0b205658733bcb",
+      "replacement_sha256": "9ef91b3156a7e192e59d1bd38a450c621e5b9e89b413747ee9616d7546c3f091",
+      "return_paths": 2
+    },
+    {
+      "signature": "public.ops_request_status(uuid,uuid,boolean)",
+      "baseline_md5": "1b17b0be678e0ce36d7bdf22c12758aa",
+      "replacement_sha256": "4182ec2923f54613e05761a47de1e027025be251e7130db57a872da8f3e898cc",
+      "return_paths": 3
+    },
+    {
+      "signature": "public.documents_list(uuid,uuid)",
+      "baseline_md5": "0b3c9ac4b1c9d06ef766f82e865b4685",
+      "replacement_sha256": "51dd47ead39d1ca29829edbc23bcdbc72bc22c8691bed5aa252f3f57443b9e9d",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.document_history(uuid,uuid)",
+      "baseline_md5": "db604c7320477b0f365d4dabfdf444e3",
+      "replacement_sha256": "961a36f633f548a6b452ffb1a863751f71ddd10fd93d9c3dbbd45c0dca5201b9",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.document_download_authorize(uuid,uuid)",
+      "baseline_md5": "f7f1d06451f6aa6e1aea15667d1c13c4",
+      "replacement_sha256": "42924747926e0b20d341dc610080f4a6aabef9b97e962396ed3d45dd0e4c9ac3",
+      "return_paths": 1
+    },
+    {
+      "signature": "public.document_upload_begin(uuid,uuid,uuid,integer,text,uuid,text,text,integer,text)",
+      "baseline_md5": "428f18d82346885d4d528e0b3951cf13",
+      "replacement_sha256": "e50ab7fa5c9d7dea5cb12f3c8f128437fafdc76022b170c22181e2b0e9009f7d",
+      "return_paths": 2
+    },
+    {
+      "signature": "public.document_archive(uuid,uuid,integer)",
+      "baseline_md5": "0043aa3f5ceac24e338b9c8ba8e2317f",
+      "replacement_sha256": "51c8ac81d7efc8fc55fe75be7a6c9e14fada101640970277536d415c59e91257",
+      "return_paths": 2
+    },
+    {
+      "signature": "public.document_cleanup_prepare(uuid,uuid)",
+      "baseline_md5": "32967a8364fd8d1957f60e8fa8786316",
+      "replacement_sha256": "608a322e1c0e4c5c166ded59314bd996cd378dd3667e3cb7e2a471330017b480",
+      "return_paths": 1
+    },
+    {
+      "signature": "zoi.document_actor(uuid,boolean)",
+      "baseline_md5": "f3e73deb0de227b63fa0922ee7f9ad41",
+      "replacement_sha256": "434098faadaed0c7982f45e466b3ca9fa4dd76049e0f475381b5bf4121637de0",
+      "return_paths": 1
+    }
+  ],
+  "unchanged_worker_paths": [
+    "public.document_upload_finish(uuid)",
+    "public.document_cleanup_finish(uuid)"
+  ],
+  "unchanged_broad_helper": "zoi.ops_role(uuid)",
+  "direct_read_policies": [
+    "ops_audit_member_read",
+    "ops_records_member_read"
+  ]
+}

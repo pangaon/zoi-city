@@ -1,0 +1,242 @@
+{
+  "actual_map_renderer": true,
+  "controlled_read_receipts": true,
+  "live_writes": 0,
+  "cases": [
+    {
+      "width": 390,
+      "name": "slow-feed-selection-recovery-and-scope",
+      "firstResultMs": 703,
+      "geoRequests": 1,
+      "before": "https://www.zoi.city/explore/map/?city=Toronto&country=Canada",
+      "calls": [
+        {
+          "rpc": "home_stats",
+          "args": {},
+          "elapsedMs": 269
+        },
+        {
+          "rpc": "explore_geo",
+          "args": {
+            "p_limit": 1000,
+            "p_offset": 0
+          },
+          "elapsedMs": 270
+        },
+        {
+          "rpc": "explore_search",
+          "args": {
+            "p_q": null,
+            "p_city": "Toronto",
+            "p_country": "Canada",
+            "p_type": null,
+            "p_limit": 24,
+            "p_offset": 0
+          },
+          "elapsedMs": 559
+        },
+        {
+          "rpc": "home_entity",
+          "args": {
+            "p_slug": "early"
+          },
+          "elapsedMs": 1471
+        },
+        {
+          "rpc": "geography_reviewed_point",
+          "args": {
+            "p_listing": "early"
+          },
+          "elapsedMs": 1526
+        },
+        {
+          "rpc": "home_entity",
+          "args": {
+            "p_slug": "early"
+          },
+          "elapsedMs": 1848
+        },
+        {
+          "rpc": "geography_reviewed_point",
+          "args": {
+            "p_listing": "early"
+          },
+          "elapsedMs": 1905
+        },
+        {
+          "rpc": "explore_search",
+          "args": {
+            "p_q": null,
+            "p_city": "Nairobi",
+            "p_country": "Kenya",
+            "p_type": null,
+            "p_limit": 24,
+            "p_offset": 0
+          },
+          "elapsedMs": 2421
+        },
+        {
+          "rpc": "explore_search",
+          "args": {
+            "p_q": null,
+            "p_city": null,
+            "p_country": null,
+            "p_type": null,
+            "p_limit": 24,
+            "p_offset": 0
+          },
+          "elapsedMs": 3211
+        }
+      ],
+      "errors": [],
+      "controlled_receipt": true
+    },
+    {
+      "width": 390,
+      "name": "outage-feed-selection-recovery-and-scope",
+      "firstResultMs": 742,
+      "geoRequests": 4,
+      "before": "https://www.zoi.city/explore/map/?city=Toronto&country=Canada#1.35/37.98380/23.72750/0/0",
+      "calls": [
+        {
+          "rpc": "home_stats",
+          "args": {},
+          "elapsedMs": 225
+        },
+        {
+          "rpc": "explore_geo",
+          "args": {
+            "p_limit": 1000,
+            "p_offset": 0
+          },
+          "elapsedMs": 226
+        },
+        {
+          "rpc": "explore_search",
+          "args": {
+            "p_q": null,
+            "p_city": "Toronto",
+            "p_country": "Canada",
+            "p_type": null,
+            "p_limit": 24,
+            "p_offset": 0
+          },
+          "elapsedMs": 502
+        },
+        {
+          "rpc": "home_entity",
+          "args": {
+            "p_slug": "early"
+          },
+          "elapsedMs": 1543
+        },
+        {
+          "rpc": "geography_reviewed_point",
+          "args": {
+            "p_listing": "early"
+          },
+          "elapsedMs": 1632
+        },
+        {
+          "rpc": "explore_geo",
+          "args": {
+            "p_limit": 1000,
+            "p_offset": 0
+          },
+          "elapsedMs": 2287
+        },
+        {
+          "rpc": "explore_geo",
+          "args": {
+            "p_limit": 1000,
+            "p_offset": 0
+          },
+          "elapsedMs": 2991
+        },
+        {
+          "rpc": "explore_geo",
+          "args": {
+            "p_limit": 1000,
+            "p_offset": 0
+          },
+          "elapsedMs": 3253
+        },
+        {
+          "rpc": "home_entity",
+          "args": {
+            "p_slug": "early"
+          },
+          "elapsedMs": 3312
+        },
+        {
+          "rpc": "geography_reviewed_point",
+          "args": {
+            "p_listing": "early"
+          },
+          "elapsedMs": 3372
+        },
+        {
+          "rpc": "explore_search",
+          "args": {
+            "p_q": null,
+            "p_city": "Nairobi",
+            "p_country": "Kenya",
+            "p_type": null,
+            "p_limit": 24,
+            "p_offset": 0
+          },
+          "elapsedMs": 4183
+        },
+        {
+          "rpc": "explore_search",
+          "args": {
+            "p_q": null,
+            "p_city": null,
+            "p_country": null,
+            "p_type": null,
+            "p_limit": 24,
+            "p_offset": 0
+          },
+          "elapsedMs": 4799
+        }
+      ],
+      "errors": [],
+      "controlled_receipt": true
+    }
+  ],
+  "failure": {
+    "error": "TimeoutError: page.waitForFunction: Timeout 15000ms exceeded.",
+    "url": "https://www.zoi.city/explore/map/?city=Toronto&country=Canada&q=Published+early&place=early#15.00/43.71000/-79.42000/0/0",
+    "state": {
+      "body": "Zoi\nMenu\n100 m\n×\nGo\nExploring Toronto, Canada\nEverywhere\nPersonalize in Community\nFilter the map\n＋\nSelected place\nToronto · Canada\nSaved (0)\n×\nPublished early\n\nToronto, Canada\n\nOpen home ↗\nDirections ↗\nSave on this device\nShare place\nRead place aloud\n\nMap position awaiting complete checks · 20 Published Street\n\nSaved places stay on this device. Directions open your map provider.\n\nThis profile is available. Its street position has not been established; the map view has not moved.\nΕλ\nOpenFreeMap · OpenMapTiles · © OpenStreetMap\nThis place is available in the list. Its street position has not been established; check the published address.",
+      "center": [
+        -79.42000000000007,
+        43.71000000000001
+      ],
+      "loaded": true,
+      "style": true,
+      "source": {
+        "geojson": {
+          "type": "FeatureCollection",
+          "features": [
+            {
+              "type": "Feature",
+              "id": 0,
+              "geometry": {
+                "type": "Point",
+                "coordinates": [
+                  -79.4,
+                  43.7
+                ]
+              },
+              "properties": {
+                "i": 0,
+                "ti": 0
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

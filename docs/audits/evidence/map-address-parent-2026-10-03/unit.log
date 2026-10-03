@@ -1,0 +1,37 @@
+✔ map loader bounds concurrency at four and stops after the first short page (11.017963ms)
+✔ an outage stops after the first page probe and never becomes an empty success (0.795075ms)
+✔ failed or malformed pages remain explicit holes in partial results (1.090207ms)
+✔ a full configured cap is marked truncated and not complete (0.354231ms)
+✔ known empty first page is a real empty dataset; out-of-range failures do not invent holes (0.212136ms)
+✔ selection focus respects precision, viewport occlusion and reduced motion (0.278019ms)
+✔ invalid coordinates never enter MapLibre while valid zero coordinates remain valid (0.314508ms)
+✔ search bounds use only finite street-level coordinates, keep zero and never invent an empty destination (0.400498ms)
+✔ selecting a city-positioned place preserves a closer manual zoom instead of jumping back out (0.235129ms)
+✔ transient page failures retry at most twice inside the four worker slots (3.81136ms)
+✔ exhausted network retries remain explicit partial coverage and invalid responses are not retried (0.58853ms)
+✔ unmapped deep links preserve exact identity without inventing any coordinates (0.259134ms)
+✔ unmapped identity survives resize moveend and late response cannot replace a new selection (2.827652ms)
+✔ coarse and unknown coordinates never become premises or move search bounds (0.289641ms)
+✔ false street labels reused across cities or many addresses remain unplotted (0.752145ms)
+✔ coordinate guards reject coercion values and dual-zero while retaining real zero-axis locations (0.367186ms)
+✔ area search retains scoped unmapped results, paginates truthfully and never supplies coordinates (0.853024ms)
+✔ area responses cannot overwrite changed account/location, and failure stays retryable (0.430494ms)
+✔ scoped area response rejects wrong country and private rows without promoting returned coordinates (0.340726ms)
+✔ service outage retries only the health probe, never starts parallel directory reads (0.39587ms)
+✔ unlocated published address search keeps exact place identity and never routes by coordinates (0.47111ms)
+✔ address lookup refuses city-only, country-only, absent, non-text and oversized addresses (0.319286ms)
+✔ fresh explicit address edit and clear override earlier place without using map scope as locality (0.259705ms)
+✔ actual map directions refuse unreviewed numeric points and recover published address search (1.464696ms)
+✔ actual map numeric directions require exact identity and coordinate receipt, and fresh clear cannot retain old action (2.015806ms)
+✔ device saves persist exact public slug, remove without duplicate and sanitize corrupt storage (1.773483ms)
+✔ storage denial cannot fabricate saved completion and storage cap is bounded (0.627603ms)
+✔ spoken summary preserves public facts and precision, never implies turn-by-turn directions (0.493392ms)
+✔ read-aloud starts only on explicit action, stops on hide/destroy and ignores superseded callbacks (2.131021ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 95.888144

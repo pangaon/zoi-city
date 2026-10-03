@@ -1,0 +1,8 @@
+{
+  "isolated_postgres_only": true,
+  "production_writes": false,
+  "stage": "default rollback writer baseline guard",
+  "error": "takeover_writer_baseline_changed:zoi.profile_strip(jsonb)",
+  "cause": "The reused isolated loader revoked PUBLIC execution on every function. The new additionally guarded pure profile_strip dependency has actual NULL/default ACL, which the loader changed locally.",
+  "correction": "The isolated loader preserves NULL/default ACL exactly and reconstructs explicit ACLs for the six writers. All seven proposal definition and ACL guards remain unchanged."
+}

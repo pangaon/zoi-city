@@ -140,7 +140,7 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
      module that mounts it. Order matters — bizpage.js reads both. -->
 <script src="/assets/suite/_vertical-forms.js?v=20261001-hospitality-catalog"></script>
 <script src="/assets/suite/_vertical-ui.js?v=20261002-field-labels"></script>
-<script src="/assets/suite/bizpage.js?v=20261002-promoter-publicity"></script>
+<script src="/assets/suite/bizpage.js?v=20261003-owner-source"></script>
 <script src="/assets/suite/connect.js?v=20261001-queued-identity"></script>
 <script src="/assets/suite/settings.js?v=20261001-invitations"></script>
 <script src="/assets/suite/ai.js?v=20261001-queued-identity"></script>
@@ -237,7 +237,9 @@ nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
     var mods = (window.ZoiSuite.modules||[]).slice().sort(function(a,b){ return (a.order||99)-(b.order||99); });
     if(STATE.shellAbort)STATE.shellAbort.abort();STATE.shellAbort=new AbortController();
     var groups=STATE.navigation.navigationModel(mods,{focus:STATE.focus,avail:STATE.avail});
-    var navHtml=groups.map(function(group){return '<details class="nav-section" '+(['overview','home'].indexOf(group.id)!==-1||group.tools.some(function(m){return m.recommended;})?'open ':'')+'data-section="'+esc(group.id)+'"><summary class="navgroup">'+esc(group.label)+'</summary>'+group.tools.map(function(m){return '<button type="button" class="nitem" data-group="'+esc(group.id)+'" data-id="'+esc(m.id)+'" data-keywords="'+esc(m.keywords)+'"><span class="nic">'+(m.icon||'')+'</span><span>'+esc(m.label)+'</span>'+(m.recommended?'<span class="nav-badge" data-focus-badge title="Suggested for your chosen focus">For you</span>':'')+(m.setupRequired?'<span class="nav-badge">Setup</span>':'')+'</button>';}).join('')+'</details>';}).join('');
+    // Search aliases lead to the existing authorized owner tools, not new modules.
+    var ownerToolSearchAliases={bizpage:'website page details source review official website address',operations:'company work queue saved work deadlines handover export company records'};
+    var navHtml=groups.map(function(group){return '<details class="nav-section" '+(['overview','home'].indexOf(group.id)!==-1||group.tools.some(function(m){return m.recommended;})?'open ':'')+'data-section="'+esc(group.id)+'"><summary class="navgroup">'+esc(group.label)+'</summary>'+group.tools.map(function(m){return '<button type="button" class="nitem" data-group="'+esc(group.id)+'" data-id="'+esc(m.id)+'" data-keywords="'+esc(m.keywords+' '+(ownerToolSearchAliases[m.id]||''))+'"><span class="nic">'+(m.icon||'')+'</span><span>'+esc(m.label)+'</span>'+(m.recommended?'<span class="nav-badge" data-focus-badge title="Suggested for your chosen focus">For you</span>':'')+(m.setupRequired?'<span class="nav-badge">Setup</span>':'')+'</button>';}).join('')+'</details>';}).join('');
     var wsInitial = esc((STATE.wsName||'Z').trim().charAt(0).toUpperCase());
     root.innerHTML =
     '<div id="app">'+

@@ -4,12 +4,13 @@ export {sourceIdentity} from './public-listing-media.mjs';
 import {sharedBranchContactSource} from '../enrichment/branch-contact-scope.mjs';
 import {websiteContacts} from '../homes/source-contact.mjs';
 import {phoneHref} from '../homes/phone.mjs';
-import {selectedOfficialWebsite} from '../enrichment/official-source-policy.mjs';
+import {selectedOfficialWebsite,officialSourceEntity} from '../enrichment/official-source-policy.mjs';
 export const publicText=v=>typeof v==='string'?v.replace(/<[^>]*(?:>|$)/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim():'';
 const text=publicText;
 const own=(x,k)=>Object.hasOwn(x||{},k);
 export function publicURL(v){try{const u=new URL(v);return ['https:','http:'].includes(u.protocol)&&!u.username&&!u.password?u.href:null;}catch{return null;}}
 export function quickLookDetails(e){
+ e=officialSourceEntity(e);
  const o=e.owner_content||{},p=e.profile||{},op=o.profile||{},source=websiteContacts(e);
  const value=k=>own(o,k)?o[k]:own(op,k)?op[k]:own(p,k)?p[k]:e[k];
  const q=p._enrich||{},trusted=sourceIdentity(e),has=k=>own(o,k)||own(op,k)||own(p,k),locationSource=trusted&&!sharedBranchContactSource(e,q.source_url);

@@ -1,0 +1,11 @@
+# Existing owner-tool search aliases
+
+Only search metadata in `social/index.html` changed: `ownerToolSearchAliases` adds Business home terms for website/Page details/source review/official website address, and Company administration terms for work queue/saved work/deadlines/handover/export/company records. Those terms are appended to the existing `data-keywords`. No tool copy, visible label, permission, route, provider capability or module loader changed. Root owns the subsequent cache-version derivative and release.
+
+`evidence/owner-tool-search-2026-10-03/final-v2/report.json` retains 20 exact term→tool assertions across390/1440. A controlled authenticated owner uses the actual live shell and live module bytes, with only the candidate HTML metadata overlaid. Every mutation RPC is denied. Both widths open Page details through source-review search, Company through company search, filter saved overdue work, check document versions, download the correct company-scoped handover and exclude the other company’s project. Exact company UUID route, workspace/listing parameters, and legacy `page`/`home-design` aliases remain exercised. No page errors or writes. Four actual signed-out production URL gates are separately recorded; controlled owner identity is not a real authenticated production customer session.
+
+The current live source-health module remains404 and the current Business home module does not import the new panel. Search points to the existing Website editor; it does not make an unavailable provider or new panel operational. The source-health panel’s separate reviewed freeze is intended for the coherent lead-owned release.
+
+Earlier evidence is preserved. The first test run looked up the export button after alias navigation removed that DOM; the corrected harness captures its label before navigating. The next run passed assertions but reported the final home-design URL as the company path; final-v2 captures the exact Company route before leaving it. Neither required a runtime change or weakened an assertion.
+
+Replay from the frozen snapshot (using the existing installed dependencies): `QA_OUTPUT_DIR=/tmp/owner-tool-search-parent NODE_PATH=/workspaces/zoi-city/.recovery/community-release/node_modules node tests/browser/owner-tool-search/verify.cjs`.
