@@ -1,0 +1,35 @@
+# Shared event guest finish — isolated candidate, 3 October 2026
+
+Guests can save and reopen a private Parea on every event home using the existing `event_plan_save/get/list` suite. Toronto's previously silent event-identity failure now shows an unavailable state and a useful retry. A failed identity or inventory read never means the organizer has not configured tickets. Retry updates only that panel: quantities, optional contacts and already-reviewed invitation composers remain intact.
+
+This candidate starts at main `1d928466552a5de8496f0467c6852f8ae31ce73c` in `.recovery/event-guest-finish-20261003`. It has six runtime paths, no schema changes, no host editor or room/furniture changes, and no production writes, push or deployment. Parent owns release and query-binding derivatives.
+
+## Source and installed contract
+
+Toronto remains the reviewed static Signature source plan with all 118 numbered positions, table 9's published $200 per guest and unchanged white/pink lounge furniture. Montréal uses the retained actual public entity `9b241a00-f0c9-5748-8e22-79e2e0b57f79`, captured 03:18 UTC, the OPA plan and exact `10A`; its black-cloth room and missing price remain unchanged. The third canonical fixture is an explicitly synthetic sparse event, exercising the generic family without inventing a room, source address, price or organizer setup.
+
+The existing connected-event-plan migration supports private notes, title, kind, a PostgreSQL-valid timezone and empty selections. No new suite was created. Its protected save/get/list definitions and ACLs were installed in isolated PostgreSQL 16 for the browser run. Real production auth, private publication and current backend health are not demonstrated by this local proof.
+
+A versioned private-notes envelope records exact event slug/title/date/venue, whole ticket quantities, names and source table preferences. The current event must match before restoration. Source labels are revalidated before adopting the saved CAS target. No saved price is trusted; Toronto recomputes the source price and Montréal/sparse stay `To confirm`. Friends' email and phone are omitted. The saving customer's required name/email are stored only in the existing protected plan record. Generic events without a published timezone ask the customer to confirm a private-plan timezone, initially their device timezone; this is not presented as an event timezone.
+
+Legacy plain-text plans stay readable and cannot be silently restored. An unresolved request marker contains only request/plan/version IDs. Losing its in-memory payload leaves save/edit adoption blocked; protected review remains available, and no replacement is created automatically. Existing immutable retry/CAS behavior remains intact.
+
+## Rendered and exercised local proof
+
+`journeys-frozen/report.json` contains six full canonical flows: Toronto, Montréal and sparse at 390 and 1440. Each builds 3/1/5 tickets, opens the actual optional contacts and reviewed SMS/email composers, checks actual encoded messages, observes controlled backend unavailable → retry → explicit `configured:false`, saves through real isolated Postgres, loses a response after committed save, retries the identical request, reloads, lists/gets and restores the same Parea, then changes account and clears private views.
+
+Toronto uses its opened room details/picker and table 9. Montréal opens its actual room number tray, chooses 10A and continues into the same planner. The sparse fixture has no room. Save forms and final saved/resumed states are captured at both widths. I visually inspected Montréal's 390 saved panel and Toronto's 390 outage/review flow; there is no horizontal overflow in the six completed journeys.
+
+The first Toronto phone case additionally opens a fresh page with a cloned unresolved marker and no request payload: actual protected review remains read-only, Save is disabled, and Resume is absent. No automatic retry, send, hold, payment or replacement plan occurs.
+
+Five additional actual Postgres assertions reject another account, anonymous execution, a stale CAS version and changed payload under an existing nonce, and distinguish the immutable original retry receipt from the current protected read. Final DB counts are six private plans, seven requests (six original saves plus one deliberate isolated CAS update), zero bookings and zero tickets.
+
+74 relevant unit tests passed, including all Signature family units, exact event/context guards, invalid/malformed quantities, anonymous setup single-flight/timeouts/disposal, global IANA timezone acceptance, source-editor adoption guards, pending-marker recovery and account/lost-response behavior. Inline checking parsed 336 script blocks in 159 HTML files. `git diff --check` passed. Existing bridge UI/contact assertions moved out of the old imports-stripped VM after extracting the shared controller; contact form validation, writer payloads and private read rendering are exercised in the real browser/DB flow, and route/lifecycle identity assertions remain in that VM suite.
+
+## Preserved negatives and practical limits
+
+`journeys/report.json` and `journeys-v2/report.json` retain the two initial harness errors: selecting hidden Toronto controls before opening its existing details sheet. The corrected harness uses the actual opened UI, with no forced click. `journeys-v3/report.json` retains the genuine first-pass restore defect: durable notes omit transient recipient IDs, but the ticket validator required them. The correction generates transient IDs at validation/restoration, and later runs prove the full journey. Later evidence never overwrites these failures.
+
+This is a browser candidate. The iOS/Android profile currently offers an existing canonical web handoff (`mobile/src/Profile.tsx`); no native private-plan restore editor or device acceptance is claimed. Friends' contacts must be added again after reopening. Plaintext legacy plans and unresolved payload-less requests remain read-only. The public source read and inventory outage are controlled fault injection around actual installed contracts, not current production acceptance. Production PGRST002 failures after the parent's schema-cache notification remain recorded in the separate immutable production packet; this feature does not repair that backend incident.
+
+Independent replay from the frozen snapshot: `NODE_PATH=/workspaces/zoi-city/.recovery/community-release/node_modules PGPORT=16379 QA_OUTPUT_DIR=/tmp/zoi-guest-independent node tests/browser/event-guest-finish/verify.cjs`; it initializes and stops its own isolated Postgres and writes only the selected evidence directory. Units: `node --test tests/unit/signature-*.test.mjs tests/unit/event-guest-finish.test.mjs tests/unit/event-generic-home.test.mjs tests/unit/event-home-templates.test.mjs`. Freeze manifest includes the exact consumed source record, SQL/fixture and runtime/test transitive dependencies. Chrome path and Playwright version remain environment prerequisites, not bundled artifacts.

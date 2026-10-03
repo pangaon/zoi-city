@@ -1,0 +1,631 @@
+{
+  "local_only": true,
+  "production_backend": false,
+  "source_record": "retained real Montréal public record; Toronto static source plan; sparse synthetic event",
+  "backend": "actual isolated Postgres existing event_plan_save/get/list definitions and ACLs",
+  "cases": [
+    {
+      "kind": "toronto",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "status": "passed"
+    },
+    {
+      "kind": "montreal",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "status": "passed"
+    },
+    {
+      "kind": "sparse",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "status": "passed"
+    },
+    {
+      "kind": "toronto",
+      "width": 1440,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "status": "passed"
+    },
+    {
+      "kind": "montreal",
+      "width": 1440,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "status": "passed"
+    },
+    {
+      "kind": "sparse",
+      "width": 1440,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "status": "passed"
+    }
+  ],
+  "calls": [
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "4546481e-8995-482a-a0af-f0017613f187"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "4546481e-8995-482a-a0af-f0017613f187"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "971ee1d7-bb40-40cd-95a4-82d95a93f49f",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-toronto-2027\",\"title\":\"Giannis Ploutarchos & Andromache\",\"date\":\"20 March 2027\",\"venue\":\"Parkview Manor\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"9\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache\\n20 March 2027 · Parkview Manor\\nGroup: 9 whole tickets\\nTable preference: 9\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: $1,800.00 before taxes and fees; currency to confirm\\nPlanning only. No table held, invitations sent or payment collected.\\nOrganizer: https://www.signatureproductions.ca/giannisploutarchosandromache\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "971ee1d7-bb40-40cd-95a4-82d95a93f49f",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-toronto-2027\",\"title\":\"Giannis Ploutarchos & Andromache\",\"date\":\"20 March 2027\",\"venue\":\"Parkview Manor\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"9\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache\\n20 March 2027 · Parkview Manor\\nGroup: 9 whole tickets\\nTable preference: 9\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: $1,800.00 before taxes and fees; currency to confirm\\nPlanning only. No table held, invitations sent or payment collected.\\nOrganizer: https://www.signatureproductions.ca/giannisploutarchosandromache\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "5c0f2aa6-ffb3-401f-a3ca-a7942383ec71"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "5c0f2aa6-ffb3-401f-a3ca-a7942383ec71"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "9b241a00-f0c9-5748-8e22-79e2e0b57f79"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "9b241a00-f0c9-5748-8e22-79e2e0b57f79"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "f6e152c2-227f-43e7-bc1f-e09253c0fe97",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache — Montréal 2027",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-montreal-2027\",\"title\":\"Giannis Ploutarchos & Andromache — Montréal 2027\",\"date\":\"2027-03-26\",\"venue\":\"Palace Convention Centre\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"10A\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache — Montréal 2027\\n2027-03-26 · Palace Convention Centre\\nGroup: 9 whole tickets\\nTable preference: 10A\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "f6e152c2-227f-43e7-bc1f-e09253c0fe97",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache — Montréal 2027",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-montreal-2027\",\"title\":\"Giannis Ploutarchos & Andromache — Montréal 2027\",\"date\":\"2027-03-26\",\"venue\":\"Palace Convention Centre\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"10A\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache — Montréal 2027\\n2027-03-26 · Palace Convention Centre\\nGroup: 9 whole tickets\\nTable preference: 10A\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "dcadc3e5-1c9b-4287-8d8e-2300079b49e4"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "dcadc3e5-1c9b-4287-8d8e-2300079b49e4"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "003e7c31-08ab-496e-add7-89231c267cf7",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "003e7c31-08ab-496e-add7-89231c267cf7",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "4540117f-2703-4c2c-9700-fd3615f78213"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "4540117f-2703-4c2c-9700-fd3615f78213"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "4546481e-8995-482a-a0af-f0017613f187"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "4546481e-8995-482a-a0af-f0017613f187"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "f168975b-1cff-45e6-a3e8-e4bb2ef0efa4",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-toronto-2027\",\"title\":\"Giannis Ploutarchos & Andromache\",\"date\":\"20 March 2027\",\"venue\":\"Parkview Manor\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"9\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache\\n20 March 2027 · Parkview Manor\\nGroup: 9 whole tickets\\nTable preference: 9\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: $1,800.00 before taxes and fees; currency to confirm\\nPlanning only. No table held, invitations sent or payment collected.\\nOrganizer: https://www.signatureproductions.ca/giannisploutarchosandromache\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "f168975b-1cff-45e6-a3e8-e4bb2ef0efa4",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-toronto-2027\",\"title\":\"Giannis Ploutarchos & Andromache\",\"date\":\"20 March 2027\",\"venue\":\"Parkview Manor\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"9\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache\\n20 March 2027 · Parkview Manor\\nGroup: 9 whole tickets\\nTable preference: 9\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: $1,800.00 before taxes and fees; currency to confirm\\nPlanning only. No table held, invitations sent or payment collected.\\nOrganizer: https://www.signatureproductions.ca/giannisploutarchosandromache\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "8ab2bc61-5e7d-4dbc-89b8-663fd92d2f0b"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "8ab2bc61-5e7d-4dbc-89b8-663fd92d2f0b"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "9b241a00-f0c9-5748-8e22-79e2e0b57f79"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "9b241a00-f0c9-5748-8e22-79e2e0b57f79"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "81eb624f-1486-4d48-bfe8-bb46bf263e74",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache — Montréal 2027",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-montreal-2027\",\"title\":\"Giannis Ploutarchos & Andromache — Montréal 2027\",\"date\":\"2027-03-26\",\"venue\":\"Palace Convention Centre\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"10A\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache — Montréal 2027\\n2027-03-26 · Palace Convention Centre\\nGroup: 9 whole tickets\\nTable preference: 10A\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "81eb624f-1486-4d48-bfe8-bb46bf263e74",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache — Montréal 2027",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-montreal-2027\",\"title\":\"Giannis Ploutarchos & Andromache — Montréal 2027\",\"date\":\"2027-03-26\",\"venue\":\"Palace Convention Centre\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"10A\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache — Montréal 2027\\n2027-03-26 · Palace Convention Centre\\nGroup: 9 whole tickets\\nTable preference: 10A\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "fd8c5c90-0252-417b-b023-31648784cabe"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "fd8c5c90-0252-417b-b023-31648784cabe"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "ebbd09fb-5a97-4554-8b99-8e666257a59b",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "ebbd09fb-5a97-4554-8b99-8e666257a59b",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "393e5664-d5c1-4ddd-9cee-9792fb4fa420"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "393e5664-d5c1-4ddd-9cee-9792fb4fa420"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "database": {
+    "plans": 6,
+    "requests": 6,
+    "bookings": 0,
+    "tickets": 0
+  },
+  "status": "passed"
+}

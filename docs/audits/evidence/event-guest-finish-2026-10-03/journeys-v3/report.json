@@ -1,0 +1,123 @@
+{
+  "local_only": true,
+  "production_backend": false,
+  "source_record": "retained real Montréal public record; Toronto static source plan; sparse synthetic event",
+  "backend": "actual isolated Postgres existing event_plan_save/get/list definitions and ACLs",
+  "cases": [
+    {
+      "kind": "toronto",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan"
+      ]
+    }
+  ],
+  "calls": [
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "4546481e-8995-482a-a0af-f0017613f187"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "4546481e-8995-482a-a0af-f0017613f187"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "0071c2c0-f447-4329-977e-c127e37e4e0d",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-toronto-2027\",\"title\":\"Giannis Ploutarchos & Andromache\",\"date\":\"20 March 2027\",\"venue\":\"Parkview Manor\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"9\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache\\n20 March 2027 · Parkview Manor\\nGroup: 9 whole tickets\\nTable preference: 9\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: $1,800.00 before taxes and fees; currency to confirm\\nPlanning only. No table held, invitations sent or payment collected.\\nOrganizer: https://www.signatureproductions.ca/giannisploutarchosandromache\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "0071c2c0-f447-4329-977e-c127e37e4e0d",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-toronto-2027\",\"title\":\"Giannis Ploutarchos & Andromache\",\"date\":\"20 March 2027\",\"venue\":\"Parkview Manor\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"9\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache\\n20 March 2027 · Parkview Manor\\nGroup: 9 whole tickets\\nTable preference: 9\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: $1,800.00 before taxes and fees; currency to confirm\\nPlanning only. No table held, invitations sent or payment collected.\\nOrganizer: https://www.signatureproductions.ca/giannisploutarchosandromache\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "home_entity",
+      "args": {
+        "p_slug": "giannis-ploutarchos-andromache-toronto-2027"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "d34c932f-9041-4299-b154-3f5419916682"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "d34c932f-9041-4299-b154-3f5419916682"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "status": "failed",
+  "failure": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('[data-recipient-name]').first() to be visible\u001b[22m\n\n    at /workspaces/zoi-city/.recovery/event-guest-finish-20261003/tests/browser/event-guest-finish/verify.cjs:21:340"
+}

@@ -1,0 +1,95 @@
+✖ all four templates produce editable ordinary project/task payloads, no legal dates or providers (1.980046ms)
+✔ validation rejects foreign contacts/member, excessive/empty actions, bad dates and cross-workspace responses (0.796497ms)
+✖ review has no mutation; save confirms five actual linked records with fresh authority per step (0.957227ms)
+✖ committed but lost project response checks receipt and resumes without duplicate (0.317052ms)
+✖ committed but lost middle action retains preceding steps and resumes exact remaining work (0.338642ms)
+✖ role downgrade before save clears private plan and emits zero writes (0.285493ms)
+✔ account switch while fresh-read awaits discards private draft, publishes no response (0.477622ms)
+✖ saved receipt followed by refresh failure never resends the already saved step (0.298136ms)
+✖ nonce-only marker never contains plan titles, contact payloads or deadlines (0.330547ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 2
+ℹ fail 7
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 72.262244
+
+✖ failing tests:
+
+test at tests/unit/company-action-plan.test.mjs:7:1
+✖ all four templates produce editable ordinary project/task payloads, no legal dates or providers (1.980046ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:7:117)
+      at Test.runInAsyncScope (node:async_hooks:228:14)
+      at Test.run (node:internal/test_runner/test:1118:25)
+      at Test.start (node:internal/test_runner/test:1015:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:358:17)
+
+test at tests/unit/company-action-plan.test.mjs:9:1
+✖ review has no mutation; save confirms five actual linked records with fresh authority per step (0.957227ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at fresh (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:9:76)
+      at async file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:14:142
+      at async run (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:12:129)
+      at async TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:9:146)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at tests/unit/company-action-plan.test.mjs:10:1
+✖ committed but lost project response checks receipt and resumes without duplicate (0.317052ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at fresh (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:9:76)
+      at async file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:14:142
+      at async run (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:12:129)
+      at async TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:10:132)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at tests/unit/company-action-plan.test.mjs:11:1
+✖ committed but lost middle action retains preceding steps and resumes exact remaining work (0.338642ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at fresh (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:9:76)
+      at async file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:14:142
+      at async run (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:12:129)
+      at async TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:11:141)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at tests/unit/company-action-plan.test.mjs:12:1
+✖ role downgrade before save clears private plan and emits zero writes (0.285493ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at fresh (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:9:76)
+      at async file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:14:142
+      at async run (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:12:129)
+      at async TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:12:120)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at tests/unit/company-action-plan.test.mjs:14:1
+✖ saved receipt followed by refresh failure never resends the already saved step (0.298136ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at fresh (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:9:76)
+      at async file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:14:142
+      at async run (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:12:129)
+      at async TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:14:130)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+test at tests/unit/company-action-plan.test.mjs:17:1
+✖ nonce-only marker never contains plan titles, contact payloads or deadlines (0.330547ms)
+  Error: Current team members could not be verified.
+      at actionPlanContext (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-model.mjs:14:163)
+      at fresh (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:9:76)
+      at async file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:14:142
+      at async run (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/assets/operations/company-action-plan-controller.mjs:12:129)
+      at async TestContext.<anonymous> (file:///workspaces/zoi-city/.recovery/community-release/.recovery/company-readiness-candidate/tests/unit/company-action-plan.test.mjs:17:213)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)

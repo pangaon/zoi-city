@@ -2,7 +2,7 @@ import {companyWork,companyDocuments,companyJourney} from './company-journey.mjs
 import {companyConsole,companyRecordChecklist,companyHandover,WORK_FILTERS} from './company-console-model.mjs?v=20261003-company-console';
 import {companyStyles} from './company-console.mjs?v=20261003-company-console';
 
-export function mountCompanyWorkspace(root,{records,workspace,companyId,showLink=true,role,members=[],current,rpc,navigate,startProject,startTask,startContact,editCompany}) {
+export function mountCompanyWorkspace(root,{records,workspace,companyId,showLink=true,role,members=[],current,rpc,navigate,startProject,startTask,startContact,editCompany,startActionPlan}) {
  if(!['owner','admin','editor','viewer'].includes(role))throw Error('Current workspace access could not be verified.');
  const model=companyWork(records,workspace,companyId),doc=root.ownerDocument,surface=doc.createElement('section');surface.className='zops-card zcompany';root.replaceChildren(surface);companyStyles(doc);
  let dead=false,busy=false,files=null,error='',filter='all',query='',assignee='';const exports=new Set();
@@ -29,7 +29,7 @@ export function mountCompanyWorkspace(root,{records,workspace,companyId,showLink
  function render(){
   if(!active())return;const journey=companyJourney(model,{documents:files}),consoleModel=companyConsole(records,workspace,{companyId});surface.replaceChildren();
   const head=doc.createElement('div');head.className='zcompany-header';const intro=doc.createElement('div'),kicker=text('p','Your company workspace');kicker.className='zcompany-kicker';intro.append(kicker,text('h3',model.company.title),text('p',model.company.data?.jurisdiction||'Record your country or jurisdiction in company details.'));head.append(intro);
-  const topActions=doc.createElement('div');topActions.className='zops-actions';topActions.append(action('Export company records',exportRecords));if(showLink)topActions.append(action('Open company workspace',()=>navigate('operations','company:'+companyId)));head.append(topActions);surface.append(head);
+  const topActions=doc.createElement('div');topActions.className='zops-actions';topActions.append(action('Export company records',exportRecords));if(writable()&&startActionPlan)topActions.append(action('Build an action plan',()=>startActionPlan(model.company)));if(showLink)topActions.append(action('Open company workspace',()=>navigate('operations','company:'+companyId)));head.append(topActions);surface.append(head);
   const metrics=doc.createElement('div');metrics.className='zcompany-metrics';for(const [value,label]of[[model.projects.length,'Projects'],[journey.counts.completed+'/'+journey.counts.total,'Tasks completed'],[journey.counts.overdue,'Overdue tasks'],[journey.counts.blocked,'Blocked tasks']]){const box=doc.createElement('div');box.className='zcompany-metric';box.append(text('strong',String(value)),text('span',label));metrics.append(box);}surface.append(metrics);
   surface.append(text('p',journey.counts.unassigned+' unassigned tasks · '+model.contacts.length+' work contacts'));
   const next=doc.createElement('div');next.className='zcompany-next';next.append(text('h4','Your next step'),text('p',journey.next.detail));if(writable()&&(!['create_task'].includes(journey.next.action)||startTask))next.append(nextAction(journey.next));else if(journey.next.action!=='create_project'&&journey.next.action!=='create_task')next.append(nextAction(journey.next));else next.append(text('p','An authorized editor or owner can start linked work.'));surface.append(next);

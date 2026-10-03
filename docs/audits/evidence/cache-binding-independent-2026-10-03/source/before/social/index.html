@@ -1,0 +1,483 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Business · Zoi</title>
+<meta name="description" content="Manage your business home, customers, services, content and team from one workspace."/>
+<meta name="theme-color" content="#080a0e"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
+<style>
+:root{
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --bg2, --line, --line2, --tx, --mut, --dim, --acc, --gold, --green, --red */
+  --bg3:var(--card);
+  --acc2:var(--acc);
+  --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
+  --btnp-fg:var(--btn-fg);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.55;-webkit-font-smoothing:antialiased;letter-spacing:-.01em;min-height:100vh}
+a{color:inherit;text-decoration:none}
+.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:9px;font-weight:600;font-size:14px;cursor:pointer;transition:.22s var(--ease);border:1px solid transparent;white-space:nowrap;font-family:inherit}
+.btn.p{background:var(--btn-bg);color:var(--btnp-fg)} .btn.p:hover{transform:translateY(-1px)} .btn.p:disabled{opacity:.5;cursor:default;transform:none}
+.btn.g{background:transparent;border-color:var(--line2);color:var(--tx)} .btn.g:hover{background:var(--bg2)}
+.inp{width:100%;background:var(--bg);border:1px solid var(--line2);border-radius:9px;padding:11px 14px;font:500 14.5px 'Hanken Grotesk';color:var(--tx);outline:none}
+.inp:focus{border-color:var(--acc)}
+
+/* layout */
+#app{display:flex;min-height:100vh}
+.side{width:248px;flex:none;background:var(--bg2);border-right:1px solid var(--line);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;padding:18px 18px 14px}
+.seal{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(150deg,var(--bg3),var(--bg2));border:1px solid var(--line2);font-family:'Fraunces';font-size:17px;color:var(--gold)}
+.wsbar{margin:0 12px 10px;position:relative}
+.wsbtn{width:100%;display:flex;align-items:center;gap:10px;background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:9px 11px;cursor:pointer;color:var(--tx);text-align:left}
+.wsbtn:hover{border-color:var(--line2)}
+.wsav{width:26px;height:26px;border-radius:7px;flex:none;display:grid;place-items:center;font-family:'Fraunces';font-size:14px;color:var(--gold);background:var(--bg2);border:1px solid var(--line2)}
+.wsname{flex:1;min-width:0;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wsdrop{position:absolute;top:calc(100% + 5px);left:0;right:0;background:var(--bg3);border:1px solid var(--line2);border-radius:10px;padding:6px;z-index:40;box-shadow:0 18px 40px -18px rgba(0,0,0,.5);display:none}
+.wsdrop.on{display:block}
+.wsitem{width:100%;border:0;background:transparent;color:var(--tx);text-align:left;font-family:inherit;display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13.5px}
+.wsitem:hover{background:var(--bg2)} .wsitem.active{color:var(--gold)}
+nav.nv{flex:1;overflow-y:auto;padding:4px 12px}
+.nitem{width:100%;border:0;background:transparent;text-align:left;font-family:inherit;display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--mut);cursor:pointer;font-weight:600;font-size:14px;transition:.15s;margin-bottom:2px}
+.nitem:hover{color:var(--tx);background:var(--bg3)}
+.nitem.active{color:var(--tx);background:var(--bg3)}
+.nitem.active .nic{color:var(--gold)}
+.nv [hidden]{display:none!important}
+.navgroup{padding:15px 12px 5px;color:var(--dim);font-size:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+.nic{width:19px;height:19px;flex:none;color:var(--dim);display:grid;place-items:center}
+.nic svg{width:19px;height:19px}
+.sfoot{padding:12px;border-top:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.iconbtn{width:36px;height:36px;border-radius:9px;display:grid;place-items:center;background:var(--bg3);border:1px solid var(--line);color:var(--tx);cursor:pointer}
+.iconbtn:hover{border-color:var(--line2)} .iconbtn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:none}
+.mount{padding:clamp(18px,3vw,34px);flex:1}
+
+/* mobile */
+.hamb{display:none}
+@media(max-width:860px){
+  .side{position:fixed;left:0;top:0;bottom:0;z-index:120;transform:translateX(-100%);transition:transform .25s var(--ease);box-shadow:0 0 60px rgba(0,0,0,.5)}
+  .side.open{transform:translateX(0)}
+  .topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--navbg);backdrop-filter:blur(16px);z-index:60}
+  .hamb{display:grid;place-items:center;width:38px;height:38px;border-radius:9px;background:var(--bg3);border:1px solid var(--line);color:var(--tx);cursor:pointer}
+  .hamb svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+  .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:110}
+  .scrim.on{display:block}
+}
+
+/* gate / center states */
+.center{min-height:100vh;display:grid;place-items:center;padding:24px}
+.card{width:100%;max-width:420px;background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:28px}
+.card h1{font-size:24px;font-weight:700;letter-spacing:-.02em}
+.card h1 .serif{color:var(--gold);font-weight:300}
+.card p.sub{color:var(--mut);font-size:14.5px;margin:8px 0 20px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12.5px;color:var(--mut);margin-bottom:6px;font-weight:600}
+.err{color:var(--red);font-size:13px;min-height:18px;margin:4px 0}
+.spin{width:34px;height:34px;border:3px solid var(--line2);border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;margin:40px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(14px);opacity:0;background:var(--bg3);border:1px solid var(--line2);border-radius:11px;padding:11px 20px;font-weight:600;font-size:13.5px;z-index:500;transition:.3s;pointer-events:none;color:var(--tx)}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* legacy-guard: these class names predate the shared design system and mean
+   something different here — re-assert the page's own intent. */
+.field{width:auto;background:none;border:0;border-radius:0;padding:0;font:inherit;margin-bottom:12px}
+
+/* shell sits under the one global header (68px); the mobile drawer keeps its own offsets */
+#app{min-height:calc(100vh - 68px)}
+@media(min-width:861px){.side{top:68px;height:calc(100vh - 68px)}}
+
+.advlink{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 12px 6px;
+  padding:8px 11px;border:1px dashed var(--line2);border-radius:10px;color:var(--mut);font-size:12.5px;font-weight:600}
+.advlink:hover{color:var(--tx);border-color:var(--acc);border-style:solid}
+.advlink em{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--gold)}
+.nav-section{border-bottom:1px solid var(--line);padding-bottom:8px}.nav-section summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between}.nav-section summary:after{content:'−'}.nav-section:not([open]) summary:after{content:'+'}.nav-badge{font-size:9px;line-height:1.2;border:1px solid var(--line2);padding:3px 5px;border-radius:4px;margin-left:auto;color:var(--mut);flex:none}.workspace-focus{font-size:11px;color:var(--mut);margin:0 12px 12px;display:block}.workspace-focus select{font-size:12px;padding:8px;margin-top:5px}.workspace-context{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:25px clamp(18px,3vw,34px) 0}.workspace-context h1{font-size:22px;line-height:1.3;margin-top:5px}.workspace-start{margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid var(--line)}.workspace-start h2{font-size:19px}.workspace-start p{color:var(--mut);font-size:14px;margin-top:5px}.setup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}.setup-grid button{border:1px solid var(--line);background:var(--card);color:var(--tx);border-radius:12px;padding:20px;text-align:left;display:flex;flex-direction:column;gap:12px;font:inherit;cursor:pointer}.setup-grid strong{font-size:15px}.setup-grid span{font-size:13px;color:var(--mut)}.setup-grid b{font-size:12px;color:var(--acc);margin-top:auto}.nv .nitem>span:nth-child(2){min-width:0;white-space:normal}.nav-section .nitem{font-size:13px;gap:9px;padding:9px}.workspace-context .mono{letter-spacing:.08em}.workspace-context .btn{white-space:normal;text-align:center}@media(max-width:700px){.workspace-context{align-items:start;flex-direction:column;gap:12px}.workspace-context h1{font-size:21px}.setup-grid{grid-template-columns:1fr}.setup-grid button{padding:17px}.workspace-start{margin-bottom:20px}}@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+</style>
+<script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');}catch(e){}})()</script>
+<link rel="manifest" href="/manifest.webmanifest">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png?v=blue-olive"><link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/favicon-16.png?v=blue-olive"><link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=blue-olive"><link rel="preload" as="image" href="/assets/brand/zoi-logo.png"></head>
+<body>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home" data-zoi-identity="08db50bee5caf18a878cb8468ced301d74c92bffd7b308678fb95e4f75514ff1"><img src="/assets/brand/zoi-logo.png" alt="Zoi" width="35" height="48" style="display:block;width:auto;height:48px;object-fit:contain"><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Discover</a><a href="/community">Community</a><a href="/tickets">Events</a><a href="/shop/">Marketplace</a><a href="/business" aria-current="page">For Business</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
+
+<div id="root"><div class="center"><div class="spin"></div></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- foundation + suite modules (load synchronously, in order) -->
+<script src="/assets/zoi-core.js?v=20261001-session-transition"></script>
+<script>window.ZoiSuite = window.ZoiSuite || { modules: [] };</script>
+<script src="/assets/suite/composer.js?v=20261001-actor-drafts"></script>
+<script src="/assets/suite/calendar.js?v=20261001-actor-drafts"></script>
+<script src="/assets/suite/analytics.js?v=20260930"></script>
+<script src="/assets/suite/bio.js?v=20261001-session-fences"></script>
+<script src="/assets/suite/email.js?v=20261001-session-fences"></script>
+<script src="/assets/suite/audience.js?v=20261002-organization-workflow"></script>
+<script src="/assets/suite/operations.js?v=20261003-current-suite-authority"></script>
+<script src="/assets/suite/priorities.js?v=20261002-member-start"></script>
+<script src="/assets/suite/bookings.js?v=20260930b"></script>
+<script src="/assets/suite/organizations.js?v=20261002-volunteer-operations"></script>
+<script src="/assets/suite/service-menu.js?v=20261002-installed-service"></script>
+<script src="/assets/suite/service-queue.js?v=20261002-installed-service"></script>
+<script src="/assets/suite/documents.js?v=20261002-workspace-files"></script>
+<script src="/assets/suite/inbox.js?v=20261001-inquiry-access"></script>
+<script src="/assets/suite/creator.js?v=20261002-sponsor-fulfillment"></script><script src="/assets/suite/timekeeping.js?v=20261002-private-scope"></script><script src="/assets/suite/organization-calendar.js?v=20260930"></script><script src="/assets/suite/groups.js?v=20261002-guardian-entry"></script><script src="/assets/suite/festival.js?v=20261002-sponsor-fulfillment"></script><script src="/assets/suite/appearances.js?v=20260930"></script><script src="/assets/suite/leagues.js?v=20260930"></script><script src="/assets/suite/properties.js?v=20261002-private-scope"></script>
+<!-- the per-vertical profile editor: schemas, then the renderer, then the
+     module that mounts it. Order matters — bizpage.js reads both. -->
+<script src="/assets/suite/_vertical-forms.js?v=20261001-hospitality-catalog"></script>
+<script src="/assets/suite/_vertical-ui.js?v=20261002-field-labels"></script>
+<script src="/assets/suite/bizpage.js?v=20261003-current-owner-authority"></script>
+<script src="/assets/suite/connect.js?v=20261001-queued-identity"></script>
+<script src="/assets/suite/settings.js?v=20261003-current-suite-authority"></script>
+<script src="/assets/suite/ai.js?v=20261001-queued-identity"></script>
+
+<script>
+(function(){
+  'use strict';
+  var C = window.ZoiCore;
+  var toastEl = document.getElementById('toast');
+  function toast(m){ if(!toastEl) return; toastEl.textContent=String(m==null?'':m); toastEl.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(function(){toastEl.classList.remove('show');},2600); }
+  if(C){ C.toast = toast; } // route core toasts through our element
+  function esc(s){ return C? C.esc(s) : String(s==null?'':s); }
+  var root = document.getElementById('root');
+
+  var claimReturnModule=null;
+  var STATE = { me:null, ws:null, wsName:'', workspaces:[], avail:null, channels:[], active:null, ctx:null, navigation:null, focus:'all', role:null, shellAbort:null, epoch:0, handle:null, moduleEpoch:0, activeView:null, currentRoute:null, actor:null, sessionIdentity:null };
+
+  function themeCurrent(){ try{ return document.documentElement.getAttribute('data-theme')||'dark'; }catch(e){ return 'dark'; } }
+  var THEMES=['dark','light','gold'];
+  function flipTheme(){ var i=THEMES.indexOf(themeCurrent()); var t=THEMES[(i+1)%THEMES.length]; document.documentElement.setAttribute('data-theme',t); try{localStorage.setItem('zoi_theme',t);}catch(e){} }
+
+  /* ---------- sign-in gate ---------- */
+  function destroyCurrent(){STATE.moduleEpoch++;var handle=STATE.handle;STATE.handle=null;if(handle&&typeof handle.destroy==='function')handle.destroy();}
+  function mayLeave(){if(STATE.actor&&STATE.sessionIdentity&&STATE.sessionIdentity(C)!==STATE.actor){authScopeChanged();return false;}return !STATE.handle||typeof STATE.handle.hasUnsavedChanges!=='function'||!STATE.handle.hasUnsavedChanges()||confirm('Leave this tool? Unsaved changes will be lost.');}
+  function restoreCurrentUrl(){if(STATE.currentRoute)history.replaceState(null,'',STATE.currentRoute);}
+  function clearAccountContext(){STATE.me=null;STATE.workspaces=[];STATE.membershipToken=null;STATE.ctx=null;STATE.ws=null;STATE.wsName='';STATE.role=null;STATE.actor=null;STATE.channels=[];STATE.avail=null;STATE.currentRoute=null;STATE.routeLoading=null;}
+  function renderGate(step, email){
+    destroyCurrent();clearAccountContext();
+    root.innerHTML =
+    '<div class="center"><div class="card">'+
+      '<div class="mono" style="margin-bottom:14px">The Greek business world, one desk</div>'+
+      '<h1>Your <span class="serif">suite.</span></h1>'+
+      '<p class="sub">Your business, content and community in one workspace. Sign in with the code sent to your email.</p>'+
+      (step==='code'
+        ? '<div class="field"><label for="g-code">Code sent to '+esc(email)+'</label><input id="g-code" class="inp" inputmode="numeric" maxlength="8" placeholder="6-digit code" style="letter-spacing:.3em;font-family:JetBrains Mono"></div>'+
+          '<div class="err" id="g-err"></div>'+
+          '<button class="btn p" id="g-verify" style="width:100%">Enter</button>'+
+          '<div style="text-align:center;margin-top:12px"><button type="button" id="g-back" class="btn g" style="color:var(--dim);font-size:13px;cursor:pointer">Use a different email</button></div>'
+        : '<div class="field"><label for="g-email">Email</label><input id="g-email" class="inp" type="email" placeholder="you@business.com" autocomplete="email"></div>'+
+          '<div class="err" id="g-err"></div>'+
+          '<button class="btn p" id="g-send" style="width:100%">Send my code</button>')+
+    '</div></div>';
+    if(step==='code'){
+      var ci=document.getElementById('g-code'); ci.focus();
+      ci.addEventListener('keydown',function(e){ if(e.key==='Enter') doVerify(email); });
+      document.getElementById('g-verify').onclick=function(){ doVerify(email); };
+      document.getElementById('g-back').onclick=function(){ renderGate('email'); };
+    } else {
+      var ei=document.getElementById('g-email'); ei.focus();
+      ei.addEventListener('keydown',function(e){ if(e.key==='Enter') doSend(); });
+      document.getElementById('g-send').onclick=doSend;
+    }
+  }
+  function doSend(){
+    var email=(document.getElementById('g-email').value||'').trim();
+    var err=document.getElementById('g-err'); err.textContent='';
+    if(!/.+@.+\..+/.test(email)){ err.textContent='Enter a valid email.'; return; }
+    var b=document.getElementById('g-send'); b.disabled=true; b.textContent='Sending…';
+    C.otp.send(email).then(function(){ renderGate('code', email); })
+      .catch(function(e){ err.textContent=e.message||'Could not send code.'; b.disabled=false; b.textContent='Send my code'; });
+  }
+  function doVerify(email){
+    var code=(document.getElementById('g-code').value||'').trim();
+    var err=document.getElementById('g-err'); err.textContent='';
+    if(!code){ err.textContent='Enter the code from your email.'; return; }
+    var b=document.getElementById('g-verify'); b.disabled=true; b.textContent='Checking…';
+    C.otp.verify(email, code).then(function(){ boot(); })
+      .catch(function(e){ err.textContent=e.message||'Wrong or expired code.'; b.disabled=false; b.textContent='Enter'; });
+  }
+
+  /* ---------- create workspace ---------- */
+  function renderCreate(){
+    root.innerHTML = '<div class="center"><div class="card"><div class="mono" style="margin-bottom:14px">Welcome</div><h1>Your next <span class="serif">workspace.</span></h1><p class="sub">Create a space for your work, organization or community. This does not publish a listing.</p><div class="field"><label for="c-kind">Workspace type</label><select id="c-kind" class="inp" style="font:inherit"><option value="business">Business</option><option value="organization">Organization or nonprofit</option><option value="community">Community or club</option><option value="creator">Creator</option><option value="agency">Agency</option><option value="personal">Personal</option></select></div><div class="field"><label for="c-name">Workspace name</label><input id="c-name" class="inp" style="font:inherit" maxlength="120" autocomplete="organization" placeholder="e.g. Hellenic Arts Society"></div><div class="err" id="c-err" role="status"></div><button class="btn p" id="c-go" style="width:100%" disabled>Create workspace</button><button class="btn" id="c-check" hidden>Check previous request</button><div id="c-review"></div></div></div>';
+    var ni=document.getElementById('c-name'),kindSelect=document.getElementById('c-kind'),button=document.getElementById('c-go'),checkButton=document.getElementById('c-check'),err=document.getElementById('c-err'),review=document.getElementById('c-review'),actor=C.auth.load()?.user_id,controller;
+    function current(){return ni.isConnected&&C.auth.load()?.user_id===actor;}
+    function paint(state){if(!current())return;button.disabled=!state.ready||state.busy||state.pending;ni.disabled=state.busy||state.pending;kindSelect.disabled=state.busy||state.pending;button.textContent=state.busy?'Checking…':'Create workspace';checkButton.hidden=!state.pending&&state.ready;checkButton.disabled=state.busy;checkButton.textContent=state.ready?'Check previous request':'Retry recovery check';}
+    var creationObserver=new MutationObserver(clearPrivate);creationObserver.observe(root,{childList:true,subtree:true});
+    function cleanupCreation(){creationObserver.disconnect();['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(event){window.removeEventListener(event,clearPrivate);});}
+    function clearPrivate(){if(current())return;cleanupCreation();controller?.dispose();ni.value='';kindSelect.value='business';kindSelect.disabled=true;review.replaceChildren();button.disabled=true;checkButton.disabled=true;err.textContent='Your account changed. Reopen workspace setup.';}
+    ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(event){window.addEventListener(event,clearPrivate);});
+    async function go(){if(!controller||button.disabled||!current())return;err.textContent='';review.replaceChildren();try{await controller.create({name:ni.value,kind:kindSelect.value});}catch(e){if(current())err.textContent=e.message||'The creation result could not be confirmed. Check the previous request before trying again.';}}
+    ni.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();go();}});button.onclick=go;
+    checkButton.onclick=async function(){if(!controller||checkButton.disabled||!current())return;err.textContent='';try{var result=await controller.check();if(!current())return;if(result.status==='unconfirmed'){err.textContent='The previous request has no confirmed receipt. Review your workspaces below. Creating again is paused to avoid a duplicate.';review.replaceChildren();result.workspaces.forEach(function(w){var link=document.createElement('a');link.className='btn';link.textContent='Open '+w.name;link.href=claimReturnModule?claimReturnModule.socialAfterCreation(location.href,w.id):'/social?workspace='+encodeURIComponent(w.id);review.appendChild(link);});}}catch(e){if(current())err.textContent=e.message||'Could not confirm the previous request.';}};
+    import('/assets/suite/workspace-creation.mjs?v=20261001-exact-workspace').then(async function(module){if(!current())return;var key='zoi_workspace_creation:'+actor;controller=module.createWorkspaceController({actor:actor,current:current,rpc:function(name,args){return C.api.rpc(name,args,{auth:'require'});},storage:{load:function(){var value=sessionStorage.getItem(key);return value===null?null:JSON.parse(value);},save:function(value){sessionStorage.setItem(key,JSON.stringify(value));},clear:function(){sessionStorage.removeItem(key);}},changed:paint,onConfirmed:function(value){if(!current())return;cleanupCreation();history.replaceState(null,'',claimReturnModule?claimReturnModule.socialAfterCreation(location.href,value.workspaceId):'/social?workspace='+encodeURIComponent(value.workspaceId));try{localStorage.setItem('zoi_ws',value.workspaceId);}catch(_){}boot();}});await controller.load();if(current()&&controller.state().pending)err.textContent='A previous workspace request needs checking before another can be created.';}).catch(function(e){if(current()){err.textContent=e.message||'Workspace setup could not load.';checkButton.hidden=!controller;}});
+    ni.focus();
+  }
+
+  /* ---------- shell ---------- */
+  function iconTheme(){ return themeCurrent()==='dark'
+    ? '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>'
+    : '<svg viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1111.2 3a7 7 0 009.8 9.8z"/></svg>'; }
+
+  function renderShell(){
+    var mods = (window.ZoiSuite.modules||[]).slice().sort(function(a,b){ return (a.order||99)-(b.order||99); });
+    if(STATE.shellAbort)STATE.shellAbort.abort();STATE.shellAbort=new AbortController();
+    var groups=STATE.navigation.navigationModel(mods,{focus:STATE.focus,avail:STATE.avail});
+    // Search aliases lead to the existing authorized owner tools, not new modules.
+    var ownerToolSearchAliases={bizpage:'website page details source review official website address',operations:'company work queue saved work deadlines handover export company records'};
+    var navHtml=groups.map(function(group){return '<details class="nav-section" '+(['overview','home'].indexOf(group.id)!==-1||group.tools.some(function(m){return m.recommended;})?'open ':'')+'data-section="'+esc(group.id)+'"><summary class="navgroup">'+esc(group.label)+'</summary>'+group.tools.map(function(m){return '<button type="button" class="nitem" data-group="'+esc(group.id)+'" data-id="'+esc(m.id)+'" data-keywords="'+esc(m.keywords+' '+(ownerToolSearchAliases[m.id]||''))+'"><span class="nic">'+(m.icon||'')+'</span><span>'+esc(m.label)+'</span>'+(m.recommended?'<span class="nav-badge" data-focus-badge title="Suggested for your chosen focus">For you</span>':'')+(m.setupRequired?'<span class="nav-badge">Setup</span>':'')+'</button>';}).join('')+'</details>';}).join('');
+    var wsInitial = esc((STATE.wsName||'Z').trim().charAt(0).toUpperCase());
+    root.innerHTML =
+    '<div id="app">'+
+      '<div class="scrim" id="scrim"></div>'+
+      '<aside class="side" id="side">'+
+        '<div class="brand"><span class="seal">Ζ</span>Zoi <span style="color:var(--dim);font-weight:500;font-size:13px;margin-left:2px">suite</span></div>'+
+        '<div class="wsbar">'+
+          '<button class="wsbtn" id="wsbtn" aria-expanded="false" aria-controls="wsdrop"><span class="wsav">'+wsInitial+'</span><span class="wsname">'+esc(STATE.wsName||'Workspace')+'</span>'+
+            '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--dim)"><path d="M6 9l6 6 6-6"/></svg></button>'+
+          '<div class="wsdrop" id="wsdrop">'+
+            STATE.workspaces.map(function(w){ return '<button type="button" class="wsitem'+(w.id===STATE.ws?' active':'')+'" data-ws="'+esc(w.id)+'" data-name="'+esc(w.name||'Workspace')+'"><span class="wsav" style="width:22px;height:22px;font-size:12px">'+esc((w.name||'Z').charAt(0).toUpperCase())+'</span>'+esc(w.name||'Workspace')+'</button>'; }).join('')+
+            '<button type="button" class="wsitem" id="ws-new" style="color:var(--gold)"><span class="wsav" style="width:22px;height:22px;font-size:14px">+</span>New workspace</button>'+
+          '</div>'+
+        '</div>'+
+        '<label style="margin:0 12px 8px;font-size:12px;color:var(--mut)">Find a tool<input class="inp" type="search" id="tool-search" placeholder="Bookings, groups, creator…" autocomplete="off"></label>'+
+        '<label class="workspace-focus">Navigation focus<select id="workspace-focus" class="inp">'+Object.keys(STATE.navigation.FOCUS).map(function(key){return '<option value="'+key+'" '+(STATE.focus===key?'selected':'')+'>'+esc(STATE.navigation.FOCUS[key])+'</option>';}).join('')+'</select></label>'+
+        '<nav class="nv" id="nav" aria-label="Workspace tools">'+navHtml+'<p id="tool-empty" hidden role="status" style="padding:12px">No tools match.</p></nav>'+
+        '<a class="advlink" href="/apps/command-center/">Advanced operations <em>workspace tools</em></a>'+
+        '<a class="advlink" href="/add">Add your business <em>start here</em></a>'+
+
+        '<div class="sfoot">'+
+          '<button class="iconbtn" id="suiteThemeBtn" title="Theme — dark / light / gold" aria-label="Switch theme">'+iconTheme()+'</button>'+
+          '<button class="btn g" id="signout" style="flex:1;padding:9px">Sign out</button>'+
+        '</div>'+
+      '</aside>'+
+      '<div class="main">'+
+        '<div class="topbar"><button class="hamb" id="hamb" aria-label="Open workspace navigation" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>'+
+          '<div><div style="font-weight:700">Zoi suite</div><div style="font-size:11px;color:var(--dim)">Plan · create · grow · convert</div></div></div>'+
+        '<header class="workspace-context"><div><p class="mono" id="workspace-context-name">'+esc(STATE.wsName)+'</p><h1 id="workspace-section-title">Workspace overview</h1></div><a class="btn g" href="/social#home-design" data-design-link>'+(['owner','admin','editor'].indexOf(STATE.role)!==-1?'Design your home':'Business home')+'</a></header><div class="mount" id="mount"></div>'+
+      '</div>'+
+    '</div>';
+
+    // Optional report handoff stays separate from the selected workspace tool.
+    var intelligenceWs=STATE.ws,intelligenceToken=C.auth.token(),intelligenceRequestedUrl=location.href;
+    import('/assets/intelligence/workspace.mjs').then(function(module){
+      if(STATE.ws!==intelligenceWs||C.auth.token()!==intelligenceToken||!module.wantsIntelligence(intelligenceRequestedUrl))return;
+      var anchor=document.getElementById('mount');if(!anchor)return;
+      var panel=document.createElement('section');anchor.before(panel);
+      module.mountIntelligence(panel,{C:C,workspace:STATE.ws,role:STATE.role,workspaceName:STATE.wsName});
+    }).catch(function(){ /* Workspace tools remain available if the optional report panel cannot load. */ });
+
+    // wire nav
+    var nav=document.getElementById('nav');
+    nav.addEventListener('click',function(e){
+      var it=e.target.closest('.nitem'); if(!it) return;
+      selectModule(it.getAttribute('data-id'));
+      closeDrawer();
+    });
+    document.getElementById('tool-search').addEventListener('input',function(e){
+      var term=e.target.value.trim().toLowerCase(),visible=0;
+      nav.querySelectorAll('.nitem').forEach(function(item){item.hidden=!(item.textContent+' '+item.dataset.keywords).toLowerCase().includes(term);if(!item.hidden)visible++;});
+      nav.querySelectorAll('.nav-section').forEach(function(group){group.hidden=!Array.from(group.querySelectorAll('.nitem')).some(function(item){return !item.hidden;});if(term)group.open=true;});
+      document.getElementById('tool-empty').hidden=visible>0;
+    });
+    document.getElementById('workspace-focus').onchange=function(e){STATE.focus=e.target.value;try{localStorage.setItem('zoi_nav_focus:'+STATE.ws,STATE.focus);}catch(_){}var suggested=STATE.navigation.navigationModel(mods,{focus:STATE.focus,avail:STATE.avail}).flatMap(function(g){return g.tools;}).filter(function(m){return m.recommended;}).map(function(m){return m.id;});nav.querySelectorAll('[data-focus-badge]').forEach(function(b){b.remove();});nav.querySelectorAll('.nitem').forEach(function(item){if(suggested.indexOf(item.dataset.id)!==-1){var badge=document.createElement('span');badge.className='nav-badge';badge.dataset.focusBadge='';badge.textContent='For you';item.appendChild(badge);}});};
+    root.querySelector('[data-design-link]').onclick=function(e){e.preventDefault();selectModule('bizpage',['owner','admin','editor'].indexOf(STATE.role)!==-1?'design':null);};
+    // workspace dropdown
+    var wsbtn=document.getElementById('wsbtn'), wsdrop=document.getElementById('wsdrop');
+    wsbtn.onclick=function(e){ e.stopPropagation(); wsdrop.classList.toggle('on'); wsbtn.setAttribute('aria-expanded',String(wsdrop.classList.contains('on'))); };
+    document.addEventListener('click',function(){ wsdrop.classList.remove('on'); wsbtn.setAttribute('aria-expanded','false'); },{signal:STATE.shellAbort.signal});
+    wsdrop.addEventListener('click',function(e){
+      var it=e.target.closest('.wsitem'); if(!it) return;
+      if(it.id==='ws-new'){if(!mayLeave())return;destroyCurrent();renderCreate();return;}
+      var id=it.getAttribute('data-ws');
+      if(id && id!==STATE.ws && STATE.workspaces.some(function(w){return w.id===id;})){if(!mayLeave())return;destroyCurrent();var nextWorkspaceURL=new URL(location.href);nextWorkspaceURL.searchParams.set('workspace',id);nextWorkspaceURL.searchParams.delete('ws');nextWorkspaceURL.searchParams.delete('listing');history.replaceState(null,'',nextWorkspaceURL.pathname+nextWorkspaceURL.search+nextWorkspaceURL.hash);try{localStorage.setItem('zoi_ws',id);}catch(err){}location.reload();}
+    });
+    // theme + signout + mobile
+    document.getElementById('suiteThemeBtn').onclick=function(){ flipTheme(); document.getElementById('suiteThemeBtn').innerHTML=iconTheme();  };
+    document.getElementById('signout').onclick=function(){destroyCurrent();STATE.actor=null;STATE.epoch++;STATE.me=null;STATE.ws=null;STATE.ctx=null;if(STATE.shellAbort)STATE.shellAbort.abort();var pending=C.auth.signOut(); renderGate('email'); pending.catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');}); };
+    var side=document.getElementById('side'), scrim=document.getElementById('scrim');
+    var hamb=document.getElementById('hamb');
+    var narrow=window.matchMedia('(max-width:860px)');
+    function syncDrawerAccess(){var hidden=narrow.matches&&!side.classList.contains('open');side.inert=hidden;if(hidden)side.setAttribute('aria-hidden','true');else side.removeAttribute('aria-hidden');}
+    syncDrawerAccess();
+    narrow.onchange=function(){if(!side.isConnected){narrow.onchange=null;return;}closeDrawerFn();};
+    hamb.onclick=function(){side.classList.add('open');scrim.classList.add('on');hamb.setAttribute('aria-expanded','true');syncDrawerAccess();if(C.trapFocus)C.trapFocus(side);};
+    scrim.onclick=closeDrawer;
+    function closeDrawerFn(){var wasOpen=side.classList.contains('open');side.classList.remove('open');scrim.classList.remove('on');hamb.setAttribute('aria-expanded','false');if(C.releaseFocus)C.releaseFocus();if(wasOpen&&narrow.matches)hamb.focus();syncDrawerAccess();}
+    document.addEventListener('keydown',function(event){if(event.key==='Escape'&&side.classList.contains('open'))closeDrawerFn();},{signal:STATE.shellAbort.signal});
+    window.__closeDrawer=closeDrawerFn;
+
+    // Stable path/hash routes preserve links into existing tools and design subviews.
+    var saved=null;try{saved=localStorage.getItem('zoi_suite_tab:'+STATE.ws)||localStorage.getItem('zoi_suite_tab');}catch(_){}
+    var start=STATE.navigation.resolveWorkspaceRoute(location.href,mods,saved);
+    if(start.id)selectModule(start.id,start.view,true);
+  }
+  function closeDrawer(){ if(window.__closeDrawer) window.__closeDrawer(); }
+
+  function selectModule(id,view,replace){
+    var mods = window.ZoiSuite.modules||[];
+    var mod = null; for(var i=0;i<mods.length;i++){ if(mods[i].id===id){ mod=mods[i]; break; } }
+    if(!mod) return false;
+    var same=STATE.active===id&&STATE.handle;
+    if(!same&&!mayLeave()){restoreCurrentUrl();return false;}
+    var keep=same&&(STATE.activeView===(view||null)||typeof STATE.handle.showView==='function');
+    if(same&&!keep&&!mayLeave()){restoreCurrentUrl();return false;}
+    if(keep&&typeof STATE.handle.showView==='function')STATE.handle.showView(view||null);
+    if(!keep)destroyCurrent();
+    STATE.activeView=view||null;
+    var search=document.getElementById('tool-search');if(search&&search.value){search.value='';document.querySelectorAll('#nav .nitem,#nav .nav-section').forEach(function(n){n.hidden=false;});document.getElementById('tool-empty').hidden=true;}
+    STATE.active=id;STATE.ctx.view=view||null;STATE.ctx.navigate=selectModule;STATE.ctx.managedNavigation=true; try{var route=STATE.navigation.moduleRoute(id,view),target=new URL(route,location.origin);target.search=location.search;var next=target.pathname+target.search+target.hash;if(replace)history.replaceState(null,'',next);else if(location.pathname+location.search+location.hash!==next)history.pushState(null,'',next);}catch(e){}STATE.currentRoute=location.pathname+location.search+location.hash;try{localStorage.setItem('zoi_suite_tab:'+STATE.ws,id);}catch(e){}
+    var items=document.querySelectorAll('.nitem');
+    for(var j=0;j<items.length;j++){ var selected=items[j].getAttribute('data-id')===id;items[j].classList.toggle('active',selected);if(selected){items[j].setAttribute('aria-current','page');items[j].closest('details').open=true;}else items[j].removeAttribute('aria-current'); }
+    var mount=document.getElementById('mount');
+    var entry=STATE.navigation.navigationModel(mods).flatMap(function(g){return g.tools;}).find(function(m){return m.id===id;});document.getElementById('workspace-section-title').textContent=view==='design'?'Business home · Design & layout':entry?entry.label:mod.label;document.title=(view==='design'?'Design & layout':entry?entry.label:mod.label)+' · '+STATE.wsName+' · Zoi';
+    if(keep)return true;
+    var moduleEpoch=STATE.moduleEpoch;
+    mount.innerHTML='';
+    if(id==='priorities'&&['owner','admin'].includes(STATE.role)){var setup=document.createElement('section');setup.className='workspace-start';setup.innerHTML='<div><h2>Your next steps</h2><p>Keep your public home, customer work and publishing connected.</p></div><div class="setup-grid">'+STATE.navigation.setupSteps({channels:STATE.channels,role:STATE.role}).map(function(step){return '<button type="button" data-setup="'+step.id+'"><strong>'+esc(step.label)+'</strong><span>'+esc(step.detail)+'</span><b>Open →</b></button>';}).join('')+'</div>';setup.addEventListener('click',function(e){var b=e.target.closest('[data-setup]');if(b)selectModule(b.dataset.setup);});mount.appendChild(setup);}
+    var surface=document.createElement('div');surface.className='suite-surface';mount.appendChild(surface);surface.innerHTML='<div class="spin"></div>';
+    try{
+      var r = mod.mount(surface, Object.assign({},STATE.ctx,{view:view||null}));
+      Promise.resolve(r).then(function(handle){if(moduleEpoch!==STATE.moduleEpoch||!surface.isConnected){if(handle&&typeof handle.destroy==='function')handle.destroy();return;}STATE.handle=handle||null;},function(e){if(moduleEpoch!==STATE.moduleEpoch||!surface.isConnected)return;showModuleError(surface,id,view);});
+    }catch(e){
+      showModuleError(surface,id,view);
+    }
+  }
+
+  function showModuleError(surface,id,view){if(!surface.isConnected)return;surface.innerHTML='<section role="alert" style="padding:20px"><h2>This tool could not load</h2><p>Please retry, or choose another workspace tool.</p><button type="button" class="btn g">Retry tool</button></section>';surface.querySelector('button').onclick=function(){selectModule(id,view,true);};}
+
+  /* ---------- boot ---------- */
+  function boot(){
+    if(!C){ root.innerHTML='<div class="center"><div class="card"><h1>Loading failed</h1><p class="sub">Core script did not load. Please refresh.</p></div></div>'; return; }
+    C.theme.init('light');
+    var tok = C.auth.token();
+    if(!tok){
+      // maybe a stored session we can refresh
+      C.auth.ensureFresh().then(function(ok){ if(ok) loadMe(); else renderGate('email'); });
+      return;
+    }
+    loadMe();
+  }
+  function renderUnavailableWorkspace(){
+    if(STATE.membershipToken!==C.auth.token())clearAccountContext();
+    destroyCurrent();STATE.ctx=null;STATE.ws=null;STATE.role=null;STATE.actor=null;
+    var token=C.auth.token(),generation=STATE.epoch;STATE.gateToken=token;
+    root.innerHTML='<div class="center"><section class="card"><h1>Choose your workspace</h1><p class="sub">The workspace in this link is not available to your account. Choose an accessible workspace to continue.</p><div class="field"><label for="workspace-recovery">Your workspaces</label><select id="workspace-recovery" class="inp"><option value="">Choose a workspace</option>'+STATE.workspaces.map(function(w){return '<option value="'+esc(w.id)+'">'+esc(w.name||'Workspace')+' · '+esc(w.role||'Access not confirmed')+'</option>';}).join('')+'</select></div><div style="display:flex;flex-wrap:wrap;gap:10px"><button class="btn p" id="workspace-open" disabled>Open workspace</button><button class="btn" id="workspace-retry">Check access again</button><button class="btn" id="workspace-create">Create a workspace</button></div></section></div>';
+    var selection=document.getElementById('workspace-recovery'),open=document.getElementById('workspace-open');
+    function current(){if(generation!==STATE.epoch)return false;if(C.auth.token()!==token){boot();return false;}return true;}
+    selection.onchange=function(){open.disabled=!STATE.workspaces.some(function(w){return w.id===selection.value;});};
+    open.onclick=function(){if(!current()||!STATE.workspaces.some(function(w){return w.id===selection.value;}))return;var u=new URL(location.href);u.searchParams.set('workspace',selection.value);u.searchParams.delete('ws');u.searchParams.delete('listing');history.replaceState(null,'',u.pathname+u.search+u.hash);loadMe();};
+    document.getElementById('workspace-retry').onclick=function(){if(current())loadMe();};
+    document.getElementById('workspace-create').onclick=function(){if(!current())return;var u=new URL(location.href);u.searchParams.delete('workspace');u.searchParams.delete('ws');u.searchParams.delete('listing');history.replaceState(null,'',u.pathname+u.search+u.hash);renderCreate();};
+  }
+  function workspaceIntent(url){
+    var params=new URL(url,location.origin).searchParams,values=params.getAll('workspace').concat(params.getAll('ws'));
+    return {explicit:values.length>0,valid:values.length===1&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(values[0]),id:values.length===1?values[0].toLowerCase():null};
+  }
+  function loadMe(){
+    STATE.gateToken=null;var generation=++STATE.epoch,requestedToken=C.auth.token(),requestedRoute=location.href,intent=workspaceIntent(requestedRoute);
+    destroyCurrent();STATE.ctx=null;STATE.routeLoading=requestedRoute;
+    if(intent.explicit&&!intent.valid){renderUnavailableWorkspace();return;}
+
+    root.innerHTML='<div class="center"><div class="spin"></div></div>';
+    C.api.rpc('zoi_me',{},{auth:'require'}).then(async function(me){
+      if(generation!==STATE.epoch)return;
+      if(location.href!==requestedRoute){restoreRoute();return;}
+      if(C.auth.token()!==requestedToken){destroyCurrent();boot();return;}
+      if(!me || !me.authenticated){ C.auth.clear(); renderGate('email'); return; }
+      STATE.me = me;var globalCta=document.getElementById('zoiCta');if(globalCta){globalCta.textContent='My workspace';globalCta.href='/social/';}
+      STATE.workspaces = (me.workspaces||[]);STATE.membershipToken=requestedToken;
+      if(new URL(location.href).searchParams.has('claim_return')){
+        claimReturnModule=await import('/assets/workspace/claim-return.mjs');
+        if(generation!==STATE.epoch||C.auth.token()!==requestedToken)return;
+        if(claimReturnModule.renderClaimReturn({root:root,C:C,url:location.href,current:function(){return generation===STATE.epoch&&C.auth.token()===requestedToken;},create:renderCreate,signOut:function(){STATE.epoch++;C.auth.signOut().catch(function(){toast('Signed out on this device. Server revocation could not be confirmed.');});renderGate('email');}}))return;
+      }
+      var saved=intent.id,explicit=intent.explicit;try{if(!explicit)saved=localStorage.getItem('zoi_ws');}catch(e){}
+      STATE.workspaces=STATE.workspaces.filter(function(w,index,all){return w&&['owner','admin','editor','viewer'].indexOf(w.role)!==-1&&all.filter(function(x){return x&&x.id===w.id;}).length===1;});
+      if(!STATE.workspaces.length&&!explicit){renderCreate();return;}
+      var chosen=STATE.workspaces.find(function(w){return w.id===saved;});
+      if(!chosen&&explicit){renderUnavailableWorkspace();return;}
+      if(!chosen)chosen=STATE.workspaces[0];
+      STATE.ws=chosen.id; STATE.wsName=chosen.name||'Workspace';STATE.role=['owner','admin','editor','viewer'].indexOf(chosen.role)!==-1?chosen.role:null;try{STATE.focus=localStorage.getItem('zoi_nav_focus:'+STATE.ws)||'all';}catch(_){}
+      try{ localStorage.setItem('zoi_ws', STATE.ws); }catch(e){}
+      loadContext();
+    }).catch(function(e){
+      if(generation!==STATE.epoch)return;
+      root.innerHTML='<div class="center"><div class="card"><h1>Workspace unavailable</h1><p class="sub">We could not load your workspace. Your saved session has been kept.</p><button class="btn p" id="retry-workspace">Try again</button></div></div>';
+      document.getElementById('retry-workspace').onclick=boot;
+    });
+  }
+  function loadContext(){
+    var generation=STATE.epoch,requestedWs=STATE.ws,requestedToken=C.auth.token();
+    root.innerHTML='<div class="center"><div class="spin"></div></div>';
+    Promise.all([
+      C.api.rpc('suite_config',{},{auth:'prefer'}).catch(function(){ return {publish:false,email:false,ai:false,payments:false,claims:false,unavailable:true}; }),
+      C.api.rpc('social_channels_list',{p_workspace:STATE.ws},{auth:'require'}).catch(function(){ return []; }),
+      import('/assets/suite/capabilities.mjs').then(async function(cap){
+        var provider=await cap.loadProviderConfig(C.BASE,C.KEY).catch(function(){return null;});
+        var navigation=await import('/assets/suite/workspace-navigation.mjs?v=20261003-company-console');var session=await import('/assets/community/session-state.mjs?v=20261001-uuid-scope');return {cap:cap,provider:provider,navigation:navigation,sessionIdentity:session.sessionIdentity};
+      })
+    ]).then(function(res){
+      if(generation!==STATE.epoch||requestedWs!==STATE.ws)return;
+      if(C.auth.token()!==requestedToken){destroyCurrent();boot();return;}
+      STATE.navigation=res[2].navigation;STATE.avail = res[2].cap.resolveCapabilities(res[0],res[2].provider);
+      STATE.channels = Array.isArray(res[1])?res[1]:[];
+      STATE.sessionIdentity=res[2].sessionIdentity;STATE.actor=STATE.sessionIdentity(C);
+      STATE.ctx = { C:C, ws:STATE.ws,managedNavigation:true, channels:STATE.channels, avail:STATE.avail, providerConfig:res[2].provider, role:STATE.role, toast:toast, navigate:selectModule, onListingSelected:function(change){
+      if(generation!==STATE.epoch||requestedWs!==STATE.ws||STATE.actor!==STATE.sessionIdentity(C)||STATE.active!=='bizpage'||!change||change.workspaceId!==requestedWs||!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(change.listingId||''))return;
+      var selectedURL=new URL(location.href);selectedURL.searchParams.set('workspace',requestedWs);selectedURL.searchParams.delete('ws');selectedURL.searchParams.set('listing',change.listingId);var next=selectedURL.pathname+selectedURL.search+selectedURL.hash;history.replaceState(null,'',next);STATE.currentRoute=next;
+    },onWorkspaceRenamed:function(change){
+        if(generation!==STATE.epoch||requestedWs!==STATE.ws||STATE.actor!==STATE.sessionIdentity(C)||!change||change.workspaceId!==requestedWs||typeof change.name!=='string'||!change.name.trim())return;
+        var workspace=STATE.workspaces.find(function(item){return item.id===requestedWs;});if(!workspace)return;
+        var oldName=STATE.wsName,name=change.name.trim();workspace.name=name;STATE.wsName=name;
+        var label=document.querySelector('#wsbtn .wsname'),avatar=document.querySelector('#wsbtn .wsav'),context=document.getElementById('workspace-context-name');
+        if(label)label.textContent=name;if(avatar)avatar.textContent=name.charAt(0).toUpperCase();if(context)context.textContent=name;
+        document.querySelectorAll('.wsitem').forEach(function(item){if(item.dataset.ws===requestedWs){item.dataset.name=name;item.innerHTML='<span class="wsav" style="width:22px;height:22px;font-size:12px">'+esc(name.charAt(0).toUpperCase())+'</span>'+esc(name);}});
+        var suffix=' · '+oldName+' · Zoi';if(document.title.endsWith(suffix))document.title=document.title.slice(0,-suffix.length)+' · '+name+' · Zoi';
+      } };
+      renderShell();
+    }).catch(function(){
+      if(generation!==STATE.epoch)return;
+      root.innerHTML='<div class="center"><div class="card"><h1>Workspace tools unavailable</h1><p class="sub">Please retry loading your tools.</p><button class="btn p" id="retry-tools">Try again</button></div></div>';
+      document.getElementById('retry-tools').onclick=loadContext;
+    });
+  }
+
+  function restoreRoute(){
+    var intent=workspaceIntent(location.href);
+    if(!STATE.ctx&&STATE.routeLoading===location.href)return;
+    if(!STATE.ctx||!intent.valid||intent.id!==STATE.ws){
+      if(STATE.ctx&&!mayLeave()){restoreCurrentUrl();return;}
+      destroyCurrent();STATE.epoch++;STATE.ctx=null;STATE.routeLoading=null;
+      if(!intent.valid){renderUnavailableWorkspace();return;}
+      loadMe();return;
+    }
+    if(!STATE.navigation||!document.getElementById('mount'))return;
+    var route=STATE.navigation.resolveWorkspaceRoute(location.href,window.ZoiSuite.modules);if(route.id)selectModule(route.id,route.view,true);
+  }
+  function authScopeChanged(){if((STATE.gateToken&&C.auth.token()!==STATE.gateToken)||(STATE.actor&&STATE.sessionIdentity&&STATE.sessionIdentity(C)!==STATE.actor)){STATE.gateToken=null;destroyCurrent();STATE.epoch++;STATE.ctx=null;STATE.me=null;STATE.ws=null;renderGate('email');boot();}}
+  window.addEventListener('zoi:auth-change',authScopeChanged);window.addEventListener('storage',authScopeChanged);window.addEventListener('focus',authScopeChanged);setInterval(authScopeChanged,250);
+  window.addEventListener('popstate',restoreRoute);window.addEventListener('hashchange',restoreRoute);
+  boot();
+})();
+</script>
+<script src="/assets/zoi-emblem.js"></script>
+<script src="/assets/zoi-search.js?v=20261002-account-history"></script>
+<script src="/assets/zoi-theme.js?v=20260930"></script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
+</body>
+</html>

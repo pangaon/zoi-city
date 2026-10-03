@@ -1,0 +1,11 @@
+# Event guest lifecycle and contrast followup
+
+Four bounded shared runtime corrections follow the independently reviewed Guest packet. The original211entry freeze and its dependency/media supplements remain unchanged. No new production writes, schema or source/furniture changes.
+
+Persisted pagehide suspends the private-plan adapter and retires its protected loaded result. Persisted pageshow recreates the adapter and controls without making a request or replacing an unresolved save; durable pending IDs remain recoverable read-only. The current Parea planner and reviewed composer stay mounted. Shared customer-a retains the transient draft and friend contacts for a persisted return, then invokes its existing actor-change clear gate on pageshow. Toronto experience preserves the mounted room/customer for persisted navigation and invokes its own existing actor gate on return; nonpersisted navigation still destroys them.
+
+The private save form explicitly uses a dark background so generic cream forms cannot reduce pale-label contrast. The shared private panel and buttons outrank the legacy Toronto.signature-save light styles, restoring visible text on the entire container. Both forms/panels need rendered checks, not only computed form-background tests.
+
+Focused75units pass, including same-actor persisted preservation, actor-change retirement and nonpersisted destruction. Canonical regression harness tests/browser/event-guest-finish/lifecycle-followup.cjs exercises actual isolated Postgres save/get/list and ACL, six390/1440 Toronto/Montréal/sparse flows, 3/1/5 source preferences, lost-response immutable retry, restored protected plan, persisted composer preservation and fresh list request, changed actor on return. This uses synthetic PageTransitionEvents for lifecycle boundaries, not a claim about physical email-app/browser BFCache support. Original failed lifecycle and initial Toronto low-contrast frames are kept in mutable evidence; final receipt will be a separate immutable supplement.
+
+Reconstruct original freeze plus both dependency supplements; overlay this packet's runtime/tests. Run NODE_PATH=/workspaces/zoi-city/.recovery/community-release/node_modules GUEST_ASSET_BASE=<reconstructed-root> PGPORT=16381 QA_OUTPUT_DIR=<new-output> node tests/browser/event-guest-finish/lifecycle-followup.cjs. No hosted or production request is made.

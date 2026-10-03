@@ -1,0 +1,21 @@
+# Today workspace independent review
+
+Held for two reproducible guest-impact defects. No producer runtime bytes were edited. The producer manifest SHA3fbfd2456b597f49a562cafff4ec50efc350314069c10fe7c2ba346478de47b5 and all30 owned/dependency hashes match. Six original controlled journeys pass independently at390/1440 light/dark, including exact task UUID navigation, filtering, searching, pagination, partial503 recovery, account-switch stale-response retirement and definitive refusal during parent refresh.
+
+At BOTH390 and1440, opening Assigned to you after a definitive HTTP400 suite_session_unavailable leaves SIX previously loaded private queue cards visible. The assigned child shows changed-access text; parent does not retire. Source assets/priorities/view.mjs openAssigned line58 passes raw ctx to mountMemberStart, bypassing the scopedCore authority wrapper used by parent refresh. This is a privacy retirement blocker. Use one current-authority/scope gate across assigned and source reads, without treating an unknown503 as definitive refusal.
+
+At BOTH widths, hold the lazy assigned Operations reply, refresh the parent, then release the old reply. The pane stays OPEN and EMPTY after a successful parent refresh; its old loader was retired correctly but memberLoading prevented the replacement mount and no retry followed. Own evidence adverse/report.json and lazy-refresh-race screenshots retain this sequence. Renew the loader by generation rather than sharing an old busy flag.
+
+Same-actor foreground role/profile changes retire private content. Unknown team503 clears the old queue, preserves a usable Refresh button, and recovers. These six additional cases pass; the two defects reproduce twice each, with no pageerrors. Known authoritative retire currently leaves an entirely blank surface; recommend a nonprivate sign-in/workspace recovery panel with an explicit link or action. This is separate from the required immediate private-content clear.
+
+Source review accepts Auth user ID and team.actor_profile_id as intentionally distinct; assignedWork correctly filters the server profile ID. Native searches/filters/pagination compile/export evidence is retained from producer; independent source inspection found no new physical-device proof, and the native panel does not install its own foreground AppState revalidation. Do not describe this as device acceptance.
+
+Screenshots visually inspected show clear readable queue cards in light desktop and dark phone without horizontal overflow. Producer/replay files named above-fold were captured after the Assigned opener scrolled the viewport down, so they are lower-page views; full-page overview frames remain available. No production backend, authenticated production writes, payment or task updates were exercised.
+
+Evidence folder: docs/audits/evidence/today-workspace-independent-2026-10-03. replay.cjs runs producer harness against immutable freeze; adverse.cjs adds separate authority/race cases. NODE_PATH=/workspaces/zoi-city/.recovery/community-release/node_modules QA_OUTPUT_DIR=<new own output> node <either harness>.
+
+## Additive correction independently accepted
+
+Root correction manifest db1ef27825dc04ac1118a470495a4beadcc7f844ab940acf05dbe33f5b8fdffe and all14 entries match. Only assets/priorities/view.mjs is overlaid on the original producer freeze; corrected runtime SHA b0fdfec5aea42fd3c6f6730c2ad0d5e4428c8537f7749b190c22cb54d5717d55. Fresh original6 controlled cases PASS and14 separate strict adverse cases PASS. Lazy current-session denial clears all private cards; lazy role and profile change also retire. Parent-refresh race renders15 verified assigned tasks and the old delayed reply cannot clear/replace them. Unknown team503 preserves retry and recovers. No pageerrors.
+
+The corrected implementation uses the same generation-fenced current-authority wrapper for parent and lazy child RPCs, verifies current team role/profile again, and resets the loader per generation with a late-finally guard. Source/permissions/ranking contracts unchanged. Blank retirement recovery UI and native device/foreground observations remain limitations, not claims of completed work. Independent acceptance is local and controlled; no production writes or native physical-device proof. Original failing evidence remains unchanged.

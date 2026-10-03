@@ -1,0 +1,136 @@
+{
+  "local_only": true,
+  "production_backend": false,
+  "source_record": "retained real Montréal public record; Toronto static source plan; sparse synthetic event",
+  "backend": "actual isolated Postgres existing event_plan_save/get/list definitions and ACLs",
+  "cases": [
+    {
+      "kind": "sparse",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "persisted page lifecycle retains current unsaved group/contact/composer with no automatic RPC",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "formStyles": {
+        "formBackground": "rgb(16, 37, 59)",
+        "panelBackground": "rgba(0, 0, 0, 0)",
+        "panelImage": "linear-gradient(145deg, rgb(20, 47, 71), rgb(11, 29, 50))",
+        "labelColor": "rgb(193, 213, 232)",
+        "helpColor": "rgb(187, 208, 227)"
+      },
+      "lifecycle": {
+        "beforeRpcCount": 9,
+        "afterRpcCount": 11,
+        "reviewReissued": true,
+        "privateText": "Keep your parea together.\n\nSave privately and reopen this event’s group plan. Names, whole-ticket quantities and table preferences are saved; friends’ email and mobile details stay on this page.\n\nSave this parea\nReview saved plans\nCheck pending save\n\nYour saved private plans.\n\nSparse event — guest acceptance"
+      },
+      "status": "passed"
+    }
+  ],
+  "calls": [
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "caa9df70-4d18-4511-8601-0af58c44dd9d",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "caa9df70-4d18-4511-8601-0af58c44dd9d",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "d4491129-11ab-4eca-a700-b2e786584329"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "d4491129-11ab-4eca-a700-b2e786584329"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "adverse_backend": [],
+  "database": {
+    "plans": 1,
+    "requests": 1
+  },
+  "lifecycleDefects": [],
+  "status": "passed"
+}

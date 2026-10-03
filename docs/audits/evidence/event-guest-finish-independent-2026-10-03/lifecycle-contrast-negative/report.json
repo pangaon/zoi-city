@@ -1,0 +1,224 @@
+{
+  "local_only": true,
+  "production_backend": false,
+  "source_record": "retained real Montréal public record; Toronto static source plan; sparse synthetic event",
+  "backend": "actual isolated Postgres existing event_plan_save/get/list definitions and ACLs",
+  "cases": [
+    {
+      "kind": "montreal",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "formStyles": {
+        "formBackground": "rgb(255, 250, 242)",
+        "labelColor": "rgb(193, 213, 232)",
+        "helpColor": "rgb(187, 208, 227)"
+      },
+      "lifecycle": {
+        "beforeRpcCount": 9,
+        "afterRpcCount": 9,
+        "reviewReissued": false,
+        "privateText": "Keep your parea together.\n\nSave privately and reopen this event’s group plan. Names, whole-ticket quantities and table preferences are saved; friends’ email and mobile details stay on this page.\n\nSave this parea\nReview saved plans\nCheck pending save\n\nYour parea is reopened. Review the current table and price; add contacts again before sharing."
+      },
+      "status": "passed"
+    },
+    {
+      "kind": "sparse",
+      "width": 390,
+      "errors": [],
+      "steps": [
+        "real source room selection; 3/1/5; reviewed composers retained across identity/inventory failures and retry; configured:false distinct",
+        "protected actual isolated event_plan_save; committed lost response; identical retry gives one request/one plan",
+        "reload -> actual protected list/get -> exact event/source restoration -> current price; contacts omitted",
+        "account switch retires saved plan and current personal group"
+      ],
+      "formStyles": {
+        "formBackground": "rgb(255, 250, 242)",
+        "labelColor": "rgb(193, 213, 232)",
+        "helpColor": "rgb(187, 208, 227)"
+      },
+      "lifecycle": {
+        "beforeRpcCount": 18,
+        "afterRpcCount": 18,
+        "reviewReissued": false,
+        "privateText": "Keep your parea together.\n\nSave privately and reopen this event’s group plan. Names, whole-ticket quantities and table preferences are saved; friends’ email and mobile details stay on this page.\n\nSave this parea\nReview saved plans\nCheck pending save\n\nYour parea is reopened. Review the current table and price; add contacts again before sharing."
+      },
+      "status": "passed"
+    }
+  ],
+  "calls": [
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "9b241a00-f0c9-5748-8e22-79e2e0b57f79"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "9b241a00-f0c9-5748-8e22-79e2e0b57f79"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "41a84bea-06b3-49c8-98bb-7c038050cd72",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache — Montréal 2027",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-montreal-2027\",\"title\":\"Giannis Ploutarchos & Andromache — Montréal 2027\",\"date\":\"2027-03-26\",\"venue\":\"Palace Convention Centre\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"10A\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache — Montréal 2027\\n2027-03-26 · Palace Convention Centre\\nGroup: 9 whole tickets\\nTable preference: 10A\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "41a84bea-06b3-49c8-98bb-7c038050cd72",
+        "p_data": {
+          "title": "Giannis Ploutarchos & Andromache — Montréal 2027",
+          "kind": "other",
+          "timezone": "America/Toronto",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"giannis-ploutarchos-andromache-montreal-2027\",\"title\":\"Giannis Ploutarchos & Andromache — Montréal 2027\",\"date\":\"2027-03-26\",\"venue\":\"Palace Convention Centre\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[\"10A\"],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Giannis Ploutarchos & Andromache — Montréal 2027\\n2027-03-26 · Palace Convention Centre\\nGroup: 9 whole tickets\\nTable preference: 10A\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "8d6b7774-b372-41f5-896b-eeaf11de4b99"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "8d6b7774-b372-41f5-896b-eeaf11de4b99"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "table_inventory_map",
+      "args": {
+        "p_event": "82000000-0000-4000-8000-000000000300"
+      },
+      "actor": null
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "07bc8664-1346-42e4-b02c-232b6f7595a0",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_save",
+      "args": {
+        "p_plan": null,
+        "p_expected_version": 0,
+        "p_request_id": "07bc8664-1346-42e4-b02c-232b6f7595a0",
+        "p_data": {
+          "title": "Sparse event — guest acceptance",
+          "kind": "other",
+          "timezone": "UTC",
+          "private_notes": "{\"format\":\"zoi-parea-v1\",\"event\":{\"key\":\"sparse-event-fixture\",\"title\":\"Sparse event — guest acceptance\",\"date\":\"\",\"venue\":\"\"},\"draft\":{\"count\":9,\"members\":[{\"name\":\"Alex\",\"ticket_quantity\":3},{\"name\":\"Maria\",\"ticket_quantity\":1},{\"name\":\"Niko\",\"ticket_quantity\":5}],\"tables\":[],\"arrangement\":\"together\",\"occasion\":\"\"},\"summary\":\"Sparse event — guest acceptance\\n\\nGroup: 9 whole tickets\\nTable preference: Not chosen\\nSeating: Together if possible\\nOccasion: Not specified\\nAlex: 3 tickets\\nMaria: 1 tickets\\nNiko: 5 tickets\\nTicket subtotal: Price to confirm\\nPlanning only. No table held, invitations sent or payment collected.\"}",
+          "selections": [],
+          "customer_name": "QA Organizer",
+          "customer_email": "host@example.org"
+        }
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "zoi_me",
+      "args": {},
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_list",
+      "args": {
+        "p_offset": 0
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "a0f8d2b9-8105-4a36-9d21-f0a5265cc849"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    },
+    {
+      "fn": "event_plan_get",
+      "args": {
+        "p_plan": "a0f8d2b9-8105-4a36-9d21-f0a5265cc849"
+      },
+      "actor": "00000000-0000-4000-8000-000000000003"
+    }
+  ],
+  "adverse_backend": [],
+  "database": {
+    "plans": 2,
+    "requests": 2
+  },
+  "status": "passed"
+}
