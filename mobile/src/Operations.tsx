@@ -8,6 +8,8 @@ import{nativeCompanyWork,companyForRecord}from'./companyWorkspace';
 import {organizationRpc} from './organizationWorkflow';
 import {CompanyWorkspace} from './CompanyWorkspace';
 import {CompanyConsole} from './CompanyConsole';
+import {CompanyActionPlans} from './CompanyActionPlans';
+import {actionPlanContext} from '../../assets/operations/company-action-plan-model.mjs';
 import {documentRpc} from './documentScope';
 import {DocumentsPanel} from './Documents';
 const sections: [RecordKind, string][] = [['company', 'Company'], ['contact', 'Contacts'], ['project', 'Projects & matters'], ['task', 'Tasks']];
@@ -22,12 +24,12 @@ function WorkspaceOperations({ workspace, userId, requestedRecordId,parentCurren
   const { client, workspaceId } = useAuth();
   const [records, setRecords] = useState<OpsRecord[]>([]); const [members, setMembers] = useState<{profile_id: string; display_name?: string; role?: string}[]>([]); const [role, setRole] = useState('viewer'); const [kind, setKind] = useState<RecordKind>('company'); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [notice, setNotice] = useState(''); const [reload, setReload] = useState(0);
   const [editing, setEditing] = useState<OpsRecord | null | undefined>(undefined); const [form, setForm] = useState<Record<string, string>>(() => toForm()); const [saving, setSaving] = useState(false); const [confirmArchive, setConfirmArchive] = useState(''); const [audit, setAudit] = useState<{ id: string; action: string; version: number; created_at: string }[]>([]); const [auditLoading, setAuditLoading] = useState(false);
-  const [companyDetails,setCompanyDetails]=useState(false);const [documentProject,setDocumentProject]=useState<OpsRecord|null>(null);const returnCompanyRef=useRef('');
+  const [actionPlans,setActionPlans]=useState(false);const [companyDetails,setCompanyDetails]=useState(false);const [documentProject,setDocumentProject]=useState<OpsRecord|null>(null);const returnCompanyRef=useRef('');
   const editingRef = useRef(editing?.id); editingRef.current = editing?.id;
   const alive = useRef(true); const busy = useRef(false); const workspaceRef = useRef(workspaceId); workspaceRef.current = workspaceId;
   const current = () => alive.current && parentCurrent() && client.session?.user.id === userId && workspaceRef.current === workspace;
   const [,rerender]=useState(0);const recoveryRef=useRef<ReturnType<typeof createOperationsRecovery>|null>(null);
-  function clearPrivate(){setRecords([]);setMembers([]);setRole('viewer');setEditing(undefined);setForm(toForm());setAudit([]);setConfirmArchive('');setNotice('');setCompanyDetails(false);setDocumentProject(null);returnCompanyRef.current='';recoveryRef.current?.dropPayload();}
+  function clearPrivate(){setActionPlans(false);setRecords([]);setMembers([]);setRole('viewer');setEditing(undefined);setForm(toForm());setAudit([]);setConfirmArchive('');setNotice('');setCompanyDetails(false);setDocumentProject(null);returnCompanyRef.current='';recoveryRef.current?.dropPayload();}
   async function rpc(name:string,args:any){if(!current())throw Error('Operations account or workspace changed.');try{const value=await organizationRpc(client,userId,current,name,args);if(!current())throw Error('Operations account or workspace changed.');return value;}catch(e){if(current()&&operationsDenied(e))clearPrivate();throw e;}}
   if(!recoveryRef.current){const store=operationsRequestStore(workspace);recoveryRef.current=createOperationsRecovery({actor:userId,workspace,current,call:rpc,nonce:randomUUID,changed:()=>{if(current())rerender(n=>n+1);},storage:{load:()=>store.load(userId),save:(value:unknown)=>store.save(userId,value),clear:()=>store.clear(userId)}});}
   const recovery=recoveryRef.current;
@@ -69,12 +71,27 @@ function WorkspaceOperations({ workspace, userId, requestedRecordId,parentCurren
       return value;
     }catch(e){if(scopedCurrent()&&operationsDenied(e)){clearPrivate();setError('Company handover access could not be confirmed. Reload your workspace or sign in again.');}throw e;}
   }
+  const openPlanProject=async(projectId:string)=>{
+    if(!current()||busy.current||recovery.state().blocked)return;
+    busy.current=true;setSaving(true);setError('');
+    const companyId=editingRef.current;
+    try{
+      const result=await rpc('ops_records_list',{p_workspace:workspace,p_kind:null,p_include_archived:false});
+      if(!current()||editingRef.current!==companyId)return;
+      const verified=actionPlanContext(result,workspace,companyId);
+      const project=verified.projects.find((r:OpsRecord)=>r.id===projectId);
+      if(!project)throw Error('The saved project is no longer available in this company.');
+      setRecords(result.records);setMembers(Array.isArray(result.members)?result.members:[]);setRole(result.role);setActionPlans(false);setKind('project');setEditing(project);setForm(toForm(project));setAudit([]);setCompanyDetails(false);
+    }catch(e){if(current()){if(operationsDenied(e))clearPrivate();setError(e instanceof Error?e.message:'Saved project could not open.');}throw e;}
+    finally{busy.current=false;if(current())setSaving(false);}
+  };
   const fields: [string, string][] = [['title', kind === 'company' ? 'Company display name' : kind === 'contact' ? 'Contact name' : 'Title'], ...(kind === 'company' ? [['legal_name', 'Legal name'], ['jurisdiction', 'Jurisdiction'], ['registration_number', 'Registration number']] as [string, string][] : []), ...(kind === 'company' || kind === 'contact' ? [['website', 'Website'], ['email', 'Email'], ['phone', 'Phone']] as [string, string][] : []), ['notes', 'Notes'], ['due_at', 'Due date · YYYY-MM-DD (UTC)']];
   const dirty=editing!==undefined&&JSON.stringify(form)!==JSON.stringify(toForm(editing||undefined));
   const parentCompany=editing?companyForRecord(records,editing,workspace):null;
   const companySummary=editing?.kind==='company'&&records.some(r=>r.id===editing.id&&r.kind==='company'&&!r.archived_at)?nativeCompanyWork(records,workspace,editing.id):null;
   const openCompany=()=>{if(!current()||saving||dirty||recovery.state().blocked||!parentCompany)return;setEditing(undefined);returnCompanyRef.current=parentCompany.id;setReload(n=>n+1);};
   const editable = canWrite(role, kind)&&!recovery.state().blocked;
+  if(actionPlans&&companySummary)return <CompanyActionPlans key={companySummary.company.id} workspace={workspace} companyId={companySummary.company.id} companyTitle={companySummary.company.title} current={()=>current()&&editingRef.current===companySummary.company.id} read={()=>readCompany(companySummary.company.id,'ops_records_list',{p_workspace:workspace,p_kind:null,p_include_archived:false})} recovery={recovery} onExit={()=>{setActionPlans(false);setReload(n=>n+1);}} onOpen={openPlanProject} onRefused={()=>{if(current()){clearPrivate();setError('Company plan access could not be confirmed. Reload your workspace or sign in again.');}}}/>;
   if(documentProject)return <DocumentsPanel requestedProjectId={documentProject.id} onBack={()=>setDocumentProject(null)} onAccessDenied={()=>{if(current()){clearPrivate();setError('Private document access could not be confirmed. Reload your workspace or sign in again.');}}}/>;
   return <View style={s.panel}><Text style={s.kicker}>YOUR BUSINESS, ORGANISED</Text><Text style={s.title}>Operations workspace</Text><Text style={s.body}>Company records, contacts, projects and tasks for your selected workspace.</Text><Text style={s.small}>Company records help you stay organised; saving a record does not register a business or submit a filing.</Text>
     {!recovery.state().ready?<Action label="Load Operations recovery reference" disabled={saving} onPress={()=>{void check('load');}}/>:null}{recovery.state().marker?<View style={s.form}><Text style={s.body}>Check your previous change before saving another. Private record content is not stored on this device.</Text><Action label="Check saved Operations receipt" disabled={saving} onPress={()=>{void check('check');}}/>{recovery.state().payload?<Action label="Retry exact Operations change" disabled={saving} onPress={()=>{void check('retry');}}/>:null}<Action label="Cancel Operations change if not saved" disabled={saving} onPress={()=>{void check('cancel');}}/></View>:null}
@@ -84,7 +101,7 @@ function WorkspaceOperations({ workspace, userId, requestedRecordId,parentCurren
     {!loading&&!error&&kind==='company'&&editing===undefined?<CompanyConsole records={records} workspace={workspace} members={members} disabled={saving||dirty||recovery.state().blocked} onOpen={row=>{if(!current()||saving||recovery.state().blocked)return;setKind(row.kind);edit(row);}} onStart={['owner','admin'].includes(role)?()=>{setKind('company');edit();}:undefined}/>:null}
     {!loading && !records.filter(row => row.kind === kind).length && !error ? <Text style={s.body}>No {sections.find(([id]) => id === kind)?.[1].toLowerCase()} records yet.</Text> : null}
     {records.filter(row => row.kind === kind).map(row => <Pressable key={row.id} accessibilityRole="button" disabled={saving} onPress={() => edit(row)} style={[s.record, editing?.id === row.id && s.recordSelected]}><Text style={s.heading}>{row.title}</Text><Text style={s.small}>{row.status.replaceAll('_', ' ')} · version {row.version}{row.due_at ? ' · due ' + row.due_at.slice(0, 10) : ''}</Text></Pressable>)}
-    {companySummary?<CompanyWorkspace records={records} current={()=>current()&&editingRef.current===companySummary.company.id} read={(name,args)=>readCompany(companySummary.company.id,name,args)} model={companySummary} role={role} members={members} disabled={saving||dirty||recovery.state().blocked} onOpen={row=>{setKind(row.kind);edit(row);}} onStart={startLinked} onFiles={row=>{void openProjectDocuments(row);}} details={companyDetails} onDetails={()=>setCompanyDetails(v=>!v)}/>:null}
+    {companySummary?<CompanyWorkspace records={records} current={()=>current()&&editingRef.current===companySummary.company.id} read={(name,args)=>readCompany(companySummary.company.id,name,args)} model={companySummary} role={role} members={members} disabled={saving||dirty||recovery.state().blocked} onOpen={row=>{setKind(row.kind);edit(row);}} onStart={startLinked} onPlan={()=>{if(current()&&!saving&&!dirty&&!recovery.state().blocked&&canWrite(role,'project'))setActionPlans(true);}} onFiles={row=>{void openProjectDocuments(row);}} details={companyDetails} onDetails={()=>setCompanyDetails(v=>!v)}/>:null}
     {parentCompany&&editing?.kind!=='company'?<Action label="Back to company workspace" disabled={saving||dirty||recovery.state().blocked} onPress={openCompany}/>:null}
     {editing !== undefined && (!companySummary||companyDetails) ? <View style={s.form}><Text style={s.heading}>{editing ? 'Record details' : 'New record'}</Text>{fields.map(([key, label]) => <View key={key} style={s.field}><Text style={s.label}>{label}</Text><TextInput accessibilityLabel={label} value={form[key] || ''} onChangeText={value => setForm(previous => ({ ...previous, [key]: value }))} editable={editable && !saving} multiline={key === 'notes'} maxLength={key === 'notes' ? 20000 : key === 'title' ? 200 : 500} autoCapitalize={['email', 'website'].includes(key) ? 'none' : 'sentences'} style={[s.input, key === 'notes' && { minHeight: 100, textAlignVertical: 'top' }]} /></View>)}
       {kind === 'company' ? <><Text style={s.label}>Sector</Text><View style={s.row}>{['business','lawyer','church','restaurant','stylist','creator'].map(sector => <Action key={sector} disabled={!editable || saving} label={(form.sector === sector ? '● ' : '') + sector} onPress={() => setForm(previous => ({...previous,sector}))} />)}</View></> : null}

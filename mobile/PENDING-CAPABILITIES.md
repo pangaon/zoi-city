@@ -13,6 +13,21 @@ The release lead confirmed both preview builds for `9cf735458b2046a79e23e643e554
 
 **Guardian enrolment limitation in these preview binaries:** the existing native youth editor does not retain an unresolved write marker across app restarts and still exposes a local retry discard action. Do not run child-record or enrolment mutations in the downloadable preview. Use the reviewed web guardian flow once its production release is verified. A source-only update routes these tools to the web; it is not included in the 9cf7354 artifacts above.
 
+## Company Action Plans source update — 3 October 2026
+
+The Company workspace now includes guided record-review, onboarding, contractor
+and custom plans. Users edit actions, current company contacts, verified team
+assignments and local-time deadlines, review, then save an ordinary project and
+linked tasks using the existing receipt-aware writer. Interrupted saves require
+checking/retrying/cancelling the original request. Partial-plan exit confirmation
+keeps saved records; unfinished draft content is not restored after app restart.
+
+This source passes 24 compiled Expo-web controlled-transport journeys, 457 native
+helper tests, TypeScript and iOS/Android/web exports. The shared writer separately
+passes nine isolated PostgreSQL groups. This is not authenticated production or
+physical-device acceptance, and it is not included in the earlier downloadable
+preview binaries. No new paid cloud build has been requested.
+
 ## Included navigation and recovery fixes; device acceptance still pending
 
 - Community keeps the intended public screen/question composer through explicit sign-in and Continue. Cancellation/account changes clear navigation; reactions/publication are never replayed automatically.

@@ -6,9 +6,11 @@ config.watchFolders = [...config.watchFolders, path.resolve(__dirname, '../asset
 // This exact shared browser edge carries a CDN version. Metro uses its source
 // file; never normalize package names, arbitrary queries or traversal paths.
 const previousResolver = config.resolver.resolveRequest;
+const actionPlanControllerSource = path.resolve(__dirname, '../assets/operations/company-action-plan-controller.mjs');
 const companyConsoleSource = path.resolve(__dirname, '../assets/operations/company-console-model.mjs');
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (context.originModulePath === companyConsoleSource && moduleName === './company-journey.mjs?v=20261003-company-console') moduleName = './company-journey.mjs';
+  if (context.originModulePath === actionPlanControllerSource && moduleName === './recovery.mjs?v=20261003-current-suite-authority') moduleName = './recovery.mjs';
   return previousResolver ? previousResolver(context, moduleName, platform) : context.resolveRequest(context, moduleName, platform);
 };
 module.exports = config;
