@@ -1,0 +1,7 @@
+# Source capture delivery boundary follow-through
+
+Actual production f3212cb was READY and served the three exact redacted derivatives, with zero Google API key signatures. The first public access-denial acceptance failed: existing source files remained HTTP200 because static filesystem delivery preceded the ordinary rewrite. Encoded/trailing-slash variants were also served. The complete safe result is retained in `evidence/source-credential-correction-production-2026-10-03/initial-f321-denial-failure.json`. No token values or source bodies were retained in that result.
+
+A root `middleware.js` now returns uncached, noindex404 for the internal docs subtree before filesystem/cache delivery, including a narrowly matched encoded-root spelling. Normal product paths skip the middleware. It adds no dependencies, credentials, database reads, authentication or request logging. Existing fallback rewrite/handler remains for absent paths. Six focused source/index/handler/matcher checks passed. Actual production matcher recognition and URL variants require post-deployment acceptance.
+
+This follows Vercel's current primary routing documentation, which supports a root middleware with standard Request/Response and scoped matcher for any framework: https://vercel.com/docs/routing-middleware/getting-started and https://vercel.com/docs/routing-middleware/api (checked2026-10-03). Historical Git evidence and previous deployment URLs remain separate unresolved exposure boundaries; this does not erase history or revoke third-party keys.
