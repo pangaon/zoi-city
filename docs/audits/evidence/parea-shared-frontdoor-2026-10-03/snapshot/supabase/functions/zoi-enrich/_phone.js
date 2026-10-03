@@ -1,0 +1,6 @@
+// Conservative placeholder exclusion; does not infer country or ownership.
+export function placeholderPhone(value){if(typeof value!=='string')return false;const base=value.trim().replace(/(?:\s*(?:ext\.?|extension|x)\s*|;ext=)\d{1,8}$/i,'');const digits=base.replace(/\D/g,'');return /^([0-9])\1{6,}$/.test(digits)||['1234567890','11234567890','0123456789'].includes(digits);}
+export function usablePhone(value){if(typeof value!=='string')return '';const text=value.trim(),base=text.replace(/(?:\s*(?:ext\.?|extension|x)\s*|;ext=)\d{1,8}$/i,''),digits=base.replace(/\D/g,'');if(placeholderPhone(text)||digits.length<5||digits.length>20||/^0+$/.test(digits)||['1234567890','11234567890','0123456789'].includes(digits))return '';return /^[+\d ().-]+(?:(?:\s*(?:ext\.?|extension|x)\s*|;ext=)\d{1,8})?$/i.test(text)?text:'';}
+
+// Explicit owner/profile presence, including null, always overrides imports.
+export function publicPhone(entity,fallback=''){const e=entity||{},o=e.owner_content||{},op=o.profile||{},p=e.profile||{};const value=Object.hasOwn(o,'phone')?o.phone:Object.hasOwn(op,'phone')?op.phone:Object.hasOwn(p,'phone')?p.phone:(!placeholderPhone(e.phone)&&e.phone)||fallback;return typeof value==='string'&&!placeholderPhone(value)?value.trim():'';}

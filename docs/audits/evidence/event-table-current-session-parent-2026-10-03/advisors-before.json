@@ -1,0 +1,407 @@
+{
+  "checked_at": "2026-10-03T02:27:42.251Z",
+  "summary": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "count": 262,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy"
+    },
+    {
+      "name": "function_search_path_mutable",
+      "level": "WARN",
+      "count": 17,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0011_function_search_path_mutable"
+    },
+    {
+      "name": "extension_in_public",
+      "level": "WARN",
+      "count": 3,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0014_extension_in_public"
+    },
+    {
+      "name": "anon_security_definer_function_executable",
+      "level": "WARN",
+      "count": 177,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable"
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "count": 469,
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable"
+    },
+    {
+      "name": "auth_leaked_password_protection",
+      "level": "WARN",
+      "count": 1,
+      "remediation": "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection"
+    }
+  ],
+  "scoped": [
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy",
+      "findings": [
+        {
+          "detail": "Table \\`zoi.event_guest_payment_preferences\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "event_guest_payment_preferences",
+            "type": "table",
+            "schema": "zoi"
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Table \\`zoi.event_host_allocations\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "event_host_allocations",
+            "type": "table",
+            "schema": "zoi"
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Table \\`zoi.event_host_guests\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "event_host_guests",
+            "type": "table",
+            "schema": "zoi"
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Table \\`zoi.event_host_requests\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "event_host_requests",
+            "type": "table",
+            "schema": "zoi"
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Table \\`zoi.event_payment_policies\\` has RLS enabled, but no policies exist",
+          "metadata": {
+            "name": "event_payment_policies",
+            "type": "table",
+            "schema": "zoi"
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        }
+      ]
+    },
+    {
+      "name": "anon_security_definer_function_executable",
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0028_anon_security_definer_function_executable",
+      "findings": [
+        {
+          "detail": "Function `public.table_inventory_map(p_event uuid)` can be executed by the `anon` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_inventory_map`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_inventory_map",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        }
+      ]
+    },
+    {
+      "name": "authenticated_security_definer_function_executable",
+      "level": "WARN",
+      "remediation": "https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable",
+      "findings": [
+        {
+          "detail": "Function `public.event_guest_payment_choose(p_guest uuid, p_method text, p_expected_policy_version integer, p_expected_version integer, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_guest_payment_choose`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_guest_payment_choose",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_guest uuid, p_method text, p_expected_policy_version integer, p_expected_version integer, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_guest_payment_options(p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_guest_payment_options`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_guest_payment_options",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_allocate(p_workspace uuid, p_event uuid, p_table uuid, p_host uuid, p_quota integer, p_expires_at timestamp with time zone, p_expected_pricing_version integer, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_allocate`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_allocate",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_table uuid, p_host uuid, p_quota integer, p_expires_at timestamp with time zone, p_expected_pricing_version integer, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_claim(p_token text, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_claim`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_claim",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_token text, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_claim_preview(p_token text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_claim_preview`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_claim_preview",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_token text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_get(p_allocation uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_get`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_get",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_allocation uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_guest_save(p_allocation uuid, p_guest uuid, p_expected_version integer, p_request uuid, p_label text, p_quantity integer, p_token text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_guest_save`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_guest_save",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_allocation uuid, p_guest uuid, p_expected_version integer, p_request uuid, p_label text, p_quantity integer, p_token text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_list(p_workspace uuid, p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_list`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_list",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_receipt(p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_receipt`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_receipt",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_release(p_allocation uuid, p_expected_version integer, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_release`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_release",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_allocation uuid, p_expected_version integer, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_host_request_cancel(p_request uuid, p_kind text)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_host_request_cancel`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_host_request_cancel",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request uuid, p_kind text",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_payment_operator_report(p_workspace uuid, p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_payment_operator_report`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_payment_operator_report",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_payment_policy_configure(p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_allow_pay_at_door boolean, p_allow_pay_online boolean, p_response_deadline timestamp with time zone)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_payment_policy_configure`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_payment_policy_configure",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_allow_pay_at_door boolean, p_allow_pay_online boolean, p_response_deadline timestamp with time zone",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_payment_policy_get(p_workspace uuid, p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_payment_policy_get`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_payment_policy_get",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_payment_policy_save(p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_allow_pay_at_door boolean, p_allow_pay_online boolean)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_payment_policy_save`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_payment_policy_save",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_allow_pay_at_door boolean, p_allow_pay_online boolean",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.event_payment_request(p_request uuid, p_kind text, p_scope jsonb, p_cancel_if_missing boolean)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/event_payment_request`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "event_payment_request",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_request uuid, p_kind text, p_scope jsonb, p_cancel_if_missing boolean",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_hold_create(p_event uuid, p_table uuid, p_party_size integer, p_expected_version integer, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_hold_create`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_hold_create",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_event uuid, p_table uuid, p_party_size integer, p_expected_version integer, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_hold_release(p_hold uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_hold_release`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_hold_release",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_hold uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_hold_status(p_event uuid, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_hold_status`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_hold_status",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_event uuid, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_identity_get(p_workspace uuid, p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_identity_get`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_identity_get",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_identity_receipt(p_workspace uuid, p_event uuid, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_identity_receipt`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_identity_receipt",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_identity_save(p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_tables jsonb)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_identity_save`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_identity_save",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_tables jsonb",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_inventory_configure(p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_data jsonb)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_inventory_configure`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_inventory_configure",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_expected_version integer, p_request uuid, p_data jsonb",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_inventory_configure_receipt(p_workspace uuid, p_event uuid, p_request uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_inventory_configure_receipt`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_inventory_configure_receipt",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid, p_request uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_inventory_map(p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_inventory_map`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_inventory_map",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        },
+        {
+          "detail": "Function `public.table_inventory_operator(p_workspace uuid, p_event uuid)` can be executed by the `authenticated` role as a `SECURITY DEFINER` function via `/rest/v1/rpc/table_inventory_operator`. Revoke `EXECUTE` or switch it to `SECURITY INVOKER` if that is not intentional.",
+          "metadata": {
+            "name": "table_inventory_operator",
+            "schema": "public",
+            "language": "plpgsql",
+            "arguments": "p_workspace uuid, p_event uuid",
+            "security_definer": true
+          },
+          "observed_at": "2026-10-03T02:27:21.597Z"
+        }
+      ]
+    }
+  ],
+  "interpretation": "Existing service-only table access and authenticated SECURITY DEFINER function notices require per-function authority checks; no blanket grants/RLS changes are made. This reviewed proposal adds current-session checks and preserves existing ACLs. Broad existing findings remain separately open."
+}

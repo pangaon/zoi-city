@@ -1,0 +1,7 @@
+# Parea pure shell extraction independent review
+
+Accepted the exact three-file frozen derivative. The exported shell function matches the previously accepted source byte for byte, including its newline hash `7666ec6c4948976e7a827990761b9ecff04674e303e00ea8f5c978637d9ee92a`. Customer-controller source reconstructs exactly after accounting for the two previously owned cache-query updates; its only subsequent changes are removing that function and importing/re-exporting it. The generic renderer changes only its import destination. No shell markup or controller behavior changed.
+
+All three current files match the derivative snapshot and the root receipt hashes. The new module has no imports, DOM reads, provider calls or request-time mutation. API renderers now reach the pure shell without pulling the browser controller and queried venue/invitation dependencies into the server import graph. Nine independent focused tests pass, including the unchanged complete API transitive-import check and its negative regression, plus readiness and roster boundaries.
+
+This approves source integration. Deployment/build tracing and actual released guest journeys remain distinct release gates; no production capability is inferred from these unit checks. No runtime files or live data were changed by this reviewer. Evidence is retained in `evidence/parea-shell-ssr-independent-2026-10-03/receipt.json` and `focused-tests.log`.

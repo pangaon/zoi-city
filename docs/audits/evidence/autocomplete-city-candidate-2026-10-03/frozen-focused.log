@@ -1,0 +1,25 @@
+✔ a real bounded candidate beyond the former eight-row cut remains selectable without client-specific ranking (1.648049ms)
+✔ an overlarge response remains bounded while exact name and prefix ordering preserve stable public identities (1.342699ms)
+✔ wider candidates retain exact city, country and categories and cannot introduce disabled categories (0.996382ms)
+✔ public autocomplete preserves filters and explicitly separates cross-category fallback (1.690618ms)
+✔ in-filter results avoid fallback, unsafe records and private fields never leave projection (0.35348ms)
+✔ short query makes no requests and failure does not invent results (1.169484ms)
+✔ cancelled and stale responses cannot reopen or replace newer suggestions (13.229204ms)
+✔ a temporary transport failure recovers without asking the visitor to retry (2.086148ms)
+✔ hung transport is bounded and retried, and persistent failure stays honest (12.104844ms)
+✔ closing suggestions cancels a scheduled automatic retry (41.250392ms)
+✔ strict map scope never expands an empty suggestion result into another city (0.324867ms)
+✔ map suggestions omit disabled categories when several categories remain selected (0.421508ms)
+✔ multi-category selection reaches RPC before its limit with one scoped request (0.518248ms)
+✔ no selected types means no fetch and malformed selections fail closed (0.282007ms)
+✔ multi-category request keeps cancellation signal and cannot broaden an empty category response (0.249757ms)
+✔ country city names deduplicate regions while preserving source country and exact city identity (9.082217ms)
+✔ malformed catalogs fail explicitly and incomplete names cannot become invented cities (0.571167ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 17
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 134.266992

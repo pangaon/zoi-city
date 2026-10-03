@@ -1,0 +1,27 @@
+(node:906921) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///workspaces/zoi-city/.recovery/community-release/mobile/src/nativePareaClient.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /workspaces/zoi-city/.recovery/community-release/mobile/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+GUARD zoi.event_payment_policy_view(uuid,uuid) e47614082fc35f473da4481caa59e108
+GUARD public.event_payment_policy_get(uuid,uuid) 950a2c73162310a0d9946a72724216ee
+GUARD public.event_payment_policy_save(uuid,uuid,integer,uuid,boolean,boolean) 86a0dc9c8010b8e280f9ff710a42110a
+GUARD public.event_guest_payment_options(uuid) 549cbca2f79c10cdb3bbb88863e89f6d
+GUARD public.event_guest_payment_choose(uuid,text,integer,integer,uuid) 8c3ccf3cb146a546fbd4c0940a9e3031
+GUARD public.event_payment_operator_report(uuid,uuid) 456aa9e77ced13851af4469d4b3547cf
+PASS actual native host 3/1/5, immutable lost-response retry, real quota and unique capability hashes
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Missing expected rejection.
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///workspaces/zoi-city/.recovery/community-release/tests/database/native-parea-journey.integration.mjs:37:112 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: /suite_session_unavailable/,
+  operator: 'rejects',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

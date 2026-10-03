@@ -1,8 +1,12 @@
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const kinds=new Set(['company','project','task','contact']);
 const states=new Set(['open','in_progress','blocked','completed']);
+export function validateCompanyRecords(records,workspace){
+ if(!UUID.test(workspace)||!Array.isArray(records)||records.some(r=>!r||!UUID.test(r.id||'')||r.workspace_id!==workspace||!Number.isInteger(r.version)||r.version<1||typeof r.title!=='string'||!r.title.trim()||!kinds.has(r.kind)||(r.status!==undefined&&!states.has(r.status)))||new Set(records.map(r=>r.id)).size!==records.length)throw Error('Company records could not be verified.');
+ return records;
+}
 export function companyWork(records,workspace,companyId){
- if(!UUID.test(workspace)||!UUID.test(companyId)||!Array.isArray(records)||records.some(r=>!UUID.test(r.id||'')||r.workspace_id!==workspace||!Number.isInteger(r.version)||r.version<1||typeof r.title!=='string'||!r.title.trim()||!kinds.has(r.kind)||(r.status!==undefined&&!states.has(r.status)))||new Set(records.map(r=>r.id)).size!==records.length)throw Error('Company records could not be verified.');
+ validateCompanyRecords(records,workspace);if(!UUID.test(companyId))throw Error('Company records could not be verified.');
  const companies=records.filter(r=>r.id===companyId&&r.kind==='company'&&!r.archived_at);if(companies.length!==1)throw Error('This company is unavailable in the current workspace.');
  const projects=records.filter(r=>r.kind==='project'&&r.company_id===companyId&&!r.archived_at),ids=new Set(projects.map(p=>p.id));
  return{company:companies[0],projects,tasks:records.filter(r=>r.kind==='task'&&ids.has(r.project_id)&&!r.archived_at),contacts:records.filter(r=>r.kind==='contact'&&r.company_id===companyId&&!r.archived_at)};

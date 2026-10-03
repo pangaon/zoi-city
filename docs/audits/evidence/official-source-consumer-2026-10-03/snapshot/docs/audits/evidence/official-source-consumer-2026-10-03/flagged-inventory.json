@@ -1,0 +1,128 @@
+{
+  "inventory": {
+    "query": "SELECT entity_type,count(*) AS flagged_records,count(*) FILTER(WHERE website IS NOT NULL AND website<>'') AS with_base_website,count(*) FILTER(WHERE profile?'website') AS raw_website_present,count(*) FILTER(WHERE owner_user_id IS NOT NULL OR owner_workspace_id IS NOT NULL) AS owned_records FROM zoi.listings WHERE publish_status='published' AND moderation_status IN('clean','cleared') AND coalesce(marketplace_status,'')<>'hidden' AND (profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch' OR profile#>>'{_enrich,scope_review_required}'='true' OR profile#>>'{_enrich,organization_identity_quarantine}'='true') GROUP BY entity_type ORDER BY entity_type;",
+    "rows": [
+      {
+        "entity_type": "business",
+        "flagged_records": 1,
+        "with_base_website": 1,
+        "raw_website_present": 0,
+        "owned_records": 0
+      },
+      {
+        "entity_type": "church",
+        "flagged_records": 85,
+        "with_base_website": 85,
+        "raw_website_present": 0,
+        "owned_records": 0
+      }
+    ],
+    "captured_at": "2026-10-03T02:14:43.761Z"
+  },
+  "samples": {
+    "query": "SELECT id,name,city,website,profile#>>'{_enrich,source_url}' AS source_url,profile#>>'{_enrich,blocked_reason}' AS blocked_reason,profile#>>'{_enrich,scope_review_required}' AS review_required,profile#>>'{_enrich,organization_identity_quarantine}' AS identity_quarantine FROM zoi.listings WHERE publish_status='published' AND moderation_status IN('clean','cleared') AND coalesce(marketplace_status,'')<>'hidden' AND (profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch' OR profile#>>'{_enrich,scope_review_required}'='true' OR profile#>>'{_enrich,organization_identity_quarantine}'='true') ORDER BY entity_type,id LIMIT 10;",
+    "rows": [
+      {
+        "id": "048c48ab-4ff1-4e4e-a6c9-bd4ff7cc31dd",
+        "name": "Fournos Bakery Benmore",
+        "city": "Johannesburg",
+        "website": "https://www.fournos.co.za/",
+        "source_url": "https://www.fournos.co.za/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": null,
+        "identity_quarantine": null
+      },
+      {
+        "id": "007efbae-eeaf-41c6-add5-b28bc724360f",
+        "name": "Parrocchia della Protezione della Madre di Dio",
+        "city": "Brescia",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "04cd17cf-7b30-4560-b7fc-de1dac6db0b1",
+        "name": "Parrocchia di San Nettario di Egina",
+        "city": "Parma",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "0a69462a-9f9a-4969-bd5b-dbb2c5018bdf",
+        "name": "Parrocchia di San Michele Arcangelo",
+        "city": "San Marino",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "10d9ab61-897f-42e9-b5b0-da3f187020da",
+        "name": "Parrocchia dei SS. Giobbe di Počaїv e Zeno di Verona",
+        "city": "Reggio Emilia",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "1368df50-d879-4611-b13e-ec9e0a1ce2ed",
+        "name": "Parrocchia del Miracolo di San Michele Arcangelo a Cona",
+        "city": "Foggia",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "179a1050-eac6-4943-ad43-0f0c967d5c92",
+        "name": "Parrocchia di San Giuseppe il Falegname",
+        "city": "Gualdo Tadino (PG)",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "21ba87a9-3fb2-42ba-8832-3735cca9e63e",
+        "name": "Chiesa Greco-Ortodossa della Dormizione della Madre di Dio",
+        "city": "Livorno",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "2463edbc-8d10-4db8-bdb9-f4defad27116",
+        "name": "Chiesa Greco-Ortodossa dei SS. Pietro e Paolo",
+        "city": "Napoli",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      },
+      {
+        "id": "276001e6-ea47-42bc-b7fb-4f7eebac6387",
+        "name": "Chiesa di San Gerasimo di Cefalonia",
+        "city": "Perugia",
+        "website": "https://ortodossia.it",
+        "source_url": "https://ortodossia.it/",
+        "blocked_reason": "source_scope_mismatch",
+        "review_required": "true",
+        "identity_quarantine": null
+      }
+    ],
+    "captured_at": "2026-10-03T02:15:07.237Z"
+  }
+}

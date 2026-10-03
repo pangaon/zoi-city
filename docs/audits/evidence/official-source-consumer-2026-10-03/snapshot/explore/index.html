@@ -1,0 +1,994 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Discover the Greek world · Zoi</title>
+<meta name="description" content="Search Greek businesses, churches, professionals, festivals and creators across the diaspora. Browse live listings, verified records, and places still awaiting review."/>
+<link rel="canonical" href="https://www.zoi.city/explore"/>
+<meta name="theme-color" content="#080a0e"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,300..500&family=Hanken+Grotesk:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<meta name="color-scheme" content="dark light">
+<script src="/assets/zoi-core.js" defer></script>
+<link rel="stylesheet" href="/assets/personalization/locality.css">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930-readable">
+<style>
+:root{
+  /* bridged onto the shared design system — /assets/zoi-theme.css */
+  /* inherited straight from the shared tokens: --bg, --bg2, --line, --line2, --tx, --mut, --dim, --acc, --gold, --green, --red */
+  --bg3:var(--card);
+  --acc2:var(--acc);
+  --navbg:color-mix(in srgb, var(--bg) 78%, transparent);
+  --btnp-fg:var(--on-text);
+  --ease:cubic-bezier(.22,.61,.36,1);
+}
+.zoi-header .zoi-search{display:none!important}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Hanken Grotesk',system-ui,sans-serif;color:var(--tx);background:var(--bg);line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;letter-spacing:-.01em}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,48px)}
+a{color:inherit;text-decoration:none}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)}
+.serif{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:400}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;transition:.25s var(--ease);border:1px solid transparent;white-space:nowrap}
+.btn.p{background:var(--tx);color:var(--btnp-fg)}
+.btn.p:hover{transform:translateY(-1px)}
+.btn.g{background:transparent;border-color:var(--line2);color:var(--tx)}
+.btn.g:hover{background:var(--bg2);border-color:var(--dim)}
+.legacy-nav{position:sticky;top:0;z-index:60;background:var(--navbg);backdrop-filter:blur(18px) saturate(1.4);border-bottom:1px solid var(--line)}
+.nv{display:flex;align-items:center;gap:22px;height:62px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px}
+.seal{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:linear-gradient(150deg,var(--bg3),var(--bg2));border:1px solid var(--line2);font-family:'Fraunces';font-weight:400;font-size:17px;color:var(--gold)}
+.nlinks{display:flex;gap:4px;margin-left:8px}
+.nlinks a{padding:8px 13px;border-radius:7px;font-weight:500;font-size:14px;color:var(--mut);transition:.2s}
+.nlinks a:hover{color:var(--tx);background:var(--bg2)}
+.nr{margin-left:auto;display:flex;gap:10px;align-items:center}
+@media(max-width:760px){.nlinks{display:none}}
+
+.hero{padding:clamp(40px,7vw,84px) 0 clamp(24px,4vw,44px)}
+.hero h1{font-size:clamp(34px,5.6vw,62px);line-height:1.02;letter-spacing:-.03em;font-weight:700;max-width:18ch}
+.hero h1 .serif{color:var(--gold);font-weight:300}
+.hsub{color:var(--mut);font-size:clamp(15px,1.8vw,17px);margin:16px 0 30px;max-width:52ch}
+.sbar{display:flex;align-items:center;gap:12px;background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:8px 8px 8px 18px;max-width:760px;transition:border-color .25s}
+.sbar:focus-within{border-color:var(--acc)}
+.sbar svg{width:20px;height:20px;stroke:var(--dim);fill:none;stroke-width:2;flex:none}
+.sbar input{flex:1;border:none;outline:none;background:transparent;font:500 16px 'Hanken Grotesk';color:var(--tx);min-width:0}
+.sbar input::placeholder{color:var(--dim)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px;align-items:center}
+.fpill{font-family:inherit;font-size:14px;font-weight:600;letter-spacing:0;padding:9px 14px;min-height:42px;border:1px solid var(--line);border-radius:8px;color:var(--mut);cursor:pointer;transition:.2s;background:transparent}
+.fpill:hover{color:var(--tx);border-color:var(--line2)}
+.fpill.on{color:var(--btnp-fg);background:var(--tx);border-color:var(--tx)}
+.fpill b{margin-left:6px;font-weight:500}
+select.city{background:var(--bg2);border:1px solid var(--line);border-radius:8px;color:var(--tx);font:500 13px 'Hanken Grotesk';padding:8px 12px;outline:none;cursor:pointer}
+
+section{padding:clamp(20px,3vw,36px) 0 60px}
+.meta-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:8px 0 18px;flex-wrap:wrap}
+.meta-row .count{font-size:13.5px;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.card{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:8px;transition:.25s var(--ease);position:relative}
+.card:hover{border-color:var(--line2);transform:translateY(-2px)}
+.chead{display:flex;align-items:flex-start;gap:10px}
+.cname{font-weight:700;font-size:16.5px;letter-spacing:-.01em;line-height:1.25;flex:1}
+.cname a:hover{color:var(--acc)}
+.vbadge{flex:none;display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:3px 9px;opacity:.9}
+.cmeta{font-size:12.5px;color:var(--dim);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.cmeta .cat{color:var(--gold)}
+.cdesc{font-size:13.5px;color:var(--mut);line-height:1.5;flex:1}
+.cfoot{display:flex;gap:8px;margin-top:6px}
+.cbtn{font-size:12.5px;font-weight:600;padding:7px 13px;border-radius:7px;border:1px solid var(--line2);color:var(--tx);cursor:pointer;background:transparent;transition:.2s;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.cbtn:hover{background:var(--bg3)}
+.cbtn.claim{color:var(--gold);border-color:var(--gold)}
+.empty{padding:60px 20px;text-align:center;color:var(--mut)}
+.empty h3{font-size:22px;font-weight:700;color:var(--tx);margin-bottom:8px}
+.empty-entry{max-width:720px;margin:12px auto;padding:34px 30px;border:1px solid var(--line);border-radius:24px;background:linear-gradient(135deg,var(--card),var(--card2));box-shadow:0 15px 40px -30px #18271c66}.empty-entry-kicker{font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--mut);font-weight:700}.empty-entry h3{font:500 32px/1.15 Fraunces,Georgia,serif;letter-spacing:-.025em;margin:12px 0}.empty-entry>p{max-width:560px;margin:0 auto;line-height:1.65;font-size:14px}.empty-entry-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:23px 0 18px}.empty-entry-actions a{min-height:44px;padding:12px 16px;border-radius:100px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:650;white-space:normal}.empty-entry-actions .empty-entry-primary{background:var(--btn-bg);color:var(--btn-fg);border:1px solid transparent}.empty-entry .empty-entry-note{font-size:12px;line-height:1.6;color:var(--mut)}.empty-entry a:focus-visible{outline:2px solid var(--acc);outline-offset:4px}@media(max-width:600px){.empty-entry{padding:26px 18px;margin:8px 0;border-radius:20px}.empty-entry h3{font-size:28px}.empty-entry-actions{flex-direction:column}.empty-entry-actions a{width:100%}}
+.loadmore{display:flex;justify-content:center;margin-top:26px}
+.strip{border-top:1px solid var(--line);padding:34px 0}
+.strip h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px}
+.strip h2 .serif{color:var(--gold);font-weight:300}
+.fresh{display:flex;gap:10px;overflow-x:auto;padding-bottom:6px}
+.fcard{flex:none;min-width:210px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px 16px;transition:.2s}
+.fcard:hover{border-color:var(--line2)}
+.fcard b{font-size:14px;display:block;margin-bottom:3px}
+.fcard span{font-size:12px;color:var(--dim)}
+.skel{height:120px;border-radius:14px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{0%{background-position:0 0}100%{background-position:-200% 0}}
+.themeToggle{position:fixed;bottom:18px;right:18px;z-index:300;width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);border:1px solid var(--line2);cursor:pointer;color:var(--tx);box-shadow:0 8px 24px -12px rgba(0,0,0,.4)}
+.themeToggle svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2}
+footer{border-top:1px solid var(--line);padding:30px 0 40px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+footer span,footer a{font-size:13px;color:var(--dim)}
+footer a:hover{color:var(--tx)}
+.toast{position:fixed;bottom:74px;left:50%;transform:translateX(-50%) translateY(16px);opacity:0;background:var(--bg2);border:1px solid var(--line2);border-radius:10px;padding:11px 20px;font-weight:600;font-size:13.5px;z-index:400;transition:.3s;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* quick view */
+.qv{position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:20px}
+.qv[hidden]{display:none}
+.qv-box{position:relative;background:var(--card);border:1px solid var(--line2);border-radius:var(--r,18px);padding:26px;max-width:520px;width:100%;max-height:86vh;overflow:auto;box-shadow:var(--shadow)}
+.qv-x{position:absolute;top:12px;right:12px;width:34px;height:34px;border-radius:10px;background:none;border:1px solid var(--line);color:var(--mut);font-size:20px;line-height:1;cursor:pointer}
+.qv-x:hover{color:var(--tx);border-color:var(--acc)}
+.qv-box h3{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0 6px 6px 0;padding-right:34px}
+.qv-meta{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 0}
+.qv-desc{color:var(--mut);font-size:14.5px;line-height:1.6;margin:14px 0 0;white-space:pre-wrap}
+.qv-acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}
+.qv-cover{aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:var(--bg3)}
+.qv-cover .ze,.qv-cover .ze-photo{width:100%;height:100%;object-fit:cover;display:block}
+.qv-cover .ze-alt{display:none}
+.qv-cat{font-size:12.5px;color:var(--gold);margin-top:6px}
+
+/* ===== listing cards: cover art + body + actions ===== */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:22px;align-items:stretch}
+.lcard{position:relative;display:flex;flex-direction:column;background:var(--bg2);
+  border:1px solid var(--line);border-radius:16px;overflow:hidden;transition:
+  transform .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease)}
+.lcard:hover{transform:translateY(-3px);border-color:var(--line2);
+  box-shadow:0 22px 44px -26px rgba(0,0,0,.55)}
+.lcover{display:block;position:relative;aspect-ratio:16/10;overflow:hidden;background:var(--bg3);
+  border-bottom:1px solid var(--line)}
+.lcover .ze,.lcover .ze-photo{display:block;width:100%;height:100%;object-fit:cover;
+  transition:transform .5s var(--ease)}
+.lcard:hover .lcover .ze,.lcard:hover .lcover .ze-photo{transform:scale(1.035)}
+.lcover .ze-alt{display:none}
+.lcover.ze-fallback .ze-alt{display:block;width:100%;height:100%}
+.lbody{padding:14px 15px 6px;display:flex;flex-direction:column;gap:6px;flex:1}
+.ltop{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ltype{font-size:10.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--gold)}
+.lname{font-size:16.5px;font-weight:700;letter-spacing:-.015em;line-height:1.28;margin:0}
+.lname a{color:var(--tx)} .lname a:hover{color:var(--acc)}
+.lloc{font-size:12.5px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.lloc svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2;flex:none}
+.ldesc{font-size:13px;color:var(--mut);line-height:1.5;margin:2px 0 0;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.lfoot{display:flex;gap:7px;padding:10px 15px 14px;margin-top:auto;flex-wrap:wrap}
+.lbtn{font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:9px;border:1px solid var(--line2);
+  background:transparent;color:var(--tx);cursor:pointer;transition:.2s var(--ease);min-height:34px;
+  display:inline-flex;align-items:center;gap:6px;text-decoration:none}
+.lbtn:hover{border-color:var(--acc);color:var(--acc)}
+.lbtn.pri{background:var(--tx);color:var(--on-text);border-color:var(--tx)}
+.lbtn.pri:hover{filter:brightness(1.06);color:var(--on-text)}
+.lbtn.claim{color:var(--gold);border-color:color-mix(in srgb, var(--gold) 45%, transparent)}
+.lbtn.claim:hover{border-color:var(--gold);color:var(--gold)}
+.lverify{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:800;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--green);
+  background:color-mix(in srgb, var(--green) 14%, transparent);
+  border:1px solid color-mix(in srgb, var(--green) 34%, transparent);border-radius:999px;padding:2px 8px}
+.lverify svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.6}
+.lsrc{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--dim)}
+/* skeletons matched to the real card so loading doesn't jump */
+.skel{height:302px;border-radius:16px;background:linear-gradient(90deg,var(--bg2),var(--bg3),var(--bg2));
+  background-size:200% 100%;animation:sk 1.2s infinite;border:1px solid var(--line)}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.mapcta{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;
+  color:var(--gold);background:color-mix(in srgb, var(--gold) 10%, transparent);
+  border:1px solid color-mix(in srgb, var(--gold) 38%, transparent);
+  border-radius:999px;padding:8px 15px;transition:.2s var(--ease)}
+.mapcta:hover{background:color-mix(in srgb, var(--gold) 18%, transparent);transform:translateY(-1px)}
+.mapcta svg{width:15px;height:15px;flex:none}
+
+/* crawlable index */
+.ph-index{border-top:1px solid var(--line);padding:clamp(30px,5vw,54px) 0}
+.ph-index h2{font-family:"Fraunces",serif;font-size:clamp(20px,2.6vw,27px);font-weight:600;letter-spacing:-.02em;margin:0 0 20px}
+.pi-grp{margin:0 0 22px}
+.pi-grp h3{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700;margin:0 0 10px}
+.pi-grp a{display:inline-flex;align-items:baseline;gap:6px;margin:0 6px 6px 0;padding:6px 12px;border-radius:999px;
+  border:1px solid var(--line);background:var(--card2);color:var(--mut);font-size:13px;font-weight:600;
+  text-decoration:none;transition:.16s var(--ease)}
+.pi-grp a:hover{color:var(--tx);border-color:var(--line2);transform:translateY(-1px)}
+.pi-grp a b{font-weight:500;font-size:11.5px;opacity:.7;font-variant-numeric:tabular-nums}
+.pi-note{font-size:12.5px;color:var(--dim);margin:4px 0 0}
+
+
+/* One editorial frame across imagery, logos and sparse records: loading never changes its size. */
+.lcover,.lcover.is-event-poster .ze-photo,.qv-cover.is-event-poster .ze-photo{object-fit:contain;padding:0;transform:none!important}
+.lcover.is-identity,.lcover.ze-fallback,.lcover.is-logo,.lcover.is-square-art{aspect-ratio:16/10;height:auto;min-height:0;flex:none}
+.lcard{border-radius:24px 24px 18px 18px;background:linear-gradient(145deg,var(--card),var(--bg2))}
+.lbody{padding:18px 18px 8px;gap:9px;min-height:155px}
+.lname{font-size:19px;line-height:1.3;overflow-wrap:anywhere}
+.lfoot{padding:12px 18px 18px;gap:8px}
+.lbtn{min-height:44px;border-radius:12px;padding:9px 13px}
+.lbtn:focus-visible,.lname a:focus-visible,.qv-x:focus-visible{outline:3px solid var(--acc);outline-offset:3px}
+.lcover.is-logo,.lcover.is-square-art,.qv-cover.is-logo,.qv-cover.is-square-art{background:#fff}
+.lcover.is-logo .ze-photo,.lcover.is-square-art .ze-photo,.qv-cover.is-logo .ze-photo,.qv-cover.is-square-art .ze-photo{object-fit:contain;padding:24px;transform:none!important}
+.lcover.is-small .ze-photo,.qv-cover.is-small .ze-photo{object-fit:scale-down;padding:18px;transform:none!important}
+.lcover.is-portrait .ze-photo,.qv-cover.is-portrait .ze-photo{object-fit:contain;transform:none!important}
+.lcover.is-identity,.lcover.ze-fallback,.qv-cover.is-identity,.qv-cover.ze-fallback{display:grid;place-items:center;background:radial-gradient(ellipse at 15% 10%,color-mix(in srgb,var(--acc) 15%,transparent),transparent 70%),var(--bg3)}
+.lcover.ze-fallback .ze-alt,.qv-cover.ze-fallback .ze-alt{display:grid;width:100%;height:100%;place-items:center}
+.lidentity{display:grid;place-items:center;width:76px;height:76px;border-radius:24px 24px 24px 8px;border:1px solid var(--line2);background:color-mix(in srgb,var(--card) 80%,transparent);color:var(--tx);font:500 27px/1 Georgia,serif;letter-spacing:.02em}
+.qv{background:rgb(2 12 25 / .65);backdrop-filter:blur(12px);padding:24px}
+.qv-box{padding:0;max-width:640px;max-height:calc(100dvh - 48px);border-radius:28px;box-shadow:0 30px 100px #0006;background:var(--card)}
+.qv-cover,.qv-cover.is-identity,.qv-cover.ze-fallback{aspect-ratio:16/9;height:auto;border:0;border-radius:0}
+.qv-copy{padding:22px 26px 26px}
+.qv-box h3{font-size:28px;line-height:1.15;margin:8px 0 10px;padding:0;overflow-wrap:anywhere}
+.qv-x{z-index:2;width:44px;height:44px;top:12px;right:12px;border-radius:50%;background:var(--card);color:var(--tx);box-shadow:0 4px 18px #0003}
+.qv-acts{padding-top:16px;border-top:1px solid var(--line);margin-top:20px}
+.qv-acts .pri{flex:1;justify-content:center}
+@media(max-width:600px){.grid{grid-template-columns:minmax(0,1fr)}.qv{padding:12px}.qv-box{max-height:calc(100dvh - 24px);border-radius:24px}.qv-copy{padding:18px}.qv-box h3{font-size:25px}.lbody{min-height:0}.qv-acts{gap:8px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.lcard,.lcover .ze,.lcover .ze-photo{transition:none}.lcard:hover,.lcard:hover .lcover .ze-photo{transform:none}.skel{animation:none}}
+
+.discovery-suggestions{margin-top:8px;max-width:900px;border:1px solid var(--line2);border-radius:18px;background:var(--bg2);box-shadow:0 18px 48px #0002;overflow:hidden}.discovery-suggestions[hidden]{display:none}.suggestion-status{padding:12px 16px;font-size:13px;color:var(--mut);line-height:1.5}.suggestion-status button{margin-left:8px;border:1px solid var(--line2);border-radius:8px;background:var(--bg);color:var(--tx);padding:8px 12px;cursor:pointer}.discovery-suggestions [role=listbox]{max-height:320px;overflow:auto;overscroll-behavior:contain}.discovery-suggestions [role=option]{display:flex;flex-direction:column;gap:5px;padding:13px 16px;min-height:48px;cursor:pointer;border-top:1px solid var(--line)}.discovery-suggestions [role=option] strong{font-size:15px;overflow-wrap:anywhere}.discovery-suggestions [role=option] span{color:var(--mut);font-size:12px}.discovery-suggestions [role=option]:hover,.discovery-suggestions [aria-selected=true]{background:var(--bg3);box-shadow:inset 3px 0 var(--acc)}
+.lbrand{position:absolute;left:14px;bottom:14px;max-width:46%;width:118px;height:58px;padding:9px;background:#fff;border:1px solid #ffffff70;border-radius:12px;box-shadow:0 5px 22px #0003;z-index:2;display:block;overflow:hidden}.qv-cover{position:relative}.lbrand.on-dark{background:#071523ef;border-color:#86adc650}.lbrand img{position:static!important;display:block;width:100%;height:100%;min-width:0!important;min-height:0!important;max-width:100%;max-height:100%;object-fit:contain!important;object-position:center;transform:none!important}.lbrand img.has-padding{object-fit:cover!important;transform:scale(1.5)!important}.lbrand-only{position:relative;left:auto;bottom:auto;width:min(68%,200px);height:80px;max-width:80%;margin:auto}
+</style>
+<script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
+<link rel="manifest" href="/manifest.webmanifest">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png?v=blue-olive"><link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/favicon-16.png?v=blue-olive"><link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=blue-olive"><link rel="preload" as="image" href="/assets/brand/zoi-logo.png"></head>
+<body>
+<header class="zoi-header"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home" data-zoi-identity="08db50bee5caf18a878cb8468ced301d74c92bffd7b308678fb95e4f75514ff1"><img src="/assets/brand/zoi-logo.png" alt="Zoi" width="35" height="48" style="display:block;width:auto;height:48px;object-fit:contain"><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore" aria-current="page">Discover</a><a href="/community">Community</a><a href="/tickets">Events</a><a href="/shop/">Marketplace</a><a href="/business">For Business</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
+
+<header class="hero"><div class="wrap">
+  <div class="mono" style="margin-bottom:18px">The map — <span id="hd-count">—</span> Greek places · <span id="hd-cities">—</span> cities · <span id="hd-countries">—</span> countries</div>
+  <h1>Find anything <span class="serif">Greek,</span> anywhere.</h1>
+  <p class="hsub">Tavernas, churches, lawyers, bakeries, festivals, creators — the living record of the Greek world, searchable with verification status shown on every listing.</p>
+  <div class="sbar">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+    <input id="q" aria-label="Search places and people" placeholder="Try “taverna”, “orthodox church”, “lawyer”…" autocomplete="off"/>
+    <button class="btn p" onclick="submitExplore()">Search</button>
+  </div>
+  <div id="discovery-locality"></div>
+  <div class="filters" id="type-pills"></div>
+  <div class="filters">
+    <select class="city" id="city-sel" aria-label="City"><option value="">Every city</option></select>
+    <select class="city" id="country-sel" aria-label="Country" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
+    <select class="city" id="sort-sel" aria-label="Sort results" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
+    <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
+    <button class="mapcta" id="lang-btn" style="color:var(--tx);border-color:var(--line2)" onclick="toggleExploreLang()">🌐 <span id="langTxt">EN</span></button>
+    <button class="mapcta" id="surprise-btn" style="color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)" onclick="randomGreekSpot()">🎲 Surprise Spot</button>
+    <button class="mapcta" id="clear-filters-btn" style="display:none;color:var(--red);border-color:color-mix(in srgb,var(--red) 45%,transparent)" onclick="clearExploreFilters()">✕ Clear Filters</button>
+    <a class="mapcta" href="/explore/map">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      See it on the map
+    </a>
+  </div>
+</div></header>
+
+<section class="wrap" style="padding:0 0 clamp(30px,5vw,54px)">
+  <div class="zoi-globe" id="zoiGlobe" data-mirror='{"gb-listings":"hd-count","gb-cities":"hd-cities","gb-countries":"hd-countries"}' style="--gh:clamp(230px,26vw,320px)" role="img"
+       aria-label="A globe showing the cities of the Greek world, with lines running from Greece to each one">
+    <div class="gname" id="zoiGlobeName" aria-hidden="true"></div>
+    <div class="gcap">
+      <h2>One world, one people.
+        <span class="gsub">Every line runs from Greece to a city that kept it going.</span>
+      </h2>
+      <div class="gstats">
+        <div><b id="gb-listings">&mdash;</b><span>places</span></div>
+        <div><b id="gb-cities">&mdash;</b><span>cities</span></div>
+        <div><b id="gb-countries">&mdash;</b><span>countries</span></div>
+      </div>
+      <a class="btn btn-primary" href="/explore/map" style="flex:0 0 auto">Open the map</a>
+    </div>
+  </div>
+</section>
+
+
+<section><div class="wrap">
+  <div class="meta-row">
+    <span class="count" id="res-count">Loading the Greek world…</span>
+    <span class="mono" id="res-mode"></span>
+  </div>
+  <div class="grid" id="results">
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+    <div class="skel"></div><div class="skel"></div><div class="skel"></div>
+  </div>
+  <p class="zb-hint" style="text-align:center;font-size:12.5px;color:var(--dim);margin:6px 0 0">Use the filters above to narrow the directory, then open the map to browse places spatially.</p>
+  <div class="loadmore"><button class="btn g" id="more-btn" style="display:none" onclick="loadMore()">Show more</button></div>
+</div></section>
+
+<div class="wrap" style="margin-bottom:28px">
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px">
+    <a href="/c/media-creators" class="fcard" style="padding:14px;border:1px solid var(--line);background:var(--card);border-radius:12px;text-decoration:none">
+      <div style="font-size:20px;margin-bottom:4px">🎙️</div>
+      <b style="color:var(--tx);font-size:14px;display:block">Creators &amp; Influencers</b>
+      <span style="color:var(--mut);font-size:11.5px">Podcasts, music, media &amp; voices</span>
+    </a>
+    <a href="/c/restaurants" class="fcard" style="padding:14px;border:1px solid var(--line);background:var(--card);border-radius:12px;text-decoration:none">
+      <div style="font-size:20px;margin-bottom:4px">🍷</div>
+      <b style="color:var(--tx);font-size:14px;display:block">Tavernas &amp; Gastronomy</b>
+      <span style="color:var(--mut);font-size:11.5px">Authentic Greek food &amp; wine</span>
+    </a>
+    <a href="/c/orthodox-churches" class="fcard" style="padding:14px;border:1px solid var(--line);background:var(--card);border-radius:12px;text-decoration:none">
+      <div style="font-size:20px;margin-bottom:4px">⛪</div>
+      <b style="color:var(--tx);font-size:14px;display:block">Orthodox Churches</b>
+      <span style="color:var(--mut);font-size:11.5px">Parishes, feasts &amp; sacraments</span>
+    </a>
+    <a href="/c/festivals" class="fcard" style="padding:14px;border:1px solid var(--line);background:var(--card);border-radius:12px;text-decoration:none">
+      <div style="font-size:20px;margin-bottom:4px">🎭</div>
+      <b style="color:var(--tx);font-size:14px;display:block">Festivals &amp; Panigiria</b>
+      <span style="color:var(--mut);font-size:11.5px">Community celebrations &amp; galas</span>
+    </a>
+  </div>
+</div>
+
+<div class="wrap"><nav class="strip" aria-label="Plan your next experience"><h2>Make your next connection</h2><a class="btn" href="/trips/">Artists, shows &amp; your trip</a> <a class="btn" href="/event-plan/">Plan a wedding or occasion</a> <a class="btn" href="/explore/map/">Explore around you</a> <a class="btn" href="/properties/">Property &amp; stays</a></nav></div>
+<div class="wrap"><div class="strip">
+  <h2>New on the <span class="serif">map</span></h2>
+  <div class="fresh" id="fresh"></div>
+</div></div>
+
+<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">
+  <span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>
+  <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Directory</a><a href="/community">Community</a><a href="/social">Business</a><a href="/tickets">Tickets</a><a href="/shop/">Marketplace</a></nav>
+</div></footer>
+
+<div class="qv" id="qv" hidden><div class="qv-box" role="dialog" aria-modal="true" aria-labelledby="qv-name">
+  <button class="qv-x" id="qv-x" aria-label="Close">&times;</button>
+  <div id="qv-body"></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const BASE='https://csebihpaychdkanjjsmz.supabase.co';
+const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
+let listingImageContext=null,publicListingModel=null;
+const listingImageReady=Promise.all([import('/supabase/functions/zoi-enrich/_image-context.js'),import('/assets/discovery/public-listing-media.mjs?v=20261002-source-bound')]).then(([images,model])=>{listingImageContext=images;publicListingModel=model;}).catch(()=>{});
+function normalizeListing(row){if(!publicListingModel)return row;const media=publicListingModel.publicListingMedia(row);return {...row,photo_url:media.hero,logo_url:media.logo,logo_backdrop:media.logoBackdrop,logo_fit:media.logoFit,image_kind:media.imageKind,description:String(publicListingModel.publicListingDescription(row)||(!row.media_input?row.description:'')||'').slice(0,170)};}
+let exploreLocality=null,exploreHome=null;
+function effectiveExploreLocation(query=ST.q){return (!query&&!ST.city&&!ST.country&&ST.scope!=='global'&&exploreHome)?exploreHome:{city:ST.city,country:ST.country};}
+let TYPES=[['','All']];
+let ST={q:'',type:'',city:'',country:'',sort:'',offset:0,busy:false,done:false,counts:{},rows:[],countries:[]};
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+
+function authToken(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at*1000>Date.now()+5000) return a.access_token; }catch(e){} return null; }
+async function rpc(fn,params,forceAnon,signal){
+  const tk=forceAnon?null:authToken();
+  const controller=new AbortController(),abort=()=>controller.abort();
+  if(signal?.aborted)abort();else signal?.addEventListener('abort',abort,{once:true});
+  const timeout=setTimeout(abort,15000);
+  try{
+    const r=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+(tk||PUB),'Content-Type':'application/json'},body:JSON.stringify(params||{}),signal:controller.signal});
+    const t=await r.text(); if(!r.ok){ let m=t; try{ m=(JSON.parse(t).message)||t; }catch(e){} throw new Error(m); }
+    return t?JSON.parse(t):null;
+  }finally{clearTimeout(timeout);signal?.removeEventListener('abort',abort);}
+}
+
+let typeFiltersLoading=false,typeFiltersFailed=false;
+function pillsRender(){
+  const el=document.getElementById('type-pills');
+  const shown=TYPES.slice();
+  if(ST.type&&!shown.some(([v])=>v===ST.type))shown.push([ST.type,typeLabel(ST.type)]);
+  el.innerHTML=shown.map(([v,l])=>{
+    const n=v?(ST.counts[v]||''):'';
+    return '<button class="fpill'+(ST.type===v?' on':'')+'" aria-pressed="'+String(ST.type===v)+'" onclick="setType(\''+v+'\')">'+esc(l)+
+      (n?'<b>'+Number(n).toLocaleString()+'</b>':'')+'</button>';
+  }).join('')+(typeFiltersFailed?'<button class="fpill" type="button" onclick="loadTypeFilters()">Retry loading categories</button>':'');
+}
+async function loadTypeFilters(){
+  if(typeFiltersLoading)return;
+  typeFiltersLoading=true;
+  try{
+    const counts=await rpc('dir_counts',{},true);
+    if(!Array.isArray(counts))throw Error('category_response_unavailable');
+    ST.raw_counts=counts;ST.counts={};
+    counts.forEach(c=>{if(c.entity_type)ST.counts[c.entity_type]=c.n??c.count;});
+    buildTypes(counts);typeFiltersFailed=false;
+  }catch{typeFiltersFailed=true;}
+  finally{typeFiltersLoading=false;pillsRender();}
+}
+/* Categories come from dir_counts, so every category in the data gets a filter —
+   nothing is stranded because the UI forgot to list it. */
+function buildTypes(rows){
+  const out=[['', LANG === 'el' ? 'Όλα' : 'All']];
+  (rows||[]).filter(c=>c.entity_type).sort((a,b)=>(b.n||b.count||0)-(a.n||a.count||0))
+    .forEach(c=>out.push([c.entity_type, typeLabel(c.entity_type)]));
+  TYPES=out;
+}
+function setType(v){ ST.type=v; pillsRender(); submitExplore(); }
+
+async function boot(){
+  readUrl();
+  applyExploreLang();
+  runSearch(true);
+  import('/assets/personalization/locality.mjs?v=20261001-uuid-scope').then(({mountLocalityControl})=>{if(!window.ZoiCore)return;exploreLocality=mountLocalityControl({core:window.ZoiCore,container:document.getElementById('discovery-locality'),onChange:value=>{const before=JSON.stringify(exploreHome);exploreHome=value.home;if(before!==JSON.stringify(exploreHome))runSearch(true);},onNavigate:href=>{history.pushState({},'',href);readUrl();runSearch(true);}});}).catch(()=>{});
+  await loadTypeFilters();
+  try{
+    const hs=await rpc('home_stats',{},true);
+    if(hs&&hs.listings){
+      document.getElementById('hd-count').textContent=Number(hs.listings).toLocaleString();
+      document.getElementById('hd-cities').textContent=Number(hs.cities).toLocaleString();
+      document.getElementById('hd-countries').textContent=Number(hs.countries).toLocaleString();
+    }
+  }catch(e){}
+  try{
+    const cities=await rpc('explore_cities',{p_limit:14},true);
+    const sel=document.getElementById('city-sel');
+    cityOptions(cities).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country; o.textContent=c.label; sel.appendChild(o); });
+    sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; ST.scope=ST.city?'':'global'; harvestCountries([]); submitExplore(); });
+  }catch(e){}
+  try{
+    const fresh=await rpc('explore_fresh',{p_limit:8},true);
+    harvestCountries(fresh||[]);
+    document.getElementById('fresh').innerHTML=(fresh||[]).map(f=>
+      '<a class="fcard" href="'+esc(hrefFor(f))+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
+  }catch(e){}
+  const selectedCity=document.getElementById('city-sel');
+  if(selectedCity) selectedCity.value=ST.city;
+}
+
+
+/* ---- URL is the source of truth for a search ----
+   Every filter lands in the querystring, so a result set can be linked, shared
+   and reached with the Back button — the way people expect search to behave. */
+function readUrl(){
+  const u=new URL(location.href), g=k=>u.searchParams.get(k)||'';
+  ST.scope=g('scope')||((u.searchParams.has('city')&&!g('city'))||(u.searchParams.has('country')&&!g('country'))?'global':''); ST.q=g('q'); ST.city=g('city'); ST.country=g('country'); ST.sort=g('sort');
+  ST.type=g('type');
+  // legacy ?c= shortcuts kept working
+  const c=g('c');
+  if(c && !ST.type){
+    const map={restaurants:'business',bakeries:'business',churches:'church',festivals:'event',
+      professionals:'professional',schools:'school',associations:'organization',creators:'creator'};
+    ST.type=map[c]||'';
+    if(c==='restaurants'||c==='bakeries') ST.q=(c==='restaurants'?'restaurant':'bakery');
+  }
+  const qi=document.getElementById('q'); if(qi) qi.value=ST.q;
+  const cs=document.getElementById('country-sel'); if(cs&&ST.country) harvestCountries([]);
+  const ss=document.getElementById('sort-sel'); if(ss) ss.value=ST.sort;
+  const ci=document.getElementById('city-sel'); if(ci) ci.value=ST.city;
+  pillsRender();
+}
+function writeUrl(push){
+  const u=new URL(location.href);
+  const workspaceIntent=u.searchParams.getAll('workspace'),claimListing=u.searchParams.getAll('claim_listing'),claimSlug=u.searchParams.getAll('claim_slug');
+  u.search='';
+  workspaceIntent.forEach(value=>u.searchParams.append('workspace',value));
+  claimListing.forEach(value=>u.searchParams.append('claim_listing',value));
+  claimSlug.forEach(value=>u.searchParams.append('claim_slug',value));
+  const set=(k,v)=>{ if(v) u.searchParams.set(k,v); };
+  set('scope',ST.scope); set('q',ST.q); set('type',ST.type); set('city',ST.city);
+  set('country',ST.country); set('sort',ST.sort);
+  const next=u.pathname+(u.search?u.search:'');
+  if(next===location.pathname+location.search) return;
+  try{ push?history.pushState({},'',next):history.replaceState({},'',next); }catch(e){}
+}
+window.addEventListener('popstate',()=>{ exploreAutocomplete?.close();readUrl(); runSearch(true); });
+function retireExploreRequests(){exploreAutocomplete?.close();++searchVersion;searchRequest?.abort();ST.busy=false;settledExplore=null;restoreSettledExplore();document.getElementById('more-btn').style.display='none';}
+window.addEventListener('zoi:auth-change',retireExploreRequests);
+window.addEventListener('storage',event=>{if(!event.key||event.key==='zoi_auth')retireExploreRequests();});
+
+let exploreAutocomplete=null;
+function submitExplore(){exploreAutocomplete?.close();ST.q=document.getElementById('q').value.trim();runSearch(true);}
+document.addEventListener('DOMContentLoaded',()=>{
+  boot();
+  import('/assets/workspace/claim-return.mjs').then(module=>{
+    const intent=module.exploreClaimIntent(location.href);if(!intent)return;
+    const panel=document.createElement('section'),note=document.createElement('p'),action=document.createElement('button');panel.className='discovery-suggestions';note.setAttribute('role','status');note.textContent='Your listing is ready to review. Nothing has been submitted.';action.type='button';action.className='lbtn pri';action.textContent='Continue ownership request';const dismiss=document.createElement('button');dismiss.type='button';dismiss.className='lbtn';dismiss.textContent='Dismiss request';dismiss.onclick=()=>{const url=new URL(location.href);url.searchParams.delete('claim_listing');url.searchParams.delete('claim_slug');history.replaceState(null,'',url.pathname+url.search);panel.remove();};panel.append(note,action,dismiss);document.getElementById('q').closest('.sbar').after(panel);
+    action.onclick=async()=>{const token=authToken();action.disabled=true;note.textContent='Checking the listing…';try{const entity=await rpc('home_entity',{p_slug:intent.slug},true);if(!panel.isConnected||authToken()!==token||JSON.stringify(module.exploreClaimIntent(location.href))!==JSON.stringify(intent)){note.textContent='Your account or listing link changed. Reload before continuing.';return;}if(!entity||entity.id!==intent.listing||entity.slug!==intent.slug||typeof entity.name!=='string'||!/^[a-z_]+$/.test(entity.entity_type||''))throw Error('unavailable');ST.view=ST.view||[];let index=ST.view.findIndex(r=>r.id===entity.id);if(index<0){index=ST.view.length;ST.view.push({...entity,claimable:true});}quickView(index);await claim(intent.slug,action);panel.remove();}catch{note.textContent='This listing could not be confirmed. Retry or search for it below.';action.disabled=false;}};
+  }).catch(()=>{});
+  const q=document.getElementById('q');
+  // Typing requests suggestions only. Retire an older result request immediately,
+  // while keeping the already-rendered results until an explicit search action.
+  q.addEventListener('input',()=>{const pending=ST.busy;++searchVersion;searchRequest?.abort();ST.busy=false;if(pending)restoreSettledExplore();document.getElementById('more-btn').style.display='none';});
+  import('/assets/discovery/autocomplete.mjs?v=20261002-keyboard-recovery').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation(q.value.trim())}),onSubmit:submitExplore});}).catch(()=>{});
+  q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!exploreAutocomplete){submitExplore();}});
+  const cs=document.getElementById('country-sel');
+  if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; ST.scope=ST.country?'':'global'; document.getElementById('city-sel').value=''; submitExplore(); });
+  const ss=document.getElementById('sort-sel');
+  if(ss) ss.addEventListener('change',()=>{ ST.sort=ss.value; renderRows(); });
+  const qv=document.getElementById('qv');
+  document.getElementById('qv-x').addEventListener('click',closeQV);
+  qv.addEventListener('click',e=>{ if(e.target===qv) closeQV(); });
+  document.addEventListener('keydown',quickViewKeyboard);
+});
+
+let LANG = localStorage.getItem('zoi_lang') || 'en';
+
+const TYPE_LABELS_EL = {
+  '': 'Όλα',
+  'business': 'Επιχειρήσεις',
+  'church': 'Εκκλησίες',
+  'event': 'Εκδηλώσεις',
+  'professional': 'Επαγγελματίες',
+  'creator': 'Δημιουργοί',
+  'school': 'Σχολεία',
+  'organization': 'Οργανισμοί',
+  'vendor': 'Πωλητές',
+  'travel_place': 'Προορισμοί',
+  'venue': 'Χώροι',
+  'artist': 'Καλλιτέχνες',
+  'sports': 'Αθλητισμός'
+};
+
+function toggleExploreLang(){
+  LANG = (LANG === 'en') ? 'el' : 'en';
+  try{ localStorage.setItem('zoi_lang', LANG); }catch(e){}
+  applyExploreLang();
+  toast(LANG === 'el' ? 'Γλώσσα: Ελληνικά' : 'Language: English');
+}
+
+function applyExploreLang(){
+  const langTxt = document.getElementById('langTxt');
+  if (langTxt) langTxt.textContent = LANG === 'el' ? 'ΕΛ' : 'EN';
+  
+  const heroH1 = document.querySelector('.hero h1');
+  if (heroH1) {
+    heroH1.innerHTML = LANG === 'el' ? 'Βρες οτιδήποτε <span class="serif">Ελληνικό,</span> παντού.' : 'Find anything <span class="serif">Greek,</span> anywhere.';
+  }
+  const hsub = document.querySelector('.hsub');
+  if (hsub) {
+    hsub.textContent = LANG === 'el' ? 'Ταβέρνες, εκκλησίες, δικηγόροι, φούρνοι, φεστιβάλ, δημιουργοί — η ζωντανή βάση του Ελληνισμού.' : 'Tavernas, churches, lawyers, bakeries, festivals, creators — discover the people and places of the Greek world.';
+  }
+  const qi = document.getElementById('q');
+  if (qi) {
+    qi.placeholder = LANG === 'el' ? 'Δοκίμασε «ταβέρνα», «ορθόδοξη εκκλησία», «δικηγόρος»…' : 'Try “taverna”, “orthodox church”, “lawyer”…';
+  }
+  const searchBtn = document.querySelector('.sbar .btn');
+  if (searchBtn) {
+    searchBtn.textContent = LANG === 'el' ? 'Αναζήτηση' : 'Search';
+  }
+  const surpriseBtn = document.getElementById('surprise-btn');
+  if (surpriseBtn) {
+    surpriseBtn.textContent = LANG === 'el' ? '🎲 Τυχαία Ανακάλυψη' : '🎲 Surprise Spot';
+  }
+  const clearBtn = document.getElementById('clear-filters-btn');
+  if (clearBtn) {
+    clearBtn.textContent = LANG === 'el' ? '✕ Καθαρισμός' : '✕ Clear Filters';
+  }
+  const mapCta = document.querySelector('a.mapcta');
+  if (mapCta) {
+    mapCta.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg> ' + (LANG === 'el' ? 'Δες το στον χάρτη' : 'See it on the map');
+  }
+
+  const citySel = document.getElementById('city-sel');
+  if (citySel && citySel.options.length) {
+    citySel.options[0].textContent = LANG === 'el' ? 'Όλες οι πόλεις' : 'Every city';
+  }
+  const countrySel = document.getElementById('country-sel');
+  if (countrySel && countrySel.options.length) {
+    countrySel.options[0].textContent = LANG === 'el' ? 'Όλες οι χώρες' : 'Every country';
+  }
+  const sortSel = document.getElementById('sort-sel');
+  if (sortSel && sortSel.options.length >= 4) {
+    sortSel.options[0].textContent = LANG === 'el' ? 'Καλύτερη αντιστοίχιση' : 'Best match';
+    sortSel.options[1].textContent = LANG === 'el' ? 'Όνομα Α–Ω' : 'Name A–Z';
+    sortSel.options[2].textContent = LANG === 'el' ? 'Επαληθευμένα πρώτα' : 'Verified first';
+    sortSel.options[3].textContent = LANG === 'el' ? 'Πόλη Α–Ω' : 'City A–Z';
+  }
+
+  if (ST.raw_counts) {
+    buildTypes(ST.raw_counts);
+    pillsRender();
+  }
+  renderRows();
+}
+
+function typeLabel(t){
+  if (LANG === 'el' && TYPE_LABELS_EL[t]) return TYPE_LABELS_EL[t];
+  return (global_ZE() && global_ZE().typeLabel) ? global_ZE().typeLabel(t) : String(t||'Listing');
+}
+function global_ZE(){ return (typeof ZoiEmblem!=='undefined') ? ZoiEmblem : null; }
+const PIN='<svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 12-9 12S3 17 3 10a9 9 0 1118 0z"/><circle cx="12" cy="10" r="3"/></svg>';
+
+/* ---- place-name normalisation ----
+   The data carries the same country under several names ("United States" 2,055,
+   "US" 53, "USA" 10) and the same city spelled differently ("St. Louis" vs
+   "St Louis", "Washington DC" vs "Washington, D.C."). Left alone, the filter
+   lists one place three times and splits its listings across all three. */
+const COUNTRY_ALIAS={
+  'us':'United States','usa':'United States','u.s.':'United States','u.s.a.':'United States',
+  'united states of america':'United States','america':'United States',
+  'uk':'United Kingdom','u.k.':'United Kingdom','great britain':'United Kingdom',
+  'britain':'United Kingdom','england':'United Kingdom','gb':'United Kingdom',
+  'gr':'Greece','hellas':'Greece','ellada':'Greece',
+  'cy':'Cyprus','au':'Australia','ca':'Canada','de':'Germany','deutschland':'Germany',
+  'nl':'Netherlands','holland':'Netherlands','se':'Sweden','ch':'Switzerland',
+  'be':'Belgium','ie':'Ireland','fr':'France','za':'South Africa','nz':'New Zealand'
+};
+function normCountry(v){
+  const t=String(v==null?'':v).trim();
+  if(!t) return '';
+  const a=COUNTRY_ALIAS[t.toLowerCase().replace(/\s+/g,' ')];
+  return a || t;
+}
+
+/* One option per city. Missing country data stays missing: a city with
+   incomplete or multiple country groups searches across countries. */
+function cityOptions(rows){
+  const groups=new Map();
+  (Array.isArray(rows)?rows:[]).forEach(row=>{
+    const city=String(row&&row.city||'').trim();
+    if(!city) return;
+    const key=city.toLocaleLowerCase();
+    if(!groups.has(key)) groups.set(key,{city,countries:new Set(),unknown:false});
+    const group=groups.get(key),country=normCountry(row.country);
+    if(country) group.countries.add(country); else group.unknown=true;
+  });
+  return Array.from(groups.values()).map(group=>{
+    const country=!group.unknown&&group.countries.size===1?Array.from(group.countries)[0]:'';
+    return {city:group.city,country,label:group.city+(country?' · '+country:' · All countries')};
+  });
+}
+
+/* Build listing links from `slug`, never from `path`.
+   explore_search derives `path` from the name, dropping the de-duplication
+   suffix real slugs carry, so ~14% of paths point at nothing (measured across
+   1,564 listings: artist 83, travel_place 43, vendor 32, school 29...).
+   `slug` always resolves, via the /:type/:slug rewrites. */
+function hrefFor(r){
+  if(!r) return '/explore';
+  if(r.slug && r.entity_type){
+    const t = r.entity_type==='travel_place' ? 'travel-place' : r.entity_type; // no underscores in URLs
+    return '/'+encodeURIComponent(t)+'/'+encodeURIComponent(r.slug);
+  }
+  if(r.slug) return '/p/'+encodeURIComponent(r.slug);
+  const path=String(r.path||'');
+  return /^\/(?!\/)[^\\]*$/.test(path) ? path : '/explore';
+}
+
+/* A listing card. Every element is real data: the cover is generated art derived
+   from the listing's own name + category (or its photo when it has one), and the
+   only badge shown is the verification state the backend actually reports. */
+function listingCover(ZE,record){
+  const initials=String(record.name||'').trim().split(/\s+/).slice(0,2).map(x=>Array.from(x)[0]||'').join('').toLocaleUpperCase();
+  const identity='<span class="lidentity">'+esc(initials||'Z')+'</span>';
+  if(!/^https?:\/\//i.test(String(record.photo||''))||!listingImageContext||listingImageContext.auxiliaryImage(record.photo)) return /^https:\/\//i.test(String(record.logo||''))?'<span class="lbrand lbrand-only'+(record.logoBackdrop==='dark'?' on-dark':'')+'" data-initials="'+esc(initials||'Z')+'"><img class="'+(record.logoFit==='cover'?'has-padding':'')+'" src="'+esc(record.logo)+'" alt="'+esc(record.name||'')+' logo" loading="lazy" decoding="async" onerror="this.parentElement.textContent=this.parentElement.dataset.initials"></span>':identity;
+  const brand=/^https:\/\//i.test(String(record.logo||''))?'<span class="lbrand'+(record.logoBackdrop==='dark'?' on-dark':'')+'"><img class="'+(record.logoFit==='cover'?'has-padding':'')+'" src="'+esc(record.logo)+'" alt="'+esc(record.name||'')+' logo" loading="lazy" decoding="async" onerror="this.parentElement.remove()"></span>':'';
+  return (ZE.cover(record).replace('class="ze-photo"','class="ze-photo" onload="fitListingImage(this)"').replace(/<span class="ze-alt">[\s\S]*<\/span>$/, '<span class="ze-alt">'+identity+'</span>')+brand);
+}
+function fitListingImage(img){
+  if(!img || !img.naturalWidth || !img.parentElement) return;
+  const box=img.parentElement,ratio=img.naturalWidth/img.naturalHeight;
+  let path='';try{path=decodeURIComponent(new URL(img.currentSrc||img.src).pathname);}catch{}
+  const logo=/(?:logo|wordmark|brandmark|favicon)/i.test(path)||ratio>=2.7;
+  box.classList.toggle('is-logo',logo);
+  box.classList.toggle('is-square-art',!logo&&ratio>=0.88&&ratio<=1.12);
+  box.classList.toggle('is-small',!logo&&img.naturalWidth<360&&img.naturalHeight<360);
+  box.classList.toggle('is-portrait',!logo&&ratio<0.72);
+}
+function listingDescription(value){return String(value||'').replace(/<[^>]*(?:>|$)/g,' ').replace(/&nbsp;|&#160;/gi,' ').replace(/&amp;/gi,'&').replace(/\s+/g,' ').trim();}
+function card(r,idx){
+  const description=listingDescription(r.description);
+  const loc=[r.city,normCountry(r.country)].filter(Boolean).join(', ');
+  const ZE=global_ZE();
+  const cover = ZE
+    ? listingCover(ZE,{name:r.name, type:r.entity_type, slug:r.slug||r.id, photo:r.photo_url,logo:r.logo_url,logoBackdrop:r.logo_backdrop,logoFit:r.logo_fit})
+    : '';
+  const vs=String(r.verification_status||'');
+  let badge='';
+  if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>'+(LANG==='el'?'Επαληθευμένο':'Verified')+'</span>';
+
+  return '<article class="lcard">'+
+    '<a class="lcover'+(r.photo_url?'':' is-identity')+(r.image_kind==='event_poster'?' is-event-poster':'')+'" href="'+esc(hrefFor(r))+'" tabindex="-1" aria-hidden="true">'+cover+'</a>'+
+    '<div class="lbody">'+
+      '<div class="ltop"><span class="ltype">'+esc(r.category||typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
+      '<h3 class="lname"><a href="'+esc(hrefFor(r))+'">'+esc(r.name)+'</a></h3>'+
+      (loc?'<div class="lloc">'+PIN+esc(loc)+'</div>':'')+
+      (description?'<p class="ldesc">'+esc(description)+'</p>':'')+
+    '</div>'+
+    '<div class="lfoot">'+
+      '<a class="lbtn pri" href="'+esc(hrefFor(r))+'">'+(LANG==='el'?'Προβολή':'View')+'</a>'+
+      '<button class="lbtn" onclick="quickView('+idx+')">'+(LANG==='el'?'Ματιά':'Quick look')+'</button>'+
+      (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">'+(LANG==='el'?'Είναι δικό μου':'This is mine')+'</button>':'')+
+    '</div></article>';
+}
+
+let searchVersion=0,searchRequest=null,settledExplore=null;
+function restoreSettledExplore(){
+  const results=document.getElementById('results');
+  if(settledExplore){
+    ST.rows=settledExplore.rows.slice();ST.view=settledExplore.view.slice();ST.done=settledExplore.done;ST.offset=settledExplore.offset;
+    results.innerHTML=settledExplore.html;
+    document.getElementById('res-count').textContent=settledExplore.count;
+    document.getElementById('res-mode').textContent='Previous results · '+settledExplore.context;
+  }else{
+    ST.rows=[];ST.view=[];
+    results.innerHTML='<div class="empty" style="grid-column:1/-1"><h3>Ready when you are</h3><p>Choose a suggested page, or press Search to load matching results.</p></div>';
+    document.getElementById('res-count').textContent='Search to load results';
+    document.getElementById('res-mode').textContent='';
+  }
+}
+async function runSearch(reset){
+  exploreAutocomplete?.close();
+  if(ST.busy&&!reset) return;
+  const version=++searchVersion;
+  searchRequest?.abort();
+  const request=searchRequest=new AbortController();
+  ST.busy=true;
+  if(reset){ ST.offset=0; ST.done=false; ST.rows=[]; document.getElementById('results').innerHTML=new Array(6).fill('<div class="skel"></div>').join(''); }
+  document.getElementById('res-mode').textContent=ST.q?('\u201c'+ST.q+'\u201d'):'';
+  const hasFilters = !!(ST.q || ST.type || ST.city || ST.country || ST.sort);
+  const clrBtn = document.getElementById('clear-filters-btn');
+  if(clrBtn) clrBtn.style.display = hasFilters ? 'inline-flex' : 'none';
+  if(reset) writeUrl(true);
+  exploreLocality?.refresh();
+  const locality=effectiveExploreLocation();
+  const resultContext=[ST.q?'“'+ST.q+'”':'All listings',ST.type?typeLabel(ST.type):'',locality.city,locality.country].filter(Boolean).join(' · ');
+  try{
+    const rows=await rpc('explore_search',{p_q:ST.q||null,p_type:ST.type||null,p_city:locality.city||null,p_country:locality.country||null,p_limit:24,p_offset:ST.offset},true,request.signal);
+    await listingImageReady;
+    if(version!==searchVersion) return;
+    const batch=(rows||[]).map(normalizeListing);
+    ST.rows = reset ? batch.slice() : ST.rows.concat(batch);
+    harvestCountries(ST.rows);
+    renderRows();
+    ST.done=batch.length<24;
+    document.getElementById('more-btn').style.display=ST.done?'none':'inline-flex';
+    const n=ST.rows.length;
+    document.getElementById('res-count').textContent = n
+      ? (LANG === 'el' ? ('Προβολή ' + n + ' αποτελεσμάτων' + (ST.done ? '' : '+')) : ('Showing '+n+' result'+(n===1?'':'s')+(ST.done?'':'+')))
+      : (LANG === 'el' ? 'Χωρίς αποτελέσματα' : 'No results');
+    settledExplore={context:resultContext,rows:ST.rows.slice(),view:(ST.view||[]).slice(),done:ST.done,offset:ST.offset,html:document.getElementById('results').innerHTML,count:document.getElementById('res-count').textContent,mode:document.getElementById('res-mode').textContent};
+  }catch(e){
+    if(version!==searchVersion) return;
+    // Never print database/schema details into the public UI. Besides being an
+    // information leak, the old full-width toast made the mobile page unusable.
+    console.error('Directory search failed', e);
+    document.getElementById('res-count').textContent='Directory temporarily unavailable';
+    document.getElementById('results').innerHTML=
+      '<div class="empty" style="grid-column:1/-1">'+
+        '<h3>We could not load the directory</h3>'+
+        '<p>Please try again. Your search and filters have been kept.</p>'+
+        '<button class="btn g" type="button" onclick="runSearch(true)">Try again</button>'+
+      '</div>';
+    document.getElementById('more-btn').style.display='none';
+    toast('The directory could not load. Please try again.');
+  }
+  if(version===searchVersion) ST.busy=false;
+}
+
+/* Sorting re-orders the results already loaded on this page. The search RPC has
+   no sort parameter, so we never claim this is a whole-directory ordering. */
+function sortedRows(){
+  const rows=ST.rows.slice();
+  const by=ST.sort;
+  const s_=v=>String(v==null?'':v);
+  if(by==='name')     rows.sort((a,b)=>s_(a.name).localeCompare(s_(b.name)));
+  else if(by==='city')rows.sort((a,b)=>s_(a.city).localeCompare(s_(b.city))||s_(a.name).localeCompare(s_(b.name)));
+  else if(by==='verified') rows.sort((a,b)=>((b.verification_status==='verified')-(a.verification_status==='verified'))||s_(a.name).localeCompare(s_(b.name)));
+  return rows;
+}
+function emptyExploreMarkup(query){
+  const context=String(query||'').replace(/[\u0000-\u001f\u007f]/g,'').trim().slice(0,200);
+  const add='/add/'+(context?'?query='+encodeURIComponent(context):'');
+  return '<section class="empty empty-entry" style="grid-column:1/-1" aria-labelledby="empty-entry-title"><span class="empty-entry-kicker">Make room for your Greek world</span><h3 id="empty-entry-title">Not finding your place?</h3><p>Try a broader search or fewer filters. If your business or organisation is missing, start a private draft and review its details.</p><div class="empty-entry-actions"><a class="btn empty-entry-primary" href="'+esc(add)+'">Add your business or organisation <span aria-hidden="true">↗</span></a><a class="btn g" href="/explore/">Search existing pages</a></div><p class="empty-entry-note">Already on Zoi? Find the existing page and use its claim option, rather than adding a duplicate. Adding a draft does not verify ownership or publish your page.</p></section>';
+}
+function renderRows(){
+  const el=document.getElementById('results');
+  const rows=sortedRows();
+  ST.view=rows;
+  if(!rows.length){
+    el.innerHTML=emptyExploreMarkup(ST.q);
+    return;
+  }
+  el.innerHTML=rows.map((r,i)=>card(r,i)).join('');
+}
+
+/* Country options come from the countries actually present in loaded results,
+   then filter server-side through explore_search's own p_country parameter. */
+function harvestCountries(rows){
+  const seen={}; ST.countries.forEach(c=>seen[c]=true);
+  let added=false;
+  (rows||[]).forEach(r=>{ const c=normCountry(r&&r.country); if(c&&!seen[c]){ seen[c]=true; added=true; } });
+  if(ST.country && !seen[ST.country]){ seen[ST.country]=true; added=true; }
+  if(!added) return;
+  ST.countries=Object.keys(seen).sort((a,b)=>a.localeCompare(b));
+  const sel=document.getElementById('country-sel');
+  if(!sel) return;
+  sel.innerHTML='<option value="">Every country</option>'+
+    ST.countries.map(c=>'<option value="'+esc(c)+'"'+(c===ST.country?' selected':'')+'>'+esc(c)+'</option>').join('');
+}
+
+/* Quick look: rendered only from fields already returned for that row.
+   No rating is shown — the backend reports none for any listing today, so a
+   star row here would be decoration pretending to be data. */
+let quickViewRequest=0;
+let quickViewAccountWatch=null;
+let quickViewReturnFocus=null;
+let quickViewScroll='';
+let quickViewInert=[];
+function quickView(i){
+  const r=(ST.view||[])[i]; if(!r) return;
+  const loc=[r.city,normCountry(r.country)].filter(Boolean).join(', ');
+  const vs=String(r.verification_status||'');
+  const ZE=global_ZE();
+  const cover=ZE?listingCover(ZE,{name:r.name,type:r.entity_type,slug:r.slug||r.id,photo:r.photo_url,logo:r.logo_url,logoBackdrop:r.logo_backdrop,logoFit:r.logo_fit}):'';
+  let badge='';
+  if(vs==='verified') badge='<span class="lverify"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>Verified</span>';
+
+  document.getElementById('qv-body').innerHTML=
+    '<div class="qv-cover'+(r.photo_url?'':' is-identity')+(r.image_kind==='event_poster'?' is-event-poster':'')+'">'+cover+'</div>'+
+    '<div class="qv-copy"><div class="ltop"><span class="ltype">'+esc(r.category||typeLabel(r.entity_type))+'</span>'+badge+'</div>'+
+    '<h3 id="qv-name">'+esc(r.name)+'</h3>'+
+    (loc?'<div class="lloc" style="margin-top:2px">'+PIN+esc(loc)+'</div>':'')+
+    (r.category?'<div class="qv-cat">'+esc(r.category)+'</div>':'')+
+    (r.description?'<p class="qv-desc">'+esc(r.description)+'</p>'
+                  :'<p class="qv-desc">No description on this listing yet.'+
+                   (r.claimable?' If it is yours, claim it and you can write one.':'')+'</p>')+
+    '<div id="qv-details" aria-live="polite"><p class="qv-cat">Loading more details…</p></div>'+
+    '<div class="qv-acts"><a class="lbtn pri" href="'+esc(hrefFor(r))+'">Open full page</a>'+
+      (r.claimable?'<button class="lbtn claim" onclick="claim(\''+esc(r.slug)+'\',this)">This is mine</button>':'')+
+    '</div></div>';
+  const qv=document.getElementById('qv');
+  if(qv.hidden){
+    quickViewReturnFocus=document.activeElement;
+    quickViewScroll=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    quickViewInert=Array.from(document.body.children).filter(el=>el!==qv && !['SCRIPT','STYLE'].includes(el.tagName)).map(el=>({el,inert:el.inert}));
+    quickViewInert.forEach(({el})=>{el.inert=true;});
+  }
+  qv.hidden=false;
+  document.getElementById('qv-x').focus();
+  loadQuickViewDetails(r,++quickViewRequest);
+}
+async function loadQuickViewDetails(row,version){
+  const target=document.getElementById('qv-details');
+  try{
+    const [entity,model]=await Promise.all([rpc('home_entity',{p_slug:row.slug},true),import('/assets/discovery/profile-preview.mjs?v=20261002-source-bound')]);
+    if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
+    if(!entity||entity.id!==row.id)throw Error('unavailable');
+    const details=model.quickLookDetails(entity),desc=document.querySelector('#qv-body .qv-desc');
+    if(desc)desc.textContent=details.description||'Explore the full page for more about this place.';
+    target.innerHTML=(details.address?'<p class="qv-desc">'+esc(details.address)+'</p>':'')+(details.links.length?'<div class="qv-acts">'+details.links.map(link=>'<a class="lbtn" href="'+esc(link.href)+'"'+(link.href.startsWith('http')?' target="_blank" rel="noopener noreferrer"':'')+'>'+esc(link.label)+' ↗</a>').join('')+'</div>':'');
+    if(details.photoAuthoritative){const cover=document.querySelector('#qv-body .qv-cover');cover.className='qv-cover'+(details.photo?'':' is-identity')+(details.imageKind==='event_poster'?' is-event-poster':'');cover.innerHTML=listingCover(global_ZE(),{name:entity.name,type:entity.entity_type,slug:entity.slug,photo:details.photo,logo:details.logo,logoBackdrop:details.logoBackdrop,logoFit:details.logoFit});}
+  }catch{
+    if(version!==quickViewRequest||document.getElementById('qv').hidden)return;
+    target.innerHTML='<p class="qv-cat">More details could not load.</p><button class="lbtn" type="button" id="qv-retry">Try again</button>';
+    document.getElementById('qv-retry').onclick=()=>{target.textContent='Loading more details…';loadQuickViewDetails(row,++quickViewRequest);};
+  }
+}
+function closeQV(){
+  const qv=document.getElementById('qv'); if(!qv || qv.hidden) return;
+  ++quickViewRequest;clearInterval(quickViewAccountWatch);quickViewAccountWatch=null; qv.hidden=true; document.body.style.overflow=quickViewScroll;
+  quickViewInert.forEach(({el,inert})=>{el.inert=inert;}); quickViewInert=[];
+  if(quickViewReturnFocus?.isConnected) quickViewReturnFocus.focus({preventScroll:true});
+  quickViewReturnFocus=null;
+}
+function quickViewKeyboard(e){
+  const qv=document.getElementById('qv'); if(!qv || qv.hidden) return;
+  if(e.key==='Escape'){e.preventDefault();closeQV();return;}
+  if(e.key!=='Tab') return;
+  const controls=Array.from(qv.querySelectorAll('a[href],button:not([disabled]),select:not([disabled]),input:not([disabled]),[tabindex="0"]')).filter(el=>!el.hidden);
+  const first=controls[0],last=controls[controls.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus();}
+}
+
+function loadMore(){ ST.offset+=24; runSearch(false); }
+
+function clearExploreFilters(){
+  exploreAutocomplete?.close();
+  ST.scope='global'; ST.q=''; ST.type=''; ST.city=''; ST.country=''; ST.sort='';
+  const qEl=document.getElementById('q'); if(qEl) qEl.value='';
+  const cEl=document.getElementById('city-sel'); if(cEl) cEl.value='';
+  const coEl=document.getElementById('country-sel'); if(coEl) coEl.value='';
+  const sEl=document.getElementById('sort-sel'); if(sEl) sEl.value='';
+  const clrBtn=document.getElementById('clear-filters-btn'); if(clrBtn) clrBtn.style.display='none';
+  pillsRender();
+  runSearch(true);
+  toast('Filters cleared');
+}
+
+function randomGreekSpot(){
+  if(!ST.rows || !ST.rows.length){ toast('Loading directory spots...'); return; }
+  const idx = Math.floor(Math.random() * (ST.view||ST.rows).length);
+  quickView(idx);
+  toast('Found a surprise Greek spot!');
+}
+
+async function claim(slug,btn){
+  const token=authToken();
+  const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  const listing=(ST.view||ST.rows||[]).find(row=>row.slug===slug);
+  if(!listing||!uuid(listing.id))return;
+  const requested=new URL(location.href).searchParams.getAll('workspace');
+  const intended=requested.length===1&&uuid(requested[0])?requested[0]:null;
+  if(!token){
+    const module=await import('/assets/workspace/claim-return.mjs');
+    if(authToken())return;
+    if(requested.length&&!intended){toast('This workspace link is invalid. Open Explore without its workspace parameter and choose your workspace after sign-in.');return;}
+    const destination=module.claimDestination({listing:listing.id,slug:listing.slug,workspace:intended});
+    if(destination)location.href='/social?claim_return='+encodeURIComponent(destination);
+    return;
+  }
+  const allowed=w=>uuid(w?.id)&&typeof w.name==='string'&&w.name&&['owner','admin'].includes(w.role);
+  let container=document.getElementById('qv-details');
+  if(document.getElementById('qv').hidden){const index=(ST.view||[]).findIndex(r=>r.slug===slug);if(index<0)return;quickView(index);container=document.getElementById('qv-details');}
+  const version=++quickViewRequest;container.textContent='Loading your workspaces…';
+  clearInterval(quickViewAccountWatch);quickViewAccountWatch=setInterval(()=>{if(authToken()!==token){++quickViewRequest;clearInterval(quickViewAccountWatch);quickViewAccountWatch=null;container.textContent='Your session changed. Close this window and sign in again.';}},500);
+  try{
+    const me=await rpc('zoi_me',{});
+    if(version!==quickViewRequest||authToken()!==token)return;
+    const workspaces=(Array.isArray(me?.workspaces)?me.workspaces:[]).filter(allowed);
+    if(!workspaces.length){container.innerHTML='<p class="qv-desc">An owner or administrator workspace is required to request this listing. Create a workspace or ask your workspace owner for access.</p><a class="lbtn" href="/social/bizpage">Open business tools →</a>';return;}
+    container.innerHTML='<form id="qv-claim"><p class="qv-desc">Choose the workspace that should manage this listing. Ownership must be verified before access is granted.</p><label class="qv-cat" for="qv-workspace">Your workspace</label><select id="qv-workspace" class="city" required style="display:block;width:100%;min-height:44px;margin:8px 0 12px"><option value="">Choose a workspace</option>'+workspaces.map(w=>'<option value="'+esc(w.id)+'">'+esc(w.name)+'</option>').join('')+'</select><button class="lbtn pri" type="submit">Request ownership review</button><p role="status" id="qv-claim-status"></p></form>';
+    const chooser=document.getElementById('qv-workspace');
+    if(intended&&workspaces.some(w=>w.id===intended))chooser.value=intended;
+    else if(requested.length)document.getElementById('qv-claim-status').textContent='The requested workspace is unavailable or you do not manage it. Choose an authorized workspace.';
+    chooser.focus();
+    document.getElementById('qv-claim').onsubmit=async event=>{
+      event.preventDefault();const select=document.getElementById('qv-workspace'),submit=event.target.querySelector('button'),status=document.getElementById('qv-claim-status');
+      if(authToken()!==token){status.textContent='Your account changed. Close this window and sign in again.';return;}
+      if(submit.disabled||!workspaces.some(w=>w.id===select.value))return;
+      const selectedWorkspace=select.value;
+      submit.disabled=true;select.disabled=true;status.textContent='Submitting your request…';
+      try{
+        const current=await rpc('zoi_me',{});
+        if(version!==quickViewRequest||authToken()!==token)return;
+        if(!Array.isArray(current?.workspaces)||!current.workspaces.some(w=>allowed(w)&&w.id===selectedWorkspace)){status.textContent='Your workspace access changed. Close this window and choose an authorized workspace.';return;}
+        const result=await rpc('zoi_claim_entity',{p_slug:slug,p_workspace:selectedWorkspace,p_method:'owner_request'});
+        if(version!==quickViewRequest||authToken()!==token)return;
+        if(result?.ok!==true||!['claim_pending','claimed'].includes(result.status)||result.workspace_id!==selectedWorkspace||result.listing_id!==listing.id||!uuid(result.claim_id))throw Error();
+        status.textContent=result.status==='claimed'?'Ownership verified. Open your business tools to manage this listing.':'Request submitted for ownership review. Editing remains locked until ownership is approved.';
+        const link=document.createElement('a');link.href='/social/bizpage?workspace='+encodeURIComponent(selectedWorkspace)+(result.status==='claimed'?'&listing='+encodeURIComponent(listing.id):'');link.className='lbtn';link.textContent='Open business tools →';status.append(document.createElement('br'),link);
+      }catch{if(version!==quickViewRequest||authToken()!==token)return;status.textContent='We could not confirm the result. Check your business tools before trying again.';}
+    };
+  }catch{if(version===quickViewRequest)container.innerHTML='<p class="qv-desc">Your workspaces could not load. Please close this window and try again.</p>';}
+}
+
+</script>
+<script src="/assets/zoi-emblem.js"></script>
+<script src="/assets/zoi-search.js?v=20261002-account-history"></script>
+<script src="/assets/zoi-theme.js"></script>
+
+<script src="/assets/zoi-globe.js" defer></script>
+<script>
+/* The hero globe. Lazy on purpose: MapLibre is ~276KB gzipped and is only
+   fetched once the container comes near the viewport, so this costs nothing on
+   first paint and degrades to a styled panel where WebGL is unavailable.
+
+   The three figures are MIRRORED from the stats this page already fetches and
+   displays, rather than fetched again — one request instead of two, and the
+   globe can never disagree with the number printed above it. The gazetteer
+   itself carries no counts by design. */
+(function(){
+  function mirror(el){
+    var map = JSON.parse(el.getAttribute('data-mirror') || '{}');
+    var keys = Object.keys(map);
+    function pull(){
+      var done = 0;
+      keys.forEach(function(dst){
+        var from = document.getElementById(map[dst]), to = document.getElementById(dst);
+        if (!from || !to) { done++; return; }
+        var v = (from.textContent || '').trim();
+        if (v && v !== '\u2014' && v !== '-') { to.textContent = v; done++; }
+      });
+      return done === keys.length;
+    }
+    if (pull()) return;
+    var tries = 0;
+    var t = setInterval(function(){ if (pull() || ++tries > 40) clearInterval(t); }, 250);
+  }
+  function boot(){
+    var el = document.getElementById('zoiGlobe');
+    if (!el) return;
+    mirror(el);
+    if (!window.ZoiGlobe) return;
+    var name = document.getElementById('zoiGlobeName');
+    window.ZoiGlobe.lazy(el, {
+      limit: 90,
+      zoom: 1.5,
+      onPick: function(p){ if (p && p.name) location.href = '/explore?q=' + encodeURIComponent(p.name); }
+    }).then(function(inst){
+      if (!inst || !name) return;
+      inst.map.on('mousemove', function(e){
+        var f = inst.map.queryRenderedFeatures(e.point, {layers:['city','city-halo']})[0];
+        if (f && f.properties && f.properties.name) { name.textContent = f.properties.name; name.classList.add('on'); }
+        else name.classList.remove('on');
+      });
+      inst.map.on('mouseout', function(){ name.classList.remove('on'); });
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+  else boot();
+})();
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
+
+<!-- Crawlable browse links. Counts are shown only where fetched live. -->
+<section class="ph-index"><div class="wrap">
+  <h2>Browse the Greek world</h2>
+  <div class="pi-grp"><h3>By country</h3><a href="/in/greece">Greece</a><a href="/in/united-states">United States</a><a href="/in/australia">Australia</a><a href="/in/canada">Canada</a><a href="/in/united-kingdom">United Kingdom</a><a href="/in/germany">Germany</a><a href="/in/cyprus">Cyprus</a><a href="/in/south-africa">South Africa</a><a href="/in/new-zealand">New Zealand</a><a href="/in/sweden">Sweden</a><a href="/in/netherlands">Netherlands</a><a href="/in/switzerland">Switzerland</a><a href="/in/belgium">Belgium</a><a href="/in/ireland">Ireland</a><a href="/in/france">France</a><a href="/in/zimbabwe">Zimbabwe</a><a href="/in/norway">Norway</a><a href="/in/iceland">Iceland</a><a href="/in/egypt">Egypt</a><a href="/in/denmark">Denmark</a></div>
+  <div class="pi-grp"><h3>By region</h3><a href="/in/greece/attica">Attica</a><a href="/in/greece/central-macedonia">Central Macedonia</a><a href="/in/greece/south-aegean">South Aegean</a><a href="/in/canada/ontario">Ontario</a><a href="/in/united-kingdom/england">England</a><a href="/in/greece/crete">Crete</a><a href="/in/united-states/illinois">Illinois</a><a href="/in/united-states/california">California</a><a href="/in/greece/thessaly">Thessaly</a><a href="/in/united-states/massachusetts">Massachusetts</a><a href="/in/australia/victoria">Victoria</a><a href="/in/greece/peloponnese">Peloponnese</a><a href="/in/united-states/new-york">New York</a><a href="/in/greece/western-greece">Western Greece</a><a href="/in/united-states/florida">Florida</a><a href="/in/greece/eastern-macedonia-and-thrace">Eastern Macedonia and Thrace</a><a href="/in/australia/new-south-wales">New South Wales</a><a href="/in/canada/quebec">Québec</a><a href="/in/united-states/michigan">Michigan</a><a href="/in/greece/central-greece">Central Greece</a><a href="/in/united-states/pennsylvania">Pennsylvania</a><a href="/in/greece/ionian-islands">Ionian Islands</a><a href="/in/australia/queensland">Queensland</a><a href="/in/australia/south-australia">South Australia</a><a href="/in/canada/british-columbia">British Columbia</a><a href="/in/greece/epirus">Epirus</a><a href="/in/south-africa/gauteng">Gauteng</a><a href="/in/united-states/texas">Texas</a><a href="/in/united-states/ohio">Ohio</a><a href="/in/australia/western-australia">Western Australia</a><a href="/in/united-states/district-of-columbia">District of Columbia</a><a href="/in/greece/north-aegean">North Aegean</a><a href="/in/united-states/new-jersey">New Jersey</a><a href="/in/canada/alberta">Alberta</a><a href="/in/united-states/virginia">Virginia</a><a href="/in/united-states/maryland">Maryland</a><a href="/in/united-states/georgia">Georgia</a><a href="/in/greece/western-macedonia">Western Macedonia</a><a href="/in/united-states/arizona">Arizona</a><a href="/in/united-states/north-carolina">North Carolina</a><a href="/in/united-states/washington">Washington</a><a href="/in/united-states/alabama">Alabama</a><a href="/in/germany/nordrhein-westfalen">Nordrhein-Westfalen</a><a href="/in/united-states/colorado">Colorado</a><a href="/in/south-africa/western-cape">Western Cape</a><a href="/in/united-states/indiana">Indiana</a><a href="/in/united-kingdom/alba-scotland">Alba / Scotland</a><a href="/in/germany/hessen">Hessen</a><a href="/in/united-states/south-carolina">South Carolina</a></div>
+  <div class="pi-grp"><h3>By category</h3><a href="/c/restaurants">Restaurants</a><a href="/c/orthodox-churches">Greek Orthodox Churches</a><a href="/c/cafes">Cafes &amp; Coffee</a><a href="/c/lawyers">Lawyers</a><a href="/c/dentists">Dentists</a><a href="/c/tavernas">Tavernas</a><a href="/c/festivals">Festivals</a><a href="/c/media-creators">Media and Creators</a><a href="/c/bakeries">Bakeries</a><a href="/c/hellenic-associations">Hellenic Associations</a><a href="/c/desserts-sweets">Dessert &amp; Sweet Shops</a><a href="/c/business-commerce">Business and Commerce</a><a href="/c/pharmacies">Pharmacies</a><a href="/c/greek-schools">Greek Language Schools</a><a href="/c/shopping-products">Shopping and Products</a><a href="/c/professional-services">Professional Services</a><a href="/c/monasteries">Monasteries</a><a href="/c/cultural-centres">Cultural Centres &amp; Museums</a><a href="/c/groceries">Groceries &amp; Importers</a><a href="/c/regional-societies">Regional Societies</a><a href="/c/radio-stations">Greek Radio</a><a href="/c/cathedrals">Cathedrals</a><a href="/c/travel-tourism">Travel and Tourism</a><a href="/c/organizations-community">Organizations and Community</a><a href="/c/doctors">Doctors</a><a href="/c/hellenic-studies">Hellenic Studies</a><a href="/c/sports-youth">Sports and Youth</a><a href="/c/musicians-djs">Musicians &amp; DJs</a><a href="/c/wine-spirits">Greek Wine &amp; Spirits</a><a href="/c/hotels">Hotels &amp; Resorts</a><a href="/c/greek-products">Greek Products</a><a href="/c/community-services">Community Services</a><a href="/c/delis">Delis</a><a href="/c/press">Greek Press &amp; Media</a><a href="/c/heritage-pilgrimage">Heritage &amp; Pilgrimage</a><a href="/c/community-leaders">Community Leaders</a><a href="/c/events-entertainment">Events and Entertainment</a><a href="/c/greece-travel">Greece Travel</a><a href="/c/realtors">Realtors</a><a href="/c/charities">Charities &amp; Philanthropy</a><a href="/c/soccer">Soccer Clubs</a><a href="/c/accountants">Accountants</a><a href="/c/dance-schools">Dance Schools</a><a href="/c/theatre-comedy">Theatre &amp; Comedy</a><a href="/c/olive-oil-honey">Olive Oil &amp; Honey</a><a href="/c/influencers">Influencers</a><a href="/c/specialty-food">Specialty Food</a><a href="/c/podcasters">Podcasters</a><a href="/c/banquet-halls">Banquet &amp; Wedding Venues</a><a href="/c/import-export">Import / Export</a><a href="/c/tours-agencies">Tours &amp; Agencies</a><a href="/c/medical-clinics">Medical Clinics</a><a href="/c/concerts">Concerts</a><a href="/c/meze-ouzo-bars">Meze &amp; Ouzo Bars</a><a href="/c/clothing">Clothing &amp; Apparel</a><a href="/c/architects-engineers">Architects &amp; Engineers</a><a href="/c/chapels">Chapels</a><a href="/c/consulates">Consulates &amp; Embassies</a><a href="/c/chefs">Chefs</a><a href="/c/chambers">Chambers of Commerce</a><a href="/c/cyprus-travel">Cyprus Travel</a><a href="/c/dance-troupes">Dance Troupes</a><a href="/c/food-products">Food Products</a><a href="/c/catering">Catering</a><a href="/c/education-culture">Education and Culture</a><a href="/c/jewelers">Jewelers</a><a href="/c/butchers">Greek Butchers</a><a href="/c/gift-shops">Greek Gift Shops</a><a href="/c/food-trucks">Food Trucks</a><a href="/c/religious-goods">Religious Goods</a></div>
+  <p class="pi-note">Explore listings by location or category. <a href="/in">Browse the whole directory</a>.</p>
+</div></section>
+</body>
+</html>

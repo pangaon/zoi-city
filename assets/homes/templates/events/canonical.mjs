@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20261002-safe-chrome';
+import {mountEventActions} from './client.mjs?v=20261003-company-parea-rooms';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');

@@ -15,7 +15,8 @@ import {
 } from "react-native";
 import { useAuth } from "./Auth";
 import { CommunitySettings } from "./CommunityProfile";
-import { LIGHT } from "./brand";
+import { LIGHT, DARK } from "./brand";
+import { discoveryMedia } from "./discoveryMedia";
 import { usePresentationPreferences, GlassHero } from "./Presentation";
 import { DiscoveryMap } from "./DiscoveryMap";
 import {
@@ -62,30 +63,42 @@ function Action({
     </Pressable>
   );
 }
-function Photo({ row }: { row: any }) {
-  const [failed, setFailed] = useState(false);
-  useEffect(() => setFailed(false), [row.photo_url]);
-  return typeof row.photo_url === "string" &&
-    row.photo_url.length <= 3000 &&
-    /^https:\/\//i.test(row.photo_url) &&
-    !failed ? (
-    <Image
-      accessibilityLabel={row.name}
-      source={{ uri: row.photo_url }}
-      onError={() => setFailed(true)}
-      resizeMode={row.image_kind === "logo" ? "contain" : "cover"}
+function Photo({ row, detail = false }: { row: any; detail?: boolean }) {
+  const media = discoveryMedia(row);
+  const [failedUri, setFailedUri] = useState<string | null>(null);
+  if (!media.uri || failedUri === media.uri)
+    return detail ? null : (
+      <View style={s.monogram}>
+        <Text style={{ fontSize: 22, color: LIGHT.accent }}>
+          {row.name.slice(0, 1)}
+        </Text>
+      </View>
+    );
+  return (
+    <View
       style={{
-        width: 58,
-        height: 58,
-        borderRadius: 14,
-        backgroundColor: LIGHT.surfaceRaised,
+        width: detail ? "100%" : 58,
+        height: detail ? (media.kind === "logo" ? 140 : 200) : 58,
+        padding: media.kind === "logo" ? (detail ? 14 : 6) : 0,
+        borderRadius: detail ? 20 : 14,
+        overflow: "hidden",
+        marginBottom: detail ? 14 : 0,
+        backgroundColor:
+          media.backdrop === "dark"
+            ? DARK.surface
+            : media.backdrop === "light"
+              ? LIGHT.surface
+              : LIGHT.surfaceRaised,
       }}
-    />
-  ) : (
-    <View style={s.monogram}>
-      <Text style={{ fontSize: 22, color: LIGHT.accent }}>
-        {row.name.slice(0, 1)}
-      </Text>
+    >
+      <Image
+        key={`${row.id}:${media.uri}`}
+        accessibilityLabel={`${row.name}${media.kind === "logo" ? " logo" : ""}`}
+        source={{ uri: media.uri }}
+        onError={() => setFailedUri(media.uri)}
+        resizeMode={media.kind === "logo" ? "contain" : media.fit}
+        style={{ width: "100%", height: "100%" }}
+      />
     </View>
   );
 }
@@ -734,6 +747,7 @@ export function Discover({
           ) : null}
           {selected ? (
             <>
+              <Photo row={selected} detail />
               <Text style={s.heading}>{selected.name}</Text>
               <Text style={s.body}>
                 {[selected.address, selected.city, selected.country]

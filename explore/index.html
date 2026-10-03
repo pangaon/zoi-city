@@ -208,6 +208,7 @@ footer a:hover{color:var(--tx)}
 
 .discovery-suggestions{margin-top:8px;max-width:900px;border:1px solid var(--line2);border-radius:18px;background:var(--bg2);box-shadow:0 18px 48px #0002;overflow:hidden}.discovery-suggestions[hidden]{display:none}.suggestion-status{padding:12px 16px;font-size:13px;color:var(--mut);line-height:1.5}.suggestion-status button{margin-left:8px;border:1px solid var(--line2);border-radius:8px;background:var(--bg);color:var(--tx);padding:8px 12px;cursor:pointer}.discovery-suggestions [role=listbox]{max-height:320px;overflow:auto;overscroll-behavior:contain}.discovery-suggestions [role=option]{display:flex;flex-direction:column;gap:5px;padding:13px 16px;min-height:48px;cursor:pointer;border-top:1px solid var(--line)}.discovery-suggestions [role=option] strong{font-size:15px;overflow-wrap:anywhere}.discovery-suggestions [role=option] span{color:var(--mut);font-size:12px}.discovery-suggestions [role=option]:hover,.discovery-suggestions [aria-selected=true]{background:var(--bg3);box-shadow:inset 3px 0 var(--acc)}
 .lbrand{position:absolute;left:14px;bottom:14px;max-width:46%;width:118px;height:58px;padding:9px;background:#fff;border:1px solid #ffffff70;border-radius:12px;box-shadow:0 5px 22px #0003;z-index:2;display:block;overflow:hidden}.qv-cover{position:relative}.lbrand.on-dark{background:#071523ef;border-color:#86adc650}.lbrand img{position:static!important;display:block;width:100%;height:100%;min-width:0!important;min-height:0!important;max-width:100%;max-height:100%;object-fit:contain!important;object-position:center;transform:none!important}.lbrand img.has-padding{object-fit:cover!important;transform:scale(1.5)!important}.lbrand-only{position:relative;left:auto;bottom:auto;width:min(68%,200px);height:80px;max-width:80%;margin:auto}
+.directory-city-picker{margin:auto;box-sizing:border-box;width:min(620px,calc(100vw - 28px));max-height:90dvh;overflow:auto;border:1px solid var(--line2);border-radius:24px;padding:20px;color:var(--tx);background:var(--bg2);box-shadow:0 24px 80px #0005}.directory-city-picker::backdrop{background:#04112688;backdrop-filter:blur(8px)}.directory-city-picker header{display:flex;align-items:center;justify-content:space-between;gap:16px}.directory-city-picker h2{margin:0;font-size:24px}.directory-city-picker p{font-size:14px;line-height:1.5;color:var(--mut)}.directory-city-picker label{display:block;font-size:14px;margin:16px 0}.directory-city-picker input,.directory-city-picker select{display:block;box-sizing:border-box;width:100%;margin-top:7px;padding:12px;min-height:46px;border:1px solid var(--line2);border-radius:12px;color:var(--tx);background:var(--bg)}.directory-city-picker button{min-height:44px;padding:10px 14px;border:1px solid var(--line2);border-radius:12px;color:var(--tx);background:var(--bg);font:inherit;cursor:pointer}.directory-city-picker button:hover,.directory-city-picker button:focus-visible{border-color:var(--acc);outline-color:var(--acc)}.directory-city-picker [data-close]{font-size:25px;min-width:44px}.directory-city-picker [data-choices]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:34dvh;overflow:auto;overscroll-behavior:contain}.directory-city-picker [data-choices] button{text-align:left;overflow-wrap:anywhere}.directory-city-picker footer{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}.directory-city-picker [aria-selected=true]{background:var(--bg3);border-color:var(--acc);box-shadow:inset 3px 0 var(--acc)}.directory-city-picker [hidden]{display:none}
 </style>
 <script>(function(){document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');})()</script>
 <link rel="manifest" href="/manifest.webmanifest">
@@ -236,6 +237,7 @@ footer a:hover{color:var(--tx)}
   <div class="filters" id="type-pills"></div>
   <div class="filters">
     <select class="city" id="city-sel" aria-label="City"><option value="">Every city</option></select>
+    <button type="button" class="lbtn" id="choose-city">Find a city</button>
     <select class="city" id="country-sel" aria-label="Country" title="Countries found in the results loaded so far"><option value="">Every country</option></select>
     <select class="city" id="sort-sel" aria-label="Sort results" title="Re-orders the results already loaded on this page"><option value="">Best match</option><option value="name">Name A–Z</option><option value="verified">Verified first</option><option value="city">City A–Z</option></select>
     <span class="mono" id="active-city" style="letter-spacing:.06em"></span>
@@ -383,8 +385,14 @@ function buildTypes(rows){
 }
 function setType(v){ ST.type=v; pillsRender(); submitExplore(); }
 
+function syncSelectedCity(){
+  const sel=document.getElementById('city-sel');if(!sel)return;
+  if(ST.city&&!Array.from(sel.options).some(o=>o.value===ST.city)){const option=document.createElement('option');option.value=ST.city;option.dataset.country=ST.country||'';option.textContent=[ST.city,ST.country].filter(Boolean).join(' · ');sel.append(option);}
+  sel.value=ST.city;
+}
 async function boot(){
   readUrl();
+  import('/assets/discovery/city-picker.mjs?v=20261003-company-parea-rooms').then(({mountCityPicker})=>mountCityPicker({trigger:document.getElementById('choose-city'),current:()=>({city:ST.city,country:ST.country}),read:(name,args,signal)=>rpc(name,args,true,signal),onChoose:choice=>{ST.city=choice.city;ST.country=choice.country;ST.scope=choice.city||choice.country?'':'global';syncSelectedCity();harvestCountries([]);submitExplore();}})).catch(()=>{document.getElementById('choose-city').onclick=()=>toast('City search could not load. Please refresh to try again.');});
   applyExploreLang();
   runSearch(true);
   import('/assets/personalization/locality.mjs?v=20261001-uuid-scope').then(({mountLocalityControl})=>{if(!window.ZoiCore)return;exploreLocality=mountLocalityControl({core:window.ZoiCore,container:document.getElementById('discovery-locality'),onChange:value=>{const before=JSON.stringify(exploreHome);exploreHome=value.home;if(before!==JSON.stringify(exploreHome))runSearch(true);},onNavigate:href=>{history.pushState({},'',href);readUrl();runSearch(true);}});}).catch(()=>{});
@@ -400,7 +408,7 @@ async function boot(){
   try{
     const cities=await rpc('explore_cities',{p_limit:14},true);
     const sel=document.getElementById('city-sel');
-    cityOptions(cities).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country; o.textContent=c.label; sel.appendChild(o); });
+    cityOptions(cities).filter(c=>!Array.from(sel.options).some(o=>o.value===c.city)).forEach(c=>{ const o=document.createElement('option'); o.value=c.city; o.dataset.country=c.country; o.textContent=c.label; sel.appendChild(o); });
     sel.addEventListener('change',()=>{ const o=sel.options[sel.selectedIndex]; ST.city=sel.value; ST.country=o&&o.dataset.country||''; ST.scope=ST.city?'':'global'; harvestCountries([]); submitExplore(); });
   }catch(e){}
   try{
@@ -410,7 +418,7 @@ async function boot(){
       '<a class="fcard" href="'+esc(hrefFor(f))+'"><b>'+esc(f.name)+'</b><span>'+esc([f.city,f.country].filter(Boolean).join(', '))+'</span></a>').join('')||'<span style="color:var(--dim);font-size:13px">Fresh listings appear here as they land.</span>';
   }catch(e){}
   const selectedCity=document.getElementById('city-sel');
-  if(selectedCity) selectedCity.value=ST.city;
+  syncSelectedCity();
 }
 
 
@@ -432,7 +440,7 @@ function readUrl(){
   const qi=document.getElementById('q'); if(qi) qi.value=ST.q;
   const cs=document.getElementById('country-sel'); if(cs&&ST.country) harvestCountries([]);
   const ss=document.getElementById('sort-sel'); if(ss) ss.value=ST.sort;
-  const ci=document.getElementById('city-sel'); if(ci) ci.value=ST.city;
+  syncSelectedCity();
   pillsRender();
 }
 function writeUrl(push){
@@ -467,7 +475,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   // Typing requests suggestions only. Retire an older result request immediately,
   // while keeping the already-rendered results until an explicit search action.
   q.addEventListener('input',()=>{const pending=ST.busy;++searchVersion;searchRequest?.abort();ST.busy=false;if(pending)restoreSettledExplore();document.getElementById('more-btn').style.display='none';});
-  import('/assets/discovery/autocomplete.mjs?v=20261002-keyboard-recovery').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation(q.value.trim())}),onSubmit:submitExplore});}).catch(()=>{});
+  import('/assets/discovery/autocomplete.mjs?v=20261003-company-parea-rooms').then(({attachAutocomplete})=>{exploreAutocomplete=attachAutocomplete(q,{filters:()=>({type:ST.type,...effectiveExploreLocation(q.value.trim())}),onSubmit:submitExplore});}).catch(()=>{});
   q.addEventListener('keydown',e=>{if(e.key==='Enter'&&!exploreAutocomplete){submitExplore();}});
   const cs=document.getElementById('country-sel');
   if(cs) cs.addEventListener('change',()=>{ ST.country=cs.value; ST.city=''; ST.scope=ST.country?'':'global'; document.getElementById('city-sel').value=''; submitExplore(); });

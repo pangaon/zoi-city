@@ -1,0 +1,24 @@
+{
+  "name": "zoi-city",
+  "version": "0.1.0",
+  "private": true,
+  "description": "zoi.city — static HTML pages + Vercel serverless api/ + Supabase backend. No build step; scripts below are zero-dependency verification tooling (Wave 1).",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "check": "node scripts/check-inline-js.mjs .",
+    "lint:html": "node scripts/lint-html.mjs .",
+    "test": "node scripts/run-tests.mjs tests",
+    "smoke:live": "node scripts/smoke-live.mjs",
+    "verify": "npm run check && npm run lint:html && npm test",
+    "verify:live": "npm run verify && npm run smoke:live",
+    "test:local": "node scripts/run-tests.mjs tests --local",
+    "test:live": "node scripts/run-tests.mjs tests --live",
+    "verify:local": "npm run check && npm run lint:html && npm run test:local"
+  },
+  "devDependencies": {
+    "playwright-core": "1.63.0"
+  }
+}

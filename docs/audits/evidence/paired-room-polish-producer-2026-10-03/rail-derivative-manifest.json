@@ -1,0 +1,30 @@
+{
+  "base_manifest": "frozen-manifest.json",
+  "base_manifest_sha256": "fd9338e7432251e6ae0bd86132b19e4dd4ce458f602df41f9a2ee3ad14e293ac",
+  "snapshot": "/workspaces/zoi-city/.recovery/owned-freezes/paired-room-rail-derivative-2026-10-03",
+  "runtime": [
+    "assets/events/room-navigation-model.mjs"
+  ],
+  "tests": [
+    "tests/unit/room-navigation-model.test.mjs"
+  ],
+  "files": [
+    {
+      "path": "assets/events/room-navigation-model.mjs",
+      "sha256": "609d65ba6a2d95ed609f3a71166f9be6197cd82b9dd3ccdf44de07f5133cea12",
+      "bytes": 5341
+    },
+    {
+      "path": "tests/unit/room-navigation-model.test.mjs",
+      "sha256": "bcdd0a030fc73e1a2ae5de8942ae2036061008da66e29d202b0a0fa2ab2beea5",
+      "bytes": 5391
+    }
+  ],
+  "cause": "Desktop fallback searched only the left edge; open landscape finder occupied that edge while the upper right edge remained free.",
+  "change": "Selected-identity fallback scans both viewport edge rails in preferred order, preserving all source IDs/positions/colours.",
+  "evidence": {
+    "units": "rail-derivative/units.log:32PASS",
+    "actual_renderer": "rail-derivative/browser.log:4PASS; Toronto/Montreal844x390normal and320x700reduce, exactedge IDs retained+hittable withopenfinder; mouse/touch drag no reselect"
+  },
+  "review": "Overlay these2files onto immutable fd9338 snapshot; rerun original8case fixture independently before release. No production deployment."
+}

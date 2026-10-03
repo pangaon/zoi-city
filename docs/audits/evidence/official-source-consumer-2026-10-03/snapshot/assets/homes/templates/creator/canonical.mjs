@@ -1,0 +1,2 @@
+import{mountCreatorActions}from'./client.mjs';
+const root=document.getElementById('creator-home'),data=document.getElementById('creator-home-content');if(root&&data){try{mountCreatorActions(JSON.parse(data.textContent).entity)}catch{const note=document.createElement('p');note.textContent='Interactive tools could not load. Refresh to retry; official contact links remain available.';root.append(note)}}

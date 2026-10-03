@@ -1,0 +1,9 @@
+# Global suggestions and city search: lead independent acceptance
+
+The lead accepts the bounded candidate manifest 12a01364e4d7c951e602050dbc3be9184e0b9196a0070fea2b9c9338b9cbce70. All 4,026 frozen files were independently hash-checked into a separate reconstruction. No candidate runtime was changed during replay.
+
+Sixteen actual anonymous-reader journeys passed at 390/1440 with candidate local HTML and ordinary production canonical destinations: OPA through bounded Show more or keyboard expansion, Signature, Yamas, actual Kenya/Nairobi and Canada/North York catalog choices, initially URL-scoped city display and empty results. Eighteen controlled city interaction groups passed: loading failures/retry, pending close, stale country replies, deduplication, exact keyboard choice, focus/Escape, empty catalog and explicit country/worldwide scope. Centered dark phone and light/desktop dialog states were visually inspected. Independent screenshots and reports are under evidence/autocomplete-city-parent-2026-10-03.
+
+Source review confirmed a bounded 32-row public request with six initially visible suggestions, accessible incremental expansion, no selected-client ID promotion, existing type filters and outside-filter disclosure. City choices use existing public catalogs; selecting a search area does not save a member's home or request GPS. Current selected cities missing from the popular dropdown retain an exact selected option. Exact city boundaries remain authoritative; Toronto is not silently expanded into North York.
+
+This is a candidate acceptance, not deployed acceptance, complete city/catalog coverage or an outage/latency guarantee. Sample suggestion timing ranged from 258 to 1,643 ms in the independent run. The release must version both Explore and Map consumers and verify served asset bytes plus actual guest journeys after deployment.

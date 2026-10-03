@@ -1,0 +1,17 @@
+# Native Discovery media independent review — 2026-10-03
+
+Decision: **hold the original candidate for a visual logo-fit correction**. The immutable producer manifest `e4d2fe90354e6c1d2f5433e1be9bd8c80fefc5078d5d5d6b185e4005415258d6` was reconstructed into `/tmp/zoi-native-media-independent-p5ydhhuu`; all 920 declared source hashes matched. No implementation source was edited by the reviewer.
+
+The narrow native adapter consumes the accepted shared public media selector without a curated listing override or new dependency. Current owner photo and website edits, explicit clears, quarantine and source mismatch keep shared authority. Native rendering adds only presentation and URI-specific failure fallback.
+
+Independent checks passed: nine media unit groups, TypeScript, 24 actual compiled Expo card/detail media cases at 390/1440, two account-switch/privacy/error cases, two existing home/search/map journeys, and two actual MapLibre cluster expansion/pin selection/SDK retry cases. The mounted media journey decodes the retained original source, replaces it with a current owner photo, then changes website and removes both previous images. RPC transports in these candidate journeys are controlled; original source image bytes are retained. No private writer or live customer action was executed.
+
+The original Signature hero is 3000×1996 and renders clearly in the phone detail. The correct logo is 1307×887, but the photo-clear fallback uses cover presentation inside a 702×140 desktop detail and a 58×58 card. Visual inspection shows portions of “SIG PRO TO” cropped. Tests passed because image decoding and source authority do not establish adequate visual identity presentation. The independent logo-fit probe and screenshot preserve this actual defect; the producer owns a separate derivative fix. This is not an incorrect source image or a generic brand replacement request.
+
+Evidence: `docs/audits/evidence/native-discovery-media-independent-2026-10-03/manifest.json`. The source and original failed visual result remain immutable. Final approval requires a separately frozen correction and an actual visual rerun. Physical iOS/Android image loading, OS map/share handoff, and actual signed-in production journeys remain separate gates.
+
+## Separate logo derivative accepted
+
+The original e4d2 frozen packet and cropped-logo evidence remain unchanged. The separately frozen derivative `2397a24d1a4dcb846070acac82a4e8cdac6f5dfd73eb06e888378688503e36b2` changes only native image presentation: all logo roles use contain with 6px card/14px detail padding inside a rounded clipping wrapper. Hero/poster fit and shared source/owner policy remain unchanged. Independent reconstruction checked both overlay hashes against the 920-file original freeze. A newly compiled application passed all 24 controlled media cases again plus TypeScript. Actual RN backing images report `backgroundSize: contain`; fresh phone and desktop screenshots show the full Signature mark in both card and selected detail. This resolves the identified visual defect. The original nine focused groups and six existing privacy/map/cluster cases remain applicable to the unchanged model and operational logic. Own Metro stopped after verification.
+
+**Final decision: approve original media logic plus this exact derivative for lead integration.** Evidence: `docs/audits/evidence/native-discovery-logo-independent-2026-10-03/manifest.json`. Publication and physical device gates remain distinct.

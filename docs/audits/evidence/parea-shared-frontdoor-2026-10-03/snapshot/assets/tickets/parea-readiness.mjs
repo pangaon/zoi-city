@@ -1,0 +1,13 @@
+const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+export function pareaReadiness(allocation,guests,{now=Date.now()}={}){
+ if(!allocation||!Number.isInteger(allocation.quota)||allocation.quota<1||!Array.isArray(guests)||!Number.isFinite(Date.parse(allocation.expires_at)))throw Error('Group readiness could not be verified.');
+ const ids=new Set();let accepted=0,waiting=0;
+ for(const g of guests){if(!g.id||ids.has(g.id)||!Number.isInteger(g.quantity)||g.quantity<1||!['invited','accepted','revoked'].includes(g.status))throw Error('Guest readiness could not be verified.');ids.add(g.id);if(g.status==='accepted')accepted+=g.quantity;if(g.status==='invited')waiting+=g.quantity;}
+ if(accepted+waiting>allocation.quota)throw Error('Group quantities exceed the current allocation.');
+ const active=allocation.status==='active'&&Date.parse(allocation.expires_at)>now;
+ return {active,accepted,waiting,unassigned:allocation.quota-accepted-waiting,quota:allocation.quota,complete:active&&accepted===allocation.quota};
+}
+export function readinessHtml(allocation,guests,options={}){
+ let state;try{state=pareaReadiness(allocation,guests,options);}catch{return '<section data-readiness><h3>Group review unavailable</h3><p>Refresh the current allocation before relying on these quantities.</p></section>';}
+ return '<section data-readiness class="parea-readiness" aria-label="Parea readiness"><p class="parea-eyebrow">Your parea, at a glance</p><h3>'+(state.complete?'Everyone has accepted their invitation':state.active?'Bring everyone into the group':'This allocation is no longer active')+'</h3><div class="parea-readiness-counts"><div><strong>'+state.accepted+'</strong><span>tickets accepted</span></div><div><strong>'+state.waiting+'</strong><span>awaiting acceptance</span></div><div><strong>'+state.unassigned+'</strong><span>still to assign</span></div></div><p>'+(state.active?'Allocation expires '+esc(new Date(allocation.expires_at).toLocaleString())+'.':'Previous invitation counts are shown for context. Refresh or contact your organiser before making plans.')+'</p><p>Accepted invitations are not paid bookings or admission tickets. Each recipient reviews their own payment arrangements; their payment status is not available in this host review.</p><div class="host-actions"><button data-action="readiness-refresh">Refresh group review</button>'+(state.active&&state.waiting?'<button data-action="readiness-waiting">Review unclaimed invitations</button>':'')+(state.active&&state.unassigned?'<button data-action="readiness-assign">Assign remaining tickets</button>':'')+'</div></section>';
+}

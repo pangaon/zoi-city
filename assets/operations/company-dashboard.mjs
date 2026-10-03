@@ -1,0 +1,60 @@
+import {companyWork,companyDocuments,companyJourney} from './company-journey.mjs?v=20261003-company-console';
+import {companyConsole,companyRecordChecklist,companyHandover,WORK_FILTERS} from './company-console-model.mjs?v=20261003-company-console';
+import {companyStyles} from './company-console.mjs?v=20261003-company-console';
+
+export function mountCompanyWorkspace(root,{records,workspace,companyId,showLink=true,role,members=[],current,rpc,navigate,startProject,startTask,startContact,editCompany}) {
+ if(!['owner','admin','editor','viewer'].includes(role))throw Error('Current workspace access could not be verified.');
+ const model=companyWork(records,workspace,companyId),doc=root.ownerDocument,surface=doc.createElement('section');surface.className='zops-card zcompany';root.replaceChildren(surface);companyStyles(doc);
+ let dead=false,busy=false,files=null,error='',filter='all',query='',assignee='';const exports=new Set();
+ const retired=rs=>rs.some(r=>[...r.removedNodes].some(n=>n===root||n===surface||n.contains?.(root)||n.contains?.(surface)));
+ const observer=new MutationObserver(rs=>{if(retired(rs))destroy();});observer.observe(doc.documentElement,{childList:true,subtree:true});
+ function destroy(){if(dead)return;dead=true;observer.disconnect();files=null;for(const url of exports)URL.revokeObjectURL(url);exports.clear();surface.replaceChildren();}
+ function active(){if(!dead&&(retired(observer.takeRecords())||!current()||!root.isConnected||!root.contains(surface)))destroy();return !dead;}
+ const text=(tag,value)=>{const n=doc.createElement(tag);n.textContent=value;return n;};
+ const writable=()=>['owner','admin','editor'].includes(role);
+ function action(label,run){const b=text('button',label);b.type='button';b.disabled=busy;b.onclick=()=>{if(active()&&!busy)run();};return b;}
+ function nextAction(next){return action(next.label,()=>{if(next.action==='create_project')startProject(model.company);else if(next.action==='create_task')startTask?.(next.record);else navigate('operations',next.action+':'+next.record.id);});}
+ function progress(percent,label){const bar=doc.createElement('progress');bar.className='zcompany-progress';bar.max=100;bar.value=percent;bar.setAttribute('aria-label',label);return bar;}
+ function heading(label,button){const row=doc.createElement('div');row.className='zcompany-section-heading';row.append(text('h4',label));if(button)row.append(button);return row;}
+ function exportRecords(){
+  if(!active()||busy)return;
+  const packet=companyHandover(model,{documents:files}),blob=new Blob([JSON.stringify(packet,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);exports.add(url);
+  const a=doc.createElement('a');a.href=url;a.download='zoi-company-'+companyId+'.json';a.hidden=true;surface.append(a);if(active())a.click();a.remove();URL.revokeObjectURL(url);exports.delete(url);
+ }
+ function renderWork(host){
+  if(!active())return;host.replaceChildren();const overview=companyConsole(records,workspace,{companyId,filter,query,assignee});
+  for(const task of overview.visible){const row=doc.createElement('article');row.className='zcompany-work-row';const content=doc.createElement('div');content.append(text('strong',task.title));const person=members.find(m=>m.profile_id===task.assignee_profile_id),detail=text('p',task.title+' · '+(task.status||'open').replaceAll('_',' ')+' · '+(person?.display_name||'Unassigned')+' · '+(task.due_at?'Due '+new Date(task.due_at).toLocaleString():'No deadline'));if(task.overdue)detail.className='zcompany-overdue';content.append(detail,text('p',task.project.title));row.append(content,action('Open task · '+task.title,()=>navigate('operations','task:'+task.id)));host.append(row);}
+  if(!overview.visible.length){const empty=text('p',overview.total?'No saved tasks match these filters.':'Create a project, then add the first assigned task and deadline.');empty.className='zconsole-empty';host.append(empty);}
+ }
+ function render(){
+  if(!active())return;const journey=companyJourney(model,{documents:files}),consoleModel=companyConsole(records,workspace,{companyId});surface.replaceChildren();
+  const head=doc.createElement('div');head.className='zcompany-header';const intro=doc.createElement('div'),kicker=text('p','Your company workspace');kicker.className='zcompany-kicker';intro.append(kicker,text('h3',model.company.title),text('p',model.company.data?.jurisdiction||'Record your country or jurisdiction in company details.'));head.append(intro);
+  const topActions=doc.createElement('div');topActions.className='zops-actions';topActions.append(action('Export company records',exportRecords));if(showLink)topActions.append(action('Open company workspace',()=>navigate('operations','company:'+companyId)));head.append(topActions);surface.append(head);
+  const metrics=doc.createElement('div');metrics.className='zcompany-metrics';for(const [value,label]of[[model.projects.length,'Projects'],[journey.counts.completed+'/'+journey.counts.total,'Tasks completed'],[journey.counts.overdue,'Overdue tasks'],[journey.counts.blocked,'Blocked tasks']]){const box=doc.createElement('div');box.className='zcompany-metric';box.append(text('strong',String(value)),text('span',label));metrics.append(box);}surface.append(metrics);
+  surface.append(text('p',journey.counts.unassigned+' unassigned tasks · '+model.contacts.length+' work contacts'));
+  const next=doc.createElement('div');next.className='zcompany-next';next.append(text('h4','Your next step'),text('p',journey.next.detail));if(writable()&&(!['create_task'].includes(journey.next.action)||startTask))next.append(nextAction(journey.next));else if(journey.next.action!=='create_project'&&journey.next.action!=='create_task')next.append(nextAction(journey.next));else next.append(text('p','An authorized editor or owner can start linked work.'));surface.append(next);
+  const columns=doc.createElement('div');columns.className='zcompany-columns';const main=doc.createElement('div'),aside=doc.createElement('aside');columns.append(main,aside);surface.append(columns);
+  main.append(heading('Projects',writable()?action('Start company project',()=>startProject(model.company)):null));
+  for(const project of journey.projects){
+   const p=project.project,card=doc.createElement('article');card.className='zcompany-project';card.append(text('h4',p.title),text('p',(p.status||'open').replaceAll('_',' ')+' · '+project.completed+' of '+project.tasks.length+' tasks completed'));if(project.percent!==null)card.append(progress(project.percent,p.title+' task completion'));
+   if(!project.tasks.length)card.append(text('p','No follow-up tasks yet. Add the first task to organize this project.'));const tools=doc.createElement('div');tools.className='zops-actions';tools.append(action('Open project · '+p.title,()=>navigate('operations','project:'+p.id)));if(writable()){if(startTask)tools.append(action('Add task · '+p.title,()=>startTask(p)));tools.append(action('Project files · '+p.title,()=>navigate('documents','project:'+p.id)));}card.append(tools);
+   const info=text('p',project.files===null?'Project file records have not been checked.':project.files.length+' recent document records returned for this project.');info.className='zcompany-files';card.append(info);if(project.files)for(const d of project.files)card.append(text('p',d.title+' · version '+d.current_version));main.append(card);
+  }
+  if(!model.projects.length){const empty=text('p','Your first project connects the work, people and files for one outcome.');empty.className='zconsole-empty';main.append(empty);}
+  main.append(heading('Work & deadlines'));const filters=doc.createElement('div');filters.className='zcompany-filters';
+  const searchLabel=text('label','Search saved work'),search=doc.createElement('input');search.type='search';search.value=query;search.placeholder='Task or project name';search.maxLength=100;searchLabel.append(search);
+  const filterLabel=text('label','Show'),select=doc.createElement('select');select.setAttribute('aria-label','Show');for(const [value,label]of Object.entries(WORK_FILTERS)){const o=text('option',label);o.value=value;o.selected=filter===value;select.append(o);}filterLabel.append(select);
+  const memberLabel=text('label','Team member'),member=doc.createElement('select');member.setAttribute('aria-label','Team member');for(const [id,label]of [['','Everyone'],...members.map(m=>[m.profile_id,m.display_name||'Team member'])]){const o=text('option',label);o.value=id;o.selected=assignee===id;member.append(o);}memberLabel.append(member);filters.append(searchLabel,filterLabel,memberLabel);main.append(filters);const taskList=doc.createElement('div');taskList.setAttribute('aria-live','polite');main.append(taskList);
+  search.oninput=()=>{query=search.value;renderWork(taskList);};select.onchange=()=>{filter=select.value;renderWork(taskList);};member.onchange=()=>{assignee=member.value;renderWork(taskList);};renderWork(taskList);
+  const record=doc.createElement('section');record.className='zcompany-panel';record.append(text('h4','Company record'));
+  for(const item of companyRecordChecklist(model.company)){const row=doc.createElement('div');row.className='zcompany-check';row.append(text('strong',item.label),text('span',item.recorded?item.value:'Not recorded'));record.append(row);}if(editCompany)record.append(action(['owner','admin'].includes(role)?'Edit company details':'View company details',editCompany));const notice=text('p','These are your team’s records. Registration, government filings and jurisdiction-specific obligations require verified information or a connected provider.');notice.className='zcompany-record-note';record.append(notice);aside.append(record);
+  const documents=doc.createElement('section');documents.className='zcompany-panel';documents.style.marginTop='18px';documents.append(text('h4','Private documents'),text('p','Project files stay connected to their saved versions.'));
+  if(writable()){documents.append(action(busy?'Checking project files…':'Check company document records',loadDocuments));if(files!==null)documents.append(text('p',files.length+' recent document records loaded. Open Project files to inspect contents.'));}else documents.append(text('p','Private documents are available to authorized editors and owners.'));aside.append(documents);
+  surface.append(heading('People',writable()&&startContact?action('Add company contact',()=>startContact(model.company)):null));
+  const people=doc.createElement('div');people.className='zcompany-contacts';for(const person of consoleModel.contacts){const card=doc.createElement('article');card.className='zcompany-contact';card.append(text('h5',person.title));const data=person.data||{};for(const [kind,value]of [['email',data.email],['phone',data.phone]]){if(!value)continue;const p=text('p',value);const safe=kind==='email'?/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(value):/^[+\d ().-]{3,40}$/.test(value);if(safe){const a=text('a',value);a.href=kind==='email'?'mailto:'+encodeURIComponent(value):'tel:'+value.replace(/[^+\d]/g,'');p.replaceChildren(a);}card.append(p);}card.append(action('Open contact · '+person.title,()=>navigate('operations','contact:'+person.id)));people.append(card);}surface.append(people);
+  if(!model.contacts.length){const empty=text('p','Add the people you work with, then connect them to a project or task.');empty.className='zconsole-empty';surface.append(empty);}
+  if(error){const n=text('p',error);n.className='zcompany-notice';n.setAttribute('role','status');surface.append(n);}
+ }
+ async function loadDocuments(){if(busy||!active())return;busy=true;files=null;error='';render();try{const value=await rpc('documents_list',{p_workspace:workspace,p_project:null},null,active);if(!active())return;files=companyDocuments(value,workspace,model.projects);}catch{if(active())error='Document records could not be verified. Retry or open the project’s files.';}finally{busy=false;if(active())render();}}
+ render();return {destroy};
+}

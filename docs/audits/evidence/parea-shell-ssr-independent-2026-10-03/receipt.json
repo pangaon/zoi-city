@@ -1,0 +1,42 @@
+{
+  "reviewed_at": "2026-10-03T03:50:23.753666+00:00",
+  "files": [
+    {
+      "path": "assets/events/signature/customer-a.mjs",
+      "sha256": "d0fdd77ac567ac9be71315e2b7adf9b0498ed372d34ccfd57de171bfa4be669c",
+      "current_equals_frozen": true
+    },
+    {
+      "path": "assets/events/signature/parea-shell.mjs",
+      "sha256": "d5dd74b1606422d0fd309a303c8e0f8361f492e2888d25d509994cb4fa63f51e",
+      "current_equals_frozen": true
+    },
+    {
+      "path": "assets/homes/templates/events/generic.mjs",
+      "sha256": "abbacb5af7e0189691647febc5886c0eec9113be05b205e277ed02faf8cec877",
+      "current_equals_frozen": true
+    }
+  ],
+  "function_sha256_including_newline": "7666ec6c4948976e7a827990761b9ecff04674e303e00ea8f5c978637d9ee92a",
+  "exact_function_bytes_equal": true,
+  "customer_only_extraction_after_two_query_derivative": true,
+  "generic_only_pure_import_substitution": true,
+  "tests": [
+    {
+      "path": "tests/unit/server-import-tracing.test.mjs",
+      "sha256": "f550ed1d00b61c1abaa73efa32c343eb39bddf4cd058790a53aef3e44620bc48"
+    },
+    {
+      "path": "tests/unit/parea-roster-plan.test.mjs",
+      "sha256": "88de7aa30aad651494971a26e2273d728335f2e97b591a5b7ebd5d2775962e47"
+    },
+    {
+      "path": "tests/unit/parea-readiness.test.mjs",
+      "sha256": "b1208813d018ed17826eab3e3b8b94e8d8bf9d30dcec92279cad5b52796a6258"
+    }
+  ],
+  "focused_tests_pass": 9,
+  "verdict": "ACCEPT source extraction; production tracing/build and actual guest journeys remain release gates",
+  "writes": "Independent evidence only; no runtime, SQL or live writes",
+  "reviewer_diagnostic": "Initial comparison omitted trailing newline from recorded function hash; byte comparison was equal; corrected hash framing matches root receipt."
+}

@@ -1,0 +1,17 @@
+GUARD zoi.event_payment_policy_view(uuid,uuid) e47614082fc35f473da4481caa59e108
+GUARD public.event_payment_policy_get(uuid,uuid) 950a2c73162310a0d9946a72724216ee
+GUARD public.event_payment_policy_save(uuid,uuid,integer,uuid,boolean,boolean) 86a0dc9c8010b8e280f9ff710a42110a
+GUARD public.event_guest_payment_options(uuid) 549cbca2f79c10cdb3bbb88863e89f6d
+GUARD public.event_guest_payment_choose(uuid,text,integer,integer,uuid) 8c3ccf3cb146a546fbd4c0940a9e3031
+GUARD public.event_payment_operator_report(uuid,uuid) 456aa9e77ced13851af4469d4b3547cf
+PASS exact 29 installed definitions/ACLs, drift refusal, transactional ROLLBACK and candidate installation
+PASS expired, deleted, anonymous, banned, absent-session and signedout actor rejected across host/read/receipt/cancel/hold/owner surfaces
+PASS observed final guest row wait followed by session deletion leaves guest/version/nonce unchanged
+PASS observed hold settings wait then expiry leaves no hold
+PASS observed claim row wait then ban leaves guest unclaimed
+PASS observed owner configuration nonce wait then deletion preserves price/version
+PASS observed private identity receipt wait then deletion refuses readback
+PASS observed guest wait then removed profile binding rejects changed actor
+PASS observed initial owner role lock then demotion denies historical configuration read
+PASS actual authenticated execution, anonymous/private ACL denial and unchanged valid release/hold price
+PASS active-session exact nonce retry and payload conflict preserved; no money rows
