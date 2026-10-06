@@ -59,7 +59,8 @@
     if (document.getElementById(STYLE_ID)) return;
     var css = [
       '.zn-how{border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:14px 0 18px;background:var(--card2)}',
-    '.zn-how h4{margin:0 0 10px;font-size:14px;font-weight:700;letter-spacing:-.01em}',
+    '.zn-how summary{cursor:pointer;font-size:14px;font-weight:700}',
+    '.zn-how[open] summary{margin-bottom:12px}',
     '.zn-how ol{margin:0;padding-left:18px;display:grid;gap:7px}',
     '.zn-how li{font-size:13px;line-height:1.55;color:var(--mut)}',
     '.zn-how li b{color:var(--tx);font-weight:650}',
@@ -67,7 +68,11 @@
       +'border-top:1px solid var(--line);padding-top:11px}',
     '.zn-how-note b{color:var(--tx)}',
     '.zn-why{margin:0 0 9px;font-size:12px;line-height:1.5;color:var(--dim)}',
-    '.zn-wrap{color:var(--tx);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:14px}',
+    '.zn-wrap,.zn-wrap *{box-sizing:border-box}',
+      '.zn-wrap{min-width:0;overflow-wrap:anywhere}',
+      '.zn-banner>div{min-width:0}',
+      '.zn-banner-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}',
+      '.zn-wrap{color:var(--tx);font-family:"Hanken Grotesk",system-ui,sans-serif;font-size:14px}',
       '.zn-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin:0 0 14px}',
       '.zn-title{font-size:18px;font-weight:800;margin:0 0 2px}',
       '.zn-sub{color:var(--mut);font-size:12.5px;margin:0;max-width:60ch;line-height:1.5}',
@@ -82,7 +87,7 @@
       '.zn-banner b{color:var(--tx)}',
       '.zn-banner p{margin:0;color:var(--mut);font-size:12.5px;line-height:1.5}',
       /* grid of platform cards */
-      '.zn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin:0 0 22px}',
+      '.zn-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(250px,100%),1fr));gap:12px;margin:0 0 22px}',
       '.zn-card{background:var(--bg2);border:1px solid var(--line);border-radius:13px;padding:15px;display:flex;flex-direction:column;gap:11px;min-height:150px}',
       '.zn-card.zn-connected{border-color:var(--line2)}',
       '.zn-card-top{display:flex;align-items:center;gap:11px}',
@@ -200,7 +205,7 @@
     var htxt = el('div');
     htxt.appendChild(el('div', 'zn-title', 'Accounts'));
     htxt.appendChild(el('p', 'zn-sub',
-      'Connect the social accounts Zoi will publish to, and set up planning handles so your composer previews look right.'));
+      'Manage connected social accounts and the account names used in your post previews.'));
     head.appendChild(htxt);
     var refreshBtn = el('button', 'zn-refresh', REFRESH_SVG + '<span>Refresh</span>');
     refreshBtn.type = 'button';
@@ -220,27 +225,33 @@
       var ready = PLATFORMS.filter(function (p) { return providerReady[p.key]; });
       banner.className = 'zn-banner' + (ready.length ? ' zn-live' : '');
       bdot.innerHTML = ready.length ? CHECK_SVG : SHIELD_SVG;
-      if (ready.length === PLATFORMS.length) {
-        bmsg.innerHTML = '<b>Social integrations are live.</b>' +
-          '<p>Connect an account below to let Zoi publish and schedule directly to it.</p>';
+      if (!configKnown) {
+        bmsg.innerHTML = '<b>Checking connection availability…</b>';
+      } else if (configFailed) {
+        bmsg.innerHTML = '<b>Connection availability could not be checked.</b><p>Your saved accounts remain below. Refresh to check again. You can still add a planning handle for previews.</p>';
       } else if (ready.length) {
-        bmsg.innerHTML = '<b>' + ready.length + ' of ' + PLATFORMS.length +
-          ' networks are connectable.</b><p>The rest need their developer app registered before Zoi can be authorised to post.</p>';
+        bmsg.innerHTML = '<b>' + ready.length + (ready.length === 1 ? ' network available to connect.' : ' networks available to connect.') + '</b><p>Choose an available network below and approve access on its website. Other networks are unavailable right now.</p>';
       } else {
-        bmsg.innerHTML = '<b>No network can be connected yet.</b>' +
-          '<p>Connecting needs a developer app registered with each network \u2014 Zoi has none yet, so there is nothing to authorise against. ' +
-          'Drafting and scheduling work now, and a planning handle below makes composer previews look right.</p>' +
-          '<p><b>Founder setup:</b> register the provider apps, add their client credentials to Supabase Edge Function secrets, and use this callback URL: <code>https://csebihpaychdkanjjsmz.supabase.co/functions/v1/social-oauth-callback</code>. ' +
-          'Then refresh this page. Zoi and Buy Greek are connected separately by workspace.</p>';
+        bmsg.innerHTML = '<b>Social connections are unavailable right now.</b><p>You can add your account name for post previews and planning. This does not connect the account or publish posts.</p>';
       }
+      var actions = el('div', 'zn-banner-actions');
+      var planButton = el('button', 'zn-refresh', 'Add a planning handle');
+      planButton.type = 'button';
+      planButton.addEventListener('click', function () {
+        if (!scopeActive()) return;
+        manual.scrollIntoView({block:'center'});
+        inHandle.focus({preventScroll:true});
+      });
+      actions.appendChild(planButton);
+      bmsg.appendChild(actions);
     }
 
     /* How this actually works. Somebody is being asked to let a third party post
        as their business — the least we owe them is a plain account of what
        happens, what we can see, and what we cannot. */
-    var how = el('div', 'zn-how');
+    var how = el('details', 'zn-how');
     how.innerHTML =
-      '<h4>How connecting works</h4>' +
+      '<summary>How connecting works</summary>' +
       '<ol>' +
         '<li><b>You press Connect.</b> Zoi sends you to the network itself. You are on Instagram\u2019s page, or Facebook\u2019s \u2014 not ours.</li>' +
         '<li><b>You approve it there.</b> The network asks whether Zoi may post for you. Your password is typed on their site and never reaches Zoi. We never see it and could not store it if we wanted to.</li>' +
@@ -258,7 +269,7 @@
     var manual = el('div', 'zn-manual');
     manual.appendChild(el('h3', null, 'Add a planning handle'));
     manual.appendChild(el('p', 'zn-mhint',
-      'Adds a handle for previews / planning only — not yet publishing. Zoi uses it so your composer previews render with the right name before live OAuth exists. It does not connect to the platform.'));
+      'Use your account name in post previews. A planning handle does not connect your account or enable publishing.'));
     var form = el('div', 'zn-form');
 
     var fPlat = el('div', 'zn-field zn-f-plat');
@@ -374,19 +385,18 @@
         // Read-only connected state. There is NO disconnect RPC — do not invent one.
         foot.appendChild(el('div', 'zn-managed', SHIELD_SVG + '<span>Managed by Zoi</span>'));
         foot.appendChild(el('p', 'zn-note',
-          'This account is connected and managed by Zoi. To remove it, contact support — self-serve disconnect is coming soon.'));
+          'This account is connected. To revoke access, use this network’s connected-app settings. Removing a connection here is not available.'));
       } else {
         var btn = el('button', 'zn-btn zn-primary', 'Connect');
         btn.type = 'button';
         if (!providerReady[p.key]) {
           btn.disabled = true;
           btn.title = configFailed ? 'Service availability could not be checked' : configKnown
-            ? p.name + ' has no developer app registered yet'
+            ? p.name + ' connections are currently unavailable'
             : 'Checking availability\u2026';
           foot.appendChild(btn);
           foot.appendChild(el('p', 'zn-note', configFailed ? 'Service availability is temporarily unavailable. Refresh to try again.' : configKnown
-            ? 'Not connectable yet: Zoi needs a ' + esc(p.name) +
-              ' developer app registered before it can ask for permission to post.'
+            ? esc(p.name) + ' connections are unavailable right now. You can add a planning handle below.'
             : 'Checking whether ' + esc(p.name) + ' is connectable\u2026'));
         } else {
           // The real handshake. social-connect builds the provider's authorize URL
@@ -476,7 +486,7 @@
     }
 
     /* ---------- wire events ---------- */
-    refreshBtn.addEventListener('click', function () { refreshChannels(); });
+    refreshBtn.addEventListener('click', function () { refreshChannels(); loadProviderConfig(true); });
     addBtn.addEventListener('click', addHandle);
     inHandle.addEventListener('keydown', function (e) {
       if (e.key === 'Enter') { e.preventDefault(); addHandle(); }
@@ -494,10 +504,15 @@
        available:true|false per platform, which is the only honest basis for
        enabling a Connect button. A failure here leaves everything disabled —
        the safe direction. */
-    (async function loadProviderConfig() {
+    var configLoading = false;
+    async function loadProviderConfig(force) {
+      if (configLoading || !scopeActive()) return;
+      configLoading = true;
+      configKnown = false; configFailed = false; providerReady = {};
+      paintBanner(); renderGrid();
       try {
         var j;
-        if (Object.prototype.hasOwnProperty.call(ctx,'providerConfig')) j=ctx.providerConfig;
+        if (!force && Object.prototype.hasOwnProperty.call(ctx,'providerConfig')) j=ctx.providerConfig;
         else { var cap=await import('/assets/suite/capabilities.mjs'); j=await cap.loadProviderConfig(C.BASE,C.KEY); }
         if (!j) throw new Error('Service availability unavailable');
         (j && j.platforms ? j.platforms : []).forEach(function (pl) {
@@ -506,10 +521,13 @@
       } catch (e) {
         configFailed = true;
       }
+      configLoading = false;
+      if (!scopeActive()) return;
       configKnown = true;
       paintBanner();
       renderGrid();
-    })();
+    }
+    loadProviderConfig(false);
 
     // Refresh from server in the background if we started empty.
     if (!state.channels.length) {

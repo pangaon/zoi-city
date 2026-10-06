@@ -1,4 +1,4 @@
-import {mountEventActions} from './client.mjs?v=20261003-guest-plans';
+import {mountEventActions} from './client.mjs?v=20261006-gallery';
 
 const root = document.getElementById('event-home');
 const data = document.getElementById('event-home-content');

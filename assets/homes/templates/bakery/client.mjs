@@ -1,6 +1,8 @@
+import {mountPhotoGallery} from '../../photo-gallery.mjs?v=20261006';
 import{esc,bakeryRequest,localToday,OCCASIONS}from'./model.mjs';
 const element=document.querySelector('#bakery-home-content'),root=document.querySelector('#bakery-home');
 if(element&&root){const {bakery:r}=JSON.parse(element.textContent),C=window.ZoiCore,dialog=root.querySelector('dialog'),content=dialog.querySelector('[data-dialog-content]'),key='zoi.bakery.request.v1.'+r.id;let current=null,photo=0,origin=null;const busy=new Set();
+mountPhotoGallery(root,{selector:'[data-gallery]',title:r.name+' · Photos',photos:()=>r.photos.map((url,i)=>({url,caption:r.photoCaptions?.[url]||r.name+' · Photo '+(i+1),credit:'Photos from the bakery profile or website.'}))});
 const status=text=>{const node=dialog.open?dialog.querySelector('[data-dialog-status]'):root.querySelector('[data-page-status]');if(node)node.textContent=text;};
 function open(title,html){if(!dialog.open)origin=document.activeElement;dialog.querySelector('h2').textContent=title;content.innerHTML=html+'<p role="status" aria-live="polite" data-dialog-status></p>';if(!dialog.open)dialog.showModal();}
 function close(){dialog.close();}dialog.addEventListener('close',()=>{if(dialog.open)return;content.innerHTML='';if(origin?.isConnected)origin.focus();});

@@ -1,3 +1,3 @@
 import {PARISH,MINISTRIES,PARISH_DETAILS} from './data.mjs';
-import {mountChurch} from './mount.mjs';
+import {mountChurch} from './mount.mjs?v=20261006-gallery';
 mountChurch(document.querySelector('#church-home'),{...PARISH,ministries:MINISTRIES,details:PARISH_DETAILS},document.body.dataset.template);

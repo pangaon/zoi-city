@@ -1,0 +1,9 @@
+# Independent Accounts setup acceptance
+
+Approved bounded candidate assets/suite/connect.js, SHA25686260caaaad6cc1e501ad9231df2d1ad4e182877d5cb73f6ad898eea7eb660bb. Hash verified before and after tests. Reviewer did not edit runtime code.
+
+Source review confirms Refresh invokes both current account reads and the existing provider capability loader. Provider checks coalesce; unavailable and unknown states keep Connect disabled. Current-scope checks prevent delayed results repainting a disposed account/workspace. The planning fallback focuses the actual existing handle input and does not invoke OAuth or claim publishing. Connected-account display remains based on returned channel state, not provider availability. Mutations and server authorization are unchanged.
+
+Independent producer-driver rerun passes390/1440. Additional reviewer driver uses the actual capabilities.mjs loader with controlled HTTP503/200 responses rather than stubbing its implementation. It verifies unavailable false versus failed read copy, refreshed availability, preservation of a connected account when channel refresh also fails503, suppression of raw provider diagnostic text, and delayed provider success after logout leaving the private view empty. No page errors or horizontal overflow. Phone overview visually inspected. No connection, publishing or channel-add write was exercised.
+
+Evidence in evidence/connect-independent-2026-10-06/: reviewer verify.cjs, report.json and overview-390.png. Driver assertions after the initial report snapshot verify recovery and late logout; successful exit is required. Provider replies are controlled fixtures and do not establish live OAuth capability. The current production API incident remains unresolved. Existing disconnected-account lifecycle/API modernization is outside this presentation/retry patch; no invented disconnect button was added.

@@ -1,6 +1,8 @@
+import {mountPhotoGallery} from '../../photo-gallery.mjs?v=20261006';
 import{esc,visitPlan,localToday,UUID}from'./model.mjs';
 const element=document.querySelector('#restaurant-home-content'),root=document.querySelector('#restaurant-home');
 if(element&&root){const {restaurant:r}=JSON.parse(element.textContent),C=window.ZoiCore,dialog=root.querySelector('dialog'),content=dialog.querySelector('[data-dialog-content]'),key='zoi.restaurant.visit.v1.'+r.id;let current=null,photo=0,origin=null;const busy=new Set();
+mountPhotoGallery(root,{selector:'[data-gallery]',title:r.name+' · Photos',photos:()=>r.photos.map((url,i)=>({url,caption:r.photoCaptions?.[url]||r.name+' · Photo '+(i+1),credit:'Photos from the restaurant profile or website.'}))});
 const status=text=>{const node=dialog.open?dialog.querySelector('[data-dialog-status]'):root.querySelector('[data-page-status]');if(node)node.textContent=text;};
 function open(title,html){const replacing=dialog.open;if(!replacing)origin=document.activeElement;const heading=dialog.querySelector('h2');heading.textContent=title;content.innerHTML=html+'<p role="status" aria-live="polite" data-dialog-status></p>';if(!dialog.open)dialog.showModal();else{heading.tabIndex=-1;heading.focus({preventScroll:true});}}
 function close(){dialog.close();}dialog.addEventListener('close',()=>{if(dialog.open)return;content.innerHTML='';if(origin?.isConnected)origin.focus();});

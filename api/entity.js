@@ -390,7 +390,7 @@ function socialIcon(k){
    +'<aside class="home-details" id="contact">'+(rows.length?'<section class="card"><h2>Good to know</h2>'+rows.join('')+'</section>':'')+provHtml+claim+'</aside></div>'
    +rel
    +'</main>'
-   +'<script type="module" src="/assets/homes/experience.mjs"></script>'
+   +'<script type="module" src="/assets/homes/experience.mjs?v=20261006-gallery"></script>'
    +'<footer class="zoi-footer"><div class="wrap" style="display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:center">'
      +'<span class="zoi-fmeta">&copy; <span id="yr">2026</span> Zoi &middot; The home of the Greek world.</span>'
      +'<nav class="zoi-fnav" aria-label="Footer">'+nav+'</nav>'
