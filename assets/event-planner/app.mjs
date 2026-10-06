@@ -31,6 +31,6 @@ export async function mountEventPlanner(root,C){
  else if(b.dataset.open){if(dirty&&!confirm('Open this saved plan and discard unsaved changes?'))return;act(()=>open(b.dataset.open));}
  });
  addEventListener('beforeunload',e=>{if(dirty||pending){e.preventDefault();e.returnValue='';}});
- if(!C.auth.isSignedIn()){body.innerHTML='<p><a href="/social/" target="_blank" rel="noopener">Sign in to Zoi</a>, then return here to create or open your private plan.</p><button data-reload>Check sign-in</button>';body.querySelector('button').onclick=()=>location.reload();return;}
+ if(!C.auth.isSignedIn()){body.innerHTML='<h2>Keep your occasion together</h2><p>Your plan is private. Sign in in the new tab, then return here to continue. This page keeps the same plan link.</p><p><a href="/social?signin=1" target="_blank" rel="noopener">Sign in to continue ↗</a></p><button data-reload>Continue with my plan</button><p><a href="/explore/?type=venue">Explore places for your occasion →</a></p>';body.querySelector('button').onclick=()=>location.reload();return;}
  try{const caps=await rpc('event_plan_capabilities',{});if(caps?.ok!==true||caps.version!==1)throw Error('Connected event booking is not available yet.');if(pending){render();lock();status('An earlier request needs its saved result checked.');}else{const id=new URLSearchParams(location.search).get('plan');if(id&&UUID.test(id))await open(id);else render();}}catch(e){status(eventError(e));body.innerHTML='<button data-reload>Retry event planner</button>';body.querySelector('button').onclick=()=>location.reload();}
 }
