@@ -1,9 +1,13 @@
 <!doctype html>
-<html lang="en" data-theme="light">
+<html lang="en" data-theme="light" data-ticket-route="discover">
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Tickets · Zoi</title>
+<title>Events · Zoi</title>
+<meta name="description" content="Find Greek concerts, festivals and gatherings. Explore event details and bring your parea."/>
+<script>document.documentElement.dataset.ticketRoute=new URLSearchParams(location.search).has("e")?"event":new URLSearchParams(location.search).get("manage")==="1"?"manage":"discover";</script>
+<link rel="stylesheet" href="/assets/tickets/public-events.css?v=20261003-public-events"/>
+<script type="module" src="/assets/tickets/public-events.mjs?v=20261003-public-events"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..700&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -462,15 +466,20 @@ select option{background:var(--card)!important;color:var(--tx)!important}
   <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world…" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
   <div class="zoi-actions"><div class="nav-right" id="navRight"></div><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
 </div></header>
-<div class="proto-banner" id="protoBanner">
+<div class="proto-banner" id="protoBanner" hidden>
   <span><b>Reservations are live.</b> Seats hold instantly. Paid checkout ships next — nothing is charged yet.</span>
 </div>
 
-<div class="tk-advanced">
+<div class="tk-advanced" id="ticketAdvanced" hidden>
   <span class="tk-adv-lab">Advanced</span>
   <a href="#venue-studio">Open venue & seating studio</a><span class="tk-adv-note">Create a floor plan and inspect it in 3D. Layout drafts stay in this browser.</span>
 </div>
-<details id="venue-studio" class="venue-studio"><summary>Venue & seating studio</summary></details>
+<details id="venue-studio" class="venue-studio" hidden><summary>Venue & seating studio</summary></details>
+<main id="publicEvents" class="tpe">
+<section class="tpe-hero" aria-labelledby="publicEventTitle"><div><p class="tpe-eyebrow">THE GREEK WORLD, TOGETHER</p><h1 id="publicEventTitle">Make a night of it.</h1><p class="tpe-intro">Concerts, festivals and gatherings worth showing up for. Bring your parea—or come meet your next one.</p><div class="tpe-links"><a class="tpe-link primary" href="#find-events">Find your next event ↓</a><a class="tpe-link" href="/tickets/?manage=1">For organizers</a></div><p class="tpe-note">Explore freely. Each event page has its own current details and ways to plan your visit.</p></div><figure class="tpe-hero-art"><img src="/assets/tickets/public-events-hero.jpg" alt="A live concert audience and stage lights from Signature Productions’ archive" width="3000" height="1996" decoding="async" fetchpriority="high"><figcaption>Concert archive · Signature Productions</figcaption></figure></section>
+<section id="find-events" aria-labelledby="findEventsTitle"><div class="tpe-heading"><h2 id="findEventsTitle">Find your next connection</h2><a href="/explore/?type=event">Explore the full event directory →</a></div><form class="tpe-form" action="/explore/" method="get" role="search" aria-label="Find events"><input type="hidden" name="type" value="event"><label>Artist, festival or event<input name="q" type="search" placeholder="Who would you love to see?" maxlength="200" autocomplete="off"></label><label>City · optional<input name="city" type="search" placeholder="Any city" maxlength="100" autocomplete="address-level2"></label><button class="primary" type="submit">Find events</button></form><p class="tpe-status" data-public-event-status role="status" aria-live="polite">Explore the featured event pages below while the directory loads.</p><button type="button" data-public-event-retry hidden>Try event directory again</button><div class="tpe-results" data-public-event-list aria-busy="false"></div><div class="tpe-more"><button type="button" data-public-event-more hidden>Explore more events</button></div></section>
+<section aria-labelledby="featuredEventsTitle"><div class="tpe-heading"><h2 id="featuredEventsTitle">Step inside the night</h2></div><div class="tpe-featured"><a href="/events/giannis-ploutarchos-andromache-toronto-2027/"><p class="tpe-eyebrow">TORONTO · SIGNATURE PRODUCTIONS</p><h3>Giannis Ploutarchos &amp; Andromache</h3><p>Explore the room and get your parea ready.</p><span>Explore Toronto →</span></a><a href="/event/giannis-ploutarchos-andromache-montreal-2027#room"><p class="tpe-eyebrow">MONTRÉAL · OPA PRODUCTIONS</p><h3>Giannis Ploutarchos &amp; Andromache</h3><p>Discover the show and explore its published room plan.</p><span>Explore Montréal →</span></a></div><p class="tpe-note">Room exploration is a planning tool. Check each event’s current ticket and contact options.</p></section>
+<noscript><p>Search opens the public event directory. The featured event links work without signing in.</p></noscript></main>
 <div id="app"></div>
 
 <!-- Confirm reservation modal -->
@@ -624,11 +633,17 @@ function ico(k, cls){ return '<svg viewBox="0 0 24 24" aria-hidden="true"'+(cls?
 function getAuth(){ try{ const a=JSON.parse(localStorage.getItem('zoi_auth')||'null'); if(a&&a.access_token&&a.expires_at&&(Number(a.expires_at)*1000 > Date.now()+5000)) return a; }catch(e){} return null; }
 function clearAuth(){ localStorage.removeItem('zoi_auth'); }
 function bearer(){ const a=getAuth(); return a?a.access_token:PUBKEY; }
+let organizerEpoch=0,organizerIdentity=getAuth()?.access_token||null,studioScope=null;
+function resetOrganizerTools(){closeGen();closeDrawer();ATT={ev:null,name:'',when:'',rows:[],error:null,loading:false,q:'',status:'all',tier:'all',sort:'name',selected:null,bulk:null};$('#tkxDrawerHead').replaceChildren();$('#genTitle').textContent='';$('#genDesc').textContent='';$('#genBody').replaceChildren();window.ZoiDoor?.close();const studio=document.getElementById('venue-studio');studio.dispatchEvent(new Event('zoi:venue-reset'));studio.replaceChildren();const summary=document.createElement('summary');summary.textContent='Venue & seating studio';studio.append(summary);studio.hidden=true;studio.open=false;delete studio.dataset.workspace;delete studio.dataset.mount;studioScope=null;}
+function organizerChanged(){const next=getAuth()?.access_token||null;if(next===organizerIdentity)return;organizerIdentity=next;organizerEpoch++;if(qs('manage')!=='1')return;DASH={me:null,ws:null,events:[],types:{},expanded:{},q:'',when:'all',sort:'soon'};resetOrganizerTools();updateNav();if(next)void renderDashboard();else renderSignIn('Your account changed. Sign in to manage your events.');}
+window.addEventListener('storage',event=>{if(!event.key||event.key==='zoi_auth')organizerChanged();});window.addEventListener('zoi:auth-change',organizerChanged);window.addEventListener('focus',organizerChanged);
+document.getElementById('venue-studio').addEventListener('toggle',async()=>{const studio=document.getElementById('venue-studio');if(!studio.open||studio.hidden||qs('manage')!=='1'||!DASH.me||!getAuth())return;const token=getAuth().access_token;if(!DASH.ws){toast('Choose your workspace before opening the seating studio.',true);return;}const scope=token+':'+DASH.ws;if(studioScope===scope)return;studio.dataset.workspace=DASH.ws;studioScope=scope;const mount=crypto.randomUUID();studio.dataset.mount=mount;try{await import('/assets/tickets/venue-studio.mjs?v=20261006-private-drafts&mount='+mount);}catch{if(getAuth()?.access_token===token){studioScope=null;toast('The seating studio could not load. Close and reopen it to retry.',true);}}});
+
 
 /* General-admission recovery stores scope/nonce only, never contact details. */
 let GA=null,gaPending=null,gaError='',gaBusy=false,gaHistory=[],gaHistoryError='',gaHistoryEpoch=0;
 function gaIdentity(){let raw=null;try{raw=JSON.parse(localStorage.getItem('zoi_auth')||'null');}catch{throw Error('Stored sign-in details could not be read. Sign in again.');}if(!raw?.access_token)return{actor:'guest',token:PUBKEY};let actor;try{const part=raw.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');actor=JSON.parse(atob(part)).sub;}catch{throw Error('Your sign-in could not be verified. Sign in again.');}const fresh=getAuth();if(!actor||!fresh)throw Error('Your session expired. Sign in to recover the original reservation; it has not been discarded.');return{actor,token:fresh.access_token};}
-const gaReady=import('/assets/tickets/general-reservation.js?v=20260930-history').then(m=>{GA=m.createGeneralReservations({storage:localStorage,identity:gaIdentity,call:rpc});return GA;});
+const gaReady=qs('e')?import('/assets/tickets/general-reservation.js?v=20260930-history').then(m=>{GA=m.createGeneralReservations({storage:localStorage,identity:gaIdentity,call:rpc});return GA;}):Promise.resolve(null);
 function gaPanel(){if(!gaPending&&!gaError)return '';return '<section class="order-box" aria-label="Saved reservation request"><div class="order-header">Recover your reservation</div><div class="order-body"><p role="status">'+esc(gaError||'A request may have completed. Check its receipt or re-enter the original details to retry the same request.')+'</p>'+(gaPending?'<p>'+esc(gaPending.qty||'Original quantity')+' tickets · '+(gaPending.protocol==='once'?'Same saved request; no new reservation ID will be created.':'Older request: contact the organizer before booking again.')+'</p>':'')+(!gaPending?'<button class="tkx-btn" data-act="gareload">Reload event and saved requests</button>':'')+(gaError.includes('unresolved guest request')?'<a class="tkx-btn" href="/social/">Open account settings</a>':'')+(gaPending?.protocol==='once'?'<button class="tkx-btn" data-act="garecover">Check saved receipt</button><div class="field"><label for="gaName">Original full name</label><input id="gaName" maxlength="120" autocomplete="name"></div><div class="field"><label for="gaEmail">Original email</label><input id="gaEmail" maxlength="160" type="email" autocomplete="email"></div><button class="reserve-btn" data-act="garetry">Retry this same request</button>':'')+'<p class="field-hint">Names and emails are not saved on this device. A missing receipt does not prove the first request failed. Opening another page does not resolve it.</p></div></section>';}
 async function gaRecover(show=true){await gaReady;const event=PUB.eventId,actor=GA.actor();gaPending=GA.read(event);gaError='';if(!gaPending)return null;try{const result=await GA.recover(gaPending);if(event!==PUB.eventId||actor!==GA.actor())return null;if(!result){gaError='No confirmed receipt is available yet. Retry only this same saved request with the original details.';return null;}if(show)showConfirm(result.receipt,PUB.types.find(t=>String(t.id)===gaPending.tier),result);GA.complete(gaPending,result);gaPending=null;return result;}catch(e){gaError=e.message||'Recovery is unavailable. Your request is preserved.';return null;}}
 async function doGaRecover(){if(gaBusy)return;gaBusy=true;try{await gaRecover();repaintPanel();}catch(e){gaError=e.message;repaintPanel();}finally{gaBusy=false;await gaLoadHistory();}}
@@ -644,23 +659,29 @@ window.addEventListener('storage',e=>{if(e.key!=='zoi_auth')return;gaHistoryEpoc
    The server may still have completed the request. Door mode relies on that distinction: only a transport failure may be
    queued offline. An HTTP error IS an answer and gets shown. */
 async function rpc(fn, params, token){
+  const usedToken=token||bearer(),privateRequest=usedToken!==PUBKEY,epoch=organizerEpoch;
+  const readController=usedToken===PUBKEY&&['tickets_event_public','tickets_types_list','suite_config'].includes(fn)?new AbortController():null;const readTimer=readController?setTimeout(()=>readController.abort(),4500):null;
   let res;
   try{
     res = await fetch(BASE+'/rest/v1/rpc/'+fn, {
-      method:'POST',
-      headers:{ apikey:PUBKEY, Authorization:'Bearer '+(token||bearer()), 'Content-Type':'application/json' },
+      method:'POST',...(readController?{signal:readController.signal}:{}),
+      headers:{ apikey:PUBKEY, Authorization:'Bearer '+usedToken, 'Content-Type':'application/json' },
       body: JSON.stringify(params||{})
     });
   }catch(netErr){
+    clearTimeout(readTimer);
     const e=new Error('Could not reach the ticket server'); e.transport=true; e.cause=netErr; throw e;
   }
   let txt;
   try{ txt = await res.text(); }
   catch(bodyErr){
+    clearTimeout(readTimer);
     // The connection died mid-response. That is still a transport failure, and
     // door mode's offline queue and runBulk's early stop both depend on knowing.
     const e=new Error('Lost the connection while reading the reply'); e.transport=true; e.cause=bodyErr; throw e;
   }
+  clearTimeout(readTimer);
+  if(privateRequest&&(epoch!==organizerEpoch||getAuth()?.access_token!==usedToken))throw Object.assign(Error('Your account changed. Reopen this tool to check its saved state.'),{scopeChanged:true});
   let data=null, unparseable=false;
   if(txt){ try{ data = JSON.parse(txt); }catch(e){ data = txt; unparseable = true; } }
   if(res.ok && unparseable){
@@ -686,6 +707,7 @@ async function verifyOtp(email, tokenCode){
   const d = await r.json().catch(()=>({}));
   if(!r.ok || !d.access_token){ throw new Error(d.msg||d.error_description||d.error||'Invalid or expired code'); }
   localStorage.setItem('zoi_auth', JSON.stringify({access_token:d.access_token, expires_at:d.expires_at}));
+  organizerIdentity=d.access_token;organizerEpoch++;
   return d;
 }
 
@@ -703,7 +725,8 @@ async function loadSvc(){
   // "cannot be sold yet" on screen is read from this flag.
   if(SVC.payments !== before) repaintForSvc();
   const b=document.getElementById('protoBanner');
-  if(b){
+  if(b&&qs('manage')==='1'){
+    b.hidden=false;
     b.innerHTML = SVC.payments
       ? '<span><b>Reservations and card payments are both live.</b> Free tiers reserve instantly; priced tiers check out with Stripe.</span>'
       : '<span><b>Reservations are live. Card payments are not.</b> Free tiers reserve instantly and check in at the door. Priced tiers cannot be sold until Stripe is switched on — nothing is charged anywhere on this page.</span>';
@@ -713,7 +736,7 @@ async function loadSvc(){
 /* The exact, checkable list. Sourced from STATUS-TRUTH.md, not guessed. */
 const PAY_GATE_HTML =
   '<div class="tkx-note" data-tone="warn">'+ico('info')+'<div><b>Online card payments are not available yet.</b>'
-  + ' You can offer free reservations. Keep paid tickets unavailable until payment setup is complete.</div></div>';
+  + ' Check the organizer’s published options for paid tickets. Nothing has been charged here.</div></div>';
 
 function repaintForSvc(){
   try{
@@ -724,17 +747,12 @@ function repaintForSvc(){
 
 /* ============ ROUTER ============ */
 async function route(){
-  const e = qs('e');
-  app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading…</div>';
-  // Whether a priced tier can be sold at all comes from suite_config, so the
-  // first paint waits for it — but never longer than four seconds, and
-  // loadSvc() repaints by itself if it lands late.
-  await Promise.race([
-    loadSvc().catch(()=>{}),
-    new Promise(r=>setTimeout(r, 4000))
-  ]);
-  if(e){ renderPublic(e); handlePaidReturn(); }
-  else { renderDashboard(); }
+  const e=qs('e');
+  if(!e&&qs('manage')!=='1')return;
+  app.innerHTML='<div class="tkx-load" role="status">Loading your event…</div>';
+  void loadSvc().catch(()=>{});
+  if(e){void renderPublic(e);void handlePaidReturn();}
+  else{void renderDashboard();}
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -807,13 +825,13 @@ async function renderPublic(eventId){
   PUB.eventId = eventId;
   PUB.ev=null;PUB.types=[];gaPending=null;gaError='';gaHistoryEpoch++;gaHistory=[];gaHistoryError='';gaClearConfirmation();ticketEventAvailability(false);
   if(!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(eventId)){paintEventUnavailable();return;}
-  try{await gaReady;gaPending=GA.read(eventId);}catch(e){gaError=e.message;}
+  const ready=gaReady.then(()=>{gaPending=GA.read(eventId);}).catch(e=>{gaError=e.message;});
   const code = qs('c');
-  app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading tickets…</div>';
+  app.innerHTML = '<section class="hero"><h1 class="hero-title">Your next night out</h1><p class="tkx-sub" role="status">Finding this event’s details…</p><a class="tkx-btn" href="/tickets/">Browse all events</a></section>';
   try{ PUB.ev = await rpc('tickets_event_public', {p_event:eventId}, PUBKEY); }catch(e){
     app.innerHTML=errBlock('Could not load this event','Please try again when the connection is available.','renderPublic');return;
   }
-  if(!PUB.ev||!PUB.ev.id||PUB.ev.error){paintEventUnavailable();if(gaPending){await gaRecover();app.insertAdjacentHTML('beforeend',gaPanel());}await gaLoadHistory();return;}
+  if(!PUB.ev||!PUB.ev.id||PUB.ev.error){paintEventUnavailable();await ready;if(gaPending){await gaRecover();app.insertAdjacentHTML('beforeend',gaPanel());}await gaLoadHistory();return;}
   let types;
   try{ types = await rpc('tickets_types_list', {p_event:eventId}, PUBKEY); }
   catch(err){
@@ -823,8 +841,9 @@ async function renderPublic(eventId){
   PUB.types = Array.isArray(types)?types:[];
   ticketEventAvailability(true);
   paintHead(PUB.ev, PUB.types, PUBLIC_BASE+'?e='+encodeURIComponent(eventId));
-  if(code){paintTicketView(code);if(gaPending){await gaRecover();app.insertAdjacentHTML('beforeend',gaPanel());}await gaLoadHistory();return;}
+  if(code){paintTicketView(code);await ready;if(gaPending){await gaRecover();app.insertAdjacentHTML('beforeend',gaPanel());}await gaLoadHistory();return;}
   paintPublic();
+  await ready;
   if(gaPending){await gaRecover();repaintPanel();}
   await gaLoadHistory();
 }
@@ -1186,15 +1205,18 @@ let DASH = { me:null, ws:null, events:[], stats:null, statsError:null, types:{},
 
 async function renderDashboard(){
   updateNav();
+  const epoch=organizerEpoch;
   const auth = getAuth();
   if(!auth){ renderSignIn(); return; }
   app.innerHTML = '<div class="tkx-load"><div class="tkx-spin"></div>Loading your account…</div>';
   let me;
   try{ me = await rpc('zoi_me', {}); }
   catch(err){
+    if(epoch!==organizerEpoch||err.scopeChanged)return;
     if(err.transport){ app.innerHTML = errBlock('No connection', 'Could not reach the ticket server. Nothing is lost — try again when you have signal.', 'renderDashboard'); return; }
     clearAuth(); renderSignIn('Your session expired. Please sign in again.'); return;
   }
+  if(epoch!==organizerEpoch)return;
   if(!me || me.authenticated===false){ clearAuth(); renderSignIn(); return; }
   DASH.me = me;
   const workspaces = me.workspaces||[];
@@ -1213,6 +1235,8 @@ function updateNav(){
   const cta = document.getElementById('zoiCta');
   if(qs('e')){ nr.innerHTML = ''; return; }
   const auth=getAuth();
+  const organizer=qs('manage')==='1'&&!!DASH.me&&!!auth;
+  document.getElementById('ticketAdvanced').hidden=!organizer;document.getElementById('venue-studio').hidden=!organizer;
   // A signed-in organiser does not need a "Start free" call to action, and with
   // the workspace pill beside it the row overflowed the viewport by ~26px.
   if(cta) cta.hidden = !!(auth && DASH.me);
@@ -1223,8 +1247,8 @@ function updateNav(){
       + '<button class="nav-link" data-act="signout">Sign out</button>';
   } else { nr.innerHTML=''; }
 }
-function switchWs(){ closeGen(); localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
-function signOut(){ closeGen(); clearAuth(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null,events:[],types:{},expanded:{},q:'',when:'all',sort:'soon'}; updateNav(); renderSignIn('Signed out.'); }
+function switchWs(){ organizerEpoch++;resetOrganizerTools(); localStorage.removeItem('zoi_ws'); DASH.ws=null; renderWorkspacePicker(DASH.me.workspaces||[]); updateNav(); }
+function signOut(){ closeGen(); clearAuth();organizerChanged(); localStorage.removeItem('zoi_ws'); DASH={me:null,ws:null,events:[],types:{},expanded:{},q:'',when:'all',sort:'soon'}; updateNav(); renderSignIn('Signed out.'); }
 
 /* ---- soft-identity bridge (unify with zoi.city onboarding) ---- */
 function zoiKnownEmail(){try{for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);var m=/^zoi_linked_(.+@.+\..+)$/.exec(k);if(m)return m[1];}var p=JSON.parse(localStorage.getItem('zoi_profile')||'null');if(p&&p.email)return p.email;}catch(e){}return null;}
@@ -1282,7 +1306,7 @@ function renderWorkspacePicker(workspaces){
         + '<div class="arr">→</div></button>').join('')
     + '</div></div></div>';
 }
-function pickWs(id){ closeGen(); localStorage.setItem('zoi_ws', id); DASH.ws=id; updateNav(); loadDashboard(); }
+function pickWs(id){ organizerEpoch++;resetOrganizerTools(); localStorage.setItem('zoi_ws', id); DASH.ws=id; updateNav(); loadDashboard(); }
 
 function renderNoWorkspace(){
   app.innerHTML = '<div class="center-wrap"><div class="auth-card">'
@@ -1294,19 +1318,22 @@ function renderNoWorkspace(){
 
 /* ---- data ---- */
 async function loadDashboard(){
+  const epoch=organizerEpoch;
   app.innerHTML = '<div class="tkx-wrap"><div class="tkx-skel"></div><div class="tkx-skel"></div><div class="tkx-skel"></div></div>';
   let data;
   try{ data = await rpc('tickets_dashboard', {p_workspace:DASH.ws}); }
   catch(err){
+    if(epoch!==organizerEpoch||err.scopeChanged)return;
     app.innerHTML = errBlock(err.transport?'No connection':'Could not load your dashboard',
       err.message+'.', 'loadDashboard');
     return;
   }
+  if(epoch!==organizerEpoch)return;
   DASH.events = (data&&data.events)||[];
   DASH.statsError = null;
   try{ DASH.stats = await rpc('tickets_event_stats',{p_workspace:DASH.ws}); }
   catch(e){ DASH.stats = null; DASH.statsError = e.message; }
-  paintDashboard();
+  if(epoch===organizerEpoch)paintDashboard();
 }
 
 function statTotals(){
@@ -1570,14 +1597,15 @@ function closeDrawer(){
 }
 
 async function openAttendees(evId, name, when, thenFn){
+  const epoch=organizerEpoch;
   ATT = { ev:evId, name:name||'Event', when:when||'', rows:[], error:null, loading:true,
           q:'', status:'all', tier:'all', sort:'name', selected:null, bulk:null };
   openDrawer();
   paintDrawer();
   try{
     const rows = await rpc('tickets_reservations_list',{p_workspace:DASH.ws,p_event:evId});
-    ATT.rows = Array.isArray(rows)?rows:[];
-  }catch(e){ ATT.error = e.message; }
+    if(epoch!==organizerEpoch)return;ATT.rows = Array.isArray(rows)?rows:[];
+  }catch(e){if(epoch!==organizerEpoch||e.scopeChanged)return; ATT.error = e.message; }
   ATT.loading=false;
   paintDrawer();
   if(thenFn) thenFn();
@@ -2145,7 +2173,7 @@ route();
   <nav class="zoi-fnav" aria-label="Footer"><a href="/explore">Discover</a><a href="/community">Community</a><a href="/business">For Business</a><a href="/tickets">Events</a><a href="/shop/">Marketplace</a></nav>
 </div></footer>
 <script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
-<script type="module" src="/assets/tickets/venue-studio.mjs?v=20260930-tables4"></script>
-<script type="module" src="/assets/tickets/seat-booking.mjs?v=20260930"></script>
+
+<script type="module">if(document.documentElement.dataset.ticketRoute==="event")import("/assets/tickets/seat-booking.mjs?v=20260930").catch(()=>{});</script>
 </body>
 </html>

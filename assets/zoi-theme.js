@@ -326,11 +326,17 @@
     var cta = document.getElementById("zoiCta");
     if (!cta) return;
     if (signedIn()) {
-      cta.textContent = "My suite";
+      cta.textContent = "My workspace";
       cta.setAttribute("href", "/social");
+    } else {
+      cta.textContent = "Join Zoi";
+      cta.setAttribute("href", "/social?signin=1");
     }
   }
 
+  window.addEventListener('zoi:auth-change',reflectSession);
+  window.addEventListener('focus',reflectSession);
+  window.addEventListener('storage',function(event){if(event.key==='zoi_auth'||event.key===null)reflectSession();});
 
   function mobileNavigation() {
     var header = document.querySelector('.zoi-header');

@@ -238,10 +238,12 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 .pulse-link{margin-top:auto;color:var(--acc);font-size:12.5px;font-weight:700}
 @media(max-width:820px){.pulse-grid{grid-template-columns:1fr 1fr}.pulse-card:first-child{grid-column:1/-1}.pulse-head{align-items:flex-start;flex-direction:column}}
 @media(max-width:520px){.pulse-grid{grid-template-columns:1fr}.pulse-card:first-child{grid-column:auto}}
+
+dialog.wl-back{border:0;margin:0;padding:24px;width:100%;max-width:none;height:100%;max-height:none}dialog.wl-back::backdrop{background:rgba(0,0,0,.5)}
 </style>
 <script>(function(){document.documentElement.setAttribute("data-theme",localStorage.getItem("zoi_theme")||"light");})()</script>
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"Organization","name":"Zoi","url":"https://www.zoi.city","logo":"https://www.zoi.city/assets/icons/icon-512.png","description":"Greek places, people and communities across Greece, Cyprus and the diaspora.","sameAs":["https://buygreek.shop"]}
+{"@context":"https://schema.org","@type":"Organization","name":"Zoi","url":"https://www.zoi.city","logo":"https://www.zoi.city/assets/brand/zoi-logo.png","description":"Greek places, people and communities across Greece, Cyprus and the diaspora.","sameAs":["https://buygreek.shop"]}
 </script>
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
@@ -249,62 +251,75 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 {"@type":"Question","name":"Is Zoi free?","acceptedAnswer":{"@type":"Answer","text":"Signing up and starting a business profile are free. Ownership approval and individual service setup may be needed before some tools can be used."}},
 {"@type":"Question","name":"How do I claim my business?","acceptedAnswer":{"@type":"Answer","text":"Find your business in the Zoi directory, tap claim, and verify ownership. Once approved, the page is yours to run — description, hours, links and photos."}},
 {"@type":"Question","name":"What is BuyGreek.Shop?","acceptedAnswer":{"@type":"Answer","text":"BuyGreek.Shop is the Greek marketplace — a multi-vendor commerce platform where Greek businesses sell products, tickets and services to the diaspora worldwide."}},
-{"@type":"Question","name":"Who is Zoi for?","acceptedAnswer":{"@type":"Answer","text":"Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places."}}
+{"@type":"Question","name":"Who is Zoi for?","acceptedAnswer":{"@type":"Answer","text":"People, communities and businesses — everyone with a connection to Greece, Cyprus or the diaspora, and anyone curious to explore."}}
 ]}
 </script>
 <link rel="manifest" href="/manifest.webmanifest">
 
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Zoi">
-<link rel="stylesheet" href="/assets/home/arrival.css?v=20260930-aegean">
+<link rel="stylesheet" href="/assets/home/public-arrival.css?v=20261003-public-entry">
 <link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png?v=blue-olive"><link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/favicon-16.png?v=blue-olive"><link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=blue-olive"><link rel="preload" as="image" href="/assets/brand/zoi-logo.png"></head>
 <body>
+<a class="za-skip" href="#za-main">Skip to content</a>
 <div class="glow"></div>
 <header class="zoi-header"><div class="wrap zoi-bar">
   <a class="zoi-brand" href="/" aria-label="Zoi home" data-zoi-identity="08db50bee5caf18a878cb8468ced301d74c92bffd7b308678fb95e4f75514ff1"><img src="/assets/brand/zoi-logo.png" alt="Zoi" width="35" height="48" style="display:block;width:auto;height:48px;object-fit:contain"><b>Zoi</b></a>
   <nav class="zoi-nav" aria-label="Zoi"><a href="/explore">Discover</a><a href="/community">Community</a><a href="/tickets">Events</a><a href="/shop/">Marketplace</a><a href="/business">For Business</a></nav>
-  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme — dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social?signin=1">Join Zoi</a></div>
 </div></header>
 
-<header class="hero arrival" aria-labelledby="arrival-title">
- <div class="wrap arrival-grid">
-  <div class="arrival-copy">
-   <p class="arrival-eyebrow"><span></span> Greece. Cyprus. Everywhere we belong.</p>
-   <h1 id="arrival-title">A little Greece.<br><span class="serif">Your whole world.</span></h1>
-   <p class="arrival-lead">The people, places and voices that make us feel at home. Find your next table, follow the music, and build something of your own.</p>
-   <form class="arrival-search" action="/explore/" method="get" role="search">
-    <label class="arrival-sr" for="arrival-query">Search places, people and communities</label>
+<main id="za-main" tabindex="-1">
+<header class="za-arrival" aria-labelledby="arrival-title">
+ <div class="wrap za-grid">
+  <div class="za-copy">
+   <p class="za-kicker"><span lang="el">Ζωή</span> Life. Better, together.</p>
+   <h1 id="arrival-title">Your Greek world.<br><em>Make yourself<br>at home.</em></h1>
+   <p class="za-lead">For people, communities and businesses. For everyone with a little Greece in their heart — wherever you call home.</p>
+   <form class="za-search" action="/explore/" method="get" role="search">
+    <label class="za-sr" for="arrival-query">Search places, people and communities</label>
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg>
-    <input id="arrival-query" name="q" placeholder="Where will you find your Greece?" maxlength="160" type="search">
-    <button type="submit" aria-label="Search the Greek world">Explore <span aria-hidden="true">↗</span></button>
+    <input id="arrival-query" name="q" placeholder="A place, a person, a little inspiration…" maxlength="160" type="search">
+    <button type="submit">Discover <span aria-hidden="true">↗</span></button>
    </form>
-   <div class="arrival-actions"><a href="/community/" class="arrival-primary">Meet your people <span aria-hidden="true">→</span></a><a href="/social/#bizpage" class="arrival-owner">Make a home for your business <span aria-hidden="true">↗</span></a></div>
-   <div class="arrival-note"><span lang="el">Παρέα.</span> Better, together.</div>
-   <div class="htag" id="nameday-chip" style="display:none"><span class="d"></span><span id="nameday-txt"></span></div>
+   <p class="za-open">Take a look around. No account needed to browse.</p>
+   <div class="za-copy-links"><a href="/community/">Meet your people <span aria-hidden="true">→</span></a><a href="#za-paths">Find your way in <span aria-hidden="true">↓</span></a></div>
   </div>
-  <div class="arrival-scenes" aria-label="People and places to discover on Zoi">
-   <a class="arrival-scene arrival-table" href="/business/12-islands-greek-taverna-stirling">
-    <img src="https://d1w7312wesee68.cloudfront.net/Qa9Y-vwj53SZMZa8L9griBTvdlPh3GmxK6g0LKHPZRw/ext%3Awebp/quality%3A85/plain/s3%3A//toast-sites-resources-prod/restaurantImages/cfab5ebd-16f3-4fb8-bafa-bc430c7ed244/12Islands0049.jpg" alt="Greek salad at Twelve Islands Greek Taverna" width="3000" height="2000" fetchpriority="high">
-    <span class="arrival-scene-top">AT THE TABLE <span aria-hidden="true">↗</span></span>
-    <span class="arrival-scene-caption"><small>Stirling, New Jersey</small><strong>A taste<br>of home.</strong><span>Twelve Islands Greek Taverna</span></span>
+  <div class="za-moment">
+   <a class="za-photo" href="/business/signatureproductions-6aa61d" aria-label="Explore Signature Productions and its past events">
+    <img src="/assets/events/signature/walls/concert-archive.jpg" alt="A singer and his band on stage at a past Signature Productions concert, surrounded by red lights" width="3000" height="1996" fetchpriority="high" decoding="async">
+    <span class="za-photo-label">THE NIGHTS THAT BRING US TOGETHER <span aria-hidden="true">↗</span></span>
+    <span class="za-photo-caption"><strong>A familiar song.<br>A whole room of friends.</strong><span>Signature Productions · previous event</span></span>
    </a>
-   <a class="arrival-scene arrival-artist" href="/artist/thanos-petrelis-athens-78ee3f">
-    <img src="https://i.scdn.co/image/ab6761610000e5eb481a334c11aa611a96841bc6" alt="Thanos Petrelis, artist portrait" width="640" height="640">
-    <span class="arrival-scene-top">THE SOUND OF HOME <span aria-hidden="true">↗</span></span>
-    <span class="arrival-scene-caption"><strong>Thanos Petrelis</strong><span>Music, moments & appearances</span></span>
-   </a>
-   <a class="arrival-scene arrival-parish" href="/church/st-nicholas-greek-orthodox-cathedral-toronto">
-    <img src="https://www.saintnicholasgochurch.org/wp-content/uploads/2026/02/Saint-Nicholas-Web-3.jpg" alt="Saint Nicholas Cathedral, Toronto" width="1920" height="1080" loading="lazy">
-    <span class="arrival-scene-caption"><small>Faith & belonging</small><strong>Our place. Our people.</strong><span>Saint Nicholas · Toronto <span aria-hidden="true">↗</span></span></span>
-   </a>
-   <span class="arrival-stamp" aria-hidden="true">ΖΩΗ<br><small>A WORLD TO BELONG TO</small></span>
+   <div class="za-glass"><span lang="el">Παρέα</span><p>Your people.<br>Your kind of place.</p><a href="/tickets/">Find your next gathering <span aria-hidden="true">→</span></a></div>
   </div>
  </div>
- <div class="wrap arrival-discover"><div class="arrival-paths" aria-label="Explore your Greek world"><a href="/categories/restaurants"><span>01</span> Eat & gather <b aria-hidden="true">↗</b></a><a href="/community/#music"><span>02</span> Music & culture <b aria-hidden="true">↗</b></a><a href="/categories/orthodox-churches"><span>03</span> Faith & community <b aria-hidden="true">↗</b></a><a href="/explore/map/"><span>04</span> Around the world <b aria-hidden="true">↗</b></a></div>
- <div class="arrival-reach"><span>Across the Greek world</span><span><b id="st-listings">—</b> places</span><span><b id="st-cities">—</b> cities</span><span><b id="st-countries">—</b> countries</span></div></div>
+ <nav class="wrap za-frontdoors" aria-label="Where to begin"><a href="/explore/"><span>01</span><strong>Discover</strong><small>Places & people</small><b aria-hidden="true">↗</b></a><a href="/community/"><span>02</span><strong>Community</strong><small>Music & shared stories</small><b aria-hidden="true">↗</b></a><a href="/tickets/"><span>03</span><strong>Events</strong><small>Gather your parea</small><b aria-hidden="true">↗</b></a><a href="/business/"><span>04</span><strong>For business</strong><small>Make something of your own</small><b aria-hidden="true">↗</b></a></nav>
 </header>
 
+<section class="za-browse wrap" aria-labelledby="za-browse-title">
+ <div class="za-section-head"><div><p class="za-kicker">Follow what feels like you</p><h2 id="za-browse-title">There’s more than one way to belong.</h2></div><div class="za-rail-controls" hidden><button type="button" data-za-scroll="-1" aria-label="Previous interests">←</button><button type="button" data-za-scroll="1" aria-label="Next interests">→</button></div></div>
+ <div class="za-rail" tabindex="0" aria-label="Browse interests; use arrow keys or swipe">
+  <a class="za-interest za-food" href="/c/restaurants"><span aria-hidden="true">01 / AT THE TABLE</span><h3>Good food.<br>Even better company.</h3><p>Restaurants, tavernas and places to gather.</p><strong>Find your next table <b aria-hidden="true">↗</b></strong></a>
+  <a class="za-interest za-music" href="/community/#music"><span aria-hidden="true">02 / TURN IT UP</span><h3>The voices<br>you grew up with.</h3><p>Artists, recordings and music across the Greek world.</p><strong>Follow the music <b aria-hidden="true">↗</b></strong></a>
+  <a class="za-interest za-community" href="/c/hellenic-associations"><span aria-hidden="true">03 / YOUR PEOPLE</span><h3>A little closer<br>to each other.</h3><p>Associations, local communities and shared traditions.</p><strong>Meet your community <b aria-hidden="true">↗</b></strong></a>
+  <a class="za-interest za-world" href="/explore/map/"><span aria-hidden="true">04 / EVERYWHERE</span><h3>A Greek world<br>without borders.</h3><p>Explore places around the world, one neighbourhood at a time.</p><strong>Open the map <b aria-hidden="true">↗</b></strong></a>
+  <a class="za-interest za-faith" href="/c/orthodox-churches"><span aria-hidden="true">05 / ROOTED</span><h3>A place<br>to come together.</h3><p>Parishes, services and communities of faith.</p><strong>Find a parish <b aria-hidden="true">↗</b></strong></a>
+  <a class="za-interest za-learn" href="/c/greek-schools"><span aria-hidden="true">06 / KEEP IT GOING</span><h3>Language. Heritage.<br>The next generation.</h3><p>Greek schools and the people keeping our language alive.</p><strong>Explore schools <b aria-hidden="true">↗</b></strong></a>
+ </div><p class="za-rail-note">Explore at your own pace. Swipe, use the arrows, or choose an interest.</p>
+</section>
+
+<section class="za-paths wrap" id="za-paths" aria-labelledby="za-path-title">
+ <div class="za-section-head"><div><p class="za-kicker">A place for you, too</p><h2 id="za-path-title">Come for a moment.<br>Build a connection.</h2></div><p>You can browse first. When you’re ready, find the part of Zoi that fits your day.</p></div>
+ <div class="za-choices" role="group" aria-label="Choose a starting point"><button type="button" aria-pressed="true" data-za-path="people" aria-controls="za-people">I’m here to explore</button><button type="button" aria-pressed="false" data-za-path="business" aria-controls="za-business">I run a business or community</button></div>
+ <div class="za-path-panel" id="za-people"><div><h3>Make room for your people.</h3><p>Find a place to eat, follow a familiar voice, or get your parea ready for a night out. There’s no need to own a business to be part of Zoi.</p><div class="za-panel-links"><a class="za-primary" href="/explore/">Keep exploring <span aria-hidden="true">→</span></a><a href="/social?signin=1">Join Zoi <span aria-hidden="true">↗</span></a></div></div><details><summary>What changes when I join?</summary><p>Your account gives you a place to participate and use the tools available to you. Public browsing stays open. Business and organizer tools require the right workspace and permissions.</p><a href="/community/">See the community <span aria-hidden="true">→</span></a></details></div>
+ <div class="za-path-panel" id="za-business"><div><h3>Bring your world to Zoi.</h3><p>Start with your existing listing, or introduce something new. Then manage your page and the work behind it from the same account.</p><div class="za-panel-links"><a class="za-primary" href="/business/">Explore business tools <span aria-hidden="true">→</span></a><a href="/explore/">Find my listing <span aria-hidden="true">↗</span></a></div></div><details><summary>Already part of Zoi?</summary><p>Sign in to your workspace to manage your approved page, company records, content and event tools. Access depends on your role; external services require their own supported setup.</p><a href="/social/bizpage">Open my page editor <span aria-hidden="true">→</span></a></details></div>
+ <p class="za-path-status za-sr" role="status"></p>
+</section>
+
+<details class="za-extra wrap" id="za-daily"><summary><span><small>WHEN YOU WANT A LITTLE MORE</small>Today across the Greek world</span><b aria-hidden="true">+</b></summary><div class="za-extra-content">
 <section class="pulse-section"><div class="wrap">
+  <div hidden><b id="st-listings">—</b><b id="st-cities">—</b><b id="st-countries">—</b><span id="nameday-chip"><span id="nameday-txt"></span></span></div>
   <div class="pulse-head">
     <div><div class="mono">Today in the Greek world</div><h2>What’s alive around us.</h2></div>
     <p>This is the part of Zoi that changes. Come back to see the voices, namedays, and gatherings moving through the diaspora.</p>
@@ -470,15 +485,15 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
         <div>
           <span style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Greek Gastronomy &amp; Table Culture</span>
-          <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0">Authentic Mezedes, Bakeries &amp; In-Seat Ordering</h3>
+          <h3 style="font-family:'Fraunces';font-size:24px;color:var(--tx);margin:4px 0">Tavernas, bakeries &amp; a place at the table</h3>
         </div>
         <a class="btn btn-primary btn-sm" href="/c/restaurants">Explore Greek Restaurants &rarr;</a>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">
         <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
           <div style="font-size:24px;margin-bottom:4px">🐙</div>
-          <b style="color:var(--tx);font-size:15px;display:block">Taverna In-Seat Ordering</b>
-          <p style="font-size:12.5px;color:var(--mut);margin:4px 0 10px">Scan your table QR code, browse the grill menu, and split the bill 3 ways with Apple Pay.</p>
+          <b style="color:var(--tx);font-size:15px;display:block">Find your next taverna</b>
+          <p style="font-size:12.5px;color:var(--mut);margin:4px 0 10px">Find a restaurant, check its published menu and contact details, and choose the next place to gather.</p>
           <a href="/tickets" style="color:var(--acc);font-weight:700;font-size:12px">Open live Tickets &rarr;</a>
         </div>
         <div style="background:var(--bg);padding:16px;border-radius:12px;border:1px solid var(--line)">
@@ -574,9 +589,9 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 <section style="padding:clamp(40px,6vw,70px) 0"><div class="wrap">
   <div class="mono" style="margin-bottom:26px">How it works</div>
   <div class="zoi-steps" aria-label="How it works">
-    <div class="zoi-step"><div class="mono">01</div><h3>Claim your place</h3><p>Your business is already on the map. Claim it and it becomes yours to run.</p></div>
-    <div class="zoi-step"><div class="mono">02</div><h3>Plug in the tools</h3><p>Publishing, tickets, email, AI — one account, one desk, everything connected.</p></div>
-    <div class="zoi-step"><div class="mono">03</div><h3>Grow with the network</h3><p>Every claimed page, sale and story feeds the network — and the network feeds you back.</p></div>
+    <div class="zoi-step"><div class="mono">01</div><h3>Claim your place</h3><p>Look for your listing, then follow the ownership process. If it is missing, introduce your business.</p></div>
+    <div class="zoi-step"><div class="mono">02</div><h3>Plug in the tools</h3><p>Open the tools available in your workspace. External services require a supported provider connection.</p></div>
+    <div class="zoi-step"><div class="mono">03</div><h3>Grow with the network</h3><p>Keep your information useful and share the next thing your community can take part in.</p></div>
   </div>
 </div></section>
 
@@ -586,21 +601,21 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
       <div class="mono">01 — the toolkit</div>
       <h2>Run your business like it's <span class="serif">2030.</span></h2>
     </div>
-    <p>Publishing, ticketing, commerce, email and AI — the full stack a modern Greek business needs, in one account. Free to start.</p>
+    <p>Explore page management, event planning and the tools available in your workspace. Provider connections and permissions vary by tool.</p>
   </div>
   <div class="tgrid">
-    <a class="tool" href="/social">
+    <a class="tool" href="/community/">
       <div class="trow"><span class="tno">01</span><span class="tst live">Live</span></div>
       <div class="ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H5.5L4 18z"/><path d="M8 9.5h8M8 12.5h5"/></svg></div>
       <h3>Zoi Social</h3>
-      <p>Plan campaigns, write drafts and manage your Zoi community posts. External publishing requires a supported connected account.</p>
+      <p>Browse community stories and conversations. Sign in when you want to participate.</p>
       <span class="go">Open Social <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool" href="/tickets">
       <div class="trow"><span class="tno">02</span><span class="tst live">Live</span></div>
       <div class="ic"><svg viewBox="0 0 24 24"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4 2 2 0 000-4z"/><path d="M14 6v12"/></svg></div>
       <h3>Zoi Tickets</h3>
-      <p>Create an event page, share it with your community, and manage reservations in one place.</p>
+      <p>Explore events and group planning. Organizers can use the ticket and allocation tools available for their configured event.</p>
       <span class="go">Open Tickets <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
     </a>
     <a class="tool soon" onclick="openWL('storefront');return false" href="#">
@@ -637,7 +652,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
 <section id="spotlight"><div class="wrap">
   <div class="zoi-section-head">
     <div><div class="mono">Explore the network</div><h2>Start with what matters to you.</h2></div>
-    <p>Every destination below is a live directory built from published records. No paid ranking or invented recommendation is mixed in.</p>
+    <p>Every destination below is a live directory built from published records. Choose a category to browse its published records.</p>
   </div>
   <div class="dcats">
     <a class="dcat" href="/c/media-creators">Creators &amp; media</a>
@@ -669,7 +684,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <div class="tool" style="min-height:170px;cursor:default">
       <span class="tno">Amplify</span>
       <h3 style="margin-top:16px">The network promotes you</h3>
-      <p>Your products surface on Zoi, your story runs on Us Greeks Can, your posts ship through Zoi Social.</p>
+      <p>Share useful updates and introduce your business through supported tools. Listing a website does not connect a sales or publishing provider.</p>
     </div>
     <a class="tool" style="min-height:170px" onclick="openWL('storefront');return false" href="#">
       <span class="tno">Join</span>
@@ -710,9 +725,9 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <p>Namedays, feasts, festivals and the people behind them — woven into every tool, not bolted on.</p>
   </div>
   <div class="cgrid">
-    <a class="cc f" href="/social">
+    <a class="cc f" href="/community/">
       <div class="mono" style="color:var(--acc)">Today — nameday</div>
-      <h3>Today's nameday is tomorrow's best post.</h3>
+      <h3>A little reason to celebrate someone.</h3>
       <p>Discover the names and traditions we celebrate. Prepare a personal wish and choose how to share it.</p>
     </a>
     <a class="cc" href="/c/media-creators">
@@ -735,20 +750,20 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   <div class="tgrid" style="grid-template-columns:repeat(auto-fit,minmax(260px,1fr))">
     <div class="tool" style="cursor:default">
       <div class="trow"><span class="tno">Playbook 01</span><span class="tst live">Taverna &amp; Bakery</span></div>
-      <h3>Claim &amp; Monetize Your Spot</h3>
-      <p>Verify your listing, add your digital menu, activate in-seat QR table ordering with split-billing, and accept reservations.</p>
+      <h3>Make your page useful to guests</h3>
+      <p>Find and claim your listing, keep its published details accurate, and show guests how to contact your business.</p>
       <a class="go" href="/social" style="color:var(--acc)">Launch Business Desk &rarr;</a>
     </div>
     <div class="tool" style="cursor:default">
       <div class="trow"><span class="tno">Playbook 02</span><span class="tst live">Festivals &amp; Events</span></div>
       <h3>Bring your next gathering together</h3>
-      <p>Upload hall blueprints, design 3D sponsor table plaques, project logos on stage LED walls, and scan tickets with offline Door mode.</p>
+      <p>Explore published gatherings and available room plans. Organizer workflows depend on the current event configuration and your permissions.</p>
       <a class="go" href="/tickets" style="color:var(--acc)">Open Tickets &rarr;</a>
     </div>
     <div class="tool" style="cursor:default">
       <div class="trow"><span class="tno">Playbook 03</span><span class="tst live">Weddings &amp; Baptisms</span></div>
       <h3>Private Event Invitation Suite</h3>
-      <p>Private PIN access, RSVP with multi-guest entrée selections (Lamb, Sea Bass, Gemista), family table seating, and digital Shakoula gifts.</p>
+      <p>Plan your group and review how to share an invitation. A private plan is not a booking; confirmation comes from the organizer’s supported workflow.</p>
       <a class="go" href="/tickets" style="color:var(--acc)">Explore Private Events &rarr;</a>
     </div>
     <div class="tool" style="cursor:default">
@@ -760,6 +775,7 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
   </div>
 </div></section>
 
+</div></details>
 <section id="faq"><div class="wrap">
   <div class="zoi-section-head">
     <div>
@@ -772,65 +788,59 @@ footer{border-top:1px solid var(--line);padding:56px 0 34px}
     <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Is it free?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Signing up and starting a business profile are free. Ownership approval and individual service setup may be needed before some tools can be used.</p></details>
     <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">How do I claim my business?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Find it in the directory, tap claim, verify ownership. Once approved, the page is yours — description, hours, links, photos.</p></details>
     <details style="border-top:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">What is BuyGreek.Shop?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">The Greek marketplace — multi-vendor commerce where Greek businesses sell products, tickets and services to the diaspora worldwide.</p></details>
-    <details style="border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Who is it for?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">Greek businesses, professionals, creators, organizers and churches — and every member of the diaspora looking for their people and places.</p></details>
+    <details style="border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:18px 0"><summary style="font-weight:600;font-size:16px;cursor:pointer">Who is it for?</summary><p style="color:var(--mut);font-size:14.5px;margin-top:10px;max-width:60ch">People, communities and businesses — everyone with a connection to Greece, Cyprus or the diaspora, and anyone curious to explore.</p></details>
   </div>
 </div></section>
 
 <section class="cta-final"><div class="wrap">
-  <div class="mono" style="margin-bottom:22px">Free · no card · 60 seconds</div>
-  <h2>Your business belongs at the center of the <span class="serif">Greek world.</span></h2>
-  <a class="btn p" href="/social" style="padding:15px 30px;font-size:15.5px">Start free <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  <div class="mono" style="margin-bottom:22px">People · communities · businesses</div>
+  <h2>You belong in the <span class="serif">Greek world.</span></h2>
+  <a class="btn p" href="/social?signin=1" style="padding:15px 30px;font-size:15.5px">Join Zoi <svg viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
 </div></section>
 
+</main>
 <footer><div class="wrap">
   <div class="fg">
     <div class="fb"><b><span style="color:var(--gold);font-family:Fraunces">Ζ</span> Zoi</b><p>The platform of the Greek diaspora — software, marketplace and media in one network.</p></div>
-    <div class="fc"><h4>Business</h4><a href="/social">Publish &amp; schedule</a><a href="/tickets">Tickets</a><a onclick="openWL('storefront')" style="cursor:pointer">Storefront</a><a onclick="openWL('business_page')" style="cursor:pointer">Business Page</a></div>
+    <div class="fc"><h4>Business</h4><a href="/business/">For business</a><a href="/community/">Zoi Social</a><a href="/social">My workspace</a><a href="/tickets">Tickets</a><a href="#" onclick="openWL('storefront');return false">Storefront</a><a href="/social/bizpage">Page editor</a></div>
     <div class="fc"><h4>Directory</h4><a href="/explore">Browse the directory</a><a href="/c/festivals">Events</a><a href="/c/orthodox-churches">Churches</a><a href="/explore">Claim your business</a></div>
-    <div class="fc"><h4>Ecosystem</h4><a href="/">Zoi</a><a href="https://buygreek.shop">BuyGreek.Shop</a><a href="/explore">Us Greeks Can</a><a href="/social">Sign in</a></div>
+    <div class="fc"><h4>Ecosystem</h4><a href="/">Zoi</a><a href="https://buygreek.shop">BuyGreek.Shop</a><a href="/explore">Us Greeks Can</a><a href="/social?signin=1">Sign in</a></div>
   </div>
   <div class="fbot"><span>© 2026 Zoi · zoi.city</span><span class="mono" style="font-size:11px">Zoi · BuyGreek.Shop · Us Greeks Can</span></div>
 </div></footer>
 
-<div class="wl-back" id="wlback" onclick="if(event.target===this)closeWL()">
+<dialog class="wl-back" aria-labelledby="wl-title" id="wlback" onclick="if(event.target===this)closeWL()">
   <div class="wl">
     <div class="mono" style="margin-bottom:12px" id="wl-tag">Early access</div>
     <h3 id="wl-title">Zoi Storefront</h3>
-    <p id="wl-sub">Be first in line when it ships. We'll email you once — no spam, ever.</p>
-    <input type="email" id="wl-email" placeholder="name@business.com"/>
+    <p id="wl-sub">Leave your email to request access.</p>
+    <input type="email" id="wl-email" placeholder="you@example.com" autocomplete="email" aria-label="Email for early access"/>
     <div class="msg" id="wl-msg"></div>
     <div class="row">
       <button class="btn g" onclick="closeWL()">Cancel</button>
       <button class="btn p" id="wl-btn" onclick="joinWL()">Request access</button>
     </div>
   </div>
-</div>
+</dialog>
 
 <!-- FEAST DEEP DIVE MODAL -->
-<div class="wl-back" id="feastModal" onclick="if(event.target===this)closeFeastModal()">
+<dialog class="wl-back" aria-labelledby="fm-title" id="feastModal" onclick="if(event.target===this)closeFeastModal()">
   <div class="wl" style="max-width:580px;background:var(--bg2);border:1px solid var(--line2)">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
       <div class="mono" style="color:var(--gold)">Holy Tradition &amp; Synaxarion</div>
       <button class="btn g" style="padding:4px 10px;min-height:28px" onclick="closeFeastModal()">✕</button>
     </div>
-    <h3 id="fm-title" style="font-family:'Fraunces';font-size:24px;margin-bottom:6px;color:var(--tx)">Feast of the Holy Cross &amp; Orthodox Commemoration</h3>
+    <h3 id="fm-title" style="font-family:'Fraunces';font-size:24px;margin-bottom:6px;color:var(--tx)">Today’s Orthodox calendar</h3>
     <div style="display:inline-block;padding:3px 10px;background:rgba(212,175,95,.15);border:1px solid rgba(212,175,95,.3);border-radius:20px;font-size:11px;font-weight:700;color:var(--gold);margin-bottom:12px">
-      ⛪ Major Orthodox Commemoration · Paschalion Synaxarion
+      Orthodox calendar reference
     </div>
-    <p id="fm-bio" style="font-size:13.5px;color:var(--tx);line-height:1.6;margin-bottom:14px">
-      In the Eastern Orthodox tradition, today is kept with prayer and thanksgiving across Greek parishes and communities worldwide. We remember the Holy Fathers who defended the faith and tended to the needy with tireless love.
-    </p>
-    <div style="background:var(--bg);border-left:3px solid var(--gold);padding:12px;border-radius:8px;font-style:italic;font-size:13px;color:var(--tx);margin-bottom:14px">
-      "The truth of things revealed thee to thy flock as a rule of faith, a model of meekness, and a teacher of temperance. Wherefore thou hast acquired the heights through humility, and the riches through poverty."
-    </div>
+    <p id="fm-bio" style="font-size:14px;line-height:1.65;color:var(--tx)">Open the calendar reference for today. Parish service times are published by each parish.</p>
     <div style="display:flex;gap:10px;margin-top:16px">
       <button class="btn g" style="flex:1" onclick="shareRitual('whatsapp')">💬 Share Blessing</button>
       <a class="btn p" style="flex:1;text-align:center" href="/social">Draft Nameday Post &rarr;</a>
     </div>
   </div>
-</div>
-
-<script src="/assets/suite/_orthocal.js"></script>
+</dialog>
 <script>
 const BASE='https://csebihpaychdkanjjsmz.supabase.co';
 const PUB='sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -839,10 +849,9 @@ const WL_NAMES={storefront:'Zoi Storefront',business_page:'Zoi Business Page',em
 function openWL(p){ WLP=p;
   document.getElementById('wl-title').textContent=WL_NAMES[p]||'Early access';
   document.getElementById('wl-msg').textContent=''; document.getElementById('wl-msg').className='msg';
-  document.getElementById('wlback').classList.add('open');
-  setTimeout(()=>document.getElementById('wl-email').focus(),50);
+  const modal=document.getElementById('wlback');modal.classList.add('open');modal.showModal();document.getElementById('wl-email').focus();
 }
-function closeWL(){ document.getElementById('wlback').classList.remove('open'); }
+function closeWL(){const modal=document.getElementById('wlback');modal.classList.remove('open');if(modal.open)modal.close();}
 
 /* ---- Daily Diaspora Ritual Controller ---- */
 function setRitualTab(tab){
@@ -858,8 +867,11 @@ function setRitualTab(tab){
   });
 }
 
-function openFeastModal(){ document.getElementById('feastModal').classList.add('open'); }
-function closeFeastModal(){ document.getElementById('feastModal').classList.remove('open'); }
+async function openFeastModal(){await loadCalendarReference();renderHomeRitual();const modal=document.getElementById('feastModal');modal.classList.add('open');modal.showModal();}
+function closeFeastModal(){const modal=document.getElementById('feastModal');modal.classList.remove('open');if(modal.open)modal.close();}
+['wlback','feastModal'].forEach(id=>{const modal=document.getElementById(id);modal.addEventListener('close',()=>modal.classList.remove('open'));modal.addEventListener('cancel',()=>modal.classList.remove('open'));});
+let calendarReferenceLoading,calendarReferenceAttempt=0;
+function loadCalendarReference(){if(window.ZoiOrthocal)return Promise.resolve();if(calendarReferenceLoading)return calendarReferenceLoading;calendarReferenceLoading=new Promise(resolve=>{const script=document.createElement('script');script.src='/assets/suite/_orthocal.js?attempt='+ ++calendarReferenceAttempt;let settled=false;const finish=failed=>{if(settled)return;settled=true;clearTimeout(deadline);if(failed){script.remove();calendarReferenceLoading=null;}resolve();};const deadline=setTimeout(()=>finish(true),6000);script.onload=()=>finish(false);script.onerror=()=>finish(true);document.head.appendChild(script);});return calendarReferenceLoading;}
 
 function togglePrefPanel(){
   const pnl = document.getElementById('userPrefPanel');
@@ -904,7 +916,7 @@ function renderHomeRitual(){
   if(gloss) gloss.textContent=HOME_WORD[2];
 
   const O=window.ZoiOrthocal;
-  if(!O) return;
+  if(!O){document.getElementById('brief-feast-title').textContent='Calendar unavailable';document.getElementById('fasting-badge').textContent='Reference unavailable';document.getElementById('brief-feast-desc').textContent='Open the calendar again to retry, or check your parish’s published schedule.';document.getElementById('fm-title').textContent='Calendar unavailable';document.getElementById('fm-bio').textContent='The calendar reference could not load. Check your parish’s published schedule for local services.';return;}
   const info=O.dayInfo(iso);
   const title=document.getElementById('brief-feast-title');
   const names=document.getElementById('brief-nameday-names');
@@ -912,6 +924,8 @@ function renderHomeRitual(){
   const badge=document.getElementById('fasting-badge');
   const feast=info.feasts&&info.feasts.length?info.feasts.map(f=>f.name).join(' · '):'';
   const next=(O.upcomingFeasts(iso,60)||[])[0];
+  document.getElementById('fm-title').textContent=feast||'Today’s Orthodox calendar';
+  document.getElementById('fm-bio').textContent=(feast?'Commemorations in Zoi’s calendar: '+feast+'.':'No feast is recorded in this calendar for today.')+' Calendar references are not parish service times. Check your parish’s published schedule for local services.';
   document.getElementById('detail-feast-title').textContent=feast||'Today’s Orthodox calendar';
   document.getElementById('detail-feast-bio').textContent=feast?'Commemorations in Zoi’s calendar: '+feast+'.':'No feast is recorded in Zoi’s calendar for this date.';
   document.getElementById('detail-fast-guidance').textContent=info.fast?info.fast.label:'No fast is recorded in this calendar for today.';
@@ -925,9 +939,10 @@ function renderHomeRitual(){
 }
 async function loadHomeWeather(){
   const cities=[['home-wx-athens',37.98,23.73],['home-wx-thess',40.64,22.94],['home-wx-chania',35.51,24.02],['home-wx-santorini',36.39,25.46]];
+  const controller=new AbortController();const deadline=setTimeout(()=>controller.abort(),7000);
   try{
     const url='https://api.open-meteo.com/v1/forecast?latitude='+cities.map(c=>c[1]).join(',')+'&longitude='+cities.map(c=>c[2]).join(',')+'&current=temperature_2m&timezone=Europe%2FAthens';
-    const r=await fetch(url); if(!r.ok) throw new Error('weather');
+    const r=await fetch(url,{signal:controller.signal}); if(!r.ok) throw new Error('weather');
     const rows=await r.json();
     (Array.isArray(rows)?rows:[rows]).forEach((row,i)=>{
       const t=row&&row.current&&row.current.temperature_2m;
@@ -935,7 +950,7 @@ async function loadHomeWeather(){
     });
   }catch(e){
     cities.forEach(c=>{const el=document.getElementById(c[0]);if(el)el.textContent='Unavailable';});
-  }
+  }finally{clearTimeout(deadline);}
 }
 function playWordAudio(){
   if('speechSynthesis' in window){
@@ -970,16 +985,18 @@ function shareRitual(channel){
   }
 }
 
+async function readHomeRPC(fn,body){const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),7000);try{const response=await fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{apikey:PUB,Authorization:'Bearer '+PUB,'Content-Type':'application/json'},body:JSON.stringify(body||{}),signal:controller.signal});if(!response.ok)throw new Error('unavailable');return await response.json();}finally{clearTimeout(timer);}}
 async function loadCommunityPulse(){
   const root=document.getElementById('community-pulse');
   if(!root) return;
-  const call=(fn,body)=>fetch(BASE+'/rest/v1/rpc/'+fn,{method:'POST',headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},body:JSON.stringify(body||{})}).then(r=>r.ok?r.json():null);
+  const call=readHomeRPC;
   try{
-    const [feed,namedays,events]=await Promise.all([
+    const results=await Promise.allSettled([
       call('feed_list',{p_limit:3,p_offset:0}),
       call('zoi_namedays_today',{}),
       call('dir_browse',{p_type:'event',p_city:null,p_limit:3,p_offset:0})
     ]);
+    const [feed,namedays,events]=results.map(result=>result.status==='fulfilled'?result.value:null);
     const posts=Array.isArray(feed)?feed:[];
     const names=(namedays&&(namedays.names||namedays.namedays))||[];
     const nameList=Array.isArray(names)?names:(typeof names==='string'?names.split(/[,·]/).map(s=>s.trim()).filter(Boolean):[]);
@@ -987,13 +1004,16 @@ async function loadCommunityPulse(){
     const cards=root.querySelectorAll('.pulse-card');
     cards[0].classList.toggle('live',posts.length>0);
     cards[0].innerHTML='<div class="pulse-label">Community now</div>'+
-      (posts.length?'<h3>'+esc(posts.length===1?'One new voice':'New voices today')+'</h3><div class="pulse-list">'+posts.map(p=>'<div class="pulse-item"><span class="pulse-dot"></span><span>'+esc(p.body||p.author||'A new post')+'<small>'+esc(p.author||'Community member')+'</small></span></div>').join('')+'</div>':'<h3>The square is waiting.</h3><p>No community posts yet today. Be the first voice in the diaspora.</p>')+
+      (posts.length?'<h3>'+esc(posts.length===1?'One new voice':'Voices from the community')+'</h3><div class="pulse-list">'+posts.map(p=>'<div class="pulse-item"><span class="pulse-dot"></span><span>'+esc(p.body||p.author||'A new post')+'<small>'+esc(p.author||'Community member')+'</small></span></div>').join('')+'</div>':'<h3>The square is waiting.</h3><p>No posts to show here yet. Explore the community to see more.</p>')+
       '<a class="pulse-link" href="/community">Open the community →</a>';
     cards[1].innerHTML='<div class="pulse-label">Namedays today</div>'+
       (nameList.length?'<h3>Χρόνια πολλά</h3><p>'+esc(nameList.slice(0,5).join(', '))+'</p>':'<h3>No namedays today</h3><p>We’ll tell you when the calendar gives us someone to celebrate.</p>')+
       '<a class="pulse-link" href="/community">See today’s ritual →</a>';
     cards[2].innerHTML='<div class="pulse-label">Next gatherings</div>'+
       (evs.length?'<h3>'+esc(evs[0].name||'Greek gathering')+'</h3><p>'+esc([evs[0].city,evs[0].country].filter(Boolean).join(', ')||'Across the diaspora')+'</p><a class="pulse-link" href="/tickets">Explore live events →</a>':'<h3>No event data yet.</h3><p>New gatherings will appear here as organizers publish them.</p><a class="pulse-link" href="/tickets">Create an event →</a>');
+    const labels=['Community now','Namedays today','Next gatherings'];
+    results.forEach((result,index)=>{if(result.status==='rejected')cards[index].innerHTML='<div class="pulse-label">'+labels[index]+'</div><h3>Taking a moment.</h3><p>This live information could not load. You can keep exploring or try again.</p><button type="button" class="za-pulse-retry">Retry live content</button>';});
+    root.querySelectorAll('.za-pulse-retry').forEach(button=>button.addEventListener('click',()=>{root.querySelectorAll('.za-pulse-retry').forEach(item=>{item.disabled=true;item.textContent='Checking…';});loadCommunityPulse();}));
   }catch(e){
     root.innerHTML='<article class="pulse-card" style="grid-column:1/-1"><div class="pulse-label">Community now</div><h3>The pulse is taking a moment.</h3><p>Open the community directly to retry the live feed.</p><a class="pulse-link" href="/community">Open the community →</a></article>';
   }
@@ -1015,7 +1035,7 @@ async function joinWL(){
   finally{ btn.disabled=false; btn.textContent='Request access'; }
 }
 document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='Enter') joinWL(); });
-(async function(){
+async function loadDailyExtras(){
   loadCommunityPulse();
   try{
     const prefs=JSON.parse(localStorage.getItem('zoi_interest_prefs')||'null');
@@ -1026,7 +1046,7 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
       });
     }
   }catch(e){}
-  renderHomeRitual();
+  await loadCalendarReference();renderHomeRitual();
   loadHomeWeather();
   try{
     const todayStr = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
@@ -1036,8 +1056,7 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
   }catch(e){}
 
   try{
-    const r=await fetch(BASE+'/rest/v1/rpc/home_stats',{method:'POST',headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},body:'{}'});
-    const j=await r.json();
+    const j=await readHomeRPC('home_stats',{});
     if(j&&j.listings){
       document.getElementById('st-listings').textContent=Number(j.listings).toLocaleString();
       document.getElementById('st-cities').textContent=Number(j.cities).toLocaleString();
@@ -1045,8 +1064,7 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
     }
   }catch(e){}
   try{
-    const r=await fetch(BASE+'/rest/v1/rpc/zoi_namedays_today',{method:'POST',headers:{'apikey':PUB,'Authorization':'Bearer '+PUB,'Content-Type':'application/json'},body:'{}'});
-    const j=await r.json();
+    const j=await readHomeRPC('zoi_namedays_today',{});
     let names=(j&&(j.names||j.namedays))||[];
     if(typeof names==='string') names=names.split(/[,·]/).map(s=>s.trim()).filter(Boolean);
     if(names.length){
@@ -1063,10 +1081,14 @@ document.getElementById('wl-email').addEventListener('keydown',e=>{ if(e.key==='
       if(dFeast) dFeast.textContent = 'Feast of ' + feast;
     }
   }catch(e){}
-})();
+}
+const dailyExtras=document.getElementById('za-daily');
+let dailyStarted=false;
+dailyExtras.addEventListener('toggle',()=>{if(dailyExtras.open&&!dailyStarted){dailyStarted=true;loadDailyExtras();}});
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeWL(); });
 </script>
 
+<script type="module" src="/assets/home/public-arrival.mjs?v=20261003-public-entry"></script>
 <script src="/assets/zoi-emblem.js"></script>
 <script src="/assets/zoi-search.js?v=20261002-account-history"></script>
 <script src="/assets/zoi-theme.js?v=20260930-arrival"></script>

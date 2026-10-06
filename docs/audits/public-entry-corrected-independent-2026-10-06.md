@@ -1,0 +1,13 @@
+# Corrected public entry: independent local acceptance
+
+Accept the bounded corrected home and guest-entry packet at the exact hashes in `docs/audits/evidence/public-entry-corrected-independent-2026-10-06/final-source-hashes.txt`. No deployment, production writes, email sends or Google OAuth completion was performed.
+
+The four home390/1440 light/dark reduced-motion cases passed again, plus four edge cases for normal motion, actual phone swipe, buttons/keyboard, no-JavaScript search, missing image and slow503 recovery. Existing social/theme files retain the exact previously accepted source hashes; their16 actual-module controlled cases were independently replayed earlier this review and passed. Google is hidden when its verification flag is unset. No initial suite helper, identity or database request was observed in extra home checks after the deferred calendar correction.
+
+The reachable Storefront footer is now a focusable anchor. Native waitlist dialog keeps Tab focus contained; Escape closes and returns focus to that anchor at390/1440. Calendar native dialog also contains keyboard focus, Escape returns to Deep Dive, and backdrop click closes. No request-access action was submitted.
+
+Final calendar deadline test held its first script response for8seconds. Both widths showed unavailable after the6second deadline, with visible reference-unavailable/retry copy. A fresh calendar intent requested attempt2 and loaded the actual calendar reference. The dialog displayed Today’s Orthodox calendar rather than an invented saint biography, and explicitly distinguishes references from parish service times. `deadline.json` records both final passes; `final-deadline-driver.cjs` is the retained controlled test.
+
+Failures were not hidden: the first native-dialog version could not restore focus to the nonfocusable footer anchor; fixed with href. The first calendar timeout retry used the same URL and failed the immediate retry; fixed with distinct attempt query. That patch initially omitted its counter declaration and produced calendarReferenceAttempt is not defined; fixed and then both widths passed. A debug second-width timeout also occurred while source changed during a run, bypassing the old exact interceptor; it is a harness/version mismatch, not an additional product claim.
+
+This review covers local source, rendering and controlled journeys. It does not establish deployed latency, every destination’s full operation, authenticated live access or connected Google sign-in. Independent tickets packet results are documented separately in `tickets-public-entry-independent-2026-10-06.md`.

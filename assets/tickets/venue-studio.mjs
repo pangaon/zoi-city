@@ -1,3 +1,4 @@
+import {venueDraftScope} from './venue-draft-scope.mjs';
 import {addPlacedObject,tableGrid,duplicateFurniture} from './table-layout.mjs';
 import {mountVenueReferences} from './venue-reference-editor.mjs?v=20260930-guided3';
 import {paintReferenceFloor} from './venue-evidence.mjs';
@@ -5,12 +6,15 @@ import {layoutsEqual} from './venue-reference.mjs';
 import {createVenueClient} from './venue-api.mjs';
 import {createLayout,validateLayout,seatRows,updateObjects,selectedSeats,summarize,parseLayout,projectPoint} from './venue-model.mjs';
 const root=document.getElementById('venue-studio');
-if(root) init();
+const requestedMount=new URL(import.meta.url).searchParams.get('mount');
+if(root&&(!requestedMount||requestedMount===root.dataset.mount)) init();
 function init(){
- const key='zoi_venue_draft_v1';
+ let disposed=false;
+ const identity=()=>{const auth=window.getAuth?.();if(!auth?.access_token)return null;try{const actor=JSON.parse(atob(auth.access_token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))).sub;if(auth.user_id&&auth.user_id!==actor)return null;return{actor,token:auth.access_token};}catch{return null;}};
+ let scope;try{scope=venueDraftScope({identity,workspace:()=>root.dataset.workspace,storage:localStorage,active:()=>!disposed&&root.isConnected&&(!requestedMount||root.dataset.mount===requestedMount)});}catch{root.innerHTML='<summary>Venue & seating studio</summary><p>Choose a signed-in workspace before opening the studio.</p>';return;}
  let layout=createLayout(),selected=new Set(),undo=[],redo=[],view='plan',yaw=35,tilt=45;
  let references=null;let cloud={workspace:'',plan:null,revision:0},cloudBusy=false,cloudSaved='';
- const api=createVenueClient({getToken:()=>window.getAuth?.()?.access_token});
+ const client=createVenueClient({getToken:()=>{scope.assert();return identity()?.token;}});const api=async(...args)=>{scope.assert();const value=await client(...args);scope.assert();return value;};
  const $=id=>root.querySelector('#vs-'+id);
  const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const message=(text,error=false)=>{$('status').textContent=text;$('status').dataset.error=String(error);if($('cloud-status')){$('cloud-status').textContent=text;$('cloud-status').dataset.error=String(error);}};
@@ -60,8 +64,8 @@ function init(){
  $('layers').addEventListener('click',e=>{const button=e.target.closest('[data-layer]');if(!button)return;selected=new Set([button.dataset.layer]);render();$('layers').querySelector(`[data-layer="${button.dataset.layer}"]`)?.focus();});
  window.addEventListener('pagehide',e=>{if(fullscreen)setFullscreen(false);if(!e.persisted)references?.destroy?.();});
 
- function commit(next){const valid=validateLayout(next);undo.push(layout);if(undo.length>40)undo.shift();redo=[];layout=valid;selected=new Set([...selected].filter(id=>layout.objects.some(o=>o.id===id)));render();message('Draft updated. Save it in this browser or export a copy.');}
- function act(fn){try{fn();}catch(error){message(error.message,true);}}
+ function commit(next){scope.assert();const valid=validateLayout(next);undo.push(layout);if(undo.length>40)undo.shift();redo=[];layout=valid;selected=new Set([...selected].filter(id=>layout.objects.some(o=>o.id===id)));render();message('Draft updated. Save it in this browser or export a copy.');}
+ function act(fn){try{scope.assert();fn();}catch(error){if(!disposed)message(error.message,true);}}
  function num(id){return Number($(id).value);}
  function render(){
   previewTables();
@@ -120,13 +124,13 @@ function init(){
  for(const name of ['undo','redo'])$(name).addEventListener('click',()=>{const from=name==='undo'?undo:redo,to=name==='undo'?redo:undo;if(!from.length)return;to.push(layout);layout=from.pop();selected.clear();render();message('Layout '+(name==='undo'?'restored.':'reapplied.'));});
  for(const name of ['plan','preview'])$(name+'-tab').addEventListener('click',()=>{view=name;$('plan-wrap').hidden=view!=='plan';root.querySelector('.vs-zoom').hidden=view!=='plan';$('3d').hidden=view!=='preview';$('plan-tab').setAttribute('aria-pressed',String(view==='plan'));$('preview-tab').setAttribute('aria-pressed',String(view==='preview'));});
  $('yaw').addEventListener('input',()=>{yaw=num('yaw');render3d();});$('tilt').addEventListener('input',()=>{tilt=num('tilt');render3d();});
- $('save').addEventListener('click',()=>act(()=>{localStorage.setItem(key,JSON.stringify(layout));message('Saved in this browser. This draft is not published and does not hold inventory.');}));
+ $('save').addEventListener('click',()=>act(()=>{scope.save(JSON.stringify(layout));message('Saved in this browser. This draft is not published and does not hold inventory.');}));
  $('export').addEventListener('click',()=>act(()=>{const url=URL.createObjectURL(new Blob([JSON.stringify(layout,null,2)],{type:'application/json'}));const link=document.createElement('a');link.href=url;link.download='zoi-venue-layout.json';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);message('Layout exported. Keep this file as a backup.');}));
- $('import').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>250000)throw new Error('Maximum file size is 250 KB.');commit(parseLayout(await file.text()));message('Layout imported. Save a browser draft to keep it here.');}catch(error){message(error.message,true);}e.target.value='';});
- async function cloudAction(fn){if(cloudBusy)return;cloudBusy=true;const selects=['workspace','plans','event','tier'].map(id=>[$(id),$(id).disabled]);for(const[n]of selects)n.disabled=true;for(const id of ['connect','cloud-save','cloud-load','publish'])$(id).disabled=true;try{await fn();}catch(error){message(error.message,true);}finally{cloudBusy=false;for(const[n,d]of selects)n.disabled=d;$('workspace').disabled=!$('workspace').options.length||$('workspace').options.length===1&&!$('workspace').value;$('plans').disabled=!cloud.workspace;$('event').disabled=!cloud.workspace;$('tier').disabled=!$('event').value;$('connect').disabled=false;$('cloud-save').disabled=!cloud.workspace;$('cloud-load').disabled=!$('plans').value;$('publish').disabled=!cloud.plan||!$('tier').value||cloudSaved!==JSON.stringify(layout);}}
+ $('import').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>250000)throw new Error('Maximum file size is 250 KB.');const text=await file.text();scope.assert();commit(parseLayout(text));message('Layout imported. Save a browser draft to keep it here.');}catch(error){if(!disposed)message(error.message,true);}e.target.value='';});
+ async function cloudAction(fn){if(cloudBusy||disposed)return;scope.assert();cloudBusy=true;const selects=['workspace','plans','event','tier'].map(id=>[$(id),$(id).disabled]);for(const[n]of selects)n.disabled=true;for(const id of ['connect','cloud-save','cloud-load','publish'])$(id).disabled=true;try{await fn();}catch(error){if(!disposed)message(error.message,true);}finally{if(disposed)return;cloudBusy=false;for(const[n,d]of selects)n.disabled=d;$('workspace').disabled=!$('workspace').options.length||$('workspace').options.length===1&&!$('workspace').value;$('plans').disabled=!cloud.workspace;$('event').disabled=!cloud.workspace;$('tier').disabled=!$('event').value;$('connect').disabled=false;$('cloud-save').disabled=!cloud.workspace;$('cloud-load').disabled=!$('plans').value;$('publish').disabled=!cloud.plan||!$('tier').value||cloudSaved!==JSON.stringify(layout);}}
  async function listPlans(){const plans=await api('venue_plan_list',{p_workspace:cloud.workspace});$('plans').innerHTML='<option value="">New plan</option>'+plans.map(p=>`<option value="${esc(p.plan_id)}">${esc(p.name)} · v${p.revision}</option>`).join('');if(cloud.plan)$('plans').value=cloud.plan;}
- async function selectWorkspace(){cloud={workspace:$('workspace').value,plan:null,revision:0};$('tier').innerHTML='<option value="">Choose a tier</option>';$('tier').disabled=true;if(!cloud.workspace)return;await listPlans();const dashboard=await api('tickets_dashboard',{p_workspace:cloud.workspace});$('event').innerHTML='<option value="">Choose an event</option>'+(dashboard.events||[]).map(e=>`<option value="${esc(e.id)}">${esc(e.name)}</option>`).join('');message('Workspace connected. Save your draft or load an existing plan.');}
- $('connect').addEventListener('click',()=>cloudAction(async()=>{const me=await api('zoi_me');const spaces=me.workspaces||[];$('workspace').innerHTML='<option value="">Choose workspace</option>'+spaces.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('');if(spaces.length===1){$('workspace').value=spaces[0].id;await selectWorkspace();}else message(spaces.length?'Choose your workspace.':'Create a workspace in Zoi Business first.');}));
+ async function selectWorkspace(){scope.assert();if($('workspace').value&&$('workspace').value!==scope.workspace)throw Error('Reopen the studio in the selected workspace.');cloud={workspace:$('workspace').value,plan:null,revision:0};$('tier').innerHTML='<option value="">Choose a tier</option>';$('tier').disabled=true;if(!cloud.workspace)return;await listPlans();const dashboard=await api('tickets_dashboard',{p_workspace:cloud.workspace});$('event').innerHTML='<option value="">Choose an event</option>'+(dashboard.events||[]).map(e=>`<option value="${esc(e.id)}">${esc(e.name)}</option>`).join('');message('Workspace connected. Save your draft or load an existing plan.');}
+ $('connect').addEventListener('click',()=>cloudAction(async()=>{const me=await api('zoi_me');const spaces=(me.workspaces||[]).filter(w=>String(w.id)===scope.workspace);$('workspace').innerHTML='<option value="">Choose workspace</option>'+spaces.map(w=>`<option value="${esc(w.id)}">${esc(w.name)}</option>`).join('');if(spaces.length===1){$('workspace').value=spaces[0].id;await selectWorkspace();}else message(spaces.length?'Choose your workspace.':'Create a workspace in Zoi Business first.');}));
  $('workspace').addEventListener('change',()=>cloudAction(selectWorkspace));
  $('plans').addEventListener('change',()=>{$('cloud-load').disabled=!$('plans').value;cloud.plan=null;cloud.revision=0;message($('plans').value?'Load the selected plan before editing it. Your current draft can be saved as a new plan.':'Your next workspace save creates a new plan.');});
  $('cloud-load').addEventListener('click',()=>cloudAction(async()=>{const result=await api('venue_plan_get',{p_workspace:cloud.workspace,p_plan_id:$('plans').value});commit(parseLayout(JSON.stringify(result.layout)));cloud.plan=result.plan_id;cloud.revision=result.revision;cloudSaved=JSON.stringify(layout);message(`Loaded workspace plan, version ${cloud.revision}.`);}));
@@ -134,8 +138,9 @@ function init(){
  $('event').addEventListener('change',()=>cloudAction(async()=>{const tiers=$('event').value?await api('tickets_types_list',{p_event:$('event').value}):[];$('tier').innerHTML='<option value="">Choose a tier</option>'+tiers.filter(t=>Number(t.price_cents)===0).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('');}));
  $('tier').addEventListener('change',()=>{$('publish').disabled=!cloud.plan||!$('tier').value||cloudSaved!==JSON.stringify(layout);});
  $('publish').addEventListener('click',()=>cloudAction(async()=>{const result=await api('venue_plan_publish',{p_workspace:cloud.workspace,p_plan_id:cloud.plan,p_revision:cloud.revision,p_event:$('event').value,p_type:$('tier').value});if(!result?.ok)throw new Error('Publication was not confirmed.');message('Seating published for this event. Its layout is now fixed.');}));
+ root.addEventListener('zoi:venue-reset',()=>{if(fullscreen)setFullscreen(false);cloudDialog.close();referenceDialog.close();references?.destroy?.();disposed=true;layout=createLayout();selected.clear();undo=[];redo=[];},{once:true});
  references=mountVenueReferences($('reference-editor'),{getLayout:()=>layout,getSelected:()=>selected,commit,message});
- try{const saved=localStorage.getItem(key);if(saved){layout=parseLayout(saved);message('Browser draft restored. No ticket inventory is held.');}}catch{message('The saved draft could not be loaded. Import a backup or create a new layout.',true);}
+ try{const saved=scope.read();if(saved){layout=parseLayout(saved);message('Browser draft restored. No ticket inventory is held.');}}catch{message('The saved draft could not be loaded. Import a backup or create a new layout.',true);}
  render();if(location.hash==='#venue-studio')root.open=true;
  addEventListener('hashchange',()=>{if(location.hash==='#venue-studio')root.open=true;});
 }
