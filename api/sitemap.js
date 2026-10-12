@@ -5,14 +5,19 @@ const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
 const SITE = 'https://www.zoi.city';
 
 async function rpc(fn, body) {
+  const started = Date.now();
+  try {
   const r = await fetch(SUPA + '/rest/v1/rpc/' + fn, {
     method: 'POST',
     signal: AbortSignal.timeout(8000),
     headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify(body || {})
   });
-  if (!r.ok) throw new Error('rpc ' + fn + ' ' + r.status);
-  return r.json();
+  if (!r.ok) throw Object.assign(new Error('sitemap reader unavailable'), {status:r.status});
+  return await r.json();
+  } catch (error) {
+    throw Object.assign(new Error('sitemap reader unavailable'), {reader:fn,status:Number(error?.status)||null,elapsedMs:Date.now()-started,kind:error?.name==='TimeoutError'?'timeout':'upstream'});
+  }
 }
 function xesc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'})[c];});}
 function iso(d){ if(!d)return null; try{ return new Date(d).toISOString().slice(0,10); }catch(e){ return null; } }
@@ -141,11 +146,11 @@ export default async function handler(req, res) {
       });
       (cats || []).forEach((c) => {
         if (!c.category_slug || Number(c.listings) < 3) return;
-        add('/c/' + c.category_slug, '0.7');
+        add('/categories/' + c.category_slug, '0.7');
       });
       (regionCats || []).forEach((rc) => {
         if (!rc.category_slug || !rc.region || !rc.country) return;
-        add('/c/' + rc.category_slug + '/in/' + hubSlug(rc.country) + '/' + hubSlug(rc.region), '0.6');
+        add('/categories/' + rc.category_slug + '/in/' + hubSlug(rc.country) + '/' + hubSlug(rc.region), '0.6');
       });
       out += '</urlset>\n';
       return send(out);
@@ -155,6 +160,7 @@ export default async function handler(req, res) {
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
     res.end('unknown sitemap part\n');
   } catch (e) {
+    console.error('sitemap_unavailable',{reader:e?.reader||null,status:e?.status||null,elapsedMs:e?.elapsedMs??null,kind:e?.kind||'response'});
     // Never replace a valid index with an empty or partial success on outage.
     res.statusCode = 503;
     res.setHeader('Content-Type', 'text/plain; charset=utf-8');
