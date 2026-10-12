@@ -1,4 +1,5 @@
 import {publicCountryRead} from './_public-country-read.js';
+import {placeSlug as hubSlug} from './_place-slug.js';
 // Dynamic sitemap of every indexable Zoi entity page (plus the home).
 const SUPA = 'https://csebihpaychdkanjjsmz.supabase.co';
 const KEY  = 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -43,12 +44,6 @@ function url(loc, freq, pri, lastmod) {
     + (lastmod ? '<lastmod>' + lastmod + '</lastmod>' : '')
     + '<changefreq>' + freq + '</changefreq><priority>' + pri + '</priority></url>\n';
 }
-function hubSlug(v) {
-  return String(v == null ? '' : v).toLowerCase().trim()
-    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
-
 export default async function handler(req, res) {
   const send = (xml) => {
     res.statusCode = 200;

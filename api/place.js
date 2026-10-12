@@ -1,6 +1,7 @@
 import {categoryEditionBody,categoryEditorialRequest} from './_category-edition.js';
 import {faithHubBody} from './_faith-hub.js';
 import {publicCountryRead} from './_public-country-read.js';
+import {placeSlug as slug} from './_place-slug.js';
 /**
  * api/place.js — server-rendered place and category hubs.
  *
@@ -70,11 +71,6 @@ function cleanText(value) {
 }
 
 /** Slug <-> display. Kept reversible so a URL round-trips to the same query. */
-function slug(s) {
-  return String(s || '').toLowerCase().trim()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')   // drop accents for the URL only
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
-}
 const typeSlug = (t) => (t === 'travel_place' ? 'travel-place' : t);
 const CURATED_LABELS = {
   'media-creators': 'Media and Creators',
