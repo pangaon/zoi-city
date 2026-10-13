@@ -213,6 +213,7 @@ export default async function handler(req, res) {
     const wantRegion = q.get('region') || '';
     const wantCity = q.get('city') || '';
     const wantCat = q.get('category') || '';
+    const directory = !wantCountry && !wantRegion && !wantCity && !wantCat;
 
     if (wantCat === 'orthodox-churches' && !wantCountry && !wantRegion && !wantCity && page === 1) {
       return send(200, shell({title:'Greek Orthodox Life · Parishes, Feasts & Community | Zoi',desc:'Find your Greek Orthodox parish, explore service calendars, upcoming feasts, family ministries and connected monasteries.',path:'/categories/orthodox-churches',body:faithHubBody(),jsonld:{'@context':'https://schema.org','@type':'CollectionPage',name:'Greek Orthodox Life',url:SITE+'/categories/orthodox-churches'}}));
@@ -222,13 +223,20 @@ export default async function handler(req, res) {
     // so a URL never has to be a guess about capitalisation or accents.
     const primaryEarly=wantCat&&!wantCountry&&!wantRegion&&!wantCity?rpc('explore_place_listings',{p_country:null,p_region:null,p_city:null,p_category:wantCat,p_limit:PER,p_offset:(page-1)*PER}).then(data=>({data}),error=>({error})):null;
     let countries = [];
-    try { const timeoutMs=wantCountry?4500:1200; countries = await publicCountryRead({endpoint:BASE+'/rest/v1/rpc/explore_countries',timeoutMs,load:()=>rpc('explore_countries',{},timeoutMs)}); } catch (err) {
+    try { const timeoutMs=wantCountry||directory?4500:1200; countries = await publicCountryRead({endpoint:BASE+'/rest/v1/rpc/explore_countries',timeoutMs,load:()=>rpc('explore_countries',{},timeoutMs)}); } catch (err) {
       // Category and location pages can still render from their scoped query if
       // the global aggregate is temporarily slow.
-      if(wantCountry)throw err;
+      if(wantCountry||directory)throw err;
       countries = [];
     }
     const site = countries.reduce((a, c) => a + Number(c.listings || 0), 0);
+    if (directory) {
+      if (!site) return notFound('There are no published places in this directory yet.');
+      const items = countries.filter(c=>Number(c.listings)>0).map(c=>({name:c.country,href:'/in/'+slug(c.country),count:c.listings}));
+      return send(200,shell({title:'Greek communities by country · Zoi',desc:'Browse Greek businesses, parishes, associations and places by country.',path:'/in',
+        body:'<section class="ph-hero"><div class="ph-hero-copy"><h1>Find your Greek community</h1><p class="ph-lede">Explore '+n(site)+' public listings across '+items.length+' countries.</p></div></section><section aria-label="Countries">'+chips(items.map(c=>({label:c.name,href:c.href,count:c.count})))+'</section>',
+        jsonld:{'@context':'https://schema.org','@type':'CollectionPage',name:'Greek communities by country',url:SITE+'/in',mainEntity:{'@type':'ItemList',itemListElement:items.map((c,i)=>({'@type':'ListItem',position:i+1,name:c.name,url:SITE+c.href}))}}}));
+    }
 
     let country = '';
     if (wantCountry) {

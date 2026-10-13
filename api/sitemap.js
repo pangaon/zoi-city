@@ -124,7 +124,7 @@ export default async function handler(req, res) {
       if (![countries,regions,cities,cats,regionCats].every(Array.isArray)) throw new Error('invalid places sitemap response');
       const seen = Object.create(null);
       const add = (path, pri) => {
-        const loc = SITE + path;
+        const loc = new URL(path, SITE).href;
         if (seen[loc]) return;
         seen[loc] = 1;
         out += url(loc, 'weekly', pri);

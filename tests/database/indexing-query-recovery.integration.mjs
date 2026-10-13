@@ -49,6 +49,7 @@ const compactBefore=(await db.query('select * from public.seo_index()')).rows;
 const originalAcl=await scalar("select proacl::text value from pg_proc where oid='zoi.seo_canonical_rows()'::regprocedure");
 await db.exec(read('20261013161611_compact_sitemap_release.sql'));
 await db.exec(read('20261013162823_public_category_covering_index.sql'));
+await db.exec(read('20261013164049_public_place_candidate_index.sql'));
 assert.deepEqual((await db.query('select * from public.seo_index()')).rows,compactBefore);
 assert.deepEqual((await db.query('select * from public.seo_index(3,5)')).rows,compactBefore.slice(5,8));
 assert.equal(await scalar("select proacl::text value from pg_proc where oid='zoi.seo_canonical_rows()'::regprocedure"),originalAcl);
