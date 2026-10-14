@@ -1,0 +1,9 @@
+# Independent client-brief review
+
+Accepted the bounded deterministic draft brief and evidence arrangement after fixing an independent identity-scan defect. The previous parser accepted a matching first JSONLD node while dropping a duplicate101st node; oversized arrays and incomplete1000-node traversals now fail closed.35 focused tests pass, including actual worker challenge/error handling, exact identity/family conflict, owner clears, source scope, packaging and payload bounds.
+
+The brief explicitly retains unknown audience, differentiators, visual verification, operational connections and journey acceptance. It does not certify a client, invent copy, overwrite owner data, connect providers or publish a home. It summarizes at most30 offerings and keeps omitted offerings explicit. Typed source identity is exact source-name evidence, not verified ownership or visual identity.
+
+Twelve actual Chromium DOM checks at390px/1440px cover restaurant/professional sparse synthetic clients in three states: sourced phone evidence moves contact before offerings; an explicit owner clear stops machine arrangement; an owner-published design retains its exact headline and order. These are controlled source fixtures through the actual parser, brief and family renderer, not fresh official-client crawling. No horizontal overflow, pageerrors or draft audit language leaked into rendered public content. Screenshots/source inputs/briefs/DOM results are retained under `evidence/client-brief-independent-2026-10-13`; the professional owner-design phone screenshot was visually inspected.
+
+This is a small foundation toward individualized composition. No all-catalogue acceptance, premium per-client art direction, complete crawl, transaction or integration delivery is claimed. The ACE agency-versus-artist family conflict found in the separate live sample remains review work; the new brief records source family conflicts without silently relabelling the catalogue.

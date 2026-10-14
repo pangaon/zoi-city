@@ -5,6 +5,7 @@ import { stripTypeScriptTypes } from 'node:module';
 import { memberLeaseGuard } from './_member.js';
 import { inspectSourceDocument } from './_document-quality.js';
 import { confirmedEnrichmentReceipts, enrichmentSample } from './_receipts.js';
+import { prepareClientBrief } from './_brief.js';
 const website='https://www.hellenicmedical.ca/profile/atzakis/';
 const row={slug:'ageliki-tzakis',name:'Ageliki Tzakis',entity_type:'professional',website,lease_id:'fixture-lease',existing_enrich:{member:{name:'Ageliki Tzakis',profession:'Reviewed nursing fact'},photo_url:'reviewed-portrait.jpg'}};
 const profile='<h1>Ageliki (Angie) Tzakis, RN</h1><p>Associate</p><p>Profession: Registered Nurse</p>';
@@ -26,7 +27,7 @@ test('actual HTTP handler routes embedded medical challenge into durable error a
   const source=readFileSync(new URL('./index.ts',import.meta.url),'utf8');
   const failGeneric=()=>assert.fail('Challenged member must not run generic extraction');
   const deps={Deno:{serve:fn=>{handler=fn;}},authorised:()=>true,ENABLED:true,BATCH:1,INVOCATION_MS:110000,RPC_MS:15000,TIMEOUT_MS:8000,
-    boundedIO:async(_deadline,_maximum,work)=>work(new AbortController().signal),enrichmentSample,memberLeaseGuard,confirmedEnrichmentReceipts,inspectSourceDocument,
+    boundedIO:async(_deadline,_maximum,work)=>work(new AbortController().signal),prepareClientBrief,enrichmentSample,memberLeaseGuard,confirmedEnrichmentReceipts,inspectSourceDocument,
     Date,URL,Response,dnsState:()=>true,vet:async value=>({url:new URL(value)}),robotsAllows:async()=>true,
     fetchDoc:async()=>({doc:'Verify you are human'+profile,finalUrl:website}),extract:failGeneric,supplementaryPages:failGeneric,
     sbRpc:async(fn,args)=>{if(fn.endsWith('_lease'))return[row];batch=args.p_batch;return batch.map(item=>({slug:item.slug,applied:true}));}};

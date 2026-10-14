@@ -38,3 +38,4 @@ export async function publishOwner({pending,current,rpc}:{pending:OwnerSave;curr
 }
 
 export function ownerAccessRefused(error:any){return [401,403].includes(error?.status)||['suite_session_unavailable','invitation_unavailable','verified_account_required','not_authorized','no_access_to_listing','no_access_to_workspace','not_signed_in'].includes(error?.code)||/not_authorized|no_access_to_listing|workspace role|no longer has access|verified_account_required/i.test(String(error?.message||''));}
+export function ownerRevisionRequired(error:any){return error?.code==='home_revision_required'||/^home_revision_required(?:\b|:)/.test(String(error?.message||''));}

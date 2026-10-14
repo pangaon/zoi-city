@@ -1,0 +1,242 @@
+{
+  "captured_at": "2026-10-14T04:04:16.288821+00:00",
+  "basis": "Current main 839b398 plus exact reviewed candidate fixes in /workspaces/zoi-city-release; no production writes or deployment by QA",
+  "reviewed_changes": {
+    "assets/suite/bizpage.js": "Accept source navigation guard for unconfirmed pendingContent; 8 focused persistence tests pass, browser lost-response journey not performed",
+    "supabase/functions/zoi-enrich/_member.js": "Accept early durable error on challenge even with embedded matched profile;2 tests include actual HTTP handler and preserve prior member facts",
+    "scripts/check-inline-js.mjs": "Ignore archived .recovery tree; current pages still checked",
+    "scripts/lint-html.mjs": "Ignore archived .recovery tree; existing exact publisher-evidence boundary retained",
+    "tests/contract/run.mjs": "Correct explore_geo request and response to migration0039/current map contract; no production change"
+  },
+  "results": {
+    "verify_local": {
+      "exit": 0,
+      "tests": 1840,
+      "passed": 1825,
+      "skipped": 15,
+      "failed": 0,
+      "page_source": {
+        "passed": 17,
+        "total": 17
+      },
+      "helpers": {
+        "passed": 16,
+        "total": 16
+      }
+    },
+    "focused_independent": {
+      "passed": 13,
+      "total": 13
+    },
+    "live": {
+      "exit": 0,
+      "contracts": {
+        "reported_passed": 53,
+        "total": 53,
+        "legacy_optional_event_os_skips": 15,
+        "note": "Unavailable Event OS assertions are logged ok after skip; not capability or negative authorization proof"
+      },
+      "pages": {
+        "passed": 17,
+        "total": 17
+      }
+    },
+    "native": {
+      "tests": 457,
+      "passed": 457,
+      "failed": 0,
+      "typescript_exit": 0,
+      "physical_devices": "not exercised"
+    },
+    "readiness": {
+      "passed": 8,
+      "total": 8,
+      "scope": "HTTP shell readiness only"
+    }
+  },
+  "dependency_audit": {
+    "command": "npm audit --omit=dev",
+    "moderate": 8,
+    "high": 18,
+    "critical": 1,
+    "critical_package": "shell-quote",
+    "critical_advisory": "https://github.com/advisories/GHSA-pqg4-j6r4-53mv",
+    "fix_available": true,
+    "risk": "Dependency findings need triage before declaring hardened mobile release; no automatic dependency changes",
+    "followup": {
+      "candidate_overrides": {
+        "shell-quote": "1.12.0",
+        "source-map-js": "1.2.2",
+        "@expo/metro-file-map": "57.0.4",
+        "uuid": "11.1.1"
+      },
+      "after": {
+        "moderate": 0,
+        "high": 16,
+        "critical": 0,
+        "total": 16
+      },
+      "native_test_pass": 458,
+      "typescript_exit": 0,
+      "node": "24.14.0 satisfies React Native/Metro ^24.3.0",
+      "remaining_roots": [
+        {
+          "package": "braces",
+          "latest_published": "3.0.3",
+          "advisory": "https://github.com/advisories/GHSA-vfj7-8cjw-p6xm",
+          "patch": "none published"
+        },
+        {
+          "package": "node-forge",
+          "latest_published": "1.4.0",
+          "advisory": "https://github.com/advisories/GHSA-86w9-cpqp-85rv",
+          "patch": "none published"
+        }
+      ],
+      "no_major_downgrades": true,
+      "export": {
+        "exit": 0,
+        "platforms": [
+          "web",
+          "ios",
+          "android"
+        ],
+        "kind": "local Expo bundles, not signed binaries or device acceptance",
+        "artifacts": [
+          {
+            "path": "_expo/static/js/android/index-163d930f59a4cdc8b4460419a51cd1f3.hbc",
+            "sha256": "a56ab3e1911fa824671f99ec8aa9fc846c4ab0fe29f9a7503d23838b4b5ab297"
+          },
+          {
+            "path": "_expo/static/js/web/index-f86c2d671c4029ffa4edefc7d171bf15.js",
+            "sha256": "79ba70d8e9dfaac17e4fe2d5a032863192485edbc6657bfe56aee65b671df40b"
+          },
+          {
+            "path": "_expo/static/js/ios/index-083e3af94a5b877babc69956483cfcf0.hbc",
+            "sha256": "0c9bcb91f9e729d8dcf2a60bfcf56d57a1f60b3543e459d934871646a51a49a5"
+          }
+        ]
+      },
+      "uuid_compatibility": "UUID11.1.1 dual CommonJS exports; actual xcode v4\u2192uppercase24hex generator exercised"
+    }
+  },
+  "remaining_gates": [
+    "15 database suites skipped: no local PostgreSQL server available; old audits are not fresh database acceptance",
+    "15 optional Event OS contract/table checks skipped: no broad Event OS delivery claim",
+    "Actual browser lost-response navigation guard acceptance",
+    "Provider OAuth/publishing/payment/AI access and confirmed results not exercised",
+    "No new native binaries or physical iOS/Android acceptance",
+    "No all-catalogue source/render/transaction completion established",
+    "Lead owns current production version verification, reviewed PR/release, rollout and continued matrix scope"
+  ],
+  "browser_followup": {
+    "owner_guard": "docs/audits/pending-content-browser-independent-2026-10-13.md",
+    "source_fixture_brief": "docs/audits/evidence/client-brief-independent-2026-10-13/journeys.json",
+    "native_current_scope": "docs/audits/evidence/native-handoff-independent-2026-10-13/music-scope.json",
+    "note": "Sourcefixture renderer controls and private mocked transport are separate from production transactions and physical devices"
+  },
+  "native_handoff_final": {
+    "tests_passed": 458,
+    "tests_failed": 0,
+    "typescript_exit": 0,
+    "all_platform_export_exit": 0,
+    "kind": "Local source and web/iOS/Android exports; no signed binary or physical device acceptance",
+    "source_hashes": {
+      "mobile/src/businessOwner.ts": "f63b53c64b6672ea3b81cb9455d887b97eb33df91ee4a88acad37078e4705f3d",
+      "mobile/src/BusinessEditor.tsx": "2671b95f8b946a18e5a4eeeb444f926cf26425fd5de5ed7e14a3b4b5ad14753e",
+      "mobile/src/MusicEditor.tsx": "791570a97569a40b881ddd76a5bc542c8d6dcd77a67af81ee82b9f82504ba63a",
+      "mobile/src/OwnerEditorHandoff.tsx": "7be3d2886577c1c083917121dfd037a8bd2d3911bae05c1bc43c0758d2e87d0c",
+      "mobile/package.json": "2db6513e1198aa176bc418536707ac9f672e74b94f8804887a18b5459e5b9d81",
+      "mobile/package-lock.json": "be2f3c94aed3c5978673697f908f2bd2a05a56de42b5befcaf3aae15f0e09024"
+    },
+    "bundles": [
+      {
+        "path": "_expo/static/js/android/index-1293eba0c9c4d919a59cca316af3eeeb.hbc",
+        "sha256": "d7086fa0b776dd73574e940b15d213ffdbdc9dcfe961c78d5a96bb590d0392b2"
+      },
+      {
+        "path": "_expo/static/js/web/index-4b474c5a130ba63da3e5c6cdc0df6ca8.js",
+        "sha256": "f54b9d30b6c7bab42a7f67447211fa284cf124eb1cfcb7fff6dea6e2727250f2"
+      },
+      {
+        "path": "_expo/static/js/ios/index-9bcb940396f1f2b03a197e104ac7eabc.hbc",
+        "sha256": "c17a2905a56bda68cf8d30b7cb2ddb3bf807d1e73d7cd54194629ae5bdf664b9"
+      }
+    ],
+    "controller_acceptance": [
+      "docs/audits/evidence/native-handoff-independent-2026-10-13/business-refusal.json",
+      "docs/audits/evidence/native-handoff-independent-2026-10-13/music-scope.json"
+    ],
+    "archive": "docs/audits/evidence/native-handoff-independent-2026-10-13/archive-graph.json"
+  },
+  "contract_telemetry_followup": {
+    "captured_at": "2026-10-14T04:29:23.318912+00:00",
+    "prior_53_pass_summary": "Historical runner incorrectly counted15optional EventOS missing checks as passes; original report retained only as provenance",
+    "regressions": {
+      "passed": 2,
+      "total": 2,
+      "scope": "Pure result counts and actual runner with unavailable mocked endpoints, default versus strict"
+    },
+    "fresh_live": {
+      "exit": 1,
+      "planned": 53,
+      "executed": 38,
+      "passed": 37,
+      "failed": 1,
+      "skipped": 15,
+      "pages_passed": 17,
+      "pages_total": 17
+    },
+    "failure": {
+      "rpc": "explore_search",
+      "request": {
+        "p_q": "",
+        "p_limit": 5
+      },
+      "status": 500,
+      "error_body": "Not retained by historical status-only assertion; new bounded code/message diagnostic added",
+      "bounded_read_only_repeat": {
+        "status": 200,
+        "rows": 5,
+        "interpretation": "Separate diagnostic; does not erase initial failure"
+      }
+    },
+    "ownership": "Lead owns recurring production search diagnostic and fix; no backend mutation by independent QA",
+    "strict_event_os": "Missing RPC404now fails strict mode instead of masquerading as auth denial; ordinary mode emits skip sentinel and excludes skips from executed/passed totals"
+  },
+  "combined_frozen_candidate": {
+    "captured_at": "2026-10-14T04:32:48.807831+00:00",
+    "verify_local_exit": 0,
+    "tests": 1864,
+    "passed": 1849,
+    "failed": 0,
+    "skipped": 15,
+    "node_test_files": 322,
+    "local_pages_passed": 17,
+    "local_pages_total": 17,
+    "helpers_passed": 16,
+    "helpers_total": 16,
+    "inline_scripts": {
+      "blocks": 347,
+      "html_files": 164,
+      "failed": 0
+    },
+    "html_lint": {
+      "checked": 124,
+      "failed": 0
+    },
+    "scope": "Frozen combined owner/brief/native/telemetry candidate at start of this single verification; future lead search-recovery migration requires its own exact checks",
+    "live": "Not repeated; previous recurring explore_search500 remains lead-owned",
+    "owner_database": {
+      "isolated_checks_passed": 20,
+      "isolated_checks_failed": 0,
+      "source_hashes": {
+        "supabase/migrations/20261014040454_home_unified_owner_revision.sql": "3a13fc19a85e8cc873cfa7601f5075f31a7c80afd02f14ee1b4dbaa3e2faebfb",
+        "assets/homes/design-editor-revision.mjs": "adea80a555c2953e4d59eb1a7ab353f2d2e12f60d752baef3681346c3dcee7cd",
+        "api/home-revision-preview.js": "7fc4d4011dbc6747070e89d2b75911e2c1edb462f340d88b80e49be308847442"
+      },
+      "review": "Authorized exact legacy receipt replay, fresh guard before/after old writers, staged new-write refusal, identity baseline, restore internalflags, atomic history/media/content and concurrency accepted",
+      "limitations": "Isolated fixture runs an earlier auth-helper definition; unchanged current-session helper reviewed separately, no real production tenant mutation or account lifecycle exercised"
+    }
+  }
+}
