@@ -1,0 +1,25 @@
+{
+  "reviewer": "owner_home (independent of release lead)",
+  "migration": "supabase/migrations/20261014043104_bounded_default_discovery_page.sql",
+  "migration_sha256": "229e9a17c0360b748e276ba15de2dc3e6c33801e53247367dbaf4fc6bd6aaa2e",
+  "source_review": "No observed algorithm or public projection correctness defect",
+  "projection_matches_original_tail_exactly": true,
+  "isolated_runner": "node tests/database/default-discovery.integration.mjs",
+  "isolated_cases_passed": 77,
+  "fixture_rows": 37007,
+  "warm_helper_execution_ms": 1.663,
+  "production_latency_measured": false,
+  "own_scratch_design_oracle_cases": 64,
+  "notes": [
+    "Verified-expression DESC retains inherited NULLS FIRST; trust DESC NULLS LAST; type priority stays in group winner order only.",
+    "Winner-ID filter precedes final LIMIT/OFFSET; final page MATERIALIZED keeps wide projection after bounded IDs.",
+    "Blank/no-filter branch preserves btrim semantics, NULL/empty scalar filters and exact limit/offset clamps; >240 offset delegates original set-based body.",
+    "Private helper and moved original execution denied to anon/authenticated/service_role; public original-role grants retained."
+  ],
+  "remaining_acceptance": [
+    "Current fixture explicit 2000 loser/creator tie group ranks behind about500 NULL-verification groups, so optimized <=240 path does not exercise it. Rank adversarial tie/suppression groups into optimized first page and assert exact winners.",
+    "Add offset240/241 transition equivalence.",
+    "Inspect live canonicalizer definition and existing global_rank index definition/validity/readiness before deployment; current migration guard does not enforce those performance dependencies.",
+    "Verify actual anonymous cold/warm RPC/API/browser output after deployment; this run does not establish production latency."
+  ]
+}
