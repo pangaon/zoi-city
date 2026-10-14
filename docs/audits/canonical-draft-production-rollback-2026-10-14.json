@@ -1,0 +1,26 @@
+{
+  "checked_at": "2026-10-14T15:04:25.295948+00:00",
+  "project": "csebihpaychdkanjjsmz",
+  "applied_migrations": [
+    "20261014140803_canonical_draft_current_authority_guards",
+    "20261014140907_canonical_social_writer_current_authority"
+  ],
+  "execution": "Actual production schemas with the dedicated current QA account/session; no helper overrides. Assertions fail the transaction if any expected behavior differs.",
+  "fixtures": [
+    {
+      "path": "tests/database/editorial-production-rollback.sql",
+      "assertions_passed": 21,
+      "rollback_absence_checks": 7
+    },
+    {
+      "path": "tests/database/ai-linked-authority-production-rollback.sql",
+      "assertions_passed": 18,
+      "rollback_absence_checks": 7
+    }
+  ],
+  "all_fixture_rows_absent": true,
+  "provider_calls": 0,
+  "publications": 0,
+  "http_browser_provider_acceptance": false,
+  "scope": "Canonical saves, edits, receipts, source invalidation and explicit future queueing. Future publisher authority and provider delivery remain separate."
+}

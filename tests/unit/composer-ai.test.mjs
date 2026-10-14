@@ -76,13 +76,13 @@ test('community publishing sends only the saved post id, never mutable editor co
   const ta = { value: 'Original draft' };
   let feedArgs, feedName, savedBody;
   const save = vm.runInNewContext('(' + source.slice(start, end).trim() + ')', {
-    ta, state: { editId: null }, ctx: { ws: 'ws' }, currentChannelIds: () => ['zoi'],
+    ta, linkedContextReady:Promise.resolve(),scopeActive:()=>true,workspaceAtMount:'ws',state: { editId: null }, ctx: { ws: 'ws' }, currentChannelIds: () => ['zoi'],
     mediaJson: () => [], buildMeta: () => ({}),
     C: { api: { rpc: async (name, args) => {
       if (name === 'social_save_post') {
         savedBody = args.p_body;
         ta.value = 'Edits made while save was in flight';
-        return { id: 'saved-id' };
+        return { id: 'saved-id',workspace_id:'ws' };
       }
       feedName = name;
       feedArgs = args;
@@ -95,3 +95,6 @@ test('community publishing sends only the saved post id, never mutable editor co
   assert.equal(JSON.stringify(feedArgs), '{"p_id":"saved-id"}');
   assert.equal(result.community, 'posted');
 });
+
+test('canonical source context must finish before actual Composer dispatches a save',async()=>{const start=source.indexOf('    async function savePost('),end=source.indexOf('    /* ---------- honest publish gating',start);let resolve,calls=0;const pending=new Promise(r=>resolve=r);const save=vm.runInNewContext('('+source.slice(start,end).trim()+')',{linkedContextReady:pending,scopeActive:()=>true,workspaceAtMount:'ws',ta:{value:'Owner edit'},state:{editId:'existing'},ctx:{ws:'ws'},currentChannelIds:()=>[],mediaJson:()=>[],buildMeta:()=>({}),C:{api:{rpc:async()=>{calls++;return{id:'existing',workspace_id:'ws'};}}}});const saved=save('draft',null);await Promise.resolve();assert.equal(calls,0);resolve();await saved;assert.equal(calls,1);});
+test('unconfirmed canonical save response never becomes a successful Composer save',async()=>{const start=source.indexOf('    async function savePost('),end=source.indexOf('    /* ---------- honest publish gating',start);const save=vm.runInNewContext('('+source.slice(start,end).trim()+')',{linkedContextReady:Promise.resolve(),scopeActive:()=>true,workspaceAtMount:'ws',ta:{value:'Owner edit'},state:{editId:'existing'},ctx:{ws:'ws'},currentChannelIds:()=>[],mediaJson:()=>[],buildMeta:()=>({}),C:{api:{rpc:async()=>null}}});await assert.rejects(save('draft',null),/saved post could not be confirmed/);});

@@ -442,6 +442,8 @@
       posts: [],           // this workspace's scheduled posts, for collision checks
       channels: (ctx.channels || []).slice(),
       editId: null,
+      originMeta: {},
+      importedChannels: null,
       scheduledAt: null,   // ISO string or null
       // the Orthodox layer
       O: null,             // ZoiOrthocal once loaded (null = unavailable, say so)
@@ -493,7 +495,7 @@
     C=Object.assign({},C,{auth:Object.assign({},originalAuth,{token:function(){if(!scopeActive())throw Error('Account or workspace changed.');return originalAuth.token.call(originalAuth);}})});
     C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
       if(!scopeActive())throw Error('Account or workspace changed.');
-      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      try{var value=await originalRpc(name,args,Object.assign({},options,{beforeDispatch:function(){return scopeActive()&&(!options||typeof options.beforeDispatch!=='function'||options.beforeDispatch()!==false);}}));if(!scopeActive())throw Error('Account or workspace changed.');return value;}
       catch(e){clearOnDenied(e);throw e;}
     }})});
     if(!scopeActive())return {destroy:dispose,unmount:dispose};
@@ -1579,6 +1581,8 @@
     }
 
     /* Apply a whole post (from the Calendar) into the composer. */
+    function applyImportedTargets(){if(state.importedChannels===null)return;state.selected={};state.channels.forEach(function(ch){var want=state.importedChannels;if(ch.connected&&netFor(ch.platform)&&(want.includes(String(ch.id))||want.includes(normPlat(ch.platform))))state.selected[ch.id]=true;});}
+    var linkedContextReady=Promise.resolve();
     function applyIncomingPost(h) {
       state.editId = h.id || null;
       ta.value = String(h.body || '');
@@ -1586,7 +1590,18 @@
       state.media = media.map(function (m) { return typeof m === 'string' ? m : (m && m.url); }).filter(Boolean).slice(0, 4);
       state.alts = {};
       media.forEach(function (m) { if (m && m.url && m.alt) state.alts[m.url] = m.alt; });
-      var meta = h.meta && typeof h.meta === 'object' ? h.meta : {};
+      var meta = h.meta && typeof h.meta === 'object' && !Array.isArray(h.meta) ? h.meta : {};
+      state.originMeta=JSON.parse(JSON.stringify(meta));
+      if(meta.editorial||meta.ai_generation_id){
+        linkedContextReady=C.api.rpc('canonical_draft_context',{p_workspace:workspaceAtMount,p_post:h.id},{auth:'require',beforeDispatch:scopeActive}).then(function(receipt){
+          if(!scopeActive())throw Error('The workspace changed. Reopen this draft.');
+          if(!receipt||receipt.ok!==true||receipt.workspace!==workspaceAtMount||receipt.post_id!==h.id||!receipt.kind||!receipt.context||typeof receipt.context!=='object')throw Error('The source context could not be confirmed. Reopen this draft before saving.');
+          var campaign=receipt.context.campaign;
+          if(campaign){q('lu_campaign').value=campaign;q('lu_campaign').readOnly=true;var note=doc.createElement('p');note.className='zc-hint';note.textContent='Campaign retained from this source draft. Use a separate draft for another campaign.';q('lu_campaign').parentNode.appendChild(note);}
+        });
+        linkedContextReady.catch(function(error){if(scopeActive())toast(error.message);});
+      }
+
       if (meta.alt_text && typeof meta.alt_text === 'object') {
         Object.keys(meta.alt_text).forEach(function (k) { if (!state.alts[k]) state.alts[k] = meta.alt_text[k]; });
       }
@@ -1597,22 +1612,12 @@
           if (v && v.body) state.overrides[k] = String(v.body);
         });
       }
+      state.threadMode=Array.isArray(meta.thread)&&meta.thread.length>0;state.thread=state.threadMode?meta.thread.map(String):[''];if(q('threadtoggle'))q('threadtoggle').checked=state.threadMode;
       if (q('firstcomment')) q('firstcomment').value = meta.first_comment || '';
       if (q('lu_campaign')) q('lu_campaign').value = meta.campaign || '';
-      // only select the channels this post actually targets, when we can match them
-      var want = (Array.isArray(h.channels) ? h.channels : []).map(String);
-      if (want.length) {
-        var matched = false;
-        state.channels.forEach(function (ch) {
-          var hit = want.indexOf(String(ch.id)) !== -1 || want.indexOf(normPlat(ch.platform)) !== -1;
-          if (hit && ch.connected) { state.selected[ch.id] = true; matched = true; }
-          else if (!hit) delete state.selected[ch.id];
-        });
-        if (!matched) {
-          // nothing matched — keep the defaults rather than leaving no target
-          state.channels.forEach(function (ch) { if (ch.connected && netFor(ch.platform)) state.selected[ch.id] = true; });
-        }
-      }
+      // An imported empty destination set is explicit; never replace it with defaults.
+      state.importedChannels=Array.isArray(h.channels)?h.channels.map(String):[];
+      applyImportedTargets();
       if (h.scheduledAt) {
         var d = (state.S && state.S.fromLocalInput(h.scheduledAt)) || new Date(h.scheduledAt);
         if (d && !isNaN(d.getTime())) setSchedule(d);
@@ -1621,6 +1626,7 @@
       renderMedia();
       onBodyChange();
       renderLit();
+      renderThread();
       renderEditBanner(h);
     }
 
@@ -1715,12 +1721,12 @@
     }
     function currentCampaign() { return String(q('lu_campaign').value || '').trim(); }
     function buildMeta() {
-      var meta = {
+      var meta = Object.assign({},state.originMeta||{}, {
         composer_version: VERSION,
         first_comment: String(q('firstcomment').value || '').trim() || null,
         campaign: currentCampaign() || null,
         per_network_overrides: {}
-      };
+      });
       // only channels that are actually selected AND actually overridden
       selectedChannels().forEach(function (ch) {
         var o = state.overrides[ch.id];
@@ -1734,10 +1740,11 @@
         var a = state.alts[u] && String(state.alts[u]).trim();
         if (a) { alts[u] = a; any = true; }
       });
-      if (any) meta.alt_text = alts;
+      if (any) meta.alt_text = alts;else delete meta.alt_text;
       if (state.threadMode) {
         meta.thread = state.thread.map(function (t) { return String(t || '').trim(); }).filter(Boolean);
       }
+      else if(Object.hasOwn(meta,'thread'))meta.thread=[];
       // What day, liturgically, is this post going out on? Stored so the
       // calendar and the analytics coverage report do not have to guess.
       var lit = litForScheduled();
@@ -1749,6 +1756,7 @@
           fast: lit.fast.level
         };
       }
+      else delete meta.liturgical;
       return meta;
     }
     function mediaJson() {
@@ -1894,6 +1902,15 @@
 
     async function savePost(status, scheduledAtIso, opts) {
       opts = opts || {};
+      await linkedContextReady;
+      if(!scopeActive())throw Error('The workspace changed. Reopen this draft.');
+      var editorialContext=state.originMeta&&state.originMeta.editorial;
+      if(editorialContext&&opts.publishNow)throw Error('Source-backed calendar drafts use an explicit scheduled time on their occurrence date. Review the source, choose a destination and schedule this draft.');
+      if(editorialContext&&status==='scheduled'){
+        if(editorialHandoff&&editorialHandoff.source_current===false)throw Error('The source has changed. Prepare a fresh source-backed draft from Calendar before scheduling.');
+        var scheduledParts=new Intl.DateTimeFormat('en-CA',{timeZone:editorialContext.time_zone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(scheduledAtIso));var scheduledPart=function(k){return scheduledParts.find(function(p){return p.type===k;}).value;};
+        if([scheduledPart('year'),scheduledPart('month'),scheduledPart('day')].join('-')!==editorialContext.occurrence_date)throw Error('Choose a scheduled time on '+editorialContext.occurrence_date+' in '+editorialContext.time_zone+', the selected source occurrence.');
+      }
       var params = {
         p_workspace: ctx.ws,
         p_body: ta.value,
@@ -1906,7 +1923,8 @@
         p_id: state.editId
       };
       var res = await C.api.rpc('social_save_post', params, { auth: 'require' });
-      if (res && res.id) state.editId = res.id;
+      if(!res||!res.id||res.workspace_id!==workspaceAtMount)throw Error('The saved post could not be confirmed. Reload the draft before continuing.');
+      state.editId = res.id;
 
       /* The authenticated RPC publishes the saved snapshot and records delivery
          in one transaction. Browser retries and the scheduled worker share the
@@ -2275,6 +2293,7 @@
           });
         }
       }
+      applyImportedTargets();
       renderChips();
       applyGating();
     }
@@ -2311,10 +2330,13 @@
 
     /* A draft handed over from the Calendar ("draft this feast") beats an old
      * autosaved one — the user just asked for it. */
-    var handoff = state.S ? state.S.takeHandoff(null, {actor:actorAtMount,workspace:workspaceAtMount}) : null;
+    var editorialHandoff=null;
+    try{var editorialModule=await import('/assets/editorial/handoff.mjs?v=20261014');if(scopeActive())editorialHandoff=await editorialModule.takeEditorialHandoff({C:C,workspace:workspaceAtMount,active:scopeActive});}catch(error){if(scopeActive())toast(error.message||'The source-backed draft could not be reloaded. Reopen it from Calendar.');}
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+    var handoff = editorialHandoff ? editorialHandoff.post : state.S ? state.S.takeHandoff(null, {actor:actorAtMount,workspace:workspaceAtMount}) : null;
     if (handoff && handoff.id) {
       applyIncomingPost(handoff);
-      toast('Editing the post you picked in the calendar.');
+      toast(editorialHandoff?'Editing the saved source-backed draft. Review its source and destination before scheduling.':'Editing the post you picked in the calendar.');if(editorialHandoff){var sourceNote=doc.createElement('p');sourceNote.className='zc-hint';sourceNote.textContent=editorialHandoff.source_current===false?'The source has changed since this draft was prepared. Recheck the original evidence and update your copy before choosing a destination or scheduled time.':'Source-backed calendar draft: original evidence is retained with this post. Edit your copy and review the source before choosing a destination or scheduled time.';wrap.insertBefore(sourceNote,wrap.firstChild);}
     } else if (handoff && (handoff.body || handoff.scheduledAt)) {
       if (handoff.body) ta.value = String(handoff.body);
       if (handoff.scheduledAt) {

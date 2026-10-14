@@ -1,0 +1,66 @@
+-- Reviewed production SQL contract fixture only. No provider calls or public posts. Explicit Zoi schedule remains queued only.
+-- Existing dedicated QA owner and actual active session; all new rows rolled back.
+-- Never replace authority helpers, disable triggers or print auth credentials.
+BEGIN;
+SET LOCAL lock_timeout='3s';SET LOCAL statement_timeout='45s';
+CREATE TEMP TABLE qa_editorial_results(label text PRIMARY KEY,passed boolean) ON COMMIT DROP;
+GRANT INSERT,SELECT ON qa_editorial_results TO authenticated;
+CREATE FUNCTION pg_temp.qa_editorial_assert(ok boolean,label text) RETURNS void LANGUAGE plpgsql AS $$BEGIN IF ok IS DISTINCT FROM true THEN RAISE EXCEPTION 'qa_editorial_assertion_failed:%',label;END IF;INSERT INTO pg_temp.qa_editorial_results VALUES(label,true);END$$;
+DO $qa$
+DECLARE executor name:=current_user;
+ ws constant uuid:='053a5656-b19b-48a4-8721-65c4674f647c';actor constant uuid:='21a04e78-e3b1-448e-8517-47aad25dd5da';account constant uuid:='2ba5b8e3-4fe9-4ec7-a3bf-7f616fcf07fd';
+ listing constant uuid:='e1eb6d31-5454-4c5c-b52b-cd2610140001';foreign_listing constant uuid:='e1eb6d31-5454-4c5c-b52b-cd2610140002';other_ws constant uuid:='e1eb6d31-5454-4c5c-b52b-cd2610140003';ephemeral_session constant uuid:='e1eb6d31-5454-4c5c-b52b-cd2610140004';fixture_source constant text:='qa-editorial-rollback-20261014';occurrence date;year integer;source_record jsonb;nonce constant uuid:='e1eb6d31-5454-4c5c-b52b-cd2610140005';sid uuid;category bigint;receipt jsonb;replay jsonb;post zoi.social_posts;denied boolean;
+BEGIN
+ IF EXISTS(SELECT 1 FROM zoi.listings WHERE id IN(listing,foreign_listing))OR EXISTS(SELECT 1 FROM zoi.workspaces WHERE id=other_ws)OR EXISTS(SELECT 1 FROM zoi.editorial_sources WHERE id=fixture_source)OR EXISTS(SELECT 1 FROM zoi.editorial_draft_receipts WHERE request_id=nonce)OR EXISTS(SELECT 1 FROM auth.sessions WHERE id=ephemeral_session)THEN RAISE EXCEPTION 'qa_editorial_fixture_collision';END IF;
+ IF NOT EXISTS(SELECT 1 FROM zoi.workspaces w JOIN zoi.workspace_members m ON m.workspace_id=w.id JOIN zoi.user_profiles p ON p.id=m.profile_id JOIN auth.users u ON u.id=p.auth_user_id WHERE w.id=ws AND w.name='Zoi isolated QA 2026-09-30' AND w.owner_profile_id=actor AND m.profile_id=actor AND m.role='owner' AND p.auth_user_id=account AND u.email_confirmed_at IS NOT NULL AND u.deleted_at IS NULL AND NOT coalesce(u.is_anonymous,false)AND(u.banned_until IS NULL OR u.banned_until<=clock_timestamp()))THEN RAISE EXCEPTION 'dedicated_qa_authority_unavailable';END IF;
+ SELECT s.id INTO sid FROM auth.sessions s WHERE s.user_id=account AND(s.not_after IS NULL OR s.not_after>clock_timestamp())ORDER BY s.created_at DESC NULLS LAST LIMIT 1;IF sid IS NULL THEN RAISE EXCEPTION 'dedicated_qa_current_session_unavailable';END IF;
+ SELECT id INTO category FROM zoi.categories WHERE slug='restaurants'LIMIT 1;IF category IS NULL THEN RAISE EXCEPTION 'qa_category_unavailable';END IF;
+ INSERT INTO zoi.workspaces(id,name,kind,owner_profile_id,created_by_auth)VALUES(other_ws,'Rollback-only editorial client workspace','business',actor,account);
+ INSERT INTO zoi.listings(id,owner_workspace_id,entity_type,name,slug,primary_category_id,publish_status,moderation_status,marketplace_status,profile)VALUES(listing,ws,'business','Rollback-only editorial client','qa-editorial-owned-rollback-20261014',category,'draft','clean','hidden','{}'),(foreign_listing,other_ws,'business','Rollback-only foreign editorial client','qa-editorial-foreign-rollback-20261014',category,'draft','clean','hidden','{}');
+
+ SELECT record INTO source_record FROM zoi.editorial_sources WHERE id='seferis-nobel-lecture'AND active;
+ IF source_record IS NULL THEN RAISE EXCEPTION 'reviewed_primary_source_unavailable';END IF;
+ source_record:=source_record||jsonb_build_object('id',fixture_source,'revision',1);
+ INSERT INTO zoi.editorial_sources(id,revision,record,active)VALUES(fixture_source,1,source_record,true);
+ year:=extract(year from current_date)::integer;occurrence:=make_date(year,12,11);IF occurrence<=current_date THEN year:=year+1;occurrence:=make_date(year,12,11);END IF;
+ INSERT INTO auth.sessions(id,user_id,created_at,updated_at,not_after)VALUES(ephemeral_session,account,clock_timestamp(),clock_timestamp(),clock_timestamp()-interval'1 minute');
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',account,'role','authenticated','session_id',sid)::text,true);PERFORM set_config('request.jwt.claim.sub',account::text,true);PERFORM set_config('request.jwt.claim.role','authenticated',true);EXECUTE 'SET LOCAL ROLE authenticated';
+ receipt:=public.editorial_draft_prepare(ws,fixture_source,1,year,'UTC','cultural',nonce,jsonb_build_object('listing',listing,'campaign','Rollback-only campaign'));
+ PERFORM pg_temp.qa_editorial_assert(receipt->>'ok'='true'AND receipt#>>'{post,meta,client_listing_id}'=listing::text AND receipt#>>'{link,source_id}'=fixture_source,'actual_owned_client_source_receipt');
+ PERFORM pg_temp.qa_editorial_assert(receipt#>'{post,channels}'='[]'::jsonb AND receipt#>>'{post,status}'='draft'AND receipt#>'{post,scheduled_at}'='null'::jsonb,'prepare_has_no_audience_or_schedule');
+ replay:=public.editorial_draft_prepare(ws,fixture_source,1,year,'UTC','cultural',nonce,jsonb_build_object('listing',listing,'campaign','Rollback-only campaign'));
+ PERFORM pg_temp.qa_editorial_assert(replay->>'replayed'='true'AND replay#>>'{post,id}'=receipt#>>'{post,id}','exact_nonce_replay_same_canonical_post');
+ denied:=false;BEGIN PERFORM public.editorial_draft_prepare(ws,fixture_source,1,year,'UTC','cultural',nonce,jsonb_build_object('listing',listing,'campaign','changed'));EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='editorial_request_conflict';END;PERFORM pg_temp.qa_editorial_assert(denied,'changed_request_context_refused');
+ denied:=false;BEGIN PERFORM public.editorial_draft_prepare(ws,fixture_source,1,year,'UTC','cultural',gen_random_uuid(),jsonb_build_object('listing',foreign_listing));EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.qa_editorial_assert(denied,'foreign_client_refused_actual_authority');
+ post:=public.social_save_post(ws,'Owner revised source-backed caption','{}',NULL,'draft','[]',NULL,receipt#>'{post,meta}',(receipt#>>'{post,id}')::uuid);
+ replay:=public.editorial_draft_get(ws,(receipt#>>'{link,id}')::uuid);
+ PERFORM pg_temp.qa_editorial_assert(post.id=(receipt#>>'{post,id}')::uuid AND replay#>>'{post,body}'='Owner revised source-backed caption'AND replay#>>'{link,source_snapshot,id}'=fixture_source,'composer_edit_reload_same_id_source_retained');
+ replay:=public.editorial_draft_prepare(ws,fixture_source,1,year,'UTC','cultural',nonce,jsonb_build_object('listing',listing,'campaign','Rollback-only campaign'));
+ PERFORM pg_temp.qa_editorial_assert(replay#>>'{post_snapshot,body}'=receipt#>>'{post_snapshot,body}'AND replay#>>'{post,body}'='Owner revised source-backed caption','immutable_original_receipt_latest_owner_text');
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,'Edited','{}',NULL,'draft','[]',NULL,(receipt#>'{post,meta}')||jsonb_build_object('client_listing_id',foreign_listing),post.id);EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='linked_draft_client_context_changed';END;PERFORM pg_temp.qa_editorial_assert(denied,'linked_client_label_immutable');
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,'Edited','{}',NULL,'draft','[]',NULL,(receipt#>'{post,meta}')||jsonb_build_object('campaign','changed'),post.id);EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='linked_draft_campaign_context_changed';END;PERFORM pg_temp.qa_editorial_assert(denied,'original_campaign_immutable');
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,post.body,'{zoi}',((occurrence+1)::text||'T12:00:00Z')::timestamptz,'scheduled','[]',NULL,post.meta,post.id);EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='editorial_schedule_occurrence_mismatch';END;PERFORM pg_temp.qa_editorial_assert(denied,'wrong_occurrence_schedule_refused');
+ post:=public.social_save_post(ws,post.body,'{zoi}',(occurrence::text||'T12:00:00Z')::timestamptz,'scheduled','[]',NULL,post.meta,post.id);
+ PERFORM pg_temp.qa_editorial_assert(post.status='scheduled'AND post.published_at IS NULL AND post.channels='{zoi}'::text[],'explicit_schedule_queued_only_not_published');
+ EXECUTE format('SET LOCAL ROLE %I',executor);UPDATE zoi.workspace_members SET role='viewer'WHERE workspace_id=ws AND profile_id=actor;EXECUTE 'SET LOCAL ROLE authenticated';
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,'Viewer edit',post.channels,post.scheduled_at,post.status,post.media,NULL,post.meta,post.id);EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.qa_editorial_assert(denied,'viewer_unchanged_schedule_edit_refused');
+ denied:=false;BEGIN PERFORM public.social_delete_post(ws,post.id);EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.qa_editorial_assert(denied,'viewer_linked_delete_refused');
+ denied:=false;BEGIN PERFORM public.editorial_draft_prepare(ws,fixture_source,1,year,'UTC','cultural',nonce,jsonb_build_object('listing',listing,'campaign','Rollback-only campaign'));EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.qa_editorial_assert(denied,'viewer_receipt_replay_refused');
+ EXECUTE format('SET LOCAL ROLE %I',executor);UPDATE zoi.workspace_members SET role='owner'WHERE workspace_id=ws AND profile_id=actor;UPDATE zoi.listings SET owner_workspace_id=other_ws WHERE id=listing;EXECUTE 'SET LOCAL ROLE authenticated';
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,'Revoked client edit','{}',NULL,'draft','[]',NULL,post.meta,post.id);EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.qa_editorial_assert(denied,'revoked_client_draft_edit_refused');
+ denied:=false;BEGIN PERFORM public.social_delete_post(ws,post.id);EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.qa_editorial_assert(denied,'revoked_client_delete_refused');
+ EXECUTE format('SET LOCAL ROLE %I',executor);UPDATE zoi.listings SET owner_workspace_id=ws WHERE id=listing;
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',account,'role','authenticated','session_id',ephemeral_session)::text,true);EXECUTE 'SET LOCAL ROLE authenticated';
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,'Expired session edit','{}',NULL,'draft','[]',NULL,post.meta,post.id);EXCEPTION WHEN insufficient_privilege THEN denied:=SQLERRM='suite_session_unavailable';END;PERFORM pg_temp.qa_editorial_assert(denied,'expired_session_edit_refused');
+ denied:=false;BEGIN PERFORM public.social_delete_post(ws,post.id);EXCEPTION WHEN insufficient_privilege THEN denied:=SQLERRM='suite_session_unavailable';END;PERFORM pg_temp.qa_editorial_assert(denied,'expired_session_delete_refused');
+ EXECUTE format('SET LOCAL ROLE %I',executor);PERFORM set_config('request.jwt.claims','{}',true);PERFORM set_config('request.jwt.claim.sub','',true);
+ UPDATE zoi.editorial_sources SET revision=2,record=record||jsonb_build_object('revision',2,'copy','Rollback-only changed reviewed source')WHERE id=fixture_source;
+ PERFORM pg_temp.qa_editorial_assert(EXISTS(SELECT 1 FROM zoi.social_posts WHERE id=post.id AND status='draft'AND scheduled_at IS NULL AND body='Owner revised source-backed caption'),'service_source_invalidation_cancels_queue_preserves_owner_text');
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',account,'role','authenticated','session_id',sid)::text,true);PERFORM set_config('request.jwt.claim.sub',account::text,true);EXECUTE 'SET LOCAL ROLE authenticated';
+ denied:=false;BEGIN PERFORM public.social_save_post(ws,post.body,'{zoi}',post.scheduled_at,'scheduled','[]',NULL,post.meta,post.id);EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='editorial_source_changed';END;PERFORM pg_temp.qa_editorial_assert(denied,'source_invalid_post_cannot_requeue');
+ EXECUTE format('SET LOCAL ROLE %I',executor);
+ PERFORM pg_temp.qa_editorial_assert((SELECT count(*)FROM zoi.editorial_draft_links WHERE source_id=fixture_source AND workspace_id=ws)=1,'one_canonical_source_link');
+END $qa$;
+SELECT label,passed FROM qa_editorial_results ORDER BY label;
+ROLLBACK;
+SELECT jsonb_build_object('rollback_completed',true,'fixture_source_absent',NOT EXISTS(SELECT 1 FROM zoi.editorial_sources WHERE id='qa-editorial-rollback-20261014'),'fixture_links_absent',NOT EXISTS(SELECT 1 FROM zoi.editorial_draft_links WHERE source_id='qa-editorial-rollback-20261014'),'fixture_receipt_absent',NOT EXISTS(SELECT 1 FROM zoi.editorial_draft_receipts WHERE request_id='e1eb6d31-5454-4c5c-b52b-cd2610140005'),'fixture_posts_absent',NOT EXISTS(SELECT 1 FROM zoi.social_posts WHERE meta#>>'{editorial,source_id}'='qa-editorial-rollback-20261014'),'fixture_listings_absent',NOT EXISTS(SELECT 1 FROM zoi.listings WHERE id IN('e1eb6d31-5454-4c5c-b52b-cd2610140001','e1eb6d31-5454-4c5c-b52b-cd2610140002')),'fixture_workspace_absent',NOT EXISTS(SELECT 1 FROM zoi.workspaces WHERE id='e1eb6d31-5454-4c5c-b52b-cd2610140003'),'fixture_session_absent',NOT EXISTS(SELECT 1 FROM auth.sessions WHERE id='e1eb6d31-5454-4c5c-b52b-cd2610140004'),'provider_or_publication_acceptance',false)AS production_editorial_contract_evidence;

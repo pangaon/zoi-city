@@ -1,0 +1,7 @@
+# Receipt-backed selected map position before global loading
+
+A deep link originally created an intentionally unmapped place even when fresh home_entity and geography_reviewed_point immediately supplied an exact current street receipt. Its map position and numeric directions waited for the whole catalogue to finish. The source now validates only that selected published identity and matching receipt/current coordinates, creates its own anchored marker and focuses the camera. Ordinary catalogue pins keep the complete-cohort gate; no address or legacy street label is promoted to a reviewed point.
+
+Actual controlled MapLibre at390px/1440px passes with the global feed deliberately held: selected marker and numeric destination appear first; marker pixel anchor error0/<1e-9; precision zoom14; other coverage explicitly remains loading. Completing the feed preserves an intervening manual camera change. A mismatched receipt leaves the place unmapped with only published-address directions. No browser errors. Background-only style verifies geometry/controller flow, not production basemap labels. Evidence is under evidence/map-reviewed-selection-owner-2026-10-14. Sixty-one targeted unit checks and eight inline-script parser checks pass.
+
+Fresh public read also confirmed the reported St Nicholas entity and receipt both contain36.849423,-76.022472 and street precision. Deployed corrected HTML/controller and actual production navigation acceptance remain lead/independent QA release gates. No deployment or schema change by this specialist.

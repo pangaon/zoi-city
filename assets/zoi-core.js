@@ -218,6 +218,7 @@
     }
     return p.then(function (tk) {
       checkSession();
+      if(opts&&typeof opts.beforeDispatch==='function'&&opts.beforeDispatch()===false)throw new Error('Your workspace changed. Reopen this view to continue.');
       return request(BASE + '/rest/v1/rpc/' + fn, {
         method: 'POST',
         headers: { apikey: KEY, Authorization: 'Bearer ' + (tk || KEY), 'Content-Type': 'application/json' },

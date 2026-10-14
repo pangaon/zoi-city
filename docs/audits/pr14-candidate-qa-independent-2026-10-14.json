@@ -1,12 +1,20 @@
 {
-  "checked_at": "2026-10-14T14:09:54.091553+00:00",
+  "checked_at": "2026-10-14T14:47:57.691043+00:00",
   "source_hashes": {
-    "explore/map/index.html": "c0f2f762aa8b503e384e4da1fd208f7a3526c2ea853e9d20900a7b36b47a4cd4",
-    "assets/map-data/loader.mjs": "06d4416c20bfede3624c61fc10ec8270dbfbe0ed51690bb50b5f107e37226e56",
+    "explore/map/index.html": "29352c963e17531cf4a1e0aa9bbdad517c68ff65786d299bbe94b64c66a0f8a0",
+    "assets/map-data/loader.mjs": "e240bf55c4d0940fc137ed8f53eb2d6ae29061ed34c38113be51155a60861c2e",
     "supabase/migrations/20261014130713_geography_source_private_archive.sql": "e53720ef260a8e6711f9d82b872bb6ed1496bb1013c94695d23712733e1528d1",
     "supabase/migrations/20261014140218_geography_source_capture_single_flight.sql": "214a5ae1db4dd2818b84ae87474929b47e6442fdf78500b6d17a83b5b5feadb3",
     "supabase/migrations/20261014134155_canonical_locality_native_name_position_cas.sql": "261d5ae4510e784dfa96a8fe0049d668948ced4787773cb761bbcecc70a7b945",
-    "supabase/functions/geography-repair-source-consumer/index.ts": "394913a6d7f4cbfbf201991ebe531bb7b6a8d476af54acdedec265bd6c5227ee"
+    "supabase/functions/geography-repair-source-consumer/index.ts": "394913a6d7f4cbfbf201991ebe531bb7b6a8d476af54acdedec265bd6c5227ee",
+    "supabase/migrations/20261014140907_canonical_social_writer_current_authority.sql": "884c8be08039655f724ea1cb7053988489b76e98686b9c14096f33b5b9fb7857",
+    "tests/database/fixtures/canonical-social-writer-live.sql": "21f264b5a5e8f8ddd5d44102a2bfd5ef641fc0720346d6c6203f2d0dd05dd943",
+    "tests/database/canonical-social-writer-authority-qa.integration.mjs": "8d40161edd1b0978e02e1c04d4e3b49c4bea95354356ec08890863192b2a184b",
+    "supabase/migrations/20261014140803_canonical_draft_current_authority_guards.sql": "7af37f473ef515a0be6ebe523b9b2bfaa9e520e9edbf7c3a6788081feaea8a51",
+    "assets/suite/composer.js": "aa03ef6fb147472c618f20dda11f3f6262655da2f27acf481f658c769fb84ed9",
+    "tests/database/editorial-production-rollback.sql": "675fbbafa6a1a27211df8dea8255d491405d08575db67e210af03c07724664bd",
+    "mobile/src/Discovery.tsx": "0574a875a6d4844f8e1441c01e0d348e43159980ce26ee5f07a29ab2649ce014",
+    "tests/unit/map-adaptive-read.test.mjs": "a1381cbe395ee476c76bece26828850764bd0ad0228f7380c3cd5044cdea2fdc"
   },
   "selected_map": {
     "candidate_actual_MapLibre": [
@@ -27,7 +35,7 @@
   "editorial": {
     "isolated_sql_checks": 14,
     "actual_Calendar_Composer_canonical_DB_queued_only": true,
-    "legacy_draft_edit_authority_blocker": "Existing social_save_post/social_delete_post membership-only checks permit viewers; linked source guards do not yet cover all draft edits. No overall owner-write completion accepted.",
+    "legacy_draft_edit_authority_blocker": "Resolved in candidate shared canonical40907 + linked40803; production rollout pending.",
     "publication_provider_verified": false
   },
   "private_archive": {
@@ -59,5 +67,49 @@
     "whole_feed_accepted": false,
     "subsequent_readonly_postgres_EXPLAIN_ms": 294.074,
     "settings_note": "No global role timeout increase performed."
+  },
+  "canonical_writer": {
+    "checks": 21,
+    "actual_captured_production_authority_helpers": true,
+    "generic_non_source_posts": true,
+    "editor_create_edit_delete": true,
+    "admin_and_real_owner_fallback": true,
+    "viewer_edit_delete_create_refused": true,
+    "forged_owner_and_removed_membership_refused": true,
+    "expired_session_refused": true,
+    "concurrent_role_revocation_denies_queued_write": true,
+    "concurrent_session_revocation_denies_queued_write": true,
+    "production_pending": true
+  },
+  "combined_linked_authority": {
+    "AI_SQL_checks": 24,
+    "editorial_SQL_checks": 23,
+    "actual_Studio_Composer_and_Calendar_Composer_queued_only": true,
+    "immutable_client_including_null_and_bound_campaign": true,
+    "originally_campaign_free_allows_selection": true,
+    "real_owner_fallback": true,
+    "viewer_expired_session_client_revoked_edit_delete_refused": true,
+    "Composer_pending_context_writer_requests": 0,
+    "deleted_canonical_nullable_receipt_never_saved": true,
+    "production_rollback_file_local_assertions": 21,
+    "production_rollback_file_absence_checks": 7,
+    "production_execution_pending": true
+  },
+  "production_feed_with_candidate_adaptive_reader": {
+    "at": "2026-10-14T14:46:12.420Z",
+    "ms": 10062,
+    "transport": 65,
+    "peak": 2,
+    "rows": 15933,
+    "distinctIds": 15933,
+    "distinctSlugs": 15933,
+    "complete": true,
+    "truncated": false,
+    "endDetected": true,
+    "failedOffsets": [],
+    "failures": [],
+    "first": "daughters-of-crete-cretefs-of-denver-paa-505-denver",
+    "last": "dr-peter-lambrou-pittsburgh-ffec6d",
+    "scope": "Actual deployed RPCs through candidate helper; source retrieval only, no full-catalogue accuracy or deployed frontend claim"
   }
 }

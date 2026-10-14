@@ -37,7 +37,7 @@ import {
 import { discoveryPrivateRpc } from "./discoveryScope";
 import { discoveryRead } from "./discoveryRead";
 import { placeDestination } from "./placeNavigation";
-import { loadMapPages, retryMapRead } from "../../assets/map-data/loader.mjs";
+import { loadMapPages, retryMapRead, createAdaptiveMapRead } from "../../assets/map-data/loader.mjs";
 import { suggestionController } from "../../assets/discovery/autocomplete.mjs";
 function Action({
   label,
@@ -319,13 +319,13 @@ export function Discover({
     setMapBusy(true);
     setMapError("");
     void loadMapPages(
-      (offset: number, limit: number) =>
+      createAdaptiveMapRead((offset: number, limit: number) =>
         discoveryRead(
           "explore_geo",
           { p_limit: limit, p_offset: offset },
           controller.signal,
-        ),
-      { retries: 1 },
+        )),
+      { retries: 0, concurrency: 2 },
     )
       .then((result: any) => {
         if (!valid) return;
