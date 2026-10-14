@@ -1,0 +1,30 @@
+name: Default discovery database contract
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/default-discovery.yml'
+      - 'tests/database/default-discovery.integration.mjs'
+      - 'tests/fixtures/explore-default-source.sql'
+      - 'supabase/migrations/20261014043104_bounded_default_discovery_page.sql'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/default-discovery.yml'
+      - 'tests/database/default-discovery.integration.mjs'
+      - 'tests/fixtures/explore-default-source.sql'
+      - 'supabase/migrations/20261014043104_bounded_default_discovery_page.sql'
+permissions:
+  contents: read
+jobs:
+  database-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify isolated PostgreSQL 16 is available
+        run: /usr/lib/postgresql/16/bin/postgres --version
+      - name: Compare complete public JSON, authorization and indexed first-page behavior
+        run: node tests/database/default-discovery.integration.mjs

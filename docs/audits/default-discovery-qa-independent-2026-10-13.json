@@ -1,0 +1,54 @@
+{
+  "reviewer": "qa_release independent of lead author",
+  "captured_at": "2026-10-14T05:05:25.802536+00:00",
+  "source_hashes": {
+    "supabase/migrations/20261014043104_bounded_default_discovery_page.sql": "689dac71074a153de8753b3572a7fc0bb4847c516c1bb19295689b9b232be54b",
+    "tests/database/default-discovery.integration.mjs": "026c0689705c9cf302b3b355053bf6f219e28a3efa30f7411db5ee73e8bf5474"
+  },
+  "command": "node tests/database/default-discovery.integration.mjs",
+  "exit": 0,
+  "result": {
+    "passed": 92,
+    "fixture_rows": 37007,
+    "full_json_oracle": true,
+    "indexes": [
+      {
+        "index": "listings_public_default_page_idx",
+        "rows": 2024,
+        "loops": 1
+      },
+      {
+        "index": "listings_public_global_rank_idx",
+        "rows": 1,
+        "loops": 2024
+      },
+      {
+        "index": "listings_pkey",
+        "rows": 1,
+        "loops": 24
+      },
+      {
+        "index": "categories_pkey",
+        "rows": 1,
+        "loops": 1
+      }
+    ],
+    "execution_ms": 26.198,
+    "production_latency": "not measured"
+  },
+  "review": "Accepted exact blank-query branch/source-tail projection, indexed correlated canonical group winner before LIMIT/OFFSET, current role grants/private helper denial and prerequisite guard",
+  "earlier_77_case_review_followup": {
+    "artifact": "docs/audits/default-discovery-owner-independent-2026-10-13.json",
+    "adversarial_ties": "Resolved:2000NULL-verification loser rows and creator-priority winner now deliberately rank within first optimized page; exact full JSON oracle plus explicit winner assertions",
+    "hidden_pending_draft_suppression": "Resolved in optimized-page fixture:better-ranked hidden/pending/draft group members cannot displace eligible public winner",
+    "offset240_241": "Resolved:limitNULL,-1,0,1,24,48,1000 crossed offsetsNULL,-1,0,1,23,24,48,240,241,900,90000 against full original JSON oracle",
+    "index_prerequisite": "Guard checks existing global-rank index valid+ready and immutable original public function definition/owner/effective explicit ACL; index plan verified on isolatedfixture. Lead separately verified live canonicalizer/index definition; independent QA does not claim a fresh live catalog inspection here"
+  },
+  "remaining_acceptance": [
+    "Actual production apply and cold/warm anonymous RPC/API/browser output after deployment",
+    "Isolated media projection helpers are controlled fixtures; full deployed consumer/draft privacy behavior needs separate production readback",
+    "Production search500initialfail remains recorded until actual deployed recovery verified"
+  ],
+  "production_mutations": false,
+  "production_latency_measured": false
+}
