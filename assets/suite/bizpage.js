@@ -389,8 +389,8 @@
     var sourceReviewHandle=null;
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false, selectedListingIntent = null;
     function scopeLive(){return validScopeId.test(account) && !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
-    function destroyDesign(){if(sourceReviewHandle)sourceReviewHandle.dispose();sourceReviewHandle=null;mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
-    function unsaved(){return contentDirty || state.saving || !!state.pendingContent || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
+    function destroyDesign(){if(state.revisionActivationHandle){state.revisionActivationHandle.destroy();state.revisionActivationHandle=null;}if(sourceReviewHandle)sourceReviewHandle.dispose();sourceReviewHandle=null;mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
+    function unsaved(){return contentDirty || state.saving || !!state.pendingContent || !!(state.revisionActivationHandle && state.revisionActivationHandle.hasUnsavedChanges()) || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
     function allowLeave(){return !unsaved() || global.confirm('Leave this business home? Unsaved content and private design changes will be lost.');}
     function destroy(){if(lifecycle.signal.aborted)return;lifecycle.abort();bootEpoch++;destroyDesign();clearInterval(scopeTimer);observer.disconnect();root.replaceChildren();}
     root.__bizPageDestroy=destroy;
@@ -411,6 +411,7 @@
         var currentPage=await rpcRead('home_content_get',{p_workspace:ws,p_listing:listing});
         if(!scopeLive()||turn!==bootEpoch)return;
         if(currentPage?.ok!==true||currentPage.workspace_id!==ws||currentPage.listing_id!==listing)throw Error('no_access_to_listing');
+        if(state.revision && state.revision.staged)return;
         if(currentPage.version!==state.contentVersion){state.contentVersion=null;var note=wrap.querySelector('[data-current-access-note]');if(!note){note=el(doc,'p','zp-note');note.dataset.currentAccessNote='';note.setAttribute('role','status');wrap.prepend(note);}note.textContent='This page changed elsewhere. Your unsaved text is still here. Reload the saved details before publishing.';var reload=wrap.querySelector('[data-current-access-reload]');if(!reload){reload=el(doc,'button','zp-btn','Reload saved details');reload.type='button';reload.dataset.currentAccessReload='';reload.onclick=function(){if(global.confirm('Reload the latest saved details? Your unsaved changes here will be replaced.'))boot(listing);};note.after(reload);}}
       }catch(error){if(scopeLive()&&turn===bootEpoch&&accessRefused(error))retireAccess();}
       finally{authorityChecking=false;}
@@ -610,8 +611,26 @@
       }
     }
 
+    async function mountRevisionTools(slot, staged) {
+      var epoch = bootEpoch;
+      try {
+        var module = await import('/assets/homes/design-editor-revision.mjs');
+        if (!scopeLive() || epoch !== bootEpoch || !slot.isConnected) return;
+        var handle = await module.mountRevision(slot, ctx, { listing: state.status.listingId, beforeActivate: allowLeave, onActivate: function () { boot(state.status.listingId); } });
+        if (!scopeLive() || epoch !== bootEpoch || !slot.isConnected) { handle.destroy(); return; }
+        if (staged) designHandle = handle;
+        else { state.revisionActivationHandle = handle; }
+      } catch (e) {
+        if (scopeLive() && slot.isConnected) slot.textContent = 'Private revision tools could not load. Reload this home before editing.';
+      }
+    }
+
     function renderEditor() {
       wrap.innerHTML = '';
+      if (state.revision && state.revision.staged) {
+        mountRevisionTools(wrap, true);
+        return;
+      }
       var s = state.status;
       if(state.choices && state.choices.length>1){var picker=el(doc,'select','zp-select');picker.setAttribute('aria-label','Business to edit');state.choices.forEach(function(r){var opt=el(doc,'option',null,esc(r.name||r.slug));opt.value=r.id;opt.selected=r.id===s.listingId;picker.appendChild(opt);});picker.addEventListener('change',function(){if(state.saving){picker.value=s.listingId;return;}if(allowLeave())boot(picker.value);else picker.value=s.listingId;});wrap.appendChild(picker);}
 
@@ -633,6 +652,7 @@
       head.appendChild(tools);
       wrap.appendChild(head);
       renderClaims();
+      if (state.revision) { var revisionSlot = el(doc, 'div'); wrap.appendChild(revisionSlot); mountRevisionTools(revisionSlot, false); }
       var designPanel=el(doc,'details','zp-design-panel');designPanel.style.cssText='margin:20px 0;max-width:100%;min-width:0';
       var designSummary=el(doc,'summary',null,'Design &amp; layout');designSummary.style.cssText='cursor:pointer;font-weight:700;padding:16px;border:1px solid var(--line2);border-radius:12px';designPanel.appendChild(designSummary);
       var designSlot=el(doc,'div');designPanel.appendChild(designSlot);wrap.appendChild(designPanel);
@@ -990,7 +1010,7 @@
     /* ---- controller ---- */
     async function boot(listingId) {
       if(!scopeLive())return;selectedListingIntent=listingId || null;state.claimsSnapshot=null;var loadEpoch=++bootEpoch;destroyDesign();contentDirty=false;
-      state.vform=null;state.publicityForm=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
+      state.revision=null;state.vform=null;state.publicityForm=null;state.entity=null;state.contentVersion=null;state.pendingContent=null;if(state.unlock){state.unlock();state.unlock=null;}
       state.loading = true;
       state.error = null;
       renderLoading();
@@ -1024,7 +1044,7 @@
       // Has a claimed listing -> load its current content.
       var contentRaw = null;
       try {
-        var contentReceipt=await rpcRead('home_content_get',{p_workspace:ws,p_listing:status.listingId});if(contentReceipt?.ok!==true||contentReceipt.listing_id!==status.listingId||contentReceipt.workspace_id!==ws||!/^([a-f0-9]{32})$/.test(contentReceipt.version||''))throw Error('Current page snapshot could not be confirmed');contentRaw=contentReceipt.base;state.entity=ownerEntity(contentReceipt,{workspace:ws,listing:status.listingId,name:status.name,slug:status.slug});state.contentVersion=contentReceipt.version;state.ownerProfile=contentReceipt.profile;
+        var contentReceipt=await rpcRead('home_content_get',{p_workspace:ws,p_listing:status.listingId});if(contentReceipt?.ok!==true||contentReceipt.listing_id!==status.listingId||contentReceipt.workspace_id!==ws||!/^([a-f0-9]{32})$/.test(contentReceipt.version||''))throw Error('Current page snapshot could not be confirmed');state.revisionStaged=contentReceipt.home_revision_staged===true;contentRaw=contentReceipt.base;state.entity=ownerEntity(contentReceipt,{workspace:ws,listing:status.listingId,name:status.name,slug:status.slug});state.contentVersion=contentReceipt.version;state.ownerProfile=contentReceipt.profile;
       } catch (e2) {
         if(!scopeLive()||loadEpoch!==bootEpoch)return;
         state.loading = false;
@@ -1036,6 +1056,8 @@
       if(!scopeLive()||loadEpoch!==bootEpoch)return;
       if(state.entity && state.entity.profile) contentRaw.profile=state.entity.profile;
       contentRaw.owner_content=state.entity.owner_content;
+      try { state.revision = await rpcRead('home_revision_get', {p_workspace:ws,p_listing:status.listingId}); } catch (e) { state.revision = null; if(state.revisionStaged && scopeLive()){state.loading=false;renderError('This home uses private drafts. Its revision tools could not load. Please retry before editing.');return;} }
+      if (!scopeLive() || loadEpoch !== bootEpoch) return;
       state.draft = normContent(contentRaw,socialResolver);
       state.loading = false;
       selectedListingIntent=status.listingId;

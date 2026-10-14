@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // zoi.city Wave 1 — API contract tests (zero deps, node >= 18, built-in fetch).
 // Needs network. Run: node contract/run.mjs   (or set BASE / ANON env vars)
+import {skip, runChecks} from './result-kit.mjs';
 
 const BASE = process.env.BASE || 'https://csebihpaychdkanjjsmz.supabase.co';
 const ANON = process.env.ANON || 'sb_publishable_BM4ZQtOCUhjg7VqyFGJGRw_eFyTgI4j';
@@ -51,7 +52,7 @@ const t = (name, fn) => tests.push({ name, fn });
 // --- explore_search ---
 t('explore_search returns a jsonb array', async () => {
   const r = await rpc('explore_search', { p_q: '', p_limit: 5 });
-  assert(r.status === 200, `status ${r.status}`);
+  assert(r.status === 200, `status ${r.status}${isObj(r.json) ? '; code '+String(r.json.code || '').slice(0,40)+'; message '+String(r.json.message || '').slice(0,200) : ''}`);
   assert(isArr(r.json), 'body is not an array');
   assert(r.json.length > 0, 'expected at least one result');
 });
@@ -249,9 +250,9 @@ for (const [fn, params] of EVENT_OS_WORKSPACE_RPCS) {
   t(`SECURITY: ${fn} without auth is cleanly rejected`, async () => {
     const r = await rpc(fn, params);
     if (!STRICT_EVENT_OS && r.status === 404) {
-      console.log(`# SKIP ${fn}: Event OS RPC is not deployed yet; use STRICT_EVENT_OS=1 after deployment`);
-      return;
+      return skip(`${fn}: Event OS RPC unavailable; use STRICT_EVENT_OS=1 for the required deployment gate`);
     }
+    assert(r.status !== 404, `${fn}: required Event OS RPC unavailable`);
     assertRejected(r, `${fn} anon`);
   });
 }
@@ -294,8 +295,7 @@ for (const tbl of RLS_LOCKED_TABLES) {
   t(`SECURITY: ${tbl} rejects anon REST access (RLS must stay enabled)`, async () => {
     const res = await fetch(`${BASE}/rest/v1/${tbl}?select=*&limit=1`, { headers: HDRS });
     if (!STRICT_EVENT_OS && res.status === 404 && ['events', 'event_floor_plans', 'event_team_members', 'event_audit_log'].includes(tbl)) {
-      console.log(`# SKIP ${tbl}: Event OS migration is not deployed; use STRICT_EVENT_OS=1 after deployment`);
-      return;
+      return skip(`${tbl}: Event OS table unavailable; use STRICT_EVENT_OS=1 for the required deployment gate`);
     }
     assert(res.status === 401 || res.status === 403,
       `${tbl}: expected 401/403 from RLS lockdown, got ${res.status}`);
@@ -305,19 +305,6 @@ for (const tbl of RLS_LOCKED_TABLES) {
 // ---------- runner ----------
 (async () => {
   console.log(`# zoi.city contract tests — BASE=${BASE}`);
-  console.log(`1..${tests.length}`);
-  let failed = 0;
-  for (let i = 0; i < tests.length; i++) {
-    const { name, fn } = tests[i];
-    try {
-      await fn();
-      console.log(`ok ${i + 1} - ${name}`);
-    } catch (e) {
-      failed++;
-      console.log(`not ok ${i + 1} - ${name}`);
-      console.log(`# ${String(e && e.message ? e.message : e).replace(/\n/g, '\n# ')}`);
-    }
-  }
-  console.log(`# ${tests.length - failed}/${tests.length} passed`);
+  const {failed} = await runChecks(tests);
   process.exit(failed === 0 ? 0 : 1);
 })();

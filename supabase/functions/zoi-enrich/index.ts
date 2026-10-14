@@ -134,6 +134,7 @@ import { vet, dnsState } from "./_ssrf.ts";
 import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
+import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
 import { extractStructuredMenu } from "./_menus.js";
 import { extractHospitality, hospitalitySupplements, hospitalitySourceMatches, validHospitalityFields } from "./_hospitality.js";
 import { extractSiteImages, supplementaryPages, imageIdentity } from "./_images.js";
@@ -624,13 +625,16 @@ Deno.serve(async (req) => {
           provenance: {} });
         continue;
       }
+      const sourceEvidence = [{url: got.finalUrl!, purpose: "registered_source", state: "fetched"}];
       const member = memberLeaseGuard(row, got.doc!, got.finalUrl!);
       if (member.handled) {
         bump(member.profile?.last_error === "source_scope_mismatch" ? "source-scope-mismatch" : member.profile && "member" in member.profile ? "member-identity-matched" : "member-review-required");
-        batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile: member.profile, provenance: member.provenance });
+        batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile: member.profile, provenance: member.provenance, source_evidence: sourceEvidence });
         continue; // Never run generic metadata or supplementary crawls for a person on a member source.
       }
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
+      const sourceIdentity = aggregator ? null : sourceClientIdentity(row, got.doc!, got.finalUrl!);
+      if (sourceIdentity) { profile.source_identity = sourceIdentity; provenance.source_identity = sourceIdentity.verification; }
       if (!hospitalitySourceMatches(got.finalUrl!, row.website)) {
         for (const key of ["rooms", "dining", "venues", "amenities"]) { delete profile[key]; delete provenance[key]; }
       }
@@ -648,11 +652,12 @@ Deno.serve(async (req) => {
           if (page.purpose === "gallery" && Array.isArray(profile.photo_urls) && profile.photo_urls.length >= 6) continue;
           if (page.purpose === "contact" && profile.phone && profile.email && Object.keys((profile.social || {}) as object).length >= 2) continue;
           const pageVet = await boundedIO(deadline - RPC_MS, TIMEOUT_MS, () => vet(page.url, Math.min(deadline - RPC_MS, Date.now() + TIMEOUT_MS)));
-          if (!pageVet.url) { bump("supplement-refused"); continue; }
+          if (!pageVet.url) { sourceEvidence.push({url:page.url,purpose:page.purpose,state:"refused"}); bump("supplement-refused"); continue; }
           const pageUrl = pageVet.url;
-          if (!(await robotsAllows(pageUrl, deadline - RPC_MS))) continue;
+          if (!(await robotsAllows(pageUrl, deadline - RPC_MS))) { sourceEvidence.push({url:page.url,purpose:page.purpose,state:"robots_disallow"}); continue; }
           const extra = await fetchDoc(pageUrl, deadline - RPC_MS);
-          if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { bump("supplement-unavailable"); continue; }
+          if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { sourceEvidence.push({url:page.url,purpose:page.purpose,state:"unavailable"}); bump("supplement-unavailable"); continue; }
+          sourceEvidence.push({url:extra.finalUrl,purpose:page.purpose,state:"fetched"});
           const next = extract(extra.doc, extra.finalUrl);
           const pageHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(extra.doc)))).map(b => b.toString(16).padStart(2, "0")).join("");
           for (const key of ["rooms", "dining", "venues", "amenities"]) {
@@ -685,7 +690,7 @@ Deno.serve(async (req) => {
       }
       for (const k of Object.keys(profile)) bump("field:" + k);
       bump("ok");
-      batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile, provenance });
+      batch.push({ slug: row.slug, website: got.finalUrl, lease_id: row.lease_id, profile, provenance, source_evidence: sourceEvidence });
     } catch (e) {
       const error = String(e).slice(0, 160);
       bump("error:" + error.slice(0, 40));
@@ -702,6 +707,11 @@ Deno.serve(async (req) => {
       leases: batch.map(row => ({slug: row.slug, lease_id: row.lease_id})),
     }), {status: 503, headers: {"Content-Type": "application/json"}});
     try {
+      prepareClientBrief(batch, queue);
+      for (const row of batch) {
+        const brief = (row.profile as Record<string, unknown>)?.client_brief as {status?: string} | undefined;
+        if (brief?.status) bump("brief:" + brief.status);
+      }
       const res = await sbRpc("enrich_apply", { p_batch: batch }, deadline);
       const receipt = confirmedEnrichmentReceipts(batch, res);
       applied = receipt.applied;

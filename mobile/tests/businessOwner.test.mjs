@@ -1,9 +1,16 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {ownerChoices,ownerSnapshot,ownerSavePayload,ownerSource,ownerSaveReceipt,ownerRPC,readOwner,publishOwner,ownerAccessRefused} from '../src/businessOwner.ts';
+import {ownerChoices,ownerSnapshot,ownerSavePayload,ownerSource,ownerSaveReceipt,ownerRPC,readOwner,publishOwner,ownerAccessRefused,ownerRevisionRequired} from '../src/businessOwner.ts';
 import {businessOwnerRecovery,ownerMarker} from '../src/businessOwnerRecovery.ts';
 const id=n=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`,ws=id(1),listing=id(2),request=id(3),actor=id(4),version='a'.repeat(32);
 const snapshot={ok:true,workspace_id:ws,listing_id:listing,version,entity_type:'business',base:{id:listing,name:'Our cafe',slug:'our-cafe',website:'https://foreign.example/',description:'Saved description',phone:null,email:'contact@our.example',hours:'Morning',photo_url:null,social_links:null},profile:{menu:[{section:'Coffee',items:[{name:'Greek coffee',price:'5'}]}],about:null,_enrich:{source_url:'https://foreign.example/',blocked_reason:'source_scope_mismatch',tagline:'Wrong identity'}},owner_content:{}};
 const draft={...snapshot.base,website:'https://our.example/'};const p=()=>ownerSavePayload(snapshot,draft,request),receipt=p=>({ok:true,workspace_id:ws,listing_id:listing,request_id:p.p_request,version:'b'.repeat(32)}),choices={ok:true,workspace_id:ws,owned:[{id:listing,name:'Our cafe'}],claims:[]};
+test('private-revision writer refusal is distinct from network uncertainty and access denial',async()=>{
+ for(const value of [Error('home_revision_required'),{code:'home_revision_required'},{code:'P0001',message:'home_revision_required: use private editor'}]){assert.equal(ownerRevisionRequired(value),true);assert.equal(ownerAccessRefused(value),false);}
+ for(const value of [Error('response lost'),Error('not_authorized'),Error('home_revision_required_other'),null,{status:500}])assert.equal(ownerRevisionRequired(value),false);
+ const pending=p();let writes=0;
+ await assert.rejects(publishOwner({pending,current:()=>true,rpc:async name=>{if(name==='home_content_get')return snapshot;if(name==='bizpage_status')return choices;writes++;throw Error('home_revision_required');}}),/home_revision_required/);
+ assert.equal(writes,1);assert.deepEqual(pending,p());assert.equal(draft.website,'https://our.example/');
+});
 test('private snapshot rejects scope/version/base identity and does not mutate original source or menus',()=>{assert.deepEqual(ownerSnapshot(snapshot,ws,listing),snapshot);for(const bad of [{...snapshot,listing_id:id(99)},{...snapshot,version:'1'},{...snapshot,base:{...snapshot.base,id:id(99)}},{...snapshot,profile:null}])assert.throws(()=>ownerSnapshot(bad,ws,listing));});
 test('changed website only uses real writer patch, leaves base clears and unknown menus/social shape untouched',()=>{assert.deepEqual(p(),{p_workspace:ws,p_listing:listing,p_expected_version:version,p_request:request,p_base:{website:'https://our.example/'},p_profile:{}});assert.equal(snapshot.profile.about,null);assert.equal(snapshot.base.social_links,null);assert.equal(snapshot.profile._enrich.tagline,'Wrong identity');});
 test('explicit website/photo/social clears are sent as owner choices, no duplicate imported fields',()=>{const v=ownerSavePayload(snapshot,{...snapshot.base,website:'',photo_url:'',social_links:{}},request);assert.deepEqual(v.p_base,{website:null,photo_url:null,social_links:{}});assert.deepEqual(v.p_profile,{});});
