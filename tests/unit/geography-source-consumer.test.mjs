@@ -37,3 +37,12 @@ test('safe hosted failure returns exact stage/http/SQLSTATE only and official co
  }finally{globalThis.fetch=previous;fixtureJobs=[];}
  assert.deepEqual(safeConsumerFailure({message:'not implemented secret',stage:'/private/path',sqlstate:'secret'},'source_research'),{error:'runtime_operation_unsupported',stage:'source_research'});
 });
+test('runner filesystem failures expose only fixed operation stages and never finish an unarchived capture',async()=>{
+ const{runGeographyResearchJobs}=await import('../../supabase/functions/geography-repair-source-consumer/_runner.js');const{mkdtemp,mkdir,rm}=await import('node:fs/promises');const dir=await mkdtemp('/tmp/zoi-operation-');const body='<p>Published source fixture</p>',hash=createHash('sha256').update(body).digest('hex');let finished=0;const job={id:'fixture',lease_id:'lease',status:'leased',listing_id:'listing',input_fingerprint:'input',original:{name:'Fixture',website:'https://official.example.org/',address:'1 Main Street',city:'Melbourne',country:'Australia'}};
+ try{
+  await assert.rejects(runGeographyResearchJobs([job],{directory:'/dev/null/invalid',finishJob:async()=>finished++}),e=>e.stage==='runner_directory');
+  await mkdir(dir+'/'+hash+'.source.html');await assert.rejects(runGeographyResearchJobs([job],{directory:dir,sourceFetch:async url=>({url,status:200,text:body}),finishJob:async()=>finished++}),e=>e.stage==='source_document_write');await rm(dir+'/'+hash+'.source.html',{recursive:true});
+  await assert.rejects(runGeographyResearchJobs([{...job,id:'missing/result'}],{directory:dir,sourceFetch:async()=>{throw Error('source_timeout')},finishJob:async()=>finished++}),e=>e.stage==='job_result_write');assert.equal(finished,0);
+  assert.deepEqual(safeConsumerFailure({message:'private path /tmp/secret-source.html',stage:'source_document_write'},'source_research'),{error:'bounded_source_batch_failed',stage:'source_document_write'});
+ }finally{await rm(dir,{recursive:true,force:true});}
+});

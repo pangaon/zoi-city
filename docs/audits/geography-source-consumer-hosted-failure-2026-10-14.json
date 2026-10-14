@@ -2,7 +2,7 @@
   "observed_at": "2026-10-14T15:16:41Z",
   "ci_run": "38586631447",
   "release_commit": "014eeb58",
-  "status": "deployed_hosted_capture_failed_safe_diagnostic_prepared",
+  "status": "frozen_operation_diagnostics_hosted_canary_pending",
   "worker": {
     "version": 1,
     "status": "ACTIVE",
@@ -26,11 +26,29 @@
     "Private temporary-directory capability checked before consuming job leases",
     "Official queue consumer explicitly pins official_sources_v1 strategy"
   ],
-  "local_tests_passed": 26,
+  "local_tests_passed": 27,
   "actual_hosted_remaining": [
     "Root reviewed fresh release and safe canary diagnostic",
     "Successful source capture/private archive readback before cron enablement"
   ],
   "diagnostic_only_not_claimed_runtime_fix": true,
-  "deployments_by_enrichment": 0
+  "deployments_by_enrichment": 0,
+  "latest_canary": {
+    "ci_run": "38591106619",
+    "failed_at": "2026-10-14T15:39:14Z",
+    "http_status": 503,
+    "safe_error": "bounded_source_batch_failed",
+    "stage": "source_research",
+    "service_http_status": null,
+    "sqlstate": null,
+    "temporary_directory_preflight": "succeeded",
+    "cron_enabled": false
+  },
+  "prepared_operation_markers": [
+    "runner_directory",
+    "source_document_write",
+    "job_result_write",
+    "archive_read"
+  ],
+  "transport_rewrites": 0
 }

@@ -1,0 +1,45 @@
+{
+  "checked_at": "2026-10-14T15:37:37.303860+00:00",
+  "source_hashes": {
+    "supabase/migrations/20261014150027_social_reader_current_session_authority.sql": "92020053fe503bc4a18df33109fb4c1efebcfcb4e2d49c529209ddd307fc4a94",
+    "tests/database/social-reader-current-session-qa.integration.mjs": "65b96c7abefbc805bc3320ce1afe411d40b2874493226031c37fe5d9d8a303f2",
+    "tests/database/social-reader-production-rollback.sql": "9bba1a99b587be36389b1e5239347824941cf982be8e032eca0ff17ebe399fe4",
+    "tests/database/fixtures/social-readers-before-current-session.sql": "490a4d9978bfe0aae5e1953724a1ddfa34459b9c86756a4b6bca397d24c93dd3"
+  },
+  "scope": [
+    "social_list_posts",
+    "social_stats",
+    "social_channels_list",
+    "social_post_targets_list"
+  ],
+  "implementation": "Existing workspace_current_role and suite_current_session; no second identity system. Targets body already used assert_ws and remains unchanged.",
+  "isolated_PG_checks": 63,
+  "preserved": [
+    "Named arguments/defaults/return types",
+    "Legitimate current viewer rows and JSON",
+    "Post date filters/order",
+    "Ten-field channels omit access/refresh tokens",
+    "Authenticated and service named grants",
+    "Current owner without membership fallback"
+  ],
+  "refused": [
+    "Anonymous/PUBLIC execution",
+    "Expired/deleted/foreign/missing auth session",
+    "Null subject",
+    "Removed membership",
+    "Foreign workspace",
+    "Private table/token direct reads"
+  ],
+  "production_rollback_fixture": {
+    "exact_SQL_executed_locally": true,
+    "assertions": 21,
+    "absence_checks": 5,
+    "fresh_private_fixture_only": true,
+    "existing_auth_session_mutations": false,
+    "helper_overrides": false,
+    "provider_operations": false,
+    "correction": "Owner fallback assertion uses public social_stats and social_list_posts; direct private helper call removed. Corrected exact fixture locally passes21 assertions and5 absence checks; live rerun awaits lead."
+  },
+  "production_status": "Pending integration lead independent review, application and actual rollback proof. No authenticated browser or provider operation claim.",
+  "migration_eof_normalized": "Trailing empty EOF line removed; SQL semantics unchanged."
+}

@@ -6,8 +6,9 @@ async function sbRpc(fn:string,args:Record<string,unknown>){
   const r=await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`,{method:"POST",signal:AbortSignal.timeout(15000),headers:{apikey:SERVICE,...(SERVICE.startsWith("sb_secret_")?{}:{Authorization:`Bearer ${SERVICE}`}),"Content-Type":"application/json"},body:JSON.stringify(args)});
   const t=await r.text(); if(!r.ok) throw new Error(`${fn}: ${r.status} ${t.slice(0,150)}`); return t?JSON.parse(t):null;
 }
-const CODE2PLAT:Record<string,string>={fb:"facebook",ig:"instagram",li:"linkedin",tt:"tiktok",x:"x",yt:"youtube",facebook:"facebook",instagram:"instagram",linkedin:"linkedin",tiktok:"tiktok",youtube:"youtube"};
-async function publishOne(platform:string,ch:any,body:string,media:any[]):Promise<{ok:boolean;id?:string;url?:string;error?:string}>{
+const CODE2PLAT:Record<string,string>={fb:"facebook",ig:"instagram",li:"linkedin",tt:"tiktok",x:"twitter",twitter:"twitter",yt:"youtube",facebook:"facebook",instagram:"instagram",linkedin:"linkedin",tiktok:"tiktok",youtube:"youtube"};
+async function publishOne(platform:string,ch:any,body:string,media:any[]):Promise<{ok:boolean;id?:string;url?:string;error?:string;uncertain?:boolean}>{
+  if(platform==="twitter")platform="x";
   if(!ch.access_token || !ch.external_id) return {ok:false,error:"channel_credentials_unavailable"};
   if((media||[]).length && ["facebook","linkedin","x"].includes(platform)) return {ok:false,error:"image_publishing_not_supported"};
   if(platform==="instagram" && (media||[]).length!==1) return {ok:false,error:"instagram_requires_one_image"};
@@ -41,7 +42,7 @@ async function publishOne(platform:string,ch:any,body:string,media:any[]):Promis
     }
     if(platform==="tiktok"||platform==="youtube") return {ok:false,error:`${platform}_requires_video_upload`};
     return {ok:false,error:"unsupported_platform"};
-  }catch(e){ return {ok:false,error:String(e instanceof Error ? e.message : e).slice(0,100)}; }
+  }catch(e){ return {ok:false,uncertain:true,error:"provider_result_unknown_requires_reconciliation: "+String(e instanceof Error ? e.message : e).slice(0,70)}; }
 }
 Deno.serve(async(req)=>{
   const auth=req.headers.get("Authorization")||"";
@@ -51,9 +52,11 @@ Deno.serve(async(req)=>{
   if(!okAuth) return new Response("unauthorized",{status:401});
 
   // ── social posts ──
-  const due=(await sbRpc("social_due_posts",{}))||[];
+  const due=(await sbRpc("social_due_posts_current",{}))||[];
   let processed=0,published=0,partial=0,failed=0;
-  for(const post of due){
+  for(const candidate of due){
+    let post:any;let payloadHash:string;
+    try{const checked=await sbRpc("social_delivery_snapshot",{p_id:candidate.id});if(checked?.ok!==true||!checked.post||!checked.payload_hash)throw Error("delivery_snapshot_unconfirmed");post=checked.post;payloadHash=checked.payload_hash;}catch{failed++;processed++;continue;}
     const codes:string[]=post.channels||[];
     const wantsCommunity=codes.some((code)=>code==="zoi"||code==="community");
     const externalCodes=codes.filter((code)=>code!=="zoi"&&code!=="community");
@@ -78,19 +81,23 @@ Deno.serve(async(req)=>{
       ? [...new Set(externalCodes.map((code)=>CODE2PLAT[code]))]
       : [...new Set(Object.values(CODE2PLAT))];
     const candidates=(await sbRpc("social_channels_for_publish",{p_workspace:post.workspace_id,p_platforms:platforms}))||[];
-    const channels=candidates.filter((ch:any)=>externalCodes.some((code)=>code===ch.id||CODE2PLAT[code]===ch.platform));
+    const channels=candidates.filter((ch:any)=>externalCodes.some((code)=>code===String(ch.id)||CODE2PLAT[code]===ch.platform));
     let anyOk=communityOk;
     let allOk=(!wantsCommunity||communityOk)&&externalCodes.every((code)=>
-      channels.some((ch:any)=>code===ch.id||CODE2PLAT[code]===ch.platform));
-    for(const ch of channels){
+      channels.some((ch:any)=>code===String(ch.id)||CODE2PLAT[code]===ch.platform));
+    for(let ch of channels){
+      // Final database gate before dispatch. This cannot make an external
+      // network request atomic with database revocation; durable attempts and
+      // provider reconciliation remain a separate operational requirement.
+      try{const checked=await sbRpc("social_delivery_snapshot",{p_id:post.id,p_expected_hash:payloadHash,p_channel:ch.id});if(checked?.ok!==true||!checked.post||!checked.channel||String(checked.channel.id)!==String(ch.id))throw Error("delivery_snapshot_unconfirmed");post=checked.post;ch=checked.channel;}catch{allOk=false;continue;}
       const overrides=post.meta?.per_network_overrides||{};
-      const override=overrides[ch.id] || overrides[ch.platform];
+      const override=overrides[ch.id] || overrides[ch.platform] || (ch.platform==="twitter"?overrides.x:null);
       const body=typeof override?.body === "string" ? override.body : (post.body||"");
       const unsupportedOptions=!!post.meta?.first_comment || (Array.isArray(post.meta?.thread)&&post.meta.thread.length>0);
-      const res=unsupportedOptions
+      const res:{ok:boolean;id?:string;url?:string;error?:string;uncertain?:boolean}=unsupportedOptions
         ? {ok:false,error:"first_comment_or_thread_delivery_not_supported"}
         : await publishOne(ch.platform,ch,body,post.media||[]);
-      await sbRpc("social_target_record",{p_post:post.id,p_channel:ch.id,p_platform:ch.platform,p_status:res.ok?"published":"failed",p_external_id:res.id??null,p_url:res.url??null,p_error:res.error??null});
+      await sbRpc("social_target_record",{p_post:post.id,p_channel:ch.id,p_platform:ch.platform,p_status:res.ok?"published":res.uncertain?"unknown":"failed",p_external_id:res.id??null,p_url:res.url??null,p_error:res.error??null});
       if(res.ok) anyOk=true; else allOk=false;
     }
     // Aggregate success requires a receipt from every requested destination.
