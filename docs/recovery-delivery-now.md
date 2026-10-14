@@ -14,7 +14,7 @@ Founder backend, current-session authorization, reports/replay, immutable readin
 | Owner operations | Implement durable per-target delivery attempts and explicit uncertain-outcome reconciliation after current publisher release | AI provider and real audience sends remain separate authorized operations |
 | Independent QA | Full987outcome phone/desktop dashboard, real database authority/counts and actual production map→destination flow; remaining family customer journeys | Controlled browser/SQL/provider/device evidence remains distinct |
 
-New Android build `b7e0e659-9168-4437-8de0-382a7058787e` and iOS simulator build `e3169968-9db6-4798-8c95-4d5a9cf62485` are IN_PROGRESS at exact618f154. They include current adaptive map reads and canonical draft web handoffs. Prior finished de309 artifacts are retained as history, not current acceptance. Included build usage was4800/22500cents before these two builds, with no overage. Artifact completion, physical-device and store acceptance remain unverified.
+New Android build `b7e0e659-9168-4437-8de0-382a7058787e` and iOS simulator build `e3169968-9db6-4798-8c95-4d5a9cf62485` are FINISHED at exact618f154. They include current adaptive map reads and canonical draft web handoffs. Prior finished de309 artifacts are retained as history, not current acceptance. Included build usage was4800/22500cents before these two builds, with no overage. Artifact download/inspection, physical-device and store acceptance remain unverified.
 
 Actual database updates: current social readers applied and21production rollback assertions passed; current Community publisher authority applied and18no-send assertions passed with all8fixture absence checks. Old service due reader is revoked until reviewed Edge release. Supporting publisher-source lane is applied, with no factual listing/coordinate writes; cursor seed and actual durable capture remain next.
 
@@ -23,3 +23,5 @@ Source worker latest deployed diagnostic failed CI38591106619 at `source_researc
 External provider actions are prepared in [connected-owner-actions-2026-10-14.md](audits/connected-owner-actions-2026-10-14.md) and the founder inbox. Missing provider authorization/budgets/signing do not suspend unrelated implementation. Never automatically send, charge, generate paid content or start licensed bulk geocoding.
 
 Historical315dirty paths in `/workspaces/zoi-city` are being reconciled against current main; do not copy stale source over newer fixes. Integrate useful changes and record obsolete/unsafe reasons. Preserve source, rendered and exercised-customer evidence separately in the existing release records. Full-goal completion remains unproven.
+
+Latest production defect: representative creator and parish homes return503 after public-read timeouts. Source/renderer tests do not establish production home availability; shared public read congestion/contract is under investigation.

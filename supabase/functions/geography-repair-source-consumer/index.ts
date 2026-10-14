@@ -1,7 +1,7 @@
 /** Service-triggered bounded source research. Never applies coordinates. */
 import {runGeographyResearchJobs} from './_runner.js';
 import {sha256} from './_hash.js';
-import {readFile,mkdtemp,rm} from 'node:fs/promises';
+import {readFile,mkdtemp,rm,mkdir,writeFile} from 'node:fs/promises';
 import {timingSafeEqual,randomUUID} from 'node:crypto';
 const url=Deno.env.get('SUPABASE_URL')||'',service=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||'';
 const token=Deno.env.get('GEOGRAPHY_REPAIR_TOKEN')||'';
@@ -20,7 +20,18 @@ async function cappedBytes(body:ReadableStream<Uint8Array>|null,maximum:number,t
  const expiry=new Promise<never>((_,reject)=>{timer=setTimeout(()=>{timedOut=true;void reader.cancel();reject(Error('body_deadline'));},timeout)});
  try{return await Promise.race([(async()=>{const chunks:Uint8Array[]=[];let total=0;while(true){const{done,value}=await reader.read();if(done)break;total+=value.byteLength;if(total>maximum){await reader.cancel();throw Error('body_byte_cap');}chunks.push(value);}if(timedOut)throw Error('body_deadline');const bytes=new Uint8Array(total);let offset=0;for(const chunk of chunks){bytes.set(chunk,offset);offset+=chunk.byteLength;}return bytes;})(),expiry]);}finally{clearTimeout(timer!);}
 }
-export function createHandler({runJobs=runGeographyResearchJobs}={}){return async(req:Request)=>{
+async function filesystemOperation(stage:string,action:()=>Promise<any>){try{return await action();}catch(error){throw Object.assign(error instanceof Error?error:Error('runner_operation_failed'),{stage});}}
+export async function probeSourceFilesystem(directory:string){
+ // Exact runner options, tiny private ephemeral bytes; no registered source IO.
+ await filesystemOperation('runner_directory',()=>mkdir(directory,{recursive:true,mode:0o700}));
+ const source='geography-source-runtime-capability-probe',result='{}';
+ await filesystemOperation('source_document_write',()=>writeFile(directory+'/.source-capability-probe',source,{mode:0o600}));
+ await filesystemOperation('job_result_write',()=>writeFile(directory+'/.result-capability-probe',result,{mode:0o600}));
+ const captured=await filesystemOperation('archive_read',()=>readFile(directory+'/.source-capability-probe'));
+ const recorded=await filesystemOperation('archive_read',()=>readFile(directory+'/.result-capability-probe'));
+ await filesystemOperation('archive_read',async()=>{if(sha256(captured)!==sha256(source)||sha256(recorded)!==sha256(result))throw Error('source_archive_hash_mismatch');});
+}
+export function createHandler({runJobs=runGeographyResearchJobs,filesystemProbe=probeSourceFilesystem}={}){return async(req:Request)=>{
  const invocationDeadline=Date.now()+110000,workDeadline=invocationDeadline-5000;
  const serviceIO=(path:string,init:RequestInit,stage:string)=>io(path,init,workDeadline,stage);const serviceRPC=(name:string,args:Record<string,unknown>={})=>rpc(name,args,workDeadline);
  const respond=(status:number,value:unknown)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
@@ -40,7 +51,7 @@ export function createHandler({runJobs=runGeographyResearchJobs}={}){return asyn
   const stored=Number(budget?.stored_bytes),limit=Number(budget?.limit_bytes);
   if(budget?.can_archive!==true||typeof budget.stored_bytes!=='number'||typeof budget.limit_bytes!=='number'||!Number.isFinite(stored)||!Number.isFinite(limit)||stored<0||limit<=0||limit>512*1024*1024||stored+15_000_000>limit)return respond(503,{error:'source_archive_budget_blocked',complete:false,stored_bytes:budget?.stored_bytes??null,limit_bytes:budget?.limit_bytes??null});
   // Verify ephemeral directory capability before consuming canonical job leases.
-  stage='temporary_directory';directory=await mkdtemp('/tmp/zoi-geography-');
+  stage='temporary_directory';directory=await mkdtemp('/tmp/zoi-geography-');await filesystemProbe(directory);
   const jobs=await serviceRPC('geography_repair_lease',{p_limit:4,p_strategy:'official_sources_v1'});
   if(!Array.isArray(jobs))throw Error('lease_response_invalid');
   if(!jobs.length)return respond(200,{processed_jobs:0,state:'no_jobs_in_this_batch',complete:false,provider_calls:0,coordinate_writes:0});
