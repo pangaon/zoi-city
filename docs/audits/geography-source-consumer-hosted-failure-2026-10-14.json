@@ -2,7 +2,7 @@
   "observed_at": "2026-10-14T15:16:41Z",
   "ci_run": "38586631447",
   "release_commit": "014eeb58",
-  "status": "native_hosted_filesystem_adapter_frozen_fresh_canary_pending",
+  "status": "numeric_dns_timer_compatibility_fix_frozen_hosted_canary_pending",
   "worker": {
     "version": 1,
     "status": "ACTIVE",
@@ -26,7 +26,7 @@
     "Private temporary-directory capability checked before consuming job leases",
     "Official queue consumer explicitly pins official_sources_v1 strategy"
   ],
-  "local_tests_passed": 30,
+  "local_tests_passed": 34,
   "actual_hosted_remaining": [
     "Root reviewed fresh release and safe canary diagnostic",
     "Successful source capture/private archive readback before cron enablement"
@@ -34,12 +34,15 @@
   "diagnostic_only_not_claimed_runtime_fix": true,
   "deployments_by_enrichment": 0,
   "latest_canary": {
-    "ci_run": "38593942440",
-    "http_status": 503,
-    "safe_error": "bounded_source_batch_failed",
-    "stage": "source_document_write",
-    "before_job_lease": true,
-    "existing_job_attempts_preserved": 2,
+    "ci_run": "38596663558",
+    "failed_at": "2026-10-14T16:17:13Z",
+    "bootstrap_error": "database_result_ambiguous",
+    "native_filesystem": "passed",
+    "safe_function_identifier": "timer.unref",
+    "actual_completed_jobs": 4,
+    "actual_job_status": "source_blocked",
+    "actual_source_pages": 0,
+    "actual_attempts": 3,
     "cron_enabled": false
   },
   "prepared_operation_markers": [
@@ -65,5 +68,7 @@
       "coordinate_writes": 0
     },
     "hosted_validation_pending": true
-  }
+  },
+  "timer_fix": "Optional Node unref optimization on numeric Deno timer handles; DNS deadline remains capped at5s and timer always cancelled on success/failure.",
+  "historical_failed_jobs": "Retained; no unchanged retry or reenqueue"
 }
