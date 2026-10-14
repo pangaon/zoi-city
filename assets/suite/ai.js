@@ -152,7 +152,7 @@
     }
     function scopeActive(){
       if(ended)return false;
-      if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
+      if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(draftModel&&draftModel.draftActor(C)!==actorAtMount)||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
       return true;
     }
     function scopeChanged(){scopeActive();}
@@ -163,11 +163,14 @@
     var originalRpc=C.api.rpc.bind(C.api);
     C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
       if(!scopeActive())throw Error('Account or workspace changed.');
-      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      try{var value=await originalRpc(name,args,Object.assign({},options,{beforeDispatch:function(){return scopeActive()&&(!options||typeof options.beforeDispatch!=='function'||options.beforeDispatch()!==false);}}));if(!scopeActive())throw Error('Account or workspace changed.');return value;}
       catch(e){clearOnDenied(e);throw e;}
     }})});
     if(!scopeActive())return {destroy:dispose,unmount:dispose};
-
+    var draftModel=await import('/assets/ai/draft-workflow.mjs?v=20261014');
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+    var draftWorkflow=draftModel.createAIDraftWorkflow({actor:actorAtMount,workspace:workspaceAtMount,rpc:C.api.rpc,active:scopeActive});
+    state.generation=null;
 
     /* ---------- LEFT: prompt panel ---------- */
     var panel = el('div', 'zai-card');
@@ -218,6 +221,8 @@
       '<span class="zai-lab">What are you promoting? <span style="text-transform:none;font-weight:600;color:var(--dim)">(optional)</span></span>' +
       '<input class="zai-in" type="text" data-role="promo" placeholder="e.g. cold-pressed olive oil, a nameday offer, new opening hours">';
     panel.appendChild(fPromo);
+
+    var campaignField=el('div','zai-field');campaignField.innerHTML='<label class="zai-lab" for="zai-campaign">Campaign name <span>(optional)</span></label><input id="zai-campaign" class="zai-in" data-role="campaign" maxlength="200" placeholder="Keep this draft with its campaign">';panel.appendChild(campaignField);
 
     // tone + count
     var fMeta = el('div', 'zai-field');
@@ -270,7 +275,7 @@
       try {
         var record = await C.api.rpc('ai_generation_get', {p_workspace:ctx.ws,p_generation:id}, {auth:'require'});
         var g = record.generation;
-        if (g.status === 'succeeded') { state.action = g.action; renderSuggestions(normalize(g.result)); }
+        if (g.status === 'succeeded') { state.generation=draftModel.savedGeneration(record,workspaceAtMount);state.action=state.generation.action;renderSuggestions(draftModel.generationItems(state.generation)); }
         else showError(g.status === 'pending' ? 'This request is still pending. Refresh history to check again; no extra provider call is made.' : 'This generation did not complete. Its budget reservation and status remain in history.');
       } catch (_) { showError('This saved generation is unavailable in this workspace.'); }
     }
@@ -419,6 +424,7 @@
         showError('Zoi’s AI replied but returned no usable text. Try rephrasing your topic and generate again.');
         return;
       }
+      var generation=state.generation;if(!generation){showError('This generation has no saved source record. Refresh its history before saving.');return;}
       list.forEach(function (item, i) {
         var card = el('div', 'zai-sug');
         var tag = state.action === 'week' ? 'Post' : (state.action === 'caption' ? 'Caption' : 'Reply');
@@ -432,14 +438,16 @@
             '<button class="zai-btn sm" data-act="save">Save as draft</button>' +
             '<span class="zai-src"><svg viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>from Zoi’s AI</span>' +
           '</div>';
+        if(generation.profile_snapshot.business_name)card.appendChild(el('p','zai-sub','Drafted for '+generation.profile_snapshot.business_name+'. Review before publication.'));
         var rawText = item.text; // keep raw for copy/save (not re-parsed from DOM)
         card.querySelector('[data-act="copy"]').addEventListener('click', function () {
           copyText(rawText);
         });
         var saveBtn = card.querySelector('[data-act="save"]');
         saveBtn.addEventListener('click', function () {
-          saveDraft(rawText, i, saveBtn);
+          saveDraft(generation,item.index==null?i:item.index,saveBtn,card);
         });
+        var recovery;try{recovery=draftWorkflow.pending(generation.id,item.index==null?i:item.index);}catch(error){saveBtn.disabled=true;card.appendChild(el('p','zai-sub',error.message));}if(recovery){saveBtn.textContent='Retry unconfirmed save';card.appendChild(el('p','zai-sub','The earlier save is unconfirmed. Retry preserves its original client and campaign context.'));}
         results.appendChild(card);
       });
     }
@@ -470,35 +478,19 @@
     }
 
     /* ---------- save as draft ---------- */
-    async function saveDraft(text, idx, btn) {
-      if (state.busySave[idx]) return;
-      state.busySave[idx] = true;
-      var prev = btn.textContent;
-      btn.disabled = true;
-      btn.textContent = 'Saving…';
-      try {
-        var res = await C.api.rpc('social_save_post', {
-          p_workspace: ctx.ws,
-          p_body: text,
-          p_channels: [],
-          p_scheduled_at: null,
-          p_status: 'draft',
-          p_media: '[]',
-          p_nameday: null,
-          p_meta: { source: 'ai-studio', action: state.action, ai_generated: true },
-          p_id: null
-        }, { auth: 'require' });
-        void res;
-        toast('Saved to your drafts.');
-        btn.textContent = 'Saved ✓';
-        setTimeout(function () { if (btn) { btn.textContent = prev; btn.disabled = false; } }, 1600);
-      } catch (e) {
-        toast((e && e.message) || 'Could not save the draft.');
-        btn.textContent = prev;
-        btn.disabled = false;
-      } finally {
-        state.busySave[idx] = false;
-      }
+    async function saveDraft(generation,idx,btn,card) {
+      if(!scopeActive())return;var saveKey=generation.id+':'+idx;if(state.busySave[saveKey])return;state.busySave[saveKey]=true;btn.disabled=true;btn.textContent='Saving…';
+      var note=card.querySelector('[data-draft-status]');if(!note){note=el('p','zai-sub');note.dataset.draftStatus='';note.setAttribute('role','status');card.appendChild(note);}
+      try{
+        var context={campaign:q('campaign')?q('campaign').value:'',listing:/^[0-9a-f-]{36}$/i.test(ctx.listing||'')?ctx.listing:null};
+        var result=await draftWorkflow.save(generation.id,idx,context);if(!scopeActive()||!card.isConnected)return;
+        btn.textContent='Saved draft ✓';btn.disabled=true;note.textContent=result.alreadySaved?'This item already has a saved draft. Composer opens its latest owner changes.':'Draft saved for '+(generation.profile_snapshot.business_name||'this workspace')+'. No post was published.';
+        var open=el('button','zai-btn sm','Open in Composer');open.type='button';card.querySelector('.zai-sug-acts').appendChild(open);
+        open.addEventListener('click',async function(){if(!scopeActive())return;open.disabled=true;try{
+          if(!global.ZoiSchedule)await new Promise(function(resolve,reject){var script=doc.createElement('script');script.src='/assets/suite/_schedule.js?v=20261014';script.onload=resolve;script.onerror=function(){reject(Error('Composer handoff could not load. Your draft remains saved.'));};doc.head.appendChild(script);});
+          if(!scopeActive())return;draftWorkflow.handoff(result.post,{schedule:global.ZoiSchedule});if(typeof ctx.navigate==='function')ctx.navigate('composer');else{var nav=doc.querySelector('.nitem[data-id="composer"]');if(nav)nav.click();else note.textContent='Your draft is saved. Open Composer to continue with the preserved draft.';}
+        }catch(error){if(scopeActive()&&note.isConnected)note.textContent=error.message||'Your draft is saved. Composer could not open.';}finally{if(scopeActive()&&open.isConnected)open.disabled=false;}});
+      }catch(error){if(!scopeActive()||!card.isConnected)return;note.textContent=error?.message||'The save could not be confirmed. Retry the same request to check its receipt.';btn.textContent='Retry unconfirmed save';btn.disabled=false;}finally{state.busySave[saveKey]=false;}
     }
 
     /* ---------- token ---------- */
@@ -567,7 +559,7 @@
         if (data.available === false) { showNotConfigured(); return; }
         if (data.error) { showError(String(data.error)); return; }
 
-        renderSuggestions(normalize(data.result));
+        if(!data.generation_id){showError('The generation returned no saved identity. Refresh history before saving.');return;}await restoreGeneration(data.generation_id);
       } catch (e) {
         showError('Couldn’t reach Zoi’s AI service. Check your connection and try again.');
       } finally {

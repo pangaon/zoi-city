@@ -442,6 +442,8 @@
       posts: [],           // this workspace's scheduled posts, for collision checks
       channels: (ctx.channels || []).slice(),
       editId: null,
+      originMeta: {},
+      importedChannels: null,
       scheduledAt: null,   // ISO string or null
       // the Orthodox layer
       O: null,             // ZoiOrthocal once loaded (null = unavailable, say so)
@@ -493,7 +495,7 @@
     C=Object.assign({},C,{auth:Object.assign({},originalAuth,{token:function(){if(!scopeActive())throw Error('Account or workspace changed.');return originalAuth.token.call(originalAuth);}})});
     C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
       if(!scopeActive())throw Error('Account or workspace changed.');
-      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      try{var value=await originalRpc(name,args,Object.assign({},options,{beforeDispatch:function(){return scopeActive()&&(!options||typeof options.beforeDispatch!=='function'||options.beforeDispatch()!==false);}}));if(!scopeActive())throw Error('Account or workspace changed.');return value;}
       catch(e){clearOnDenied(e);throw e;}
     }})});
     if(!scopeActive())return {destroy:dispose,unmount:dispose};
@@ -1579,6 +1581,7 @@
     }
 
     /* Apply a whole post (from the Calendar) into the composer. */
+    function applyImportedTargets(){if(state.importedChannels===null)return;state.selected={};state.channels.forEach(function(ch){var want=state.importedChannels;if(ch.connected&&netFor(ch.platform)&&(want.includes(String(ch.id))||want.includes(normPlat(ch.platform))))state.selected[ch.id]=true;});}
     function applyIncomingPost(h) {
       state.editId = h.id || null;
       ta.value = String(h.body || '');
@@ -1586,7 +1589,8 @@
       state.media = media.map(function (m) { return typeof m === 'string' ? m : (m && m.url); }).filter(Boolean).slice(0, 4);
       state.alts = {};
       media.forEach(function (m) { if (m && m.url && m.alt) state.alts[m.url] = m.alt; });
-      var meta = h.meta && typeof h.meta === 'object' ? h.meta : {};
+      var meta = h.meta && typeof h.meta === 'object' && !Array.isArray(h.meta) ? h.meta : {};
+      state.originMeta=JSON.parse(JSON.stringify(meta));
       if (meta.alt_text && typeof meta.alt_text === 'object') {
         Object.keys(meta.alt_text).forEach(function (k) { if (!state.alts[k]) state.alts[k] = meta.alt_text[k]; });
       }
@@ -1597,22 +1601,12 @@
           if (v && v.body) state.overrides[k] = String(v.body);
         });
       }
+      state.threadMode=Array.isArray(meta.thread)&&meta.thread.length>0;state.thread=state.threadMode?meta.thread.map(String):[''];if(q('threadtoggle'))q('threadtoggle').checked=state.threadMode;
       if (q('firstcomment')) q('firstcomment').value = meta.first_comment || '';
       if (q('lu_campaign')) q('lu_campaign').value = meta.campaign || '';
-      // only select the channels this post actually targets, when we can match them
-      var want = (Array.isArray(h.channels) ? h.channels : []).map(String);
-      if (want.length) {
-        var matched = false;
-        state.channels.forEach(function (ch) {
-          var hit = want.indexOf(String(ch.id)) !== -1 || want.indexOf(normPlat(ch.platform)) !== -1;
-          if (hit && ch.connected) { state.selected[ch.id] = true; matched = true; }
-          else if (!hit) delete state.selected[ch.id];
-        });
-        if (!matched) {
-          // nothing matched — keep the defaults rather than leaving no target
-          state.channels.forEach(function (ch) { if (ch.connected && netFor(ch.platform)) state.selected[ch.id] = true; });
-        }
-      }
+      // An imported empty destination set is explicit; never replace it with defaults.
+      state.importedChannels=Array.isArray(h.channels)?h.channels.map(String):[];
+      applyImportedTargets();
       if (h.scheduledAt) {
         var d = (state.S && state.S.fromLocalInput(h.scheduledAt)) || new Date(h.scheduledAt);
         if (d && !isNaN(d.getTime())) setSchedule(d);
@@ -1621,6 +1615,7 @@
       renderMedia();
       onBodyChange();
       renderLit();
+      renderThread();
       renderEditBanner(h);
     }
 
@@ -1715,12 +1710,12 @@
     }
     function currentCampaign() { return String(q('lu_campaign').value || '').trim(); }
     function buildMeta() {
-      var meta = {
+      var meta = Object.assign({},state.originMeta||{}, {
         composer_version: VERSION,
         first_comment: String(q('firstcomment').value || '').trim() || null,
         campaign: currentCampaign() || null,
         per_network_overrides: {}
-      };
+      });
       // only channels that are actually selected AND actually overridden
       selectedChannels().forEach(function (ch) {
         var o = state.overrides[ch.id];
@@ -1734,10 +1729,11 @@
         var a = state.alts[u] && String(state.alts[u]).trim();
         if (a) { alts[u] = a; any = true; }
       });
-      if (any) meta.alt_text = alts;
+      if (any) meta.alt_text = alts;else delete meta.alt_text;
       if (state.threadMode) {
         meta.thread = state.thread.map(function (t) { return String(t || '').trim(); }).filter(Boolean);
       }
+      else if(Object.hasOwn(meta,'thread'))meta.thread=[];
       // What day, liturgically, is this post going out on? Stored so the
       // calendar and the analytics coverage report do not have to guess.
       var lit = litForScheduled();
@@ -1749,6 +1745,7 @@
           fast: lit.fast.level
         };
       }
+      else delete meta.liturgical;
       return meta;
     }
     function mediaJson() {
@@ -2275,6 +2272,7 @@
           });
         }
       }
+      applyImportedTargets();
       renderChips();
       applyGating();
     }
