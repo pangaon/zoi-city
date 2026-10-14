@@ -1,5 +1,6 @@
 // social-publish: minute worker. Publishes due social posts AND due scheduled email campaigns.
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import { runDurableDelivery } from "./delivery-attempts.ts";
 const SUPABASE_URL=Deno.env.get("SUPABASE_URL")!;
 const SERVICE=Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 async function sbRpc(fn:string,args:Record<string,unknown>){
@@ -7,11 +8,11 @@ async function sbRpc(fn:string,args:Record<string,unknown>){
   const t=await r.text(); if(!r.ok) throw new Error(`${fn}: ${r.status} ${t.slice(0,150)}`); return t?JSON.parse(t):null;
 }
 const CODE2PLAT:Record<string,string>={fb:"facebook",ig:"instagram",li:"linkedin",tt:"tiktok",x:"twitter",twitter:"twitter",yt:"youtube",facebook:"facebook",instagram:"instagram",linkedin:"linkedin",tiktok:"tiktok",youtube:"youtube"};
-async function publishOne(platform:string,ch:any,body:string,media:any[]):Promise<{ok:boolean;id?:string;url?:string;error?:string;uncertain?:boolean}>{
+async function publishOne(platform:string,ch:any,body:string,media:any[],checkpoint:(ref:Record<string,unknown>)=>Promise<void>,step:(name:string)=>Promise<any>):Promise<{ok:boolean;id?:string;url?:string;error?:string;uncertain?:boolean;knownRejected?:boolean}>{
   if(platform==="twitter")platform="x";
-  if(!ch.access_token || !ch.external_id) return {ok:false,error:"channel_credentials_unavailable"};
-  if((media||[]).length && ["facebook","linkedin","x"].includes(platform)) return {ok:false,error:"image_publishing_not_supported"};
-  if(platform==="instagram" && (media||[]).length!==1) return {ok:false,error:"instagram_requires_one_image"};
+  if(!ch.access_token || !ch.external_id) return {ok:false,knownRejected:true,error:"channel_credentials_unavailable"};
+  if((media||[]).length && ["facebook","linkedin","x"].includes(platform)) return {ok:false,knownRejected:true,error:"image_publishing_not_supported"};
+  if(platform==="instagram" && (media||[]).length!==1) return {ok:false,knownRejected:true,error:"instagram_requires_one_image"};
   const img=(media||[]).find((m)=> (m.type||"image").startsWith("image"))?.url;
   try{
     if(platform==="facebook"){
@@ -33,15 +34,17 @@ async function publishOne(platform:string,ch:any,body:string,media:any[]):Promis
       return {ok:false,error:r.detail||r.title||"x_failed"};
     }
     if(platform==="instagram"){
-      if(!img) return {ok:false,error:"instagram_requires_image"};
+      if(!img) return {ok:false,knownRejected:true,error:"instagram_requires_image"};
       const create=await (await fetch(`https://graph.facebook.com/v19.0/${ch.external_id}/media`,{method:"POST",signal:AbortSignal.timeout(15000),headers:{"Content-Type":"application/json"},body:JSON.stringify({image_url:img,caption:body,access_token:ch.access_token})})).json();
       if(!create.id) return {ok:false,error:create.error?.message||"ig_container_failed"};
+      await checkpoint({kind:"instagram_container",id:String(create.id)});
+      const fresh=await step("instagram_publish");ch=fresh.channel;
       const pub=await (await fetch(`https://graph.facebook.com/v19.0/${ch.external_id}/media_publish`,{method:"POST",signal:AbortSignal.timeout(15000),headers:{"Content-Type":"application/json"},body:JSON.stringify({creation_id:create.id,access_token:ch.access_token})})).json();
       if(pub.id) return {ok:true,id:pub.id};
       return {ok:false,error:pub.error?.message||"ig_publish_failed"};
     }
-    if(platform==="tiktok"||platform==="youtube") return {ok:false,error:`${platform}_requires_video_upload`};
-    return {ok:false,error:"unsupported_platform"};
+    if(platform==="tiktok"||platform==="youtube") return {ok:false,knownRejected:true,error:`${platform}_requires_video_upload`};
+    return {ok:false,knownRejected:true,error:"unsupported_platform"};
   }catch(e){ return {ok:false,uncertain:true,error:"provider_result_unknown_requires_reconciliation: "+String(e instanceof Error ? e.message : e).slice(0,70)}; }
 }
 Deno.serve(async(req)=>{
@@ -52,11 +55,13 @@ Deno.serve(async(req)=>{
   if(!okAuth) return new Response("unauthorized",{status:401});
 
   // ── social posts ──
-  const due=(await sbRpc("social_due_posts_current",{}))||[];
+  await sbRpc("social_delivery_attempts_expire",{p_limit:50});
+  const due=(await sbRpc("social_delivery_due_attempts",{p_limit:50}))||[];
   let processed=0,published=0,partial=0,failed=0;
   for(const candidate of due){
-    let post:any;let payloadHash:string;
-    try{const checked=await sbRpc("social_delivery_snapshot",{p_id:candidate.id});if(checked?.ok!==true||!checked.post||!checked.payload_hash)throw Error("delivery_snapshot_unconfirmed");post=checked.post;payloadHash=checked.payload_hash;}catch{failed++;processed++;continue;}
+    // Candidates are read-only hints; each actual destination has a current
+    // atomic Community gate or a durable one-time external dispatch permission.
+    const post=candidate;
     const codes:string[]=post.channels||[];
     const wantsCommunity=codes.some((code)=>code==="zoi"||code==="community");
     const externalCodes=codes.filter((code)=>code!=="zoi"&&code!=="community");
@@ -85,24 +90,21 @@ Deno.serve(async(req)=>{
     let anyOk=communityOk;
     let allOk=(!wantsCommunity||communityOk)&&externalCodes.every((code)=>
       channels.some((ch:any)=>code===String(ch.id)||CODE2PLAT[code]===ch.platform));
-    for(let ch of channels){
-      // Final database gate before dispatch. This cannot make an external
-      // network request atomic with database revocation; durable attempts and
-      // provider reconciliation remain a separate operational requirement.
-      try{const checked=await sbRpc("social_delivery_snapshot",{p_id:post.id,p_expected_hash:payloadHash,p_channel:ch.id});if(checked?.ok!==true||!checked.post||!checked.channel||String(checked.channel.id)!==String(ch.id))throw Error("delivery_snapshot_unconfirmed");post=checked.post;ch=checked.channel;}catch{allOk=false;continue;}
-      const overrides=post.meta?.per_network_overrides||{};
-      const override=overrides[ch.id] || overrides[ch.platform] || (ch.platform==="twitter"?overrides.x:null);
-      const body=typeof override?.body === "string" ? override.body : (post.body||"");
-      const unsupportedOptions=!!post.meta?.first_comment || (Array.isArray(post.meta?.thread)&&post.meta.thread.length>0);
-      const res:{ok:boolean;id?:string;url?:string;error?:string;uncertain?:boolean}=unsupportedOptions
-        ? {ok:false,error:"first_comment_or_thread_delivery_not_supported"}
-        : await publishOne(ch.platform,ch,body,post.media||[]);
-      await sbRpc("social_target_record",{p_post:post.id,p_channel:ch.id,p_platform:ch.platform,p_status:res.ok?"published":res.uncertain?"unknown":"failed",p_external_id:res.id??null,p_url:res.url??null,p_error:res.error??null});
-      if(res.ok) anyOk=true; else allOk=false;
+    for(const ch of channels){
+      const result=await runDurableDelivery({rpc:sbRpc,postId:post.id,channelId:ch.id,requestId:crypto.randomUUID(),
+        preflight:(payload:any)=>!payload?.meta?.first_comment&&!(Array.isArray(payload?.meta?.thread)&&payload.meta.thread.length>0),
+        send:async(canonical:any,current:any,checkpoint,step)=>{
+          const overrides=canonical.meta?.per_network_overrides||{};
+          const override=overrides[current.id]||overrides[current.platform]||(current.platform==="twitter"?overrides.x:null);
+          const body=typeof override?.body==="string"?override.body:(canonical.body||"");
+          return publishOne(current.platform,current,body,canonical.media||[],checkpoint,step);
+        }
+      });
+      if(result.status==="published"||result.status==="already_delivered")anyOk=true;else allOk=false;
     }
     // Aggregate success requires a receipt from every requested destination.
     // Individual provider receipts remain available for partial-result reporting.
-    await sbRpc("social_post_finalize",{p_post:post.id,p_status:allOk?"published":"failed"});
+    try{const receipt=await sbRpc("social_delivery_attempts_finalize",{p_post:post.id,p_expected_hash:post.payload_hash,p_status:allOk?"published":"failed"});if(receipt?.ok!==true)allOk=false;}catch{allOk=false;}
     if(allOk) published++; else if(anyOk) partial++; else failed++;
     processed++;
   }

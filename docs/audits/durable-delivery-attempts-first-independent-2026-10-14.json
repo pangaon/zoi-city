@@ -1,0 +1,48 @@
+{
+  "checked_at": "2026-10-14T16:31:50.144046+00:00",
+  "kind": "Independent first durable-attempt candidate review; not final integratedEdge gate",
+  "hashes": {
+    "supabase/migrations/20261014154650_durable_social_delivery_attempts.sql": "92c096c9214eabbedb1dfe2e2c536f0db72781e5510a64e2e1ab0e27ca40bb59",
+    "supabase/functions/social-publish/delivery-attempts.ts": "3fd8358813093812997c3a6a98f899f07928f95331d242f6ae9c2f52b249693b",
+    "assets/suite/delivery-review.mjs": "5643b62a3cf9377c8d919db941f1b7c665b1ed46e7d1dbb293164d73fee0689d"
+  },
+  "real_pg_checks": 25,
+  "actual_controlled_calendar_browser_widths": [
+    390,
+    1440
+  ],
+  "no_provider_calls": true,
+  "finding": {
+    "state": "confirmedandfixed; finalrealregressionpassed",
+    "severity": "release_blocker",
+    "sequence": [
+      "dispatch becomesunknown",
+      "owner closeswithoutretry",
+      "late service resultknownrejected",
+      "record replacesclosed withrejected/failed",
+      "newnonce claim no longerseesunknown/closed hold"
+    ],
+    "implication": "Late result could erase explicit owner no-retry intent. Final schema acceptance withheld until actual regression resolved."
+  },
+  "limits": [
+    "No liveprovider publication proof",
+    "Production schema/rollback/deployment and authenticatedownerlivebrowser are lead-ownedpending"
+  ],
+  "final_frozen_review_at": "2026-10-14T16:56:43.858237+00:00",
+  "final_manifest": "docs/audits/durable-social-delivery-frozen-owner-2026-10-14.json",
+  "final_gate": {
+    "real_pg_checks": 32,
+    "worker_units": 25,
+    "actual_controlled_calendar_browser_widths": [
+      390,
+      1440
+    ],
+    "actual_edge_to_real_sql_concurrent_provider_callback_count": 1,
+    "actual_provider_network_calls": 0,
+    "closure_late_rejection_regression": "pass",
+    "current_authority_receipt_payload_finalizer": "pass",
+    "concurrent_owner_edit_preserved": "pass",
+    "concurrent_revocation_preserved": "pass",
+    "production_rollback_source_read": "freshprivatefixtureBEGINROLLBACK,no networkprovider"
+  }
+}
