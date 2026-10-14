@@ -2,7 +2,7 @@
   "observed_at": "2026-10-14T15:16:41Z",
   "ci_run": "38586631447",
   "release_commit": "014eeb58",
-  "status": "frozen_operation_diagnostics_hosted_canary_pending",
+  "status": "native_hosted_filesystem_adapter_frozen_fresh_canary_pending",
   "worker": {
     "version": 1,
     "status": "ACTIVE",
@@ -26,7 +26,7 @@
     "Private temporary-directory capability checked before consuming job leases",
     "Official queue consumer explicitly pins official_sources_v1 strategy"
   ],
-  "local_tests_passed": 29,
+  "local_tests_passed": 30,
   "actual_hosted_remaining": [
     "Root reviewed fresh release and safe canary diagnostic",
     "Successful source capture/private archive readback before cron enablement"
@@ -34,14 +34,12 @@
   "diagnostic_only_not_claimed_runtime_fix": true,
   "deployments_by_enrichment": 0,
   "latest_canary": {
-    "ci_run": "38591106619",
-    "failed_at": "2026-10-14T15:39:14Z",
+    "ci_run": "38593942440",
     "http_status": 503,
     "safe_error": "bounded_source_batch_failed",
-    "stage": "source_research",
-    "service_http_status": null,
-    "sqlstate": null,
-    "temporary_directory_preflight": "succeeded",
+    "stage": "source_document_write",
+    "before_job_lease": true,
+    "existing_job_attempts_preserved": 2,
     "cron_enabled": false
   },
   "prepared_operation_markers": [
@@ -51,5 +49,21 @@
     "archive_read"
   ],
   "transport_rewrites": 0,
-  "exact_filesystem_preflight": "Before canonical job lease: recursive mkdir mode0700; tiny source and result writes mode0600; source/result reads and SHA checks. Failure preserves canonical job attempts and issues no source requests."
+  "exact_filesystem_preflight": "Before canonical job lease: recursive mkdir mode0700; tiny source and result writes mode0600; source/result reads and SHA checks. Failure preserves canonical job attempts and issues no source requests.",
+  "runtime_fix": {
+    "hosted_api": "Asynchronous native Deno file APIs; Node local runner untouched",
+    "path_scope": "Random invocation-private /tmp/zoi-geography-* with approved filenames only",
+    "byte_cap": 2097152,
+    "private_storage_and_sha_budgets": "unchanged",
+    "unsupported_operation_evidence": "Actual Node string writeFile with mode600 failed; underlying runtime error message remains undisclosed",
+    "primary_contract": "https://supabase.com/docs/guides/functions/ephemeral-storage",
+    "local_actual_deno_probe": {
+      "native_async_fs": true,
+      "hash_match": true,
+      "private_directory": true,
+      "provider_calls": 0,
+      "coordinate_writes": 0
+    },
+    "hosted_validation_pending": true
+  }
 }
