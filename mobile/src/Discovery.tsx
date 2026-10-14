@@ -1,4 +1,5 @@
 import { DiscoveryLocation } from "./DiscoveryLocation";
+import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
@@ -153,6 +154,12 @@ export function Discover({
     [selectError, setSelectError] = useState(""),
     [selectionRetry, setSelectionRetry] = useState(0),
     [actionError, setActionError] = useState("");
+  const [travelMode, setTravelMode] = useState("driving"),
+    [routeOrigin, setRouteOrigin] = useState("");
+  useEffect(() => {
+    setRouteOrigin("");
+    setTravelMode("driving");
+  }, [actor, state.selected]);
   const area = discoveryArea(state, home?.home || null),
     key = JSON.stringify([
       actor,
@@ -438,7 +445,8 @@ export function Discover({
         }}
       />
     );
-  const selectedPoint = selected
+  const selectedMatchesIntent = !!selected && (selected.slug === state.selected || selected.canonical_slug === state.selected);
+  const selectedPoint = selectedMatchesIntent
     ? pointBySlug.get(selected.canonical_slug || selected.slug)
     : null;
   const coLocated = selectedPoint
@@ -449,12 +457,13 @@ export function Discover({
           Number(p.lng).toFixed(5) === Number(selectedPoint.lng).toFixed(5),
       )
     : [];
-  const directions = selected
-    ? placeDirections(
-        selected,
-        pointBySlug.get(selected.canonical_slug || selected.slug),
-      )
-    : null;
+  const baseDirections = selectedMatchesIntent ? placeDirections(selected, selectedPoint) : null;
+  let directions = baseDirections, directionsError = "";
+  if (selected && baseDirections?.basis !== "name") {
+    try { directions = placeDirections(selected, selectedPoint, {mode: travelMode, origin: routeOrigin}); }
+    catch (error) { directions = null; directionsError = error instanceof Error ? error.message : "Check the starting address."; }
+  }
+  const directionURL = directions?.url || "";
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -745,7 +754,7 @@ export function Discover({
               />
             </>
           ) : null}
-          {selected ? (
+          {selected && selectedMatchesIntent ? (
             <>
               <Photo row={selected} detail />
               <Text style={s.heading}>{selected.name}</Text>
@@ -759,6 +768,25 @@ export function Discover({
                   pointBySlug.get(selected.canonical_slug || selected.slug),
                 )}
               </Text>
+              {baseDirections && baseDirections.basis !== "name" ? (
+                <View style={s.routePanel}>
+                  <Text style={s.heading}>Plan directions</Text>
+                  <Text style={s.small}>Choose how to travel</Text>
+                  <View style={s.row} accessibilityLabel="Travel mode">
+                    {TRAVEL_MODES.map((item: {value: string; label: string}) => (
+                      <Action key={item.value} label={item.label} selected={travelMode === item.value}
+                        onPress={() => setTravelMode(item.value)} />
+                    ))}
+                  </View>
+                  <Text style={s.small}>Starting address (optional)</Text>
+                  <TextInput value={routeOrigin} onChangeText={setRouteOrigin} maxLength={700}
+                    accessibilityLabel="Starting address for directions"
+                    placeholder="Current location in Google Maps" placeholderTextColor={LIGHT.dim}
+                    textContentType="fullStreetAddress" style={s.input} />
+                  <Text style={s.small}>Google Maps calculates the route and available navigation. Leave the start blank to use your location there.</Text>
+                  {directionsError ? <Text accessibilityRole="alert" style={s.error}>{directionsError}</Text> : null}
+                </View>
+              ) : null}
               <View style={s.row}>
                 <Action
                   label="Open this place"
@@ -770,11 +798,11 @@ export function Discover({
                     )
                   }
                 />
-                {directions ? (
+                {directions && directionURL ? (
                   <Action
-                    label={directions.label}
+                    label={directions.basis === "name" ? directions.label : "Open directions in Google Maps"}
                     onPress={() =>
-                      void action(() => Linking.openURL(directions.url))
+                      void action(() => Linking.openURL(directionURL))
                     }
                   />
                 ) : null}
@@ -924,6 +952,7 @@ const s = StyleSheet.create({
     color: LIGHT.ink,
   },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 9, alignItems: "center" },
+  routePanel: { gap: 10, padding: 14, borderRadius: 18, backgroundColor: LIGHT.surfaceRaised, borderWidth: 1, borderColor: LIGHT.line },
   panel: {
     padding: 18,
     gap: 12,

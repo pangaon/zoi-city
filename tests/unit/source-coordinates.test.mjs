@@ -42,3 +42,6 @@ test('explicit source name alias is exact and bound to current property snapshot
  const branch={...current,website:'https://www.parkviewmanor.ca/property-a/'};const sibling=html({...sourceNode,url:'https://www.parkviewmanor.ca/property-b/'});assert(!extractSourceCoordinates(sibling,branch,{identityReview:{...aliasFor(sibling,branch,address),source_name:'Parkview Manor',exact_name_confirmed:true}}).candidate);
  assert.equal(extractSourceCoordinates(source+' ',current,{identityReview:identity}).reason,'identity_review_mismatch');
 });
+
+test('challenge and truncated structured graphs never supply an earlier plausible point',()=>{assert.equal(extractSourceCoordinates('<title>Just a moment...</title><h1>Verify you are human</h1>'+html(node),row).reason,'source_challenge');assert.equal(extractSourceCoordinates(html([node,...Array.from({length:501},()=>({'@type':'WebPage'}))]),row).reason,'structured_coordinates_require_full_review')});
+test('nearby differently formatted same-identity address cannot hide a conflicting source point',()=>{const first={...node,address:{...node.address,streetAddress:'10 Main St'},geo:{...node.geo,latitude:-37.81001}};assert.equal(extractSourceCoordinates(html([first,node]),row).reason,'nearby_unmatched_identity_location_requires_review')});

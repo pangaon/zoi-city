@@ -238,7 +238,7 @@
     <div class="m-intro"><div><span>Discover, on the map</span><h1>Your Greek world.</h1></div><button type="button" class="m-near-label" id="nearLabel">Near me ↗</button></div>
     <form class="m-searchrow" id="mapsearch" role="search">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input id="q" type="search" placeholder="Search name, city or category…" autocomplete="off" aria-label="Filter places on the map">
+      <input id="q" type="search" placeholder="Search name, address or city…" autocomplete="off" aria-label="Filter places on the map">
       <button type="button" class="m-clearq" id="clearq" hidden aria-label="Clear search">&times;</button><button type="submit" class="m-find" aria-label="Show matching places on the map">Go</button>
     </form>
     <div id="map-locality"></div>
@@ -247,7 +247,7 @@
       <span class="m-lbl" id="chipcount">Categories</span>
       <button class="m-linkish" id="allon">All</button>
     </div>
-    <div class="m-chips" id="chips" role="group" aria-label="Filter by category"></div></details>
+    <div class="m-chips" id="chips" role="group" aria-label="Filter by category"></div></details><div id="map-interactions"></div>
   </section>
 
   <aside class="m-pane m-panel" id="panel" aria-label="Places">
@@ -300,7 +300,7 @@
   </div>
 </main>
 
-<link rel="stylesheet" href="/assets/map-data/preview.css?v=20260930-profile-details"><link rel="stylesheet" href="/assets/map-data/discovery.css?v=20260930-profile-details">
+<link rel="stylesheet" href="/assets/map-data/interactions.css?v=20261014-map-interactions"><link rel="stylesheet" href="/assets/map-data/preview.css?v=20261014-map-interactions"><link rel="stylesheet" href="/assets/map-data/discovery.css?v=20261014-map-interactions">
 <script src="/assets/zoi-core.js"></script>
 <script src="/assets/zoi-theme.js?v=20260930"></script>
 <script src="/assets/zoi-emblem.js"></script>
@@ -419,7 +419,7 @@
     return PRECISION[String((p && p.precision) || '').toLowerCase()] || UNKNOWN_PRECISION;
   }
   function mapPositionEligible(p){return mapPositionsComplete&&mapTools.hasStreetPosition(p);}
-  function precisionLabel(p) { return p&&p.unmapped?'Map position not selected':!mapPositionsComplete?'Map position awaiting complete checks':(p&&p.position_conflict)||!precisionOf(p).exact?'Address awaiting map verification':precisionOf(p).label; }
+  function precisionLabel(p) { return p&&p.unmapped?'Map position not selected':!mapPositionsComplete?'Map position awaiting complete checks':(p&&p.position_conflict)||!precisionOf(p).exact?'Address awaiting map verification':(p.reviewedPosition||p.position_diagnosis?.reviewed?'Reviewed street position':precisionOf(p).label+' · awaiting review'); }
 
   /* Numeric routing requires the fresh receipt-backed entity to match this
    * point. Other records offer a clearly labelled published-address search;
@@ -457,10 +457,11 @@
   var on = {};                        // active category filters
   TYPES.forEach(function (t) { on[t.k] = true; });
   var query = '';
+  var savedOnly=false,savedExtras=[],savedViewVersion=0;
   var here = null;                    // {lat,lng} once geolocated
   var selected = null;
   var selectionVersion = 0, pendingPlace = null;
-  var mapTools = null, previewModule=null, previewController=null;
+  var mapTools = null, previewModule=null, previewController=null, mapInteractions=null;
   var truncated = false;              // true when the page cap, not the data, ended the walk
   var directoryPending=false,directoryError='',directoryLoaded=0,mapPositionsComplete=false;
   var failedPages = 0;                // pages the directory did not return
@@ -479,7 +480,7 @@
       out.view = { zoom: m[0], center: [m[2], m[1]], bearing: m[3] || 0, pitch: m[4] || 0 };
     }
     var p = new URLSearchParams(location.search);
-    query=p.get('q')||'';$('q').value=query;
+    query=p.get('q')||'';$('q').value=query;if(mapInteractions)mapInteractions.restore(p);
     out.place = p.get('place') || null;
     var t = p.get('t');
     TYPES.forEach(function(x){on[x.k]=true;});
@@ -506,6 +507,7 @@
       else if(pendingPlace)p.set('place',pendingPlace);
       var offCount = TYPES.filter(function (t) { return !on[t.k]; }).length;
       if (offCount) p.set('t', TYPES.filter(function (t) { return on[t.k]; }).map(function (t) { return t.k; }).join(','));
+      if(mapInteractions)mapInteractions.writeParams(p);
       var qs = p.toString();
       history.replaceState(Object.assign({},history.state||{},{zoiMapIntent:mapIntentURL}), '', location.pathname + (qs ? '?' + qs : '') + hash);
     }, 260);
@@ -522,6 +524,8 @@
 
   /* ---------- data ---------- */
   function matches(p) {
+    if(savedOnly&&(!previewModule||!previewModule.readSavedPlaces().includes(p.s)))return false;
+    if(mapInteractions&&!mapInteractions.accepts(p))return false;
     var locality=activeMapLocality();
     if(locality.city&&fold(p.city||'')!==fold(locality.city))return false;
     if(locality.country&&fold(p.country||'')!==fold(locality.country))return false;
@@ -557,15 +561,13 @@
         if (!mapTools.isMappableRow(r)) return;
         if (seen[r.slug]) return;
         seen[r.slug] = 1;
-        var p = {
+        var p = Object.assign(mapTools.mapPositionFields(r), {
           i: out.length, s: r.slug, n: r.name, t: r.entity_type || 'business',
           city: r.city, country: r.country, cat: r.category_slug,
-          lat: +r.lat, lng: +r.lng,
-          addr: r.address || null,
-          precision: r.precision || r.geo_precision || (r._geo && r._geo.precision) || ''
-        };
+          addr: r.address || null
+        });
         p.hay = fold((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
-                 nice(p.cat) + ' ' + (p.t || ''));
+                 nice(p.cat) + ' ' + (p.t || '') + ' ' + (p.addr || ''));
         out.push(p);
       });
     });
@@ -747,7 +749,7 @@
         return;
       }
 
-      if (n <= FAN_MAX) {
+      if (!b.merged && n <= FAN_MAX) {
         // Fan them around their shared point. The marker keeps the true
         // coordinate and only carries a pixel offset, so the fan tracks
         // correctly through pan, zoom, rotate and pitch.
@@ -779,7 +781,7 @@
         ? n + ' places in this area \u2014 open the list'
         : n + ' places at this location \u2014 open the list');
       var items = b.items.slice(), ll = b.lngLat;
-      function open() { showList(items, n + ' here', groupWhere(items), ll); }
+      function open() { showList(items, n + (b.merged ? ' places in this area' : ' places at this location'), groupWhere(items), b.merged ? null : ll); }
       el.addEventListener('click', function (e) { e.stopPropagation(); open(); });
       el.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
@@ -830,6 +832,9 @@
   }
 
   function makePin(p, lngLat, offset) {
+    // An individual listing always keeps its own geographic anchor. Nearby
+    // screen-space groups must never move it to another listing's position.
+    lngLat = [p.lng, p.lat];
     var el = document.createElement('div');
     el.className = 'm-pin' + (selected && selected.s === p.s ? ' m-selected' : '');
         el.dataset.slug = p.s;
@@ -871,6 +876,10 @@
   function spiderfy(group, lngLat) {
     clearSpider();
     if (group.length < 2) return;
+    // Geographic clusters span several addresses. Only genuinely coincident
+    // places may fan out; all other places keep their own source coordinates.
+    var anchor = group[0];
+    if (!group.every(function(p){return p.lat === anchor.lat && p.lng === anchor.lng;})) return;
     var n = Math.min(group.length, 28);
     var rings = n <= 8 ? 1 : n <= 18 ? 2 : 3;
     var idx = 0;
@@ -894,13 +903,13 @@
           el.addEventListener('keydown', function (e) {
             if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(pp, true); }
           });
-          el.addEventListener('mouseenter', function () { tip(pp, lngLat); });
+          el.addEventListener('mouseenter', function () { tip(pp, [pp.lng, pp.lat]); });
           el.addEventListener('mouseleave', hideTip);
-          el.addEventListener('focus', function () { tip(pp,lngLat); });
+          el.addEventListener('focus', function () { tip(pp,[pp.lng,pp.lat]); });
           el.addEventListener('blur',hideTip);
         })(p);
         spider.push(new MB.Marker({ element: el, offset: [Math.cos(a) * rad, Math.sin(a) * rad] })
-          .setLngLat(lngLat).addTo(map));
+          .setLngLat([p.lng,p.lat]).addTo(map));
       }
     }
   }
@@ -908,6 +917,8 @@
   /* ---------- popup ---------- */
   var pop = new MB.Popup({ closeButton: false, closeOnClick: false, offset: 14, maxWidth: '250px' });
   function tip(p, lngLat) {
+    document.querySelectorAll('.m-row[data-slug]').forEach(function(row){row.classList.toggle('m-row-hovered',row.dataset.slug===p.s);});
+    document.querySelectorAll('.m-pin[data-slug]').forEach(function(pin){pin.classList.toggle('m-hover',pin.dataset.slug===p.s);});
     if(!mapPositionEligible(p))return;
     pop.setLngLat(lngLat).setHTML(
       '<div class="m-tipnm">' + esc(p.n) + '</div>' +
@@ -917,7 +928,7 @@
       '<span class="m-tipgo">Select to preview this place →</span>'
     ).addTo(map);
   }
-  function hideTip() { pop.remove(); }
+  function hideTip() { pop.remove();document.querySelectorAll('.m-row-hovered,.m-hover').forEach(function(node){node.classList.remove('m-row-hovered','m-hover');}); }
 
   /* ---------- the panel ---------- */
   function rowHTML(p) {
@@ -927,7 +938,7 @@
     /* A distance is only as good as both ends of it. A coarse fix or an
        unverified pin makes an exact-looking figure a false claim. */
     var fuzzy = d != null && ((here && here.coarse) || !p.exact);
-    var dist = d == null ? '' : ' · ' + (fuzzy ? '~' : '') + km(d) + ' away';
+    var dist = d == null ? '' : ' · ' + (fuzzy ? '~' : '') + km(d) + ' straight-line estimate';
     var dir = directionsUrl(p);
     var basis = directionsBasis(p);
     var lookup=basis==='published-address',actionLabel=lookup?'Find address':'Directions';
@@ -951,7 +962,7 @@
   var listState = { items: [], shown: 0, mode: 'all' };
   function paint(reset) {
     var body = $('pbody');
-    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){selected.reviewedPosition=false;var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),resolveDirections:function(entity,place,details){place.reviewedPosition=mapTools.hasReviewedPosition(place,entity);place.addr=details.address;return directionsUrl(place);},loadDetails:function(slug){return selected&&selected.unmapped&&!selected.areaResult?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}).then(async function(value){var entity=Array.isArray(value)?value[0]:value;if(!entity)return value;entity=Object.assign({},entity,{reviewed_destination:null});try{entity.reviewed_destination=await C.api.rpc('geography_reviewed_point',{p_listing:entity.id},{auth:'anon'});}catch(_){}return entity;});});},onSaved:updateSavedLabel,shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){selected.reviewedPosition=false;var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),resolveDirections:function(entity,place,details){place.reviewedPosition=mapTools.hasReviewedPosition(place,entity);place.addr=details.address;return directionsUrl(place);},loadDetails:function(slug){return selected&&selected.unmapped&&!selected.areaResult?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}).then(async function(value){var entity=Array.isArray(value)?value[0]:value;if(!entity)return value;entity=Object.assign({},entity,{reviewed_destination:null});try{entity.reviewed_destination=await C.api.rpc('geography_reviewed_point',{p_listing:entity.id},{auth:'anon'});}catch(_){}return entity;});});},onSaved:function(){updateSavedLabel();if(savedOnly)refresh();},shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
     var slice = listState.items.slice(listState.shown, listState.shown + 60);
     var advance=slice.length;
     if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});
@@ -980,7 +991,13 @@
   $('pbody').addEventListener('focusout',hideTip);
   $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];if(p){e.preventDefault();choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
   function updateSavedLabel(){if(previewModule)$('tSaved').textContent='Saved ('+previewModule.readSavedPlaces().length+')';}
-  $('tSaved').addEventListener('click',function(){if(!previewModule)return;setSheet(false);$('stage').classList.remove('m-selected-view');selected=null;selectionVersion++;pendingPlace=null;clearSpider();var saved=previewModule.readSavedPlaces();showList(ALL.filter(function(p){return saved.includes(p.s);}), 'Saved on this device','Currently available loaded places are shown, including those awaiting a map position.',null);if(!listState.items.length)$('pbody').innerHTML='<div class="m-empty">No available saved places yet. Preview a place and choose Save on this device.</div>';updateSavedLabel();});
+  $('tSaved').addEventListener('click',async function(){
+    if(!previewModule)return;var version=++savedViewVersion;savedOnly=!savedOnly;$('tSaved').setAttribute('aria-pressed',String(savedOnly));setSheet(false);showAll();refresh();updateSavedLabel();if(!savedOnly)return;
+    var missing=previewModule.readSavedPlaces().filter(function(slug){return !ALL.concat(savedExtras).some(function(p){return p.s===slug;});}),next=0,failed=0;
+    if(missing.length)status('Checking saved profiles…',true);
+    await Promise.all(Array.from({length:Math.min(4,missing.length)},async function(){while(next<missing.length&&version===savedViewVersion){var slug=missing[next++];try{var value=await C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}),entity=Array.isArray(value)?value[0]:value,p=mapTools.unmappedPlace(entity,slug);if(p&&version===savedViewVersion){p.hay=fold([p.n,p.addr,p.city,p.country,p.t].filter(Boolean).join(' '));savedExtras.push(p);}}catch(_){failed++;}}}));
+    if(version!==savedViewVersion||!savedOnly)return;showAll();refresh();status(failed?'Some saved profiles could not be checked. Toggle Saved off and on to retry.':'Saved view shows currently available published profiles in your filters.',false,6000);
+  });
 
   function showList(items, title, sub, lngLat) {
     if(selected&&!items.some(function(p){return p.s===selected.s;}))selected=null;
@@ -1021,19 +1038,20 @@
     selected = null;
     document.querySelectorAll('.m-pin.m-selected').forEach(function(pin){pin.classList.remove('m-selected');});
     syncAreaSearch();
-    var vis = ALL.filter(matches),seenSlugs=new Set(vis.map(function(p){return p.s;}));
-    areaState().rows.forEach(function(row){var p=mapTools.areaResultPlace(row);if(p&&!seenSlugs.has(p.s)&&on[p.t]){p.hay=fold(p.n+' '+p.city+' '+p.country);vis.push(p);seenSlugs.add(p.s);}});
+    var vis = ALL.concat(savedExtras).filter(matches),seenSlugs=new Set(vis.map(function(p){return p.s;}));
+    areaState().rows.forEach(function(row){var p=mapTools.areaResultPlace(row);if(p)p.hay=fold([p.n,p.addr,p.city,p.country,p.t].filter(Boolean).join(' '));if(p&&!seenSlugs.has(p.s)&&matches(p)){vis.push(p);seenSlugs.add(p.s);}});
     // nearest-first once we know where the user is, otherwise centre-out
     var c = map ? map.getCenter() : { lat: 37.98, lng: 23.72 };
     var o = here || c;
-    vis.sort(function (a, b) {
+    if(mapInteractions)vis=mapInteractions.sort(vis,c);
+    else vis.sort(function (a, b) {
       var ap=mapPositionEligible(a),bp=mapPositionEligible(b);
       if(ap&&bp)return haversine(o.lat,o.lng,a.lat,a.lng)-haversine(o.lat,o.lng,b.lat,b.lng);
       if(ap!==bp)return ap?-1:1;
       return String(a.city||'').localeCompare(String(b.city||''))||String(a.n||'').localeCompare(String(b.n||''));
     });
     listState = { items: vis, shown: 0, mode: 'all' };
-    $('ptitle').innerHTML = (here ? 'Street locations near you · more places below' : (query ? 'Search results' : 'Explore places')) +
+    $('ptitle').innerHTML = (savedOnly ? 'Saved on this device' : here ? 'Street locations near you · more places below' : (query ? 'Search results' : 'Explore places')) +
       '<span class="m-sub">' + fmtN(vis.length) + (vis.length===1?' place loaded':' places loaded') + '</span>';
     $('pclose').hidden = true;
     paint(true);
@@ -1080,6 +1098,7 @@
   }
 
   function choose(p, keepSpider) {
+    var sameSelection = selected && selected.s === p.s;
     selectionVersion++;pendingPlace=null;
     setSheet(false);$('stage').classList.add('m-selected-view');
     selected = p;
@@ -1093,7 +1112,7 @@
       showList([p], 'Selected place', [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
     }
     if(!mapPositionEligible(p)){selectedPositionStatus();status('This place is available in the list. Its street position has not been established; check the published address.',false,6000);writeUrl();return;}
-    var focus=mapTools.focusOptions(p,Object.assign(mapViewportInsets(),{currentZoom:map.getZoom(),reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches}));
+    var focus=mapTools.focusOptions(p,Object.assign(mapViewportInsets(),{currentZoom:sameSelection ? map.getZoom() : null,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches}));
     if(focus.duration===0)map.jumpTo(focus);else map.easeTo(focus);
     status(precisionLabel(p) + (p.unknown ? ' — confirm the address before travelling' : ''),false,5000);
     writeUrl();
@@ -1152,7 +1171,7 @@
 
   // Collapse the bottom sheet on small screens. Everything else is positioned
   // from --sheet, so the tool rail and attribution follow it up and down.
-  function setSheet(shut){$('stage').classList.toggle('m-shut',shut);$('psheet').setAttribute('aria-expanded',String(!shut));$('psheet').setAttribute('aria-label',shut?'Show places':'Collapse places');if(map)map.resize();}
+  function setSheet(shut){$('stage').classList.remove('m-full-list');$('stage').classList.toggle('m-shut',shut);$('psheet').setAttribute('aria-expanded',String(!shut));$('psheet').setAttribute('aria-label',shut?'Show places':'Collapse places');if(map)map.resize();}
   $('psheet').addEventListener('click',function(){setSheet(!$('stage').classList.contains('m-shut'));});
 
   /* ---------- filtering ---------- */
@@ -1408,6 +1427,7 @@
     status('Finding you…', true);
     navigator.geolocation.getCurrentPosition(function (pos) {
       query='';$('q').value='';mapSearchIntent();refresh();
+      if(!pos||!pos.coords||!Number.isFinite(pos.coords.latitude)||!Number.isFinite(pos.coords.longitude)||Math.abs(pos.coords.latitude)>90||Math.abs(pos.coords.longitude)>180||!Number.isFinite(pos.coords.accuracy)||pos.coords.accuracy<0){status('Your device returned an invalid location. Try again or search your city.',false,5000);$('locationHelp').hidden=false;return;}
       var accuracy = Math.round(pos.coords.accuracy || 0);
       here = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: accuracy, coarse: accuracy > COARSE_FIX_M };
       status(accuracy
@@ -1462,7 +1482,7 @@
     var m = (here && here.accuracy) || 0;
     if (!m) return 16;
     var metresPerPx = function (z) {
-      return 156543.03392 * Math.cos(here.lat * Math.PI / 180) / Math.pow(2, z);
+      return 78271.51696 * Math.cos(here.lat * Math.PI / 180) / Math.pow(2, z);
     };
     var stops = [];
     for (var z = 1; z <= 20; z += 1) stops.push(z, Math.min(m / metresPerPx(z), 1400));
@@ -1487,8 +1507,9 @@
 
   /* keyboard: / focuses search, Escape backs out */
   document.addEventListener('keydown', function (e) {
-    if (e.key === '/' && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
-    if (e.key === 'Escape' && e.target!==$('q')) { hideTip(); clearSpider(); if (listState.mode !== 'all') { closeSelection(); } }
+    var editing=e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable=true]');
+    if (e.key === '/' && !editing && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
+    if (e.key === 'Escape' && !editing && e.target!==$('q')) { hideTip(); clearSpider(); if (listState.mode !== 'all') { closeSelection(); } }
   });
 
   /* theme changes must repaint the basemap, not just the chrome */
@@ -1500,9 +1521,10 @@
 
   /* ---------- go ---------- */
   (async function () {
+    document.querySelectorAll('.m-tool[title]').forEach(function(button){button.setAttribute('aria-label',button.title);});
     var initial = readUrl();
-    import('/assets/discovery/autocomplete.mjs?v=20261003-company-parea-rooms').then(function(module){
-      mapAutocomplete=module.attachAutocomplete($('q'),{mountAfter:$('mapsearch'),id:'map-suggestions',suggestionLabel:'Select a place on the map',filters:function(){var area=activeMapLocality(),types=TYPES.filter(function(t){return on[t.k];});return{city:area.city,country:area.country,type:types.length===1?types[0].k:null,types:types.map(function(t){return t.k;}),strict:true};},onSubmit:showMatches,onChoose:function(row){
+    Promise.all([import('/assets/discovery/autocomplete.mjs?v=20261014-map-interactions'),import('/assets/map-data/address-search.mjs?v=20261014-map-interactions')]).then(function(modules){var module=modules[0],addressModule=modules[1];
+      mapAutocomplete=module.attachAutocomplete($('q'),{search:async function(term,filters,signal){var q=fold(term.trim()),local=ALL.filter(function(p){return q.length>=2&&(!filters.city||fold(p.city||'')===fold(filters.city))&&(!filters.country||fold(p.country||'')===fold(filters.country))&&(!filters.types||filters.types.includes(p.t))&&fold([p.n,p.addr,p.city].filter(Boolean).join(' ')).includes(q);}).slice(0,32).map(function(p){return{slug:p.s,name:p.n,address:p.addr||'',city:p.city,country:p.country,type:p.t,href:module.suggestionHref({slug:p.s,entity_type:p.t})};}).filter(function(p){return p.href;});var responses=await Promise.allSettled([module.searchSuggestions(term,filters,signal),addressModule.searchMapAddresses(term,filters,signal)]);if(signal.aborted)throw Error('search_aborted');var failed=responses.find(function(r){return r.status==='rejected';}),seen=new Set(local.map(function(p){return p.slug;})),rows=local;responses.slice().reverse().forEach(function(r){if(r.status==='fulfilled')r.value.rows.forEach(function(p){if(!seen.has(p.slug)){seen.add(p.slug);rows.push(p);}});});if(!rows.length&&failed)throw failed.reason;return{rows:rows.slice(0,32),outside:false};},mountAfter:$('mapsearch'),id:'map-suggestions',suggestionLabel:'Select a place on the map',filters:function(){var area=activeMapLocality(),types=TYPES.filter(function(t){return on[t.k];});return{city:area.city,country:area.country,type:types.length===1?types[0].k:null,types:types.map(function(t){return t.k;}),strict:true};},onSubmit:showMatches,onChoose:function(row){
         $('q').blur();if(!map){pendingAutocompleteSlug=row.slug;status('Opening '+row.name+' when the map is ready…',true);return;}
         var hit=ALL.find(function(p){return p.s===row.slug;});if(hit)choose(hit);else openUnmappedPlace(row.slug);
       }});
@@ -1523,7 +1545,7 @@
 
     if (!MB || typeof MB.Map !== 'function') { $('nowebgl').hidden = false; return; }
 
-    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261003-progressive-map'),import('/assets/map-data/preview.mjs?v=20261003-progressive-map')]);mapTools=modules[0];previewModule=modules[1];}
+    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261014-map-interactions'),import('/assets/map-data/preview.mjs?v=20261014-map-interactions'),import('/assets/map-data/interactions.mjs?v=20261014-map-interactions')]);mapTools=modules[0];previewModule=modules[1];mapInteractions=modules[2].mountMapInteractions($('map-interactions'),{getMap:function(){return map;},getOrigin:function(){return here;},getSelected:function(){return selected;},params:new URLSearchParams(location.search),changed:function(){showAll();refresh();writeUrl();},fit:showMatches,focus:choose,locate:function(){$('tNear').click();},sheet:function(mode){setSheet(mode==='compact');$('stage').classList.toggle('m-full-list',mode==='full');if(map)map.resize();}});}
     catch(error){$('ptitle').textContent='Map tools could not start';$('pbody').innerHTML='<div class="m-empty">Browse <a href="/explore">Explore</a>, or reload this page.</div>';return;}
 
     C.api.rpc('home_stats', {}, { auth: 'anon' }).then(function (s) {

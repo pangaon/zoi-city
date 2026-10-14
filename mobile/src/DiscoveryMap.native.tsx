@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, View, Text, Pressable, Linking } from "react-native";
 import MapView, { Marker, type Region } from "react-native-maps";
 import { LIGHT } from "./brand";
 import type { DiscoveryMapProps } from "./DiscoveryMap.types";
-import { exactPins, nativePinClusters } from "./discovery";
+import { exactPins, nativePinClusters, fullMapToolsLink } from "./discovery";
 export function DiscoveryMap({
   points,
   selected,
@@ -12,8 +12,12 @@ export function DiscoveryMap({
   motion,
   onSelect,
 }: DiscoveryMapProps) {
+  const mounted = useRef(true);
+  useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const map = useRef<MapView | null>(null),
     [ready, setReady] = useState(false),
+    [opening, setOpening] = useState(false),
+    [toolError, setToolError] = useState(""),
     region = useRef<Region>({
       latitude: 37,
       longitude: 15,
@@ -21,7 +25,8 @@ export function DiscoveryMap({
       longitudeDelta: 160,
     }),
     pins = exactPins(points),
-    prior = useRef("");
+    prior = useRef(""),
+    priorSelection = useRef("");
   const [selectedPoint] = pins.filter((p: any) => p.s === selected);
   useEffect(() => {
     if (!ready || prior.current === scopeKey) return;
@@ -36,18 +41,20 @@ export function DiscoveryMap({
       );
   }, [ready, scopeKey, pins.length, motion]);
   useEffect(() => {
-    if (ready && selectedPoint)
-      map.current?.animateToRegion(
+    if (!ready || !selectedPoint) return;
+    const sameSelection = priorSelection.current === selected;
+    priorSelection.current = selected;
+    map.current?.animateToRegion(
         {
           ...region.current,
           latitude: selectedPoint.lat,
           longitude: selectedPoint.lng,
-          latitudeDelta: Math.min(region.current.latitudeDelta, 0.009),
-          longitudeDelta: Math.min(region.current.longitudeDelta, 0.009),
+          latitudeDelta: sameSelection ? Math.min(region.current.latitudeDelta, 0.009) : 0.009,
+          longitudeDelta: sameSelection ? Math.min(region.current.longitudeDelta, 0.009) : 0.009,
         },
         motion ? 300 : 0,
       );
-  }, [ready, selected, focus, motion]);
+  }, [ready, selected, selectedPoint?.lat, selectedPoint?.lng, focus, motion]);
   // Render only real positions in the current viewport. No scattered centroid pins.
   const [, setViewport] = useState(0),
     [width, setWidth] = useState(350);
@@ -122,6 +129,12 @@ export function DiscoveryMap({
           );
         })}
       </MapView>
+      <View style={s.actions}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" onPress={()=>map.current?.animateToRegion({...region.current,latitudeDelta:Math.min(170,region.current.latitudeDelta*2),longitudeDelta:Math.min(350,region.current.longitudeDelta*2)},motion?250:0)} style={s.action}><Text style={s.actionText}>−</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" onPress={()=>map.current?.animateToRegion({...region.current,latitudeDelta:Math.max(0.0005,region.current.latitudeDelta/2),longitudeDelta:Math.max(0.0005,region.current.longitudeDelta/2)},motion?250:0)} style={s.action}><Text style={s.actionText}>＋</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Open full map tools in browser" disabled={opening} onPress={async()=>{setOpening(true);setToolError("");try{await Linking.openURL(fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},{...region.current,width}));}catch{if(mounted.current)setToolError("The browser could not open. Try full map tools again.");}finally{if(mounted.current)setOpening(false);}}} style={[s.action,{flex:1}]}><Text style={[s.actionText,{fontSize:12}]}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable>
+      </View>
+      {toolError?<View style={s.note}><Text accessibilityRole="alert" style={s.text}>{toolError}</Text></View>:null}
       {!ready ? (
         <View pointerEvents="none" style={s.note}>
           <Text style={s.text}>Opening the map…</Text>
@@ -138,6 +151,9 @@ export function DiscoveryMap({
   );
 }
 const s = StyleSheet.create({
+  actions:{position:"absolute",top:10,left:10,right:10,flexDirection:"row",gap:6},
+  action:{minWidth:40,minHeight:40,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,alignItems:"center",justifyContent:"center",paddingHorizontal:10},
+  actionText:{color:LIGHT.ink,fontWeight:"700",fontSize:20},
   frame: {
     height: 340,
     borderRadius: 24,
