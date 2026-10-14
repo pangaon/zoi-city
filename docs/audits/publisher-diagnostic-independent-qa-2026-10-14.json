@@ -1,0 +1,44 @@
+{
+  "checked_at": "2026-10-14T15:36:34.226223+00:00",
+  "kind": "independent candidate source and isolated operation gates",
+  "hashes": {
+    "supabase/functions/geography-repair-source-consumer/index.ts": "c54f0062f66e184c5f09f345723e284fe5ccaa57085285d5f97394f5ab61c244",
+    "scripts/release-geography-source-consumer.mjs": "eb99b919ff7ae2b4ad877610f4e52cc7437637148c954f838aabc1a9e10e04be",
+    "supabase/migrations/20261014144626_publisher_profile_source_lane.sql": "116d0bcb27b0af38d676d98e23127dfdcbb7363ad7f324a4817ab48d52449abd",
+    "supabase/migrations/20261014145156_community_publisher_current_authority.sql": "1c24e2c4baa5edba231a0dd704677a7591b2478390325ad184f676706cfcecdf",
+    "supabase/functions/social-publish/index.ts": "4300d34f343a5a4aced2132ec8ced9737c283a0ecb72555b4ab32254c0af6124",
+    "tests/database/social-reader-production-rollback.sql": "9bba1a99b587be36389b1e5239347824941cf982be8e032eca0ff17ebe399fe4"
+  },
+  "gates": {
+    "consumer_diagnostic": {
+      "tests": 26,
+      "safe_bounded_diagnostics": true,
+      "temporary_directory_before_job_lease": true
+    },
+    "publisher_supporting_lane": {
+      "real_pg_groups": 5,
+      "supporting_only": true,
+      "official_strategy_preserved": true
+    },
+    "community_publisher": {
+      "real_pg_cases": 23,
+      "fresh_channel_receipt": true,
+      "concurrent_disconnect_refused": true
+    },
+    "publisher_units_combined": {
+      "passed": 30,
+      "skipped": 0
+    },
+    "corrected_reader_fixture": {
+      "combined_real_pg_checks": 63,
+      "private_helper_access_added": false,
+      "public_owner_fallback": true
+    }
+  },
+  "limits": [
+    "No live provider publication performed",
+    "External network dispatch atomicity and reconciliation not accepted",
+    "Production web deployment still queued; no candidate browser production claim",
+    "Corrected reader production rollback awaits lead execution"
+  ]
+}

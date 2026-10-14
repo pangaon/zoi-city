@@ -1,0 +1,41 @@
+{
+  "feature_id": "reviewed-map-selection-directions",
+  "info": {
+    "title": "Reviewed map destinations and directions",
+    "open_url": "/explore/map/?place=saint-nicholas-greek-orthodox-church-virginia-beach",
+    "scope": "Seven reviewed address records; phone and desktop selection plus provider directions handoff",
+    "limitations": "External Google Maps route/ETA not exercised; no global address accuracy or native acceptance claim"
+  },
+  "release": {
+    "id": "dpl_6evnh4fZoEQwic8gEfPmk5beSEbs",
+    "commit": "618f1541f0bb31d008d3661e3a0ff5c29eae4cb6",
+    "state": "READY"
+  },
+  "proof": {
+    "result": "passed",
+    "environment": "production",
+    "independent": true,
+    "type": "customer_journey",
+    "verified_at": "2026-10-14T15:40:45.034Z",
+    "record_ids": [
+      "2defc750-a78a-4a4b-976f-6b8070d790df",
+      "37318d7d-3eff-47ec-8f63-28c8015cad5b",
+      "373f6d89-03b6-4c58-b293-93a805885f5b",
+      "937a5d62-26ad-476a-b223-5621063d86ef",
+      "fe638ea9-b781-4aeb-984c-225c727a7764",
+      "26e30ccd-875a-4810-921d-e7609db68a14",
+      "4b00280a-a184-4852-93d4-9a634ca584a9"
+    ],
+    "evidence": [
+      "docs/audits/evidence/map-pr14-production-independent-2026-10-14/journeys.json",
+      "Actual390/1440 browser selected7reviewed records; destinations matched exact reviewed coordinates; exercised4travelmodes and entered/blankorigin; no API/data mocks"
+    ],
+    "operations": [
+      "Select reviewed public place",
+      "Open Plan directions",
+      "Change each of4travel modes",
+      "Enter and clear starting address",
+      "Inspect actionable Google Maps URL exact reviewed destination"
+    ]
+  }
+}

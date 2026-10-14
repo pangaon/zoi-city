@@ -37,3 +37,20 @@ test('safe hosted failure returns exact stage/http/SQLSTATE only and official co
  }finally{globalThis.fetch=previous;fixtureJobs=[];}
  assert.deepEqual(safeConsumerFailure({message:'not implemented secret',stage:'/private/path',sqlstate:'secret'},'source_research'),{error:'runtime_operation_unsupported',stage:'source_research'});
 });
+test('runner filesystem failures expose only fixed operation stages and never finish an unarchived capture',async()=>{
+ const{runGeographyResearchJobs}=await import('../../supabase/functions/geography-repair-source-consumer/_runner.js');const{mkdtemp,mkdir,rm}=await import('node:fs/promises');const dir=await mkdtemp('/tmp/zoi-operation-');const body='<p>Published source fixture</p>',hash=createHash('sha256').update(body).digest('hex');let finished=0;const job={id:'fixture',lease_id:'lease',status:'leased',listing_id:'listing',input_fingerprint:'input',original:{name:'Fixture',website:'https://official.example.org/',address:'1 Main Street',city:'Melbourne',country:'Australia'}};
+ try{
+  await assert.rejects(runGeographyResearchJobs([job],{directory:'/dev/null/invalid',finishJob:async()=>finished++}),e=>e.stage==='runner_directory');
+  await mkdir(dir+'/'+hash+'.source.html');await assert.rejects(runGeographyResearchJobs([job],{directory:dir,sourceFetch:async url=>({url,status:200,text:body}),finishJob:async()=>finished++}),e=>e.stage==='source_document_write');await rm(dir+'/'+hash+'.source.html',{recursive:true});
+  await assert.rejects(runGeographyResearchJobs([{...job,id:'missing/result'}],{directory:dir,sourceFetch:async()=>{throw Error('source_timeout')},finishJob:async()=>finished++}),e=>e.stage==='job_result_write');assert.equal(finished,0);
+  assert.deepEqual(safeConsumerFailure({message:'private path /tmp/secret-source.html',stage:'source_document_write'},'source_research'),{error:'bounded_source_batch_failed',stage:'source_document_write'});
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('failed exact filesystem preflight consumes no job lease and issues no registered source request',async()=>{
+ calls=[];let ran=0;const h=createHandler({runJobs:async()=>{ran++;return{results:[],source_requests:0}},filesystemProbe:async()=>{throw Object.assign(Error('/private/fixture-service-key/file mode failed'),{stage:'source_document_write'})}});
+ const r=await h(new Request('https://worker.example/',{method:'POST',headers:{'x-geography-repair-token':token}}));assert.equal(r.status,503);assert.deepEqual(await r.json(),{error:'bounded_source_batch_failed',stage:'source_document_write',complete:false});assert.equal(ran,0);assert.ok(calls.every(c=>!c.url.includes('geography_repair_lease')));assert.ok(calls.some(c=>c.url.includes('geography_source_capture_release')));
+});
+test('exact filesystem capability probe writes tiny private source/result bytes with hashes before job lease',async()=>{
+ const{probeSourceFilesystem}=await import('../../supabase/functions/geography-repair-source-consumer/index.ts');const{mkdtemp,readFile,stat,rm}=await import('node:fs/promises');const dir=await mkdtemp('/tmp/zoi-preflight-');try{await probeSourceFilesystem(dir);for(const name of['.source-capability-probe','.result-capability-probe']){const p=dir+'/'+name;assert.ok((await readFile(p)).byteLength<128);assert.equal((await stat(p)).mode&0o777,0o600);}}finally{await rm(dir,{recursive:true,force:true});}
+});
