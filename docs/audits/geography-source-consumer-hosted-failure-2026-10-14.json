@@ -1,0 +1,36 @@
+{
+  "observed_at": "2026-10-14T15:16:41Z",
+  "ci_run": "38586631447",
+  "release_commit": "014eeb58",
+  "status": "deployed_hosted_capture_failed_safe_diagnostic_prepared",
+  "worker": {
+    "version": 1,
+    "status": "ACTIVE",
+    "verify_jwt": false,
+    "all_seven_runtime_modules_present": true
+  },
+  "actual_canary": {
+    "http_status": 503,
+    "execution_ms": 1426,
+    "cron_jobs": 0,
+    "leased_jobs": 4,
+    "lease_attempts": 1,
+    "capture_results_persisted": 0,
+    "private_archive_objects": 0,
+    "capture_single_flight_released": true
+  },
+  "bounded_failure_location": "After job lease and before any private archive/finish; exact runtime operation not yet proven.",
+  "prepared_delta": [
+    "HTTP/stage/allowlisted SQLSTATE diagnostics only",
+    "No raw service body/error/path/credential emitted",
+    "Private temporary-directory capability checked before consuming job leases",
+    "Official queue consumer explicitly pins official_sources_v1 strategy"
+  ],
+  "local_tests_passed": 26,
+  "actual_hosted_remaining": [
+    "Root reviewed fresh release and safe canary diagnostic",
+    "Successful source capture/private archive readback before cron enablement"
+  ],
+  "diagnostic_only_not_claimed_runtime_fix": true,
+  "deployments_by_enrichment": 0
+}

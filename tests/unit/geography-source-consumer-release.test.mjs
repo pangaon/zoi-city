@@ -1,4 +1,4 @@
-import test from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{createHash}from'node:crypto';import{safeSourceModuleDiagnostic,validateGeographySourceRelease,runGeographySourceRelease,PROJECT,MANIFEST,BUCKET,VAULT_NAME,WORKER}from'../../scripts/release-geography-source-consumer.mjs';
+import test from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{createHash}from'node:crypto';import{safeHostedConsumerDiagnostic,safeSourceModuleDiagnostic,validateGeographySourceRelease,runGeographySourceRelease,PROJECT,MANIFEST,BUCKET,VAULT_NAME,WORKER}from'../../scripts/release-geography-source-consumer.mjs';
 const digest=s=>createHash('sha256').update(s).digest('hex'),at=Date.now(),privateToken='b'.repeat(64),sourceHash='c'.repeat(64),access='management-secret-fixture';
 function fixture(){const paths=JSON.parse(readFileSync(MANIFEST,'utf8')).files.map(f=>f.path),content=new Map(paths.map(p=>[p,'reviewed:'+p]));content.set('scripts/release-geography-source-consumer.mjs','bootstrap-source');content.set('scripts/release-backend.mjs','safe-helper-source');content.set(MANIFEST,JSON.stringify({files:paths.map(path=>({path,sha256:digest(content.get(path))}))}));const request={id:'release-geography-fixture-safe',project:PROJECT,expires_at:new Date(at+600000).toISOString(),manifest_path:MANIFEST,manifest_sha256:digest(content.get(MANIFEST)),script_sha256:digest(content.get('scripts/release-geography-source-consumer.mjs')),helper_sha256:digest(content.get('scripts/release-backend.mjs')),install_schedule:true};const read=p=>{if(!content.has(p))throw Error('unexpected source');return content.get(p)};return{request,read,content};}
 const env={GITHUB_ACTIONS:'true',GITHUB_REPOSITORY:'pangaon/zoi-city',GITHUB_REF:'refs/heads/main',GITHUB_EVENT_NAME:'push',GITHUB_RUN_ATTEMPT:'1',SUPABASE_ACCESS_TOKEN:access};
@@ -17,4 +17,9 @@ test('bundler diagnostic emits only a single exact whitelisted specifier, never 
  const result=safeSourceModuleDiagnostic({stderr:Buffer.from(raw),message:privateToken});assert.deepEqual(result,{module:want});assert.ok(!JSON.stringify(result).includes(privateToken));
  }
  assert.deepEqual(safeSourceModuleDiagnostic({message:'Module not found "node:https"'}),{module:'unknown'});
+});
+
+test('hosted diagnostic accepts only fixed handler/stage/SQLSTATE labels and never echoes a private body',async()=>{
+ const good=await safeHostedConsumerDiagnostic(new Response(JSON.stringify({error:'bounded_source_batch_failed',stage:'job_finish',service_http_status:403,sqlstate:'42501',message:privateToken}),{status:503}));assert.deepEqual(good,{http_status:503,error:'bounded_source_batch_failed',stage:'job_finish',service_http_status:403,sqlstate:'42501'});
+ const bad=await safeHostedConsumerDiagnostic(new Response(JSON.stringify({error:privateToken,stage:'/private/'+access,sqlstate:privateToken,service_http_status:'403'}),{status:503}));assert.deepEqual(bad,{http_status:503,error:'unknown',stage:'unknown'});
 });
