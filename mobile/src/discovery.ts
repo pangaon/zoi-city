@@ -3,8 +3,10 @@ import {
   hasStreetPosition,
   hasReviewedPosition,
   isMappableRow,
+  mapPositionFields,
   validatePositionCohorts,
 } from "../../assets/map-data/loader.mjs";
+import { navigationDestination, navigationURL } from "../../assets/map-data/directions.mjs";
 import { placeDestination } from "./placeNavigation.ts";
 export type Area = { city: string; country: string };
 export type DiscoveryState = {
@@ -120,16 +122,14 @@ export function discoveryPoints(rows: any[]) {
         return true;
       })
       .map((r) => ({
+        ...mapPositionFields(r),
         s: r.slug,
         n: cleanLocation(r.name),
         t: r.entity_type || "business",
         city: cleanLocation(r.city),
         country: cleanLocation(r.country),
         cat: r.category_slug || "",
-        lat: Number(r.lat),
-        lng: Number(r.lng),
         addr: r.address || "",
-        precision: r.geo_precision || "",
       })),
   );
 }
@@ -177,28 +177,14 @@ export function selectedEntity(value: any, slug: string, id?: string) {
     throw Error("This place is no longer available. Refresh your search.");
   return { ...e, reviewed_destination: null };
 }
-export function placeDirections(entity: any, point: any) {
+export function placeDirections(entity: any, point: any, options: {mode?:string;origin?:string;navigate?:boolean} = {}) {
   if (!entity || !uuid(entity.id)) return null;
   const confirmed = point && hasReviewedPosition(point, entity);
   const address = cleanLocation(entity.address),
     city = cleanLocation(entity.city),
     country = cleanLocation(entity.country);
-  if (confirmed)
-    return {
-      url:
-        "https://www.google.com/maps/dir/?api=1&destination=" +
-        encodeURIComponent(point.lat + "," + point.lng),
-      label: "Directions · reviewed pin",
-      basis: "reviewed",
-    };
-  if (address)
-    return {
-      url:
-        "https://www.google.com/maps/dir/?api=1&destination=" +
-        encodeURIComponent([address, city, country].filter(Boolean).join(", ")),
-      label: "Directions · address on file",
-      basis: "address",
-    };
+  const destination = navigationDestination({s:entity.slug||point?.s||"destination",n:entity.name,addr:address,city,country,lat:point?.lat,lng:point?.lng},{reviewed:!!confirmed});
+  if (destination) return {url:navigationURL(destination,options),label:destination.basis==="reviewed"?"Directions · reviewed pin":"Directions · address on file",basis:destination.basis};
   if (city)
     return {
       url:
@@ -297,4 +283,12 @@ export function nativePinClusters(
         360) -
       180,
   }));
+}
+
+/** Public map tools carry selected-place/view context, never account tokens. */
+export function fullMapToolsLink(place:any,{latitude=37,longitude=15,longitudeDelta=160,width=350}: {latitude?:number;longitude?:number;longitudeDelta?:number;width?:number}={}) {
+ const url=new URL('https://www.zoi.city/explore/map/');url.searchParams.set('scope','global');
+ if(typeof place?.s==='string'&&place.s&&place.s.length<=240){url.searchParams.set('place',place.s);const city=cleanLocation(place.city),country=cleanLocation(place.country);if(city)url.searchParams.set('city',city);if(country)url.searchParams.set('country',country);}
+ if([latitude,longitude,longitudeDelta,width].every(Number.isFinite)&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180&&longitudeDelta>0&&width>0){const zoom=Math.min(18.5,Math.max(0.6,Math.log2(width*360/(512*longitudeDelta))));url.hash=[zoom.toFixed(2),latitude.toFixed(5),longitude.toFixed(5),0,0].join('/');}
+ return url.href;
 }

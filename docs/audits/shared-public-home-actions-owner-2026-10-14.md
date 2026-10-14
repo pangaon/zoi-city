@@ -1,0 +1,11 @@
+# Shared public home contact and directions repair
+
+Problem: sparse public homes constructed Directions from a name/city, unreceipted coordinates or a locality-only address. A valid bare stored website such as `igourmet.com` lost its customer Website action before rendering.
+
+The shared `publishedDirections` helper now routes only to an actual published postal address with country context; a city, city/country, absent address or unreceipted rooftop label cannot create an exact destination. Generic entity, quick-look, restaurant, venue/event and parish renderers reuse it. Generic event data retains country so legitimate street-address links remain available. The reviewed event path takes actual entity country/city without guessing.
+
+Outbound legacy hostname normalization is separate from research identity. `outwardWebsiteURL` and `selectedOutwardWebsite` restore safe HTTPS customer contacts; `officialSiteURL` and `selectedOfficialWebsite` remain strict and do not promote the bare hostname to verified source evidence. Source quarantine and explicit owner clears remain authoritative. Contact wrappers and shared quick-look use outward selection; research/source-health consumers remain strict. This is a transient public projection, not a database rewrite or new crawl authorization.
+
+Verification: 125 combined unique checks pass across actual entity handler, all four restaurant/venue/parish designs, populated/sparse contact cases, strict source policy, owner removals, quick-look and person/health/music navigation. Independent QA's actual handler SSR with fresh public catalogue snapshots confirms iGourmet's HTTPS Website action and absent false Directions, sparse Nea Salamis and Kapnikarea no false destination, and a Calgary street address retains Directions. See independent evidence under `evidence/full-scope-family-independent-2026-10-13/`.
+
+This artifact does not claim every catalogue address is correct, every family was physically exercised, or that this candidate is live. Lead owns coherent production release; independent browser/live contact and destination verification remains its gate. Map source repair and physical native acceptance remain separately tracked in the existing recovery board.

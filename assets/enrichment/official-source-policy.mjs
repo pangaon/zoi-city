@@ -10,6 +10,8 @@ const receiptKeys=new Set(['source_url','provenance','checked_at','last_attempt_
 export function sourceIdentityContentHeld(entity){return object(context(entity)?.profile?._enrich).blocked_reason==='source_scope_mismatch';}
 function receiptOnly(value){return Object.fromEntries(Object.entries(object(value)).filter(([key])=>receiptKeys.has(key)));}
 export function officialSiteURL(value){try{if(typeof value!=='string')return '';const u=new URL(value);return ['http:','https:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
+// Outbound contact only: a legacy bare hostname is not verified source identity.
+export function outwardWebsiteURL(value){const strict=officialSiteURL(value);if(strict)return strict;if(typeof value!=='string')return '';const bare=value.trim();if(!/^(?:[a-z0-9\u0080-\uffff](?:[a-z0-9\u0080-\uffff-]*[a-z0-9\u0080-\uffff])?\.)+[a-z\u0080-\uffff]{2,}(?:[/?#]|$)/i.test(bare)||/[\s\\]/.test(bare))return '';return officialSiteURL('https://'+bare);}
 export function officialSourceQuarantined(entity){
  entity=context(entity);
  const q=object(entity?.profile?._enrich);
@@ -20,6 +22,7 @@ function selected(entity){
  for(const layer of [owner,object(owner.profile),profile])if(own(layer,'website'))return{present:true,value:layer.website};
  return{present:false,value:entity?.website};
 }
+export function selectedOutwardWebsite(entity){if(entity?.[normalized])return entity[normalized].outward??entity[normalized].website;entity=context(entity);const chosen=selected(entity);return officialSourceQuarantined(entity)&&!chosen.present?'':outwardWebsiteURL(chosen.value);}
 export function selectedOfficialWebsite(entity){
  if(entity?.[normalized])return entity[normalized].website;
  entity=context(entity);
@@ -34,10 +37,10 @@ export function officialSourceEntity(entity){
  if(!entity||typeof entity!=='object'||Array.isArray(entity))return entity;
  if(entity[normalized])return entity;
  const original=entity;entity=context(entity);
- const site=selectedOfficialWebsite(entity),chosen=selected(entity);
+ const qualified=selectedOfficialWebsite(entity),chosen=selected(entity),site=qualified||(!officialSourceQuarantined(entity)||chosen.present?outwardWebsiteURL(chosen.value):'');
  // Keep an accepted stored URL's exact spelling in canonical/schema payloads.
  // Outward action helpers still normalize its URL independently.
- const out={...entity,website:site?(chosen.present?chosen.value:entity.website):''};
+ const out={...entity,website:site?(qualified?(chosen.present?chosen.value:entity.website):site):''};
  if(sourceIdentityContentHeld(entity))out.profile={...object(entity.profile),_enrich:receiptOnly(entity.profile?._enrich)};
  // Clamp all fallback layers only when their selected outward website is empty.
  // This is a transient public projection; the supplied record remains untouched.
@@ -49,6 +52,6 @@ export function officialSourceEntity(entity){
  // Compact search context must carry the same cleaned view. Stored inputs and
  // explicit owner/profile/base fields remain unchanged; this is not a write.
  if(original.media_input&&typeof original.media_input==='object')out.media_input={...original.media_input,profile:out.profile,website:out.website};
- Object.defineProperty(out,normalized,{value:{website:site},enumerable:false});
+ Object.defineProperty(out,normalized,{value:{website:qualified,outward:site},enumerable:true});
  return out;
 }

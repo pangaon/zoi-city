@@ -1,10 +1,11 @@
 {
-  "updated_at": "2026-09-30T02:39:25.321820+00:00",
+  "updated_at": "2026-10-14T12:57:30.245478+00:00",
   "production_web": {
-    "commit": "10ce0f107c83f54af3acfeadc67e997d943cfde6",
-    "deployment": "dpl_FHs9Drk56BQjXgiGLbtKe8LQErEi",
+    "commit": "de3096030bf026ecaed7f634b17cf47e5f08d6ba",
+    "deployment": "dpl_5rZbWs9dWVz9EZPXSphjyf6U1i7F",
     "status": "READY",
-    "checks": "Actual authenticated Creator operator/customer lists200; public creator screen390 no overflow and actual theme assets loaded. Production transactional creator approval/rescheduling/privacy checks passed with0persistedtestlistings."
+    "host": "https://www.zoi.city",
+    "checks": "Merged release bytes and public routes verified. Latest map/dashboard source not yet deployed. Database-only main5811f84 Vercel build intentionally skipped/canceled; API change is live independently."
   },
   "database": {
     "controlled_restart": "2026-09-29T23:54:42Z",
@@ -56,19 +57,16 @@
     "delivery_payments": "disabled; signed-in ownership checks deployed, no charges"
   },
   "mobile": {
-    "android_apk": "https://expo.dev/artifacts/eas/YoBJQIVEIzHCfK8m6QGW2KH-gvYQtn4PymmsUDFq1LY.apk",
-    "ios_simulator_archive": "https://expo.dev/artifacts/eas/5SJDOKzRs7I1UydF9kzT3LvhbkIPhevMULgmnrmiLZc.tar.gz",
-    "binary_source_commit": "6e93a44",
-    "later_source_local_checks_only": [
-      "through 3f68373: 54 tests, TypeScript and Expo export; browser verification includes real private bookings and volunteer operator RPCs; no physical-device acceptance"
-    ],
-    "physical_ios_distribution": "signing credentials not configured",
-    "observed_credit_usage": {
-      "included_credits_usd": 3,
-      "overage_usd": 0,
-      "basis": "observed EAS included usage changed1000 to1300cents across2successful builds; not a full platform invoice"
-    },
-    "new_cloud_builds": "paused until next reviewed batch"
+    "binary_source_commit": "de3096030bf026ecaed7f634b17cf47e5f08d6ba",
+    "android_build_id": "f5d4f8fc-6d4a-42db-83c2-c488b1f52978",
+    "android_apk": "https://expo.dev/artifacts/eas/LGlKnjVNh4Gfab7rNkLiUUmiafbYMFeIAaTaxy3tQm8.apk",
+    "ios_build_id": "71b5f5aa-62e8-4d61-8ef7-624da311be55",
+    "ios_simulator_archive": "https://expo.dev/artifacts/eas/qMDj8H7_hgMJv3BdXS6ClGKQ-0scjiT-Ss2gQ_FKC2E.tar.gz",
+    "build_status": "FINISHED",
+    "included_changes": "Owner revision and retry changes; excludes current map/dashboard source.",
+    "physical_device_acceptance": "Not yet recorded for these artifacts.",
+    "store_distribution": "Not verified; App Store identity/signing requires operator validation.",
+    "next": "Coherent final map/workflow commit build within existing included credits; no unapproved overage."
   },
   "cost_controls": [
     "Vercel skips operations/docs/tests/mobile/backend-only commits; unknown history builds conservatively",
@@ -132,7 +130,11 @@
     "local": {
       "source_tests_passed": 1825,
       "source_tests_skipped": 15,
-      "live_contract_checks": 53,
+      "live_contract_checks": {
+        "executed": 38,
+        "skipped": 15,
+        "historical_reporting_correction": "15 unavailable EventOS RPC checks were previously labelled pass; strict runner now reports skipped"
+      },
       "live_page_checks": 17,
       "owner_browser": "lost response and exact retry at390/1440 with controlled RPC",
       "native_source_tests": 457,
@@ -169,5 +171,130 @@
       "payments": false,
       "stripe": false
     }
+  },
+  "unified_owner_and_client_brief_release_2026_10_13": {
+    "pr": "https://github.com/pangaon/zoi-city/pull/11",
+    "commit": "de3096030bf026ecaed7f634b17cf47e5f08d6ba",
+    "web": {
+      "deployment_id": "dpl_5rZbWs9dWVz9EZPXSphjyf6U1i7F",
+      "state": "READY",
+      "merged_bytes_verified_on_custom_domain": true
+    },
+    "worker": {
+      "name": "zoi-enrich",
+      "version": 53,
+      "bundle_sha256": "b098a5f6e17f1bb24a56b1d0583ab68835dac9d9400cf028798446b75650b601"
+    },
+    "owner_migration": {
+      "version": "20261014044157",
+      "production_sql_contract_checks": 21,
+      "all_fixture_writes_rolled_back": true,
+      "live_authenticated_http_or_device_acceptance": false
+    },
+    "native": {
+      "source_commit": "de3096030bf026ecaed7f634b17cf47e5f08d6ba",
+      "android": {
+        "build_id": "f5d4f8fc-6d4a-42db-83c2-c488b1f52978",
+        "status": "FINISHED",
+        "apk": "https://expo.dev/artifacts/eas/LGlKnjVNh4Gfab7rNkLiUUmiafbYMFeIAaTaxy3tQm8.apk"
+      },
+      "ios_simulator": {
+        "build_id": "71b5f5aa-62e8-4d61-8ef7-624da311be55",
+        "status": "FINISHED",
+        "archive": "https://expo.dev/artifacts/eas/qMDj8H7_hgMJv3BdXS6ClGKQ-0scjiT-Ss2gQ_FKC2E.tar.gz"
+      },
+      "physical_device_acceptance": false,
+      "new_map_changes_included": false,
+      "store_submission": false
+    }
+  },
+  "default_discovery_recovery_2026_10_13": {
+    "migration_version": "20261014050544",
+    "local_full_json_comparisons": 92,
+    "independent_comparisons_passed": 92,
+    "production_migration_applied": true,
+    "performance_note": "Indexed first-page candidate search; duplicate groups still require candidate probes, no worst-case bounded-latency claim",
+    "production_latency_measured": "Four anonymous requests including network; not cold-cache/worst-case guarantee",
+    "live_contract": {
+      "executed_passed": 38,
+      "skipped": 15,
+      "failed": 0
+    },
+    "live_pages_passed": 17,
+    "anonymous_http_statuses": [
+      200,
+      200,
+      200,
+      200
+    ],
+    "observed_end_to_end_ms": [
+      348,
+      241,
+      226,
+      190
+    ],
+    "pr": "https://github.com/pangaon/zoi-city/pull/12",
+    "merge_state": "merged"
+  },
+  "centroid_precision_recovery_2026_10_13": {
+    "migration_source": "supabase/migrations/20261014050623_centroid_precision_claim_cas.sql",
+    "source_sha256": "98a60c5cda17bb0de3f859b7b0bfe9fc7d477e3a8e9b4252834884f4a4d8d9ac",
+    "ledger_version": "20261014051443",
+    "production_dry_run": {
+      "changed": 24,
+      "rolled_back": true,
+      "snapshots_unchanged": true,
+      "durable_receipts": 0
+    },
+    "production_apply": {
+      "receipts": 24,
+      "current_city_precision": 24,
+      "coordinates_unchanged": 24,
+      "owner_untouched": 24
+    },
+    "street_certifications": 0,
+    "scope": "Corrects false street precision claims; does not establish exact premises positions or globally complete address accuracy."
+  },
+  "historical_top_level_snapshots": [
+    {
+      "production_web": {
+        "commit": "10ce0f107c83f54af3acfeadc67e997d943cfde6",
+        "deployment": "dpl_FHs9Drk56BQjXgiGLbtKe8LQErEi",
+        "status": "READY",
+        "checks": "Actual authenticated Creator operator/customer lists200; public creator screen390 no overflow and actual theme assets loaded. Production transactional creator approval/rescheduling/privacy checks passed with0persistedtestlistings."
+      },
+      "mobile": {
+        "android_apk": "https://expo.dev/artifacts/eas/YoBJQIVEIzHCfK8m6QGW2KH-gvYQtn4PymmsUDFq1LY.apk",
+        "ios_simulator_archive": "https://expo.dev/artifacts/eas/5SJDOKzRs7I1UydF9kzT3LvhbkIPhevMULgmnrmiLZc.tar.gz",
+        "binary_source_commit": "6e93a44",
+        "later_source_local_checks_only": [
+          "through 3f68373: 54 tests, TypeScript and Expo export; browser verification includes real private bookings and volunteer operator RPCs; no physical-device acceptance"
+        ],
+        "physical_ios_distribution": "signing credentials not configured",
+        "observed_credit_usage": {
+          "included_credits_usd": 3,
+          "overage_usd": 0,
+          "basis": "observed EAS included usage changed1000 to1300cents across2successful builds; not a full platform invoice"
+        },
+        "new_cloud_builds": "paused until next reviewed batch"
+      },
+      "note": "Historical values retained; current top-level snapshot follows independently observed release identities."
+    }
+  ],
+  "global_map_and_founder_dashboard_2026_10_14": {
+    "branch": "repair-global-map-20261014",
+    "web": "Frozen coherent source; deployment verification pending.",
+    "database": "Founder-only dashboard, durable complete-population geography jobs, guarded current address lookup and sanitized point contract, actual job event bridge and lightweight founder job projection applied.",
+    "coverage": {
+      "eligible_records": 35794,
+      "exact_street_coordinate_changes": 7,
+      "city_context_coordinate_changes": 49,
+      "precision_labels_only": 24,
+      "source_capture_jobs": 120,
+      "whole_population_accuracy": "not complete"
+    },
+    "independent_evidence": "docs/audits/delivery-production-reconciliation-qa-2026-10-14.json",
+    "native": "Existingde309preview artifacts exclude these map changes. Coherent exact-commit build/device acceptance still required.",
+    "full_goal": "987 recorded scope/evidence statements retained in authoritative execution queue, not a completion percentage."
   }
 }

@@ -1,7 +1,7 @@
 import { createElement, useEffect, useRef, useState } from "react";
 import { Text, View, Pressable } from "react-native";
 import { LIGHT } from "./brand";
-import { exactPins } from "./discovery";
+import { exactPins, fullMapToolsLink } from "./discovery";
 import { matchBounds, focusOptions } from "../../assets/map-data/loader.mjs";
 import type { DiscoveryMapProps } from "./DiscoveryMap.types";
 let sdk: Promise<void> | null = null;
@@ -65,13 +65,16 @@ export function DiscoveryMap({
     [ready, setReady] = useState(false),
     [error, setError] = useState(""),
     [attempt, setAttempt] = useState(0),
-    prior = useRef("");
+    prior = useRef(""),
+    priorSelection = useRef("");
   live.current = { points, selected, onSelect };
+  const selectedPoint = exactPins(points).find((p:any)=>p.s===selected);
   useEffect(() => {
     let active = true;
     setError("");
     setReady(false);
     prior.current = "";
+    priorSelection.current = "";
     void loadSDK()
       .then(() => {
         if (!active || !node.current) return;
@@ -223,17 +226,19 @@ export function DiscoveryMap({
       "#10294d",
       "#075dcc",
     ]);
-    const p = exactPins(points).find((p: any) => p.s === selected);
+    const p = selectedPoint;
+    const sameSelection = priorSelection.current === selected;
+    priorSelection.current = selected;
     if (p)
       map.current.easeTo(
         focusOptions(p, {
-          currentZoom: map.current.getZoom(),
+          currentZoom: sameSelection ? map.current.getZoom() : null,
           width: node.current?.clientWidth,
           height: 340,
           reducedMotion: !motion,
         }),
       );
-  }, [ready, selected, focus, motion]);
+  }, [ready, selected, selectedPoint?.lat, selectedPoint?.lng, focus, motion]);
   return (
     <View
       style={{
@@ -251,6 +256,7 @@ export function DiscoveryMap({
         "aria-label": "Zoi street-level places map",
         style: { height: "100%", width: "100%" },
       })}
+      <Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" onPress={()=>{const center=map.current?.getCenter();const href=fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},center?{latitude:center.lat,longitude:center.lng,longitudeDelta:360/(2**map.current.getZoom())*(node.current?.clientWidth||350)/512,width:node.current?.clientWidth||350}:{});window.location.assign(href);}} style={{position:"absolute",top:12,left:12,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>Full map tools ↗</Text></Pressable>
       {!ready || error ? (
         <View
           style={{

@@ -1,3 +1,4 @@
+import {selectedOfficialWebsite} from '../enrichment/official-source-policy.mjs';
 import {auxiliaryImage} from '../../supabase/functions/zoi-enrich/_image-context.js';
 import {ARTIST_SOURCES} from '../homes/templates/music/sources.mjs';
 import {reviewedArtistMedia} from '../homes/templates/music/reviewed-media.mjs';
@@ -26,7 +27,7 @@ function effectiveWebsite(entity){const raw=object(entity?.profile),owner=object
 export function sourceIdentity(entity){
  const q=object(entity?.profile?._enrich),owner=object(entity?.owner_content);
  if(sourceQuarantined(q))return false;
- try{const a=new URL(effectiveWebsite(entity)),b=new URL(q.source_url);return ['https:','http:'].includes(a.protocol)&&['https:','http:'].includes(b.protocol)&&!a.username&&!a.password&&!b.username&&!b.password&&a.port===b.port&&a.hostname.replace(/^www\./,'')===b.hostname.replace(/^www\./,'')&&(a.pathname==='/'||a.pathname.replace(/\/$/,'')===b.pathname.replace(/\/$/,''));}catch{return false;}
+ try{const a=new URL(selectedOfficialWebsite(entity)),b=new URL(q.source_url);return ['https:','http:'].includes(a.protocol)&&['https:','http:'].includes(b.protocol)&&!a.username&&!a.password&&!b.username&&!b.password&&a.port===b.port&&a.hostname.replace(/^www\./,'')===b.hostname.replace(/^www\./,'')&&(a.pathname==='/'||a.pathname.replace(/\/$/,'')===b.pathname.replace(/\/$/,''));}catch{return false;}
 }
 function selected(layers,keys){for(const layer of layers)for(const key of keys)if(has(layer,key))return{present:true,value:layer[key],key};return{present:false,value:null};}
 function selectedLogo(layers){for(const layer of layers){if(has(layer.brand,'logo'))return{present:true,value:layer.brand.logo};for(const key of ['logo_url','logo'])if(has(layer,key))return{present:true,value:layer[key]};}return{present:false,value:null};}

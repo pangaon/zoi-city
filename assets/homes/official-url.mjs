@@ -1,3 +1,3 @@
 // Outbound website navigation only. Media and embeds retain their HTTPS validators.
-import {officialSiteURL,selectedOfficialWebsite} from '../enrichment/official-source-policy.mjs';
-export function officialURL(value,entity){return entity?selectedOfficialWebsite(entity):officialSiteURL(value);}
+import {outwardWebsiteURL,selectedOutwardWebsite} from '../enrichment/official-source-policy.mjs';
+export function officialURL(value,entity){return entity?selectedOutwardWebsite(entity):outwardWebsiteURL(value);}

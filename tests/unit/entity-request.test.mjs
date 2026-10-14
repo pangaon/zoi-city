@@ -54,11 +54,11 @@ test('verified workflow links reach real booking, enquiry and volunteer entry po
 });
 test('directions prefer street address and never route to unverified centroid coordinates',async()=>{
  const render=e=>run(async fn=>response(fn==='home_entity'?{...entity,...e}:null));
- const address=await render({address:'12 Main St',latitude:1,longitude:2,geo_precision:'city'});
- assert.match(address.body,/destination=12%20Main%20St%2C%20Athens/);
+ const address=await render({address:'12 Main St',country:'Greece',latitude:1,longitude:2,geo_precision:'city'});
+ assert.match(address.body,/destination=12\+Main\+St%2C\+Athens%2C\+Greece/);
  const city=await render({latitude:1,longitude:2,geo_precision:'city'});
- assert.match(city.body,/destination=Greek%20Home%2C%20Athens/);assert.doesNotMatch(city.body,/destination=1%2C2/);
- const exact=await render({latitude:1,longitude:2,geo_precision:'rooftop'});assert.match(exact.body,/destination=1%2C2/);
+ assert.doesNotMatch(city.body,/maps\/dir\//);
+ const exact=await render({latitude:1,longitude:2,geo_precision:'rooftop'});assert.doesNotMatch(exact.body,/maps\/dir\//);
 });
 test('public business data cannot inject executable actions or close the structured-data script',async()=>{
  const r=await run(async fn=>response(fn==='home_entity'?{...entity,name:'Greek </script><script>alert(1)</script>',website:'javascript:alert(2)',description:'</script><img src=x onerror=alert(3)>'}:null));
@@ -67,7 +67,7 @@ test('public business data cannot inject executable actions or close the structu
 });
 test('artist hometown without a venue address does not become a directions destination',async()=>{
  const artist=await run(async fn=>response(fn==='home_entity'?{...entity,entity_type:'artist'}:null));assert.doesNotMatch(artist.body,/maps\/dir\//);
- const venue=await run(async fn=>response(fn==='home_entity'?{...entity,entity_type:'artist',address:'12 Main St'}:null));assert.match(venue.body,/maps\/dir\//);
+ const venue=await run(async fn=>response(fn==='home_entity'?{...entity,entity_type:'artist',address:'12 Main St',country:'Greece'}:null));assert.match(venue.body,/maps\/dir\//);
 });
 
 test('a transient gateway failure retries only the primary public read once',async()=>{let attempts=0;const r=await run(async fn=>{if(fn==='home_entity'&&++attempts===1)return new Response('gateway',{status:502});return response(fn==='home_entity'?entity:[])});assert.equal(r.status,200);assert.equal(attempts,2);assert.deepEqual(r.calls.slice(0,2),['home_entity','home_entity']);});
@@ -83,3 +83,5 @@ test('explicit social removal clears public buttons and structured data without 
   const structured=JSON.parse(r.body.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)[1]);assert.equal(structured.sameAs.includes(channel),expected,label);assert.ok(structured.sameAs.includes(e.website));
  }
 });
+
+test('bare official website host becomes HTTPS customer action without enabling unsafe schemes',async()=>{const r=await run(async fn=>response(fn==='home_entity'?{...entity,entity_type:'vendor',website:'igourmet.com',address:null,country:null}:null));assert.match(r.body,/href="https:\/\/igourmet.com\/"/);assert.doesNotMatch(r.body,/maps\/dir\//);});

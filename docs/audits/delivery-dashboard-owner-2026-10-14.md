@@ -1,0 +1,17 @@
+# Founder delivery dashboard frontend
+
+Candidate route: `/apps/command-center/delivery/`, linked from the existing operations console. The frontend uses existing Zoi email-code authentication and authenticated RPCs only. The lead owns the dedicated founder/current-session database gate and live queue feeds. No email address, private credential, service key or bypass exists in this frontend.
+
+The first implementation displays measured metric counts/denominators without adding overlapping categories; unavailable counts say “Not yet measured.” Counters open actual paged records, canonical profile links, before/after values and evidence. Eleven goal groups expand to concrete outcomes. Ready cards require a release, valid verification timestamp and actual destination; missing URLs do not become homepage links. The API remains authoritative for live acceptance and rollback.
+
+Owner action acknowledgements retain their request UUID until a confirmed receipt and explain that readiness must still be checked. Problem reports preserve their original feature/release/profile context on uncertain retry, save to the same backend queue and do not send external messages. The frontend polls every 30 seconds through the existing bounded API transport. Account changes remove private DOM, fence delayed results and recheck authorization. A failed refresh preserves earlier results with an explicit warning; stale or absent activity shows “No recent update.” A modal form/record panel is preserved while data refreshes.
+
+Owner evidence: four focused renderer/URL/heartbeat checks pass; actual HTML/controller browser at 390/1440 with controlled RPC passes counter-to-record links, acknowledgement without green, problem save/reload, automatic polling, rollback removing ready cards, stale update warning, and delayed account-switch denial clearing private DOM. No overflow or page errors. Screenshots and reproducible runner are in `evidence/delivery-dashboard-owner-2026-10-14/`. Controlled persistence is not actual database persistence or live founder authorization evidence.
+
+Release gates: independently reviewed founder-only migration and grants; current-session revoked access; real queue/count reconciliation and jobs/release feed definitions; real report/ack receipts; production deployment; founder live login and actual record links. Native signed build installation remains separate. The lead must identify which feeds are connected versus reported or still being wired before sharing the live URL.
+
+Provider setup attachment: `connected-owner-actions-2026-10-14.md`. The existing recovery board is authoritative; this audit does not create another queue.
+
+## Final release source check, 2026-10-14
+
+Current authoritative queue producer supplies all 987 outcome statements in 11 groups directly from recovery-delivery-board.json. Actual dashboard controller browser acceptance passes 390px and 1440px, including the expanded first group, long unbroken outcome title, optional repair workload counts, explicit verified-workflow count, authenticated readiness observation, report/reload, polling, rollback, stale warning and actor-switch private-data clearing. No overflow or browser errors. Local controlled first usable timings are 180ms/166ms and are not field latency. Nine dashboard unit checks pass. This is controlled frontend acceptance; live founder authorization, real queue persistence and deployed readiness checks remain separate release evidence owned by the lead and independent QA.

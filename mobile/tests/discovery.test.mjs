@@ -268,3 +268,7 @@ test("native viewport clusters count real pins, hide coarse points and split wit
   );
   assert.equal(world.length, 1);
 });
+
+import {fullMapToolsLink} from '../src/discovery.ts';
+test('native full map tools preserve exact selected place city country and actual view without account data',()=>{const url=new URL(fullMapToolsLink({s:'actual place',city:'Toronto',country:'Canada',account:'private'},{latitude:43.7,longitude:-79.4,longitudeDelta:0.009,width:390}));assert.equal(url.origin,'https://www.zoi.city');assert.equal(url.pathname,'/explore/map/');assert.equal(url.searchParams.get('place'),'actual place');assert.equal(url.searchParams.get('city'),'Toronto');assert.equal(url.searchParams.get('country'),'Canada');assert(!url.href.includes('private'));assert.match(url.hash,/\/43\.70000\/-79\.40000\/0\/0$/);});
+test('native direct directions honor travel mode manual origin and actual published address',()=>{const entity={id,name:'Actual place',slug:'actual',address:'22 Actual Street',city:'Toronto',country:'Canada'},url=new URL(placeDirections(entity,null,{mode:'walking',origin:'10 Starting Avenue'}).url);assert.equal(url.searchParams.get('travelmode'),'walking');assert.equal(url.searchParams.get('origin'),'10 Starting Avenue');assert.equal(url.searchParams.get('dir_action'),'navigate');assert.equal(url.searchParams.get('destination'),'22 Actual Street, Toronto, Canada');});

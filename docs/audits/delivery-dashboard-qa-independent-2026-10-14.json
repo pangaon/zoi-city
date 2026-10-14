@@ -1,0 +1,36 @@
+{
+  "sourceHashes": {
+    "assets/operations/delivery-dashboard.mjs": "508cbeb8ff79cf90d6ff439199805f71611d0c2637228b9ca2fc679f19ab99d5",
+    "assets/operations/delivery-dashboard.css": "1ad13c7193c0fcfd0da0df50595cd1a053a436cb1178658a469b8b206b2c8813",
+    "apps/command-center/delivery/index.html": "d1df5ac144b89f559fc9d3d8b0a49328b613936f209eb867dbda389ce501924f"
+  },
+  "frontendAcceptance": {
+    "viewports": [
+      390,
+      1440
+    ],
+    "actualHTMLAndController": true,
+    "controlledRPC": true,
+    "outcomes": [
+      "Counter opens actual mocked records with exact profile link",
+      "Acknowledgement remains readiness check required, no green connection",
+      "Unsent report survives heartbeat aging (initial independent failure fixed by owner)",
+      "Unknown report response retries identical nonce/message/original feature context after different feature reopened",
+      "Mocked problem persists/reloads once",
+      "Periodic refresh updates feed without manual page reload",
+      "Rollback removes ready workflow",
+      "Stale activity explicitly displayed",
+      "Delayed actor switch clears private DOM and prevents stale private result restoring",
+      "No overflow/page errors"
+    ]
+  },
+  "evidence": "docs/audits/evidence/delivery-dashboard-independent-2026-10-14/journeys.json",
+  "notAccepted": [
+    "Actual server dedicated founder UID authorization/current auth session",
+    "Database persisted event/ack/report behavior",
+    "Counts reconcile against real records",
+    "Production deployed flow/mobile build identity",
+    "External lifecycle feed wiring/readiness execution"
+  ],
+  "status": "Frontend independently accepted with controlled transport; backend/production gates remain"
+}

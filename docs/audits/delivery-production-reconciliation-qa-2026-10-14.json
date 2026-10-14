@@ -1,0 +1,80 @@
+{
+  "checked_at": "2026-10-14T06:43:20.576018+00:00",
+  "independent": true,
+  "source_hashes": {
+    "scripts/delivery/sync.mjs": "4fb67633263d21787fdfb81c43999a027d87e6bb9f4b6e1e0e2c0b2ea9f7beaf",
+    "supabase/migrations/20261014063119_delivery_geography_event_bridge.sql": "3917046c6321852cd5c91af6fb5bcb70619554d0c8d14957a5fa14deac74dcd1",
+    "supabase/migrations/20261014054646_founder_live_delivery_dashboard.sql": "d2164e22c0924406c79687ee21758938c6a579c79fa11ad7e35d7723945d1786",
+    "tests/database/founder-delivery.integration.mjs": "5bdcf5c81a9c997c722e36d80d77cd1f9a047dc7ca5dfbc3807442043f295951",
+    "supabase/migrations/20261014124504_delivery_job_status_projection.sql": "0b54a232a2a8ad11cd3005221d99397bf0d8d64545969c89c3ee0fc97c5d9893",
+    "assets/enrichment/official-source-policy.mjs": "f77468e4d720145f71ef9a08a83afe8eb43582be5c408dcbef6139e844fcbdfd",
+    "assets/discovery/public-listing-media.mjs": "f021f6f21e2a0471088e5828e8fe5bfa04b841a71238048506eb7442aa8a2908",
+    "assets/operations/delivery-dashboard.css": "10bbae9585e360528564ff205f125e4203825f8bf4b717725a2271962c9debd6"
+  },
+  "production_read_only_sql": {
+    "population": 35794,
+    "stored_and_actual_equal": {
+      "addresses_corrected": 7,
+      "city_coordinates": 49,
+      "precision_labels": 24,
+      "awaiting_review": 35787
+    },
+    "unmeasured_null": [
+      "websites_reviewed",
+      "profiles_enriched",
+      "homes_visual",
+      "customer_actions"
+    ],
+    "definition": "Unique records; categories overlap and are not summed. Changed input remains unresolved."
+  },
+  "isolated_pg": {
+    "passed": 76,
+    "bridge_checks": [
+      "ACL unchanged",
+      "No insert events",
+      "No timestamp-only events",
+      "Changed input remains unresolved",
+      "Events automatic",
+      "Attempt updates emit",
+      "Applied excluded from unresolved"
+    ],
+    "auth_fixture": "Actual new founder helper; fixture auth UID/JWT and trusted admin registry only.",
+    "lightweight_job_projection": [
+      "Existing dashboard ACL retained",
+      "Private helper anon and authenticated denied",
+      "Ordinary actor dashboard denied",
+      "Valid fresh applied receipt removed from remaining",
+      "Reverted, stale fingerprint and malformed UUID receipts remain unresolved"
+    ]
+  },
+  "production_auth": {
+    "executor": "Integration lead",
+    "result_reported": "20 assertions passed using exact QA rollback fixture without helper overrides",
+    "qa_direct_execution": false
+  },
+  "limitations": [
+    "Production counters are measurements, not feature completion.",
+    "No provider operations, sends, charges, or AI generation tested.",
+    "Deployed founder browser journey remains separate from controlled DOM and SQL checks."
+  ],
+  "final_candidate_checked_at": "2026-10-14T12:54:46.509866+00:00",
+  "full_payload_browser": {
+    "widths": [
+      390,
+      1440
+    ],
+    "outcomes": 987,
+    "expanded_group": true,
+    "overflow": false,
+    "readiness_receipt_bound": true,
+    "report_draft_and_retry_context_preserved": true,
+    "transport": "Controlled RPC/edge; actual HTML/controller"
+  },
+  "strict_source_qualification": {
+    "accepted": true,
+    "regression_checks": 6,
+    "bare_host_outbound_contact_only": true,
+    "spread_marker_preserved": true,
+    "serialization_boundary": "Normalized outward projections are not research inputs; current path retains private Symbol."
+  }
+}

@@ -1,3 +1,4 @@
+import { positionPair, diagnosePosition, canonicalPositionPrecision } from './coordinate-integrity.mjs';
 // Four requests maximum in flight; retries stay within each worker slot.
 export function transientMapFailure(error){
  const status=Number(error?.status||error?.statusCode),code=String(error?.code||'');
@@ -42,14 +43,25 @@ export function validCoordinates(point){
  const numeric=value=>typeof value==='number'?Number.isFinite(value):typeof value==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value.trim())&&Number.isFinite(Number(value));
  return !!point&&numeric(point.lat)&&numeric(point.lng)&&Math.abs(Number(point.lat))<=90&&Math.abs(Number(point.lng))<=180&&!(Number(point.lat)===0&&Number(point.lng)===0);
 }
-export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&validCoordinates(row));}
+export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&positionPair(row).valid);}
+export function mapPositionFields(row){const pair=positionPair(row),metadata=row.geo_metadata||row.profile?._geo||row._geo,diagnosis=diagnosePosition({...row,geo_metadata:metadata}),raw=row.geo_precision??row.precision??row._geo?.precision??'';return{id:row.id,lat:pair.latitude,lng:pair.longitude,precision:diagnosis.effective_precision==='street'?(canonicalPositionPrecision(raw)==='street'?raw:'street'):diagnosis.effective_precision,geo_metadata:metadata,reviewed_destination:row.reviewed_destination,position_diagnosis:diagnosis};}
 
 // Only address/street evidence may place an individual listing on the map.
-export function hasStreetPosition(point){return !!point&&!point.position_conflict&&['street','address','rooftop'].includes(String(point.precision||point.geo_precision||'').toLowerCase())&&validCoordinates(point);}
+export function hasStreetPosition(point){return !!point&&!point.position_conflict&&diagnosePosition(point).drawable&&validCoordinates(point);}
 
 
 /** Bounds never imply premises from coarse or unverified coordinates. */
-export function matchBounds(points){const valid=points.filter(hasStreetPosition);if(!valid.length)return null;let west=180,east=-180,south=90,north=-90;for(const p of valid){west=Math.min(west,+p.lng);east=Math.max(east,+p.lng);south=Math.min(south,+p.lat);north=Math.max(north,+p.lat);}return[[west,south],[east,north]];}
+export function matchBounds(points){
+ const valid=points.filter(hasStreetPosition);if(!valid.length)return null;
+ const longitudes=valid.map(p=>({original:Number(p.lng),wrapped:Number(p.lng)<0?Number(p.lng)+360:Number(p.lng)})).sort((a,b)=>a.wrapped-b.wrapped);
+ let gap=-1,west=0,east=0,south=90,north=-90;
+ for(let i=0;i<longitudes.length;i++){const following=longitudes[(i+1)%longitudes.length],next=following.wrapped+(i===longitudes.length-1?360:0),size=next-longitudes[i].wrapped;if(size>gap){gap=size;west=following.original;east=longitudes[i].original;}}
+ if(east<west)east+=360;
+ for(const p of valid){south=Math.min(south,Number(p.lat));north=Math.max(north,Number(p.lat));}
+ // An eastern value above 180 is intentional: MapLibre fits the short
+ // antimeridian arc instead of sending Fiji/Samoa results around the globe.
+ return[[west,south],[east,north]];
+}
 
 /** Reused geocoder fallback coordinates are not street evidence, even if labelled so. */
 export function validatePositionCohorts(points){

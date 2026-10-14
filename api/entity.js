@@ -1,3 +1,5 @@
+import {publishedDirections} from '../assets/homes/directions.mjs';
+import {officialURL} from '../assets/homes/official-url.mjs';
 import {withHomeNavigation} from './_home-navigation.js';
 import {officialSourceEntity} from '../assets/enrichment/official-source-policy.mjs';
 import {createPublicReadCoalescer} from './_public-read-coalescer.js';
@@ -201,6 +203,7 @@ function completionPanel(e, completeness) {
 }
 
 function page(e, related, completeness){
+  e={...e,website:officialURL(e.website)?(/^https?:\/\//i.test(e.website)?e.website:officialURL(e.website)):null};
   var slug = e.canonical_slug || e.slug;
   var url = SITE + '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' + encodeURIComponent(slug);
   var picked = verticalFor(e), V = picked.v, sub = picked.sub;
@@ -210,11 +213,7 @@ function page(e, related, completeness){
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
   var publicDescription = cleanPublicText(e.description || p.about || p.description);
   var desc = cleanPublicText(e.meta_description) || publicDescription || (e.name + (e.city?(' in '+e.city):'') + ' — connect with the Greek world on Zoi.');
-  var destination = e.address ? [e.address,e.city,e.country].filter(Boolean).join(', ') :
-    ['rooftop','entrance','building','parcel','exact'].includes(String(e.geo_precision||'').toLowerCase()) && Number.isFinite(Number(e.latitude)) && Number.isFinite(Number(e.longitude)) && e.latitude!=null && e.longitude!=null
-      ? e.latitude+','+e.longitude : e.city ? [e.name,e.city,e.country].filter(Boolean).join(', ') : null;
-  if (['music','creator'].includes(V.key) && !e.address) destination=null;
-  var mapHref = destination ? 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(destination) : null;
+  var mapHref = publishedDirections(e);
 
   /* ---- primary actions: the vertical's own, then the universally real ones ---- */
   var acts = [];

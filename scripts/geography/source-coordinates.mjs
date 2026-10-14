@@ -1,4 +1,5 @@
 import {canonical,sha256} from '../quality/evidence.mjs';
+import {inspectSourceDocument} from '../../supabase/functions/zoi-enrich/_document-quality.js';
 const norm=v=>typeof v==='string'?v.normalize('NFKC').toLowerCase().replace(/[\p{P}\p{S}\s]+/gu,' ').trim():'';
 const host=u=>{try{const v=new URL(u);return v.protocol==='https:'&&!v.username&&!v.password?v.hostname.replace(/^www\./,''):null}catch{return null}};
 const sourceWithin=(url,website)=>{try{const a=new URL(url),b=new URL(website),base=b.pathname.replace(/\/$/,'');return host(url)===host(website)&&(!base||a.pathname===base||a.pathname.startsWith(base+'/'));}catch{return false}};
@@ -105,12 +106,13 @@ function squarespaceCandidate(html,row,review){
  const expected=[location.addressLine1,location.addressLine2,location.addressCountry].join(' ');let corroborated=false;
  for(const match of doc.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)){
   let json;try{json=JSON.parse(match[1])}catch{continue}
-  for(const n of nodes(json))if(types(n['@type']).some(t=>placeTypes.has(t))&&norm(n.name||n.legalName)===norm(row.name)&&typeof n.address==='string'&&norm(n.address)===norm(expected)&&(!n.url||sourceWithin(n.url,row.website)))corroborated=true;
+  const inspected=nodes(json);if(!inspected)return null;
+  for(const n of inspected)if(types(n['@type']).some(t=>placeTypes.has(t))&&norm(n.name||n.legalName)===norm(row.name)&&typeof n.address==='string'&&norm(n.address)===norm(expected)&&(!n.url||sourceWithin(n.url,row.website)))corroborated=true;
  }
  const lat=numeric(location.mapLat),lng=numeric(location.mapLng);if(!corroborated||!finitePoint(lat,lng))return null;
  return{latitude:lat,longitude:lng,precision:'source_published',name:row.name,address:a,evidence_kind:'squarespace_website_location',evidence_path:'Static.SQUARESPACE_CONTEXT.website.location'};
 }
-function nodes(v,out=[],depth=0){if(depth>12||out.length>500)return out;if(Array.isArray(v)){for(const n of v)nodes(n,out,depth+1)}else if(v&&typeof v==='object'){out.push(v);if(v['@graph'])nodes(v['@graph'],out,depth+1)}return out;}
+function nodes(v){const out=[],queue=[{value:v,depth:0}];while(queue.length){const {value,depth}=queue.shift();if(depth>12||out.length>=500)return null;if(Array.isArray(value)){if(value.length>500)return null;queue.push(...value.map(n=>({value:n,depth:depth+1})));}else if(value&&typeof value==='object'){out.push(value);if(value['@graph'])queue.push({value:value['@graph'],depth:depth+1});}}return out;}
 export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpStatus=200,identityReview=null}={}){
  const result={schema:1,kind:'official_coordinate_dry_run',listing_id:row.id,snapshot_sha256:coordinateSnapshot(row),source_fingerprint:row.source_fingerprint,source_url:sourceUrl,http_status:httpStatus,source_sha256:sha256(String(html)),status:'review_required',coordinate_writes:0,provider_calls:0};
  const refuse=reason=>({...result,reason});
@@ -118,6 +120,7 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
  if(row.public_eligible!==true)return refuse('not_public_eligible');
  if(!row.source_fingerprint||!row.owner_hash||!norm(row.name))return refuse('snapshot_incomplete');
  if(httpStatus!==200)return refuse('source_http_'+String(httpStatus));
+ const document=inspectSourceDocument(html);if(document.source_state==='source_challenge')return refuse('source_challenge');if(document.requires_rendering)return refuse('javascript_render_required');
  if(!host(row.website)||host(sourceUrl)!==host(row.website))return refuse('source_identity_mismatch');
  if(row.source_kind!=='official_website')return refuse('official_source_review_required');
  if(!norm(row.address)||!norm(row.city)||!norm(row.country))return refuse('address_components_missing');
@@ -128,16 +131,17 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
  // A parent publisher contact page may supply only the explicitly bound card,
  // never its other hotels' structured data or unreviewed links.
  if(!sourceWithin(sourceUrl,row.website))return namedPlace?{...result,reason:'coordinate_plausibility_review_required',candidate:namedPlace}:refuse('source_identity_mismatch');
- const candidates=[];let addressMismatch=false;
+ const candidates=[],unmatched=[];let addressMismatch=false;
  if(namedPlace)candidates.push(namedPlace);
  const structuredDoc=String(html).replace(/<!--[\s\S]*?-->/g,'').replace(/<(template|noscript|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
  for(const m of structuredDoc.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)){
   let data;try{data=JSON.parse(m[1])}catch{continue}
-  for(const n of nodes(data)){
+  const inspected=nodes(data);if(!inspected)return refuse('structured_coordinates_require_full_review');
+  for(const n of inspected){
    if(!types(n['@type']).some(t=>placeTypes.has(t))||!sourceNameMatches(n.name,row,identity))continue;
    if(n.url&&!sourceWithin(n.url,row.website))continue;
    const a=n.address,g=n.geo;if(!a||!g||!types(a['@type']).includes('PostalAddress')||!types(g['@type']).includes('GeoCoordinates'))continue;
-   if(!addressMatches(a,row,identity)||(norm(n.name)!==norm(row.name)&&!sameAddress(addressFields(a),identity.source_address))){addressMismatch=true;continue;}
+   if(!addressMatches(a,row,identity)||(norm(n.name)!==norm(row.name)&&!sameAddress(addressFields(a),identity.source_address))){addressMismatch=true;const latitude=numeric(g.latitude),longitude=numeric(g.longitude);if(finitePoint(latitude,longitude)&&norm(a.addressLocality)===norm(row.city)&&canonicalCountry(a.addressCountry)===canonicalCountry(row.country))unmatched.push({latitude,longitude,address:addressFields(a)});continue;}
    const lat=numeric(g.latitude),lng=numeric(g.longitude);if(!finitePoint(lat,lng))continue;
    // Source claims are not proof of a door. Require review even for exact identity.
    candidates.push({latitude:lat,longitude:lng,precision:'source_published',name:n.name,address:addressFields(a),evidence_kind:'jsonld',schema_type:types(n['@type'])[0]});
@@ -148,7 +152,7 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
  const unique=[...new Map(candidates.map(c=>[c.latitude+','+c.longitude,c])).values()];
  if(!unique.length)return refuse(addressMismatch?'structured_address_mismatch':'matching_structured_coordinates_missing');
  if(unique.length!==1)return refuse('conflicting_source_coordinates');
- const candidate=unique[0];if(norm(candidate.name)!==norm(row.name)){candidate.stored_name=row.name;candidate.name_identity_review_sha256=result.identity_review_sha256;}
+ const candidate=unique[0];if(unmatched.some(c=>(c.latitude!==candidate.latitude||c.longitude!==candidate.longitude)&&Math.abs(c.latitude-candidate.latitude)<0.001&&Math.abs(c.longitude-candidate.longitude)<0.001))return {...refuse('nearby_unmatched_identity_location_requires_review'),unmatched_locations:unmatched};if(norm(candidate.name)!==norm(row.name)){candidate.stored_name=row.name;candidate.name_identity_review_sha256=result.identity_review_sha256;}
  return {...result,reason:'coordinate_plausibility_review_required',candidate};
 }
 export function reviewCoordinateCandidate(report,review,current){

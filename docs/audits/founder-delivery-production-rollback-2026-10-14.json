@@ -1,0 +1,14 @@
+{
+  "at": "2026-10-14T06:43:13.405658+00:00",
+  "environment": "production database",
+  "source": "docs/audits/evidence/delivery-dashboard-independent-2026-10-14/production-rollback.sql",
+  "source_sha256": "03044fe8d113402a877826f2378c44bc749888fc75ee74cae187b335c0a8d86a",
+  "assertions": 20,
+  "actual_founder_and_current_auth_session": true,
+  "authentication_helpers_replaced": false,
+  "authorization": "Anonymous, missing actor, unbound session, nonfounder and direct private table/writer access denied.",
+  "journey": "Dashboard/records read; exact report and acknowledgement replay; changed report refused; report enters authoritative queue; readiness observation visible without operational verification.",
+  "scope": "SQL actual-role/current-session boundary and rollback-only persistence; not founder browser session or device/provider acceptance.",
+  "result": "passed",
+  "provider_operation_verified": false
+}
