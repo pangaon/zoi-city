@@ -1,0 +1,47 @@
+{
+  "status": "frozen_packaging_fix_not_deployed",
+  "owner": "enrichment",
+  "release_owner": "root",
+  "files": [
+    {
+      "path": "scripts/release-geography-source-consumer.mjs",
+      "sha256": "a508aa3902645fd74f0113877a24c23ae7c62662afd01b85ddfd941dd78701d4"
+    },
+    {
+      "path": "tests/unit/geography-source-consumer-release.test.mjs",
+      "sha256": "47ec49f82a8345f58e13d481697fcaaf479e543f868d64cd570b1e686fff7f90"
+    },
+    {
+      "path": "docs/audits/geography-source-consumer-release-manifest-2026-10-14.json",
+      "sha256": "a3ab6e827a4b8f968e85f1081bf12085b02773be90acda4a7be58b0ed882306b"
+    },
+    {
+      "path": "scripts/release-backend.mjs",
+      "sha256": "bf846d801c3c7a77440165d2a5e6b83dfc128ab1ee012b74202dad0a97c8da0a"
+    }
+  ],
+  "request_path": "ops/geography-source-consumer-release.json",
+  "request_fields": [
+    "id",
+    "project",
+    "expires_at",
+    "manifest_path",
+    "manifest_sha256",
+    "script_sha256",
+    "helper_sha256",
+    "install_schedule"
+  ],
+  "worker_manifest_path": "docs/audits/geography-source-consumer-release-manifest-2026-10-14.json",
+  "bootstrap_tests_passed": 9,
+  "worker_boundary_tests_passed": 15,
+  "production_configuration_or_deployment_by_enrichment": false,
+  "actual_runtime_remaining": [
+    "Worker redeploy under fresh reviewed expiring request",
+    "Bounded hosted capture canary plus fresh private archive readback",
+    "Vault-referencing cron activation only after actual proofs"
+  ],
+  "security": "No service-key extraction, secret logging, raw upstream errors, or automatic retry of ambiguous mutations",
+  "generated_at": "2026-10-14T14:43:25.208595+00:00",
+  "packaging_fix": "Pinned CLI v2.115.0 API dependency regex requires whitespace after import; generated session import normalized so transport is uploaded.",
+  "prior_attempt": "CI 38581497625 configured prerequisites/secrets but worker deployment failed before canary; no cron proof."
+}

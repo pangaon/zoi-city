@@ -1,0 +1,89 @@
+{
+  "generated_at": "2026-10-14T14:43:25.208096+00:00",
+  "status": "frozen_packaging_fix_not_deployed",
+  "release_owner": "root",
+  "files": [
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_coordinates.js",
+      "sha256": "e5662e32fc270af7a1dfe613de0d6d393f15fd65ea938aaa40d3ad71d5d0a002",
+      "bytes": 20487
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_hash.js",
+      "sha256": "f18ff36b4cb3ec1cf743162d414fdd625c653ac01c79ec55620453418bc7e7e9",
+      "bytes": 382
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_document-quality.js",
+      "sha256": "ed21fc9df59039292cd5cb14d00c4514c041b04d06018046ed6b0d778e6b6b9f",
+      "bytes": 2516
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_runner.js",
+      "sha256": "0ff172dc8cd3b2fddf7e08eba1b03fb3294fa08328ed58450689d5b673bf2dda",
+      "bytes": 4994
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_session.js",
+      "sha256": "04fc302981f5c5c8f0e40241fee4d89c2530928d737e834764e05128afafbe51",
+      "bytes": 2435
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "sha256": "394913a6d7f4cbfbf201991ebe531bb7b6a8d476af54acdedec265bd6c5227ee",
+      "bytes": 7233
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_transport.js",
+      "sha256": "3c3073afff76e2680b67a426cba9b4cd0a015c01e3cf55972d321fac0397f432",
+      "bytes": 6795
+    },
+    {
+      "path": "scripts/geography/build-edge-source-consumer.mjs",
+      "sha256": "538605ec1c755e644c240afe1a84e749a189610b008c9553ae42b11ba5fecc29",
+      "bytes": 2442
+    },
+    {
+      "path": "tests/unit/geography-source-consumer.test.mjs",
+      "sha256": "dcc657368dd438ebba62c29b77f3c0e53612f11aa5e92db2bdda1f193fc21b0e",
+      "bytes": 11132
+    },
+    {
+      "path": "docs/audits/geography-source-consumer-setup-2026-10-14.md",
+      "sha256": "5ba7bdf1d1769d4a063d6b3fb765ffcb4b9742056f19afcff0f86c74017465fb",
+      "bytes": 3484
+    }
+  ],
+  "validation": {
+    "node_boundary_tests": 14,
+    "deno_typecheck": "passed Deno2.9.6",
+    "local_actual_https": "Olympia official contact HTTP200,177803bytes,one request",
+    "hosted_edge_runtime": "not yet exercised",
+    "cron_schedule": "not connected"
+  },
+  "coordinate_writes": 0,
+  "provider_calls": 0,
+  "quota_contract": {
+    "rpc": "geography_source_archive_budget",
+    "maximum_limit_bytes": 536870912,
+    "invocation_reserve_bytes": 15000000,
+    "before_lease": true
+  },
+  "archive_verification": {
+    "action": "verify_archive",
+    "body_cap_bytes": 1024,
+    "response_cap_bytes": 2097152,
+    "fixed_private_bucket_only": true,
+    "returns_source_html": false,
+    "lease_or_budget_calls": false
+  },
+  "single_flight": {
+    "acquire": "geography_source_capture_acquire(p_lease uuid)",
+    "release": "geography_source_capture_release(p_lease uuid)",
+    "ttl_seconds": 180,
+    "invocation_deadline_seconds": 110,
+    "cleanup_reserve_seconds": 5,
+    "all_workers_settle_before_release": true
+  },
+  "packaging_fix": "Pinned CLI v2.115.0 API dependency regex requires whitespace after import; generated session import normalized so transport is uploaded."
+}

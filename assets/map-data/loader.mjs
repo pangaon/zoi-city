@@ -1,14 +1,34 @@
 import { positionPair, diagnosePosition, canonicalPositionPrecision } from './coordinate-integrity.mjs';
-// Four requests maximum in flight; retries stay within each worker slot.
+// Bounded worker slots; chunk retries stay within their logical page slot.
 export function transientMapFailure(error){
  const status=Number(error?.status||error?.statusCode),code=String(error?.code||'');
  if([408,425,429,500,502,503,504].includes(status)||['REQUEST_TIMEOUT','57014'].includes(code))return true;
  if(status>=400&&status<500)return false;
  return /statement timeout|canceling statement|failed to fetch|fetch failed|network(?:error| request failed| error)|service took too long|timed? ?out/i.test(String(error?.message||''));
 }
-export async function retryMapRead(read,{retries=2,wait=ms=>new Promise(r=>setTimeout(r,ms))}={}){
+export async function retryMapRead(read,{retries=2,wait=ms=>new Promise(r=>setTimeout(r,ms)),retryable=transientMapFailure}={}){
  if(!Number.isSafeInteger(retries)||retries<0||retries>2)throw Error('Invalid retry limit');
- for(let attempt=0;;attempt++){try{return await read();}catch(error){if(attempt>=retries||!transientMapFailure(error))throw error;await wait(350*2**attempt);}}
+ for(let attempt=0;;attempt++){try{return await read();}catch(error){if(attempt>=retries||!retryable(error))throw error;await wait(350*2**attempt);}}
+}
+// Combine bounded transport chunks into the original logical page. A timeout
+// retries the SAME offset with a smaller limit; only a genuinely short response
+// establishes the end. A failed chunk rejects the whole page, never skips rows.
+export function createAdaptiveMapRead(fetchPage,{requestSize=250,minRequestSize=125,retries=2,wait}={}){
+ if(!Number.isSafeInteger(requestSize)||!Number.isSafeInteger(minRequestSize)||minRequestSize<1||requestSize<minRequestSize)throw Error('Invalid chunk limits');
+ let preferred=requestSize;
+ const timeout=error=>String(error?.code||'')==='57014'||/statement timeout|canceling statement/i.test(String(error?.message||''));
+ return async(offset,limit)=>{
+  if(!Number.isSafeInteger(offset)||offset<0||!Number.isSafeInteger(limit)||limit<1)throw Error('Invalid page limits');
+  const rows=[];
+  while(rows.length<limit){
+   const size=Math.min(preferred,limit-rows.length);let chunk;
+   try{chunk=await retryMapRead(()=>fetchPage(offset+rows.length,size),{retries,wait,retryable:error=>!timeout(error)&&transientMapFailure(error)});}
+   catch(error){if(timeout(error)&&size>minRequestSize){preferred=Math.max(minRequestSize,Math.floor(size/2));continue;}throw error;}
+   if(!Array.isArray(chunk)||chunk.length>size)throw Error('Invalid page response');
+   rows.push(...chunk);if(chunk.length<size)break;
+  }
+  return rows;
+ };
 }
 // No coordinates are inferred from the address, city or another same-name place.
 export function unmappedPlace(entity,slug){

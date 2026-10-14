@@ -548,9 +548,9 @@
 
   async function loadData() {
     // Consume the complete existing feed before approving any coordinate cohort.
-    var result = await mapTools.loadMapPages(function (offset, limit) {
+    var result = await mapTools.loadMapPages(mapTools.createAdaptiveMapRead(function (offset, limit) {
       return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
-    }, { concurrency: 4, onProgress: function (progress) { directoryLoaded=progress.loaded;if(listState.mode==='all')renderBrowseFooter(); } });
+    }), { retries: 0, concurrency: 2, onProgress: function (progress) { directoryLoaded=progress.loaded;if(listState.mode==='all')renderBrowseFooter(); } });
     mapPositionsComplete=result.complete;
     failedPages = result.failedOffsets.length;
     truncated = result.truncated;
@@ -1550,7 +1550,7 @@
 
     if (!MB || typeof MB.Map !== 'function') { $('nowebgl').hidden = false; return; }
 
-    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261014-reviewed-selection'),import('/assets/map-data/preview.mjs?v=20261014-map-interactions'),import('/assets/map-data/interactions.mjs?v=20261014-map-interactions')]);mapTools=modules[0];previewModule=modules[1];mapInteractions=modules[2].mountMapInteractions($('map-interactions'),{getMap:function(){return map;},getOrigin:function(){return here;},getSelected:function(){return selected;},params:new URLSearchParams(location.search),changed:function(){showAll();refresh();writeUrl();},fit:showMatches,focus:choose,locate:function(){$('tNear').click();},sheet:function(mode){setSheet(mode==='compact');$('stage').classList.toggle('m-full-list',mode==='full');if(map)map.resize();}});}
+    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261014-adaptive-map-feed'),import('/assets/map-data/preview.mjs?v=20261014-map-interactions'),import('/assets/map-data/interactions.mjs?v=20261014-map-interactions')]);mapTools=modules[0];previewModule=modules[1];mapInteractions=modules[2].mountMapInteractions($('map-interactions'),{getMap:function(){return map;},getOrigin:function(){return here;},getSelected:function(){return selected;},params:new URLSearchParams(location.search),changed:function(){showAll();refresh();writeUrl();},fit:showMatches,focus:choose,locate:function(){$('tNear').click();},sheet:function(mode){setSheet(mode==='compact');$('stage').classList.toggle('m-full-list',mode==='full');if(map)map.resize();}});}
     catch(error){$('ptitle').textContent='Map tools could not start';$('pbody').innerHTML='<div class="m-empty">Browse <a href="/explore">Explore</a>, or reload this page.</div>';return;}
 
     C.api.rpc('home_stats', {}, { auth: 'anon' }).then(function (s) {

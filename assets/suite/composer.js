@@ -1582,6 +1582,7 @@
 
     /* Apply a whole post (from the Calendar) into the composer. */
     function applyImportedTargets(){if(state.importedChannels===null)return;state.selected={};state.channels.forEach(function(ch){var want=state.importedChannels;if(ch.connected&&netFor(ch.platform)&&(want.includes(String(ch.id))||want.includes(normPlat(ch.platform))))state.selected[ch.id]=true;});}
+    var linkedContextReady=Promise.resolve();
     function applyIncomingPost(h) {
       state.editId = h.id || null;
       ta.value = String(h.body || '');
@@ -1591,6 +1592,16 @@
       media.forEach(function (m) { if (m && m.url && m.alt) state.alts[m.url] = m.alt; });
       var meta = h.meta && typeof h.meta === 'object' && !Array.isArray(h.meta) ? h.meta : {};
       state.originMeta=JSON.parse(JSON.stringify(meta));
+      if(meta.editorial||meta.ai_generation_id){
+        linkedContextReady=C.api.rpc('canonical_draft_context',{p_workspace:workspaceAtMount,p_post:h.id},{auth:'require',beforeDispatch:scopeActive}).then(function(receipt){
+          if(!scopeActive())throw Error('The workspace changed. Reopen this draft.');
+          if(!receipt||receipt.ok!==true||receipt.workspace!==workspaceAtMount||receipt.post_id!==h.id||!receipt.kind||!receipt.context||typeof receipt.context!=='object')throw Error('The source context could not be confirmed. Reopen this draft before saving.');
+          var campaign=receipt.context.campaign;
+          if(campaign){q('lu_campaign').value=campaign;q('lu_campaign').readOnly=true;var note=doc.createElement('p');note.className='zc-hint';note.textContent='Campaign retained from this source draft. Use a separate draft for another campaign.';q('lu_campaign').parentNode.appendChild(note);}
+        });
+        linkedContextReady.catch(function(error){if(scopeActive())toast(error.message);});
+      }
+
       if (meta.alt_text && typeof meta.alt_text === 'object') {
         Object.keys(meta.alt_text).forEach(function (k) { if (!state.alts[k]) state.alts[k] = meta.alt_text[k]; });
       }
@@ -1891,6 +1902,8 @@
 
     async function savePost(status, scheduledAtIso, opts) {
       opts = opts || {};
+      await linkedContextReady;
+      if(!scopeActive())throw Error('The workspace changed. Reopen this draft.');
       var editorialContext=state.originMeta&&state.originMeta.editorial;
       if(editorialContext&&opts.publishNow)throw Error('Source-backed calendar drafts use an explicit scheduled time on their occurrence date. Review the source, choose a destination and schedule this draft.');
       if(editorialContext&&status==='scheduled'){
@@ -1910,7 +1923,8 @@
         p_id: state.editId
       };
       var res = await C.api.rpc('social_save_post', params, { auth: 'require' });
-      if (res && res.id) state.editId = res.id;
+      if(!res||!res.id||res.workspace_id!==workspaceAtMount)throw Error('The saved post could not be confirmed. Reload the draft before continuing.');
+      state.editId = res.id;
 
       /* The authenticated RPC publishes the saved snapshot and records delivery
          in one transaction. Browser retries and the scheduled worker share the

@@ -1,0 +1,24 @@
+name: Geography source consumer release
+on:
+  push:
+    branches: [main]
+    paths: [ops/geography-source-consumer-release.json]
+permissions:
+  contents: read
+concurrency:
+  group: geography-source-consumer-release
+  cancel-in-progress: false
+jobs:
+  release:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Release pinned worker and verify private source capture
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/release-geography-source-consumer.mjs ops/geography-source-consumer-release.json
