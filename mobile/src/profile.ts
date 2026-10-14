@@ -1,3 +1,5 @@
+// @ts-ignore Shared public address lookup; never invent a routed or reviewed destination.
+import {publishedAddressLookup} from '../../assets/map-data/loader.mjs';
 // @ts-ignore Shared pure official-site authority and quarantine contract.
 import {selectedOfficialWebsite,officialSourceEntity,sourceIdentityContentHeld} from '../../assets/enrichment/official-source-policy.mjs';
 // @ts-ignore Shared conservative phone placeholder guard.
@@ -42,7 +44,8 @@ export function normalizeProfile(input: unknown) {
   const fieldsFromWebsite = Object.keys(enrichment).filter(key => !banned.test(key) && !(key in raw));
   const services = Array.isArray(profile.services) ? profile.services.map((v: unknown) => plain(v) || plain(object(v).name) || plain(object(v).title)).filter(Boolean).slice(0, 30) : [];
   const booking = profileAction(e.booking_url, 'booking'), inquiry = profileAction(e.inquiry_url, 'inquiry');
-  return { showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
+  const addressLookup=publishedAddressLookup({s:plain(e.canonical_slug||e.slug),n:plain(e.name),addr:plain(e.address),city:plain(e.city),country:plain(e.country)});
+  return { addressLookup, showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
     groupListing:profileAction(e.group_url,'group')===String(e.id||'').toLowerCase()?profileAction(e.group_url,'group'):'',
     inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), description: plain(e.description || profile.about || profile.description), location: [e.city, e.country].map(plain).filter(Boolean).join(' · '), address: plain(e.address), website: publicURL(selectedOfficialWebsite(e)), phone, phoneHref:phoneHref(phone), email: plain(e.email || profile.email), photo, socials, services, verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };
 }

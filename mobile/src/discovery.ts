@@ -2,6 +2,7 @@ import { communityTopics } from "./community.ts";
 import {
   hasStreetPosition,
   hasReviewedPosition,
+  reviewedSelectedPlace,
   isMappableRow,
   mapPositionFields,
   validatePositionCohorts,
@@ -291,4 +292,15 @@ export function fullMapToolsLink(place:any,{latitude=37,longitude=15,longitudeDe
  if(typeof place?.s==='string'&&place.s&&place.s.length<=240){url.searchParams.set('place',place.s);const city=cleanLocation(place.city),country=cleanLocation(place.country);if(city)url.searchParams.set('city',city);if(country)url.searchParams.set('country',country);}
  if([latitude,longitude,longitudeDelta,width].every(Number.isFinite)&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180&&longitudeDelta>0&&width>0){const zoom=Math.min(18.5,Math.max(0.6,Math.log2(width*360/(512*longitudeDelta))));url.hash=[zoom.toFixed(2),latitude.toFixed(5),longitude.toFixed(5),0,0].join('/');}
  return url.href;
+}
+
+/** A reviewed selection may arrive before the catalogue map feed. */
+export function selectedDiscoveryPoint(entity:any,point:any){
+ if(!entity)return null;
+ return reviewedSelectedPlace({s:entity.slug,n:entity.name,city:entity.city,country:entity.country,addr:entity.address,t:entity.entity_type},entity)||point||null;
+}
+/** Broaden a scoped search; a global empty result resets public filters. */
+export function emptyDiscoveryRecovery(state:DiscoveryState,area:Area){
+ const scoped=!!(area.city||area.country);
+ return {label:scoped?'Search everywhere':'Explore all places',state:{...state,area:null,source:'global' as const,selected:'',...(scoped?{}:{input:'',query:'',type:''})}};
 }

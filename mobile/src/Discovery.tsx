@@ -1,6 +1,6 @@
 import { DiscoveryLocation } from "./DiscoveryLocation";
 import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   AppState,
@@ -30,6 +30,8 @@ import {
   exactPins,
   pointStatus,
   selectedEntity,
+  selectedDiscoveryPoint,
+  emptyDiscoveryRecovery,
   placeDirections,
   discoveryShare,
   type DiscoveryState,
@@ -350,9 +352,9 @@ export function Discover({
       controller.abort();
     };
   }, [state.mode, mapRetry]);
-  const scoped = scopedPoints(points, area, state.type, state.query),
-    pins = exactPins(scoped),
-    pointBySlug = new Map(points.map((p: any) => [p.s, p]));
+  const scoped = useMemo(()=>scopedPoints(points, area, state.type, state.query),[points,area.city,area.country,state.type,state.query]),
+    pins = useMemo(()=>exactPins(scoped),[scoped]),
+    pointBySlug = useMemo(()=>new Map(points.map((p: any) => [p.s, p])),[points]);
   useEffect(() => {
     setSelected(null);
     setSelectError("");
@@ -430,25 +432,11 @@ export function Discover({
         setActionError("This action could not open. Please try again.");
     }
   };
-  if (editor && actor)
-    return (
-      <CommunitySettings
-        preferencesOnly
-        key={actor}
-        back={() => {
-          setEditor(false);
-          void loadHome();
-        }}
-        profile={(id) => {
-          setEditor(false);
-          open("/community/?profile=" + id);
-        }}
-      />
-    );
   const selectedMatchesIntent = !!selected && (selected.slug === state.selected || selected.canonical_slug === state.selected);
-  const selectedPoint = selectedMatchesIntent
-    ? pointBySlug.get(selected.canonical_slug || selected.slug)
-    : null;
+  const selectedPoint = useMemo(()=>selectedMatchesIntent
+    ? selectedDiscoveryPoint(selected, pointBySlug.get(selected.canonical_slug || selected.slug))
+    : null,[selectedMatchesIntent,selected,pointBySlug]);
+  const mapPoints = useMemo(()=>selectedPoint ? [selectedPoint, ...scoped.filter((p:any)=>p.s!==selectedPoint.s)] : scoped,[selectedPoint,scoped]);
   const coLocated = selectedPoint
     ? exactPins(points).filter(
         (p: any) =>
@@ -464,6 +452,21 @@ export function Discover({
     catch (error) { directions = null; directionsError = error instanceof Error ? error.message : "Check the starting address."; }
   }
   const directionURL = directions?.url || "";
+  if (editor && actor)
+    return (
+      <CommunitySettings
+        preferencesOnly
+        key={actor}
+        back={() => {
+          setEditor(false);
+          void loadHome();
+        }}
+        profile={(id) => {
+          setEditor(false);
+          open("/community/?profile=" + id);
+        }}
+      />
+    );
   return (
     <ScrollView
       keyboardShouldPersistTaps="handled"
@@ -688,7 +691,7 @@ export function Discover({
       {state.mode === "map" ? (
         <View style={{ gap: 12 }}>
           <DiscoveryMap
-            points={scoped}
+            points={mapPoints}
             selected={state.selected}
             scopeKey={key}
             focus={focus}
@@ -764,9 +767,7 @@ export function Discover({
                   .join(", ")}
               </Text>
               <Text style={s.small}>
-                {pointStatus(
-                  pointBySlug.get(selected.canonical_slug || selected.slug),
-                )}
+                {pointStatus(selectedPoint)}
               </Text>
               {baseDirections && baseDirections.basis !== "name" ? (
                 <View style={s.routePanel}>
@@ -821,7 +822,7 @@ export function Discover({
                 {state.mode === "map" &&
                 exactPins(
                   [
-                    pointBySlug.get(selected.canonical_slug || selected.slug),
+                    selectedPoint,
                   ].filter(Boolean),
                 ).length ? (
                   <Action
@@ -877,16 +878,13 @@ export function Discover({
       ) : null}
       {!loading && !error && !rows.length && !homeBusy ? (
         <View style={s.panel}>
-          <Text style={s.heading}>Try a wider view.</Text>
+          <Text style={s.heading}>{area.source === "global" ? "No matching places." : "Try a wider view."}</Text>
           <Text style={s.body}>
-            No matching places in this search. Keep your chosen home, or explore
-            everywhere.
+            {area.source === "global" ? "Clear this search and its filters to explore all places." : "No matching places in this area. Explore everywhere while keeping your saved home."}
           </Text>
           <Action
-            label="Search everywhere"
-            onPress={() =>
-              setState({ ...state, source: "global", area: null, selected: "" })
-            }
+            label={emptyDiscoveryRecovery(state,area).label}
+            onPress={() => setState(emptyDiscoveryRecovery(state,area).state)}
           />
         </View>
       ) : null}
