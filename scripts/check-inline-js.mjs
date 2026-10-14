@@ -18,7 +18,7 @@ import { join, relative, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', '.github', '.vercel', '.next', 'dist']);
+const SKIP_DIRS = new Set(['node_modules', '.git', '.github', '.vercel', '.next', '.recovery', 'dist']);
 const JS_TYPES = /^(text\/javascript|application\/(x-)?javascript|application\/ecmascript)$/i;
 
 function* htmlFiles(dir) {

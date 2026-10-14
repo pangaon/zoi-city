@@ -17,7 +17,8 @@ export function memberLeaseGuard(row, html = '', finalUrl = row.website) {
   // Only reviewed, balanced person components may replace the guarded legal fallback.
   // Challenges remain errors even if a cached/embedded card is present in the page.
   const challenged=/one moment, please|request (?:is )?being verified|checking your browser|verify you are human|cf-chl-/i.test(html);
-  const card=challenged?null:extractAssociationCard({url:finalUrl,html,expectedName:row.name});
+  if(challenged)return {...result,profile:{crawl_status:'error',last_error:'member_source_challenged'}};
+  const card=extractAssociationCard({url:finalUrl,html,expectedName:row.name});
   if(card){
     const old=existing.member;
     const sameReviewedIdentity=old&&identityMatches(row.name,old.name)&&sourceURL(old.source_url)?.href===sourceURL(card.source_url)?.href&&old.provenance?.identity_match===true;

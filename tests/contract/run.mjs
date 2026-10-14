@@ -98,10 +98,10 @@ t('explore_fresh returns an array of listings', async () => {
 });
 
 t('explore_geo rows have numeric lat/lng and shape', async () => {
-  const r = await rpc('explore_geo', { p_q: '', p_limit: 10 });
+  const r = await rpc('explore_geo', { p_limit: 10, p_offset: 0 });
   assert(r.status === 200 && isArr(r.json), 'bad response');
   for (const row of r.json) {
-    hasFields(row, ['id', 'name', 'path', 'lat', 'lng', 'entity_type', 'city', 'verified']);
+    hasFields(row, ['slug', 'name', 'lat', 'lng', 'entity_type', 'city', 'country', 'category_slug', 'geo_precision', 'address']);
     assert(typeof row.lat === 'number' && typeof row.lng === 'number', 'lat/lng not numbers');
     assert(row.lat >= -90 && row.lat <= 90 && row.lng >= -180 && row.lng <= 180, 'lat/lng out of range');
   }

@@ -390,7 +390,7 @@
     var account = identity(C), lifecycle = new AbortController(), designHandle = null, mediaHandle = null, mediaEpoch = 0, designEpoch = 0, bootEpoch = 0, contentDirty = false, selectedListingIntent = null;
     function scopeLive(){return validScopeId.test(account) && !lifecycle.signal.aborted && root.isConnected && ctx.ws===ws && identity(C)===account;}
     function destroyDesign(){if(sourceReviewHandle)sourceReviewHandle.dispose();sourceReviewHandle=null;mediaEpoch++;if(mediaHandle)mediaHandle.dispose();mediaHandle=null;designEpoch++;if(designHandle)designHandle.destroy();designHandle=null;}
-    function unsaved(){return contentDirty || state.saving || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
+    function unsaved(){return contentDirty || state.saving || !!state.pendingContent || !!(mediaHandle && mediaHandle.hasUnsavedChanges()) || !!(designHandle && designHandle.hasUnsavedChanges());}
     function allowLeave(){return !unsaved() || global.confirm('Leave this business home? Unsaved content and private design changes will be lost.');}
     function destroy(){if(lifecycle.signal.aborted)return;lifecycle.abort();bootEpoch++;destroyDesign();clearInterval(scopeTimer);observer.disconnect();root.replaceChildren();}
     root.__bizPageDestroy=destroy;
