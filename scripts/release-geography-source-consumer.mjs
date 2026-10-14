@@ -7,6 +7,15 @@ export const PROJECT='csebihpaychdkanjjsmz',WORKER='geography-repair-source-cons
 const SCRIPT='scripts/release-geography-source-consumer.mjs',HELPER='scripts/release-backend.mjs',CRON='geography-source-capture-v1';
 const files=new Set(['index.ts','_coordinates.js','_document-quality.js','_hash.js','_runner.js','_session.js','_transport.js'].map(p=>'supabase/functions/'+WORKER+'/'+p).concat(['scripts/geography/build-edge-source-consumer.mjs','tests/unit/geography-source-consumer.test.mjs','docs/audits/geography-source-consumer-setup-2026-10-14.md']));
 const hash=value=>createHash('sha256').update(value).digest('hex');
+// Emit fixed labels only: never echo a bundler body, absolute path or arbitrary specifier.
+export function safeSourceModuleDiagnostic(error){
+ const known=new Map(['node:https','node:dns/promises','node:fs/promises','node:crypto','node:path'].map(s=>[s,s]));
+ for(const name of ['index.ts','_coordinates.js','_document-quality.js','_hash.js','_runner.js','_session.js','_transport.js'])known.set('./'+name,name);
+ let raw='';for(const field of ['stderr','stdout']){const value=error?.[field];if(typeof value==='string'||Buffer.isBuffer(value))raw+=String(value).slice(0,65536)+'\n';}
+ const labels=new Set();for(const match of raw.matchAll(/(?:Module not found|Cannot find module|Could not resolve|Failed to resolve)[^\r\n]{0,100}?["']([^"'\r\n]{1,256})["']/gi)){const label=known.get(match[1]);if(label)labels.add(label);}
+ return{module:labels.size===1?[...labels][0]:'unknown'};
+}
+
 function fail(code){const e=new Error(code);e.safeCode=code;throw e;}
 export function validateGeographySourceRelease(request,{read=readFileSync,now=Date.now(),attempt='1'}={}){
  if(attempt!=='1')fail('release_replay_rejected');if(request?.project!==PROJECT||!/^release-geography-[a-z0-9-]{6,80}$/.test(request?.id||''))fail('release_identity_invalid');
@@ -32,7 +41,7 @@ export async function runGeographySourceRelease(request,{env=process.env,read=re
  if(!stored.length){internal=generateToken();if(!/^[a-f0-9]{64}$/.test(internal))fail('generated_token_invalid');await query(`SELECT vault.create_secret($1,'${VAULT_NAME}','Internal geography source capture token') AS created`,true,[internal]);const after=one(await query(`SELECT decrypted_secret AS private_token FROM vault.decrypted_secrets WHERE name='${VAULT_NAME}'`));if(after.private_token!==internal)fail('vault_secret_readback_failed');}
  if(typeof internal!=='string'||!/^[a-f0-9]{64}$/.test(internal))fail('vault_secret_invalid');
  await management('/secrets',[{name:'GEOGRAPHY_REPAIR_TOKEN',value:internal},{name:'GEOGRAPHY_REPAIR_PRIVATE_BUCKET',value:BUCKET},{name:'GEOGRAPHY_REPAIR_SOURCE_ENABLED',value:'on'}],true);
- active();try{deploy('npx',['--yes','supabase@2.115.0','functions','deploy',WORKER,'--use-api','--project-ref',PROJECT,'--no-verify-jwt'],{env,stdio:['ignore','pipe','pipe'],timeout:120000});}catch(error){log(JSON.stringify({phase:'worker_deploy',diagnostic:safeWorkerError(error)}));fail('worker_deployment_unconfirmed')}
+ active();try{deploy('npx',['--yes','supabase@2.115.0','functions','deploy',WORKER,'--use-api','--project-ref',PROJECT,'--no-verify-jwt'],{env,stdio:['ignore','pipe','pipe'],timeout:120000});}catch(error){log(JSON.stringify({phase:'worker_deploy',diagnostic:safeWorkerError(error),module_diagnostic:safeSourceModuleDiagnostic(error)}));fail('worker_deployment_unconfirmed')}
  const stamp=one(await query("SELECT to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS.MS\"Z\"') AS canary_started_at"));const stampMs=Date.parse(stamp.canary_started_at);if(!Number.isFinite(stampMs)||Math.abs(stampMs-now())>300000)fail('canary_clock_invalid');const canaryAt=new Date(stampMs).toISOString();
  async function invoke(body){active();let response;try{response=await fetcher('https://'+PROJECT+'.supabase.co/functions/v1/'+WORKER,{method:'POST',headers:{'Content-Type':'application/json','x-geography-repair-token':internal},body:JSON.stringify(body),signal:AbortSignal.timeout(120000)});}catch{fail('hosted_canary_unconfirmed')}if(!response.ok)fail('hosted_canary_failed');return boundedJSON(response);}
  const canary=await invoke({});if(!Number.isInteger(canary?.processed_jobs)||canary.processed_jobs<1||canary.processed_jobs>4||canary.provider_calls!==0||canary.coordinate_writes!==0||canary.complete!==false||canary.database_results_persisted!==true)fail('hosted_canary_contract_failed');

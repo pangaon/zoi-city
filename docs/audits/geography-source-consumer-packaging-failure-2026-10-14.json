@@ -1,0 +1,41 @@
+{
+  "status": "source_fixed_hosted_redeploy_pending",
+  "ci_run": "38581497625",
+  "merged_commit": "2f8c214",
+  "observed_phase": "worker_deploy",
+  "safe_category": "module_not_found",
+  "upstream_source": "https://github.com/supabase/cli/blob/v2.115.0/apps/cli/src/shared/functions/deploy.ts",
+  "cause": "Pinned API uploader importPathPattern requires whitespace after import. Compact _session.js import is valid JavaScript but omitted from uploader graph; _transport.js is never uploaded.",
+  "before_graph": [
+    "index.ts",
+    "_runner.js",
+    "_hash.js",
+    "_coordinates.js",
+    "_session.js",
+    "_document-quality.js"
+  ],
+  "after_graph": [
+    "index.ts",
+    "_runner.js",
+    "_hash.js",
+    "_coordinates.js",
+    "_session.js",
+    "_document-quality.js",
+    "_transport.js"
+  ],
+  "fix": "Generator inserts import whitespace in session module; no transport implementation or research guard changed.",
+  "tests": {
+    "release": 9,
+    "worker": 15,
+    "deno_typecheck": "passed"
+  },
+  "production_proof": {
+    "vault_and_secret_configuration": "acknowledged by trusted CI",
+    "worker_deployed": false,
+    "hosted_capture_canary": false,
+    "private_archive_canary": false,
+    "cron_enabled": false
+  },
+  "secret_output": false,
+  "deployments_by_enrichment": 0
+}
