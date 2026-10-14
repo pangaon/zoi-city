@@ -1,0 +1,88 @@
+{
+  "generated_at": "2026-10-14T14:05:25.841648+00:00",
+  "status": "prepared_not_deployed",
+  "release_owner": "root",
+  "files": [
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_coordinates.js",
+      "sha256": "e5662e32fc270af7a1dfe613de0d6d393f15fd65ea938aaa40d3ad71d5d0a002",
+      "bytes": 20487
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_hash.js",
+      "sha256": "f18ff36b4cb3ec1cf743162d414fdd625c653ac01c79ec55620453418bc7e7e9",
+      "bytes": 382
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_document-quality.js",
+      "sha256": "ed21fc9df59039292cd5cb14d00c4514c041b04d06018046ed6b0d778e6b6b9f",
+      "bytes": 2516
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_runner.js",
+      "sha256": "0ff172dc8cd3b2fddf7e08eba1b03fb3294fa08328ed58450689d5b673bf2dda",
+      "bytes": 4994
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_session.js",
+      "sha256": "28f7a208113f4d8e92139e641c70be5c4b707ec0f2d205a3190f141dbd3d833d",
+      "bytes": 2434
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "sha256": "394913a6d7f4cbfbf201991ebe531bb7b6a8d476af54acdedec265bd6c5227ee",
+      "bytes": 7233
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_transport.js",
+      "sha256": "3c3073afff76e2680b67a426cba9b4cd0a015c01e3cf55972d321fac0397f432",
+      "bytes": 6795
+    },
+    {
+      "path": "scripts/geography/build-edge-source-consumer.mjs",
+      "sha256": "7e23974a8be57624871be35a1a71245cb397a5e6a86f487d4fb5d45525c0a6ed",
+      "bytes": 2412
+    },
+    {
+      "path": "tests/unit/geography-source-consumer.test.mjs",
+      "sha256": "4e26491707ecabfa9aa3f860177dd7442a9e27ab3ffd113de760244b71333b01",
+      "bytes": 10192
+    },
+    {
+      "path": "docs/audits/geography-source-consumer-setup-2026-10-14.md",
+      "sha256": "5ba7bdf1d1769d4a063d6b3fb765ffcb4b9742056f19afcff0f86c74017465fb",
+      "bytes": 3484
+    }
+  ],
+  "validation": {
+    "node_boundary_tests": 14,
+    "deno_typecheck": "passed Deno2.9.6",
+    "local_actual_https": "Olympia official contact HTTP200,177803bytes,one request",
+    "hosted_edge_runtime": "not yet exercised",
+    "cron_schedule": "not connected"
+  },
+  "coordinate_writes": 0,
+  "provider_calls": 0,
+  "quota_contract": {
+    "rpc": "geography_source_archive_budget",
+    "maximum_limit_bytes": 536870912,
+    "invocation_reserve_bytes": 15000000,
+    "before_lease": true
+  },
+  "archive_verification": {
+    "action": "verify_archive",
+    "body_cap_bytes": 1024,
+    "response_cap_bytes": 2097152,
+    "fixed_private_bucket_only": true,
+    "returns_source_html": false,
+    "lease_or_budget_calls": false
+  },
+  "single_flight": {
+    "acquire": "geography_source_capture_acquire(p_lease uuid)",
+    "release": "geography_source_capture_release(p_lease uuid)",
+    "ttl_seconds": 180,
+    "invocation_deadline_seconds": 110,
+    "cleanup_reserve_seconds": 5,
+    "all_workers_settle_before_release": true
+  }
+}

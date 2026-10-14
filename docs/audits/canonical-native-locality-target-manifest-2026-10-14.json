@@ -1,0 +1,140 @@
+{
+  "prepared_at": "2026-10-14T13:47:44.861245+00:00",
+  "status": "prepared_not_applied",
+  "migration": "supabase/migrations/20261014134155_canonical_locality_native_name_position_cas.sql",
+  "migration_sha256": "261d5ae4510e784dfa96a8fe0049d668948ced4787773cb761bbcecc70a7b945",
+  "target_count": 5,
+  "unique_canonical_localities": 3,
+  "countries": [
+    "Greece"
+  ],
+  "global_scan": "All countries; published, visible, nonduplicate, unowned records with existing coordinate pairs and already-linked verified GeoNames city; nonstreet effective precision; distance >=25km; query limit200 returned6, not truncated",
+  "targets": [
+    {
+      "listing_id": "59769e67-156a-4514-8755-88dd803880b5",
+      "native_city": "Πολίχνη",
+      "country": "Greece",
+      "place_id": 5160,
+      "geonames_id": 734538,
+      "before": [
+        37.270848,
+        21.947102
+      ],
+      "after": [
+        40.66671,
+        22.94881
+      ],
+      "distance_km": 387.397473610174,
+      "precision_after": "city",
+      "street_review_claimed": false,
+      "database_snapshot": "226b028c10ef1878249afbfbcfb887a4",
+      "place_snapshot": "7302189f44b624e610d3eafe9441beda"
+    },
+    {
+      "listing_id": "65a91f82-86ce-4c50-bb8e-69351017da14",
+      "native_city": "Συκιές",
+      "country": "Greece",
+      "place_id": 2631,
+      "geonames_id": 734301,
+      "before": [
+        38.65986,
+        21.993464
+      ],
+      "after": [
+        40.64944,
+        22.95083
+      ],
+      "distance_km": 235.92053292317,
+      "precision_after": "city",
+      "street_review_claimed": false,
+      "database_snapshot": "7178046c738cb43ebcf4c755ad99f6e7",
+      "place_snapshot": "f87cb795c74e1df87d65a6dc34db1a04"
+    },
+    {
+      "listing_id": "98754633-a310-40d1-a298-99138868e267",
+      "native_city": "Πολίχνη",
+      "country": "Greece",
+      "place_id": 5160,
+      "geonames_id": 734538,
+      "before": [
+        37.270848,
+        21.947102
+      ],
+      "after": [
+        40.66671,
+        22.94881
+      ],
+      "distance_km": 387.397473610174,
+      "precision_after": "city",
+      "street_review_claimed": false,
+      "database_snapshot": "608aa166d1914858bc9445dc2cb88471",
+      "place_snapshot": "7302189f44b624e610d3eafe9441beda"
+    },
+    {
+      "listing_id": "b7dc6f74-d1a4-4c0e-b7a0-ca75cabd962b",
+      "native_city": "Πεύκα",
+      "country": "Greece",
+      "place_id": 5126,
+      "geonames_id": 734405,
+      "before": [
+        40.900845,
+        26.041276
+      ],
+      "after": [
+        40.65806,
+        22.99378
+      ],
+      "distance_km": 258.002118132041,
+      "precision_after": "city",
+      "street_review_claimed": false,
+      "database_snapshot": "3c1d5daa09c92ec8eb0195c95a3ebd72",
+      "place_snapshot": "8404f44edcb02ef02159f61fac15cc8e"
+    },
+    {
+      "listing_id": "cf6a8861-1769-45bb-8f3d-c34e66e71043",
+      "native_city": "Συκιές",
+      "country": "Greece",
+      "place_id": 2631,
+      "geonames_id": 734301,
+      "before": [
+        38.65986,
+        21.993464
+      ],
+      "after": [
+        40.64944,
+        22.95083
+      ],
+      "distance_km": 235.92053292317,
+      "precision_after": "city",
+      "street_review_claimed": false,
+      "database_snapshot": "5fa43def356d9789e7e7483cde56d8ca",
+      "place_snapshot": "f87cb795c74e1df87d65a6dc34db1a04"
+    }
+  ],
+  "source_evidence": "docs/audits/evidence/global-canonical-locality-native-2026-10-14/official-geonames-records.json",
+  "source_archive_sha256": "9e70c809e62b33199ebcb703ab0a27fa8a864cc06460bdfa6b60e23b88b9101b",
+  "source_name_matching": "listing city exactly equals canonical name_el and exact official GeoNames alternate-name token; not fuzzy transliteration",
+  "guards": [
+    "owner/public/duplicate eligibility",
+    "existing coordinates required",
+    "current listing full-row hash",
+    "current canonical place full-row hash",
+    "verified GeoNames city/place link/native name/Greece-GR",
+    "existing effective city precision",
+    "far wrong existing point",
+    "unrelated content preserved"
+  ],
+  "rollback": "immutable geography_reviews before_geo plus existing guarded geography_review_revert workflow; never blind revert after changed input",
+  "local_validation": "isolated real PostgreSQL fixture passed city-only changes/before-geometry reversal, owner/missing coordinate/unknown country/duplicate/publication/native identity/stale CAS guards",
+  "production_acceptance": "pending root independent review and actual transaction rollback dryrun; no apply by enrichment",
+  "blocked": [
+    {
+      "listing_id": "a4eb0407-e1be-4e53-a6c6-2710215a4789",
+      "reason": "country unknown; cannot satisfy exact country match"
+    },
+    {
+      "listing_id": "63d4d048-1c1e-4fca-b466-11369ac88ff0",
+      "reason": "existing street precision without city-centroid provenance; actual address/source review required"
+    }
+  ]
+}
