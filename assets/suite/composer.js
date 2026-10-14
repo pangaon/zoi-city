@@ -1891,6 +1891,13 @@
 
     async function savePost(status, scheduledAtIso, opts) {
       opts = opts || {};
+      var editorialContext=state.originMeta&&state.originMeta.editorial;
+      if(editorialContext&&opts.publishNow)throw Error('Source-backed calendar drafts use an explicit scheduled time on their occurrence date. Review the source, choose a destination and schedule this draft.');
+      if(editorialContext&&status==='scheduled'){
+        if(editorialHandoff&&editorialHandoff.source_current===false)throw Error('The source has changed. Prepare a fresh source-backed draft from Calendar before scheduling.');
+        var scheduledParts=new Intl.DateTimeFormat('en-CA',{timeZone:editorialContext.time_zone,year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(new Date(scheduledAtIso));var scheduledPart=function(k){return scheduledParts.find(function(p){return p.type===k;}).value;};
+        if([scheduledPart('year'),scheduledPart('month'),scheduledPart('day')].join('-')!==editorialContext.occurrence_date)throw Error('Choose a scheduled time on '+editorialContext.occurrence_date+' in '+editorialContext.time_zone+', the selected source occurrence.');
+      }
       var params = {
         p_workspace: ctx.ws,
         p_body: ta.value,
@@ -2309,10 +2316,13 @@
 
     /* A draft handed over from the Calendar ("draft this feast") beats an old
      * autosaved one — the user just asked for it. */
-    var handoff = state.S ? state.S.takeHandoff(null, {actor:actorAtMount,workspace:workspaceAtMount}) : null;
+    var editorialHandoff=null;
+    try{var editorialModule=await import('/assets/editorial/handoff.mjs?v=20261014');if(scopeActive())editorialHandoff=await editorialModule.takeEditorialHandoff({C:C,workspace:workspaceAtMount,active:scopeActive});}catch(error){if(scopeActive())toast(error.message||'The source-backed draft could not be reloaded. Reopen it from Calendar.');}
+    if(!scopeActive())return {destroy:dispose,unmount:dispose};
+    var handoff = editorialHandoff ? editorialHandoff.post : state.S ? state.S.takeHandoff(null, {actor:actorAtMount,workspace:workspaceAtMount}) : null;
     if (handoff && handoff.id) {
       applyIncomingPost(handoff);
-      toast('Editing the post you picked in the calendar.');
+      toast(editorialHandoff?'Editing the saved source-backed draft. Review its source and destination before scheduling.':'Editing the post you picked in the calendar.');if(editorialHandoff){var sourceNote=doc.createElement('p');sourceNote.className='zc-hint';sourceNote.textContent=editorialHandoff.source_current===false?'The source has changed since this draft was prepared. Recheck the original evidence and update your copy before choosing a destination or scheduled time.':'Source-backed calendar draft: original evidence is retained with this post. Edit your copy and review the source before choosing a destination or scheduled time.';wrap.insertBefore(sourceNote,wrap.firstChild);}
     } else if (handoff && (handoff.body || handoff.scheduledAt)) {
       if (handoff.body) ta.value = String(handoff.body);
       if (handoff.scheduledAt) {

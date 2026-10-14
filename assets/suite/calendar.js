@@ -450,9 +450,9 @@
     root.innerHTML = '';
     var wrap = el('div', 'zk-wrap');
     root.appendChild(wrap);
-    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false, modalClosers=new Set();
+    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false, modalClosers=new Set(),editorialPicker=null;
     function dispose(message){
-      if(ended)return;ended=true;
+      if(ended)return;ended=true;if(editorialPicker)editorialPicker.destroy();
       if(typeof saveTimer!=='undefined'&&saveTimer)global.clearTimeout(saveTimer);
       scopeObserver.disconnect();
       ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.removeEventListener(n,scopeChanged);});
@@ -472,7 +472,7 @@
     C=Object.assign({},C,{auth:Object.assign({},originalAuth,{token:function(){if(!scopeActive())throw Error('Account or workspace changed.');return originalAuth.token.call(originalAuth);}})});
     C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
       if(!scopeActive())throw Error('Account or workspace changed.');
-      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      try{var value=await originalRpc(name,args,Object.assign({},options,{beforeDispatch:function(){return scopeActive()&&(!options||typeof options.beforeDispatch!=='function'||options.beforeDispatch()!==false);}}));if(!scopeActive())throw Error('Account or workspace changed.');return value;}
       catch(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');throw e;}
     }})});
     if(!scopeActive())return {destroy:dispose,unmount:dispose};
@@ -521,6 +521,9 @@
         'Scheduling works now; posts publish once your accounts are connected.');
       wrap.appendChild(banner);
     }
+
+    var editorialTools=el('details','zk-card');var editorialSummary=doc.createElement('summary');editorialSummary.textContent='Prepare a source-backed calendar draft';editorialTools.appendChild(editorialSummary);var editorialHost=doc.createElement('div');editorialHost.style.padding='16px';editorialTools.appendChild(editorialHost);wrap.appendChild(editorialTools);
+    import('/assets/editorial/controller.mjs?v=20261014').then(function(module){if(scopeActive())editorialPicker=module.mountEditorialPicker(editorialHost,{C:C,workspace:workspaceAtMount,active:scopeActive,listing:/^[0-9a-f-]{36}$/i.test(ctx.listing||'')?ctx.listing:null,navigate:function(id){if(!scopeActive())return;if(typeof ctx.navigate==='function')ctx.navigate(id);else{var item=doc.querySelector('.nitem[data-id="'+id+'"]');if(item)item.click();else toast('The draft is saved. Open Composer to continue.');}}});}).catch(function(){if(scopeActive())editorialHost.textContent='Source-backed draft tools are not available in this release.';});
 
     // legend
     var legend = el('div', 'zk-legend',
