@@ -4,6 +4,10 @@
   "coverage": "All existing routes/modules plus all user-requested capability areas; presence of code never establishes delivery.",
   "modules": [
     {
+      "web": "implementation exists; full journey not yet verified",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
       "id": "ai",
       "source": "assets/suite/ai.js",
       "route": "/social/ai",
@@ -11,56 +15,86 @@
         "ai_profile_get",
         "social_save_post"
       ],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "source_present": true
     },
     {
-      "id": "analytics",
-      "source": "assets/suite/analytics.js",
-      "route": "/social/analytics",
-      "rpc_calls": [],
       "web": "Authorized workspace internal counts; no fabricated external engagement; external provider analytics unavailable.",
       "ios": "Provider analytics and native parity pending.",
       "android": "Provider analytics and native parity pending.",
       "evidence": [],
+      "id": "analytics",
+      "source": "assets/suite/analytics.js",
+      "route": "/social/analytics",
+      "rpc_calls": [],
       "source_present": true
     },
     {
-      "id": "audience",
-      "source": "assets/suite/audience.js",
-      "route": "/social/audience",
-      "rpc_calls": [],
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "appearances",
+      "source": "assets/suite/appearances.js",
+      "route": "/social/appearances",
+      "source_present": true
+    },
+    {
       "web": "implementation exists; full journey not yet verified",
       "ios": "parity review required",
       "android": "parity review required",
       "evidence": [],
+      "id": "audience",
+      "source": "assets/suite/audience.js",
+      "route": "/social/audience",
+      "rpc_calls": [],
       "source_present": true
     },
     {
-      "id": "bio",
-      "source": "assets/suite/bio.js",
-      "route": "/social/bio",
-      "rpc_calls": [],
       "web": "Persisted profile/bio tools with truthful save receipts; private unpublished QA verified.",
       "ios": "Native web export saved private unpublished bio; physical devices pending.",
       "android": "Native web export saved private unpublished bio; physical devices pending.",
       "evidence": [],
+      "id": "bio",
+      "source": "assets/suite/bio.js",
+      "route": "/social/bio",
+      "rpc_calls": [],
       "source_present": true
     },
     {
-      "id": "bizpage",
-      "source": "assets/suite/bizpage.js",
-      "route": "/social/bizpage",
-      "rpc_calls": [],
       "web": "Owned business profile and social URL editing implemented; public home real data/claim ownership checks.",
       "ios": "Native owned profile edit source/export verified; device link acceptance pending.",
       "android": "Native owned profile edit source/export verified; device link acceptance pending.",
       "evidence": [],
+      "id": "bizpage",
+      "source": "assets/suite/bizpage.js",
+      "route": "/social/bizpage",
+      "rpc_calls": [],
       "source_present": true
     },
     {
+      "web": "Production service/resource/availability/customer booking foundation; recurring planner passing local PostgreSQL/browser tests and awaiting PR6 backend release.",
+      "ios": "Native booking and recurring planner exports verified; real planner HTTP and physical devices pending.",
+      "android": "Native booking and recurring planner exports verified; real planner HTTP and physical devices pending.",
+      "evidence": [],
+      "id": "bookings",
+      "source": "assets/suite/bookings.js",
+      "route": "/social/bookings",
+      "rpc_calls": [],
+      "source_present": true
+    },
+    {
+      "id": "builtin-welcome",
+      "source": "assets/suite/composer.js",
+      "route": "/social/builtin-welcome",
+      "rpc_calls": [],
+      "evidence": [],
+      "source_present": false
+    },
+    {
+      "web": "implementation exists; full journey not yet verified",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
       "id": "calendar",
       "source": "assets/suite/calendar.js",
       "route": "/social/calendar",
@@ -72,13 +106,13 @@
         "social_list_posts",
         "social_save_post"
       ],
+      "source_present": true
+    },
+    {
       "web": "implementation exists; full journey not yet verified",
       "ios": "parity review required",
       "android": "parity review required",
       "evidence": [],
-      "source_present": true
-    },
-    {
       "id": "composer",
       "source": "assets/suite/composer.js",
       "route": "/social/composer",
@@ -95,12 +129,13 @@
         "template_save",
         "zoi_namedays_today"
       ],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
-      "evidence": []
+      "source_present": true
     },
     {
+      "web": "Production availability derives from actual provider configuration; six external social providers currently unconfigured.",
+      "ios": "External provider OAuth acceptance pending.",
+      "android": "External provider OAuth acceptance pending.",
+      "evidence": [],
       "id": "connect",
       "source": "assets/suite/connect.js",
       "route": "/social/connect",
@@ -108,24 +143,159 @@
         "social_channel_add",
         "social_channels_list"
       ],
-      "web": "Production availability derives from actual provider configuration; six external social providers currently unconfigured.",
-      "ios": "External provider OAuth acceptance pending.",
-      "android": "External provider OAuth acceptance pending.",
-      "evidence": [],
       "source_present": true
     },
     {
-      "id": "email",
-      "source": "assets/suite/email.js",
-      "route": "/social/email",
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "creator",
+      "source": "assets/suite/creator.js",
+      "route": "/social/creator",
+      "source_present": true
+    },
+    {
+      "web": "Private immutable files deployed and real HTTP accepted; suite navigation in PR6 candidate.",
+      "ios": "Native web export real upload/download/version/archive accepted; physical OS sharing pending.",
+      "android": "Native web export real upload/download/version/archive accepted; physical OS sharing pending.",
+      "evidence": [],
+      "id": "documents",
+      "source": "assets/suite/documents.js",
+      "route": "/social/documents",
       "rpc_calls": [],
+      "source_present": true
+    },
+    {
       "web": "Delivery disabled pending configured provider; campaign UI must not imply sent mail.",
       "ios": "Full native campaign workflow pending.",
       "android": "Full native campaign workflow pending.",
       "evidence": [],
+      "id": "email",
+      "source": "assets/suite/email.js",
+      "route": "/social/email",
+      "rpc_calls": [],
       "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "festival",
+      "source": "assets/suite/festival.js",
+      "route": "/social/festival",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "groups",
+      "source": "assets/suite/groups.js",
+      "route": "/social/groups",
+      "source_present": true
+    },
+    {
+      "web": "Customer enquiries and operator inbox locally tested; schema/production integration pending.",
+      "ios": "Native implementation in progress.",
+      "android": "Native implementation in progress.",
+      "evidence": [],
+      "id": "inbox",
+      "source": "assets/suite/inbox.js",
+      "route": "/social/inbox",
+      "rpc_calls": [],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "leagues",
+      "source": "assets/suite/leagues.js",
+      "route": "/social/leagues",
+      "source_present": true
+    },
+    {
+      "web": "Production persisted company/contact/project/task operations, version checks, role authorization and audit; private QA create/update/archive verified.",
+      "ios": "Native web export exercised real private operations; physical devices pending.",
+      "android": "Native web export exercised real private operations; physical devices pending.",
+      "evidence": [],
+      "id": "operations",
+      "source": "assets/suite/operations.js",
+      "route": "/social/operations",
+      "rpc_calls": [],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "organization-calendar",
+      "source": "assets/suite/organization-calendar.js",
+      "route": "/social/organization-calendar",
+      "source_present": true
+    },
+    {
+      "web": "Production programs, volunteer shifts and registration; PostgreSQL success/failure tests and authenticated web operator acceptance.",
+      "ios": "Native volunteer and operator source/export verified; physical devices pending.",
+      "android": "Native volunteer and operator source/export verified; physical devices pending.",
+      "evidence": [],
+      "id": "organizations",
+      "source": "assets/suite/organizations.js",
+      "route": "/social/organizations",
+      "rpc_calls": [],
+      "source_present": true
+    },
+    {
+      "web": "Production explainable ranking with source provenance and partial-source failures; authenticated web acceptance.",
+      "ios": "Shared ranking and native export verified; physical devices pending.",
+      "android": "Shared ranking and native export verified; physical devices pending.",
+      "evidence": [],
+      "id": "priorities",
+      "source": "assets/suite/priorities.js",
+      "route": "/social/priorities",
+      "rpc_calls": [],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "properties",
+      "source": "assets/suite/properties.js",
+      "route": "/social/properties",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "service-menu",
+      "source": "assets/suite/service-menu.js",
+      "route": "/social/service-menu",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "service-queue",
+      "source": "assets/suite/service-queue.js",
+      "route": "/social/service-queue",
+      "source_present": true
+    },
+    {
+      "web": "implementation exists; full journey not yet verified",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
       "id": "settings",
       "source": "assets/suite/settings.js",
       "route": "/social/settings",
@@ -134,10 +304,16 @@
         "ai_profile_save",
         "workspace_rename"
       ],
-      "web": "implementation exists; full journey not yet verified",
-      "ios": "parity review required",
-      "android": "parity review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
       "evidence": [],
+      "id": "timekeeping",
+      "source": "assets/suite/timekeeping.js",
+      "route": "/social/timekeeping",
       "source_present": true
     },
     {
@@ -146,477 +322,1125 @@
       "route": "/social/week",
       "rpc_calls": [],
       "evidence": [],
-      "source_present": true
-    },
-    {
-      "id": "bookings",
-      "source": "assets/suite/bookings.js",
-      "route": "/social/bookings",
-      "rpc_calls": [],
-      "evidence": [],
-      "web": "Production service/resource/availability/customer booking foundation; recurring planner passing local PostgreSQL/browser tests and awaiting PR6 backend release.",
-      "ios": "Native booking and recurring planner exports verified; real planner HTTP and physical devices pending.",
-      "android": "Native booking and recurring planner exports verified; real planner HTTP and physical devices pending.",
-      "source_present": true
-    },
-    {
-      "id": "builtin-welcome",
-      "source": "assets/suite/composer.js",
-      "route": "/social/builtin-welcome",
-      "rpc_calls": [],
-      "evidence": [],
-      "source_present": true
-    },
-    {
-      "id": "documents",
-      "source": "assets/suite/documents.js",
-      "route": "/social/documents",
-      "rpc_calls": [],
-      "evidence": [],
-      "web": "Private immutable files deployed and real HTTP accepted; suite navigation in PR6 candidate.",
-      "ios": "Native web export real upload/download/version/archive accepted; physical OS sharing pending.",
-      "android": "Native web export real upload/download/version/archive accepted; physical OS sharing pending.",
-      "source_present": true
-    },
-    {
-      "id": "inbox",
-      "source": "assets/suite/inbox.js",
-      "route": "/social/inbox",
-      "rpc_calls": [],
-      "evidence": [],
-      "web": "Customer enquiries and operator inbox locally tested; schema/production integration pending.",
-      "ios": "Native implementation in progress.",
-      "android": "Native implementation in progress.",
-      "source_present": true
-    },
-    {
-      "id": "operations",
-      "source": "assets/suite/operations.js",
-      "route": "/social/operations",
-      "rpc_calls": [],
-      "evidence": [],
-      "web": "Production persisted company/contact/project/task operations, version checks, role authorization and audit; private QA create/update/archive verified.",
-      "ios": "Native web export exercised real private operations; physical devices pending.",
-      "android": "Native web export exercised real private operations; physical devices pending.",
-      "source_present": true
-    },
-    {
-      "id": "organizations",
-      "source": "assets/suite/organizations.js",
-      "route": "/social/organizations",
-      "rpc_calls": [],
-      "evidence": [],
-      "web": "Production programs, volunteer shifts and registration; PostgreSQL success/failure tests and authenticated web operator acceptance.",
-      "ios": "Native volunteer and operator source/export verified; physical devices pending.",
-      "android": "Native volunteer and operator source/export verified; physical devices pending.",
-      "source_present": true
-    },
-    {
-      "id": "priorities",
-      "source": "assets/suite/priorities.js",
-      "route": "/social/priorities",
-      "rpc_calls": [],
-      "evidence": [],
-      "web": "Production explainable ranking with source provenance and partial-source failures; authenticated web acceptance.",
-      "ios": "Shared ranking and native export verified; physical devices pending.",
-      "android": "Shared ranking and native export verified; physical devices pending.",
-      "source_present": true
+      "source_present": false
     }
   ],
   "static_surfaces": [
     {
-      "route": "/add/",
-      "source": "add/index.html",
       "web": "review required",
       "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/apps/business-pro/",
-      "source": "apps/business-pro/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/apps/command-center/",
-      "source": "apps/command-center/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/apps/event-os/",
-      "source": "apps/event-os/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/apps/",
-      "source": "apps/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/apps/intelligence/",
-      "source": "apps/intelligence/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/apps/tickets-studio/",
-      "source": "apps/tickets-studio/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/b/",
-      "source": "b/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/business/",
-      "source": "business/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/community/",
-      "source": "community/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/e/",
-      "source": "e/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/explore/app/",
-      "source": "explore/app/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/explore/",
-      "source": "explore/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
-      "route": "/explore/map/",
-      "source": "explore/map/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
-    },
-    {
+      "android": "parity review required",
+      "evidence": [],
       "route": "/",
       "source": "index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
+      "source_present": true
     },
     {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/add/",
+      "source": "add/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/apps/",
+      "source": "apps/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/apps/business-pro/",
+      "source": "apps/business-pro/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/apps/command-center/",
+      "source": "apps/command-center/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/apps/event-os/",
+      "source": "apps/event-os/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/apps/intelligence/",
+      "source": "apps/intelligence/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/apps/tickets-studio/",
+      "source": "apps/tickets-studio/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/b/",
+      "source": "b/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/book/",
+      "source": "book/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/business/",
+      "source": "business/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/community/",
+      "source": "community/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/creator/",
+      "source": "creator/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/e/",
+      "source": "e/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/event-plan/",
+      "source": "event-plan/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/events/giannis-ploutarchos-andromache-toronto-2027/",
+      "source": "events/giannis-ploutarchos-andromache-toronto-2027/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/explore/",
+      "source": "explore/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/explore/app/",
+      "source": "explore/app/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/explore/map/",
+      "source": "explore/map/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/festival/",
+      "source": "festival/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/groups/",
+      "source": "groups/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/inquiries/",
+      "source": "inquiries/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
       "route": "/l/",
       "source": "l/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
+      "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/leagues/",
+      "source": "leagues/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/organization-calendar/",
+      "source": "organization-calendar/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/properties/",
+      "source": "properties/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/shop/",
+      "source": "shop/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/avli/",
+      "source": "showcase/avli/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/avli/atelier/",
+      "source": "showcase/avli/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/avli/concierge/",
+      "source": "showcase/avli/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/avli/parea/",
+      "source": "showcase/avli/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/avli/table/",
+      "source": "showcase/avli/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/church/saint-sophia-dc/",
+      "source": "showcase/church/saint-sophia-dc/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/church/saint-sophia-dc/atelier/",
+      "source": "showcase/church/saint-sophia-dc/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/church/saint-sophia-dc/concierge/",
+      "source": "showcase/church/saint-sophia-dc/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/church/saint-sophia-dc/parea/",
+      "source": "showcase/church/saint-sophia-dc/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/church/saint-sophia-dc/table/",
+      "source": "showcase/church/saint-sophia-dc/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/creator/peter-kypri-cypriot-smurf-london/",
+      "source": "showcase/creator/peter-kypri-cypriot-smurf-london/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/creator/peter-kypri-cypriot-smurf-london/atelier/",
+      "source": "showcase/creator/peter-kypri-cypriot-smurf-london/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/creator/peter-kypri-cypriot-smurf-london/concierge/",
+      "source": "showcase/creator/peter-kypri-cypriot-smurf-london/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/creator/peter-kypri-cypriot-smurf-london/parea/",
+      "source": "showcase/creator/peter-kypri-cypriot-smurf-london/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/creator/peter-kypri-cypriot-smurf-london/table/",
+      "source": "showcase/creator/peter-kypri-cypriot-smurf-london/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/entertainment/signatureproductions-6aa61d/",
+      "source": "showcase/entertainment/signatureproductions-6aa61d/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/entertainment/signatureproductions-6aa61d/atelier/",
+      "source": "showcase/entertainment/signatureproductions-6aa61d/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/entertainment/signatureproductions-6aa61d/concierge/",
+      "source": "showcase/entertainment/signatureproductions-6aa61d/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/entertainment/signatureproductions-6aa61d/parea/",
+      "source": "showcase/entertainment/signatureproductions-6aa61d/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/entertainment/signatureproductions-6aa61d/table/",
+      "source": "showcase/entertainment/signatureproductions-6aa61d/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/health/ageliki-tzakis/",
+      "source": "showcase/health/ageliki-tzakis/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/health/ageliki-tzakis/atelier/",
+      "source": "showcase/health/ageliki-tzakis/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/health/ageliki-tzakis/concierge/",
+      "source": "showcase/health/ageliki-tzakis/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/health/ageliki-tzakis/parea/",
+      "source": "showcase/health/ageliki-tzakis/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/health/ageliki-tzakis/table/",
+      "source": "showcase/health/ageliki-tzakis/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/giorgos-dalaras-athens-a558f2/",
+      "source": "showcase/music/giorgos-dalaras-athens-a558f2/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/giorgos-dalaras-athens-a558f2/atelier/",
+      "source": "showcase/music/giorgos-dalaras-athens-a558f2/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/giorgos-dalaras-athens-a558f2/concierge/",
+      "source": "showcase/music/giorgos-dalaras-athens-a558f2/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/giorgos-dalaras-athens-a558f2/parea/",
+      "source": "showcase/music/giorgos-dalaras-athens-a558f2/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/giorgos-dalaras-athens-a558f2/table/",
+      "source": "showcase/music/giorgos-dalaras-athens-a558f2/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/thanos-petrelis-athens-78ee3f/",
+      "source": "showcase/music/thanos-petrelis-athens-78ee3f/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/thanos-petrelis-athens-78ee3f/atelier/",
+      "source": "showcase/music/thanos-petrelis-athens-78ee3f/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/thanos-petrelis-athens-78ee3f/concierge/",
+      "source": "showcase/music/thanos-petrelis-athens-78ee3f/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/thanos-petrelis-athens-78ee3f/parea/",
+      "source": "showcase/music/thanos-petrelis-athens-78ee3f/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/music/thanos-petrelis-athens-78ee3f/table/",
+      "source": "showcase/music/thanos-petrelis-athens-78ee3f/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/professional/advokatbyran-giota-noussi-athens/",
+      "source": "showcase/professional/advokatbyran-giota-noussi-athens/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/professional/advokatbyran-giota-noussi-athens/atelier/",
+      "source": "showcase/professional/advokatbyran-giota-noussi-athens/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/professional/advokatbyran-giota-noussi-athens/concierge/",
+      "source": "showcase/professional/advokatbyran-giota-noussi-athens/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/professional/advokatbyran-giota-noussi-athens/parea/",
+      "source": "showcase/professional/advokatbyran-giota-noussi-athens/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/professional/advokatbyran-giota-noussi-athens/table/",
+      "source": "showcase/professional/advokatbyran-giota-noussi-athens/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/venue/parkview-manor-banquet-hall-north-york/",
+      "source": "showcase/venue/parkview-manor-banquet-hall-north-york/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/venue/parkview-manor-banquet-hall-north-york/atelier/",
+      "source": "showcase/venue/parkview-manor-banquet-hall-north-york/atelier/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/venue/parkview-manor-banquet-hall-north-york/concierge/",
+      "source": "showcase/venue/parkview-manor-banquet-hall-north-york/concierge/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/venue/parkview-manor-banquet-hall-north-york/parea/",
+      "source": "showcase/venue/parkview-manor-banquet-hall-north-york/parea/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/showcase/venue/parkview-manor-banquet-hall-north-york/table/",
+      "source": "showcase/venue/parkview-manor-banquet-hall-north-york/table/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
       "route": "/social/",
       "source": "social/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
+      "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/studio/recipes/",
+      "source": "studio/recipes/index.html",
+      "source_present": true
+    },
+    {
+      "web": "review required",
+      "ios": "parity review required",
+      "android": "parity review required",
+      "evidence": [],
       "route": "/tickets/",
       "source": "tickets/index.html",
-      "web": "review required",
-      "ios": "parity review required",
-      "android": "parity review required"
+      "source_present": true
     },
     {
-      "route": "/w/",
-      "source": "w/index.html",
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/tickets/hosts/",
+      "source": "tickets/hosts/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/trips/",
+      "source": "trips/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/volunteer/",
+      "source": "volunteer/index.html",
+      "source_present": true
+    },
+    {
       "web": "review required",
       "ios": "parity review required",
-      "android": "parity review required"
+      "android": "parity review required",
+      "evidence": [],
+      "route": "/w/",
+      "source": "w/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/widgets/",
+      "source": "widgets/index.html",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/workspace/join/",
+      "source": "workspace/join/index.html",
+      "source_present": true
     }
   ],
   "dynamic_routes": [
     {
-      "route": "/social/:path*",
-      "destination": "/social/index.html",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/artist/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/social/:path*",
-      "destination": "/social/index.html",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/b/:slug",
+      "destination": "/b/index.html",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/e/:slug",
-      "destination": "/e/index.html",
-      "status": "review required"
-    },
-    {
-      "route": "/c/:category/in/:country/:region/:city",
-      "destination": "/api/place?category=:category&country=:country&region=:region&city=:city",
-      "status": "review required"
-    },
-    {
-      "route": "/c/:category/in/:country/:region",
-      "destination": "/api/place?category=:category&country=:country&region=:region",
-      "status": "review required"
-    },
-    {
-      "route": "/c/:category/in/:country",
-      "destination": "/api/place?category=:category&country=:country",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/business/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
     },
     {
       "route": "/c/:category",
       "destination": "/api/place?category=:category",
-      "status": "review required"
+      "status": "review required",
+      "source_present": false
     },
     {
-      "route": "/in/:country/:region/:city",
-      "destination": "/api/place?country=:country&region=:region&city=:city",
-      "status": "review required"
+      "route": "/c/:category/in/:country",
+      "destination": "/api/place?category=:category&country=:country",
+      "status": "review required",
+      "source_present": false
     },
     {
-      "route": "/in/:country/:region",
-      "destination": "/api/place?country=:country&region=:region",
-      "status": "review required"
+      "route": "/c/:category/in/:country/:region",
+      "destination": "/api/place?category=:category&country=:country&region=:region",
+      "status": "review required",
+      "source_present": false
     },
     {
-      "route": "/in/:country",
-      "destination": "/api/place?country=:country",
-      "status": "review required"
+      "route": "/c/:category/in/:country/:region/:city",
+      "destination": "/api/place?category=:category&country=:country&region=:region&city=:city",
+      "status": "review required",
+      "source_present": false
     },
     {
-      "route": "/in",
-      "destination": "/api/place",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/categories/:category",
+      "destination": "/api/place?category=:category",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/sitemap-core.xml",
-      "destination": "/api/sitemap?part=core",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/categories/:category/in/:country",
+      "destination": "/api/place?category=:category&country=:country",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/sitemap-listings.xml",
-      "destination": "/api/sitemap?part=listings",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/categories/:category/in/:country/:region",
+      "destination": "/api/place?category=:category&country=:country&region=:region",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/sitemap-places.xml",
-      "destination": "/api/sitemap?part=places",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/categories/:category/in/:country/:region/:city",
+      "destination": "/api/place?category=:category&country=:country&region=:region&city=:city",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/sitemap.xml",
-      "destination": "/api/sitemap",
-      "status": "review required"
-    },
-    {
-      "route": "/business/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
-    },
-    {
-      "route": "/travel-place/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
-    },
-    {
-      "route": "/p/:slug",
-      "destination": "/api/entity?slug=:slug&canon=1",
-      "status": "review required"
-    },
-    {
-      "route": "/travel_place/:slug",
-      "destination": "/api/entity?slug=:slug&canon=1",
-      "status": "review required"
-    },
-    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "route": "/church/:slug",
       "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/professional/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
-    },
-    {
-      "route": "/organization/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
-    },
-    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "route": "/creator/:slug",
       "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "status": "review required",
+      "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/docs/audits/:path*",
+      "destination": "/api/audit-evidence",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/e/:slug",
+      "destination": "/e/index.html",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "route": "/event/:slug",
       "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/vendor/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/in",
+      "destination": "/api/place",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/school/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/in/:country",
+      "destination": "/api/place?country=:country",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/artist/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/in/:country/:region",
+      "destination": "/api/place?country=:country&region=:region",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/venue/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/in/:country/:region/:city",
+      "destination": "/api/place?country=:country&region=:region&city=:city",
+      "status": "review required",
+      "source_present": true
     },
     {
-      "route": "/sports/:slug",
-      "destination": "/api/entity?slug=:slug",
-      "status": "review required"
-    },
-    {
-      "route": "/b/:slug",
-      "destination": "/b/index.html",
-      "status": "review required"
-    },
-    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "route": "/l/:slug",
       "destination": "/l/index.html",
-      "status": "review required"
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/organization/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/p/:slug",
+      "destination": "/api/entity?slug=:slug&canon=1",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/professional/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/school/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/sitemap-core.xml",
+      "destination": "/api/sitemap?part=core",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/sitemap-listings-:page.xml",
+      "destination": "/api/sitemap?part=listings&page=:page",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/sitemap-listings.xml",
+      "destination": "/api/sitemap?part=listings",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/sitemap-places.xml",
+      "destination": "/api/sitemap?part=places",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/sitemap.xml",
+      "destination": "/api/sitemap",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/social/:path*",
+      "destination": "/social/index.html",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/sports/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/travel_place/:slug",
+      "destination": "/api/entity?slug=:slug&canon=1",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/travel-place/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/vendor/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "route": "/venue/:slug",
+      "destination": "/api/entity?slug=:slug",
+      "status": "review required",
+      "source_present": true
     }
   ],
   "requested_capability_areas": [
     {
-      "area": "Site-wide brand and product overhaul",
-      "requirements": [
-        "One coherent brand and shared visual language across all public and authenticated routes",
-        "Redesign page hierarchy, navigation, formatting, promotion and content organization",
-        "Repair logic and interactions throughout real user journeys",
-        "Consistent typography, color, spacing, forms, controls and responsive states"
-      ],
       "web": "unverified",
       "ios": "unverified",
-      "android": "unverified"
+      "android": "unverified",
+      "evidence": [],
+      "area": "Account-aware discovery and reusable autocomplete",
+      "requirements": [
+        "Autocomplete public places, businesses and artists as users type; accessible keyboard and touch selection, debounced requests, stale response cancellation, loading/empty/error states and canonical links.",
+        "Keep active category/location filters visible; offer explicit matches outside a filter without silently changing it.",
+        "Use the signed-in account’s explicitly saved home and preferences across search, maps, events and recommendations through existing preference writers.",
+        "Distinguish saved home from temporary browsing area and optional device location. Never silently replace chosen home from IP or travel searches.",
+        "Guest fallback, sign-out and account-switch isolation; no cross-account saved contacts, history or preferences."
+      ],
+      "source_present": true
     },
     {
-      "area": "Mobile application",
-      "requirements": [
-        "Audit and replace simulated native operations",
-        "Working real-data mobile journeys",
-        "Shared Zoi brand across mobile and web",
-        "Native build validation",
-        "Verified device testing and distribution status",
-        "Release through available authorized distribution channels; report external signing/review blockers honestly"
-      ],
       "web": "unverified",
       "ios": "unverified",
-      "android": "unverified"
+      "android": "unverified",
+      "evidence": [],
+      "area": "Additional community operating needs",
+      "requirements": [
+        "Language schools, tutoring, cultural classes and paid/free enrollment",
+        "Alumni and professional associations, memberships and renewals",
+        "Equipment lending and venue setup/teardown buffers",
+        "Waitlists and equitable allocation when capacity fills",
+        "Dietary and accessibility requirements with restricted visibility",
+        "Volunteer training, role eligibility and expiring qualifications",
+        "Financial receipts, taxes and refunds only when provider-backed",
+        "Data export, retention, deletion and role changes across each organization"
+      ],
+      "source_present": true
     },
     {
-      "area": "Production recovery",
-      "requirements": [
-        "Resolve hosting pause within authorized spending",
-        "Reliable repeatable deployments",
-        "Reconcile migration history safely",
-        "Backups, restore and rollback",
-        "Monitoring and incident diagnosis"
-      ],
       "web": "unverified",
       "ios": "unverified",
-      "android": "unverified"
-    },
-    {
-      "area": "Unified business foundation",
-      "requirements": [
-        "Real identity and workspaces",
-        "Team roles and data isolation",
-        "Shared brand and business knowledge",
-        "Contacts and customer history",
-        "Documents and audit history"
-      ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
-    },
-    {
-      "area": "Creator growth",
-      "requirements": [
-        "Polished profiles and bio pages",
-        "Media kits and sponsorship workflows",
-        "Brand templates and creative assets",
-        "Campaign planning and approval",
-        "Supported social publishing",
-        "Inbox and approved messaging automations",
-        "Provider-sourced engagement analytics",
-        "Attribution and revenue reporting"
-      ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
-    },
-    {
-      "area": "Creative production",
-      "requirements": [
-        "Image design and resizing",
-        "Video editing and captions",
-        "Transcription and text-based editing",
-        "Long-video clipping",
-        "Recording workflow",
-        "AI video generation integration",
-        "Voiceover and dubbing integration",
-        "Brand-aware AI writing"
-      ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
-    },
-    {
-      "area": "Marketing and automation",
-      "requirements": [
-        "CRM pipelines",
-        "Email campaigns and sequences",
-        "Embeddable forms",
-        "Website analytics",
-        "Heatmaps and session analysis integration",
-        "SEO diagnostics and licensed research",
-        "Social listening integration",
-        "Business event/action automation"
-      ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
-    },
-    {
+      "android": "unverified",
+      "evidence": [],
       "area": "BuyGreek commerce",
       "requirements": [
         "Store and seller onboarding",
@@ -629,11 +1453,113 @@
         "Affiliates and creator commissions",
         "Cross-site customer and order integration"
       ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
+      "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Coordinated weddings, funerals and event spaces",
+      "requirements": [
+        "Private event plan with ceremony, hall, band and additional service requirements",
+        "Search real published provider availability with timezone, duration and capacity constraints",
+        "Explainable compatible-slot suggestions with fresh source timestamps",
+        "All-or-nothing reservations across supported provider slots, explicit price review and truthful payment state",
+        "Private customer/provider communications, changes and cancellation tracking",
+        "External availability explicitly unknown until connected or confirmed; never invented"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Creative production",
+      "requirements": [
+        "Image design and resizing",
+        "Video editing and captions",
+        "Transcription and text-based editing",
+        "Long-video clipping",
+        "Recording workflow",
+        "AI video generation integration",
+        "Voiceover and dubbing integration",
+        "Brand-aware AI writing"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Creator growth",
+      "requirements": [
+        "Polished profiles and bio pages",
+        "Media kits and sponsorship workflows",
+        "Brand templates and creative assets",
+        "Campaign planning and approval",
+        "Supported social publishing",
+        "Inbox and approved messaging automations",
+        "Provider-sourced engagement analytics",
+        "Attribution and revenue reporting"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Culinary recipes and Community cook-along",
+      "requirements": [
+        "Chef-authorized structured recipe builder and versioned persistence",
+        "Two purpose-built cooking and prep views with serving adjustment, timers and optional voice narration",
+        "Detachable Community recipe/media experience with actual sharing and creator attribution",
+        "Actionable shopping lists and purchasable product matching only for real available inventory",
+        "Sourced regional food history and origins, sponsorship disclosure, mobile accessibility",
+        "Independent competition review of real user journeys, not screenshots alone"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Festivals and community events",
+      "requirements": [
+        "Organizer workspace and event lifecycle",
+        "Sponsor packages, applications, promised benefits and fulfillment tracking",
+        "Booth inventory, vendor applications, requirements and operator approval",
+        "Performer schedules, rehearsals, staffing and volunteer assignments",
+        "Tickets, accessible seating, entry/check-in and capacity",
+        "Safety/accessibility plans, cancellations and provider-backed refunds"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Geographic editorial editions and client brand identity",
+      "requirements": [
+        "Purpose-built category experiences from city to region, country and global editions; precise geographic scope, not identical unbounded listings",
+        "Digital magazine editions connect local stories, businesses, artists, events and travel with useful actions",
+        "Hero sponsorship selected by explicit category, geography, publication window and approved creative; visibly labelled Sponsored, never fabricate a campaign or imply local relevance",
+        "Source-derived client brand kit: visually verified logo, palette, imagery and typography direction with accessible contrast; owner edits take precedence",
+        "Distinct per-client art direction across four selectable layouts, intentional corners, layered depth and reduced-motion-aware animation",
+        "Twelve Islands Greek Taverna is the source-reviewed restaurant acceptance case; image alt text is not reliable evidence of what an image depicts"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "area": "Global Greek community",
       "requirements": [
         "Personal and organization profiles",
@@ -643,24 +1569,122 @@
         "Creator-business collaboration",
         "Greek and multilingual experience"
       ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
+      "source_present": true
     },
     {
-      "area": "Profession-specific operations",
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Greek artist discovery and enrichment from Bandsintown",
       "requirements": [
-        "Restaurant menus, ordering, reservations and loyalty",
-        "Stylist appointments, deposits and client history",
-        "Professional and lawyer intake, matters, documents and deadlines",
-        "Church parish communications, calendars, giving, volunteers and events",
-        "Retailer stock, sales and wholesale workflows"
+        "Discover Greek artists through accessible source links and match existing profiles before insert.",
+        "Enrich source-backed biography, official links, artist imagery and event references while preserving owner edits and explicit clears.",
+        "Separate upcoming and past shows, record source/fetch dates, validate exact artist identity and event local dates.",
+        "Produce per-artist source/projection/rendered journey evidence and report access gaps honestly."
       ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
+      "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Greek dance and cultural groups",
+      "requirements": [
+        "Public group homes with instructors, repertoire and performance media",
+        "Adult membership applications, reviewed rosters and rehearsal attendance",
+        "Auditions, age-group policies and guardian-consent requirements before child data collection",
+        "Timezone-aware rehearsal/class calendar and performance booking",
+        "Costume and equipment inventory; deposits and returns only with working payment flows",
+        "Member communications with explicit recipients and delivery receipts"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Greek sports leagues — planned now",
+      "requirements": [
+        "Federation→region→league→season→division→club→team model",
+        "North American pilot including Toronto/Montreal, followed by broader regions",
+        "Club and church team registration, adult player applications and eligibility review",
+        "Guardian consent and access restrictions before junior-player records",
+        "Fixture generation with home/away balance, rest, venue clashes and travel constraints",
+        "Referee assignments, results submitted by authorized teams and confirmed disputes",
+        "Standings rules versioned by competition; no invented results",
+        "Venue availability, postponements, discipline and season archives"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Marketing and automation",
+      "requirements": [
+        "CRM pipelines",
+        "Email campaigns and sequences",
+        "Embeddable forms",
+        "Website analytics",
+        "Heatmaps and session analysis integration",
+        "SEO diagnostics and licensed research",
+        "Social listening integration",
+        "Business event/action automation"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Mobile application",
+      "requirements": [
+        "Audit and replace simulated native operations",
+        "Working real-data mobile journeys",
+        "Shared Zoi brand across mobile and web",
+        "Native build validation",
+        "Verified device testing and distribution status",
+        "Release through available authorized distribution channels; report external signing/review blockers honestly"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "OPA Ploutarchos and Andromache all-eight-stop official source discovery",
+      "requirements": [
+        "Find officialpromoter,venue,event and booking source for eachMarch2027poster stop:SanFrancisco5,LosAngeles6,Detroit12,Chicago13,Boston19,Toronto20,Montréal26,AtlanticCity27.",
+        "Preserve announced-only versus official booking confirmed distinctions and originalsource conflicts.",
+        "Connect actualevent/artist/promoter identities without carrying forward pasttourvenues or prices."
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "OPA Productions Montréal rollout after Toronto acceptance",
+      "requirements": [
+        "Verify existing OPA listing before creating any duplicate; identify exact Montréal event and source date.",
+        "Use OPA-specific floor plan, table IDs, categories, pricing, brand and booking contacts; do not reuse Toronto seating facts.",
+        "Apply accepted Toronto shared journey and visual system with OPA identity and owner controls; preserve actual phone booking when no connected inventory/payment provider exists.",
+        "Verify source, rendered and exercised desktop/mobile journeys separately before publishing and confirming live."
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "area": "Ownr-style business administration",
       "requirements": [
         "Company records",
@@ -670,11 +1694,177 @@
         "Employee and contractor administration",
         "Jurisdiction-specific obligations and filing workflows"
       ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
+      "source_present": true
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Production recovery",
+      "requirements": [
+        "Resolve hosting pause within authorized spending",
+        "Reliable repeatable deployments",
+        "Reconcile migration history safely",
+        "Backups, restore and rollback",
+        "Monitoring and incident diagnosis"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Profession-specific operations",
+      "requirements": [
+        "Restaurant menus, ordering, reservations and loyalty",
+        "Stylist appointments, deposits and client history",
+        "Professional and lawyer intake, matters, documents and deadlines",
+        "Church parish communications, calendars, giving, volunteers and events",
+        "Retailer stock, sales and wholesale workflows"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Shared Zoi Studio and live creation",
+      "requirements": [
+        "Guided creation using real business/source context with duplicate and branch checks",
+        "Editable responsive canvas and actual task progress, not simulated extraction",
+        "Reusable recipe, business home, menu, event and creator adapters",
+        "Private draft persistence, revision conflict recovery, authority checks, reviewed publication",
+        "Aegean blue and white shared identity; midnight and turquoise with restrained accents; preserve each client identity"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Signature event operating suite and reusable global event journeys",
+      "requirements": [
+        "Real Signature Productions Giannis Ploutarchos and Andromache concert March 20 2027 at Parkview Manor: source-faithful room/table explorer, original poster and floor plan, physical venue tour, responsive guest planning and organizer operations. Printed 100–275 prices confirmed per guest; currency/tax/fees remain unconfigured.",
+        "Front stage sponsor lounges: two facing white five-seat benches with a central table, approximately ten people. Side stage lounges: open rectangular white seating around a central area, approximately twenty-five or more. Do not assign these descriptions to numbered inventory without organizer confirmation.",
+        "Organizer imports and edits price lists, photographs, menu sections, bottle packages, modifiers, allergens, explicit taxes/service charges/currency, stock, service zones, last-order cutoffs and age/staff checks. Preview before publish; version conflicts and rollback; no inferred free prices or stock.",
+        "Guest ordering from verified table context routes bottles/drinks to assigned servers and bar queues with accepted/preparing/ready/delivered/rejected states, staff override audit, sold-out recovery, duplicate-request protection and reconnect reconciliation.",
+        "Full bill splitting before and during event: ticket shares, own items, equal/custom amounts, shared bottle allocations, discounts, taxes, service charge, optional tips, paid/refunded balances, cash staff receipts, outstanding shares and late orders. Exact money conservation and concurrent payment reservation; no client-paid status.",
+        "Temporary inventory holds with expiry, atomic table/seat confirmation and payment reconciliation. Distinguish source-plan preferences, private saved plans, enquiries, held inventory and actual tickets; no fabricated available seats.",
+        "Subtle disclosed actionable sponsorship on table details, bottle/menu context and event screens: active scoped organizer-approved placements, frequency caps, offer expiry, redemption authorization, accessible touch alternative to hover, no automatic popups covering seat or checkout controls.",
+        "Event social sharing: shareable public event cards and deep links, opt-in guest photo/video submissions and hashtags, organizer moderation, content rights and people permission, revocation/removal, screen-safe projection, expiry, reporting, event-scoped media retention and authorized provider ingestion. Hashtag alone is not public-screen consent.",
+        "Drag and drop for authorized organizer table layouts, sponsor placements and menu order, and guest-owned group/itinerary/shared-item organization. Keyboard/buttons alternative, touch support, undo, stale versions, permission checks; guests cannot change inventory or other groups.",
+        "Scoped messaging: guest-to-organizer questions, private invited-group planning, table-to-assigned-server assistance, order-linked issues, staff handoff, block/report, mute, rate limits, attachment checks, participant revocation, delivery receipts and no cross-tenant or cross-table leakage.",
+        "Owner setup/readiness dashboard connects actual business ownership, venue, inventory, catalog, staff routing, taxes, policies, merchant account and moderation team before activating operational features. No payment information entered for the current sales showcase.",
+        "Web, iOS and Android journey parity assessed explicitly; native deep links, upload/camera, QR scan, notification permission, offline/foreground recovery and accessible interactions. Responsive web alone is not native delivery.",
+        "Acceptance includes simultaneous last-seat/last-bottle requests, expired holds, double clicks, uncertain responses, stale quotes, payment/webhook duplication, voids/refunds, staff turnover, venue/table transfer, social-content takedown during display and inaccessible provider embeds."
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Signature experience design competition and integrated delivery",
+      "requirements": [
+        "Compare three runnable, source-specific design contenders covering client home, event entry, stage-facing room, exact table selection, parea allocation, sharing, sponsorship and owner-managed content.",
+        "Judge desktop and 390px phone states independently; labels must remain exact, legible and selectable, controls must not cover stage or selected content.",
+        "Side lounges 1 and 23: enlarged three-section U arrangements alongside stage; standard tables include visible chairs; white couches and long tables retain correct stage relationship.",
+        "Stage backdrop and side-wall screen concepts must be polished and identified as proposed production setup until venue confirmation.",
+        "Preserve existing backend/owner contracts; no fake live inventory, ticket sales, payment success, invite delivery or sponsor affiliation.",
+        "Select and integrate strongest cohesive direction; retain prior site-wide map, enrichment, identity and operational scope."
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Signature whole-ticket groups and social distribution",
+      "requirements": [
+        "Organizer grants a durable host table allocation with expiry and explicit ticket quota; host assigns whole quantities per recipient and tracks unassigned, invited, accepted and paid states",
+        "Secure guest claim links, email/SMS delivery receipts and connected payment status; no client-only reservation or payment claims",
+        "Reusable company and event poster sharing composer with editable captions, native image sharing, text/email/WhatsApp and download fallbacks",
+        "Toronto listing logos/assets may be used in clearly labelled sponsor test previews; public sponsorship requires organizer approval and scoped active placement",
+        "Private usual guest groups store ticket quantities and are reusable on future events; current availability and prices must be checked again"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Site-wide brand and product overhaul",
+      "requirements": [
+        "One coherent brand and shared visual language across all public and authenticated routes",
+        "Redesign page hierarchy, navigation, formatting, promotion and content organization",
+        "Repair logic and interactions throughout real user journeys",
+        "Consistent typography, color, spacing, forms, controls and responsive states",
+        "Use user-supplied cobalt Greek zeta/omicron-iota mark with olive dot; refined inner curve, transparent high-resolution master, polished large-use and crisp favicon/app exports. Do not substitute the old gold serif Z."
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Site-wide following, reputation and contextual reviews",
+      "requirements": [
+        "Visible unobtrusive Follow on eligible canonical business, professional, artist, church, organization and other entity homes, discovery cards and relevant map/community surfaces; reuse a shared capability rather than source-specific one-offs.",
+        "Follow/unfollow persists to the real account, is idempotent and account-scoped, handles signed-out return intent, duplicate taps, unknown responses and account changes; user controls notification categories, frequency, mute and unsubscribe.",
+        "Compact truthful review summary and accessible detail drawer or page: ratings, written experience, optional approved photos, rating distribution, useful sorting/filtering, helpful votes and business response where appropriate. No fake rating/count or imported review misattribution.",
+        "Purpose-appropriate review eligibility: business service/event experience differs from reviewing a person or religious belief. Define allowed contexts and avoid blanket reputation scores for sensitive identities or children.",
+        "Real review write/edit/delete/report flows with current authorization, rate limits, duplicate/self-review and conflict-of-interest controls, abuse moderation, reviewer privacy and an appeal path; owner responses require current ownership.",
+        "Only label verified visit or purchase when linked to actual eligible booking/order evidence, without exposing private transaction data; never infer verification from a scraped source or mere account registration.",
+        "Passive contextual prompts after a completed eligible interaction, frequency caps and dismissal persistence; never interrupt checkout, demand a positive review or gate review solicitation by satisfaction.",
+        "Shared web/iOS/Android capability audit and end-to-end evidence, including aggregate consistency after edits/removal, moderation visibility, concurrent writes, revoked owners and notification delivery preferences."
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Ticketing, seating and immersive venue experience",
+      "requirements": [
+        "Functional venue and seating editor backed by a shared layout model",
+        "Accurate accessible 2D seat selection and meaningful 3D venue preview",
+        "Real seat availability, expiring inventory holds and atomic reservations",
+        "Ticket issuance, organizer operations and check-in",
+        "Transparent payment and refund state backed by provider receipts",
+        "Equivalent appropriate web, iOS and Android journeys",
+        "Polished transitions, clear hierarchy, fast interaction and complete loading/error/empty states"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "area": "Unified business foundation",
+      "requirements": [
+        "Real identity and workspaces",
+        "Team roles and data isolation",
+        "Shared brand and business knowledge",
+        "Contacts and customer history",
+        "Documents and audit history"
+      ],
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "area": "User experience and release quality",
       "requirements": [
         "Consistent desktop and mobile layouts",
@@ -686,106 +1876,243 @@
         "End-to-end success and failure tests",
         "Production deployment and verification"
       ],
-      "web": "unverified",
-      "ios": "unverified",
-      "android": "unverified"
+      "source_present": true
     },
     {
-      "area": "Ticketing, seating and immersive venue experience",
-      "requirements": [
-        "Functional venue and seating editor backed by a shared layout model",
-        "Accurate accessible 2D seat selection and meaningful 3D venue preview",
-        "Real seat availability, expiring inventory holds and atomic reservations",
-        "Ticket issuance, organizer operations and check-in",
-        "Transparent payment and refund state backed by provider receipts",
-        "Equivalent appropriate web, iOS and Android journeys",
-        "Polished transitions, clear hierarchy, fast interaction and complete loading/error/empty states"
-      ],
       "web": "unverified",
       "ios": "unverified",
-      "android": "unverified"
+      "android": "unverified",
+      "evidence": [],
+      "area": "Verified map coordinates and stable close-range GIS",
+      "requirements": [
+        "Carry coordinate provenance and geo_precision through public RPCs and map models.",
+        "Do not render city, suburb, approximate, missing-precision or repeated centroid coordinates as exact business pins.",
+        "Keep approximate/unmapped listings discoverable through explicitly scoped area results; directions must use verified address or actual coordinates.",
+        "Audit repeated centroid assignments and source-backed geocoding; no invented jitter or fake precision.",
+        "Preserve user zoom and selected location; test clustering and marker selection at street-level on desktop/mobile.",
+        "Pause decorative globe rendering offscreen/hidden and respect reduced motion; useful map behavior takes priority."
+      ],
+      "source_present": true
     }
   ],
   "edge_functions": [
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "ai-generate",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/ai-generate/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "community-media",
+      "source": "supabase/functions/community-media/index.ts",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "delivery-charge",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/delivery-charge/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "delivery-connect-onboard",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/delivery-connect-onboard/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "delivery-create",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/delivery-create/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "delivery-quote",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/delivery-quote/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "email-send",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/email-send/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "email-unsubscribe",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/email-unsubscribe/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "intake-audit",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/intake-audit/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
+      "id": "ops-documents",
+      "source": "supabase/functions/ops-documents/index.ts",
+      "source_present": true
+    },
+    {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "seo-site-scan",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/seo-site-scan/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "social-config",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/social-config/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "social-connect",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/social-connect/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "social-oauth-callback",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/social-oauth-callback/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "social-publish",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/social-publish/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "tickets-checkout",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/tickets-checkout/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "tickets-confirm",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/tickets-confirm/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "zoi-enrich",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/zoi-enrich/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "zoi-feed-publish",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/zoi-feed-publish/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "zoi-page",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/zoi-page/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "zoi-sitemap",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/zoi-sitemap/index.ts"
     },
     {
+      "web": "unverified",
+      "ios": "unverified",
+      "android": "unverified",
+      "evidence": [],
       "id": "zoi-worker",
-      "status": "contract and deployment review required"
+      "status": "contract and deployment review required",
+      "source_present": true,
+      "source": "supabase/functions/zoi-worker/index.ts"
     }
   ],
   "native_evidence_source": "mobile/capabilities.json",
@@ -833,5 +2160,7 @@
       "Identity checks and government submissions",
       "Corporate minute books/signing"
     ]
-  }
+  },
+  "inventory_rule": "Source presence is inventory only. Historical status and evidence are retained; current production, rendered and exercised acceptance must be recorded separately.",
+  "inventory_updated_at": "2026-10-14T04:03:12.898Z"
 }

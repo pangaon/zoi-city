@@ -28,3 +28,14 @@ test('business save requires exact versioned receipt and retains immutable retry
 });
 
 test('public bio filters unsafe URLs and distinguishes availability failures from missing pages',()=>{const html=readFileSync(new URL('../../b/index.html',import.meta.url),'utf8');const fn=html.slice(html.indexOf('function safeUrl('),html.indexOf('function slugFromPath'));const safe=vm.runInNewContext(fn+';safeUrl',{URL});assert.equal(safe('javascript:alert(1)'),null);assert.equal(safe('https://example.test'),'https://example.test/');assert.match(html,/Profile temporarily unavailable/);assert.match(html,/id=\"retryProfile\"/);assert.match(html,/links.filter\(l=>l&&l.label&&safeUrl\(l.url\)\)/);});
+
+
+test('uncertain content save keeps navigation guarded even without input edits',()=>{
+ const start=source.indexOf('    function unsaved()'),end=source.indexOf('    function allowLeave()',start);
+ const state={saving:false,pendingContent:null};
+ const unsaved=vm.runInNewContext('('+source.slice(start,end).trim()+')',{state,contentDirty:false,mediaHandle:null,designHandle:null});
+ assert.equal(unsaved(),false);
+ state.pendingContent={p_request:'unconfirmed-save'};assert.equal(unsaved(),true);
+ state.pendingContent=null;assert.equal(unsaved(),false);
+ state.saving=true;assert.equal(unsaved(),true);
+});

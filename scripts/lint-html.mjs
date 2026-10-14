@@ -17,7 +17,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative, resolve, basename } from 'node:path';
 
-const SKIP_DIRS = new Set(['node_modules', '.git', '.github', '.vercel', '.next', 'dist']);
+const SKIP_DIRS = new Set(['node_modules', '.git', '.github', '.vercel', '.next', '.recovery', 'dist']);
 const VERIFICATION_STUB = /^google[0-9a-f]+\.html$/i;
 
 function* htmlFiles(dir, sourceEvidence) {
