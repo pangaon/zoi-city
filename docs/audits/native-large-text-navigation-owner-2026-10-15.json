@@ -1,0 +1,172 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "baseline": "b0c13d0597d4eb3f1a46d58ad9df68de895a0e39",
+  "outcome": "Source correction for installed large-text header and bottom navigation defect; independent and installed acceptance remain separate.",
+  "source_manifest": {
+    "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/source-manifest.json",
+    "sha256": "7838a19827de11c396595deb436117fc2f6a8d6062b0f67ced8456bce7c669d2"
+  },
+  "runtime_paths": [
+    "mobile/App.tsx",
+    "mobile/src/AppChrome.tsx",
+    "mobile/src/navigationLayout.ts"
+  ],
+  "behavior": [
+    "All five existing destination labels retain system font scaling and use measured horizontal navigation when needed.",
+    "Previous and more controls scroll without changing route; keyboard focus and external route/font/orientation changes reveal the current destination.",
+    "Header keeps the real logo and full tagline with minimum44 point account/home targets and a compact normal layout.",
+    "Existing route/auth/map/business logic body is byte-identical to baseline."
+  ],
+  "verification": {
+    "all_mobile_tests": 478,
+    "focused_geometry_and_existing_map_tests": 10,
+    "typescript": "pass",
+    "diff_check": "pass",
+    "controlled_actual_RN_web_cases": 18,
+    "viewports": [
+      "320x740",
+      "390x844",
+      "844x390",
+      "780x900"
+    ],
+    "text_scales": [
+      1,
+      2
+    ],
+    "labels": [
+      "English",
+      "long Greek",
+      "explicit Greek newlines"
+    ],
+    "callbacks_and_keyboard": [
+      "all five routes",
+      "home/account",
+      "scroll does not navigate",
+      "focus reveal",
+      "Enter",
+      "Space",
+      "external route/font/orientation changes"
+    ]
+  },
+  "limits": [
+    "Controlled RN Web uses a fixture-only text scaling adapter; it is not installed native font rendering proof.",
+    "Actual Android/iOS, screen reader, font metrics and coherent binary release remain with root.",
+    "No production mutation, Auth, provider, EAS or ADB operation was performed."
+  ],
+  "react_review": "Small shared chrome components; bounded pure geometry; no new library/global state/font cap; RAF cleanup; full accessible labels and selected states.",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-320-740-font1.png",
+      "sha256": "6b36e39d250917f0df0969f2300c563ff6098f8e9a092ddb251f726fb0f14aed"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-320-740-font2.png",
+      "sha256": "6dde716407c5d71b10456db013068681403246ceaadceddfc6a4b8c33f58d117"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-390-844-font1.png",
+      "sha256": "2472ace7853e9c7e1a9dfd799da6c17680b3b67a6eaf47fb74a48043879630d8"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-390-844-font2.png",
+      "sha256": "8d857f4429b345845821cfd94a0743003b3ba64f871ef0145f60e61051119d61"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-390-font2-explicit-newlines.png",
+      "sha256": "187081f9a79a78b4aa6684955e665083804b66908068e4cdabbce330dff6c841"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-780-900-font1.png",
+      "sha256": "aeefb41c9f68206852beb166542f1fb3884fc47f58985fc4507db5bc92470c4f"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-780-900-font2.png",
+      "sha256": "21dc1ad6dfc70e82473fa06cbc2076773df9afdce4e1bbcc27bf3f7f12be1006"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-844-390-font1.png",
+      "sha256": "c037f1f234d72309b8676ae7d961f43d9cf001a63e17256b46c9ca229f9d8472"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/el-844-390-font2.png",
+      "sha256": "de95912b8fa2b99f8e9411bedb00f5ec6eaa7dd9fef3cc7d8bd2cbac643c4990"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-320-740-font1.png",
+      "sha256": "71ddc1d2b549c60b5ec4634fff3352295f0aabf94c46301a822d5b97a77dfc1f"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-320-740-font2.png",
+      "sha256": "a4ef935e1ed3216b76da457d47a9c549a57429da12cacdb3c5fb620d1483a0db"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-390-844-font1.png",
+      "sha256": "f1294a5e09974ec6dc80fec1060724c519573cc8762d0e7d72c95b0d8657e0a8"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-390-844-font2.png",
+      "sha256": "f3b3e7d462c476acf233d343d37d4d82fe5b241ed7b37654e335cf8a0b0e60dc"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-780-900-font1.png",
+      "sha256": "73aea5c0b8dd36ee810cd4eb242ce9dd3840458139a600ddbd3a067272a4c9ee"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-780-900-font2.png",
+      "sha256": "e9883447d21e851f33aec52b2f06b9b8f948436f200d38d361a29ee783a15beb"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-844-390-font1.png",
+      "sha256": "31e3cb9b67fb6ed919d8d6b7b47efa84fc22c4f3c2b1e69d49ccdc7b7c589547"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/en-844-390-font2.png",
+      "sha256": "a2c8cb0e2526e1fc898f33dc7d7ee6857c1cfdcbd875da773c31e04f5079ea66"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/controlled-browser/report.json",
+      "sha256": "b66f2e918c038dc40ece34dc36b14ef3bfc4fed5948091b653c7f5ddbd7f0580"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/installed-before/map-font2.png",
+      "sha256": "17485f9406c7e384d1f09702635ec9e978007b0878a793fe983d65b5a141d79d"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/installed-before/map-font2.xml",
+      "sha256": "af49a972e75c976ed606e41bed98ad7fba45a1752b70334352b57ed863faf9d0"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/installed-before/original-font-scale.txt",
+      "sha256": "5717e7c840171019a4eeab5b79a7f894a4986eaff93d04ec5b12c9a189f594bf"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/preserved-route-body.json",
+      "sha256": "cad4429c85e2e3c6280361d75fc0f75365f0dc501643057a9abfaab02c9e1f56"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/source-manifest.json",
+      "sha256": "7838a19827de11c396595deb436117fc2f6a8d6062b0f67ced8456bce7c669d2"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/zoi-native-navigation-all-tests.log",
+      "sha256": "704d3205239c0f6ec126ed73a24128bed10c3a85f020fbc147e449e7e2f62b29"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/zoi-native-navigation-browser-frozen.log",
+      "sha256": "a03e8f40aec461b46714ab1902be3e2bbb972d069b1f860109ef93b9534764de"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/zoi-native-navigation-build-final.log",
+      "sha256": "83a1ac510efd6f47903bfcc9115a6f3e0d77546acbff48e6ccfe38d8cf3dda55"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/zoi-native-navigation-focused.log",
+      "sha256": "5fc04189c85dd3c0c501cab46536fdd0407875786143c1149bd32a64c9f6b8eb"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/zoi-native-navigation-types-owner.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
