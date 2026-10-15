@@ -6,18 +6,9 @@
  * mount(root, ctx) renders the accounts panel into `root`.
  *   ctx = { C:ZoiCore, ws, channels:[], avail:{publish,email,ai,payments,claims}, toast }
  *
- * HONEST GATING: the real OAuth connect flow runs through a Supabase edge
- * function `social-connect` that needs provider dev-app credentials which are
- * NOT configured yet. When ctx.avail.publish is FALSE, every "Connect" button
- * is disabled with a clear explanation. We NEVER fake an OAuth handshake or a
- * connection. Already-connected channels (from ctx.channels) render read-only
- * with a "managed by Zoi" note — there is no disconnect RPC, so we do not
- * invent one. Users may add planning-only handles (for composer previews)
- * through social_channel_add; those are clearly labelled as not-yet-publishing.
- *
- * RPCs used:
- *   social_channels_list(p_workspace) -> [{id,platform,handle,display_name,connected,status,avatar_url}]
- *   social_channel_add(p_workspace, p_platform, p_handle, p_display)  (auth:'require')
+ * Provider availability is checked independently from saved connection state.
+ * Current owners/admins can remove local credentials with versioned receipts.
+ * Local disconnect does not revoke provider permissions or recall sent requests.
  */
 (function (global) {
   'use strict';
@@ -186,7 +177,7 @@
       if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
       return true;
     }
-    function scopeChanged(){scopeActive();}
+    function scopeChanged(event){if(scopeActive()&&connections&&event?.type==='storage'){renderRecovery();if(event.key==='zoi:social-disconnect:v1:'+String(actorAtMount).toLowerCase()+':'+String(workspaceAtMount).toLowerCase()&&event.newValue===null)refreshChannels();}}
     function clearOnDenied(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');}
     var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(root.ownerDocument.body,{childList:true,subtree:true});
     ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
@@ -194,11 +185,14 @@
     var originalRpc=C.api.rpc.bind(C.api);
     C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
       if(!scopeActive())throw Error('Account or workspace changed.');
-      try{var value=await originalRpc(name,args,options);if(!scopeActive())throw Error('Account or workspace changed.');return value;}
+      try{var previousGuard=options&&options.beforeDispatch;var value=await originalRpc(name,args,Object.assign({},options,{beforeDispatch:function(){if(!scopeActive())throw Error('Account or workspace changed.');if(previousGuard)previousGuard();}}));if(!scopeActive())throw Error('Account or workspace changed.');return value;}
       catch(e){clearOnDenied(e);throw e;}
     }})});
     if(!scopeActive())return {destroy:dispose,unmount:dispose};
 
+
+    var connections=null,capability=false;
+    try{var tools=await import('/assets/social/connection-state.mjs?v=20261015-local-disconnect');if(!scopeActive())return {destroy:dispose,unmount:dispose};connections=tools.createConnectionState({C:C,workspace:workspaceAtMount,current:scopeActive});}catch(e){if(!scopeActive())return {destroy:dispose,unmount:dispose};}
 
     // header
     var head = el('div', 'zn-head');
@@ -211,6 +205,11 @@
     refreshBtn.type = 'button';
     head.appendChild(refreshBtn);
     wrap.appendChild(head);
+
+    var recoveryBox=el('section','zn-how');recoveryBox.hidden=true;wrap.appendChild(recoveryBox);
+    var historyBox=el('details','zn-how');historyBox.innerHTML='<summary>Local connection history</summary>';wrap.appendChild(historyBox);
+    function renderRecovery(message){if(!scopeActive())return;recoveryBox.replaceChildren();recoveryBox.hidden=!message;if(message)recoveryBox.appendChild(el('p',null,esc(message)));try{var pending=connections&&connections.pending();if(pending){recoveryBox.hidden=false;recoveryBox.appendChild(el('p',null,'The previous disconnect result is unconfirmed. Check that original request before making another change.'));var retry=el('button','zn-refresh','Check previous disconnect');retry.type='button';retry.onclick=async function(){retry.disabled=true;try{await connections.retry();renderRecovery('The original local disconnect is confirmed. Provider access must be reviewed in the network’s own app settings.');await refreshChannels();}catch(e){renderRecovery('The original result is still unconfirmed. Reopen with this account and retry the same request.');}};recoveryBox.appendChild(retry);}}catch(e){recoveryBox.hidden=false;recoveryBox.appendChild(el('p',null,'Recovery storage is unavailable. Disconnect is blocked until it can be read.'));}}
+    async function loadHistory(){if(!capability||!connections)return;try{var r=await connections.history();if(!scopeActive())return;historyBox.innerHTML='<summary>Local connection history</summary>';if(!r.history.length)historyBox.appendChild(el('p',null,'No local disconnects recorded.'));r.history.forEach(function(h){historyBox.appendChild(el('p',null,esc(new Date(h.at).toLocaleString())+' · Account '+esc(h.channel)+' disconnected locally. Provider permission was not revoked.'));});}catch(e){if(scopeActive()){historyBox.innerHTML='<summary>Local connection history</summary><p>History could not be loaded. Refresh to retry.</p>';}}}
 
     // gating banner — filled in once we know which providers are really configured
     var banner = el('div', 'zn-banner');
@@ -332,7 +331,7 @@
           if (ch.connected && !connected) connected = ch;
           else if (!ch.connected && !planning) planning = ch;
         });
-        grid.appendChild(buildCard(p, connected, planning));
+        if(chans.length)chans.forEach(function(ch){grid.appendChild(buildCard(p,ch.connected?ch:null,ch.connected?null:ch));});else grid.appendChild(buildCard(p,null,null));
       });
     }
 
@@ -370,11 +369,10 @@
 
       // state chip
       if (connected) {
-        var okLabel = (connected.status && String(connected.status).toLowerCase() !== 'ok')
-          ? ('Connected · ' + esc(connected.status)) : 'Connected';
+        var okLabel=connected.status==='connected'&&(!connected.expires_at||Date.parse(connected.expires_at)>Date.now())?'Connected locally':'Connection needs attention';
         card.appendChild(el('span', 'zn-state on', '<span class="zn-sdot"></span>' + okLabel));
       } else if (planning) {
-        card.appendChild(el('span', 'zn-state plan', '<span class="zn-sdot"></span>Planning handle'));
+        card.appendChild(el('span', 'zn-state plan', '<span class="zn-sdot"></span>'+(planning.status==='disconnected'?'Disconnected locally':'Planning handle')));
       } else {
         card.appendChild(el('span', 'zn-state off', '<span class="zn-sdot"></span>Not connected'));
       }
@@ -382,10 +380,9 @@
       // footer / actions
       var foot = el('div', 'zn-card-foot');
       if (connected) {
-        // Read-only connected state. There is NO disconnect RPC — do not invent one.
-        foot.appendChild(el('div', 'zn-managed', SHIELD_SVG + '<span>Managed by Zoi</span>'));
-        foot.appendChild(el('p', 'zn-note',
-          'This account is connected. To revoke access, use this network’s connected-app settings. Removing a connection here is not available.'));
+        foot.appendChild(el('p','zn-note','Disconnecting here removes Zoi’s saved credentials. Use the network’s app settings to revoke its permission. Already dispatched requests cannot be recalled.'));
+        var disconnect=el('button','zn-btn','Disconnect from Zoi');disconnect.type='button';disconnect.disabled=!capability||!connections?.canCoordinate;if(capability&&!connections?.canCoordinate)foot.appendChild(el('p','zn-note','Local disconnect is unavailable in this browser. Update your browser to manage connections safely.'));
+        disconnect.addEventListener('click',async function(){if(!scopeActive()||!capability)return;if(!global.confirm('Remove this connection and its saved credentials from Zoi? This does not revoke permission at the network or recall requests already sent.'))return;disconnect.disabled=true;try{await connections.disconnect(String(connected.id),String(connected.connection_version));renderRecovery('Disconnected from Zoi. Saved local credentials were removed; network permission was not revoked.');await refreshChannels();}catch(e){renderRecovery(e?.message==='social_connection_lock_unavailable'?'This browser cannot safely coordinate changes across tabs. Update it before trying again.':'Disconnect was not confirmed. Check the previous request if shown, or refresh to review the current account version.');renderGrid();}});foot.appendChild(disconnect);
       } else {
         var btn = el('button', 'zn-btn zn-primary', 'Connect');
         btn.type = 'button';
@@ -445,8 +442,8 @@
       state.loading = true;
       renderGrid();
       try {
-        var rows = await C.api.rpc('social_channels_list', { p_workspace: ctx.ws }, { auth: 'prefer' });
-        state.channels = (rows && rows.slice) ? rows.slice() : [];
+        if(connections){try{var value=await connections.status();capability=true;state.channels=value.channels;}catch(error){if(Number(error.status)!==404)throw error;capability=false;var rows=await C.api.rpc('social_channels_list',{p_workspace:ctx.ws},{auth:'require'});state.channels=Array.isArray(rows)?rows:[];}}else{capability=false;var rows=await C.api.rpc('social_channels_list',{p_workspace:ctx.ws},{auth:'require'});state.channels=Array.isArray(rows)?rows:[];}
+        if(!scopeActive())return;renderRecovery();await loadHistory();
       } catch (e) {
         toast('Could not load accounts: ' + (e && e.message ? e.message : 'unknown error'));
       }
@@ -530,9 +527,7 @@
     loadProviderConfig(false);
 
     // Refresh from server in the background if we started empty.
-    if (!state.channels.length) {
-      refreshChannels();
-    }
+    refreshChannels();
     return {destroy:dispose,unmount:dispose};
   }
 

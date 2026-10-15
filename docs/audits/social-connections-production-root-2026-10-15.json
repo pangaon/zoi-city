@@ -1,0 +1,103 @@
+{
+  "kind": "social_connection_integrated_production_backend",
+  "measured_at": "2026-10-15T03:02:25.869240Z",
+  "original_migration": {
+    "source": "20261015023559",
+    "actual_ledger": "20261015025830",
+    "sha256": "3b8814d4626d33ce81f3059df25eaa65437fd2371e5a83330376f4ea19906d40"
+  },
+  "corrective_migration": {
+    "source": "20261015025944",
+    "actual_ledger": "20261015030209",
+    "sha256": "61be7e507ce9ba0c1096034d476271e440b9e89d13eb17bda71a5a98539eb070",
+    "change": "Adds disconnected only to exact existing pending/connected/error status check; existing invalid-state refusals preserved"
+  },
+  "prior_actual_failure": {
+    "sqlstate": "23514",
+    "reason": "Local isolated fixture omitted actual status CHECK",
+    "rollback_confirmed": true,
+    "customer_records_mutated": 0
+  },
+  "actual_production_rollback": {
+    "fixture_sha256": "cc497790dba885afab124fb55b1a36003ac293d7a5f61b961a34c75c75549306",
+    "assertions_executed_without_error": 17,
+    "absence_flags": {
+      "workspace": true,
+      "channel": true,
+      "requests": true,
+      "synthetic_expired_session": true
+    },
+    "real_qa_session_and_workspace_roles_unchanged": true,
+    "provider_calls": 0,
+    "publication_acceptance": false
+  },
+  "functions": {
+    "social_connections_status": "76b38bc5a0b3a03366d83d559db91ea8",
+    "social_connection_disconnect": "c427a18a43275bb01635227f517a6a25",
+    "social_connection_history": "6ca3d4ff9442f6d45e6a1c680580ee7d"
+  },
+  "rpc_security": {
+    "owner": "postgres",
+    "execute": [
+      "postgres",
+      "authenticated"
+    ],
+    "security_definer": true,
+    "search_path": "empty"
+  },
+  "controlled_acceptance": {
+    "units": 14,
+    "real_PG_browser_groups": 53,
+    "widths": [
+      390,
+      1440
+    ],
+    "actual_two_tab_lost_response": true,
+    "provider_transport": "controlled"
+  },
+  "web_release": "pending",
+  "signed_in_production_browser": "open; one-hour founder token expired, not renewed",
+  "native_new_acceptance": false,
+  "root_delta_to_owner_freeze": [
+    "social/index cache version",
+    "actual status CHECK fixture plus narrow corrective migration"
+  ],
+  "files": [
+    {
+      "path": "assets/suite/connect.js",
+      "sha256": "c2f01eaa585ceb098d083822f57c91599244edbcaf904ea8b8a330effac21abe"
+    },
+    {
+      "path": "assets/social/connection-state.mjs",
+      "sha256": "38de3c1cdf591e5c045b8e995b600ef39576a77004940f72e9ffc9b7b953e024"
+    },
+    {
+      "path": "social/index.html",
+      "sha256": "a7f5f49c9a3c21347d91f6edfed1cb336ff17efc82dbfb9863db0efd233f0c99"
+    },
+    {
+      "path": "supabase/migrations/20261015023559_social_connection_local_disconnect.sql",
+      "sha256": "3b8814d4626d33ce81f3059df25eaa65437fd2371e5a83330376f4ea19906d40"
+    },
+    {
+      "path": "supabase/migrations/20261015025944_social_connection_disconnected_status.sql",
+      "sha256": "61be7e507ce9ba0c1096034d476271e440b9e89d13eb17bda71a5a98539eb070"
+    },
+    {
+      "path": "tests/unit/social-connection-state.test.mjs",
+      "sha256": "e6da04ad3b83c6b8f5d8e5933128a78e1e4122d536c0fbae150915556b0c37cd"
+    },
+    {
+      "path": "tests/database/social-connections.integration.mjs",
+      "sha256": "f508a2fa0c37d335fecd68826a2176e145700c125a070582c5d86a73aaf80281"
+    },
+    {
+      "path": "tests/database/social-connections-production-rollback.sql",
+      "sha256": "cc497790dba885afab124fb55b1a36003ac293d7a5f61b961a34c75c75549306"
+    },
+    {
+      "path": "tests/browser/social-connections/verify.mjs",
+      "sha256": "2372344d306887fe94156ef98bf3598476e07a47f5667c6130e09c5aec8fb3ce"
+    }
+  ]
+}
