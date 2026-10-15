@@ -7,7 +7,7 @@ const object=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
 const numeric=v=>typeof v==='number'&&Number.isFinite(v)?v:typeof v==='string'&&/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)$/.test(v.trim())?Number(v):null;
 export function canonicalPositionPrecision(value){const names={rooftop:'street',address:'street',street:'street',neighborhood:'neighbourhood',neighbourhood:'neighbourhood',suburb:'neighbourhood',locality:'city',town:'city',city:'city',region:'region',country:'region',approx:'approximate',approximate:'approximate'},key=fold(value);return Object.hasOwn(names,key)?names[key]:'unknown';}
 export function positionPair(row){const latitude=numeric(Object.hasOwn(row||{},'latitude')?row.latitude:row?.lat),longitude=numeric(Object.hasOwn(row||{},'longitude')?row.longitude:row?.lng);return{latitude,longitude,valid:latitude!==null&&longitude!==null&&Math.abs(latitude)<=90&&Math.abs(longitude)<=180&&(latitude!==0||longitude!==0)};}
-export function reviewedPositionMatches(row){const p=positionPair(row),r=row?.reviewed_destination;return p.valid&&typeof row?.id==='string'&&!!row.id&&!!r&&r.listing_id===row.id&&typeof r.request_id==='string'&&r.precision==='street'&&numeric(r.latitude)===p.latitude&&numeric(r.longitude)===p.longitude;}
+export function reviewedPositionMatches(row){const p=positionPair(row),r=row?.reviewed_destination;return p.valid&&typeof row?.id==='string'&&!!row.id&&!!r&&r.listing_id===row.id&&typeof r.request_id==='string'&&!!r.request_id.trim()&&r.precision==='street'&&numeric(r.latitude)===p.latitude&&numeric(r.longitude)===p.longitude;}
 export function positionCohorts(rows){
  const groups=new Map();for(const row of rows){const p=positionPair(row);if(!p.valid)continue;const key=p.latitude.toFixed(5)+','+p.longitude.toFixed(5);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(row);}
  const result=new Map();for(const group of groups.values()){
@@ -32,8 +32,12 @@ export function diagnosePosition(row,{cohort=null,countryExtent=null}={}){
  const countryMatch=p.valid?inExtent(p,countryExtent):null;
  if(countryMatch===false&&!reviewed){reasons.push('outside_reviewed_country_extent');if(inExtent({latitude:p.longitude,longitude:p.latitude},countryExtent)===true)reasons.push('possible_swapped_coordinates_requires_review');}
  const enrich=object(row.source_context||row.profile?._enrich);
- if(enrich.scope_review_required||enrich.blocked_reason==='source_scope_mismatch'||enrich.identity_scope==='organization'&&['artist','creator','professional'].includes(row.entity_type)||enrich.source_kind==='association_member')reasons.push('source_branch_or_person_scope_requires_review');
+ if(geo.scope_conflict===true||[enrich.scope_review_required,enrich.organization_identity_quarantine,enrich.source_scope_mismatch].some(v=>v===true||v==='true')||enrich.blocked_reason==='source_scope_mismatch'||enrich.identity_scope==='organization'&&['artist','creator','professional'].includes(row.entity_type)||enrich.source_kind==='association_member')reasons.push('source_branch_or_person_scope_requires_review');
+ const cohortConflict=!reviewed&&(cohort?.distinct_city_country>1||cohort?.distinct_addresses>8);
+ const contradictory=cohortConflict||reasons.some(reason=>['precision_sources_conflict','outside_reviewed_country_extent','source_branch_or_person_scope_requires_review'].includes(reason));
+ const drawable=p.valid&&precision==='street'&&!contradictory;
+ if(contradictory)state='conflicting_position_evidence';
  return {schema_version:1,listing_id:row.id||null,slug:row.slug||row.s||null,latitude:p.latitude,longitude:p.longitude,claimed_precision:claimed,effective_precision:precision,state,reviewed,
-  drawable:p.valid&&precision==='street',route_to_coordinates:reviewed,review_required:reasons.length>0||!reviewed&&claimed==='street',reasons,
-  next_action:reviewed?'retain_reviewed_position':!p.valid?'verify_official_public_address_and_coordinates':sourceArea?'research_exact_official_place_position':reasons.length?'review_exact_identity_address_and_source_position':'research_and_review_exact_place_position'};
+  drawable,route_to_coordinates:reviewed&&drawable,review_required:reasons.length>0||!reviewed&&claimed==='street',reasons,
+  next_action:contradictory?'review_exact_identity_address_and_source_position':reviewed?'retain_reviewed_position':!p.valid?'verify_official_public_address_and_coordinates':sourceArea?'research_exact_official_place_position':reasons.length?'review_exact_identity_address_and_source_position':'research_and_review_exact_place_position'};
 }

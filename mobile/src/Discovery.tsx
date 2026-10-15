@@ -701,8 +701,9 @@ export function Discover({
           <Text style={s.small}>
             {mapBusy
               ? "Reading map positions…"
-              : pins.length +
-                " street-level places in this search. Approximate and unmapped places remain in the list."}
+              : pins.filter((p:any)=>p.position_diagnosis?.reviewed).length +
+                " reviewed map positions; " + pins.filter((p:any)=>!p.position_diagnosis?.reviewed).length +
+                " stored positions awaiting independent verification. Approximate and unmapped places remain in the list."}
           </Text>
           {mapError ? (
             <>

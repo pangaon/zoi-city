@@ -1,0 +1,114 @@
+{
+  "reviewed_at": "2026-10-15T04:43:35.608995+00:00",
+  "reviewer": "independent enrichment specialist; QA specialist authored candidate",
+  "decision": "accepted frozen9-path source and isolated projection candidate; production release/application and new native artifact remain root gates",
+  "owner_manifest_sha256": "bb03cf437eea5fc6512eef972fd5c353cb26b47d20a8fa74abbe57825bc8f673",
+  "files": [
+    {
+      "path": "assets/map-data/coordinate-integrity.mjs",
+      "sha256": "dd33ac9551777638c8411433b872a26a90fdc2d92d9bf4c94b7f32df95480cd5"
+    },
+    {
+      "path": "assets/map-data/loader.mjs",
+      "sha256": "4e9ea561f296e2ee2604b4b26e828933b9d9b9d91597d790e49265400a175033"
+    },
+    {
+      "path": "explore/map/index.html",
+      "sha256": "9e0418d67f1dcf5884a0c04705d1dea53bac2d4efbde5dd525b79bd0d9a4bb7f"
+    },
+    {
+      "path": "mobile/src/discovery.ts",
+      "sha256": "e1cbc8b16de878b81c8a6ab977f21e9ef790d4366bc0a278675b28c9a9c85ebf"
+    },
+    {
+      "path": "mobile/src/Discovery.tsx",
+      "sha256": "db1b4de534d78db2ddc6f4c97d4b6a839d400a95a0be8f1a4b526a6a7e07a616"
+    },
+    {
+      "path": "mobile/tests/discovery.test.mjs",
+      "sha256": "61791caf8ee380753991cc9015353fa7f27a21b0f1c77c69f66ad6af0a693006"
+    },
+    {
+      "path": "tests/unit/map-provenance-independent.test.mjs",
+      "sha256": "a3dc407926c687090a47f0f93660a1cf99555106cea11082485761b1b974b7ed"
+    },
+    {
+      "path": "supabase/migrations/20261015043626_public_map_scope_provenance.sql",
+      "sha256": "b7911ddbaa933f52ae8622640ec062c2b1614cbf0c809bc1415a38cc663a564d"
+    },
+    {
+      "path": "tests/database/map-scope-projection.integration.mjs",
+      "sha256": "f55a84331ccfe0d0ae45c6181f97c3f2386ed2fd9376385114f3fd9ace626c1b"
+    }
+  ],
+  "checks": {
+    "web_map_basemap_units_passed": 125,
+    "native_discovery_scope_android_location_media_units_passed": 46,
+    "typescript": "mobile tsc --noEmit passed",
+    "final_affected_coordinate_provenance_tests_passed": 14,
+    "final_real_PostgreSQL_groups_passed": 7,
+    "real_PostgreSQL_fixture_rows": 20000,
+    "latest_local_projection_ms": 24.397,
+    "latest_index_page_ms": 4.273,
+    "actual_MapLibre_controlled_browser": {
+      "kind": "actual MapLibre geometry and map HTML; controlled own RPC fixture and background-only Mercator basemap, not source address acceptance or production navigation",
+      "results": [
+        {
+          "width": 390,
+          "legacyRetainedExplicitUnverified": true,
+          "reviewedCountSeparate": true,
+          "conflictingPrecisionNoExactPin": true,
+          "currentScopeBooleanRefusesReviewedExactMarker": true,
+          "addressDestination": true,
+          "pageErrors": []
+        },
+        {
+          "width": 1440,
+          "legacyRetainedExplicitUnverified": true,
+          "reviewedCountSeparate": true,
+          "conflictingPrecisionNoExactPin": true,
+          "currentScopeBooleanRefusesReviewedExactMarker": true,
+          "addressDestination": true,
+          "pageErrors": []
+        }
+      ],
+      "pass": true
+    },
+    "live_queries_by_this_reviewer": 0,
+    "coordinate_writes": 0,
+    "source_edits": 0
+  },
+  "resolved_findings": [
+    "Old effective-precision SQL gate suppressed current ledger receipt before client could override stale centroid metadata. FinalSQL gates bounded reader on rawstreet+request marker; unchanged actual receipt reader validates fresh row fingerprint. RealPG matchingoldcentroid,foreign,stale,reverted cases pass.",
+    "Explicit source_scope_mismatch boolean/string alias is now treated as a scope hold in aggregateSQL/core/projected context. Falsealiases remain nonholds; ordinary HTTP403 does not erase independently established geography.",
+    "Diagnostic next_action now recommends review for contradictory held evidence even when receipt matches, rather than retain_reviewed_position."
+  ],
+  "reviewed_invariants": [
+    "Current same-record coordinate-matching server receipt overrides legacy centroid metadata; source scope conflict still blocks pin and numeric directions. Empty/wronglisting/wrongcoordinate receipts do not authorize routing.",
+    "Legacy stored street pins remain visible explicitly independently unverified; numerical directions remain receipt-gated, published address handoff available. No new geocoding or coordinate movement.",
+    "Two-to-eight shared building/address points preserve original positions; existing large/multi-locality cohort conflict rules retained, current receipt survives conflicting legacy peers.",
+    "Exact SQL public13column shape, defaults, bounded5000cap, sort, deepoffset, moderation/duplicateNULL/hidden/public filters and ACL preserved. Only aggregate scope boolean added; no raw source/person/contact fields exposed.",
+    "Partial-index page selected before profile payloads; receipt reader remains gated by bounded page/rawstreet/nonempty marker.20kfixture performance is local evidence, not actual production latency."
+  ],
+  "private_browser_evidence": [
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-map-provenance-independent-2026-10-15/browser.json",
+      "sha256": "7757ba156245763f1d7f02ba68df0a3c097341c762dd000ab88d531ad46777bb"
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-map-provenance-independent-2026-10-15/legacy-1440.jpg",
+      "sha256": "e45d6d4f5743d8b5e909f1d22201e218c5177530683f6f665f00a3d516d606b8"
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-map-provenance-independent-2026-10-15/legacy-390.jpg",
+      "sha256": "37d4c01a8a7f12ba441738acc7049f94e60b4e99fadad327078842658bfff989"
+    }
+  ],
+  "limits": [
+    "Production input function hash/metadata capture independently reported by author after recovery; this reviewer did not query production during incident. Root must recheck exact guard before apply.",
+    "Author actual public sample15294 is incomplete,7reviewed/2050retainedlegacy drawable replay. Neither sample nor localfixture establishes catalogue totals or global coordinate accuracy.",
+    "ActualMapLibre run uses controlled RPC data and background-only basemap; not a production route/navigation or source-address acceptance claim.",
+    "No new APK/iOS artifact installed; source/native tests do not change old installed binary capability.",
+    "Root owns applied SQL/web/native releases and actual production public-data/journey acceptance."
+  ]
+}

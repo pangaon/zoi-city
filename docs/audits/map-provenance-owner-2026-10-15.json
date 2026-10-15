@@ -1,0 +1,209 @@
+{
+  "kind": "Shared map provenance author candidate, frozen for independent review",
+  "observed_at": "2026-10-15T04:42:46.552498+00:00",
+  "baseline": "c1a3530546883cbc798a10c1b547ecd700b8c66c",
+  "files": [
+    {
+      "path": "assets/map-data/coordinate-integrity.mjs",
+      "sha256": "dd33ac9551777638c8411433b872a26a90fdc2d92d9bf4c94b7f32df95480cd5"
+    },
+    {
+      "path": "assets/map-data/loader.mjs",
+      "sha256": "4e9ea561f296e2ee2604b4b26e828933b9d9b9d91597d790e49265400a175033"
+    },
+    {
+      "path": "explore/map/index.html",
+      "sha256": "9e0418d67f1dcf5884a0c04705d1dea53bac2d4efbde5dd525b79bd0d9a4bb7f"
+    },
+    {
+      "path": "mobile/src/discovery.ts",
+      "sha256": "e1cbc8b16de878b81c8a6ab977f21e9ef790d4366bc0a278675b28c9a9c85ebf"
+    },
+    {
+      "path": "mobile/src/Discovery.tsx",
+      "sha256": "db1b4de534d78db2ddc6f4c97d4b6a839d400a95a0be8f1a4b526a6a7e07a616"
+    },
+    {
+      "path": "mobile/tests/discovery.test.mjs",
+      "sha256": "61791caf8ee380753991cc9015353fa7f27a21b0f1c77c69f66ad6af0a693006"
+    },
+    {
+      "path": "tests/unit/map-provenance-independent.test.mjs",
+      "sha256": "a3dc407926c687090a47f0f93660a1cf99555106cea11082485761b1b974b7ed"
+    },
+    {
+      "path": "supabase/migrations/20261015043626_public_map_scope_provenance.sql",
+      "sha256": "b7911ddbaa933f52ae8622640ec062c2b1614cbf0c809bc1415a38cc663a564d"
+    },
+    {
+      "path": "tests/database/map-scope-projection.integration.mjs",
+      "sha256": "f55a84331ccfe0d0ae45c6181f97c3f2386ed2fd9376385114f3fd9ace626c1b"
+    }
+  ],
+  "behavior": [
+    "Preserve valid legacy stored street positions with explicit independently-unverified labels; counts separate receipt-backed vs legacy.",
+    "Unreviewed explicit precision disagreements, reviewed country-extent contradictions and current source-scope contradictions fail closed. Known centroid provenance remains area-only.",
+    "Current authoritative same-record receipt overrides old centroid metadata, but current source-scope contradictions still refuse numeric routing and selected exact marker.",
+    "Existing multi-locality/nine-address cohort refusal retained for unreviewed points; current receipt survives conflicting legacy peers. Two-to-eight same/distinct address colocations retain own unchanged coordinates.",
+    "Shared web/native status and no unknown-as-approximate claim. No coordinate or owner data writes. HTML loader import version bumped.",
+    "Additive existing13field RPC geo_metadata.scope_conflict boolean only, bounded selected rows; no raw private enrichment projection. Loader and raw selected entity diagnostics both enforce it.",
+    "Independent review corrected SQL receipt eligibility to rawstreet+request marker; unchanged authoritative reader alone validates fresh receipt so stale centroid metadata cannot hide a CURRENT receipt. Scope contradictions still refuse; diagnostic next_action now requests review rather than retain.",
+    "Explicit source_scope_mismatch true/stringtrue alias added to core and safe SQL boolean; false and generic transport403 remain unblocked."
+  ],
+  "verification": {
+    "web_map_coordinate_tests": 112,
+    "failed": 0,
+    "skipped": 0,
+    "native_discovery_android_tests": 39,
+    "typescript": "pass using existing Expo57/location dependencies",
+    "actual_MapLibre_controlled_browser": {
+      "kind": "actual MapLibre geometry and map HTML; controlled own RPC fixture and background-only Mercator basemap, not source address acceptance or production navigation",
+      "results": [
+        {
+          "width": 390,
+          "legacyRetainedExplicitUnverified": true,
+          "reviewedCountSeparate": true,
+          "conflictingPrecisionNoExactPin": true,
+          "currentScopeBooleanRefusesReviewedExactMarker": true,
+          "addressDestination": true,
+          "pageErrors": []
+        },
+        {
+          "width": 1440,
+          "legacyRetainedExplicitUnverified": true,
+          "reviewedCountSeparate": true,
+          "conflictingPrecisionNoExactPin": true,
+          "currentScopeBooleanRefusesReviewedExactMarker": true,
+          "addressDestination": true,
+          "pageErrors": []
+        }
+      ],
+      "pass": true
+    },
+    "actual_public_catalogue_sample": {
+      "at": "2026-10-15T04:30:44.563Z",
+      "source": "Actual anonymous explore_geo complete feed; public rows retained in local cache",
+      "complete": false,
+      "rows": 15294,
+      "uniqueIds": 15294,
+      "calls": 65,
+      "ms": 16448,
+      "failures": [],
+      "states": {
+        "area_position": 9708,
+        "source_area_position": 3259,
+        "legacy_street_unreviewed": 2252,
+        "unknown_precision": 68,
+        "reviewed_street": 7
+      },
+      "raw_precision": {
+        "city": 9655,
+        "street": 2259,
+        "unknown": 68,
+        "approximate": 3309,
+        "neighbourhood": 3
+      },
+      "reviewed": 7,
+      "drawable": 2057,
+      "cohort_conflict": 7933,
+      "precisionMismatch": 1,
+      "distinctAddressShared": 10124,
+      "cache": "/home/codespace/.cache/zoi/map-provenance-20261015"
+    },
+    "actual_sample_replay": {
+      "kind": "Replay of incomplete actual public sample; not full catalogue count",
+      "rows": 15294,
+      "coverage": {
+        "reviewed": 7,
+        "unverified": 2050,
+        "total": 2057
+      },
+      "conflicts": [
+        {
+          "id": "c1011768-b9c1-4dac-b0e2-ee734b36476a",
+          "slug": "gerome-parnell",
+          "precision": "approximate",
+          "metadata": {
+            "method": "address geocode validated against city",
+            "source": "openstreetmap",
+            "precision": "street",
+            "geocoded_at": "2026-08-23"
+          },
+          "reasons": [
+            "precision_sources_conflict"
+          ]
+        }
+      ],
+      "lostPins": 0
+    },
+    "real_PG_projection": {
+      "groups": 7,
+      "fixture_rows": 20000,
+      "selected_ID_page_ms": 4.398,
+      "anon250row_projection_RPC_ms": 24.8,
+      "old_new_exact_projection": "13fields/order/default/cap/deepoffset unchanged except additive boolean and explicitly reviewed receipt eligibility correction",
+      "roles": "anon/authenticated/service role public reader, private enrichment denied",
+      "guards": "exact body/ACL/config/owner/namedargs/defaults/signature; no fixture hash adaptation",
+      "receipt_reader": "Actual unchanged source over synthetic fingerprint fixture: currentreceipt+oldcentroid delivered, foreign/revoked/stale refused"
+    }
+  },
+  "actual_read_failures": [
+    {
+      "operation": "public-scope full profile aggregation",
+      "bound_seconds": 8,
+      "code": "57014"
+    },
+    {
+      "operation": "public-scope basic grouped count",
+      "bound_seconds": 4,
+      "code": "57014"
+    }
+  ],
+  "limits": [
+    "Actual anonymous sample incomplete:15294rows,7reviewed; not catalogue totals or reproduction of installed2185 count. No fullscan retry after incident.",
+    "No new installed binary or actualOS/device acceptance; current APK predates this change.",
+    "No coordinate correction or independent review of2050retained legacy points; global accuracy remains open.",
+    "All20mapinteraction requirements remain in scope; focused changed journeys do not promote all20 anew.",
+    "New scope boolean SQL not applied by QA; root production application/API readback and new installed binary remain open."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/actual-reader-catalog.json",
+      "sha256": "332b3a5c0a2d95c4269c54341b0b2e92ac109e9a2f6bd3981cceb137f15bb335"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/browser.json",
+      "sha256": "7757ba156245763f1d7f02ba68df0a3c097341c762dd000ab88d531ad46777bb"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/browser.mjs",
+      "sha256": "d20aa55036eb5c22ee6951d556b5db8949fc4c966410c5c554602faa0aff51bf"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/catalogue.json",
+      "sha256": "ea44baabe7fddd382b2bcf5db475cf72bc7e9d3537609f7a4d8534358f40b1d0"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/catalogue.mjs",
+      "sha256": "f576ac2e0619c7e4441182f7f8f75063accdf2ee235edd272266a7e27805b17a"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/legacy-1440.jpg",
+      "sha256": "e45d6d4f5743d8b5e909f1d22201e218c5177530683f6f665f00a3d516d606b8"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/legacy-390.jpg",
+      "sha256": "37d4c01a8a7f12ba441738acc7049f94e60b4e99fadad327078842658bfff989"
+    },
+    {
+      "path": "docs/audits/evidence/map-provenance-2026-10-15/sample-replay.json",
+      "sha256": "6d1f5c6cffd5bf01e521ce4ea1b7c3bbeaae96e3696effd53badae58e2d4e797"
+    }
+  ],
+  "supersedes_core_manifest": "b557ad5e4f7a9cc45ddeeb8d66eb6843624da6daee3c0087c87097f067f415ec",
+  "production_guard": {
+    "expected_original_explore_geo_prosrc_md5": "f6f492cedb166f9baaddb528f7161501",
+    "derived_from": "exact applied bounded migration source20261014132147",
+    "actual_catalogue_metadata_comparison": "PASS bounded read-only catalog lookup after root recovery: actual sourceMD5 f6f492cedb166f9baaddb528f7161501,postgres/exact4roleACL/emptysearchpath/namedargs/defaults5000,0/SDstable match"
+  }
+}

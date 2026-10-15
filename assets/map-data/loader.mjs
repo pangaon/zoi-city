@@ -64,10 +64,15 @@ export function validCoordinates(point){
  return !!point&&numeric(point.lat)&&numeric(point.lng)&&Math.abs(Number(point.lat))<=90&&Math.abs(Number(point.lng))<=180&&!(Number(point.lat)===0&&Number(point.lng)===0);
 }
 export function isMappableRow(row){return !!(row&&typeof row.slug==='string'&&row.slug&&positionPair(row).valid);}
-export function mapPositionFields(row){const pair=positionPair(row),metadata=row.geo_metadata||row.profile?._geo||row._geo,diagnosis=diagnosePosition({...row,geo_metadata:metadata}),raw=row.geo_precision??row.precision??row._geo?.precision??'';return{id:row.id,lat:pair.latitude,lng:pair.longitude,precision:diagnosis.effective_precision==='street'?(canonicalPositionPrecision(raw)==='street'?raw:'street'):diagnosis.effective_precision,geo_metadata:metadata,reviewed_destination:row.reviewed_destination,position_diagnosis:diagnosis};}
+function positionSourceContext(row){const e=row.source_context||row.profile?._enrich||{};return{scope_review_required:e.source_scope_mismatch===true||e.source_scope_mismatch==='true'||row.geo_metadata?.scope_conflict===true||e.scope_review_required===true||e.scope_review_required==='true',organization_identity_quarantine:e.organization_identity_quarantine===true||e.organization_identity_quarantine==='true',blocked_reason:e.blocked_reason==='source_scope_mismatch'?'source_scope_mismatch':null,identity_scope:e.identity_scope==='organization'?'organization':null,source_kind:e.source_kind==='association_member'?'association_member':null};}
+export function mapPositionFields(row){const pair=positionPair(row),metadata=row.geo_metadata||row.profile?._geo||row._geo,diagnosis=diagnosePosition({...row,geo_metadata:metadata}),raw=row.geo_precision??row.precision??row._geo?.precision??'';return{id:row.id,lat:pair.latitude,lng:pair.longitude,precision:diagnosis.effective_precision==='street'?(canonicalPositionPrecision(raw)==='street'?raw:'street'):diagnosis.effective_precision,geo_metadata:metadata,source_context:positionSourceContext(row),entity_type:row.entity_type,reviewed_destination:row.reviewed_destination,position_diagnosis:diagnosis};}
 
 // Only address/street evidence may place an individual listing on the map.
 export function hasStreetPosition(point){return !!point&&!point.position_conflict&&diagnosePosition(point).drawable&&validCoordinates(point);}
+
+export function positionStatus(point){if(!point)return 'Map position not available';const d=diagnosePosition(point);if(point.position_conflict||d.state==='conflicting_position_evidence')return 'Map position under review · use published address';if(!hasStreetPosition(point))return d.effective_precision==='unknown'?'Map position not verified · no precise pin':'Approximate area · no precise pin';return d.reviewed?'Reviewed map position':'Stored map position · not independently verified';}
+export function positionCoverage(points){let reviewed=0,unverified=0;for(const p of points||[]){if(!hasStreetPosition(p))continue;if(diagnosePosition(p).reviewed)reviewed++;else unverified++;}return{reviewed,unverified,total:reviewed+unverified};}
+
 
 
 /** Bounds never imply premises from coarse or unverified coordinates. */
@@ -88,7 +93,7 @@ export function validatePositionCohorts(points){
  const groups=new Map(),key=p=>Number(p.lat).toFixed(5)+','+Number(p.lng).toFixed(5),fold=v=>String(v||'').normalize('NFKC').toLocaleLowerCase().trim().replace(/\s+/g,' ');
  for(const point of points){const k=key(point);if(!groups.has(k))groups.set(k,[]);groups.get(k).push(point);}
  const conflicts=new Set();for(const [k,group] of groups){const cities=new Set(group.filter(p=>p.city&&p.country).map(p=>fold(p.city)+'|'+fold(p.country))),addresses=new Set(group.map(p=>fold(p.addr||p.address)).filter(Boolean));if(cities.size>1||addresses.size>8)conflicts.add(k);}
- return points.map(point=>({...point,position_conflict:conflicts.has(key(point))}));
+ return points.map(point=>({...point,position_conflict:conflicts.has(key(point))&&!diagnosePosition(point).reviewed}));
 }
 
 // Public area search supplements the coordinate feed; it never supplies pins.
@@ -123,7 +128,7 @@ export function hasReviewedPosition(place,entity){
  if(Array.isArray(entity))entity=entity[0];
  if(!place||!entity?.id||entity.marketplace_status==='hidden'||entity.publish_status&&entity.publish_status!=='published'||!place.s||(entity.slug!==place.s&&entity.canonical_slug!==place.s)||place.position_conflict||place.areaResult)return false;
  const proof=entity.reviewed_destination;
- return hasStreetPosition(place)&&proof?.listing_id===entity.id&&typeof proof.request_id==='string'&&proof.precision==='street'&&entity.geo_precision==='street'&&validCoordinates({lat:proof.latitude,lng:proof.longitude})&&Number(proof.latitude)===Number(entity.latitude)&&Number(proof.longitude)===Number(entity.longitude)&&Number(proof.latitude)===Number(place.lat)&&Number(proof.longitude)===Number(place.lng);
+ return diagnosePosition(entity).route_to_coordinates&&hasStreetPosition(place)&&proof?.listing_id===entity.id&&typeof proof.request_id==='string'&&proof.precision==='street'&&entity.geo_precision==='street'&&validCoordinates({lat:proof.latitude,lng:proof.longitude})&&Number(proof.latitude)===Number(entity.latitude)&&Number(proof.longitude)===Number(entity.longitude)&&Number(proof.latitude)===Number(place.lat)&&Number(proof.longitude)===Number(place.lng);
 }
 
 // A single selected profile can have fresher proof than a still-loading feed.
@@ -132,6 +137,7 @@ export function reviewedSelectedPlace(place,entity){
  if(Array.isArray(entity))entity=entity[0];
  if(!place||place.areaResult||!entity?.id||!place.s||(entity.slug!==place.s&&entity.canonical_slug!==place.s)||entity.marketplace_status==='hidden'||entity.publish_status!=='published')return null;
  const proof=entity.reviewed_destination;
+ if(!diagnosePosition(entity).route_to_coordinates)return null;
  if(proof?.listing_id!==entity.id||typeof proof.request_id!=='string'||!proof.request_id||proof.precision!=='street'||entity.geo_precision!=='street'||!validCoordinates({lat:entity.latitude,lng:entity.longitude})||!validCoordinates({lat:proof.latitude,lng:proof.longitude})||Number(proof.latitude)!==Number(entity.latitude)||Number(proof.longitude)!==Number(entity.longitude))return null;
  return {...place,...mapPositionFields(entity),id:entity.id,lat:Number(entity.latitude),lng:Number(entity.longitude),precision:'street',unmapped:false,areaResult:false,position_conflict:false,unknown:false,exact:true,reviewedPosition:true,reviewedSelected:true,entity};
 }
