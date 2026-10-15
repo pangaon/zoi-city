@@ -17,5 +17,12 @@
     "later_coherent_build_required": true
   },
   "actual_worker_release": "pending reviewed merge; all20servedfiles will be checked",
-  "scope": "Whole-value sentinel source descriptions/taglines only. Current machine fallback can no longer display these sentinels after web deployment. Owner/raw values and explicit clears remain authoritative. Eligible oldcopy retains original provenance and is excluded from freshbrief evidence. No canonical writer/lease/schema changes."
+  "scope": "Whole-value sentinel source descriptions/taglines only. Current machine fallback can no longer display these sentinels after web deployment. Owner/raw values and explicit clears remain authoritative. Eligible oldcopy retains original provenance and is excluded from freshbrief evidence. No canonical writer/lease/schema changes.",
+  "required_ci_failure_and_fix": {
+    "failed_run": 38749812494,
+    "reason": "Existing extractor fingerprint isolation test copied a hardcoded dependency fixture that omitted the newly reused client-brief/member-source graph. Product behavior assertions were unchanged.",
+    "fix": "Add exactly the two actual imported modules to isolated test copy list; existing hash-change and extraction parity assertions pass.",
+    "focused_recheck": 1,
+    "remaining": "Protected CI reruns on changed source commit, including native checks."
+  }
 }
