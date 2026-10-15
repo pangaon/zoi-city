@@ -1,0 +1,270 @@
+{
+  "created_at": "2026-10-15T14:16:59.866566+00:00",
+  "reviewer": "/root/qa_next",
+  "state": "ACCEPTED frozen shared photo viewer source and exercised candidate; root deployment/live-byte acceptance remains",
+  "base_commit": "afe271b3fc507e745ee2ab8ce6ed63d1db753773",
+  "owner_audit_sha256": "08d3f62788c1f4cbb4cc30e36c4c6890a73cd15f0f157bcace23d989cd484ff6",
+  "source_manifest_sha256": "97e7629a2af0901dafe0d792c46133b999de46a7eabe8d3cf19fe6236c30128c",
+  "frozen_files": [
+    {
+      "path": "assets/homes/photo-gallery.mjs",
+      "sha256": "bd49730f9ec1e05519d58fbe9b6caf23182385272cefddb5bce8e6caea73e226"
+    },
+    {
+      "path": "assets/homes/photo-gallery.css",
+      "sha256": "9f124c16acb72e2763a354078a09c3b936eba9f2ef016ab91f53395c89f39f02"
+    },
+    {
+      "path": "assets/homes/templates/church/church.css",
+      "sha256": "cf928ab270ef53f21c994be1d8d9ea69378d96a69bb2dc57560861732b815c42"
+    },
+    {
+      "path": "tests/browser/listing-photo-gallery/expand-restore.mjs",
+      "sha256": "213783dfa675366d530ceaf00a3bd88cb79934986ff0fa10dafb6200d6251ca5"
+    },
+    {
+      "path": "tests/browser/listing-photo-gallery/EXPAND_RESTORE.md",
+      "sha256": "90143f22b19877bd3f50b33bac50a47570f32f3a9f76f878cdc605ca318415e5"
+    }
+  ],
+  "runtime_scope": [
+    "assets/homes/photo-gallery.mjs",
+    "assets/homes/photo-gallery.css",
+    "assets/homes/templates/church/church.css"
+  ],
+  "source_review": {
+    "presentation_only": "Existing source-bound caller photos/captions/credit/handoff remain exact. No auth, source-media selection, persistence, facts, uploads or owner design changes.",
+    "expanded_mode": "Explicit Expand photo/Restore window button with aria-pressed; caller initial fullscreen boolean preserved, preference persists for current mounted viewer. Browser viewport expansion, not operating-system Fullscreen API.",
+    "landscape_containment": "Expanded grid uses minmax(0,1fr) image stage and absolute contain image; bounded scrolling caption panel. Actual844\u00d7390longcaption image fitsstage844\u00d7147.90625 with both source-image edges visible and buttons withinviewport.",
+    "accessibility": "Native dialog focus/Escape preserved; Enter/Space activate toggle, Arrow keys/swipe move selectedimage, full title remains accessible when visuallyclamped, controls>=44px withfocusoutline andmobile distinctsafearea padding.",
+    "restoration": "Selectedimage/caption/source unchanged across modes; closingreturns focus to original opener without moving backgroundscroll. Failure/retry, bfcache close anddestroy verified.",
+    "church_fix": "Only min-height:88px added to existing church stylesheet. Removing that literal yields byte-identical baseline; existing published image heights remain. Failed hidden image leaves labelled clickable opener and canreopen.",
+    "url_and_text_safety": "Existing safehttp(s) URL/no-credentials classifier, noopener+noreferrer source handoff andliteral caption text preserved; existing generic browser safety regressions pass.",
+    "cache": "Independent two current public HEAD responses confirm max-age=0,must-revalidate. CSS injection version updated; existing family imports retained. Already-loaded tabs require navigation/reload for newmodule."
+  },
+  "verification": {
+    "independent_canonical_browser_cases": 45,
+    "families": [
+      "restaurant",
+      "bakery",
+      "hotel",
+      "creator",
+      "artist",
+      "church",
+      "event"
+    ],
+    "matrix": "7families\u00d7390/1440\u00d70/1/3images=42 plus3fullscreen-default/longcaption cases390/1440/844landscape",
+    "all_canonical_passed": true,
+    "sparse_zero_controls": true,
+    "actual_loading_failure_retry_reopen": true,
+    "long_caption_stage_and_button_containment": true,
+    "keyboard_focus_scroll_swipe_bfcache_destroy": true,
+    "focused_media_passed": 27,
+    "focused_media_failed": 0,
+    "existing_generic_browser_passed": 2,
+    "fresh_actual_public_page_candidate_overlays": 4,
+    "overlay_pages": [
+      "Orthodoxchurch category",
+      "HellenicBakery &Grocery ordinary canonical listing"
+    ],
+    "overlay_widths": [
+      390,
+      1440
+    ],
+    "overlay_scope": "Only sharedcandidate module+CSS overlaid on actualcurrentpublicpage/realphotos; originalpagecontent unchanged. Not deployedcandidate acceptance.",
+    "all5source_and77owner_evidence_hashes": "exact before/after tests",
+    "git_diff_check": "pass",
+    "visual_inspection": [
+      "controlled844\u00d7390longcaption fullscreen",
+      "failedchurch390opener",
+      "controlledbakery390expanded",
+      "actualHellenic1440expanded",
+      "actualfaith390restored"
+    ]
+  },
+  "current_public_cache": {
+    "checked_at": "2026-10-15T14:14:16.203911+00:00",
+    "scope": "Two read-only public HEAD requests; no candidate overlay or deployment claim",
+    "responses": [
+      {
+        "url": "https://zoi.city/assets/homes/photo-gallery.mjs?v=20261006",
+        "status": 200,
+        "headers": {
+          "cache-control": "public, max-age=0, must-revalidate",
+          "etag": "\"b2b37f60670dada02bde906a672eada8\"",
+          "date": "Thu, 15 Oct 2026 14:14:16 GMT",
+          "content-type": "application/javascript; charset=utf-8",
+          "content-length": "4936"
+        }
+      },
+      {
+        "url": "https://zoi.city/assets/homes/photo-gallery.css?v=20261015-fullscreen",
+        "status": 200,
+        "headers": {
+          "cache-control": "public, max-age=0, must-revalidate",
+          "etag": "\"4fa461da23e16554aad79769d50aee90\"",
+          "date": "Thu, 15 Oct 2026 14:14:16 GMT",
+          "content-type": "text/css; charset=utf-8",
+          "content-length": "2462"
+        }
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/artist-1440.png",
+      "sha256": "c2015a35726b66e4a460765d6c3d1d5135356ccb06732e968d76b23748a74d3b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/artist-390.png",
+      "sha256": "8947ac6a5d4f2b85d69f1ff6fb3619d14a0ed5fa2a7b2acaa07dfb88cfc6ecdc"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/bakery-1440.png",
+      "sha256": "0c54dda02b14d4353acb8f7fb01196266554536f0c531ca4ba19a10899644276"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/bakery-390.png",
+      "sha256": "a33069e0e97c233f73028fba6b67ef6918a9eb6a832ab34eb0d378c1d50f8263"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/church-1440.png",
+      "sha256": "e50fee1963e1a97a88ced15e4201517ac3872a021693488b55022b6c002fdee8"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/church-390.png",
+      "sha256": "1128ea098de449cd1aedff8fd3c7b24e1913f0d4f54c32fc8cdc22bfa311b32f"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/creator-1440.png",
+      "sha256": "249052fe6dd022f59604144546a0de3caa978f324bed6305151db2e518030edb"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/creator-390.png",
+      "sha256": "2af91ab7ea5534ceaebbdb58d4bbbcc5f481bfd37323aa12d4229e9d5f9182e7"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/event-1440.png",
+      "sha256": "e3dcdd2ce91cc195397ade7bc7737baf068416a0d02ec6916de752a2d4180d1e"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/event-390.png",
+      "sha256": "3a83f7274ee38e36e4148ae70c3d1e6fa6aba1abac5e9d691a29f51c11492a91"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/failed-church-thumbnail-1440.png",
+      "sha256": "eee843a5c8b4d92b8b574e12826a61158c6521946169d8003603aabefebea1af"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/failed-church-thumbnail-390.png",
+      "sha256": "2227b93e04c601f12ab5a51e597efd5cdd0bbed219e2734eb44d52b1257bc955"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/fullscreen-long-1440.png",
+      "sha256": "0c5083d972f315c336965370ea8781ff1bb1f434de420eafdaefd0d73f03a4b1"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/fullscreen-long-390.png",
+      "sha256": "258cf245f151be854f4360bf5c1d8b8f5d5036039e51cb01bf6ef76168fbb611"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/fullscreen-long-844.png",
+      "sha256": "8629cb212166376196d187eaf59cb1fc9b14312bd1dc8acaa4db003de08dccb4"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/hotel-1440.png",
+      "sha256": "fc00e0354e8830490923358306c53d998601af5e824136d24d783f435aafdd63"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/hotel-390.png",
+      "sha256": "a1dc77b109b403575ce70cca3a7262c36e2a3a4fd968cc4d5d228e9ccc7eba92"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/report.json",
+      "sha256": "12ed957a3ab839fbdad49964f99af13cb351174188c30fd64665ea6d76e9652d"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/restaurant-1440.png",
+      "sha256": "57fb4d604b587ce2de9c3a6158abc97c59547531a4f4a8979f8bce62ae0c6057"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical/restaurant-390.png",
+      "sha256": "0c0437bd42df5201d3e009876e1514b9221a8c47f81804682e32a22a164ccc4b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/canonical-browser.log",
+      "sha256": "34dea2c6f86107fe93272fd9a47e41a2d5a9290dcd039e282ae5717957a33239"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-cache-readonly.json",
+      "sha256": "b67b126cd487faf94280810bb86eb01d87901244af72bd217a19249f22e99192"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/bakery-expanded-1440.png",
+      "sha256": "d0f8182b04800b5e8149efc62d15733897b0e1ce0dcc06bae49218e47edb5707"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/bakery-expanded-390.png",
+      "sha256": "62b2c258307efeeaa7fb0c80541053d830538f8178a22109d06e99e06c127338"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/bakery-restored-1440.png",
+      "sha256": "d6297b4af55ef8bf62faa717fbc4c4eb64917a2a43ab4b165e3d338bd70bbbb2"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/bakery-restored-390.png",
+      "sha256": "13242c5f1c2e992160ce920d603748c5f75431c2dca7af47bd63dc5afb79d809"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/faith-expanded-1440.png",
+      "sha256": "8553391c1fb7aa26e2e4ad734d2748ea4829ca0c9b56bcf81d9ee5a90f7d5421"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/faith-expanded-390.png",
+      "sha256": "645c888aa8a9194bd349f9b1b3dbd03701cbc523c0e9098a9e2a4369bc8c16dc"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/faith-restored-1440.png",
+      "sha256": "d6e9401ec25f61336d7057f1494410f20bb368f2c3a6f676f34d4065a080ffff"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/faith-restored-390.png",
+      "sha256": "6da0cad33f4d851bb490c30ccbe6c7448efdea6b51569b89e27f6d607d354ccd"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate/report.json",
+      "sha256": "ddda42bb02504e766f4ea3935eab9ee259ec21d94d54d83bde0f914d55b5d672"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate.log",
+      "sha256": "39ab0ad630920288949ae022bb7805e2f02b47cf05478e5d9bfa9ed5a434cf38"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/current-page-candidate.mjs",
+      "sha256": "bda7503751f67b4e6886ec21ad1fa99ee092344bb192d099083e1d757ff4aae7"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/existing-browser.log",
+      "sha256": "9e19b0699af9e5c2168ab1aab4b380a405007740f4902dfaa5bf258eecc2b30f"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-independent-2026-10-15/media-focused.log",
+      "sha256": "5d6164a693a10b2327d86e9bc65227b4a28ccb1f355bb21ad0f17741f430d28a"
+    }
+  ],
+  "boundaries": {
+    "production_fact_writes": 0,
+    "sql_calls": 0,
+    "provider_integrations_or_paid_actions": 0,
+    "auth_or_adb_control": 0,
+    "network": "Offlinecanonical cases interceptedlocally; two publicHEADs+4readonlycurrentpage/photographcandidatejourneys. No livefact mutation.",
+    "source_edits": "Only independent audits/evidence written; author/root source frozen."
+  },
+  "remaining": [
+    "Root protected source release then exactdeployedmodule/CSS+publicjourneyverification",
+    "Oldalreadyopen tabs may retainpreviousmoduleuntilnavigation/reload",
+    "Existingnative viewers unchanged; no nativeartifact capability claim",
+    "This does not certify allpagehero designs, discoverycards, upstreamimageauthority or allfamilytrigger44pxsizes; specificfailedchurch88px andshareddialog44pxverified",
+    "Hellenicactual151menu/customeractions are separate productionjourneygate; currentpagegalleryoverlay doesnot certify menu."
+  ]
+}
