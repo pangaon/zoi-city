@@ -2,7 +2,7 @@
   "observed_at": "2026-10-14T15:16:41Z",
   "ci_run": "38586631447",
   "release_commit": "014eeb58",
-  "status": "numeric_dns_timer_compatibility_fix_frozen_hosted_canary_pending",
+  "status": "native_pinned_tls_fix_frozen_hosted_canary_pending",
   "worker": {
     "version": 1,
     "status": "ACTIVE",
@@ -70,5 +70,36 @@
     "hosted_validation_pending": true
   },
   "timer_fix": "Optional Node unref optimization on numeric Deno timer handles; DNS deadline remains capped at5s and timer always cancelled on success/failure.",
-  "historical_failed_jobs": "Retained; no unchanged retry or reenqueue"
+  "historical_failed_jobs": "Retained; no unchanged retry or reenqueue",
+  "latest_attempt": {
+    "ci_run": "38602748726",
+    "observed_at": "2026-10-14T17:01:41Z",
+    "exact_known_error": "Not implemented: ClientRequest.options.lookup",
+    "classification_method": "bounded four-job SQL equality assertion; no raw upstream reason printed",
+    "new_finished_jobs": 4,
+    "first_capture_at": "2026-10-14T16:59:59.034088Z",
+    "last_capture_at": "2026-10-14T16:59:59.386089Z",
+    "status": "source_blocked",
+    "attempts_each": 1,
+    "private_archive_pages": 0,
+    "private_archive_objects": 0,
+    "cron_jobs": 0,
+    "unchanged_retries_or_history_resets": false
+  },
+  "candidate_runtime_fix": {
+    "hosted_only": true,
+    "node_local_transport_unchanged": true,
+    "tcp": "validated publicIPv4:443",
+    "tls": "same socket, registered original hostname, http/1.1 ALPN, normal certificate verification",
+    "host_header": "original hostname",
+    "maximum_document_bytes": 2097152,
+    "parser": "bounded HTTP/1.x status/headers/content-length/chunked/EOF, ambiguous framing refused",
+    "unexpected_content_encoding": "refused; identity requested",
+    "deadline_abort_socket_cleanup": true,
+    "focused_checks_passed": 43,
+    "actual_local_native_tls": "matching-host certificate/SNI success and hostname mismatch refusal",
+    "deno_check": "passed Deno2.9.6",
+    "hosted_validation": "pending root release, no continuous capture capability claimed",
+    "utf8": "fatal decode; BOM retained for exact UTF8 archive bytes"
+  }
 }
