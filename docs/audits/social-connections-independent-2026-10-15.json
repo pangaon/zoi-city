@@ -1,0 +1,65 @@
+{
+  "gate": "corrected source/real-CHECK isolatedSQL/actual two-tab browser accepted; actual production correction/fixture rerun pending",
+  "manifest": "docs/audits/social-connections-frozen-owner-2026-10-15.json",
+  "independent_checks": {
+    "unit_passed": 14,
+    "isolated_PG_browser_groups_passed": 53,
+    "existing_durable_groups_included": 32,
+    "rollback_fixture_assertions": 17,
+    "rollback_fixture_absence_flags": 4,
+    "widths": [
+      390,
+      1440
+    ],
+    "source_dependency_SHA_mismatch": []
+  },
+  "authority": [
+    "Actual current session/profile mapping/foundation owner-admin guards preserved; no second identity system.",
+    "Local disconnect clears token/refresh/expiry/scopes/meta and records decimal version/actor-bound nonce receipt.",
+    "Old receipt replay cannot clear newer reconnect; current session/role checked before historical receipt access.",
+    "Reserved actual durable publisher begin refuses after disconnect.",
+    "Viewer/editor/forged owner refused; real role/session/profile races preserve credentials."
+  ],
+  "production_fixture": {
+    "sha256": "cc497790dba885afab124fb55b1a36003ac293d7a5f61b961a34c75c75549306",
+    "source_review": "Fresh synthetic workspace/channel/expired session under BEGIN/ROLLBACK; real QA account/session/roles unchanged. No helper override, grant weakening, auth user creation, provider or publication call.",
+    "actual_production_run": "not performed by QA"
+  },
+  "production_writes": 0,
+  "provider_calls": 0,
+  "source_sha256": {
+    "assets/suite/connect.js": "c2f01eaa585ceb098d083822f57c91599244edbcaf904ea8b8a330effac21abe",
+    "assets/social/connection-state.mjs": "38de3c1cdf591e5c045b8e995b600ef39576a77004940f72e9ffc9b7b953e024",
+    "supabase/migrations/20261015023559_social_connection_local_disconnect.sql": "3b8814d4626d33ce81f3059df25eaa65437fd2371e5a83330376f4ea19906d40",
+    "tests/unit/social-connection-state.test.mjs": "e6da04ad3b83c6b8f5d8e5933128a78e1e4122d536c0fbae150915556b0c37cd",
+    "tests/database/social-connections.integration.mjs": "8d108f66d219d4cc514d1fa9ade72ea488cb3c578596a2766e0e376b09d73cf9",
+    "tests/database/social-connections-production-rollback.sql": "cc497790dba885afab124fb55b1a36003ac293d7a5f61b961a34c75c75549306",
+    "tests/browser/social-connections/verify.mjs": "2372344d306887fe94156ef98bf3598476e07a47f5667c6130e09c5aec8fb3ce",
+    "docs/audits/social-connections-owner-2026-10-15.md": "acaea49939843755ee6525b793c566a20e16d2c501b3884438ffb4e20e821e65"
+  },
+  "resolved_cross_tab_finding": {
+    "before": "Pending read/persist not coordinated across tabs could overwrite winning uncertain nonce.",
+    "after": "Same scoped exclusive WebLock covers admission, pending reread, dispatch, canonical receipt validation and clearing for disconnect and retry; scope rechecked after wait and Core token refresh.",
+    "actual_two_tab_canonical_SQL": "390/1440 winner response held after commit; second tab queued; winner returns503; one dispatch/one receipt, original uncertain nonce retained both tabs; second-tab retry exact receipt with no duplicate.",
+    "no_WebLocks": "Mutation fails closed with explanation; reads remain available."
+  },
+  "evidence_storage": {
+    "retained_root": "/workspaces/zoi-connect-recovery/docs/audits/evidence/social-connection-owner-2026-10-15",
+    "versioning": "Audit-only release may omit browser screenshots; retained worktree evidence does not imply all binaries committed."
+  },
+  "production_observation": {
+    "reported_by": "root",
+    "migration_ledger": "20261015025830",
+    "fixture_result": "23514 CHECK violation; actual allowed statuses pending/connected/error exclude disconnected",
+    "rollback": "Root reports full rollback and all fixture absence checks true.",
+    "fixture_gap": "Isolated fixture omitted actual live status CHECK, so14units/51SQL-browser checks did not verify this production compatibility.",
+    "next_gate": "Exact guarded corrective CHECK adding disconnected and real-CHECK regression; actual production fixture must rerun before acceptance."
+  },
+  "status_constraint_correction": {
+    "migration": "supabase/migrations/20261015025944_social_connection_disconnected_status.sql",
+    "sha256": "61be7e507ce9ba0c1096034d476271e440b9e89d13eb17bda71a5a98539eb070",
+    "fixture_sha256": "f508a2fa0c37d335fecd68826a2176e145700c125a070582c5d86a73aaf80281",
+    "review": "Exact validated existing named CHECK MD5 and postgres tableowner; adds disconnected only, preserves three prior statuses/other schema and permissions. Transaction and timeouts retained.",
+    "independent_real_SQL": "Actual old CHECK reproduces23514 before correction; unrelated arbitrary status still rejected after; all53groups/17rollbackassertions/4absence pass."
+  }
+}

@@ -1,0 +1,47 @@
+-- ROOT ONLY after reviewed schema apply. Never calls a provider or creates a post.
+BEGIN;
+SET LOCAL lock_timeout='3s';SET LOCAL statement_timeout='30s';SET LOCAL idle_in_transaction_session_timeout='60s';
+CREATE TEMP TABLE connection_qa_results(label text PRIMARY KEY,passed boolean)ON COMMIT DROP;
+GRANT INSERT,SELECT ON connection_qa_results TO authenticated;
+CREATE FUNCTION pg_temp.connection_assert(ok boolean,label text)RETURNS void LANGUAGE plpgsql AS $$BEGIN IF ok IS DISTINCT FROM true THEN RAISE EXCEPTION 'connection_assert_failed:%',label;END IF;INSERT INTO pg_temp.connection_qa_results VALUES(label,true);END$$;
+DO $qa$ DECLARE
+ executor name:=current_user;
+ qa_ws constant uuid:='053a5656-b19b-48a4-8721-65c4674f647c';actor constant uuid:='21a04e78-e3b1-448e-8517-47aad25dd5da';account constant uuid:='2ba5b8e3-4fe9-4ec7-a3bf-7f616fcf07fd';
+ ws constant uuid:='a3c00101-1015-4a00-8a00-000000000001';expired_sid constant uuid:='a3c00101-1015-4a00-8a00-000000000002';nonce constant uuid:='a3c00101-1015-4a00-8a00-000000000003';next_nonce constant uuid:='a3c00101-1015-4a00-8a00-000000000004';
+ channel constant bigint:=9223372036000000301;
+ sid uuid;r jsonb;receipt jsonb;replay jsonb;v bigint;denied boolean;sql text;refusals integer:=0;
+BEGIN
+ IF NOT EXISTS(SELECT 1 FROM zoi.workspaces w JOIN zoi.workspace_members m ON m.workspace_id=w.id JOIN zoi.user_profiles p ON p.id=m.profile_id JOIN auth.users u ON u.id=p.auth_user_id WHERE w.id=qa_ws AND w.name='Zoi isolated QA 2026-09-30'AND w.owner_profile_id=actor AND m.profile_id=actor AND m.role='owner'AND p.auth_user_id=account AND u.email_confirmed_at IS NOT NULL AND u.deleted_at IS NULL AND NOT coalesce(u.is_anonymous,false)AND(u.banned_until IS NULL OR u.banned_until<=clock_timestamp()))THEN RAISE EXCEPTION 'dedicated_qa_authority_unavailable';END IF;
+ SELECT id INTO sid FROM auth.sessions WHERE user_id=account AND(not_after IS NULL OR not_after>clock_timestamp())ORDER BY created_at DESC NULLS LAST LIMIT 1;IF sid IS NULL THEN RAISE EXCEPTION 'dedicated_qa_current_session_unavailable';END IF;
+ IF EXISTS(SELECT 1 FROM zoi.workspaces WHERE id=ws)OR EXISTS(SELECT 1 FROM zoi.social_channels WHERE id=channel)OR EXISTS(SELECT 1 FROM auth.sessions WHERE id=expired_sid)OR EXISTS(SELECT 1 FROM zoi.social_connection_requests WHERE request_id IN(nonce,next_nonce))THEN RAISE EXCEPTION 'social_connection_fixture_collision';END IF;
+ INSERT INTO zoi.workspaces(id,name,kind,owner_profile_id,created_by_auth)VALUES(ws,'Rollback-only connection fixture20261015','business',actor,account);
+ INSERT INTO zoi.social_channels(id,workspace_id,platform,handle,display_name,connected,status,external_id,access_token,refresh_token,token_expires_at,scopes,meta,connected_by)VALUES(channel,ws,'facebook','@rollback-only','Rollback-only connection',true,'connected','rollback-only-not-provider-id','NOT_A_PROVIDER_TOKEN_ROLLBACK_ONLY','NOT_A_REFRESH_TOKEN_ROLLBACK_ONLY',clock_timestamp()+interval'1 hour',ARRAY['fixture-only'],'{"private_fixture":"remove-on-disconnect"}',actor);
+ INSERT INTO auth.sessions(id,user_id,created_at,updated_at,not_after)VALUES(expired_sid,account,clock_timestamp(),clock_timestamp(),clock_timestamp()-interval'1 minute');
+ PERFORM pg_temp.connection_assert(NOT EXISTS(SELECT 1 FROM zoi.workspace_members WHERE workspace_id=ws),'synthetic_workspace_actual_owner_without_member');
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',account,'role','authenticated','session_id',sid)::text,true);PERFORM set_config('request.jwt.claim.sub',account::text,true);EXECUTE 'SET LOCAL ROLE authenticated';
+ r:=public.social_connections_status(ws);PERFORM pg_temp.connection_assert(r->>'schema_version'='1'AND r->>'account'=account::text AND r->>'actor'=actor::text AND r#>>'{channels,0,id}'=channel::text AND r#>>'{channels,0,connection_version}'='1','current_owner_status_exact_schema_and_lossless_bigint');
+ PERFORM pg_temp.connection_assert(position('TOKEN'in r::text)=0 AND position('access_token'in r::text)=0 AND position('private_fixture'in r::text)=0,'status_has_no_credentials_or_private_meta');
+ receipt:=public.social_connection_disconnect(ws,channel,1,nonce);PERFORM pg_temp.connection_assert(receipt->>'version'='2'AND receipt->>'connected'='false'AND receipt->>'local_credentials_removed'='true'AND receipt->>'provider_revoked'='false','disconnect_confirms_local_only_credential_removal');
+ replay:=public.social_connection_disconnect(ws,channel,1,nonce);PERFORM pg_temp.connection_assert(replay=receipt,'lost_response_returns_exact_immutable_receipt');
+ EXECUTE format('SET LOCAL ROLE %I',executor);
+ PERFORM pg_temp.connection_assert((SELECT connected=false AND status='disconnected'AND access_token IS NULL AND refresh_token IS NULL AND token_expires_at IS NULL AND scopes IS NULL AND meta='{}'AND connected_by IS NULL AND last_error IS NULL FROM zoi.social_channels WHERE id=channel),'all_saved_local_credentials_are_cleared');
+ UPDATE zoi.social_channels SET connected=true,status='connected',access_token='NEW_NOT_A_PROVIDER_TOKEN_ROLLBACK_ONLY',refresh_token='NEW_NOT_A_REFRESH_TOKEN_ROLLBACK_ONLY'WHERE id=channel;EXECUTE 'SET LOCAL ROLE authenticated';
+ replay:=public.social_connection_disconnect(ws,channel,1,nonce);PERFORM pg_temp.connection_assert(replay=receipt,'original_receipt_replay_preserves_newer_reconnect');
+ r:=public.social_connections_status(ws);PERFORM pg_temp.connection_assert(r#>>'{channels,0,connection_version}'='3'AND r#>>'{channels,0,connected}'='true','reopen_reads_current_reconnect_separately_from_original_receipt');
+ denied:=false;BEGIN PERFORM public.social_connection_disconnect(ws,channel,1,next_nonce);EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='social_connection_version_conflict';END;PERFORM pg_temp.connection_assert(denied,'stale_disconnect_version_is_refused');
+ denied:=false;BEGIN PERFORM public.social_connection_disconnect(ws,channel,3,nonce);EXCEPTION WHEN raise_exception THEN denied:=SQLERRM='social_disconnect_request_conflict';END;PERFORM pg_temp.connection_assert(denied,'same_nonce_changed_payload_is_refused');
+ denied:=false;BEGIN PERFORM public.social_connection_disconnect(qa_ws,channel,3,next_nonce);EXCEPTION WHEN insufficient_privilege THEN denied:=SQLERRM='social_channel_unavailable';END;PERFORM pg_temp.connection_assert(denied,'authorized_other_workspace_cannot_disconnect_foreign_channel');
+ r:=public.social_connection_history(ws);PERFORM pg_temp.connection_assert(jsonb_array_length(r->'history')=1 AND r#>>'{history,0,request}'=nonce::text AND position('TOKEN'in r::text)=0,'persisted_history_is_safe_and_exact');
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',account,'role','authenticated','session_id',expired_sid)::text,true);
+ FOREACH sql IN ARRAY ARRAY[format('SELECT public.social_connections_status(%L)',ws),format('SELECT public.social_connection_history(%L)',ws),format('SELECT public.social_connection_disconnect(%L,%s,1,%L)',ws,channel,nonce)]LOOP denied:=false;BEGIN EXECUTE sql;EXCEPTION WHEN insufficient_privilege THEN denied:=SQLERRM='suite_session_unavailable';END;IF NOT denied THEN RAISE EXCEPTION 'expired_connection_call_not_refused';END IF;refusals:=refusals+1;END LOOP;
+ PERFORM pg_temp.connection_assert(refusals=3,'all_reads_and_successful_replay_refuse_expired_session');
+ PERFORM set_config('request.jwt.claims',jsonb_build_object('sub',account,'role','authenticated','session_id',sid)::text,true);
+ denied:=false;BEGIN PERFORM 1 FROM zoi.social_connection_requests;EXCEPTION WHEN insufficient_privilege THEN denied:=true;END;PERFORM pg_temp.connection_assert(denied,'private_receipt_table_not_browser_readable');
+ r:=public.social_connection_disconnect(ws,channel,3,next_nonce);PERFORM pg_temp.connection_assert(r->>'version'='4','new_explicit_disconnect_requires_current_reconnect_version');
+ EXECUTE format('SET LOCAL ROLE %I',executor);
+ PERFORM pg_temp.connection_assert((SELECT count(*)=2 FROM zoi.social_connection_requests WHERE workspace_id=ws),'only_two_exact_committed_receipts_inside_rollback');
+ PERFORM pg_temp.connection_assert((SELECT not_after IS NULL OR not_after>clock_timestamp()FROM auth.sessions WHERE id=sid AND user_id=account)AND(SELECT owner_profile_id=actor FROM zoi.workspaces WHERE id=qa_ws)AND(SELECT role='owner'FROM zoi.workspace_members WHERE workspace_id=qa_ws AND profile_id=actor),'real_qa_session_and_workspace_roles_unchanged');
+END $qa$;
+SELECT label,passed FROM connection_qa_results ORDER BY label;
+ROLLBACK;
+SELECT jsonb_build_object('rollback_completed',true,'fixture_workspace_absent',NOT EXISTS(SELECT 1 FROM zoi.workspaces WHERE id='a3c00101-1015-4a00-8a00-000000000001'),'fixture_channel_absent',NOT EXISTS(SELECT 1 FROM zoi.social_channels WHERE id=9223372036000000301),'fixture_requests_absent',NOT EXISTS(SELECT 1 FROM zoi.social_connection_requests WHERE workspace_id='a3c00101-1015-4a00-8a00-000000000001'),'fixture_session_absent',NOT EXISTS(SELECT 1 FROM auth.sessions WHERE id='a3c00101-1015-4a00-8a00-000000000002'),'provider_calls',0,'publication_acceptance',false);
