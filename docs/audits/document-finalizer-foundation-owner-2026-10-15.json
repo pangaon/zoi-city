@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "status": "Frozen candidate; independent acceptance and root release gates pending. No live writes/deployments by owner agent.",
+  "worktree": "/workspaces/zoi-document-finalizer-recovery",
+  "base": "72e82ad",
+  "scope": "Existing private Documents reserve -> private immutable object readback -> current-authorized service finalization -> private list/history/download; no new UI or document store.",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015031840_document_upload_finish_foundation_authority.sql",
+      "sha256": "68cf3519f1363e4f59ed0d4e9b7a5f19f56ebe5bcc95af773057d41e24098063"
+    },
+    {
+      "path": "supabase/migrations/20261015032509_require_verified_document_upload_completion.sql",
+      "sha256": "47f73e3e418fa3853be6a39d37ffcec9e2a6d5fa8c6947c9df3ca7e96c296518"
+    },
+    {
+      "path": "supabase/functions/ops-documents/index.ts",
+      "sha256": "15b3a44103bf94479d21421c3d5b5a167411fb9af6e7dad2dc96253b42e3ea09"
+    },
+    {
+      "path": "tests/unit/document-edge.test.mjs",
+      "sha256": "34a6cfc1764dc3cd51e3e41b841d7b4ce2dc6f42ce44109dfe3d17b8d3a8c771"
+    },
+    {
+      "path": "tests/unit/document-finalizer-readback.test.mjs",
+      "sha256": "b5073ad81c966af3fe09626355c3b1faf9305b6a42185e61afdcfa322e602b0b"
+    },
+    {
+      "path": "tests/database/document-finalizer-foundation.integration.mjs",
+      "sha256": "38b3b5452e728480510a1fc76014d11e0246d0f83eefc164d2bc6875e9bb96bf"
+    },
+    {
+      "path": "tests/database/document-finalizer-production-rollback.sql",
+      "sha256": "81bb62acb9ae51069a463dbdbd8803f7cf61bda08faf053c5fe0a062b3a2688a"
+    },
+    {
+      "path": "tests/database/fixtures/document-finalizer-authority-live.json",
+      "sha256": "a2e74108dd5807709731e22b50705d53acab29ee9655249c4f6e3ff51f9a26b6"
+    }
+  ],
+  "dependency": {
+    "foundation_applied_by_root": "20261015032346",
+    "isolated_install": "Exact frozen foundation migration ee8685fe embedded as explicit dependency in captured fixture; source untouched",
+    "live_readback": "Seven actual applied foundation definitions/ACL/owner/config captured again for additive migration exact guards; original service finish actual metadata captured"
+  },
+  "source_contract": {
+    "grant_history": "Private append-only per-version actor/account/session grants. Current grant selected after workspace lock. Only explicit authorized same actor/account exact-nonce upload_begin replay appends a renewed SID; service never fabricates/refreshes authority.",
+    "canonical_authority": "Exact foundation allowed owner/admin/editor; real owner fallback only when member absent, forged owner=>viewer, explicit viewer owner not upgraded. Workspace/member then bound user/session then profile mapping locks, current session checked again at finish after possible waits.",
+    "file_verification": "Existing Edge validates incoming bytes and canonical immutable digest; private canonical DB-selected path, nonupsert POST, fixed-bucket actual object GET with redirect:error,20s read deadline and expected-size hard limit. Actual saved byte digest must match incoming and canonical saved digest before service verified RPC. Size/MIME/private Standard bucket/object current metadata/active project/doc/CAS checks preserved or tightened.",
+    "ready_recovery": "All paths require current grant/account/session/role/project/document/bucket/object. No return for archived/deleted state. Verified path includes actual digest; legacy ready receipt explicitly content_verified=false.",
+    "privacy": "Actual private restrictive Storage policy/RLS exact guarded; no browser grant-table access; verified RPC only service_role/postgres; private core cannot be called by service or browser.",
+    "unknown": "No automatic mutation retry/delete after uncertain finalization. Explicit same canonical nonce recovers immutable version and one uploaded audit. No fake successful upload."
+  },
+  "tests": {
+    "postgres": {
+      "command": "node tests/database/document-finalizer-foundation.integration.mjs",
+      "groups_passed": 26,
+      "socket_port": 15685,
+      "observed_groups": [
+        "45 exact captured definitions, owners and ACLs installed; actual nine authority tables constraints retained; eight unrelated composites retain CHECKs",
+        "changed actual finalizer ACL refuses before creating authority grants",
+        "changed actual restrictive private Storage policy refuses candidate atomically",
+        "exact foundation dependency and finalizer candidate installed with actual private Storage constraints/triggers/RLS",
+        "historical pending version has no fabricated grant; explicit current authorized exact-nonce replay admits current session then completes",
+        "actual owner without member reserves, service verifies, private list/history/download readback and exact lost-response finish repeat retain one uploaded audit",
+        "verified service RPC and private authority grant ledger unavailable to browser",
+        "actual readback digest differing from immutable reservation cannot become ready",
+        "original actual Storage size and MIME metadata checks preserved",
+        "changed public bucket policy refuses completion without changing ready pointer",
+        "revoked original session cannot finish; explicit same-nonce same-actor/account new-session replay appends grant and resumes canonical version",
+        "authority history remains append-only across renewal",
+        "workspace ownership transfer and forged owner membership cannot finish or silently renew upload",
+        "profile-to-account mapping transfer refuses historical grant",
+        "same profile assigned to another account cannot silently renew or complete original account grant",
+        "banned original account cannot complete saved upload",
+        "ready replay cannot resurrect an archived document or inactive project",
+        "stale current-version policy cannot advance and ready receipt cannot return deleted/archived stored object",
+        "private Storage object metadata is not readable through authenticated direct SELECT",
+        "phase A retains explicitly authority-checked compatibility path for old Edge, without byte-verification claim",
+        "phase B refuses verified-service ACL drift without changing compatibility function",
+        "phase B closes old pending-write path, retaining only current-authorized ready receipt recovery without byte-verification claim",
+        "unchanged allowed admin/editor roles reserve and complete alongside actual-owner fallback",
+        "service call queued behind explicit grant rotation observes newest authorized session and canonical ready state",
+        "natural session expiry during actual Storage row wait rolls back completion, then explicit new-session resume finishes",
+        "unchanged production SQL metadata/authority fixture executes with private-schema denial; nine absence flags; actual blob readback remains separate root gate"
+      ],
+      "actual_schema": "Nine actual Company authority tables/constraints/index/RLS; eight unrelated composites for captured authority installation only; actual Storage two tables/CHECK/FK/indexes/platform trigger definitions/RLS policies, generated column and bucket enum. Auth JWT accessors only GUC facade. No production authority helper override. Ancillary workspace/member revision triggers omitted as in foundation fixture; no broad sector journey claim."
+    },
+    "units": {
+      "command": "node --test tests/unit/document-edge.test.mjs tests/unit/document-finalizer-readback.test.mjs tests/unit/document-files.test.mjs tests/unit/document-client-scope.test.mjs",
+      "passed": 28,
+      "new_edge_cases": 13
+    },
+    "production_fixture": {
+      "path": "tests/database/document-finalizer-production-rollback.sql",
+      "locally_executed_unchanged": true,
+      "private_schema_usage_denied_for_authenticated": true,
+      "absence_flags": 9,
+      "actual_storage_body_checked": false,
+      "meaning": "SQL controlled metadata/authority proof only; it cannot create or verify a Storage blob. Root actual Edge/private Storage proof remains REQUIRED."
+    },
+    "deno_check": {
+      "status": "not run: deno binary unavailable in local environment",
+      "node_ts_runtime": "Actual Edge module loaded/exercised by28 passing unit cases"
+    }
+  },
+  "release_order": [
+    "Root independent source/PG/Edge gate and exact source hashes.",
+    "Root apply phaseA31840 only after foundation current exactguards; this phase preserves legacy Edge metadata-only completion with new current-authority grants, never a byte verification claim.",
+    "Root deploy exact reviewed ops-documents Edge and verify unauth refusal plus actual controlled private Storage upload/readback digest path,409wrong-blob refusal and lost-response recovery; no provider.",
+    "Root apply phaseB32509 only after new Edge is served. This exact-guarded phase refuses old metadata-only pending writes; ready recovery retains current authority and labels content_verified=false.",
+    "Root actual SQL rollback proof, all absence flags and safe private Storage cleanup; verify old pending RPC refusal and new service ACL/authority after deployment before acceptance."
+  ],
+  "remaining": [
+    "Independent reviewer gate not yet complete",
+    "Root actual schema/Edge release and private blob exercise remain pending",
+    "No browser/native upload UX acceptance from this source-only server change; existing scoped transport unit checks pass",
+    "Cannot make DB and object-store network changes atomically. This flow uses canonical immutable nonupsert path, actual readback hash and current locked SQL authority; privileged external Storage replacement after readback is not a claimed atomic guarantee.",
+    "Full private minutes/roles/deadlines remain separate unfinished original scope; not implemented here."
+  ],
+  "rollback": "No automatic legacy writer restoration after phaseB: keep pending writes failclosed. Old Edge may only be restored while reviewed phaseA compatibility remains, with no byte-verification acceptance. Preserve append-only authority history and canonical pending/ready records; pause uploads for forward correction rather than delete unknown outcomes or silently re-enable metadata-only publication.",
+  "production_writes_by_child": 0,
+  "provider_calls": 0
+}
