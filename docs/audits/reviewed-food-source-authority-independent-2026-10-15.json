@@ -1,0 +1,117 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-10-15T12:32:34.804410+00:00",
+  "reviewer": "/root/owner_next",
+  "status": "Accepted frozen source packet for root integration and production gates; not live",
+  "candidate_worktree": "/workspaces/zoi-food-reviewed-pipeline",
+  "owner_audit_path": "docs/audits/reviewed-food-source-authority-owner-2026-10-15.json",
+  "owner_audit_sha256": "a2c19ce55a56c4970a722b3dc20ea6d86b8fc58231502b3ef889fca1e653c361",
+  "reviewed_files": [
+    {
+      "path": "scripts/enrichment/source-html.mjs",
+      "sha256": "15a2510aed9aa3816c13948fd51d30e24203649058025600470adb070debbd17"
+    },
+    {
+      "path": "scripts/enrichment/reviewed-batch.mjs",
+      "sha256": "e2c6134b44dec6aa70253dcd72d9f5dcb5660f5d9e2780a855c31e6d5e1dd5f1"
+    },
+    {
+      "path": "scripts/enrichment/render-capture.mjs",
+      "sha256": "9e4bb4db25dde63011fbab524dd34a0f4c2983ad0a22cd4f7953fc5e3765ab52"
+    },
+    {
+      "path": "supabase/migrations/20261015121224_enrichment_lease_authority_context.sql",
+      "sha256": "200ad930d62090809ae5a019736e14282649b5573e79ccd632ca5a536e613182"
+    },
+    {
+      "path": "tests/database/enrichment-authority-context.integration.mjs",
+      "sha256": "48190cef70cd0a8e2ce676ef926ce7c9652bcdd341a091bd16e415e376e2641c"
+    },
+    {
+      "path": "tests/database/enrichment-authority-context-production-rollback.sql",
+      "sha256": "1b6af2794ec79274a708764aa91c71fdea7f68288a4c08da1b226577b7eb7d38"
+    },
+    {
+      "path": "tests/database/fixtures/enrichment-authority-context-live.json",
+      "sha256": "f3776dc49df1c6ca4ac5f3bb5996be280f9dc5bb52ca468271a9037698ac5f2f"
+    },
+    {
+      "path": "tests/unit/reviewed-food-source.test.mjs",
+      "sha256": "cf907604c2e895d73439214f512f5cbe23a1e98826f17176f7edf5209b79ee3d"
+    },
+    {
+      "path": "tests/unit/source-html.test.mjs",
+      "sha256": "7ae85fb758e5a24b0f6adb34d89f112ca8ca3576f91f6afb84a029bca6337cf6"
+    },
+    {
+      "path": "tests/integration/reviewed-food-retained-proof.mjs",
+      "sha256": "47b8f96ae0f9ba9e7a316c769883d249a613e0966d218ce2936be87e0673e4e5"
+    },
+    {
+      "path": "tests/unit/reviewed-source-html.test.mjs",
+      "sha256": "8fdeb9034acf74d5a471a7da00b3e91219847f5040ee42f8d527e978d180fd27"
+    }
+  ],
+  "source_findings": [
+    {
+      "finding": "Server authority omitted exact machine source identity/provenance; a stale lease could replace independently corrected machine facts.",
+      "resolution": "Final private authority fingerprint includes complete _enrich namespace except lease/transient source context. Actual PostgreSQL typed identity/provenance mutations refuse stale writes, along with other authority changes.",
+      "state": "resolved"
+    },
+    {
+      "finding": "Unresolved linked-menu capture without newly contributed menu fields bypassed reviewed Food checks and generic merge cleared source holds while keeping stale menu.",
+      "resolution": "Refuse explicit unresolved Food evidence before hasFields early return.",
+      "state": "resolved"
+    },
+    {
+      "finding": "No current menu/link produced no Food evidence, so held prior structured menu/menu URL and image menu could still revive through generic merge.",
+      "resolution": "Guard prior Food presence including canonical menu_image_urls before early return; image field is not added to new import allowlist. Six independent representation/link variants now all refuse. Formal author regression spans12 hold variants.",
+      "state": "resolved"
+    }
+  ],
+  "verification": {
+    "focused_checks": 64,
+    "focused_failures": 0,
+    "real_postgresql_groups": 27,
+    "postgres_basis": "Exact captured function definitions/ACLs; exact guarded migration; row-lock wait against second backend; stale branch/owner/current source identity/provenance refusal; source body preservation; legacy lease refusal without reset; local execution of exact rollback fixture. Final migration and DB tests unchanged from independent run, final after_contracts exact.",
+    "independent_held_food_variants": 6,
+    "retained_Hellenic_source": "Actual retained official document hashes, controlled source transport,100of151 payload/model items and30-item brief. No fresh external capture or SQL apply/browser/provider acceptance claimed.",
+    "cache_strategy": "Reviewed explicit recipe hashing and one changed-strategy capture namespace; historical artifacts remain, same strategy resumes rather than retries.",
+    "diff_check": true,
+    "owner_menu_cross_evidence": "docs/audits/food-owner-large-menu-2026-10-15.json independently proves actual mounted editor/realSQL preservation of100 imported items; no owner runtime fix required."
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/reviewed-food-source-authority-independent-2026-10-15/focused-unit-results.log",
+      "sha256": "3967ad28d21d3ecad5b2e51733f45967bf1b473c379b6e0f1f7910fdb6ff09f3"
+    },
+    {
+      "path": "docs/audits/evidence/reviewed-food-source-authority-independent-2026-10-15/held-food-refusal.json",
+      "sha256": "086fa0b7e3f23b66c54ec39e00f5279d1408c728ac6a06046f263a34bc6a7208"
+    },
+    {
+      "path": "docs/audits/evidence/reviewed-food-source-authority-independent-2026-10-15/historical-held-menu-failure.json",
+      "sha256": "c2e1daffbd2c261b838060cbed955d765487da8cf210d41ee112c9e161f070d1"
+    },
+    {
+      "path": "docs/audits/evidence/reviewed-food-source-authority-independent-2026-10-15/historical-image-menu-failure.json",
+      "sha256": "8599fd3ac1b946e99a99913819287af7067068ebcd694b5a06afe987894e8e69"
+    },
+    {
+      "path": "docs/audits/evidence/reviewed-food-source-authority-independent-2026-10-15/postgres.json",
+      "sha256": "ba2a4d199f9e03a02e6a8a2b5b0aa9942d5c0e111c4b8db46a63295570a7818f"
+    },
+    {
+      "path": "docs/audits/evidence/reviewed-food-source-authority-independent-2026-10-15/retained-source.json",
+      "sha256": "2e0e70e7b5e18e40525f1b03c81be0ed99995198f0f85476a574b15dfeae994d"
+    }
+  ],
+  "production_writes": false,
+  "provider_calls": 0,
+  "release_conditions": [
+    "Root applies exact migration in quiet enrichment window, accounting for an old already-running function body.",
+    "Root verifies final function definitions/ACLs then runs included production rollback fixture and proves both synthetic rows absent.",
+    "Root actual canonical production queue/worker source apply and public rendered customer journey acceptance remain open.",
+    "This reusable Food lane retains100of151 Hellenic source items and is not full-menu, client-home, catalogue or native completion."
+  ]
+}
