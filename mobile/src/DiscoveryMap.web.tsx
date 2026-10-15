@@ -4,6 +4,9 @@ import { LIGHT } from "./brand";
 import { exactPins, fullMapToolsLink } from "./discovery";
 import { matchBounds, focusOptions } from "../../assets/map-data/loader.mjs";
 import type { DiscoveryMapProps } from "./DiscoveryMap.types";
+import {useMapLocation} from './useMapLocation';
+import {MapLocationControl} from './MapLocationControl';
+import {deviceLocationRegion,deviceLocationLabel,deviceAccuracyFeature} from '../../assets/map-data/foreground-location.mjs';
 let sdk: Promise<void> | null = null;
 function loadSDK() {
   if ((window as any).maplibregl && (window as any).ZoiBasemap)
@@ -61,13 +64,18 @@ export function DiscoveryMap({
 }: DiscoveryMapProps) {
   const node = useRef<HTMLDivElement | null>(null),
     map = useRef<any>(null),
-    live = useRef({ points, selected, onSelect }),
+    live = useRef({ points, selected, onSelect, scopeKey }),
     [ready, setReady] = useState(false),
     [error, setError] = useState(""),
     [attempt, setAttempt] = useState(0),
     prior = useRef(""),
     priorSelection = useRef("");
-  live.current = { points, selected, onSelect };
+  live.current = { points, selected, onSelect, scopeKey };
+  const marker=useRef<any>(null),cameraIntent=useRef(0),selectionIntent=useRef({key:'',epoch:0});
+  const location=useMapLocation(scopeKey,(fix,{center})=>{if(center&&map.current){const r=deviceLocationRegion(fix);map.current.easeTo({center:[fix.longitude,fix.latitude],zoom:Math.max(1,Math.min(14,Math.log2(360/r.longitudeDelta))),duration:motion?300:0});}});
+  useEffect(()=>{location.manualMove();},[selected,focus]);
+  useEffect(()=>{marker.current?.remove();marker.current=null;if(!ready||!map.current)return;map.current.getSource('zoi-device-accuracy')?.setData(deviceAccuracyFeature(location.state.fix));if(!location.state.fix)return;const fix=location.state.fix,node=document.createElement('div');node.setAttribute('role','img');node.setAttribute('aria-label',deviceLocationLabel(fix));node.title=deviceLocationLabel(fix);Object.assign(node.style,{width:'18px',height:'18px',borderRadius:'50%',background:'#1676df',border:'3px solid white',boxShadow:'0 0 0 5px #1676df22'});marker.current=new (window as any).maplibregl.Marker({element:node}).setLngLat([fix.longitude,fix.latitude]).addTo(map.current);return()=>{marker.current?.remove();marker.current=null;};},[ready,location.state.fix]);
+  useEffect(()=>{if(error)location.clear();},[error]);
   const selectedPoint = exactPins(points).find((p:any)=>p.s===selected);
   useEffect(() => {
     let active = true;
@@ -94,6 +102,8 @@ export function DiscoveryMap({
             cooperativeGestures: true,
           });
         map.current = m;
+        m.on("movestart",(e:any)=>{if(e.originalEvent){cameraIntent.current++;location.manualMove();prior.current=live.current.scopeKey;}});
+        m.on("click",()=>{cameraIntent.current++;location.manualMove();prior.current=live.current.scopeKey;});
         m.addControl(
           new mb.NavigationControl({ showCompass: false }),
           "top-right",
@@ -148,6 +158,8 @@ export function DiscoveryMap({
               "circle-stroke-width": 3,
             },
           });
+          m.addSource('zoi-device-accuracy',{type:'geojson',data:deviceAccuracyFeature(null)});
+          m.addLayer({id:'zoi-device-accuracy',type:'fill',source:'zoi-device-accuracy',paint:{'fill-color':'#1676df','fill-opacity':0.12}});
           setReady(true);
         });
         m.on("click", "zoi-pins", (e: any) => {
@@ -219,6 +231,8 @@ export function DiscoveryMap({
     }
   }, [ready, points, scopeKey, motion]);
   useEffect(() => {
+    const selectionKey=selected+'|'+focus;
+    if(selectionIntent.current.key!==selectionKey)selectionIntent.current={key:selectionKey,epoch:cameraIntent.current};
     if (!ready || !map.current) return;
     map.current.setPaintProperty("zoi-pins", "circle-color", [
       "case",
@@ -229,7 +243,7 @@ export function DiscoveryMap({
     const p = selectedPoint;
     const sameSelection = priorSelection.current === selected;
     priorSelection.current = selected;
-    if (p)
+    if (p&&selectionIntent.current.epoch===cameraIntent.current)
       map.current.easeTo(
         focusOptions(p, {
           currentZoom: sameSelection ? map.current.getZoom() : null,
@@ -257,6 +271,7 @@ export function DiscoveryMap({
         style: { height: "100%", width: "100%" },
       })}
       <Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" onPress={()=>{const center=map.current?.getCenter();const href=fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},center?{latitude:center.lat,longitude:center.lng,longitudeDelta:360/(2**map.current.getZoom())*(node.current?.clientWidth||350)/512,width:node.current?.clientWidth||350}:{});window.location.assign(href);}} style={{position:"absolute",top:12,left:12,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>Full map tools ↗</Text></Pressable>
+      {ready&&!error?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}
       {!ready || error ? (
         <View
           style={{

@@ -5,17 +5,27 @@ import {LIGHT} from "./brand";
 import {fullMapToolsLink} from "./discovery";
 import type {DiscoveryMapProps} from "./DiscoveryMap.types";
 import {embeddedMapDocument,embeddedMapPayload,embeddedMapCommand,embeddedMapMessage} from "../../assets/map-data/embedded.mjs";
+import {useMapLocation} from './useMapLocation';
+import {MapLocationControl} from './MapLocationControl';
+import {embeddedLocationCommand} from '../../assets/map-data/embedded.mjs';
 const documentHTML=embeddedMapDocument(),base="https://www.zoi.city";
 export function DiscoveryMap(props:DiscoveryMapProps){
  const web=useRef<WebView>(null),current=useRef(props),previous=useRef({scope:"",selected:"",focus:0}),alive=useRef(true);
  current.current=props;
+ const cameraIntent=useRef(0),selectionIntent=useRef({selected:'',focus:0,epoch:0});
+ const location=useMapLocation(props.scopeKey,(fix,{center})=>web.current?.injectJavaScript(embeddedLocationCommand(fix,{center,motion:props.motion})));
+ useEffect(()=>{location.manualMove();},[props.selected,props.focus]);
+
  const [ready,setReady]=useState(false),[error,setError]=useState(""),[attempt,setAttempt]=useState(0),[opening,setOpening]=useState(false);
+ useEffect(()=>{if(ready)web.current?.injectJavaScript(embeddedLocationCommand(location.state.fix));},[ready,location.state.fix]);
+ useEffect(()=>{if(error)location.clear();},[error]);
  const viewport=useRef({latitude:37,longitude:15,longitudeDelta:160,width:350});
  useEffect(()=>{alive.current=true;return()=>{alive.current=false;};},[]);
  useEffect(()=>{
   if(!ready)return;
   const p=current.current,before=previous.current;
-  const payload=embeddedMapPayload(p.points,p.selected,{fit:before.scope!==p.scopeKey,focus:before.focus!==p.focus,motion:p.motion});
+  if(selectionIntent.current.selected!==p.selected||selectionIntent.current.focus!==p.focus)selectionIntent.current={selected:p.selected,focus:p.focus,epoch:cameraIntent.current};
+  const payload=embeddedMapPayload(p.points,p.selected,{fit:before.scope!==p.scopeKey,focus:before.focus!==p.focus,motion:p.motion,selectionFocus:selectionIntent.current.epoch===cameraIntent.current});
   web.current?.injectJavaScript(embeddedMapCommand(payload));
   previous.current={scope:payload.points.length?p.scopeKey:before.scope,selected:p.selected,focus:p.focus};
  },[ready,props.points,props.selected,props.scopeKey,props.focus,props.motion]);
@@ -25,10 +35,11 @@ export function DiscoveryMap(props:DiscoveryMapProps){
   <WebView key={attempt} ref={web} source={{html:documentHTML,baseUrl:base+"/"}} style={StyleSheet.absoluteFill} originWhitelist={["*"]} javaScriptEnabled domStorageEnabled incognito sharedCookiesEnabled={false} thirdPartyCookiesEnabled={false} geolocationEnabled={false} setSupportMultipleWindows
    onShouldStartLoadWithRequest={request=>{if(["about:blank",base,base+"/"].includes(request.url))return true;void open(request.url);return false;}}
    onOpenWindow={event=>{void open(event.nativeEvent.targetUrl);}}
-   onMessage={event=>{if(!alive.current)return;if(!["about:blank",base,base+"/"].includes(event.nativeEvent.url))return;const message=embeddedMapMessage(event.nativeEvent.data,current.current.points);if(message?.type==="map.ready"){setError("");setReady(true);}else if(message?.type==="map.error")setError("The interactive map could not load. Your places are still in the list.");else if(message?.type==="map.select")current.current.onSelect(message.slug);else if(message?.type==="map.view"&&typeof message.longitudeDelta==="number")viewport.current={...viewport.current,...message,longitudeDelta:message.longitudeDelta*viewport.current.width/512};}}
+   onMessage={event=>{if(!alive.current)return;if(!["about:blank",base,base+"/"].includes(event.nativeEvent.url))return;const message=embeddedMapMessage(event.nativeEvent.data,current.current.points);if(message?.type==="map.ready"){setError("");setReady(true);}else if(message?.type==="map.error")setError("The interactive map could not load. Your places are still in the list.");else if(message?.type==="map.interaction"){cameraIntent.current++;location.manualMove();previous.current.scope=current.current.scopeKey;}else if(message?.type==="map.select"){cameraIntent.current++;location.manualMove();previous.current.scope=current.current.scopeKey;current.current.onSelect(message.slug);}else if(message?.type==="map.view"&&typeof message.longitudeDelta==="number")viewport.current={...viewport.current,...message,longitudeDelta:message.longitudeDelta*viewport.current.width/512};}}
    onError={()=>setError("The interactive map could not load. Your places are still in the list.")}
    onContentProcessDidTerminate={()=>{setReady(false);setError("The map closed. Try loading it again.");}}/>
   <Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" disabled={opening} style={s.tools} onPress={async()=>{setOpening(true);await open(fullMapToolsLink(props.points.find(p=>p.s===props.selected)||{s:props.selected},viewport.current));if(alive.current)setOpening(false);}}><Text style={s.link}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable>
+  {ready&&!error?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;previous.current.scope=current.current.scopeKey;location.request();}} onClear={location.clear}/>:null}
   {!ready||error?<View style={s.note}>{!error?<ActivityIndicator color={LIGHT.accent}/>:null}<Text style={s.text}>{error||"Opening the map…"}</Text>{error?<Pressable accessibilityRole="button" onPress={()=>{setReady(false);setError("");previous.current={scope:"",selected:"",focus:0};setAttempt(v=>v+1);}}><Text style={s.link}>Retry interactive map</Text></Pressable>:null}</View>:null}
  </View>;
 }

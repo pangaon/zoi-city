@@ -1,0 +1,38 @@
+{
+  "gate": "refrozen source/config/lifecycle and controlled actual components accepted; new binary/OS sensor acceptance pending",
+  "candidate_manifest": "docs/audits/native-foreground-location-2026-10-15.json",
+  "independent_checks": {
+    "focused_passed": 19,
+    "failed": 0,
+    "config_introspection_actual": true,
+    "ios_location_keys": [
+      "NSLocationWhenInUseUsageDescription"
+    ],
+    "ios_background_modes": [],
+    "android_location_permissions": [
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ]
+  },
+  "review": [
+    "Gesture-only foreground request; no startup request/Always/background/motion/foreground-service enablement.",
+    "One fresh validated fix with actual reported accuracy; watch cleanup/timeout/cancel/scope/unmount/late-subscription safeguards.",
+    "No stored profile/home-city/preferences or listing writes.",
+    "Android WebView geolocation remains disabled; explicit native adapter supplies snapshot."
+  ],
+  "limits": [
+    "Controlled location adapter is not actual OS permission/sensor acceptance.",
+    "Installed4a APK predates this source and has no native GPS request path.",
+    "New coherent native binary and released embed dependency required; no build started by QA."
+  ],
+  "production_operations": 0,
+  "candidate_manifest_sha256": "0573902156d30659ae1cd8d3b69f834cca64956bbd9f941aadfe0263b78866ab",
+  "resolved_finding": {
+    "reproduced": "Actual retained ReactNativeWeb/MapLibre bundle; onlyHarness selected late-place/points initially empty. ExplicitTorontoGPSfix centers[-79.4,43.7], late selectedVirginiafeedpoint moves camera[-76,36.8].",
+    "source": "Separate selectedPoint coordinate effect bypasses prior fit/camera intent suppression in web and similar native iOS path.",
+    "evidence": "docs/audits/evidence/native-foreground-independent-2026-10-15/selected-before-fix.json",
+    "fix": "Camera-intent epoch gates deferred selected coordinate effects in web/iOS; Android sanitized missing\u2192present selected payload requires selectionFocus admission.",
+    "independent_after_fix": "Same actual bundled ReactNativeWeb/MapLibre repro: before[-79.4,43.7], afterlatepoint[-79.4,43.7], cameraPreserved true. Real drag/late selected coordinate changes and explicit refresh tested; iOS explicitfocus and Android selectionFocus regressions passed."
+  },
+  "controlled_browser": "Independently reran actual retained NativeWeb component/MapLibre harness; no startup prompt, drag/GPS snapshot/late selectedfeed/refresh/hide/deny/settings/services/cancel, zeroJSerrors."
+}

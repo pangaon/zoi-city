@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {selectedDiscoveryPoint,emptyDiscoveryRecovery,initialDiscovery,placeDirections} from '../src/discovery.ts';
 import {normalizeProfile} from '../src/profile.ts';
-import {embeddedMapPayload,embeddedMapCommand,embeddedMapMessage,mountEmbeddedMap} from '../../assets/map-data/embedded.mjs';
+import {embeddedMapPayload,embeddedMapCommand,embeddedMapMessage,mountEmbeddedMap,embeddedLocationCommand} from '../../assets/map-data/embedded.mjs';
 const id='11111111-1111-4111-8111-111111111111';
 const entity={id,slug:'reviewed',name:'Actual parish',city:'Toronto',country:'Canada',address:'22 Actual Street',publish_status:'published',geo_precision:'street',latitude:43.7,longitude:-79.4,reviewed_destination:{listing_id:id,request_id:'actual-receipt',precision:'street',latitude:43.7,longitude:-79.4}};
 test('fresh selected receipt places and routes before feed arrives; altered or hidden proof is rejected',()=>{
@@ -35,4 +35,13 @@ test('embedded controller renders reviewed positions and selection, reports clic
 test('native profile address search is labelled lookup and declines locality-only or missing country destinations',()=>{
  const p=normalizeProfile(entity);assert.equal(p.addressLookup.basis,'published-address');assert.equal(new URL(p.addressLookup.href).searchParams.get('query'),'Actual parish, 22 Actual Street, Toronto, Canada');
  assert.equal(normalizeProfile({...entity,address:'Toronto'}).addressLookup,null);assert.equal(normalizeProfile({...entity,country:''}).addressLookup,null);
+});
+
+
+test('embedded location snapshot carries only measured fields, renders accuracy and never recenters on refresh',()=>{
+ const events={},messages=[],moves=[],sources={},markers=[];
+ class Map{addControl(){}on(e,layer,handler){events[e+(typeof layer==='string'?':'+layer:'')]=handler||layer;}addSource(id){sources[id]=[];}addLayer(){}getSource(id){return{setData:v=>sources[id].push(v)}}setPaintProperty(){}easeTo(v){moves.push(v)}remove(){}}
+ class Marker{constructor(){markers.push(this)}setLngLat(v){this.point=v;return this}addTo(){return this}remove(){this.removed=true}}
+ const host={maplibregl:{Map,Marker,NavigationControl:class{}},ZoiBasemap:{style:()=>({})},ReactNativeWebView:{postMessage:v=>messages.push(JSON.parse(v))}},doc={getElementById:()=>({clientWidth:390}),createElement:()=>({style:{},setAttribute(){}})};
+ const control=mountEmbeddedMap(doc,host);events.load();const fix={latitude:0,longitude:0,accuracy:35,timestamp:Date.now(),privateToken:'never forward'};const command=embeddedLocationCommand(fix,{center:true});assert.ok(!command.includes('never forward'));vm.runInNewContext(command,{window:host});assert.deepEqual(markers[0].point,[0,0]);assert.equal(moves.length,1);assert.equal(sources['zoi-device-accuracy'].at(-1).features.length,1);events.movestart({originalEvent:{type:'touchmove'}});assert.deepEqual(messages.at(-1),{type:'map.interaction'});assert.deepEqual(embeddedMapMessage(JSON.stringify(messages.at(-1)),[]),{type:'map.interaction'});vm.runInNewContext(embeddedLocationCommand(fix),{window:host});assert.equal(moves.length,1);control.update(embeddedMapPayload([],'late-place',{selectionFocus:false}));control.update(embeddedMapPayload([{s:'late-place',n:'Late selected place',lat:36.8,lng:-76,precision:'street'}],'late-place',{selectionFocus:false}));assert.equal(moves.length,1);control.update(embeddedMapPayload([{s:'late-place',lat:36.8,lng:-76,precision:'street'}],'late-place',{selectionFocus:true,focus:true}));assert.equal(moves.length,2);vm.runInNewContext(embeddedLocationCommand(null),{window:host});assert.equal(markers.at(-1).removed,true);assert.equal(sources['zoi-device-accuracy'].at(-1).features.length,0);control.destroy();
 });

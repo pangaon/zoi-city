@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, Text, Pressable, Linking } from "react-native";
-import MapView, { Marker, type Region } from "react-native-maps";
+import MapView, { Marker, Circle, type Region } from "react-native-maps";
 import { LIGHT } from "./brand";
 import type { DiscoveryMapProps } from "./DiscoveryMap.types";
 import { exactPins, nativePinClusters, fullMapToolsLink } from "./discovery";
+import {useMapLocation} from './useMapLocation';
+import {MapLocationControl} from './MapLocationControl';
+import {deviceLocationRegion,deviceLocationLabel} from '../../assets/map-data/foreground-location.mjs';
 export function DiscoveryMap({
   points,
   selected,
@@ -27,6 +30,9 @@ export function DiscoveryMap({
     pins = exactPins(points),
     prior = useRef(""),
     priorSelection = useRef("");
+  const location=useMapLocation(scopeKey,(fix,{center})=>{if(center)map.current?.animateToRegion(deviceLocationRegion(fix),motion?300:0);});
+  useEffect(()=>{location.manualMove();},[selected,focus]);
+  const cameraIntent=useRef(0),selectionIntent=useRef({key:'',epoch:0});
   const [selectedPoint] = pins.filter((p: any) => p.s === selected);
   useEffect(() => {
     if (!ready || prior.current === scopeKey) return;
@@ -41,7 +47,9 @@ export function DiscoveryMap({
       );
   }, [ready, scopeKey, pins.length, motion]);
   useEffect(() => {
-    if (!ready || !selectedPoint) return;
+    const selectionKey=selected+'|'+focus;
+    if(selectionIntent.current.key!==selectionKey)selectionIntent.current={key:selectionKey,epoch:cameraIntent.current};
+    if (!ready || !selectedPoint||selectionIntent.current.epoch!==cameraIntent.current) return;
     const sameSelection = priorSelection.current === selected;
     priorSelection.current = selected;
     map.current?.animateToRegion(
@@ -75,11 +83,15 @@ export function DiscoveryMap({
           region.current = r;
           setViewport((v) => v + 1);
         }}
+        onPanDrag={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;}}
+        onTouchStart={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;}}
         showsUserLocation={false}
         showsMyLocationButton={false}
         rotateEnabled={false}
         pitchEnabled={false}
       >
+        {location.state.fix?<Marker identifier="zoi-device-location" coordinate={location.state.fix} title={deviceLocationLabel(location.state.fix)} pinColor="#1676df"><View style={s.deviceDot}/></Marker>:null}
+        {location.state.fix?.accuracy>0?<Circle center={location.state.fix} radius={location.state.fix.accuracy} strokeColor="#1676df" fillColor="rgba(22,118,223,0.12)"/>:null}
         {shown.map((cluster) => {
           const p = cluster.places[0],
             same = cluster.places.every(
@@ -106,6 +118,7 @@ export function DiscoveryMap({
                   : LIGHT.accent
               }
               onPress={() => {
+                cameraIntent.current++;location.manualMove();prior.current=scopeKey;
                 if (cluster.places.length === 1 || same) onSelect(p.s);
                 else
                   map.current?.fitToCoordinates(
@@ -130,10 +143,11 @@ export function DiscoveryMap({
         })}
       </MapView>
       <View style={s.actions}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" onPress={()=>map.current?.animateToRegion({...region.current,latitudeDelta:Math.min(170,region.current.latitudeDelta*2),longitudeDelta:Math.min(350,region.current.longitudeDelta*2)},motion?250:0)} style={s.action}><Text style={s.actionText}>−</Text></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" onPress={()=>map.current?.animateToRegion({...region.current,latitudeDelta:Math.max(0.0005,region.current.latitudeDelta/2),longitudeDelta:Math.max(0.0005,region.current.longitudeDelta/2)},motion?250:0)} style={s.action}><Text style={s.actionText}>＋</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" onPress={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;map.current?.animateToRegion({...region.current,latitudeDelta:Math.min(170,region.current.latitudeDelta*2),longitudeDelta:Math.min(350,region.current.longitudeDelta*2)},motion?250:0);}} style={s.action}><Text style={s.actionText}>−</Text></Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" onPress={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;map.current?.animateToRegion({...region.current,latitudeDelta:Math.max(0.0005,region.current.latitudeDelta/2),longitudeDelta:Math.max(0.0005,region.current.longitudeDelta/2)},motion?250:0);}} style={s.action}><Text style={s.actionText}>＋</Text></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Open full map tools in browser" disabled={opening} onPress={async()=>{setOpening(true);setToolError("");try{await Linking.openURL(fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},{...region.current,width}));}catch{if(mounted.current)setToolError("The browser could not open. Try full map tools again.");}finally{if(mounted.current)setOpening(false);}}} style={[s.action,{flex:1}]}><Text style={[s.actionText,{fontSize:12}]}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable>
       </View>
+      {ready?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}
       {toolError?<View style={s.note}><Text accessibilityRole="alert" style={s.text}>{toolError}</Text></View>:null}
       {!ready ? (
         <View pointerEvents="none" style={s.note}>
@@ -151,6 +165,7 @@ export function DiscoveryMap({
   );
 }
 const s = StyleSheet.create({
+  deviceDot:{width:18,height:18,borderRadius:9,backgroundColor:"#1676df",borderWidth:3,borderColor:"#fff"},
   actions:{position:"absolute",top:10,left:10,right:10,flexDirection:"row",gap:6},
   action:{minWidth:40,minHeight:40,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,alignItems:"center",justifyContent:"center",paddingHorizontal:10},
   actionText:{color:LIGHT.ink,fontWeight:"700",fontSize:20},
