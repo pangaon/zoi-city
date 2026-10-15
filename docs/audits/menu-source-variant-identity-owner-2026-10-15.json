@@ -1,0 +1,165 @@
+{
+  "schema": 1,
+  "specialist": "enrichment_next",
+  "at": "2026-10-15T13:37:15.534114+00:00",
+  "worktree": "/tmp/zoi-menu-variant-dedup",
+  "branch": "fix-source-menu-variant-dedup-20261015",
+  "base": "bd5e9c41d8e10947266315fdbf262a0a4470a04d",
+  "required_prerequisite": "PR65 cb8df80fc4f801b4f695843fcd396808627d8c56 is in base ancestry. Current main includes accepted151/300 menu/guard contract.",
+  "files": [
+    {
+      "path": "supabase/functions/zoi-enrich/_menus.js",
+      "sha256": "668f4dcc402e1be5af75adde850392b60e523bf72e3b8d95587d8f59c900925b"
+    },
+    {
+      "path": "tests/unit/menu-source-variant-identity.test.mjs",
+      "sha256": "96e13d3f378e3803bb253b79b079e15b86a13ee01fc85b751ea7205a0cbf4f3f"
+    },
+    {
+      "path": "tests/integration/reviewed-food-retained-proof.mjs",
+      "sha256": "34527d8d3321fe94ef718db5f008a77a700ad85243b0b38855ae012ce0e752a2"
+    }
+  ],
+  "problem": "JSON-LD source equivalence compared section/name/offers but omitted description, collapsing distinct source variants such as the red and white Imiglykos wines at the same950HUFprice.",
+  "runtime_change": {
+    "path": "supabase/functions/zoi-enrich/_menus.js",
+    "expression_before": "JSON.stringify([section,name,item.offers])",
+    "expression_after": "JSON.stringify([section,name,item.offers,text(item.description)])",
+    "only_runtime_expression_changed": true,
+    "reverse_diff_matches_base": true,
+    "preserved": [
+      "Original source names, prices and section labels",
+      "Normalized description equivalence and exact duplicate collapse",
+      "300total/300persection/20sections/120000UTF8byte bounds",
+      "Existing1000node/200array traversal and unknown-coverage policy",
+      "Source identity, branch, owner, lease and writer fences; no schema or source apply"
+    ]
+  },
+  "actual_pyrgos_evidence": {
+    "private_directory": "/home/codespace/.cache/zoi/food-three-client-proposals-private-20261015",
+    "source_url": "https://pyrgostaverna.hu/hu/etlap",
+    "source_sha256": "652d97141212a463e8610e44853ed4d495d43b2ac45ac7e422fd04522c05c6f2",
+    "complete_original_body_rehashed": true,
+    "original_observed_items_before": 186,
+    "original_observed_items_after": 187,
+    "full_source_retained_items": 130,
+    "full_source_retained_sections": 20,
+    "full_source_truncated": true,
+    "omitted_items_after": 57,
+    "variants": [
+      {
+        "name": "Imiglykos",
+        "price": "950 HUF",
+        "note": "félédes vörös"
+      },
+      {
+        "name": "Imiglykos",
+        "price": "950 HUF",
+        "note": "félédes fehér"
+      }
+    ],
+    "variant_check_scope": "The exact original wine MenuSection node was isolated as a controlled test input because it lies beyond unchanged20section bound in the full source. Both original variants survive; this is not a claim that all29source sections are now importable."
+  },
+  "current_retained_proof_alignment": {
+    "path": "tests/integration/reviewed-food-retained-proof.mjs",
+    "separate_change_reason": "Historical proof still expected100/truncated=true after PR65 accepted151. Root explicitly authorized alignment of this current integration gate; prior audit/history files remain untouched.",
+    "preserved": "Exact original source SHA checks, source-context/identity/capture/review gates, payload provenance/ephemeral context removal, deterministic brief and actual public bakery model checks.",
+    "new_assertions": [
+      "151retained of151observed, truncated=false",
+      "Exact4source sections Spanakopita2/Tiropitakia2/Desserts2/List145",
+      "Payload menu canonical hash equals capture menu hash",
+      "Brief observes151and retains30summary entries with acceptance not_reviewed",
+      "Actual public bakery model retains151",
+      "Explicit owner menu clear still overrides imported151"
+    ],
+    "actual_result": {
+      "captured_at": "2026-10-15T13:36:04.030Z",
+      "scope": "actual retained official Hellenic source bytes through generic reviewed source capture and existing-writer payload; controlled transport and public model, no SQL apply or browser acceptance",
+      "listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+      "source_url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+      "source_sha256": "98327c9a383605c9630e977d3715b67aa4a7a8b967533c74bae09a61ffb1f6df",
+      "primary_sha256": "bbfd8172b3dbc4d7005fad739436e3442efb501e874dd7740602f105510fcce8",
+      "retained_items": 151,
+      "original_total": 151,
+      "truncated": false,
+      "brief_items": 30,
+      "exact_literal_price": true,
+      "public_bakery_model_items": 151,
+      "public_sections": [
+        {
+          "name": "Spanakopita",
+          "count": 2
+        },
+        {
+          "name": "Tiropitakia",
+          "count": 2
+        },
+        {
+          "name": "Desserts",
+          "count": 2
+        },
+        {
+          "name": "List",
+          "count": 145
+        }
+      ],
+      "owner_explicit_menu_clear_preserved": true,
+      "brief_offering_total": 151,
+      "brief_offering_retained": 30,
+      "source_documents_requested": 2,
+      "external_requests": 0,
+      "production_writes": 0,
+      "actual_production_lease": false
+    }
+  },
+  "verification": {
+    "focused_unit": {
+      "command": "ZOI_FOOD_RETAINED_SOURCE_PROOF=1 ZOI_FOOD_VARIANT_SOURCE_DIR=/home/codespace/.cache/zoi/food-three-client-proposals-private-20261015 node --test tests/unit/menu-source-variant-identity.test.mjs tests/unit/food-full-menu.test.mjs tests/unit/enrichment-menu.test.mjs tests/unit/reviewed-food-source.test.mjs tests/unit/food-source-pipeline.test.mjs tests/unit/food-source-branch-independent.test.mjs",
+      "tests": 46,
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/home/codespace/.cache/zoi/menu-source-variant-dedup-20261015/zoi-menu-variant-dedup-retained-unit.log",
+      "sha256": "5f8355012595bb69a07f3ef7868e12f6f747e2c6f2605862ece0b3546b636797"
+    },
+    "retained_integration": {
+      "command": "ZOI_FOOD_RETAINED_OUTPUT=/tmp/zoi-menu-variant-dedup-retained-result.json node tests/integration/reviewed-food-retained-proof.mjs",
+      "passed": true,
+      "log": "/home/codespace/.cache/zoi/menu-source-variant-dedup-20261015/zoi-menu-variant-dedup-retained.log",
+      "sha256": "64f1481326762573c7878aed7fbc811439b4df53aa2a1eb8593d1b74e074815c"
+    },
+    "deno_check": {
+      "command": "/home/codespace/.npm/_npx/7a40be787520bede/node_modules/deno/deno check --cached-only --node-modules-dir=none --no-lock supabase/functions/zoi-enrich/index.ts",
+      "passed": true,
+      "log": "/home/codespace/.cache/zoi/menu-source-variant-dedup-20261015/zoi-menu-variant-dedup-deno.log",
+      "sha256": "7d1f38f30f4893c2556aea91494f819ae185a2146a151e7b049d614cb4da98a8"
+    },
+    "node_syntax": true,
+    "git_diff_check": true,
+    "browser_or_database_apply": "Not run. This pure parser correction creates no DB/schema changes; actual retained source/controlled handler/reviewed payload/public model tested, no production or native acceptance asserted."
+  },
+  "capture_strategy": {
+    "recipe_sha256_after": "8fb7e7c723e73a31aef6da20bf93d10dc365e48c64417f25e4c2c8195249ca53",
+    "node": "24.14.0",
+    "behavior": "Existing recipe includes extractor/helper hashes, so parser bytes change future authorized resume keys. Existing immutable captures retained; no fresh external capture attempted."
+  },
+  "private_patch": {
+    "path": "/home/codespace/.cache/zoi/menu-source-variant-dedup-20261015/tracked-delta.patch",
+    "sha256": "c7739225c47f68cb5c155cd3fd96b1fdeac77c2c7b7ec4e2e9579aad87cf8a41",
+    "note": "Tracks one runtime-expression delta and current integration-proof alignment. New focused test is separately pinned."
+  },
+  "safety": {
+    "live_database_writes": 0,
+    "leases_created": 0,
+    "external_requests": 0,
+    "paid_calls": 0,
+    "website_swaps": 0,
+    "automatic_apply": false
+  },
+  "remaining": [
+    "Independent review and root-owned coherent worker release/deployment proof.",
+    "Pyrgos29source sections still exceed20canonical owner/import bound; no flattening or broadening here.",
+    "Three-client proposals remain unaccepted until actual identity/branch/source/currentfacts, owner edit/publish and customer journeys pass.",
+    "Other shared extraction/visible-branch identity/menu-label/placeholder gaps are outside this narrow delta and remain open."
+  ]
+}
