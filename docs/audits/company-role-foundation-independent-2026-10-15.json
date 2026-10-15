@@ -1,0 +1,45 @@
+{
+  "gate": "foundation source/isolated SQL/corrected production rollback fixture source accepted; actual root production execution pending",
+  "source_sha256": {
+    "supabase/migrations/20261015030231_company_role_foundation_alignment.sql": "ee8685fe668655c0b7bc250e48e7b64f1ece93b405eb0cbeeb31bc5be43e2a2c",
+    "tests/database/company-role-foundation.integration.mjs": "c0b3ff066aa1f0ff5dfbff6e78bf16c1852f96ed41a350d2d8b91078374f83f2",
+    "tests/database/fixtures/company-role-authority-live.json": "87961377bae8468048bece6a40acf00afff48ea221dbce357cd290233bfae3c2",
+    "tests/database/company-role-production-rollback.sql": "0fd919677bd215e875974820951cd31294891f8c5750936c4cd0eb3b25b99140",
+    "docs/audits/private-company-minutes-recovery-proposal-owner-2026-10-15.json": "0875784f7efa5fe5f5515daf312912c65c9dd6ca09374b453e30576dadf17dd8"
+  },
+  "independent_checks": {
+    "real_PG_groups": 25,
+    "captured_function_definitions": 45,
+    "direct_caller_structural_preservation": 37,
+    "locked_nonlocked_permission_matrix": 80,
+    "actual_authority_tables": 9,
+    "unrelated_composites_only": 8,
+    "production_fixture_absence_flags": 8
+  },
+  "review": [
+    "Exact full-definition/owner/ACL/config/definer/volatility guards refuse drift atomically.",
+    "Shared actual foundation role: absent-member true owner fallback; forged owner becomes viewer; explicit viewer remains viewer.",
+    "Current session/profile mapping rechecked after foundation locks; concurrent role/session/mapping revocation refuses mutations.",
+    "Private upload adapter locks profile UPDATE after workspace/member/session; observed two workspaces/same actor both complete without share upgrade deadlock.",
+    "Canonical Company/project save/reopen/CAS, immutable receipt replay/cancel, upload reservation/replay/history accepted in isolated canonical SQL.",
+    "All old ACLs preserved; new adapter private.35unaffected bodies byteidentical;37directcallers only approved bounded deltas."
+  ],
+  "fixture_issue_resolved": {
+    "before": "Four private zoi.ops_role calls underauthenticated depended on isolated schema USAGE not present in production.",
+    "actual_readonly_metadata": "has_schema_privilege(authenticated,zoi,USAGE)=false; auth USAGE=true. No grants modified.",
+    "after": "Four assertions use public ops_records_list role; exact production fixture executed after revoking authenticated private-schema USAGE, all25groups/eightabsence PASS.",
+    "fixture_sha256": "0fd919677bd215e875974820951cd31294891f8c5750936c4cd0eb3b25b99140"
+  },
+  "production_fixture_safety": [
+    "Dedicated existing QA/current session; fresh synthetic profile/workspace/records/reservations under BEGIN/ROLLBACK.",
+    "No helper override, grant weakening, real QA membership/session mutation, new auth user, provider/storage operation or publication."
+  ],
+  "limits": [
+    "37source-preservation checks are not37business/customer journeys.",
+    "Existing service document_upload_finish missing-member owner fallback remains reproduced/open.",
+    "No actual private upload bytes/download/storage cleanup or Company Minutes implementation accepted.",
+    "No actual production rollback fixture run by QA."
+  ],
+  "production_writes": 0,
+  "provider_operations": 0
+}

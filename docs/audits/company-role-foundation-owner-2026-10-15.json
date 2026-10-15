@@ -1,0 +1,1955 @@
+{
+  "schema_version": 1,
+  "worktree": "/workspaces/zoi-company-recovery",
+  "base": "a66641f",
+  "status": "Frozen candidate:25 isolated PostgreSQL groups passed; awaiting independent review and root production gate",
+  "scope": "Canonical Company role foundation alignment only; no private-minutes implementation",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015030231_company_role_foundation_alignment.sql",
+      "sha256": "ee8685fe668655c0b7bc250e48e7b64f1ece93b405eb0cbeeb31bc5be43e2a2c"
+    },
+    {
+      "path": "tests/database/company-role-foundation.integration.mjs",
+      "sha256": "c0b3ff066aa1f0ff5dfbff6e78bf16c1852f96ed41a350d2d8b91078374f83f2"
+    },
+    {
+      "path": "tests/database/fixtures/company-role-authority-live.json",
+      "sha256": "87961377bae8468048bece6a40acf00afff48ea221dbce357cd290233bfae3c2"
+    },
+    {
+      "path": "tests/database/company-role-production-rollback.sql",
+      "sha256": "0fd919677bd215e875974820951cd31294891f8c5750936c4cd0eb3b25b99140"
+    },
+    {
+      "path": "docs/audits/private-company-minutes-recovery-proposal-owner-2026-10-15.json",
+      "sha256": "0875784f7efa5fe5f5515daf312912c65c9dd6ca09374b453e30576dadf17dd8"
+    }
+  ],
+  "source_evidence": {
+    "actual_live_functions": 45,
+    "direct_callers": 37,
+    "actual_authority_tables": 9,
+    "composite_only_unrelated_tables": 8,
+    "guard": "Exact pg_get_functiondef MD5, owner, ACL, proconfig, SECURITY DEFINER and volatility for all45; new adapter must be absent"
+  },
+  "isolated_acceptance": {
+    "runner": "node tests/database/company-role-foundation.integration.mjs",
+    "expected_groups": 25,
+    "permission_checks": 80,
+    "role_scenarios": [
+      {
+        "member": null,
+        "actual_owner": true,
+        "canonical_role": "owner"
+      },
+      {
+        "member": "owner",
+        "actual_owner": false,
+        "canonical_role": "viewer"
+      },
+      {
+        "member": "owner",
+        "actual_owner": true,
+        "canonical_role": "owner"
+      },
+      {
+        "member": "admin",
+        "actual_owner": false,
+        "canonical_role": "admin"
+      },
+      {
+        "member": "editor",
+        "actual_owner": false,
+        "canonical_role": "editor"
+      },
+      {
+        "member": "viewer",
+        "actual_owner": false,
+        "canonical_role": "viewer"
+      },
+      {
+        "member": "viewer",
+        "actual_owner": true,
+        "canonical_role": "viewer"
+      },
+      {
+        "member": null,
+        "actual_owner": false,
+        "canonical_role": null
+      }
+    ],
+    "journeys": [
+      "canonical Company/project creation and current owner UI role",
+      "exact nonce replay, changed-payload refusal and cancellation",
+      "Documents list owner projection, private reservation/replay/history",
+      "same actor uploads in two workspaces observed waiting on profile UPDATE, both complete",
+      "mapping transfer during workspace admission refuses",
+      "session removal during workspace admission refuses without reservation",
+      "production rollback fixture unchanged executes locally, eight absence readbacks",
+      "canonical Company update persisted readback and stale version refusal"
+    ],
+    "source_preservation": "37 direct caller exact bodies asserted against captured originals with only seven entry call changes and Documents two role projections; this is not37 business journey acceptance",
+    "passed_groups": 25,
+    "observed_group_labels": [
+      "45 exact captured definitions, owners and ACLs installed; actual nine authority tables constraints retained; eight unrelated composites retain CHECKs",
+      "actual-owner absent-member defect reproduced against unchanged baseline",
+      "whole-definition volatility drift refuses guarded migration atomically",
+      "anonymous ACL drift refuses without installing adapter or partial replacements",
+      "actual foundation owner fallback now projects to current Company role",
+      "35 unaffected captured functions byte-identical and every original ACL preserved; upload adapter private",
+      "all 37 direct callers preserve exact original bodies except seven approved entry calls and two Documents role projections",
+      "role projection and five-permission locked/nonlocked matrix: member=null actualOwner=true",
+      "role projection and five-permission locked/nonlocked matrix: member=owner actualOwner=false",
+      "role projection and five-permission locked/nonlocked matrix: member=owner actualOwner=true",
+      "role projection and five-permission locked/nonlocked matrix: member=admin actualOwner=false",
+      "role projection and five-permission locked/nonlocked matrix: member=editor actualOwner=false",
+      "role projection and five-permission locked/nonlocked matrix: member=viewer actualOwner=false",
+      "role projection and five-permission locked/nonlocked matrix: member=viewer actualOwner=true",
+      "role projection and five-permission locked/nonlocked matrix: member=null actualOwner=false",
+      "actual owner without member opens Company and Documents with owner UI role, saves canonical company/project",
+      "canonical immutable nonce replay and cancellation survive fallback authority",
+      "canonical Company update reopens persisted edit and stale version cannot overwrite it",
+      "owner fallback reserves private upload and reopens history with exact retry",
+      "unchanged raw-member service finalizer fallback gap explicitly reproduced, not concealed",
+      "expired actual session denies Company mutation/private list/upload",
+      "two same-actor/different-workspace uploads wait on profile UPDATE then both finish without SHARE upgrade deadlock",
+      "profile mapping transfer while foundation acquisition waits cannot attribute prior owner authority to new profile",
+      "session revoked before foundation lock admission leaves no upload/version receipt",
+      "root production rollback fixture executes unchanged locally and all eight absence readbacks are true"
+    ]
+  },
+  "caller_role_projection_matrix": [
+    {
+      "signature": "ai_generation_get(uuid,uuid)",
+      "captured_definition_md5": "7956b9ee52c3c38ba2fb031be2fc2001",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ai_generation_history(uuid)",
+      "captured_definition_md5": "63f1074380dc8d2c0c8ff522f66b5a59",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ai_profile_get(uuid)",
+      "captured_definition_md5": "61cbdbf7b305b9176a7df30db4f9f76f",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "appearance_decide(uuid,integer,text)",
+      "captured_definition_md5": "646c25189efcc41827213bd57a93c301",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "appearance_operator(uuid)",
+      "captured_definition_md5": "01933a75824a34d8910918aec9986461",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "appearance_propose(uuid,jsonb)",
+      "captured_definition_md5": "b5c9f60a3f79245848eafa4480b85524",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "audience_access(uuid)",
+      "captured_definition_md5": "6fe2d0f929a50a2ca5cb848a8c8c8b44",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "creator_convert(uuid,uuid,uuid,text,uuid)",
+      "captured_definition_md5": "51f2e77fca0d58eab783f4489ec42f90",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "creator_get(uuid)",
+      "captured_definition_md5": "d29ddac65e4e41d5cf6cb6752d0d4bb0",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "creator_list(uuid)",
+      "captured_definition_md5": "13d0ae965e5c8106113833c41392c224",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "document_archive(uuid,uuid,integer)",
+      "captured_definition_md5": "c00324735605d24f75a387353105b22a",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "document_cleanup_prepare(uuid,uuid)",
+      "captured_definition_md5": "e37fe82d2ee2af9019772d832de2f796",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "document_download_authorize(uuid,uuid)",
+      "captured_definition_md5": "c60523109b85d62dfd8dbac17de04feb",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "document_history(uuid,uuid)",
+      "captured_definition_md5": "832b5f05b1eb95c3633d79774a580a14",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "document_upload_begin(uuid,uuid,uuid,integer,text,uuid,text,text,integer,text)",
+      "captured_definition_md5": "b1fce60275887092f4ea4089a40d2115",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "documents_list(uuid,uuid)",
+      "captured_definition_md5": "c13e519bf0004e95f1187fa7690246c0",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "festival_operator(uuid,uuid,text,integer)",
+      "captured_definition_md5": "3aef648296a90dece6ceaaaf9f0ba667",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "festival_placement_operator(uuid,uuid)",
+      "captured_definition_md5": "4257943f614b89161b88ae255ec6936c",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ops_audit_list(uuid,uuid,integer)",
+      "captured_definition_md5": "05950a6d72206f03714ac276d83c2ba2",
+      "uses_ops_role": true,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ops_mutation_execute(uuid,uuid,text,jsonb)",
+      "captured_definition_md5": "ecbcc01686137abac7dd7a204de87e13",
+      "uses_ops_role": true,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ops_record_archive(uuid,uuid,integer)",
+      "captured_definition_md5": "7ec0b6f51fed36be451296d02b979d96",
+      "uses_ops_role": true,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ops_record_save(uuid,text,jsonb,uuid,integer)",
+      "captured_definition_md5": "258675e34a2aa8857f10c45fe8c018c7",
+      "uses_ops_role": true,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ops_records_list(uuid,text,boolean)",
+      "captured_definition_md5": "870c6d822c2c71b84dad5cbd2671cf8d",
+      "uses_ops_role": true,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "ops_request_status(uuid,uuid,boolean)",
+      "captured_definition_md5": "6560fbe3184be7dab38f25dae4ec4464",
+      "uses_ops_role": true,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "time_entry_history(uuid,uuid)",
+      "captured_definition_md5": "5f89d94acb56181a6d0e4bbe1e7ceab1",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "time_entry_transition(uuid,uuid,integer,text,text)",
+      "captured_definition_md5": "5dd48b941cde79eb1381a3bb9c4303e3",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "timekeeping_dashboard(uuid,timestamp with time zone,timestamp with time zone)",
+      "captured_definition_md5": "7ead9f29762615102e21d3b518b6d3a7",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "timekeeping_export(uuid,timestamp with time zone,timestamp with time zone)",
+      "captured_definition_md5": "3b0c199ae14e1fc4a4121d1f50dfc955",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "workspace_settings_get(uuid)",
+      "captured_definition_md5": "7d844e7595319e56c0f67d6ba3bcb4fa",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.creator_receipt_value(zoi.creator_mutation_receipts)",
+      "captured_definition_md5": "b5c08e70db48d8f872297643db2d559d",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.creator_write(uuid,boolean)",
+      "captured_definition_md5": "520c8bf536ca8fb2a72c740625243225",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.document_actor(uuid,boolean)",
+      "captured_definition_md5": "929df76431b70932a1c30144be5a199a",
+      "uses_ops_role": false,
+      "uses_company_authority": true,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.festival_actor(uuid,boolean)",
+      "captured_definition_md5": "c677d627a191d45177b3da2539001b18",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.football_actor(uuid)",
+      "captured_definition_md5": "c713a59d86ad3460e1fede422a0bb6f8",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.ops_receipt_value(zoi.ops_mutation_receipts)",
+      "captured_definition_md5": "e6f20d09f61fd6004c9377b94d203c6e",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.property_actor(uuid)",
+      "captured_definition_md5": "8e4b154c77c494bb1f1a1b10edcb91ba",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    },
+    {
+      "signature": "zoi.time_actor(uuid,boolean)",
+      "captured_definition_md5": "cf85de5d088251b31004696375e54323",
+      "uses_ops_role": true,
+      "uses_company_authority": false,
+      "role_scenarios": [
+        {
+          "member": null,
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "owner",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "owner",
+          "actual_owner": true,
+          "canonical_role": "owner"
+        },
+        {
+          "member": "admin",
+          "actual_owner": false,
+          "canonical_role": "admin"
+        },
+        {
+          "member": "editor",
+          "actual_owner": false,
+          "canonical_role": "editor"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": false,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": "viewer",
+          "actual_owner": true,
+          "canonical_role": "viewer"
+        },
+        {
+          "member": null,
+          "actual_owner": false,
+          "canonical_role": null
+        }
+      ],
+      "coverage": "shared role projection and exact caller preservation; sector-specific business journey not exercised unless listed above"
+    }
+  ],
+  "scaffold_limits": [
+    "Auth uid/jwt accessors use test GUC facade; actual suite_current_session/suite_lock_session/workspace_locked_role functions are exact captured production definitions",
+    "Nine authority tables use actual columns/CHECK/PK/unique/FK/index/RLS policies; ancillary workspace/member revision triggers omitted and not claimed",
+    "Eight unrelated sector composites install actual columns/CHECK/PK/unique only, omit their external FKs; no sector business journey claim"
+  ],
+  "remaining": [
+    "Actual production application and controlled rollback proof by root after independent gate",
+    "document_upload_finish service raw member check still refuses actual owner without member: explicitly reproduced and original body untouched",
+    "Private company minutes/role/deadline vertical not yet implemented",
+    "No browser or native parity claim; this candidate changes no UI files"
+  ],
+  "rollback": "Root only: restore exact changed10 definitions from captured fixture, DROP private upload adapter after restoring caller; no table/data changes. Do not blindly restore if a newer definition differs. Root production fixture transaction rolls back all synthetic data.",
+  "references": [
+    "https://www.postgresql.org/docs/current/explicit-locking.html",
+    "docs/audits/private-company-minutes-recovery-proposal-owner-2026-10-15.json",
+    "/workspaces/zoi-city/docs/audits/original-worktree-recovery-classification-2026-10-15.json"
+  ],
+  "production_fixture_private_schema_regression": "Authenticated zoi USAGE revoked immediately before unchanged production rollback fixture; role assertions use public readers only."
+}

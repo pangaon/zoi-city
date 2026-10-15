@@ -1,0 +1,733 @@
+{
+  "state": "read_only_proposal_pending_ownership_no_product_edits",
+  "worktree": "/workspaces/zoi-company-recovery",
+  "base_main": "a66641f",
+  "original_recovery_evidence": "/workspaces/zoi-city/docs/audits/original-worktree-recovery-classification-2026-10-15.json",
+  "authoritative_queue": "docs/recovery-delivery-board.json; connected_operations/owners lane remains authoritative",
+  "scope_links": [
+    "63584904647352e2",
+    "36eca25beacfe466",
+    "2eb20293ad1af541"
+  ],
+  "finding": "Original private company minutes/roles/deadlines are meaningful unfinished source; current Operations company/project/task/contact records are viewer-readable and current Documents permits editors. Private minutes cannot be safely stored in ordinary Operations notes or labelled private while using the ordinary document permissions.",
+  "actual_helpers": [
+    {
+      "name": "zoi.ops_role(uuid)",
+      "hash": "0eafa8c62d693d63d3b663d90a9dff92",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "volatility": "stable",
+      "finding": "Raw membership-only role lookup, no actual owner fallback or forged-owner downgrade."
+    },
+    {
+      "name": "zoi.company_document_authority(uuid,text,uuid,boolean)",
+      "hash": "e2c7cc18415f3f9fa4a7c7736d38753e",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "finding": "Membership JOIN only; p_lock false uses current session/read-only role fetch; p_lock true adds profile/member SHARE then current-session recheck. No workspace lock currently."
+    }
+  ],
+  "direct_dependency_counts": {
+    "unique_functions": 37,
+    "company_authority": 13,
+    "ops_role": 30
+  },
+  "direct_callers": [
+    {
+      "nspname": "public",
+      "proname": "ai_generation_get",
+      "args": "p_workspace uuid, p_generation uuid",
+      "hash": "fd99b181ad95d4e14f8c7353a7556411",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ai_generation_history",
+      "args": "p_workspace uuid",
+      "hash": "d095cb6ad032930b46fff19bd3c0492a",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ai_profile_get",
+      "args": "p_workspace uuid",
+      "hash": "79cefdbe4dd796872edb6ae296bc1b0a",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "appearance_decide",
+      "args": "p_id uuid, p_expected_version integer, p_action text",
+      "hash": "4c07b4bbf245e200248dfe1e7be0c5f4",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "appearance_operator",
+      "args": "p_workspace uuid",
+      "hash": "02379ab6df5c77b5c05bb9a870382e8e",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "appearance_propose",
+      "args": "p_id uuid, p_data jsonb",
+      "hash": "e047729e0234394c943399350fd287de",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "audience_access",
+      "args": "p_workspace uuid",
+      "hash": "d382372a48509ae833632d2b27baf7e9",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "creator_convert",
+      "args": "p_workspace uuid, p_inquiry uuid, p_company uuid, p_kind text, p_request uuid",
+      "hash": "d35ee38986e2b7c9f4dc841ef8d107d2",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "creator_get",
+      "args": "p_campaign uuid",
+      "hash": "9c8d59cac21c2fc77113e5a53e88673d",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "creator_list",
+      "args": "p_workspace uuid",
+      "hash": "ca71c79a7541f6c84a43d281ab359b63",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "document_archive",
+      "args": "p_workspace uuid, p_document uuid, p_expected_version integer",
+      "hash": "a699b85861481f88221e194b7ab44fa3",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "public",
+      "proname": "document_cleanup_prepare",
+      "args": "p_workspace uuid, p_version uuid",
+      "hash": "d4d0a54552cdbd8a424a469621e202cc",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "public",
+      "proname": "document_download_authorize",
+      "args": "p_workspace uuid, p_version uuid",
+      "hash": "804e73e9eb59d71e5e2ab6b7ec33246a",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "public",
+      "proname": "document_history",
+      "args": "p_workspace uuid, p_document uuid",
+      "hash": "45f3116fb0d034b6ba8483260f392577",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "public",
+      "proname": "document_upload_begin",
+      "args": "p_workspace uuid, p_project uuid, p_document uuid, p_expected_version integer, p_title text, p_request uuid, p_filename text, p_mime text, p_size integer, p_sha256 text",
+      "hash": "4cc886d5a0a97c1b99f1c17a8404f9cd",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "public",
+      "proname": "documents_list",
+      "args": "p_workspace uuid, p_project uuid",
+      "hash": "dd439bae70292d0f04b1c8138e5e3556",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "public",
+      "proname": "festival_operator",
+      "args": "p_workspace uuid, p_event uuid, p_status text, p_offset integer",
+      "hash": "d0c3b93451b5038d18e034c2c47662f6",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "festival_placement_operator",
+      "args": "p_workspace uuid, p_event uuid",
+      "hash": "ef08e60877b955910a019eb1bd4b89ab",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ops_audit_list",
+      "args": "p_workspace uuid, p_record uuid, p_limit integer",
+      "hash": "05dcac57b564aa832304d31695a36986",
+      "company_authority": true,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ops_mutation_execute",
+      "args": "p_workspace uuid, p_request uuid, p_action text, p_args jsonb",
+      "hash": "6581faef5266c707c57953e62b2ccaa9",
+      "company_authority": true,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ops_record_archive",
+      "args": "p_workspace uuid, p_id uuid, p_expected_version integer",
+      "hash": "c537929b38f5e7bd137837dab97eed79",
+      "company_authority": true,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ops_record_save",
+      "args": "p_workspace uuid, p_kind text, p_data jsonb, p_id uuid, p_expected_version integer",
+      "hash": "865c3f5e8face96aacdaece37865a9fa",
+      "company_authority": true,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ops_records_list",
+      "args": "p_workspace uuid, p_kind text, p_include_archived boolean",
+      "hash": "ab91e701c15fb6489b35fa8c37a991cd",
+      "company_authority": true,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "ops_request_status",
+      "args": "p_workspace uuid, p_request uuid, p_cancel_if_missing boolean",
+      "hash": "039a0df4311ce235e329a362af95f68c",
+      "company_authority": true,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "time_entry_history",
+      "args": "p_workspace uuid, p_entry uuid",
+      "hash": "a18e2658b56c67a95d0c269fca7b0ab7",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "time_entry_transition",
+      "args": "p_workspace uuid, p_entry uuid, p_expected_version integer, p_action text, p_reason text",
+      "hash": "12fc28af7fab123fab852e8cf16cf333",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "timekeeping_dashboard",
+      "args": "p_workspace uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "hash": "16bb783e7490c259da576539b64fba59",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "timekeeping_export",
+      "args": "p_workspace uuid, p_from timestamp with time zone, p_to timestamp with time zone",
+      "hash": "4403e733bceaf762101a84767634f235",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "public",
+      "proname": "workspace_settings_get",
+      "args": "p_workspace uuid",
+      "hash": "3695de3c5b674e4d2c0ab0be6f4f871c",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "creator_receipt_value",
+      "args": "r zoi.creator_mutation_receipts",
+      "hash": "ded5c32fb027ab21887844289c9733b4",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "creator_write",
+      "args": "p_campaign uuid, p_operator boolean",
+      "hash": "f67412abffbca48412702f4e84c699cb",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "document_actor",
+      "args": "p_workspace uuid, p_manage boolean",
+      "hash": "70632c033cc47e12a68365e51a27d110",
+      "company_authority": true,
+      "ops_role": false
+    },
+    {
+      "nspname": "zoi",
+      "proname": "festival_actor",
+      "args": "p_workspace uuid, p_manage boolean",
+      "hash": "657042123cbaa36ac9537da7fb513de9",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "football_actor",
+      "args": "p_workspace uuid",
+      "hash": "1c834297390d1e9504ca8d2cd9c98b9b",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "ops_receipt_value",
+      "args": "r zoi.ops_mutation_receipts",
+      "hash": "50805f36ddaf2d49eebc025fefff4733",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "property_actor",
+      "args": "p_workspace uuid",
+      "hash": "fd1d0346bbf4b6fe12cff3eef6dd0c34",
+      "company_authority": false,
+      "ops_role": true
+    },
+    {
+      "nspname": "zoi",
+      "proname": "time_actor",
+      "args": "p_workspace uuid, p_manage boolean",
+      "hash": "10b10f42ca25fd22d1e6362c01c02c10",
+      "company_authority": false,
+      "ops_role": true
+    }
+  ],
+  "read_write_lock_review": [
+    {
+      "name": "public.document_archive",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'document_manage',NULL,false);"
+        },
+        {
+          "line": 10,
+          "text": "actor:=zoi.document_actor(p_workspace,true);"
+        },
+        {
+          "line": 11,
+          "text": "select * into doc from zoi.workspace_documents where id=p_document and workspace_id=p_workspace for update;"
+        },
+        {
+          "line": 13,
+          "text": "if doc.archived_at is not null then PERFORM zoi.company_document_authority(p_workspace,'document_manage',authority_actor,true); RETURN jsonb_build_object('ok',true,'document',to_jsonb(doc));end if;"
+        },
+        {
+          "line": 18,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_manage',authority_actor,true); RETURN jsonb_build_object('ok',true,'document',to_jsonb(doc));"
+        }
+      ]
+    },
+    {
+      "name": "public.document_cleanup_prepare",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'document_manage',NULL,false);"
+        },
+        {
+          "line": 10,
+          "text": "actor:=zoi.document_actor(p_workspace,true);"
+        },
+        {
+          "line": 12,
+          "text": "select * into doc from zoi.workspace_documents where id=v.document_id for update;"
+        },
+        {
+          "line": 13,
+          "text": "select * into v from zoi.document_versions where id=p_version and workspace_id=p_workspace for update;"
+        },
+        {
+          "line": 19,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_manage',authority_actor,true); RETURN jsonb_build_object('ok',true,'object_path',v.object_path,'version_id',v.id);"
+        }
+      ]
+    },
+    {
+      "name": "public.document_download_authorize",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'document_read',NULL,false);"
+        },
+        {
+          "line": 10,
+          "text": "actor:=zoi.document_actor(p_workspace);"
+        },
+        {
+          "line": 15,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_read',authority_actor,true); RETURN jsonb_build_object('ok',true,'object_path',v.object_path,'filename',v.filename,'expires_in',60);"
+        }
+      ]
+    },
+    {
+      "name": "public.document_history",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'document_read',NULL,false);"
+        },
+        {
+          "line": 10,
+          "text": "perform zoi.document_actor(p_workspace);"
+        },
+        {
+          "line": 15,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_read',authority_actor,true); RETURN jsonb_build_object('ok',true,'document',to_jsonb(doc),'versions',versions,'audit',audit);"
+        }
+      ]
+    },
+    {
+      "name": "public.document_upload_begin",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'document_read',NULL,false);"
+        },
+        {
+          "line": 10,
+          "text": "actor:=zoi.document_actor(p_workspace);"
+        },
+        {
+          "line": 15,
+          "text": "perform 1 from zoi.user_profiles where id=actor for update;"
+        },
+        {
+          "line": 22,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_read',authority_actor,true); RETURN jsonb_build_object('ok',true,'document',to_jsonb(doc),'upload',to_jsonb(v));"
+        },
+        {
+          "line": 24,
+          "text": "perform 1 from zoi.ops_records where id=p_project and workspace_id=p_workspace and kind='project' and archived_at is null for share;"
+        },
+        {
+          "line": 30,
+          "text": "select * into doc from zoi.workspace_documents where id=p_document and workspace_id=p_workspace for update;"
+        },
+        {
+          "line": 41,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_read',authority_actor,true); RETURN jsonb_build_object('ok',true,'document',to_jsonb(doc),'upload',to_jsonb(v));"
+        }
+      ]
+    },
+    {
+      "name": "public.documents_list",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'document_read',NULL,false);"
+        },
+        {
+          "line": 10,
+          "text": "actor:=zoi.document_actor(p_workspace);select m.role into role from zoi.workspace_members m where workspace_id=p_workspace and profile_id=actor;"
+        },
+        {
+          "line": 13,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'document_read',authority_actor,true); select m.role into role from zoi.workspace_members m where workspace_id=p_workspace and profile_id=authority_actor; RETURN jsonb_build_object('ok',true,'role',role,'documents',docs,'projects',projects);"
+        }
+      ]
+    },
+    {
+      "name": "public.ops_audit_list",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'ops_read',NULL,false);"
+        },
+        {
+          "line": 14,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'ops_read',authority_actor,true); RETURN jsonb_build_object('ok',true,'events',events);"
+        }
+      ]
+    },
+    {
+      "name": "public.ops_mutation_execute",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,CASE WHEN p_action='archive' OR (p_action='save' AND p_args->>'p_kind'='company') THEN 'ops_manage' ELSE 'ops_write' END,NULL,false);"
+        },
+        {
+          "line": 15,
+          "text": "perform pg_advisory_xact_lock(hashtextextended('ops-request:'||actor::text||':'||p_request::text,0));"
+        },
+        {
+          "line": 21,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,CASE WHEN p_action='archive' OR (p_action='save' AND p_args->>'p_kind'='company') THEN 'ops_manage' ELSE 'ops_write' END,authority_actor,true); RETURN zoi.ops_receipt_value(r);"
+        },
+        {
+          "line": 23,
+          "text": "perform pg_advisory_xact_lock(hashtextextended('ops-actor:'||actor::text,0));"
+        },
+        {
+          "line": 30,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,CASE WHEN p_action='archive' OR (p_action='save' AND p_args->>'p_kind'='company') THEN 'ops_manage' ELSE 'ops_write' END,authority_actor,true); RETURN zoi.ops_receipt_value(r);"
+        }
+      ]
+    },
+    {
+      "name": "public.ops_record_archive",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'ops_manage',NULL,false);"
+        },
+        {
+          "line": 14,
+          "text": "SELECT * INTO prior FROM zoi.ops_records WHERE id=p_id AND workspace_id=p_workspace FOR UPDATE;"
+        },
+        {
+          "line": 22,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'ops_manage',authority_actor,true); RETURN jsonb_build_object('ok',true,'record',to_jsonb(saved));"
+        }
+      ]
+    },
+    {
+      "name": "public.ops_record_save",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 10,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,CASE WHEN p_kind='company' THEN 'ops_manage' ELSE 'ops_write' END,NULL,false);"
+        },
+        {
+          "line": 32,
+          "text": "PERFORM 1 FROM zoi.ops_records WHERE id=company AND workspace_id=p_workspace AND kind='company' AND archived_at IS NULL FOR SHARE;"
+        },
+        {
+          "line": 36,
+          "text": "SELECT company_id INTO company FROM zoi.ops_records WHERE id=project AND workspace_id=p_workspace AND kind='project' AND archived_at IS NULL FOR SHARE;"
+        },
+        {
+          "line": 40,
+          "text": "PERFORM 1 FROM zoi.ops_records WHERE id=contact AND workspace_id=p_workspace AND kind='contact' AND archived_at IS NULL FOR SHARE;"
+        },
+        {
+          "line": 54,
+          "text": "SELECT * INTO prior FROM zoi.ops_records WHERE id=p_id AND workspace_id=p_workspace AND kind=p_kind FOR UPDATE;"
+        },
+        {
+          "line": 66,
+          "text": "IF assignee IS NOT NULL THEN PERFORM 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=assignee FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'invalid_assignee';END IF;END IF; PERFORM zoi.company_document_authority(p_workspace,CASE WHEN p_kind='company' THEN 'ops_manage' ELSE 'ops_write' END,authority_actor,true); RETURN jsonb_build_object('ok',true,'record',to_jsonb(saved));"
+        }
+      ]
+    },
+    {
+      "name": "public.ops_records_list",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'ops_read',NULL,false);"
+        },
+        {
+          "line": 16,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'ops_read',authority_actor,true); role_name:=zoi.ops_role(p_workspace); RETURN jsonb_build_object('ok',true,'role',role_name,'records',records,'members',members);"
+        }
+      ]
+    },
+    {
+      "name": "public.ops_request_status",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 9,
+          "text": "authority_actor:=zoi.company_document_authority(p_workspace,'ops_write',NULL,false);"
+        },
+        {
+          "line": 13,
+          "text": "perform pg_advisory_xact_lock(hashtextextended('ops-request:'||actor::text||':'||p_request::text,0));"
+        },
+        {
+          "line": 17,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'ops_write',authority_actor,true); RETURN zoi.ops_receipt_value(r);"
+        },
+        {
+          "line": 19,
+          "text": "if not coalesce(p_cancel_if_missing,false) then PERFORM zoi.company_document_authority(p_workspace,'ops_write',authority_actor,true); RETURN jsonb_build_object('ok',true,'state','missing','workspace_id',p_workspace,'request_id',p_request);end if;"
+        },
+        {
+          "line": 20,
+          "text": "perform pg_advisory_xact_lock(hashtextextended('ops-actor:'||actor::text,0));"
+        },
+        {
+          "line": 23,
+          "text": "PERFORM zoi.company_document_authority(p_workspace,'ops_write',authority_actor,true); RETURN zoi.ops_receipt_value(r);"
+        }
+      ]
+    },
+    {
+      "name": "zoi.document_actor",
+      "volatility": "v",
+      "lines": [
+        {
+          "line": 1,
+          "text": "CREATE OR REPLACE FUNCTION zoi.document_actor(p_workspace uuid, p_manage boolean DEFAULT false)"
+        },
+        {
+          "line": 6,
+          "text": "AS $function$ BEGIN RETURN zoi.company_document_authority(p_workspace,CASE WHEN p_manage THEN 'document_manage' ELSE 'document_read' END,NULL,false);END $function$"
+        }
+      ]
+    }
+  ],
+  "authority_alignment": {
+    "ops_role": "Keep STABLE, no locks, existing ACL/signature. Project the exact canonical workspace/profile/member role decision: member role where known; owner fallback only when member absent and actual workspace owner; forged owner label becomes viewer; unknown/nonmember becomes null. No new global session predicate.",
+    "company_document_authority": "Preserve the p_lock=false nonlocking preliminary contract and existing current-session checks/expected actor. p_lock=true obtains canonical workspace_locked_role first, rechecks locked current profile mapping/expected actor and the unchanged permission-role matrix, then rechecks current session before return.",
+    "permission_matrix": {
+      "ops_read": [
+        "owner",
+        "admin",
+        "editor",
+        "viewer"
+      ],
+      "ops_write": [
+        "owner",
+        "admin",
+        "editor"
+      ],
+      "ops_manage": [
+        "owner",
+        "admin"
+      ],
+      "document_read": [
+        "owner",
+        "admin",
+        "editor"
+      ],
+      "document_manage": [
+        "owner",
+        "admin"
+      ]
+    },
+    "initial_true_before_resource_locks": [
+      "public.ops_record_save",
+      "public.ops_record_archive",
+      "public.ops_mutation_execute",
+      "public.ops_request_status",
+      "public.document_upload_begin",
+      "public.document_archive",
+      "public.document_cleanup_prepare"
+    ],
+    "reason": "These seven mutators otherwise obtain advisory/profile/document/Operations row locks before their final authority call. Only changing the final helper would create row-to-workspace inversion against canonical workspace-first writers.",
+    "plain_select_read_rpc": [
+      "public.ops_records_list",
+      "public.ops_audit_list",
+      "public.documents_list",
+      "public.document_history",
+      "public.document_download_authorize"
+    ],
+    "read_context": "All thirteen actual direct helper callers are VOLATILE. The five read RPCs perform ordinary SELECTs before the existing final locked authority check. Existing final p_lock=true already performs FOR SHARE and is not a read-only transaction contract; do not claim new GET support.",
+    "additional_projection": "public.documents_list twice selects workspace_members.role directly. Exact guarded replacement with ops_role is needed so owner-without-member receives owner in the real Documents UI, not merely RPC authorization success.",
+    "preserve": [
+      "No existing writer signatures/nonce/CAS semantics changed",
+      "No Documents editor/viewer privacy policy broadened",
+      "No global session predicate added to ops_role",
+      "No call to volatile locking helper inside STABLE per-row RLS lookup",
+      "No existing applied migration edited"
+    ]
+  },
+  "proposed_alignment_ownership": [
+    "NEW CLI-generated company_role_foundation_alignment migration",
+    "NEW tests/database/company-role-foundation.integration.mjs",
+    "NEW tests/database/fixtures/company-role-authority-live.json",
+    "NEW tests/database/company-role-production-rollback.sql",
+    "NEW owner audit/manifest"
+  ],
+  "alignment_gates": [
+    "Capture exact actual function bodies/owners/ACL/config AND table constraints/triggers/policies/index metadata before changing anything.",
+    "Role projection test for every one of37 direct callers and both Operations RLS policies; actual owner missing member, owner/admin/editor/viewer, forged owner, unknown role, other account/workspace.",
+    "Actual Company open/create/project/task/recovery receipt flow with owner missing membership, not only a helper test.",
+    "Actual Documents safe list/history/download/upload reservation/archive/cleanup permission matrix and returned role projection.",
+    "Real concurrent role/profile/session revocation and workspace-first cross-workflow lock contention; immutable existing nonce receipts/CAS/cancel tombstones unchanged.",
+    "Prove no external provider calls or persistent production data; independent review then root-owned production rollback/apply/release."
+  ],
+  "private_minutes_next_slice": {
+    "outcome": "Current owner/admin opens an existing canonical company workspace, creates a private meeting minute, saves/reopens, edits with CAS, and reads immutable version history.",
+    "reuse": "Existing Company/Operations route and canonical ops_records company ID. Existing ordinary record writer cannot safely represent this private kind because its rows/audit are viewer-readable.",
+    "storage": "Private RLS-revoked current minute + immutable version/audit + actor/account/workspace request receipt/tombstone extension keyed to existing company. No second company/contact/calendar product.",
+    "recovery": "Use the existing Operations opaque-reference recovery pattern; no private minutes body in browser storage. Exact original payload retry only while it remains in memory. After reload, check canonical receipt or atomically cancel-if-missing before a new mutation. Preserve unsent form on ordinary failures; explicitly state that private unsent text is not retained on this device.",
+    "fields": [
+      "Title",
+      "Meeting date/time and explicit timezone",
+      "Participants entered for this meeting",
+      "Private minute/decision text"
+    ],
+    "limits": "Internal team-maintained minutes; no approval/e-signature/legal validity/government filing claim. No attachments initially; no Documents permission broadening or duplicate file store. Private registry/roles/legal deadlines remain separate explicit unfinished scope.",
+    "proposed_later_paths": [
+      "assets/operations/company-dashboard.mjs",
+      "assets/suite/operations.js",
+      "NEW assets/operations/company-minutes-model.mjs",
+      "NEW assets/operations/company-minutes-controller.mjs",
+      "NEW assets/operations/company-minutes-view.mjs",
+      "NEW assets/operations/company-minutes.css",
+      "NEW CLI-generated private-minute canonical extension migration",
+      "NEW focused unit/PG/actual Core/browser/root rollback evidence"
+    ]
+  },
+  "separate_documents_gap": {
+    "function": "public.document_upload_finish(uuid)",
+    "hash": "9ac155ecce3ee13da06dfb54cb57d0e6",
+    "finding": "Service finalizer checks uploaded_by against raw workspace_members and therefore still refuses actual owner without member after reservation. It locks document/version before checking authority. This is not fixed merely by changing the two helpers or documents_list role projection.",
+    "boundary": "No attachments in the first minutes slice; do not claim full Documents owner-fallback upload parity. Service finalization/current uploader/session capability and lock-order review requires a separate bounded design and gate."
+  },
+  "mutations": {
+    "original_worktree_source": 0,
+    "current_product_source": 0,
+    "database": 0,
+    "provider_calls": 0
+  },
+  "limitations": [
+    "This is a source/dependency proposal, not accepted implementation.",
+    "Read-only production metadata contains function definitions/hashes only, no customer records or credentials.",
+    "37 dependent workflows are identified, not newly accepted or fixed.",
+    "Connect remains a separate frozen candidate; root owns its actual status-constraint corrective migration and release."
+  ]
+}
