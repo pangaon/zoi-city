@@ -1,0 +1,96 @@
+{
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "md5": "76061ee2d74e01f1514250f00b567950",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "explore_geo(text,text,text,text,integer)",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "md5": "f748cf4022085edbd10478c8aeda94c2",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "seo_entity(text)",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "d628d42f4407f56c7567eb3d30e5de00",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\"",
+        "plan_cache_mode=force_custom_plan"
+      ],
+      "signature": "zoi.explore_default_page(integer,integer)",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "69060b1eca6c4b094d66fc61d555dc7f",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\"",
+        "plan_cache_mode=force_custom_plan"
+      ],
+      "signature": "zoi.explore_search_before_default_page(text,text,text,text,integer,integer,text)",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f17b227663468c63feaafdda7caf903f",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.maintain_seo_projection()",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "e2c9c77b88eac4ef5f45486545c6894e",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.reviewed_duplicate_canonical_slug(text)",
+      "volatility": "s",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "afd4c37cb7254b589924db8bb3e7fb99",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.reviewed_food_public_context(zoi.listings)",
+      "volatility": "s",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "146dd8ef656d920722377064b13874ec",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\"",
+        "work_mem=16MB"
+      ],
+      "signature": "zoi.seo_canonical_rows()",
+      "volatility": "s",
+      "security_definer": true
+    }
+  ],
+  "trigger": "CREATE TRIGGER zz_maintain_seo_projection AFTER INSERT OR UPDATE OF id, name, city, region, country, address, slug, entity_type, updated_at, created_at, phone, website, latitude, description, publish_status, moderation_status, marketplace_status, duplicate_status ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_projection()"
+}

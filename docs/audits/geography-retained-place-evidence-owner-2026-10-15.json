@@ -1,0 +1,184 @@
+{
+  "kind": "retained_official_place_destination_support_owner",
+  "at": "2026-10-15T16:27:34.537615+00:00",
+  "worktree": "/tmp/zoi-geography-place-evidence",
+  "branch": "geography-place-evidence-20261015",
+  "base_commit": "08d16fe5eb9c7ad9c692e193e30b77789b338b8d",
+  "freeze_status": "Frozen read-only support capability awaiting independent review. Not a completed coordinate repair and not deployed.",
+  "owned_files": {
+    "scripts/geography/place-destination-evidence.mjs": "5bb3c39c6482057274253c8d2de750188ff832c4415b154ed5ce89f3fb55b749",
+    "scripts/geography/source-coordinates.mjs": "3ef86c26322837360d516adacf8a670a357c5b0417bf1388f6ff2befbafde4a9",
+    "scripts/geography/build-edge-source-consumer.mjs": "ca0b870950b6629568df6c1a0c4b3c2ac905a87373bf5831b34d7b3ba1d134b0",
+    "supabase/functions/geography-repair-source-consumer/_place-evidence.js": "6ab4030aa0af68d1146f8b886d1f037a9f00a2bc0d3745b70469a6c503c1543d",
+    "supabase/functions/geography-repair-source-consumer/_coordinates.js": "59719d47fdc579b72a33a240155d67441d58e057e6141ae5ca20ea1cb211c5ee",
+    "tests/unit/geography-place-destination-evidence.test.mjs": "49850d99debb9ffd4de16aa256c3adfde5e65a09032962601ea592b38446e3ef"
+  },
+  "source_findings": {
+    "current_outcome_counts_context": {
+      "matching_structured_coordinates_missing": 112,
+      "individual_publisher_profile_identity_unconfirmed": 63,
+      "source": "Root earlier live outcome census; not re-read during recovery."
+    },
+    "locally_replayed": {
+      "jobs": 70,
+      "documents": 120,
+      "all_raw_sha256_verified": true,
+      "every_original_result_field_unchanged": true,
+      "generated_edge_parity": true,
+      "support_outcomes": {
+        "exact_official_branch_identity_address_review_required": 2,
+        "actual_place_payload_missing_viewport_not_evidence": 5,
+        "malformed_or_unsupported_place_destination": 1
+      },
+      "strong_place_observations": 2,
+      "scope_limit": "70 retained historical official jobs are not all112current failures. No claim remaining42have the same gap or are repaired."
+    },
+    "examples": [
+      {
+        "listing_id": "02e262c3-087f-40ae-aa3c-7c5d93371fef",
+        "name": "Saint Demetrios Greek Orthodox Church",
+        "source_url": "https://www.stdemetriosunion.org/contact",
+        "source_sha256": "cec4a6d487f29da6cd71f9ae5d0e422e0ec44739e8bbae5f3aef1e31032165e2",
+        "published_actual_place": {
+          "latitude": 40.6948328,
+          "longitude": -74.2952553
+        },
+        "ignored_viewport_longitude": -74.297444,
+        "source_branch": "Literal721RahwayAvenue,UnionNewJersey07083 and St.Demetrios source name. CanonicalSaint/St alias and full-country/locality authority remain explicit independent review.",
+        "result": "Held supporting observation; no writer-eligible candidate."
+      },
+      {
+        "listing_id": "015c4726-008f-4343-8cce-5b60e55b6990",
+        "name": "Fradelakis & Co. CPA's LLC",
+        "source_url": "https://www.fradelakisllc.com/",
+        "source_sha256": "2bfab4285943e320cc33df1db9143ecb9556a31bafc775645285e363ca25fa34",
+        "published_actual_place": {
+          "latitude": 40.7643685,
+          "longitude": -73.9142598
+        },
+        "ignored_viewport_longitude": -73.9164485,
+        "source_branch": "Visible28-41SteinwayStreet2ndFloor/Astoria versus literalplaceURL LongIslandCity. No automaticAstoria/LICalias resolution or address normalization.",
+        "result": "Held for branch/address and locality-alias review."
+      },
+      {
+        "listing_id": "04374507-4e4e-4aa2-8daf-170986177101",
+        "name": "Thoukididis Guest House",
+        "source_url": "https://thoukididis.gr/contact/",
+        "source_sha256": "4e6fd9e4edbf94ca0aa0c558abefb110e2f93b25f5a2fc47fe45e7bfdc384ec1",
+        "result": "Actual single hyperlink concatenatesGreek/Tokyo destination payloads. Refused malformed/unsupported; never pick first numeric pair or viewport."
+      }
+    ],
+    "publisher_boundaries": [
+      {
+        "source_sha256s": [
+          "129d6388408ae447699579cfda80e22b3d229da92513caf22efbff8977fff58b",
+          "c9ba54c85e39872349775d63cb16865e1687809a0c3bb2d14fe1ac148dcf456e"
+        ],
+        "finding": "Eight local OrthodoxWorld captures are OneMomentPlease verification documents, not parish identity. Current shared source triage already detects these; keep blocked. No bypass/retry."
+      },
+      {
+        "source_sha256": "66e6c11f8da51459cded48c91f9394d6cf7e52df85bd085166a69f1637c77818",
+        "finding": "POE exactDigenis member name is present, but address/phone labels are blank. No address/coordinate/official-website assertion from membership."
+      },
+      {
+        "source_sha256": "7bce20ae5bb11f31aee4ec45f6ce242baa1e160af1efdf4d43d9b881ca1a0249",
+        "finding": "Two distinct chapter IDs4071/4064 share StBasilChurch/31612ElCaminoReal/SanJuanCapistrano. Shared address does not resolve chapter identity."
+      },
+      {
+        "source_sha256s": [
+          "2ef54c0c22f72f9d8494440b6421ac3c00cdfdfb4bd091afa48ab1b0798a116c",
+          "472743a400932ba28426a126446eb8cb820e338383ace79862a538d6e6deccc7"
+        ],
+        "finding": "GreekCityTimes andGreeklist homepage source records are genericaggregates, not exactclientprofiles. Identity refusal retained."
+      }
+    ]
+  },
+  "implemented_contract": {
+    "grammar": "Only exact https://www.google.com/maps/place/LABEL/@CAMERA/data=!3m1!4b1!4m5!3m4!1sPLACE_ID!8m2!3dLAT!4dLNG with single whole actual-place grammar, canonicalURL, finite globalbounds, no query/hash/credentials. Coordinates come only from terminal place payload. Camera retained as explicitlyignored metadata.",
+    "conflicts": "Distinct/ambiguous/malformed/duplicatehref payloads refuse; repeated identical links are counted rather than treated as separate places. Comments/scripts/templates do not supply links.",
+    "branch": "Any bound support requires existing snapshot/source/identity review plus exact unique raw contactblock hash containing the actuallink, source name/street/city and explicit literal destination label/address review. Whole-token matching. Unasserted locality aliases stayheld; source country is not inferred from a name/URL.",
+    "authority": "All outcomes writer_eligible=false, precisionunverified, official_source_confirmedfalse, country_verifiedfalse. Supporting object never occupies existingcandidate field. Existing report status/reason/candidate and writer eligibility unchanged.",
+    "owner_and_holds": "Owner-managed/user/workspace inputs, parent/different branch/host, supporting publisher source kinds and machine sourceholds across allexistingcontextlayers gain no supporting evidence. Existing source challenge gate remains before adapter.",
+    "integration": "Only no-existing-candidate branch gets optional supporting_place_evidence. No runner/index/transport/strategy/retry/provider/lease/writer/precision/status policy change."
+  },
+  "packaging": {
+    "at": "2026-10-15T16:26:10.448131+00:00",
+    "existing_generated_changes": [
+      "_coordinates.js"
+    ],
+    "new_generated_leaf": "_place-evidence.js",
+    "other_generated_files_exact_HEAD": true,
+    "owned_module_transforms_exact": true,
+    "whole_generator_run": false,
+    "writer_migration": "supabase/migrations/20261015120726_geography_reviewed_read_authority.sql",
+    "writer_migration_sha256": "88167423b36ba6c3135822a19f330c1991f709767ad520b42d0c8dccce44a50b",
+    "writer_support_kind_accepted": false,
+    "actual_production_definition_requery": false,
+    "packaging_only_no_deployment": true
+  },
+  "future_canonical_extension_proposal": {
+    "status": "Design/test contract only; requires separate root ownership approval, exact live function capture/guard, independentreview and production rollback proof before implementation/release.",
+    "existing_writer": "Retain canonical public.geography_review_apply and existing sourcearchive/jobs/reviews/read-authority/revert. No competingwriter/RPC/store. Current acceptedkind list jsonld/official_destination/reviewed_named_place_shortlink staysbyteidentical.",
+    "new_kind_after_approval": "A separately named reviewed_official_place_destination kind; never impersonate JSONLD or existing official_destination/shortlink shapes. Current supporting kind remains ineligible.",
+    "mandatory_bindings": [
+      "Current canonical full-row CAS, listingID/name/address/city/country/website/sourcefingerprint/owner/visibility/sourceholds unchanged.",
+      "Exact raw-source SHA, contactblock SHA/source-link SHA, literal destinationURL/label/placeID and full original independent identity/address review bound to that snapshot; existing private immutable capture reference.",
+      "Server independently anchored-parses the whole actual-place URL; exactpayloadlatitude/longitude/placeID equalcandidate, no viewport/default/first-number extraction.",
+      "Explicit source-name/address alias review; no automatic Saint/St, Avenue/Ave, Astoria/LongIslandCity or source-country inference.",
+      "Existing independent exactaddress/notarea-centroid/officialsource proof and independently sourced bounded locality evidence remain required. GeoNames centroid is not address proof.",
+      "Existing listinglock/fullrowCAS/sourcehold/owner/precision/replay/read-authority/epoch/revert and API ACL/security/search_path retained.",
+      "No automatic retry of unresolvedsourcejobs, no strategy/finitepolicyextension or factualapply from existing observations."
+    ],
+    "required_regressions": [
+      "Valid independently reviewed actual destination can pass only after explicit approved canonical extension; source/renderer/visiblemap exercised evidence remains separate.",
+      "Current unchanged writer rejects support kind with no listing/receipt/epoch change (already demonstrated in isolatedPG).",
+      "MalformedGreek/Tokyo, multiplepoints, cameraviewport, wronghost/query/credentials, wrongbranch/address/country/locality and unreviewedalias refuse.",
+      "Stale/current-row/context/owner/sourcehold/replay/expiry and interveningowner/canonical edits refuse, original writer/revertfullrowCAS unchanged.",
+      "Rawcapture mutation/source/card/link/placeID mismatch and false or missing independent review refuse.",
+      "Normal JSONLD/directions/shortlink positive and negative contracts stay exact; canonicalpublic/native map and actual directions destination verified after rootapply."
+    ]
+  },
+  "validation": {
+    "focused_tests": 54,
+    "failed": 0,
+    "skipped": 0,
+    "focused_command": "node --test tests/unit/geography-place-destination-evidence.test.mjs tests/unit/source-coordinates.test.mjs tests/unit/source-shortlink-coordinates.test.mjs tests/unit/reviewed-coordinate-request.test.mjs tests/unit/coordinate-audit-retention.test.mjs tests/unit/geography-repair-job-runner.test.mjs",
+    "retained_command": "node /home/codespace/.cache/zoi/geography-retained-source-gap-20261015/replay-retained-official-final.mjs",
+    "real_PG_contract": {
+      "groups": 16,
+      "command": "node /home/codespace/.cache/zoi/geography-retained-source-gap-20261015/current-writer-support-refusal.pg.mjs",
+      "fixture": "Private copy of existing actual-function/acceptedmigration PGread-authority harness; only absolute fixturepaths, optionalcandidatekind argument and one unknownkind refusal assertion added; all existing15groups retained.",
+      "new_assertion": "Actual reproduced canonicalwriter refuses official_place_destination_support; no row/hash/receipt/epoch change.",
+      "production_definition_requery": false,
+      "source_address_verified_by_this_PG_fixture": false
+    },
+    "cached_Deno_command": "/home/codespace/.npm/_npx/7a40be787520bede/node_modules/deno/deno check --cached-only supabase/functions/geography-repair-source-consumer/_coordinates.js",
+    "cached_Deno": "passed",
+    "syntax_and_diff_check": "passed",
+    "independent_acceptance": "Pending separate reviewer artifact."
+  },
+  "private_evidence": {
+    "root": "/home/codespace/.cache/zoi/geography-retained-source-gap-20261015",
+    "manifest": "place-evidence-manifest.json",
+    "manifest_sha256": "f6ef5f8617041aa2852fa5b91a7c4111233d2e5fcb0b5e24cae0565cefcffa1a",
+    "full_raw_HTML_or_embedded_config_committed": false,
+    "historical_context": "Retained old source/job snapshots only. No assertion these are current leases or current canonicalstate."
+  },
+  "operations": {
+    "production_SQL": 0,
+    "network": 0,
+    "provider_calls": 0,
+    "newjobs": 0,
+    "leases": 0,
+    "retries": 0,
+    "canonical_factual_writes": 0,
+    "actual_geography_receipts_created": 0,
+    "deployed": false
+  },
+  "remaining": [
+    "Independent review of exact adapter/rawproof/packaging and refusal contract.",
+    "Separately authorized canonical writer-extension implementation, realPG positive/negativeauthority proof and rootproductionrollback before any factualrepair.",
+    "Refresh current source/canonicalcontext only after rootauthorizes resumedoperational work; no retainedsnapshot reused as live lease or accepted currentfacts.",
+    "Population and duplicateV2 freezes remainimmutable; rootrequested duplicateV3 trigger-aware proposal follows separately."
+  ]
+}

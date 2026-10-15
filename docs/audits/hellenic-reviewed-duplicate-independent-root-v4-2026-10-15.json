@@ -1,0 +1,71 @@
+{
+  "kind": "hellenic_reviewed_duplicate_root_independent_v4",
+  "at": "2026-10-15T17:01:30.774413+00:00",
+  "author": "qa_next",
+  "independent_reviewer": "root",
+  "source_audit_sha256": "e643f03d71867ff6615bcc427e2d1eb357cb12e8a868e6f2b4eff685a104ac82",
+  "source_hashes": {
+    "api/entity.js": "c44bfa8faac349ab3de128cf36fa0e9a900ebe14a697dbaf19ac24c06b668502",
+    "supabase/migrations/20261015165327_reviewed_duplicate_canonical_identity_v4.sql": "13eaa6b2759801f11aed82213f9b7a8e0d1bde7a6347df869dceba6da05f28bf",
+    "tests/database/fixtures/hellenic-reviewed-duplicate-live.json": "25dfadea83b6a258851c13fe45691496d2a0aa7cd39848181405f131a51bcf0c",
+    "tests/database/hellenic-reviewed-duplicate.integration.mjs": "e73fb7f5cde890fbf349b3845b12a51032d012577ad92c23dd631a8b4b15855e",
+    "tests/unit/hellenic-reviewed-duplicate-route.test.mjs": "e66ec6e9cfea8a1c42aed561a14f2c78919fd115be0a699a43095b0da57483e2",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-dryrun.sql": "c6b80d5a9259c7a0b077dac5fad507bbfc5ad56710933f054434273eb36f691c",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-apply.sql": "20ef2b6007b7e201aee503e57a6e693e3a3e54a7c34a421e2edc4a471f2d1046",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-rollback.sql": "8f99d2e59e4e07fc169eccd21691fcfa065a378a1fddf0a1ff89ddae47b8da0e"
+  },
+  "composed_base": "1b95f09213ae940d3a794efde1e51e90e784594b",
+  "decision": "ACCEPT SOURCE and guarded proposal for protected integration; persistent schema/data/web acceptance separate",
+  "review": [
+    "Read V4 migration diff versus V3: exactvalidated immediateFK/indexguards and antijoin only; ordering/NULLstatus semantics preserved.",
+    "Current actual3indexes allvalid/ready; PK and nondeferrable validatedFK establish equivalence.",
+    "API exactV3 301 only for canonical returned-slug mismatch/legacy canon, local encodedpath, no-store reviewed alias. Ownerpublished fields retained.",
+    "All8frozenownedhashes verified; base equality checked against currentmain before composition.",
+    "Independently reran50realPostgres groups including full57840listing/41099key equivalence and selectiveindex plan.",
+    "Actual production rollback-only combines exactschema+apply+withdrawal in bounded3slock/20sstatement transaction, checkslegacy10JSON/business151/geo and66references thenROLLBACK; finaloriginalbothCAS/helperabsent/oldpubliccontract/decisionabsent PASS.",
+    "Separate actual fullglobalanti query1670.243ms; previous positive query exceeded5s and V3atomicattempt exceeded20s. No timeout increase or partialcommit."
+  ],
+  "evidence": {
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/zoi-v4-root-pg-20261015.log": {
+      "sha256": "9c8c5953d549e01d8bdac589179d3ca9b47dbf39f31d2337378a2c73ed59c199",
+      "bytes": 8249
+    },
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/zoi-v4-root-pg-result.json": {
+      "sha256": "655093a37f28e5d505c2ff26ced263bb0cfe14498ae1d462d9b655bcf55bd5d1",
+      "bytes": 3240
+    },
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/zoi-v4-root-pg-contracts.json": {
+      "sha256": "96ddcfd8c6442eeeef8a761656add26d8d291017b9d4baefc9d2165c94127690",
+      "bytes": 3026
+    },
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/zoi-v4-root-pg-plan.json": {
+      "sha256": "85ca4e49c35e7c1c2ec064dc4569705e26f89051033636b13e8ff28b62795d2b",
+      "bytes": 3579
+    },
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/rollback-result.json": {
+      "sha256": "c2b20dba71b8799369c4119edf5b0b691a25317ef08cc6936332da9205c88431",
+      "bytes": 880
+    },
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/actual-index-readiness.json": {
+      "sha256": "89adf865d186feaaf332c6f94428b49133a8729fadb63bb827bb1f4c86c7c414",
+      "bytes": 1207
+    },
+    "evidence/hellenic-reviewed-duplicate-root-v4-2026-10-15/anti-join-5s-plan-result.json": {
+      "sha256": "f22af8b14003cdaffdda6bd69ab92532cad51a4e08c01cacf71c0a982e42921a",
+      "bytes": 3460
+    }
+  },
+  "actual_rollback_sql": {
+    "private_path": "/home/codespace/.cache/zoi/hellenic-duplicate-v4-root-20261015/rollback-only.sql",
+    "sha256": "2cbf318c09822708b6095d2326f9cf4a92ea3af74b3318eede19de9ad7f3ce11"
+  },
+  "limits": [
+    "No persistentV1/V2/V3/V4schema/data mutation yet.",
+    "Isolated PG action/design stubs are not owner/publish evidence.",
+    "No actual301/publicdiscovery/sitemap post-release acceptance yet.",
+    "Separate-transaction withdrawal accepted in real isolatedPG; actualproduction rehearsal usesoneoutertransaction andrestoresallviaROLLBACK."
+  ],
+  "composed_required_verify": "PASS397nodefiles+2standalone",
+  "fixture_correction": "Existingprofessionalownerdesignfixture now requestsprofessional.slug; oldtestaskedgreek-homewhilemockreturnedprofessional—newcanonicalredirectcorrectly301. All originalowner-designassertions retained.",
+  "fixture_sha256": "992a28e56439201a943515c2706223a720925e4cee1b9f791033e9cb6128b9bb"
+}

@@ -1,0 +1,149 @@
+{
+  "kind": "hellenic_reviewed_duplicate_owner_v4_source_proposal",
+  "at": "2026-10-15T16:59:36.118234+00:00",
+  "worktree": "/tmp/zoi-hellenic-duplicate-v4",
+  "branch": "reviewed-hellenic-duplicate-v4-20261015",
+  "base_commit": "08d16fe5eb9c7ad9c692e193e30b77789b338b8d",
+  "freeze_status": "SOURCE FROZEN for root independent review/current actual contract and atomic rollback-only rehearsal; no deployment or factual apply by author",
+  "migration_scaffold": {
+    "command": "supabase migration new reviewed_duplicate_canonical_identity_v4",
+    "local_CLI_version": "2.115.0",
+    "file": "supabase/migrations/20261015165327_reviewed_duplicate_canonical_identity_v4.sql",
+    "no_db_push_link_or_remote_migration_execution": true
+  },
+  "owned_files": {
+    "api/entity.js": "c44bfa8faac349ab3de128cf36fa0e9a900ebe14a697dbaf19ac24c06b668502",
+    "supabase/migrations/20261015165327_reviewed_duplicate_canonical_identity_v4.sql": "13eaa6b2759801f11aed82213f9b7a8e0d1bde7a6347df869dceba6da05f28bf",
+    "tests/database/fixtures/hellenic-reviewed-duplicate-live.json": "25dfadea83b6a258851c13fe45691496d2a0aa7cd39848181405f131a51bcf0c",
+    "tests/database/hellenic-reviewed-duplicate.integration.mjs": "e73fb7f5cde890fbf349b3845b12a51032d012577ad92c23dd631a8b4b15855e",
+    "tests/unit/hellenic-reviewed-duplicate-route.test.mjs": "e66ec6e9cfea8a1c42aed561a14f2c78919fd115be0a699a43095b0da57483e2",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-dryrun.sql": "c6b80d5a9259c7a0b077dac5fad507bbfc5ad56710933f054434273eb36f691c",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-apply.sql": "20ef2b6007b7e201aee503e57a6e693e3a3e54a7c34a421e2edc4a471f2d1046",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-rollback.sql": "8f99d2e59e4e07fc169eccd21691fcfa065a378a1fddf0a1ff89ddae47b8da0e"
+  },
+  "manifest": {
+    "path": "docs/audits/evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/source-manifest.json",
+    "sha256": "4c97006199b753e18149614501f11d9cac4fb2fd120d070bb3875654444c9094"
+  },
+  "supersedes_held_v3": {
+    "owner_audit_sha256": "96711579fae7b8888543e289cfdfd1133a58eca1bee722edce722d604220ecbb",
+    "independent_source_gate_sha256": "4386fcab992fcbf4e7b9a6903361131a6061ec1ef3aa86f36013673cf138ed68",
+    "held_reason": "20s cumulative DO timeout reached global canonical materialization; separate exact positive join alone exceeded bounded5s. Cannot attribute whole20s solely to one query.",
+    "V1_V2_V3_immutable": true,
+    "no_persistent_V3_apply_claim": true
+  },
+  "exact_changes_from_V3": [
+    "Canonical sitemap only: replace positive full-listings join with NOT EXISTS equality check for current confirmed_duplicate listing IDs BEFORE same DISTINCT ON/ranking. Null statuses remain admitted.",
+    "Guard exact validated immediate ON DELETE CASCADE keys\u2192listings FK, exact existing status/parent-PK/key-PK index definitions and valid/ready flags. No new index/schema/store/writer/provider capability.",
+    "All three data proposals retain full V3 apply/withdrawal/context/receipt/ref guards and3s/20s timeouts, update only expected canonical function MD5, add FK/index guards and replace global sitemap assertion with scoped source-slug eligibility proof.",
+    "Scoped proof asserts zero eligible indexable keys with the source slug. If none can enter ranking, none can win DISTINCT ON. It is sufficient and can conservatively refuse an eligible losing candidate; it never removes an existing safety fence. One-sourcekey/is_indexablefalse assertion stays.",
+    "Fixture adds exact dependency contract and existing status index in isolated PG; all previous actual trigger/helper objects, two fullcanonical rows/ten public-input subsets/ref66/Food projection/API presence composition remain unchanged."
+  ],
+  "semantic_justification": "With the guarded valid nondeferrable FK and unique listing PK, every key has exactly one parent at the snapshot. Parent duplicate_status IS DISTINCT FROM confirmed_duplicate equals absence of that same parent satisfying equality confirmed_duplicate, including NULL. Ranking and output fields/order are unchanged. Missing/deferrable/unvalidated FK or unavailable selective index refuses migration/apply instead of assuming equivalence/performance.",
+  "global_function_after_md5": "1d4652a172aef4f1ca4d1b90b9b4ad78",
+  "validation": {
+    "real_PG_groups": 50,
+    "focused_tests": 34,
+    "failed_final": 0,
+    "skipped_final": 0,
+    "commands": {
+      "database": "ZOI_DUPLICATE_RESULT=/new-result.json ZOI_DUPLICATE_CONTRACT_OUTPUT=/new-contracts.json ZOI_DUPLICATE_PERFORMANCE_OUTPUT=/new-offline-plan.json node --experimental-strip-types tests/database/hellenic-reviewed-duplicate.integration.mjs",
+      "focused": "node --test tests/unit/hellenic-reviewed-duplicate-route.test.mjs tests/unit/official-source-policy.test.mjs tests/unit/source-identity-content.test.mjs"
+    },
+    "V3_original_groups_retained": 45,
+    "new_cases": [
+      "Migration refuses deferrable/unvalidated FK and absent status index atomically.",
+      "Apply independently refuses FK/index contract drift without partial writes.",
+      "Exact scoped predicate finds another NULL-status eligible same-slug key; earlier full canonical alias guard also refuses whole proposal without writes.",
+      "Full ordered canonical-output digest positive==anti across57840synthetic listings/41099keys,489duplicates,NULLstatuses and competingrankedwinners.",
+      "Offline plan uses existing selective status index489rows; no full listings SeqScan on this dataset."
+    ],
+    "offline_performance_limits": "Compact synthetic rows do not model actual listing heap/TOAST I/O or prove production latency. Root retained exact actual antiquery result is separate and upcoming installed function/sitemap gate remains root-owned.",
+    "historical_test_assumption": "First new collision test expected later scoped refusal, but actual stronger earlier canonical alias guard refused. Test expectation corrected; no guard relaxed. Failed run retained privately in frozen-pg.log.",
+    "diff_check": "PASS",
+    "local_PG_port": 15932,
+    "cluster_final_state": "stopped and removed in finally"
+  },
+  "actual_root_provided_performance": {
+    "root_provided_actual_receipt_hashes": {
+      "actual-indexes-fk.json": "22d6a6bb2108735a1dd224923b761073240f1bb12eb6262bd0cafb5a0437a325",
+      "positive-join-plan.json": "a9503ef57f5d521f7b08e6d5170ee8a65e65ea4b391d695835427568aa36326e",
+      "positive-join-5s-result.json": "6293b8796d88d6595df0e803b6ba5b10932004d9650d674d57e5461332d4d382",
+      "anti-join-5s-plan-result.json": "f22af8b14003cdaffdda6bd69ab92532cad51a4e08c01cacf71c0a982e42921a",
+      "rollback-result.json": "09a0e11b5ebc344ca09d23a3dde7b1d61a1e48082fbc527b7948e6380642e0c7"
+    },
+    "actual_anti_query_only": {
+      "execution_ms": 1670.243,
+      "winner_rows": 37588,
+      "duplicate_index": "idx_zoi_listings_dupe",
+      "indexed_duplicate_rows": 489
+    },
+    "V3_failure": "20s cumulative DO timeout reached global canonical materialization; separate exact positive join alone exceeded bounded5s. Cannot attribute whole20s solely to one query.",
+    "rollback_receipt_label": "rollback-result.json is FAILED atomic attempt error, not successful post-ROLLBACK state proof. Root separately reported immediate ROLLBACK and originalCAS/readers/helper absence; reviewer did not run production SQL.",
+    "actual_index_flags": "Retained root metadata pins three index names/definitions and exact validated/nondeferrable FK. Source guards additionally require indisvalid/indisready=true; root independently rechecks all three flags before actualV4 rehearsal."
+  },
+  "unchanged_V3_safety": {
+    "actual_contracts": "All eight installed after-migration body/owner/ACL/config/security/volatility receipts and exact trigger pinned individually. Each data proposal also independently pins the same complete BEFORE-trigger/helper contracts.",
+    "listing_CAS": "Both actual original FULL-row MD5s before apply, no timestamp omission; explicit no-owner/unclaimed and relationship guards. Deterministic listing locks and exact original reference schema/counts. Timestamp-away-and-back refuses even if substantive fields match.",
+    "references": "All66declaredFKdefinitions and all66two-ID count families pinned; added reference schema/rows refuse. Four known non-FK delivery/owner-history reference tables must stay empty for the pair and are held in SHARE mode during the bounded transaction.",
+    "reference_locks": "Parent row FOR UPDATE fences FK writers; four named non-FK table SHARE locks precede row locks to keep their initial no-commerce/no-history evidence coherent. lock_timeout3s/statement_timeout20s; root must review operational suitability before execution.",
+    "business_invariance": "Canonical business full row/public JSON/current geography stays exact and151menu retained. Source after actual triggers must equal original full JSON changed ONLY duplicate_status and updated_at=transaction_timestamp(); RETURNING row also reread equal from table.",
+    "rollback_CAS": "Locked existing decision ID/sourceA/targetB/confirmed/release actor and every original proof field exact, stripping only the application object for original proof comparison. Application exact object must match current full source CAS/updated_at and old original full beforeCAS; source entire JSON also reconstructed against original snapshot plus confirmed status and exact recorded timestamp. Business/current geo/owner/context/relationships/all66counts stay guarded. Withdrawal source changes ONLY status and its own transaction timestamp; final source reread equals RETURNING; rollback receipt retains actual afterCAS/time. Later edits/missing or altered receipt/new refs refuse without partial mutations.",
+    "application_receipt": "Existing match_signals.reviewed_canonical.application stores schema1, full original beforeMD5, actual applied afterMD5, actual canonical after updated_at and applied transaction_timestamp. Exact current table/source equality checked before writing receipt; no competing writer/store."
+  },
+  "fixture_limits": [
+    "Action/design/owner providers are bounded fixture stubs; no owner publish acceptance",
+    "Vector column represented as text only while both actual captured embeddings are NULL; exact full-row JSON hashes match",
+    "66declaredFKschemas preserve constraints; source/history rows are checked separately by guarded proposal tests",
+    "No live routes/native device/provider invocation yet"
+  ],
+  "operations": {
+    "production_SQL": 0,
+    "production_DDL": 0,
+    "live_data_writes": 0,
+    "paid_provider_calls": 0,
+    "ADB": 0,
+    "EAS": 0,
+    "intentional_external_network": 0,
+    "CLI_local_migration_scaffold_only": true
+  },
+  "evidence": {
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/V3-preservation.json": {
+      "bytes": 455,
+      "sha256": "53b13dfc95a33ef62dbd93c3bbb28b4ca877c0cc00b31570ef2a3d005d796839"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/real-PG-result.json": {
+      "bytes": 3240,
+      "sha256": "3af036931a863aefdd39d7acea3e56e41e9a250e47f1b5fd2cb1764065f7b026"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/focused.log": {
+      "bytes": 3655,
+      "sha256": "4734dfea798ebbd457c01b2a49ea3c114a26c9b7aa86785ad96ff279f67ef6ca"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/offline-antijoin-plan.json": {
+      "bytes": 3579,
+      "sha256": "e730b6101dcd7bde49b3f85a5c80a9af4f60fb94957f75dd15e4c9d41542b259"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/actual-root-performance-summary.json": {
+      "bytes": 1418,
+      "sha256": "237858191e3e4bacc70fba6efd03a25ed9d95b00209fae9e1fa63da1fd7c1274"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/source-manifest.json": {
+      "bytes": 1162,
+      "sha256": "4c97006199b753e18149614501f11d9cac4fb2fd120d070bb3875654444c9094"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/real-PG.log": {
+      "bytes": 8249,
+      "sha256": "b4bd5425c04be4ff073140bf955711d93b2a9cf79d7a7fbba111a90c59c8f02f"
+    },
+    "evidence/hellenic-reviewed-duplicate-owner-v4-2026-10-15/after-contracts.json": {
+      "bytes": 3026,
+      "sha256": "96ddcfd8c6442eeeef8a761656add26d8d291017b9d4baefc9d2165c94127690"
+    }
+  },
+  "remaining": [
+    "Root independent exact-source review, all actual contracts/current row CAS/current geography and three ready/valid index flags.",
+    "Root atomic actualV4 migration\u2192apply\u2192withdraw\u2192outer ROLLBACK with unchanged20s fence; verify old state/readers/helper absence afterward.",
+    "Only root commits approved migration/data after proof; actual sitemap stats/page, old slug/ID redirects, canonical151/Horio/current map receipt and legacy ten routes must then be exercised."
+  ]
+}

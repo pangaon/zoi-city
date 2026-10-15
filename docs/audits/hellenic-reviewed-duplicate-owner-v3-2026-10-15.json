@@ -1,0 +1,306 @@
+{
+  "at": "2026-10-15T16:41:27.302340+00:00",
+  "worktree": "/tmp/zoi-hellenic-duplicate-v3",
+  "branch": "reviewed-hellenic-duplicate-v3-20261015",
+  "base_commit": "08d16fe5eb9c7ad9c692e193e30b77789b338b8d",
+  "prerequisite": "Current main includes accepted Food source migration15143259 (actual ledger15152043). New CLI-created migration20261015162942 supersedes held V1/V2; apply only V3 against original post-Food baseline, never V1/V2 then V3.",
+  "freeze_status": "Frozen V3 for independent review and root-only actual rollback proof; not deployed or applied by specialist.",
+  "owned_files": {
+    "api/entity.js": "c44bfa8faac349ab3de128cf36fa0e9a900ebe14a697dbaf19ac24c06b668502",
+    "supabase/migrations/20261015162942_reviewed_duplicate_canonical_identity_v3.sql": "38b90401de5b9333aa57a2b175ddb9a1bc8726c67a41c55d00b106f0430a33e0",
+    "tests/database/fixtures/hellenic-reviewed-duplicate-live.json": "0d6fbb190a9f6f5653b84631bfd7962e9a6118ac4228c77c681af4a30f4f2388",
+    "tests/database/hellenic-reviewed-duplicate.integration.mjs": "5dd0d835a64441da119e00f00bb6a532d26740a7686aef5fa995b40162715587",
+    "tests/unit/hellenic-reviewed-duplicate-route.test.mjs": "e66ec6e9cfea8a1c42aed561a14f2c78919fd115be0a699a43095b0da57483e2",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-dryrun.sql": "b73615fea387ec07f60d33ccbf5132ce28a3a3f661da5d44beb679f094eabe93",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-apply.sql": "8a1131b07103e3924a4b8c76f4f3fd57564204e1a90ae1e8c6c5c71f1f7f71c9",
+    "ops/proposals/hellenic-reviewed-duplicate-20261015-rollback.sql": "80b94cbd2bdb5ccb906e9910c8af0bc080b23c4b727e3ec8c5b5b5f34c0254de"
+  },
+  "identity_decision": {
+    "source_listing_id": "ebe7b1d3-a4af-4826-8de5-6dea8e38ab5c",
+    "source_route": "/vendor/hellenic-bakery-and-grocery-livonia",
+    "canonical_listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+    "canonical_route": "/business/hellenic-bakery-grocery-livonia",
+    "interpretation": "Same physical bakery represented twice across business/vendor. No evidence of an intentional linked Zoi storefront; customer identity duplication should be reviewed as a true duplicate representation.",
+    "source_findings_sha256": "d77858ca818b56fc4a401f512ca53d4b250e0ee1d5848bfd8d3b1cd3568f37b1",
+    "current_read_at": "2026-10-15T15:03:07.778701+00:00",
+    "currently_live": "Both records remain published/unique and self-canonical as sampled; this specialist has not applied the proposed decision.",
+    "independent_identity_approval": "Pending; committed SQL is root-only after actual independent source/runtime approval.",
+    "new_auto_classifier": false
+  },
+  "source_evidence": {
+    "homepage": {
+      "retained_source_url": "https://hellenicbakery.com/",
+      "retained_source_sha256": "bbfd8172b3dbc4d7005fad739436e3442efb501e874dd7740602f105510fcce8",
+      "bytes": 155898,
+      "typed_source_nodes": [
+        {
+          "@type": "Restaurant",
+          "name": "Hellenic Bakery & Grocery",
+          "telephone": "2484762080",
+          "address": {
+            "@type": "PostalAddress",
+            "addressCountry": "US",
+            "addressLocality": "Livonia",
+            "addressRegion": "MI",
+            "postalCode": "48152",
+            "streetAddress": "33308 Seven Mile Road"
+          }
+        }
+      ],
+      "new_network_calls": 0
+    },
+    "menu": {
+      "retained_source_url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+      "retained_source_sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267",
+      "bytes": 120675,
+      "typed_source_nodes": [],
+      "new_network_calls": 0
+    },
+    "shared_phone": "2484762080",
+    "shared_imported_street": "33308 Seven Mile Road, Livonia, MI 48152",
+    "shared_source_ordering_resource": "spot_id=268653",
+    "new_crawl_requests": 0,
+    "new_paid_calls": 0
+  },
+  "before_rows": [
+    {
+      "id": "ebe7b1d3-a4af-4826-8de5-6dea8e38ab5c",
+      "type": "vendor",
+      "slug": "hellenic-bakery-and-grocery-livonia",
+      "full_row_fingerprint": "960410923d7978bdf9dcf02ca535f499",
+      "quality_fingerprint": "3774ad165c7adc28f1923636346dc787",
+      "authority_fingerprint": "bd090b0df839da1a97a1c942c02d828a",
+      "owners_null": true,
+      "claim_status": "unclaimed"
+    },
+    {
+      "id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+      "type": "business",
+      "slug": "hellenic-bakery-grocery-livonia",
+      "full_row_fingerprint": "69721a037d33826a77e0c1f4426fec22",
+      "quality_fingerprint": "c990ca237a6f359034ff0db6de27dcb1",
+      "authority_fingerprint": "7a60453776c5a69d338f1850b0cb29ec",
+      "owners_null": true,
+      "claim_status": "unclaimed"
+    }
+  ],
+  "remedy": {
+    "store": "Existing duplicate_candidates.match_signals.reviewed_canonical with explicit source/canonical IDs, exact narrow contexts and retained evidence hash. No new store, writer or public RPC.",
+    "private_helper": "zoi.reviewed_duplicate_canonical_slug(text), postgres-owned STABLE invoker, empty search_path, no PUBLIC/anon/authenticated/service execute.",
+    "public_resolution": "Existing seo_entity initial slug selector becomes sole private resolver result; literalID resolves toslug, legacy/no-protocol preserves existing canonCTE semantics. Enrolled sourcevalidreview returns target; invalid/stale/revoked protocol returnsNULL and never sourcefacts.",
+    "context": "Explicit approved decision only; source/target canonical identity, website, branch/address/city/country/category/ownership/claim and machine source authority remain current. Routine menu/copy/crawl metadata does not invalidate identity. Ambiguous/cyclic/hidden/owned/stale/unapproved decisions refuse.",
+    "web_route": "Actual api/entity handler301s only returned-canonical slug mismatch or existing canon request. Reviewed alias/ID redirects use no-store so a stale decision can withdraw promptly; existing legacy canonical caching remains300s. Target is encoded local path.",
+    "discovery": "Exact default-page lateral winner AND candidate predicates, both locality/global search predicates and legacy text map predicate now exclude only existing confirmed_duplicate status. Existing public search wrapper, rankings, limits, output and bounded map body unchanged. No new classification.",
+    "SEO": "Existing projection eligibility and UPDATE OF trigger watch confirmed_duplicate; current-listing sitemap filter also rejects old stale materialized keys. No SEO row or history deletion.",
+    "data_scope": "One new existing reviewed duplicate audit decision; source vendor duplicate_status plus legitimate canonical updated_at only. Preserve both IDs, all66declaredFKfamilies, orders/resources/SEO history,151canonical business menu and actual current business geography receipt; no source fact copying or repointing.",
+    "rollback": "Guard exact full applied source CAS and original review proof/application receipt. Restore original substantive source fields/status and ordinary direct route, with canonical rollback transaction timestamp; append explicit audited withdrawal and rollback after-row CAS in existing decision JSON. Historical updated_at is deliberately not restored. Business row stays exact."
+  },
+  "migration_guards": {
+    "Food_source_prerequisite": "supabase/migrations/20261015143259_reviewed_food_public_context.sql SHA25328681ac6b3ae3921474945a602d2156c600e192373e8f10722e7f3433d240",
+    "Food_actual_execution_ledger": "20261015152043 (root confirmed; source filename is not renamed)",
+    "post_Food_seo_md5": "9006c7b304263fbd4d12e574e5698a7f",
+    "Food_helper_md5": "afd4c37cb7254b589924db8bb3e7fb99",
+    "exact_baselines": "Per-function definition MD5, owner, ACL, individual search_path/config, security flag and volatility; exact existing SEO trigger. Predicate occurrence counts checked before replacements. Missing/repeat/drift refuses.",
+    "canonical_writers_leases": "Unchanged exact source definitions; no new source authority.",
+    "manual_Food_projection": "Exact two Food projection hunks retained; reverse new single identity predicate equals exact post-Food seo_entity definition. Food helper unchanged.",
+    "before_update_contract": "All five actual BEFORE UPDATE listing triggers, exact definitions/enabled state and function MD5/owner/nullableACL/config/security/volatility. Exact three actual SEO helper bodies and equivalent metadata pinned. These are guards only; runtime trigger/helper definitions unchanged by migration."
+  },
+  "data_guards": {
+    "actual_contracts": "All eight installed after-migration body/owner/ACL/config/security/volatility receipts and exact trigger pinned individually. Each data proposal also independently pins the same complete BEFORE-trigger/helper contracts.",
+    "listing_CAS": "Both actual original FULL-row MD5s before apply, no timestamp omission; explicit no-owner/unclaimed and relationship guards. Deterministic listing locks and exact original reference schema/counts. Timestamp-away-and-back refuses even if substantive fields match.",
+    "references": "All66declaredFKdefinitions and all66two-ID count families pinned; added reference schema/rows refuse. Four known non-FK delivery/owner-history reference tables must stay empty for the pair and are held in SHARE mode during the bounded transaction.",
+    "reference_locks": "Parent row FOR UPDATE fences FK writers; four named non-FK table SHARE locks precede row locks to keep their initial no-commerce/no-history evidence coherent. lock_timeout3s/statement_timeout20s; root must review operational suitability before execution.",
+    "business_invariance": "Canonical business full row/public JSON/current geography stays exact and151menu retained. Source after actual triggers must equal original full JSON changed ONLY duplicate_status and updated_at=transaction_timestamp(); RETURNING row also reread equal from table.",
+    "rollback_CAS": "Locked existing decision ID/sourceA/targetB/confirmed/release actor and every original proof field exact, stripping only the application object for original proof comparison. Application exact object must match current full source CAS/updated_at and old original full beforeCAS; source entire JSON also reconstructed against original snapshot plus confirmed status and exact recorded timestamp. Business/current geo/owner/context/relationships/all66counts stay guarded. Withdrawal source changes ONLY status and its own transaction timestamp; final source reread equals RETURNING; rollback receipt retains actual afterCAS/time. Later edits/missing or altered receipt/new refs refuse without partial mutations.",
+    "application_receipt": "Existing match_signals.reviewed_canonical.application stores schema1, full original beforeMD5, actual applied afterMD5, actual canonical after updated_at and applied transaction_timestamp. Exact current table/source equality checked before writing receipt; no competing writer/store."
+  },
+  "validation": {
+    "focused_tests": 34,
+    "focused_failed": 0,
+    "focused_command": "node --test tests/unit/hellenic-reviewed-duplicate-route.test.mjs tests/unit/official-source-policy.test.mjs tests/unit/source-identity-content.test.mjs",
+    "real_PG_command": "ZOI_DUPLICATE_RESULT=/absolute/new-result.json ZOI_DUPLICATE_CONTRACT_OUTPUT=/absolute/new-contract.json node --experimental-strip-types tests/database/hellenic-reviewed-duplicate.integration.mjs",
+    "real_PostgreSQL": {
+      "at": "2026-10-15T16:40:27.662Z",
+      "groups": 45,
+      "isolated_PostgreSQL16": true,
+      "production_mutations": 0,
+      "canonical_business_items": 151,
+      "after_contracts": [
+        {
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+          "md5": "76061ee2d74e01f1514250f00b567950",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "explore_geo(text,text,text,text,integer)",
+          "volatility": "s",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+          "md5": "f748cf4022085edbd10478c8aeda94c2",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "seo_entity(text)",
+          "volatility": "s",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "md5": "d628d42f4407f56c7567eb3d30e5de00",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\"",
+            "plan_cache_mode=force_custom_plan"
+          ],
+          "signature": "zoi.explore_default_page(integer,integer)",
+          "volatility": "s",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "md5": "69060b1eca6c4b094d66fc61d555dc7f",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\"",
+            "plan_cache_mode=force_custom_plan"
+          ],
+          "signature": "zoi.explore_search_before_default_page(text,text,text,text,integer,integer,text)",
+          "volatility": "s",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "md5": "f17b227663468c63feaafdda7caf903f",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.maintain_seo_projection()",
+          "volatility": "v",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "md5": "e2c9c77b88eac4ef5f45486545c6894e",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.reviewed_duplicate_canonical_slug(text)",
+          "volatility": "s",
+          "security_definer": false
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "md5": "afd4c37cb7254b589924db8bb3e7fb99",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.reviewed_food_public_context(zoi.listings)",
+          "volatility": "s",
+          "security_definer": false
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "md5": "146dd8ef656d920722377064b13874ec",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\"",
+            "work_mem=16MB"
+          ],
+          "signature": "zoi.seo_canonical_rows()",
+          "volatility": "s",
+          "security_definer": true
+        }
+      ],
+      "limits": [
+        "Action/design/owner providers are bounded fixture stubs; no owner publish acceptance",
+        "Vector column represented as text only while both actual captured embeddings are NULL; exact full-row JSON hashes match",
+        "66declaredFKschemas preserve constraints; source/history rows are checked separately by guarded proposal tests",
+        "No live routes/native device/provider invocation yet"
+      ]
+    },
+    "syntax_and_git_diff_check": "Passed",
+    "local_PG_port": 15932,
+    "local_PG_final_state": "Stopped and temporary cluster removed in finally",
+    "canonical_writer_and_lease_functions": "All pinned original definitions remain byte-identical; geography write CAS never edited",
+    "live_writes": 0,
+    "network_calls": 0,
+    "paid_calls": 0
+  },
+  "private_evidence": {
+    "root": "/home/codespace/.cache/zoi/hellenic-vendor-relationship-20261015",
+    "manifest": "final-manifest.json",
+    "manifest_sha256": "2c06c404ebb3294ca8a5225b787770893f50874d6406076300900f441b06f8eb",
+    "full_source_HTML_committed": false,
+    "embedded_website_configuration_committed": false,
+    "v2_root": "/home/codespace/.cache/zoi/geography-population-mismatch-private-20261015",
+    "v2_files": {
+      "existing-published-duplicates.json": "c7ea097fcb87be2ef34d6c75788dcd5b9284ef061f351ee59a3ede23b1760de0",
+      "existing-duplicate-canonical-links.json": "23348a2b49d96863b71834a5def5f034bb669112c1019b80d571989a366421ad",
+      "legacy-ten-public-read-fixture.json": "daab3b53d4c0f5518a6a6214a2f99fd149cb77aa64bb9813c6c05f8864be6a84",
+      "duplicate-v2-final-result.json": "9d33e739f313095cdfda669a82139ef7cc2d2b483e723e8bf317c15d1e729a19",
+      "duplicate-v2-final-pg.log": "072b6630b5b4f3a614d162036b55c0d8688ea94a7a8afdfd945beab7c39370aa",
+      "duplicate-v2-unit.log": "5ffb80c9b79dace9a801e43307bcc62b7c0b545101534511889fbcdefa03283a"
+    },
+    "v3_root": "/home/codespace/.cache/zoi/hellenic-duplicate-v3-20261015",
+    "v3_files": {
+      "pg-result-v3-final.json": "6f865a17947e897a076671d3525e2a3fbe721cb5de614e6680cf1f7b0f7f6fb4",
+      "contracts-v3-final2.json": "00e3cdfb1b07130addade8f95bb89ba87c0ea9c008479e8f2557dd7aee1cf0c4",
+      "pg-v3-final2.log": "d71da3b4839ec6a6ccaff462c1fbf5b2ef1cd07ccf34141d4df15fdcdb54ee92",
+      "focused-final.log": "2a7d350ebec7e2227d9ad7591e86adcc88bd537b2068a3e834e3cae37191ff9f"
+    },
+    "actual_trigger_contracts": {
+      "path": "/home/codespace/.cache/zoi/hellenic-duplicate-v2-root-20261015/actual-trigger-contracts-with-helpers.json",
+      "sha256": "c81e33fa9497c0e5880e6b3e60a7439e22ead48b30da21d2b950aa6e9fed46a1",
+      "source": "Root bounded actual contract read; no specialist production queries/customer/Auth reads."
+    }
+  },
+  "coordination": {
+    "frozen_V2": "/tmp/zoi-hellenic-duplicate-v2 unchanged",
+    "frozen_place_adapter": "/tmp/zoi-geography-place-evidence unchanged",
+    "current_main_owner_email": "Current base08d16fe5 published-field/email changes preserved exactly outside narrow canonical route hunk",
+    "release_and_live_SQL_owner": "root only",
+    "independent_reviewer": "qa_next; exact frozen source and distinct evidence required"
+  },
+  "remaining": [
+    "Independent V3 exact trigger/receipt/legacy-ten/Food/native/public route review.",
+    "Root actual beforeCAS/contracts/geography recheck and atomic DDL/apply/withdraw rollback proof; no child production writes.",
+    "Only after root acceptance: guarded release/apply, verify actual canonical old slug/ID redirect and business151/current geography plus legacy ten direct routes/discovery/SEO behavior.",
+    "Global scope remains open; this single reviewed duplicate remedy does not classify or canonicalize other cross-family businesses."
+  ],
+  "supersedes_held_v1": {
+    "audit": "docs/audits/hellenic-reviewed-duplicate-owner-2026-10-15.json",
+    "sha256": "37bbe513cf4596129ba8c354e23c1cfc185677ee5cde256d282de06fab6a2b21",
+    "independent_hold_sha256": "d23fc2f8685f8e0014ff4f9a71dd779c09c37a26000cf35ae610f3225b669b8d",
+    "reason": "Global direct-reader confirmed-duplicate exclusion would make10 currently reachable self-canonical legacy routes404."
+  },
+  "compatibility_v2": {
+    "actual_legacy_rows": 10,
+    "actual_before": "Each current public.seo_entity(slug) returns ownID and owncanonical_slug. No reviewed_canonical key/confirmed decision, no safe inferred alias. All10unowned. One row has merged historical decisions; others open/dismissed/none.",
+    "before_after_checks": "Exact public/native seo_entity/home_entity JSON equality for10 actual canonical public-input fixture rows, anon/authenticated; actual handler renders all10without redirect. Public actions/owner/design are fixture stubs as separately documented. Actual production JSON and relationship snapshot retained privately. The ten committed legacy listings are exact public-input subsets of retained full canonical rows, not full-row snapshots; missing unrelated fields cannot enter no-protocol early return. Two Hellenic rows are complete full-row CAS snapshots.",
+    "orientation": "Only listing_a_id is the reviewed source, listing_b_id target; proof must exactly agree. Targets are not enrolled by a source decision.",
+    "enrollment": "A is enrolled by reviewed_canonical key PRESENCE in any historical decision, irrespective malformed/null value/status. No coalesce-to-source fallback in reader.",
+    "withdrawal": "Only exact schema/sourceA/targetB/evidence/operator/reason/date audited withdrawal in dismissed decision is excluded from active enrollment. All history must be valid withdrawn and sourceunique/primary_of_merge to restore ordinary route. Later active/null/revoked history is evaluated and cannot be bypassed by earlier withdrawal.",
+    "rollback": "V3 retains V2 explicit withdrawal reader semantics, but restores original substantive source state with new legitimate canonical updated_at; audit retains original proof, application receipt and rollback afterCAS/time. Original historical full-row identity is not claimed.",
+    "global_inventory_effect": "Existing confirmed duplicates remain excluded from discovery/map/sitemap independently of legacy direct-route compatibility. This does not classify, canonicalize, merge, delete or repoint the10rows. No legacy status/data change proposed.",
+    "unmodified": "V1 API exact bytes; all other migration guards/SEO/discovery/map hunks byteidentical after reversing only helper/reader delta; all original fixture values preserved."
+  },
+  "compatibility_v3": {
+    "actual_failure": "Root V2 atomic apply/withdraw rollback refused because set_updated_at() legitimately changed timestamp; actual transaction rolled back. V1/V2 freezes stay immutable.",
+    "runtime_bytes": "Migration content after END $guard$; is byte-identical V2. No resolver/reader/discovery/SEO semantics changed. Current main api published-field/email owner-clear fixes preserved; only narrow canonical redirect hunk added.",
+    "canonical_timestamps": "Apply source updated_at=apply transaction_timestamp. Separate rollback uses its own transaction_timestamp; same-transaction apply/withdraw shares one legitimate timestamp and passes. Never disable triggers, forge historical time, ignore preapply timestamps or broadly subtract after fields.",
+    "actual_triggers": "All five actual BEFORE triggers plus all three actual SEO dependencies run in isolated PG; no trigger disable or replacement stub. Actual populated Hellenic rows retain all SEO/slug fields except legitimate updated_at, proven strict JSON equality. Actual auto-SEO sparse INSERT behavior also exercised.",
+    "new_regressions": "Trigger/helper drift migration and apply refusal; full preapply timestamp-away/back refusal; committed full mechanical receipt; separate rollback time; same-transaction apply/withdraw outer rollback; source/canonical later edits and absent/tampered receipt refuse."
+  },
+  "supersedes_held_v2": {
+    "path": "/tmp/zoi-hellenic-duplicate-v2/docs/audits/hellenic-reviewed-duplicate-owner-v2-2026-10-15.json",
+    "sha256": "cdb2f5268130ef60abeeeb5148b3e66e6a501102e8b59755a90b67931fc366a4",
+    "immutable": true
+  }
+}
