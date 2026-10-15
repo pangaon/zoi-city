@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/home/codespace/.cache/zoi/wix-requeue-independent-20261015/verify.py", line 40, in <module>
+    a=src.index('CREATE OR REPLACE FUNCTION public.'+name+'(');b=src.index('$function$\n;',a)+len('$function$\n;');defs[name]=src[a:b];q(defs[name])
+                                                                                                                                       ^^^^^^^^^^^^^
+  File "/home/codespace/.cache/zoi/wix-requeue-independent-20261015/verify.py", line 8, in q
+    if fail is None:assert r.returncode==0,r.stderr
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ERROR:  function "public.geography_repair_finish(uuid,uuid,jsonb)" does not exist
+LINE 1: md5(pg_get_functiondef('public.geography_repair_finish(uuid,...
+                               ^
+QUERY:  md5(pg_get_functiondef('public.geography_repair_finish(uuid,uuid,jsonb)'::regprocedure)) IS DISTINCT FROM 'fb16665e927b8bf55e37f916adbcfbac'
+CONTEXT:  PL/pgSQL function inline_code_block line 1 at IF
+

@@ -1,0 +1,305 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "reviewer": "/root/owner_next",
+  "state": "independently accepted source and controlled browser journeys; coherent artifact and installed verification remain root gates",
+  "review_tree": "/workspaces/zoi-native-map-ux-independent",
+  "review_baseline": "32f35249fea9aa6b0f37f4274dfb4b690ad4eb62",
+  "author_baseline": "cc806c05cb5ffce75535277d89693fb65580d80f",
+  "owner_audit_sha256": "b0d3e949c62b08fe8eb3b8d191c9e670501f316a91f2acea04017a19f706ac96",
+  "owner_manifest_sha256": "9c09cc802a94c2e3b95478dc0d4ba65ac7b19b5a8eb235948491f64f3f5ce6a9",
+  "pin_verification": {
+    "owned_source": 16,
+    "readonly_dependencies": 27,
+    "owner_evidence": 64,
+    "source_and_dependencies_unchanged_after_review": true,
+    "current32f_critical_originals_equal_author_cc806": true
+  },
+  "findings": [],
+  "accepted_behaviors": [
+    "Map mode leads with the actual map, with selected name/address/point status and existing actions directly following or alongside it. Filters and full place details are deliberate disclosures; list content retains its existing route.",
+    "Expansion changes layout, keeps the actual local MapLibre instance, camera and selected point, and does not request GPS. Close remains in the persistent toolbar. Escape and controlled hardware Back restore chrome and focus.",
+    "Real generated embedded HTML uses44px SDK controls and keeps the same actual MapLibre camera on resize in3 viewport cases. Android source separately reuses a module-constant WebView source object and changes its key only for explicit retry; no actual installed WebView lifecycle proof is claimed.",
+    "Location options use the existing control inline without zoom overlap. Opening/closing it or expanding makes0GPS requests. Explicit permission denial and state retention are exercised.",
+    "Only Android subscribes AppState focus/blur; web uses real RN-web AppState without an unsupported event adapter. Existing foreground/background/visibility, actor disposal and controller behavior remain.",
+    "Originless Google Maps directions intents preserve destination and travel mode and omit forced navigation; an explicit nonempty origin can request navigation, unless navigate:false. All4 travel modes and reviewed/address destinations pass."
+  ],
+  "source_boundaries": {
+    "mobile/App.tsx": {
+      "current_main32f_original_equals_author_baseline": true,
+      "exact_existing_App_Auth_routes_handlers_restored_after_only_expansion_delta": true
+    },
+    "mobile/src/Discovery.tsx": {
+      "current_main32f_original_equals_author_baseline": true,
+      "canonical_reader_actor_scope_authority_span_unchanged_sha256": "b881b3a1843d4a4461aa2ddd3d7081d74cbe33e81426279de4f9f624eb889dd0"
+    },
+    "mobile/src/useMapLocation.ts": {
+      "current_main32f_original_equals_author_baseline": true
+    },
+    "assets/map-data/directions.mjs": {
+      "current_main32f_original_equals_author_baseline": true,
+      "one_condition_only": true
+    },
+    "useMapLocation": {
+      "only_android_event_subscription_and_optional_cleanup_delta": true,
+      "foreground_controller_scope_callbacks_other_code_byte_exact": true
+    },
+    "embedded": {
+      "payload_message_location_command_prefix_byte_exact_sha256": "ea3f38d80ce8ff7b9c714f8a418a88c63cbc7052fe33d9b19e8328bacf5ac113",
+      "document_cache_version": "20261015-map-ux"
+    },
+    "Android_WebView": {
+      "documentSource_module_constant": true,
+      "source_prop_uses_same_constant": true,
+      "key_changes_only_explicit_retry": true,
+      "height_update_resizes_existing_document_not_source": true,
+      "runtime_native_WebView_mount_not_exercised": true
+    }
+  },
+  "React_review": {
+    "existing_canonical_readers_and_async_authority_unchanged": true,
+    "effects_cleanup_Back_Escape_AppState_visibility": true,
+    "no_new_library_store_auth_writer_or_provider": true,
+    "no_system_font_scale_caps_or_hidden_control_labels": true
+  },
+  "verification": {
+    "focused_native_map_and_foreground": {
+      "tests": 18,
+      "pass": 18,
+      "command": "cd mobile && node --test tests/native-map-ux.test.mjs tests/foreground-map-location.test.mjs"
+    },
+    "existing_web_directions": {
+      "tests": 4,
+      "pass": 4,
+      "command": "node --test tests/unit/map-directions.test.mjs"
+    },
+    "typescript": "PASS mobile/node_modules/.bin/tsc --noEmit -p mobile",
+    "controlled_browser": {
+      "journeys": 18,
+      "pass": 18,
+      "actual": "Discovery/AppChrome/models/location controller, actual RN-web AppState, actual local MapLibre and generated embedded document",
+      "controlled": "Auth/settings/public-read transport from retained Hellenic151 response and reviewed-point literal; OS permissions/native Back dispatch; local empty basemap style; no live tiles",
+      "viewports": "390x900,390x390,844x390,1440x900 at font1/2 plus stale/error/retry/account/list/denial/embedded/sparse/approximate/long-Greek variants"
+    },
+    "broader_owner_tests": "Owner retained500 mobile tests exact log hash verified; not redundantly rerun because focused and mounted independent checks passed with no source changes.",
+    "visual_checks": [
+      "Independent initial-selected390x390 font2: map first, full labels, narrow scrolling navigation with visible overflow controls. Selected context requires vertical scroll.",
+      "Independent expanded390x390 font2: persistent Close toolbar and full readable location/selected content in scroll flow; no zoom overlay.",
+      "Independent landscape844x390 font2: map and selected card use adjacent columns; full labels remain scrollable.",
+      "No real tile/image/provider visual verification inferred from the controlled empty basemap."
+    ]
+  },
+  "reviewer_environment_history": "Fresh --no-checkout sparse worktree initially lacked tracked transitive dependencies. Packaging and concurrent early TypeScript checks reported missing files. Materialized only existing current32f tracked files, preserving all frozen pins; final build/TypeScript/browser pass. Historical setup logs retained separately; no production/runtime relaxation.",
+  "limitations": [
+    "New source is not evidence that installed Android/iOS has changed; root owns coherent build, actual WebView/device lifecycle, native accessibility and hardware Back acceptance.",
+    "Short390px/font2 or long selected text requires scrolling; not all map, address and actions fit simultaneously. Close remains visible and controls remain reachable.",
+    "No live tiles, OS permission success, calculated route, ETA, turn-by-turn guidance, fresh source review, global map accuracy, actual Auth or production API reliability claimed.",
+    "Root must integrate exact source, release web embedded-module cache version and produce one coherent native artifact before live claims."
+  ],
+  "operations": {
+    "source_runtime_edits": 0,
+    "actual_SQL": 0,
+    "ADB": 0,
+    "EAS": 0,
+    "deployments": 0,
+    "actual_Auth": 0,
+    "external_network_or_provider": 0
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/approx-390-font2.png",
+      "sha256": "9e52ad52238ab50ccc4ccbf62626b1d488bdbf6c2ef05d3a71de9a7da2971d68",
+      "bytes": 55149
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/embedded-resized-1440.png",
+      "sha256": "f743ccef9003f0572362f5facdbd7e4eb121e443518e3dd9ade0c12484c9b1b5",
+      "bytes": 3652
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/embedded-resized-390.png",
+      "sha256": "a5332a8a4e3b8fa805afc54ffc81658a37d8881f5ea7ca0e86553d8bdb2be43e",
+      "bytes": 4243
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/embedded-resized-844.png",
+      "sha256": "38075278a30eecbd2574a526329dde0281fe3e9827ffe8a00db22614811fdc32",
+      "bytes": 4716
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/expanded-1440-font1.png",
+      "sha256": "3b6df84b014196fcf78576d2ae0671bdaa37328267c1c6dcd57b87455f3146ee",
+      "bytes": 45410
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/expanded-1440-font2.png",
+      "sha256": "04c8eaf7b5c4062d94a5d698cbc995480ab257818bc3291def16bd238c4ce821",
+      "bytes": 58424
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/expanded-390-font1.png",
+      "sha256": "609e2c935d668cce70702406c6843d34fb4c0f71dbca0fb81ff4f0113ea4627e",
+      "bytes": 23427
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/expanded-390-font2.png",
+      "sha256": "7a3cf1b01058a51fa319affbb385b884dfbddadaf52bce465af74b51a0686beb",
+      "bytes": 27708
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/expanded-844-font1.png",
+      "sha256": "b31a05df9e5b49a61ad0bb7bd8bd81ebdf6457a6a17ffcb44e2f9d6b29fc146f",
+      "bytes": 42391
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/expanded-844-font2.png",
+      "sha256": "bb09771c4342e31e43a778ff2f05ec8275a54f6be3504fd0e483f7a2e1df39fe",
+      "bytes": 50075
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/greek-390-font2.png",
+      "sha256": "667a0e9c76441cc4d90df028355dcfab2cf6c43a5639bf8dbd722dedd1ce2650",
+      "bytes": 57067
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/initial-selected-1440-font1.png",
+      "sha256": "3491044b7b91827854c023cd1ef677b680d014fa999e39a8c169a0a5c378ce5c",
+      "bytes": 54774
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/initial-selected-1440-font2.png",
+      "sha256": "737ac257440a093b0fa542d32d057bc9f1cbd3fb0196684ce540eb4aa146d037",
+      "bytes": 90535
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/initial-selected-390-font1.png",
+      "sha256": "908013f798175597350437a9618a5e202a143daa3dc1a8f7e30d61b7a7305113",
+      "bytes": 19641
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/initial-selected-390-font2.png",
+      "sha256": "07db5ce25147cf66ebc6938d8965954128bdb0169968d7a7c7d31287601d6338",
+      "bytes": 24822
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/initial-selected-844-font1.png",
+      "sha256": "114f2f843d4dd04d4086e37739dd89bf6a32e155163551597b0aa98689f6e21d",
+      "bytes": 37641
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/initial-selected-844-font2.png",
+      "sha256": "8894f05fbd9b5ce6b05fa44925066f5e3ded1d9bbac702722593c007c870baf0",
+      "bytes": 41281
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/map-1440-font1.png",
+      "sha256": "362399eb5eaf666f063e0ed6bbdd78008c18fa609417c1b9ab3d1c46d0dcdfce",
+      "bytes": 37469
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/map-1440-font2.png",
+      "sha256": "53238036a0fc15edfdef22f591f93f71632ee9e0d909d69250c59d9f8e3fed82",
+      "bytes": 67369
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/map-390-font1.png",
+      "sha256": "cce02c12ec41b074f8f1afafa4bf29c82ea110531bf30c56a92a9b6b46bd88ec",
+      "bytes": 19335
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/map-390-font2.png",
+      "sha256": "53dde8fb32c50fadf55d43e3909e9ff7d6d4d867bd72ba564de1ea0c48906adc",
+      "bytes": 24656
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/map-844-font1.png",
+      "sha256": "6ac7f06a5b0b8c3ee65fc272cbfbe3e03ddf2c90c92f36d25f7b8ebcaa924d98",
+      "bytes": 21027
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/map-844-font2.png",
+      "sha256": "d2a0c47e01e62a63b091dfc75e2a646794ed3090d4892e9d35196d585d0003b6",
+      "bytes": 30776
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/report.json",
+      "sha256": "6ad77dcf5007b2edd164e0ed81ea5df9baa90e7fcc6982d6482caa142acdb35c",
+      "bytes": 4145
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/sparse-390-font2.png",
+      "sha256": "128e698f9fd2859813a61255c1431933e128d7a0ad2dc116b4753c40d56f2ebd",
+      "bytes": 37501
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser/unmapped-390-font2.png",
+      "sha256": "9e52ad52238ab50ccc4ccbf62626b1d488bdbf6c2ef05d3a71de9a7da2971d68",
+      "bytes": 55149
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/browser.log",
+      "sha256": "e6265ff231ddcca027047b37259a6437de5ed52b4e04b77650c236612cd14b6f",
+      "bytes": 41
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/build-complete.log",
+      "sha256": "b213d50a38275c42700ce90bc53df8faa744bd1d0b01c786e1a4c1fec3961c25",
+      "bytes": 451
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/focused.log",
+      "sha256": "65b094a96494360719f657b6dcb5bdc93462c9ecf505ceb822177274b3d5e2ac",
+      "bytes": 2161
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/independent-source-boundaries.json",
+      "sha256": "0ad7dc7a1942324655da503669c32e2916f38b574bd9818314ebb679d21e4af9",
+      "bytes": 1301
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/owner-audit.json",
+      "sha256": "b0d3e949c62b08fe8eb3b8d191c9e670501f316a91f2acea04017a19f706ac96",
+      "bytes": 19447
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/owner-source-manifest.json",
+      "sha256": "9c09cc802a94c2e3b95478dc0d4ba65ac7b19b5a8eb235948491f64f3f5ce6a9",
+      "bytes": 6825
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/reviewer-setup-history/build-ready.log",
+      "sha256": "565c479321aea535023eeec41bfdbf1a0defe95df7bfe3438b7469070d2e6e6e",
+      "bytes": 2704
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/reviewer-setup-history/build.log",
+      "sha256": "beb318fc9756572e9b1de3af3396af827a8bb86004d47696bfabc9be22a8cf5f",
+      "bytes": 2629
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/reviewer-setup-history/typescript-complete.log",
+      "sha256": "f94f94380eae32bc53ee6b229d4723b3d06c91282e67e8827fdbc36af72650d2",
+      "bytes": 5301
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/reviewer-setup-history/typescript.log",
+      "sha256": "a2e8196b051ca98c1ee9c916fb564325970862533c4b7eb5abf07be78387b3f2",
+      "bytes": 8196
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/source-pincheck.json",
+      "sha256": "f3ca0bc8fda8f29825234e9ca0f7495051c1466db28135f411a49b01a7d6bbc3",
+      "bytes": 6829
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/typescript-final.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/audits/evidence/native-map-ux-independent-2026-10-15/web-directions.log",
+      "sha256": "1b6ca1461885eaaf641151fac1fe4b97a96c27886f5c47c9a33830eb560d355c",
+      "bytes": 530
+    }
+  ]
+}

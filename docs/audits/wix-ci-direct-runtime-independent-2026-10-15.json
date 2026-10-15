@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "reviewer": "/root/owner_next",
+  "state": "independent source review accepted; protected CI run remains release gate",
+  "head": "4a2cce60333d29fee1d107cc4c4152026e683fe7",
+  "base": "be182661fe0cd1ab31dffd7a729f88cbd7f6d6a7",
+  "scope": [
+    ".github/workflows/ci.yml",
+    "tests/integration/geography-hosted-native-tls.test.mjs"
+  ],
+  "findings": [],
+  "checks": {
+    "head": "4a2cce60333d29fee1d107cc4c4152026e683fe7",
+    "base": "be182661fe0cd1ab31dffd7a729f88cbd7f6d6a7",
+    "TLS_fixture_three_launcher_hunks_reverse_byte_exact": true,
+    "workflow_only_provisioning_and_unit_env_reverse_byte_exact": true,
+    "YAML_parse_and_pin": true,
+    "direct_exec_no_shell": true,
+    "fallback_original_pinned_npx_install_and_offline_probe_preserved": true,
+    "strict_version_and_20second_real_TLS_assertions_unchanged": true,
+    "cached_official_action_source_version_input_cache_false_PATH_install_consistent": true,
+    "root_evidence_hashes_verified": [
+      {
+        "path": "docs/audits/evidence/wix-ci-direct-runtime-root-2026-10-15/official-action-ref.json",
+        "bytes": 211,
+        "sha256": "b89cfe96a65643005bb00443aaa69377ead89b53c080f17da16f16abc81e5d9f"
+      },
+      {
+        "path": "docs/audits/evidence/wix-ci-direct-runtime-root-2026-10-15/wix-direct-runtime-required-local.log",
+        "bytes": 275332,
+        "sha256": "c8ec488642df38d2d8831ae4475f862bcbddeaf0f2a342f5b50adeec81f9e8c6"
+      },
+      {
+        "path": "docs/audits/evidence/wix-ci-direct-runtime-root-2026-10-15/wix-pr87-deno-setup-failure.log",
+        "bytes": 705,
+        "sha256": "fb37c067b1586b01d3faa7bf3b335f1ddc73e62c35f643978cb974e49bcc965f"
+      }
+    ],
+    "test_execution": "No rerun; exact root full405+2 passing log retained and rehashed",
+    "external_requests": 0
+  },
+  "assessment": [
+    "The exact official setup-deno action commit provisions exact Deno2.9.6 with a3-minute setup bound; its retained official source installs from Deno GitHub releases/tool cache and adds the executable to PATH. Automatic module cache is false by default.",
+    "ZOI_DENO_BIN=deno selects the provisioned executable through execFile without shell expansion. When absent, the original exact npx2.9.6 installation and offline probe behavior remains.",
+    "The fixture retains its strict Deno2.9.6 version assertion,60-second version probe,20-second real local TCP/TLS probe, fixed loopback permissions, expected Host/SNI, wrong-certificate rejection, actual response body and socket cleanup assertions. Reversing exactly3 launcher hunks restores the entire prior fixture byte-for-byte.",
+    "Reversing only provisioning+unit-step environment restores the prior entire workflow byte-for-byte. Existing workflow permissions, triggers, other actions, jobs and release behavior are unchanged.",
+    "The first two CI attempts stopped during runtime installation; they are not TLS test failures or passes. This change supplies a different installation transport while retaining the actual test."
+  ],
+  "limits": [
+    "Reviewed retained official action source/ref evidence; no new remote ref resolution, action download, provider request or CI dispatch performed.",
+    "Full required suite was not redundantly rerun; root retained405 node:test files plus2 standalone suite log rehashed exactly. New protected CI completion remains necessary before merge/release.",
+    "Existing floating checkout/setup-node refs are unchanged baseline and outside this narrow delta; no broader workflow hardening claim."
+  ],
+  "operations": {
+    "runtime_source_edits": 0,
+    "tests_executed": 0,
+    "external_network": 0,
+    "deployments": 0,
+    "provider_actions": 0
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/action.yml",
+      "sha256": "68dea2694ce321a8dd68c46e06495dd436ce2132fecb4bb5b7abd3cec641ec70",
+      "bytes": 1191
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/ci-after.yml",
+      "sha256": "246989bb39717f4840ebadf2b2e2101ed113cc09f40778084c5283e69291d24e",
+      "bytes": 5081
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/ci-before.yml",
+      "sha256": "bc3e8aed1a46c4c144fcbd457933194988815c2ff3126a4ed8de25466c3798d8",
+      "bytes": 4963
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/independent-check.json",
+      "sha256": "3ad4bd137114b11fdc22053d41845c32a192078187a4bfef0abb0b2a42e0289c",
+      "bytes": 1371
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/launcher-only.patch",
+      "sha256": "58728e8e0edee5440a375a09015fafe9000b91b0f26e8636b9c89f9bfe99ade3",
+      "bytes": 4510
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/official-action-ref.json",
+      "sha256": "b89cfe96a65643005bb00443aaa69377ead89b53c080f17da16f16abc81e5d9f",
+      "bytes": 211
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/src_install.ts",
+      "sha256": "0da0a29cf1ef9545830bef6601a49bf90d58a504e2e41eb3f1f059e73833645e",
+      "bytes": 2513
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/src_main.ts",
+      "sha256": "2bb9e59c21430d65955fe81d3e3eb01c502cc39e098d3196c29beaa31da43c24",
+      "bytes": 1738
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/tls-after.mjs",
+      "sha256": "cbad70f4b30a2afbc29de2922ef8fe5a668a8672d237f10a8c14e3cbc0778a78",
+      "bytes": 3948
+    },
+    {
+      "path": "docs/audits/evidence/wix-ci-direct-runtime-independent-2026-10-15/tls-before.mjs",
+      "sha256": "529467a17634a3abad4edbe48b5a63c07b9ab984d5cbf711f445f9d818894cb8",
+      "bytes": 3822
+    }
+  ]
+}

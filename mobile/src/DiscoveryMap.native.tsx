@@ -9,12 +9,14 @@ import {MapLocationControl} from './MapLocationControl';
 import {deviceLocationRegion,deviceLocationLabel} from '../../assets/map-data/foreground-location.mjs';
 export function DiscoveryMap({
   points,
+  height = 340,
   selected,
   scopeKey,
   focus,
   motion,
   onSelect,
 }: DiscoveryMapProps) {
+  const [locationOptions,setLocationOptions]=useState(false);
   const mounted = useRef(true);
   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
   const map = useRef<MapView | null>(null),
@@ -66,11 +68,12 @@ export function DiscoveryMap({
   // Render only real positions in the current viewport. No scattered centroid pins.
   const [, setViewport] = useState(0),
     [width, setWidth] = useState(350);
-  const clusters = nativePinClusters(pins, region.current, width, 340),
+  const clusters = nativePinClusters(pins, region.current, width, height),
     shown = clusters.slice(0, 500);
   return (
+    <View style={{gap:8}}>
     <View
-      style={s.frame}
+      style={[s.frame, {height}]}
       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
     >
       <MapView
@@ -145,9 +148,9 @@ export function DiscoveryMap({
       <View style={s.actions}>
         <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" onPress={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;map.current?.animateToRegion({...region.current,latitudeDelta:Math.min(170,region.current.latitudeDelta*2),longitudeDelta:Math.min(350,region.current.longitudeDelta*2)},motion?250:0);}} style={s.action}><Text style={s.actionText}>−</Text></Pressable>
         <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" onPress={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;map.current?.animateToRegion({...region.current,latitudeDelta:Math.max(0.0005,region.current.latitudeDelta/2),longitudeDelta:Math.max(0.0005,region.current.longitudeDelta/2)},motion?250:0);}} style={s.action}><Text style={s.actionText}>＋</Text></Pressable>
-        <Pressable accessibilityRole="button" accessibilityLabel="Open full map tools in browser" disabled={opening} onPress={async()=>{setOpening(true);setToolError("");try{await Linking.openURL(fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},{...region.current,width}));}catch{if(mounted.current)setToolError("The browser could not open. Try full map tools again.");}finally{if(mounted.current)setOpening(false);}}} style={[s.action,{flex:1}]}><Text style={[s.actionText,{fontSize:12}]}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable>
+
       </View>
-      {ready?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}
+
       {toolError?<View style={s.note}><Text accessibilityRole="alert" style={s.text}>{toolError}</Text></View>:null}
       {!ready ? (
         <View pointerEvents="none" style={s.note}>
@@ -162,12 +165,14 @@ export function DiscoveryMap({
         </View>
       ) : null}
     </View>
+    <View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}><Pressable accessibilityRole="button" accessibilityLabel="Open full map tools in browser" disabled={opening} onPress={async()=>{setOpening(true);setToolError("");try{await Linking.openURL(fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},{...region.current,width}));}catch{if(mounted.current)setToolError("The browser could not open. Try full map tools again.");}finally{if(mounted.current)setOpening(false);}}} style={[s.action,{flexShrink:1}]}><Text style={[s.actionText,{fontSize:12}]}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{expanded:locationOptions}} style={s.action} onPress={()=>setLocationOptions(v=>!v)}><Text style={[s.actionText,{fontSize:12}]}>{locationOptions?"Close location options":"Location options"}</Text></Pressable></View>
+    {locationOptions&&ready?<MapLocationControl inline state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}</View>
   );
 }
 const s = StyleSheet.create({
   deviceDot:{width:18,height:18,borderRadius:9,backgroundColor:"#1676df",borderWidth:3,borderColor:"#fff"},
   actions:{position:"absolute",top:10,left:10,right:10,flexDirection:"row",gap:6},
-  action:{minWidth:40,minHeight:40,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,alignItems:"center",justifyContent:"center",paddingHorizontal:10},
+  action:{minWidth:44,minHeight:44,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,alignItems:"center",justifyContent:"center",paddingHorizontal:10},
   actionText:{color:LIGHT.ink,fontWeight:"700",fontSize:20},
   frame: {
     height: 340,

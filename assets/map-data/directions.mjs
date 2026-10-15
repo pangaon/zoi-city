@@ -25,7 +25,7 @@ export function navigationURL(destination, { origin = '', mode = 'driving', navi
   url.searchParams.set('api', '1'); url.searchParams.set('destination', destination.value);
   url.searchParams.set('travelmode', mode);
   if (start) url.searchParams.set('origin', start);
-  if (navigate) url.searchParams.set('dir_action', 'navigate');
+  if (navigate && start) url.searchParams.set('dir_action', 'navigate');
   if (url.href.length > 2048) throw Error('The directions link is too long. Shorten the starting address.');
   return url.href;
 }
