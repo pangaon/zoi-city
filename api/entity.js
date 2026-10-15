@@ -21,6 +21,7 @@ import {renderBakeryHome} from './_bakery-home.js';
 import {renderProfessionalHome} from './_professional-home.js';
 import {renderHealthHome} from './_health-home.js';
 import {renderSocietyHome} from './_society-home.js';
+import {renderConsulateHome} from './_consulate-home.js';
 import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
@@ -369,9 +370,9 @@ function socialIcon(k){
      +'</div>'
    +'</div></header>'
    +'<main class="wrap home-main">'
-   +'<nav class="bc"><a href="/">Zoi</a> &rsaquo; <a href="/explore">Discover</a> &rsaquo; '
+   +'<nav class="bc" aria-label="Breadcrumb"><a href="/explore">Discover</a> &rsaquo; '
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
-   +'<div class="ep-cover '+(coverImg?'has-img':'no-photo')+'" id="epCover"'
+   +'<div class="ep-cover '+(coverImg?'has-img':logoImg?'logo-only':'no-photo')+'" id="epCover"'+(!coverImg&&!logoImg?' hidden':'')
      + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
      + ' data-position="'+heroPosition+'"'
      + '>' + (coverImg ? '<img id="epCoverImage" src="'+attr(coverImg)+'" alt="'+attr(e.name||'')+'" width="1600" height="600" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" style="object-position:'+heroPosition+'">' : '') + '<div class="ep-brand">'
@@ -398,10 +399,9 @@ function socialIcon(k){
    +'<script src="/assets/zoi-search.js?v=20261002-account-history"></script>'
    +'<script>(function(){var h=document.getElementById("epCover");if(!h)return;'
      +'var src=h.getAttribute("data-img");'
-     // A remote logo that fails to load must not leave a blank frame: fall
-     // straight through to the generated emblem.
-     +'function emblem(){if(window.ZoiEmblem){h.innerHTML=ZoiEmblem.emblem('
-       +JSON.stringify({name:e.name||'', type:e.entity_type||'', slug:slug||''}).replace(/</g,'\\u003c')+');}}'
+     // Keep valid client artwork compact when the cover is absent or fails.
+     +'function emblem(){h.classList.remove("has-img","contained-media");h.classList.add("logo-only");var b=h.querySelector(".ep-brand img");if(!b||b.parentNode.hidden)h.hidden=true;}'
+     +'var brand=h.querySelector(".ep-brand img");if(brand){function noBrand(){brand.parentNode.hidden=true;if(!h.classList.contains("has-img"))h.hidden=true;}brand.addEventListener("error",noBrand);if(brand.complete&&!brand.naturalWidth)noBrand();}'
      +'if(src){var im=document.getElementById("epCoverImage")||new Image();im.alt=h.getAttribute("data-alt")||"";'
        +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
        +'im.style.objectPosition=h.getAttribute("data-position")||"center";'
@@ -537,7 +537,7 @@ export default async function handler(req, res) {
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
     const design = publishedHomeDesign(e);
-    const designedHome = renderHospitalityHome(e, design) || renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
+    const designedHome = renderConsulateHome(e, design) || renderHospitalityHome(e, design) || renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
     if (designedHome) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');

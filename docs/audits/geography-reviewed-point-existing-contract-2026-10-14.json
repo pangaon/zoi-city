@@ -1,0 +1,6 @@
+{
+  "definition_md5": "91f7e4d96519f9a4bb0800a25e1c9e65",
+  "owner": "postgres",
+  "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+  "definition": "CREATE OR REPLACE FUNCTION public.geography_reviewed_point(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT jsonb_build_object('listing_id',l.id,'request_id',r.request_id,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision)\n FROM zoi.listings l JOIN zoi.geography_reviews r ON r.listing_id=l.id\n WHERE l.id=p_listing AND l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n AND l.marketplace_status IS DISTINCT FROM 'hidden'\n AND l.owner_user_id IS NULL AND l.owner_workspace_id IS NULL\n AND r.reverted_at IS NULL AND r.after_fingerprint=zoi.geography_fingerprint(l)\n AND l.profile->'_geo'->>'request_id'=r.request_id::text\n AND r.receipt->>'listing_id'=l.id::text AND r.receipt->>'request_id'=r.request_id::text\n AND r.receipt->'latitude'=to_jsonb(l.latitude) AND r.receipt->'longitude'=to_jsonb(l.longitude)\n AND r.receipt->>'precision'=l.geo_precision AND l.geo_precision='street'\n ORDER BY r.created_at DESC LIMIT 1\n$function$\n"
+}

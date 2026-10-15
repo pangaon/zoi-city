@@ -77,7 +77,7 @@ test('stored plus-delimited and weblogo artwork cannot replace genuine machine p
  const photos=['https://restaurant.org/Poppis-dining.jpg','https://restaurant.org/LogoVillage-terrace.jpg'];
  for(const logo of ['https://cdn.example.org/Logo+best+quality+no+words.jpg?format=1500w','https://cdn.example.org/Poppis_weblogos-03.png?format=1500w']){
   const p={hero_url:logo,photo_urls:[logo,...photos]},entity={profile:{_enrich:p}};
-  const result=profileMedia(entity,p);assert.equal(result.hero,photos[0]);assert.deepEqual(result.gallery,photos);assert.equal(result.logo,logo);
+  const result=profileMedia(entity,p);assert.equal(result.hero,photos[0]);assert.deepEqual(result.gallery,photos);assert.equal(result.logo,null,'a filename alone does not prove client logo identity');
   const sparse={hero_url:logo,photo_urls:[logo]};const empty=profileMedia({profile:{_enrich:sparse}},sparse);assert.equal(empty.hero,null);assert.deepEqual(empty.gallery,[]);
   const selected=profileMedia({...entity,owner_content:{photo_url:logo,profile:{photos:[logo]}}},p);assert.equal(selected.hero,logo);assert.deepEqual(selected.gallery,[logo]);
   const cleared=profileMedia({...entity,owner_content:{photo_url:null,profile:{photos:[]}}},p);assert.equal(cleared.hero,null);assert.deepEqual(cleared.gallery,[]);

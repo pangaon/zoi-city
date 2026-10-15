@@ -14,7 +14,7 @@ export function discoveryMedia(row: any): {
     !row?.owner_content &&
     row?.image_kind === "logo";
   const kind = media.hero
-    ? legacyLogo
+    ? legacyLogo || media.imageKind === "brand_logo"
       ? "logo"
       : media.imageKind === "event_poster"
         ? "poster"
@@ -25,14 +25,7 @@ export function discoveryMedia(row: any): {
   return {
     uri: media.hero || media.logo || null,
     kind,
-    fit:
-      kind === "poster" || legacyLogo
-        ? "contain"
-        : kind === "logo"
-          ? media.logoFit === "cover"
-            ? "cover"
-            : "contain"
-          : "cover",
+    fit: media.imageFit === "cover" ? "cover" : "contain",
     backdrop:
       kind === "logo" && media.logoBackdrop === "dark"
         ? "dark"

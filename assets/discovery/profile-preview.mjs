@@ -27,5 +27,5 @@ export function quickLookDetails(e){
  // cover would resurrect artwork the shared selector has deliberately blocked.
  const mediaPolicy=has('website')||!!sourceQuarantined(q)||!!q.source_url&&!trusted;
  const photoAuthoritative=!!photo||['photo_url','hero_url','photos','photo_urls','gallery'].some(key=>has(key))||own(e,'photo_url')||mediaPolicy;
- return {description,address,photo,logo:media.logo,logoBackdrop:media.logoBackdrop,logoFit:media.logoFit,imageKind,photoAuthoritative,links};
+ return {description,address,photo,logo:media.logo,logoBackdrop:media.logoBackdrop,logoFit:media.logoFit,imageKind,imageFit:media.imageFit,photoAuthoritative,links};
 }

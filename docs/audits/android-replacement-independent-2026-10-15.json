@@ -1,0 +1,32 @@
+{
+  "reviewer": "qa_release",
+  "device": "Android API35 x86_64 emulator5554, 1080x2400",
+  "installed_apk": {
+    "sha256": "2e427818872cef3bdaeab04a08fa6e402c940c61e6c33a9c9f823e31c46e0495",
+    "bytes": 85235319,
+    "matches_authorized_apk": true,
+    "build": "66f97652-0efc-4b46-96c7-47414b8b354a",
+    "source_commit": "4a7440509f663783217ce8badc98d4b9ec159d2c"
+  },
+  "gate": "Critical replacement Map crash recovery accepted on emulator; remaining native coverage explicit",
+  "actual_journeys": {
+    "map": "Actual installed native WebView renders MapLibre and OpenFreeMap street tiles, reviewed Saint Nicholas selected pin; process survives",
+    "directions": "All four modes dispatch actual Google Maps intents, exact destination36.849423,-76.022472. Driving blank origin; walking entered synthetic address; cycling/transit entered synthetic test text. External navigation only; no embedded route/ETA claim.",
+    "browser_handoff": "Actual Chrome address preserves selected slug and #14.00/36.84942/-76.02247/0/0",
+    "empty_query": "Unknown global query displays no matches. Explore all places clears query and filters; public results return.",
+    "sparse_home": "Lefteris creator native profile renders published description/address; Find published address contact lookup rather than numeric unreviewed pin.",
+    "offline": "Cold launch in airplane mode produces interactive-map, positions, and selected-place error controls. Restore network, Retry interactive map, Retry map positions and Retry selected place restore actual map,2185 positioned rows/current selected street-level profile.",
+    "crash_buffer": "Empty after replacement journeys",
+    "network_restored": true
+  },
+  "evidence_directory": "docs/audits/evidence/android-replacement-independent-2026-10-14",
+  "not_yet_verified": [
+    "Physical device/iOS/store acceptance",
+    "Native permission denial/coarse GPS",
+    "Full global coordinate accuracy",
+    "Fresh receipt-before-feed timing on installed device (controlled browser proof separate)",
+    "Explicit cluster selection and manual camera preservation in installed device (controlled browser proof separate)",
+    "Authenticated owner/provider/payment operations"
+  ],
+  "prior_build": "Old618f154 APK Map fatal remains recorded failed; superseded for these tested journeys only"
+}

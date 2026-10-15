@@ -1,0 +1,57 @@
+{
+  "state": "offline_candidate_not_applied",
+  "date": "2026-10-14",
+  "migration": {
+    "path": "supabase/migrations/20261014165259_geography_repair_continuous_source_enqueue.sql",
+    "sha256": "d0a1a3b510c40c3fc26ca84cb81605cf628080a79d23f0ac003d343ca45f4a6f",
+    "requires_bounded_lease_definition_md5": "3726b3f5fb307bdbf690f72f374df815"
+  },
+  "test": {
+    "path": "tests/database/geography-continuous-enqueue.integration.mjs",
+    "sha256": "6308e0bed60f87df86a98f07f49958a32fa971743d1648c1a39b1bf79990882f",
+    "database": "isolated PostgreSQL16",
+    "passed_groups": 9,
+    "automatically_seeded_clients": 1201,
+    "publisher_replay_pages": 5,
+    "replay_new_jobs": 0,
+    "actual_two_session_lock_order_test": true,
+    "guarded_publisher_seed_rollback_sql_executed_locally": true,
+    "confirmed_duplicate_and_null_after_enqueue_excluded": true
+  },
+  "contract": {
+    "official_input_hash_unchanged": true,
+    "insert_only_listing_trigger": true,
+    "deferred_post_ledger_fresh_street_skip": true,
+    "cursor_fresh_street_skip": true,
+    "source_only_publisher": true,
+    "owner_edits_captured": false,
+    "listing_coordinate_writes": 0,
+    "live_queries": 0,
+    "provider_calls": 0,
+    "guarded_readers": [
+      "public.geography_repair_summary",
+      "public.zoi_delivery_records",
+      "zoi.delivery_job_status"
+    ],
+    "reader_full_population_fingerprint_scan_added": false,
+    "public_duplicate_scope": "duplicate_status <> 'confirmed_duplicate'; SQL NULL excluded exactly as live v_public_listings"
+  },
+  "remaining": [
+    "Independent review",
+    "Root production rollback/apply gate",
+    "No continuous background source success or catalogue accuracy claimed from local tests"
+  ],
+  "reader_evidence": {
+    "path": "docs/audits/geography-generation-existing-readers-2026-10-14.json",
+    "sha256": "1168d900e6ae613dcb65441b65a3b4182a4b620680c4fb5b4910664478cd2a71",
+    "scan": "all public/zoi pg_proc functions with old input/fingerprint source tokens; no listing population scan"
+  },
+  "publisher_seed_proof": {
+    "path": "scripts/geography/publisher-seed-proof.mjs",
+    "sha256": "a6e7f08e7b0a0707a4896b7d9b95fe368db9ad07c35eb0aff666cef14429ff3a",
+    "test_path": "tests/unit/geography-publisher-seed-proof.test.mjs",
+    "test_sha256": "13264bffa767b9407ca2d04d7e3da839579fc032891c4b0c010410121dd47e34",
+    "unit_checks_passed": 2,
+    "production_execution": "not executed"
+  }
+}

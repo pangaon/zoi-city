@@ -1,0 +1,55 @@
+{
+  "status": "offline_frozen_candidate_pending_independent_review_root_production_execution",
+  "date": "2026-10-15",
+  "files": [
+    {
+      "path": "supabase/migrations/20261014171541_geography_reviewed_point_public_scope.sql",
+      "sha256": "8e3c35aeac1eeb83ce574ac0b795275fa4009af94bc926c2b02fcf09373611e5"
+    },
+    {
+      "path": "tests/database/geography-reviewed-point-scope.integration.mjs",
+      "sha256": "a9dc7672a8026875c8151bb372dfa7e446b549c8b8e36472e56b0ca036268aac"
+    },
+    {
+      "path": "tests/database/geography-continuous-production-rollback.sql",
+      "sha256": "b13eed8fc29b6054c5707400fde0f4489784b7263bb8b5713dc1393be0a69de0"
+    },
+    {
+      "path": "tests/database/geography-generation-production-fixture.integration.mjs",
+      "sha256": "35efdee287b56d8ae8c93222e6e77cb9059dda8ee2df6c3fd2aae7e878e542f8"
+    },
+    {
+      "path": "docs/audits/geography-reviewed-point-existing-contract-2026-10-14.json",
+      "sha256": "baca80a1971533d86338d7b5d85c76f224b338a8dd022c0735651e9e898da2f3"
+    }
+  ],
+  "tests": {
+    "exact_generation_production_sql_local_checks": 6,
+    "reviewed_point_scope_groups": 4,
+    "actual_roles": [
+      "anon",
+      "authenticated",
+      "service_role"
+    ],
+    "actual_duplicate_statuses": [
+      "unique",
+      "candidate_duplicate",
+      "confirmed_duplicate",
+      "merged",
+      "primary_of_merge"
+    ],
+    "null_scope_test": "defensive local nullable fixture; live schema is NOTNULL",
+    "source_writer_authority_proven": false,
+    "synthetic_receipt_only": true,
+    "full_rollback_confirmed_locally": true
+  },
+  "production_writes": 0,
+  "provider_calls": 0,
+  "preserved": [
+    "frozen hosted TLS bundle",
+    "already applied continuous SQL",
+    "existing receipt fields/signature/ACL/owner",
+    "freshness/revert/point/request checks"
+  ],
+  "correction": "public receipt reader now matches v_public_listings duplicate_status <> confirmed_duplicate plus existing published/moderation/hidden/unowned scope"
+}
