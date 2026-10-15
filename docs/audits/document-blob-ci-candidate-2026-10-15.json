@@ -1,0 +1,38 @@
+{
+  "status": "Frozen QA harness source candidate; root independent review and activation required",
+  "base": "86bb929",
+  "files": [
+    {
+      "path": "scripts/auth-qa/document-blob-ci.mjs",
+      "sha256": "9d7598e4b3283a824bcb58f7f031245a66fdfa7324aaf697a0e3487226d7bd45"
+    },
+    {
+      "path": ".github/workflows/document-blob-qa.yml",
+      "sha256": "e23f1532dd4f0f4355cff6ed002483cb67b3ba8318619f92754219f59ffe2b42"
+    },
+    {
+      "path": "tests/unit/document-blob-ci.test.mjs",
+      "sha256": "c5488f7e285d994d17bdf40a8447fd2d93def51a6861e283fb8098e6369770ba"
+    }
+  ],
+  "tests": {
+    "controlled_guard_and_runtime_cases": 12,
+    "live_calls": 0
+  },
+  "scope": "Existing dedicated QA account/workspace only. Existing withQaSession + serviceCredential, local logout finally. No founder token/new auth users/provider calls. Fixed actual Edge upload/download/cleanup and canonical Operations/Documents RPCs.",
+  "request": "Fresh request UUID, main-only single-parent one-file push, attempt1,30min lifetime, exact script/workflow/transitive imports and reviewed Edge local source+deployed bundle hash before service credential resolution. No active request included.",
+  "exercise": "9-byte PDF upload, same-nonce repeat => one version/one uploaded audit; actual private file hash. Second canonical reservation with same-size/same-MIME wrong PDF object then Edge409 and pending/no uploaded audit.",
+  "cleanup": "Pending wrong object waits canonical15min age, max16min bounded30s sleeps; authenticated Edge cleanup, document archive then project/company archive. No timestamp changes/hidden deletion. Ready blob stays retained with archived history. Unknowns preserve nonce/known IDs in sanitized reconciliation artifact.",
+  "required_before_activation": [
+    "Root integrate exact reviewed new Edge source into release, pin source SHA and actual deployed ezbr_sha256 in request",
+    "Root inspect harness, verify actual RPC/Edge response shapes and no privileged source-policy bypass",
+    "Main code-first release then separate expiring request-only activation; no live run by QA"
+  ],
+  "limitations": [
+    "Controlled tests are not deployed blob acceptance",
+    "Unknown response before canonical ID can require root reconciliation by persisted nonce",
+    "Cleanup or expiry failure is reported unconfirmed; no hidden retries/delete fallback",
+    "Service credential resolver uses existing Management key path; keys memory-only and masked; all wrapper fetches redirect:error"
+  ],
+  "reference": "https://supabase.com/docs/reference/api/v1-get-a-function"
+}
