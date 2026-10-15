@@ -2,7 +2,7 @@ import {validHospitalityFields,hospitalitySourceMatches} from '../../supabase/fu
 /** Bind reviewed captured source evidence to an existing database enrichment lease.
  * Does not invent a lease or write around enrich_apply's owner/source fences.
  */
-import {buildClientBrief} from '../../assets/enrichment/client-brief.mjs';
+import {buildClientBrief,sourceCopyPlaceholder,sourceCopyProfile,retainedSourceCopy} from '../../assets/enrichment/client-brief.mjs';
 import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
 import {canonical,sha256} from '../quality/evidence.mjs';
 const hashPattern=/^[a-f0-9]{64}$/;
@@ -22,9 +22,10 @@ export function reviewedEnrichmentBatch(report,review,lease){
  if(!report.render?.url||report.aggregator||report.status==='repair_required'||report.source?.http_status!==200||new URL(report.render.url).hostname.replace(/^www\./,'')!==new URL(report.website).hostname.replace(/^www\./,''))throw Error('source_not_approved');
  if(!validHospitalityFields(report.profile||{},report.render.url)||(['rooms','dining','venues','amenities'].some(k=>Object.hasOwn(report.profile||{},k))&&!hospitalitySourceMatches(report.render.url,report.website)))throw Error('source_hospitality_invalid');
  const allowed=new Set(['description','tagline','address_parts','brand_palette']);
- const overrides=review.approved_fields||{};for(const key of Object.keys(overrides))if(!allowed.has(key))throw Error('unapproved_review_field');
- const profile={...report.profile,...overrides,crawl_status:'ok',rendered_source_evidence:{sha256:review.report_sha256,source_sha256:report.source.sha256,render_sha256:report.render.sha256,reviewer:review.reviewer,reviewed_at:review.reviewed_at,source_fingerprint:report.source_fingerprint}};
- const provenance=Object.fromEntries(Object.keys(profile).filter(k=>k!=='crawl_status').map(k=>[k,'rendered-official-source:'+report.render.url]));
+ const overrides=review.approved_fields||{};for(const key of Object.keys(overrides))if(!allowed.has(key)||['description','tagline'].includes(key)&&sourceCopyPlaceholder(overrides[key]))throw Error('unapproved_review_field');
+ const fresh=sourceCopyProfile({...report.profile,...overrides}),retained=retainedSourceCopy(lease,fresh,report.render.url);
+ const profile={...retained.fields,...fresh,crawl_status:'ok',rendered_source_evidence:{sha256:review.report_sha256,source_sha256:report.source.sha256,render_sha256:report.render.sha256,reviewer:review.reviewer,reviewed_at:review.reviewed_at,source_fingerprint:report.source_fingerprint}};
+ const provenance={...retained.provenance,...Object.fromEntries(Object.keys(fresh).map(k=>[k,'rendered-official-source:'+report.render.url])),rendered_source_evidence:'rendered-official-source:'+report.render.url};
  for(const key of Object.keys(overrides))provenance[key]='reviewed-official-source:'+report.render.url;
  return[{slug:lease.slug,website:lease.website,lease_id:lease.lease_id,profile,provenance}];
 }
@@ -97,21 +98,23 @@ function reviewedSourceHTML(report,review,lease){
   if(!object(conflict)||Object.keys(conflict).some(key=>!['structured','linked','source_url'].includes(key))||conflict.source_url!==source.url||report.profile.email!==null||!(conflict.structured===null||email(conflict.structured))||!Array.isArray(conflict.linked)||!conflict.linked.length||conflict.linked.length>100||!conflict.linked.every(email)||new Set([...(conflict.structured?[conflict.structured]:[]),...conflict.linked].map(value=>value.toLowerCase())).size<2)throw Error('source_email_conflict_invalid');
  }
  const overrides=review.approved_fields||{};
- for(const key of Object.keys(overrides))if(!['description','tagline'].includes(key)||typeof overrides[key]!=='string'||!overrides[key].trim())throw Error('unapproved_review_field');
+ for(const key of Object.keys(overrides))if(!['description','tagline'].includes(key)||typeof overrides[key]!=='string'||!overrides[key].trim()||sourceCopyPlaceholder(overrides[key]))throw Error('unapproved_review_field');
  const urls=new Set([...approved].map(hash=>verified.get(hash).url));
- const fields=Object.fromEntries(Object.entries({...report.profile,...overrides}).filter(([key,value])=>!['photo_urls','photo_url','hero_url'].includes(key)&&value!==undefined&&value!==null&&value!==''&&(!Array.isArray(value)||value.length)&&(!object(value)||Object.keys(value).length)));
+ const fields=Object.fromEntries(Object.entries(sourceCopyProfile({...report.profile,...overrides})).filter(([key,value])=>!['photo_urls','photo_url','hero_url'].includes(key)&&value!==undefined&&value!==null&&value!==''&&(!Array.isArray(value)||value.length)&&(!object(value)||Object.keys(value).length)));
  if(conflict){fields.email=null;fields.email_conflict=conflict;}
  else if(conflict===null&&email(fields.email))fields.email_conflict=null;
  const photos=(report.profile.photo_urls||[]).filter(value=>urls.has(value));
  if(!fields.menu?.length&&!fields.menu_url&&!photos.length&&!fields.phone&&!fields.email&&!['rooms','dining','venues','amenities'].some(k=>fields[k]?.length)&&String(fields.description||'').trim().length<40)throw Error('source_html_no_useful_fields');
  const freshFields={...fields,...(photos.length?{photo_urls:photos,hero_url:urls.has(report.profile.hero_url)?report.profile.hero_url:photos[0]}:{})};
  const {lease:oldLease,_lease_source_context:ignoredContext,blocked,last_error,status,crawl_status,checked_at,last_attempt_at,source_url,provenance:oldProvenance,...previous}=existing;
+ const retained=retainedSourceCopy(lease,fields,source.url);for(const key of ['description','tagline'])delete previous[key];
  if(photos.length){fields.photo_urls=[...new Set([...photos,...(Array.isArray(previous.photo_urls)?previous.photo_urls:[])])];const hero=urls.has(report.profile.hero_url)?report.profile.hero_url:photos[0];fields.hero_url=hero;fields.photo_url=hero;}
  if(object(previous.social)&&object(fields.social))fields.social={...previous.social,...fields.social};
  const evidence={sha256:review.report_sha256,source_sha256:source.sha256,extractor_sha256:report.extractor_sha256,method:publisher?'reviewed_record_label_source_html':'reviewed_official_source_html',...(publisher?{publisher_identity:report.publisher_identity}:{}),reviewer:review.reviewer,reviewed_at:review.reviewed_at,source_fingerprint:report.source_fingerprint,approved_image_hashes:[...approved],prior_machine_sha256:review.prior_machine_sha256,added_photo_urls:photos,preserved_photo_urls:(previous.photo_urls||[]).filter(url=>!photos.includes(url)),updated_social_channels:Object.keys(report.profile.social||{})};
- const profile={...previous,...fields,crawl_status:'ok',source_html_evidence:evidence};
- const provenance={...(object(oldProvenance)?oldProvenance:{}),...Object.fromEntries(Object.keys(fields).map(key=>[key,'official-source-html:'+source.url])),source_html_evidence:'reviewed-official-source-html:'+source.url};
+ const profile={...previous,...retained.fields,...fields,crawl_status:'ok',source_html_evidence:evidence};
+ const provenance={...(object(oldProvenance)?oldProvenance:{}),...retained.provenance,...Object.fromEntries(Object.keys(fields).map(key=>[key,'official-source-html:'+source.url])),source_html_evidence:'reviewed-official-source-html:'+source.url};
  for(const key of Object.keys(overrides))provenance[key]='reviewed-official-source-html:'+source.url;
+ for(const key of ['description','tagline'])if(!Object.hasOwn(profile,key))delete provenance[key];
  if(food){
   const proof='reviewed-source:'+food.source_url+'#sha256='+food.source_sha256+';retrieved_at='+food.retrieved_at;
   for(const key of foodKeys)if(Object.hasOwn(fields,key))provenance[key]=proof;

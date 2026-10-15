@@ -11,6 +11,26 @@ export function briefURL(value){if(typeof value!=='string'||value.length>2048)re
 function sameSource(a,b){try{const x=new URL(a),y=new URL(b);return x.protocol===y.protocol&&x.hostname.replace(/^www\./,'')===y.hostname.replace(/^www\./,'')&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search;}catch{return false;}}
 function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
 
+/** Literal source metadata sentinels only. Owner/raw values and listing names
+ * are never passed through this fallback classifier. */
+export const sourceCopyPlaceholder=value=>typeof value==='string'&&/^(?:\.\.\.|…|null|undefined|\[object Object\])$/i.test(value.normalize('NFKC').trim());
+export function sourceCopyProfile(profile){const out={...object(profile)};for(const key of ['description','tagline'])if(sourceCopyPlaceholder(out[key]))delete out[key];return out;}
+const copyHeld=p=>briefBlocked(p)||p?.crawl_status==='error'||p?.blocked_reason==='source_scope_mismatch'||['scope_review_required','organization_identity_quarantine','source_scope_mismatch','source_challenge','challenge'].some(k=>p?.[k]===true||p?.[k]==='true')||!!(p?.identity_scope||p?.member||p?.association_member||p?.source_affiliation)||['association_directory','association_member','supporting_publisher_profile'].includes(p?.source_kind)||p?.source_identity?.verification==='entity_family_review_required';
+/** Old copy remains old evidence. No stale, held, unknown or owner-managed
+ * source may lend copy to a successful new machine result.
+ * @returns {{fields:Record<string,string>,provenance:Record<string,string>}}
+ */
+export function retainedSourceCopy(row,current,url){
+ const prior=object(row?.existing_enrich),fields={},provenance={};
+ if(row?.owner_managed||row?.owner_workspace_id||copyHeld(prior)||copyHeld(current)||!briefURL(prior.source_url)||!briefURL(url)||!briefURL(row?.website)||!sameSource(prior.source_url,row?.website)||!sameSource(url,row?.website))return {fields,provenance};
+ for(const p of [prior,current]){const identity=object(p?.source_identity);if(identity.name&&identity.name!==row.name||identity.expected_entity_type&&identity.expected_entity_type!==row.entity_type||identity.source_url&&(!briefURL(identity.source_url)||!sameSource(identity.source_url,row.website)))return {fields,provenance};}
+ for(const key of ['description','tagline']){
+  const value=prior[key],proof=object(prior.provenance)[key];
+  if(!Object.hasOwn(object(current),key)&&typeof value==='string'&&value.trim()&&!sourceCopyPlaceholder(value)&&typeof proof==='string'&&proof.trim()&&proof!=='aggregator-branding-excluded'){fields[key]=value;provenance[key]=proof;}
+ }
+ return {fields,provenance};
+}
+
 export function buildClientBrief({listing,profile={},provenance={},sourceURL,checkedAt=new Date().toISOString(),sources=[]}){
  const p=object(profile),proof=object(provenance),url=briefURL(sourceURL),registered=briefURL(listing?.website);
  if(!url||!registered||!text(listing?.name)||!text(listing?.entity_type)||p.crawl_status==='error'||briefBlocked(p))return null;
@@ -62,7 +82,7 @@ export function buildClientBrief({listing,profile={},provenance={},sourceURL,che
  if(offerings.some(o=>o.kind==='rooms'))needs.push({tool:'accommodation_inventory',state:'not_connected_by_source_extraction'});
  const brief={schema_version:1,status:'draft_requires_review',listing:{id:text(listing.listing_id||listing.id,80)||null,slug:text(listing.slug,200),name:text(listing.name),entity_type:text(listing.entity_type,80)},
   source:{registered_url:registered,url,retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
-  offering:offerings,audience:[],differentiators:[],description:has('description')?{text:text(p.description,1200),evidence:evidence('description')}:null,
+  offering:offerings,audience:[],differentiators:[],description:has('description')&&!sourceCopyPlaceholder(p.description)?{text:text(p.description,1200),evidence:evidence('description')}:null,
   primary_actions:actions,visual_assets:visuals,tools_needed:needs,unknowns,
   composition:{section_order:sectionOrder,evidenced_sections:available,copy_generated:false,hidden_sections:[]},
   progress:{source_research:'partial',brief:'draft_requires_review',classification:familyConflict?'review_required':'not_accepted',composition:'evidence_arrangement_only',operational_connections:'unverified',acceptance:'not_reviewed'},

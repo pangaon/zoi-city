@@ -135,6 +135,7 @@ import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
+import { sourceCopyPlaceholder } from "../../../assets/enrichment/client-brief.mjs";
 import { assessMachineSourceIdentity } from "./_source-identity.js";
 import { extractStructuredMenu } from "./_menus.js";
 import { extractStructuredServices, structuredSourceContextMatches } from "./_services.js";
@@ -371,6 +372,7 @@ function extract(doc: string, finalUrl: string) {
     if (v === null || v === undefined || v === "" ||
         (Array.isArray(v) && !v.length) ||
         (typeof v === "object" && !Array.isArray(v) && !Object.keys(v as object).length)) return;
+    if (["description", "tagline"].includes(k) && sourceCopyPlaceholder(v)) return;
     if (k in profile) return;                       // first, most-trusted wins
     profile[k] = v;
     provenance[k] = src;
@@ -435,7 +437,8 @@ function extract(doc: string, finalUrl: string) {
 
   if (!isAgg) {
     put("tagline", metaTag(doc, "og:site_name"), "og");
-    put("description", (metaTag(doc, "og:description") || metaTag(doc, "description", "name") || "").slice(0, 1200), "og");
+    put("description", (metaTag(doc, "og:description") || "").slice(0, 1200), "og");
+    put("description", (metaTag(doc, "description", "name") || "").slice(0, 1200), "meta");
     for (const [key, value] of Object.entries(extractHospitality(doc, finalUrl))) put(key, value, "source-hospitality:" + finalUrl);
     const imagery = extractSiteImages(doc, finalUrl, biz || {});
     // A successful current crawl replaces only machine imagery, including stale bad fallbacks.

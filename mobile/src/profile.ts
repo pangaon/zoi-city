@@ -13,7 +13,7 @@ import {socialProfile} from '../../supabase/functions/zoi-enrich/_social.js';
 // @ts-ignore Shared exact publisher identity scope.
 import {publisherSocial} from '../../assets/enrichment/publisher-social.mjs';
 // @ts-ignore Shared identity/provenance/branch guards; owner clears stay authoritative.
-import {scopedSourceServices} from '../../assets/enrichment/client-brief.mjs';
+import {scopedSourceServices,sourceCopyPlaceholder} from '../../assets/enrichment/client-brief.mjs';
 type RecordValue = Record<string, any>;
 const object = (value: unknown): RecordValue => value && typeof value === 'object' && !Array.isArray(value) ? value as RecordValue : {};
 export function plain(value: unknown) { return typeof value === 'string' ? value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() : ''; }
@@ -33,6 +33,7 @@ export function normalizeProfile(input: unknown) {
   const banned = /^(rating|rating_count|ratingvalue|reviewcount|aggregaterating|reviews?|stars|score|_enrich|_geo|_meta|provenance|source_url|checked_at|blocked|blocked_reason|last_error)$/i;
   const profile: RecordValue = {};
   for (const source of [enrichment, raw, ownerProfile]) for (const key of Object.keys(source)) if (!banned.test(key)) {
+    if(source===enrichment&&['description','tagline'].includes(key)&&sourceCopyPlaceholder(source[key]))continue;
     if(source===enrichment&&sharedBranchContactSource(e,enrichment.source_url)&&BRANCH_CONTACT_FIELDS.has(key))continue;
     profile[key] = source===enrichment && ['social','social_links'].includes(key) ? Object.fromEntries(Object.entries(object(source[key])).flatMap(([name,value])=>{const match=socialProfile(value);return match&&!publisherSocial(enrichment.source_url,match.url)?[[name,match.url]]:[];})) : source[key];
   }
