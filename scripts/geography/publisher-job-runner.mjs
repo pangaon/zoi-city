@@ -1,3 +1,4 @@
+import {Buffer} from 'node:buffer';
 import{researchPublisherProfile}from'./publisher-profile-research.mjs';import{geographyResearchSession}from'./guarded-research-session.mjs';import{sha256}from'../quality/evidence.mjs';
 const fixedErrors=new Set(['invalid_source_url','unsafe_source_url','unsafe_source_dns','source_dns_timeout','source_timeout','source_too_large','source_redirect_limit','source_cross_host_redirect','robots_disallow','robots_unavailable','source_request_budget','source_time_budget','source_byte_budget','publisher_registered_http_unsupported']);
 /** Execute already-leased canonical jobs. Caller must archive exact decoded bytes
@@ -18,7 +19,7 @@ export async function runPublisherResearchJobs(jobs,{sourceFetch,archiveSource,f
   if(archive?.private!==true||archive.sha256!==sha256(body)||archive.bytes!==Buffer.byteLength(body))throw Object.assign(Error('publisher_private_archive_unconfirmed'),{archiveFailure:true});
   archivedDocuments++;
   result.source={...result.source,private_archive:archive.reference,archive_format:'decoded_utf8_sha256',pages:[{url:page.url,sha256:sha256(body),bytes:Buffer.byteLength(body)}]};
- }catch(error){if(error.archiveFailure)throw error;const reason=fixedErrors.has(error?.message)?error.message:'publisher_capture_unconfirmed';result={status:'source_blocked',reason,source:null,proposed:null,precision:'unknown',confidence:'supporting_source_unverified',coordinate_writes:0,website_writes:0};}
+ }catch(error){if(error?.archiveFailure)throw error;if(!fixedErrors.has(error?.message))throw Error('publisher_runtime_unconfirmed');const reason=error.message;result={status:'source_blocked',reason,source:null,proposed:null,precision:'unknown',confidence:'supporting_source_unverified',coordinate_writes:0,website_writes:0};}
  const finished=await finishJob(job.id,job.lease_id,result);
  if(!finished||![result.status,'input_changed'].includes(finished.status)||finished.coordinate_writes!==0)throw Error('publisher_finish_unconfirmed');
  const changed=finished.status==='input_changed';

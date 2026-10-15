@@ -1,0 +1,57 @@
+{
+  "kind": "publisher_edge_runtime_correction",
+  "prior_actual_hosted_run": 38673228605,
+  "prior_request_commit": "a66641f6e0a218be1234c41e8492a749cc924ad7",
+  "prior_result": "publisher_canary_contract_failed",
+  "prior_actual_jobs": {
+    "source_blocked": 4,
+    "reason": "publisher_capture_unconfirmed",
+    "pages": 0,
+    "current_leases": 0
+  },
+  "actual_worker_metadata": {
+    "version": 15,
+    "bundle_sha256": "e1bbec6439ad23d33fbb72cc4f2e863a62cf73f0e21ad905341888c435047994"
+  },
+  "cause_boundary": "Missing implicit Node Buffer global is reproduced under a controlled runtime. Actual prior Edge cause remains unconfirmed; do not claim a proved cause from the generic failed result.",
+  "correction": [
+    "Explicit node:buffer dependency for UTF-8 archive byte counts",
+    "Unknown runtime faults abort before finish rather than label the registered publisher source blocked",
+    "Fixed diagnostic label accepted by bootstrap and scheduled operator; no raw exception details"
+  ],
+  "regression": {
+    "generated_module_without_global_Buffer": "passes exact UTF-8 archive and proposal",
+    "unknown_runtime_fault": "no archive or finish and fixed safe error",
+    "hosted_corrected_capture": "pending"
+  },
+  "files": [
+    {
+      "path": "scripts/geography/publisher-job-runner.mjs",
+      "sha256": "16b403514997a5053d1f9f4a94e161ef8b973e02905d1eb355029e6ef08045de"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher-runner.js",
+      "sha256": "56c256bfbdc1f44703340e9772be3ec5053ef3de1924e53784fcfe08177aa8d1"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "sha256": "b5ebc45b222dece1c4f4759af41b573ed4a59eada81c75926cb26cf1e4f55e6e"
+    },
+    {
+      "path": "tests/unit/geography-publisher-job-runner.test.mjs",
+      "sha256": "f7ed1180aa23bf07bae0cdd4fe447a9e8a01158fa79f2a075e427d98ab77b3a9"
+    },
+    {
+      "path": "scripts/release-geography-source-consumer.mjs",
+      "sha256": "1f409eae49b3b3977b8ea4bf1c15e4fae7f2ff93f5bd1415bc616aa7a12d547f"
+    },
+    {
+      "path": "scripts/geography/run-scheduled-capture.mjs",
+      "sha256": "8116d785d2466d3f0e35ae493a02ff467129399610a69b5497981c765e90a3e7"
+    },
+    {
+      "path": "docs/audits/geography-source-consumer-release-manifest-2026-10-14.json",
+      "sha256": "f87ea03997a42545eebe63821bfc5be539e1732e2bc5e7abc2af197bf4fd0b73"
+    }
+  ]
+}

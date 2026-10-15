@@ -9,3 +9,15 @@ test('same-host duplicate jobs and wrong strategy rejected before IO',async()=>{
 test('CAS input_changed does not claim a persisted proposal or record a host observation',async()=>{const h=harness('<title>One moment, please...</title>');h.options.finishJob=async()=>({status:'input_changed',coordinate_writes:0});const r=await runPublisherResearchJobs([job],h.options);assert.equal(r.results[0].status,'input_changed');assert.equal(r.results[0].proposal,false);assert.ok(!h.events.includes('cooldown'));});
 test('registered HTTP remains explicit unsupported transport without a silent HTTPS request',async()=>{let requested=0;const h=harness();h.options.sourceFetch=async()=>{requested++;throw Error('must not fetch');};h.options.finishJob=async(_id,_lease,r)=>{assert.equal(r.reason,'publisher_registered_http_unsupported');assert.equal(r.source,null);return{status:r.status,coordinate_writes:0};};await runPublisherResearchJobs([{...job,original:{...job.original,source_url:'http://www.lgr.co.uk/directory/'}}],h.options);assert.equal(requested,0);});
 test('ambiguous or refused finish never claims persisted results or continues cooldown',async()=>{for(const finishJob of[async()=>undefined,async()=>({status:'applied',coordinate_writes:1})]){const h=harness();await assert.rejects(runPublisherResearchJobs([job],{...h.options,finishJob}),/publisher_finish_unconfirmed/);}});
+
+test('generated Edge runner captures UTF-8 bytes without a Node Buffer global',async()=>{
+ const {spawnSync}=await import('node:child_process');
+ const moduleURL=new URL('../../supabase/functions/geography-repair-source-consumer/_publisher-runner.js',import.meta.url).href;
+ const script=`import assert from 'node:assert/strict';globalThis.Buffer=undefined;const {runPublisherResearchJobs}=await import(${JSON.stringify(moduleURL)});const job=${JSON.stringify(job)};const body=${JSON.stringify(card.replace('18 Main Street','18 Κύπρου'))};let archives=0,finishes=0;const result=await runPublisherResearchJobs([job],{sourceFetch:async url=>({url,status:200,text:body}),archiveSource:async a=>{archives++;assert.equal(a.bytes,new TextEncoder().encode(body).byteLength);return{private:true,sha256:a.sha256,bytes:a.bytes,reference:'private-evidence'}},finishJob:async(_id,_lease,r)=>{finishes++;assert.equal(r.status,'needs_address_review');return{status:r.status,coordinate_writes:0}},cooldownHost:async()=>assert.fail('no challenge')});assert.equal(archives,1);assert.equal(finishes,1);assert.equal(result.results[0].proposal,true);`;
+ const child=spawnSync(process.execPath,['--input-type=module'],{input:script,encoding:'utf8',timeout:15000});assert.equal(child.status,0,child.stderr);
+});
+test('unknown runtime faults abort before finish without misclassifying a publisher source',async()=>{
+ const h=harness();h.options.sourceFetch=async()=>{throw new ReferenceError('private runtime detail must not escape');};
+ await assert.rejects(runPublisherResearchJobs([job],h.options),e=>e.message==='publisher_runtime_unconfirmed');
+ assert.deepEqual(h.events,[]);
+});
