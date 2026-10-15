@@ -1,0 +1,431 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-15T14:11:06.672275+00:00",
+  "owner": "/root/owner_next",
+  "worktree": "/tmp/zoi-shared-design-work",
+  "baseline": "afe271b3fc507e745ee2ab8ce6ed63d1db753773",
+  "status": "source frozen; owner acceptance passed; independent review and root release pending",
+  "manifest": {
+    "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/source-manifest.json",
+    "sha256": "97e7629a2af0901dafe0d792c46133b999de46a7eabe8d3cf19fe6236c30128c"
+  },
+  "outcome": "Existing photo galleries gain an explicit viewport expand/restore control. Caller initial view, selected source image, captions, credit, source handoff and owner design remain intact. Whole-image containment also holds in short landscape. Failed church thumbnails keep a labelled reopen target.",
+  "runtime_ownership": [
+    "assets/homes/photo-gallery.mjs",
+    "assets/homes/photo-gallery.css",
+    "assets/homes/templates/church/church.css"
+  ],
+  "production_current_observation": {
+    "evidence": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/results.json",
+    "sample_count": 12,
+    "routes": [
+      "cards",
+      "corfu",
+      "embassy",
+      "faith",
+      "hellenic",
+      "sparse"
+    ],
+    "widths": [
+      390,
+      1440
+    ],
+    "all_http_200": true,
+    "all_no_horizontal_overflow": true,
+    "all_one_zoi_brand_image": true,
+    "all_no_page_errors": true,
+    "specific_findings": [
+      "Orthodox category already uses photo-first two-column layout with a full-image preview, actual parish caption, previous/next and viewport expansion. Mobile stacks copy above unoccluded photograph. Existing real fullscreen/arrow/Escape/focus were exercised at both widths.",
+      "London embassy currently uses compact consular service layout without the prior empty decorative header or duplicate Zoi brand.",
+      "Current Corfu header contains its actual restaurant logo; current sampled discovery Yamas logo renders within its identity badge. No media policy change is part of this packet.",
+      "Hellenic bakery gallery currently opens a window (about978x801 desktop,370x519 mobile) with no expand/restore control. Existing galleries therefore did not share the Orthodox viewport option."
+    ],
+    "limits": "Six current public routes, two widths and sampled discovery results; this is neither a global listing census nor site-wide design acceptance."
+  },
+  "implemented_behavior": [
+    "Shared native dialog has accessible Expand photo / Restore window toggle with aria-pressed and keyboard activation. Each caller retains its initial mode; a visitor choice persists while that mounted viewer exists.",
+    "Header wraps and title clamps visually at two lines while the complete title remains the dialog accessible name. Header/footer respect distinct safe area insets; buttons remain at least44px high.",
+    "Expanded image is positioned within the actual stage, contains the whole source image and cannot overflow/crop the stage under long caption/short landscape. Caption details scroll within their bounded area.",
+    "Exact selected photograph, caption, source URL and current gallery navigation survive mode changes. Source remains a safe external handoff.",
+    "Escape/Close return focus to the original trigger and preserve page position. Existing loading/failure/retry, swipe, bfcache close and disposal retain behavior.",
+    "Existing church photo buttons get only min-height88px. Published350/230/270px image heights are unchanged; a hidden failed thumbnail no longer collapses its caption/open control to0px."
+  ],
+  "cache_and_delivery": {
+    "existing_imports": "Existing family module imports retain their current query strings; no family route/client changes.",
+    "observed_cache_policy": "Actual current module?v=20261006 and CSS?v=20261015-fullscreen return public,max-age=0,must-revalidate. Header evidence retained.",
+    "new_injected_css_version": "20261015-expand-restore",
+    "release": "Root must deploy and verify current public bytes/journeys. Already open tabs keep their loaded module until navigation/reload. No production deployment by author."
+  },
+  "validation": [
+    {
+      "kind": "actual canonical renderer browser",
+      "result": "45 passed on final frozen5path source",
+      "evidence": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/report.json",
+      "families": [
+        "restaurant",
+        "bakery",
+        "hotel",
+        "creator",
+        "artist",
+        "church",
+        "event"
+      ],
+      "matrix": "7 families \u00d7390/1440\u00d70/1/3 images=42; three fullscreen-default/long-caption/short-landscape cases=45. All network locally intercepted, controlled image labelled. Actual image load failure/retry, selected-photo source/caption preservation, Enter/Space, arrows, Escape, focus/scroll, touch size/bounds, stage containment, reopen, swipe, bfcache and destroy. Failed church thumbnail explicitly hidden and >=88px before pointer reopening."
+    },
+    {
+      "kind": "current public page with candidate two-asset overlay",
+      "result": "4 passed",
+      "evidence": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/report.json",
+      "matrix": "Actual Orthodox/Hellenic source photos at390/1440; only local photo-gallery module/CSS overlaid. Whole viewport, restore, exact source/caption and Escape focus. Candidate screenshots are not deployed behavior."
+    },
+    {
+      "kind": "existing focused source/media tests",
+      "result": "27 passed",
+      "command": "node --test tests/unit/public-listing-media.test.mjs tests/unit/media-role.test.mjs tests/unit/public-owner-media.test.mjs tests/unit/home-media.test.mjs",
+      "evidence": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-focused.log"
+    },
+    {
+      "kind": "existing generic shared browser regression",
+      "result": "2 passed at390/1440",
+      "evidence": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-existing-shared-final.log",
+      "environment_adjustment": "Unchanged existing shared.mjs assertions; retained executable adapter alters only absolute Playwright module, worktree root and installed Chromium1234\u21921243 path. Validates original-caption/swipe/safe URL/literal non-markup/destroy/bfcache."
+    },
+    {
+      "kind": "static verification",
+      "result": "inline JS349blocks/167HTML parsed; HTML127passed; node syntax checks and git diff --check passed",
+      "evidence": [
+        "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-check.log",
+        "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-html.log"
+      ]
+    }
+  ],
+  "diagnostic_history": {
+    "church_failure": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/historical-failure/church-collapsed-thumbnail.log",
+    "landscape_draft": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/historical-failure/draft-landscape-stage-overflow.png",
+    "explanation": "Failure evidence retained from pre-fix iterations; not counted as accepted source. Church0px opener fixed by approved extra CSS. Long-caption landscape screenshot revealed intrinsic image-stage clipping despite computed contain; final source includes stage/image dimension assertion."
+  },
+  "remaining": [
+    "Independent review and root deployment/live byte+journey verification remain.",
+    "Full-browser operating-system fullscreen is not invoked: expansion fills the browser viewport. Native app media viewers are unchanged; these are existing web gallery controls.",
+    "Original duplicate-brand/blank-header examples are corrected on the sampled current routes; generic families and all existing listings were not globally certified by this packet.",
+    "Sparse discovery initials still reserve an image-sized card area. This packet does not redesign discovery cards or replace absent images.",
+    "Per-family trigger touch sizes outside this shared dialog are not globally certified; an exploratory broad44px trigger assertion found an existing compact bakery trigger. The accepted44px dialog-controls checks and specific88px failed-church opener check are separate.",
+    "No authentication, persistence, upload, source-image replacement, profile enrichment, map or provider integration is introduced."
+  ],
+  "operations": {
+    "production_writes": 0,
+    "provider_sends": 0,
+    "paid_services_or_builds": 0,
+    "read_only_public_browser_and_cache_requests": true
+  },
+  "evidence_files": [
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/bakery-expanded-1440.png",
+      "sha256": "39b48ef5c380e150c1d8134287140c870a6d9d44480a39a8d21428ea4f1eee25"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/bakery-expanded-390.png",
+      "sha256": "0c9c153a2adef6958bf5f4fcb8a8b5ee3dd6ba8995f7bd573c092f58100118ac"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/bakery-restored-1440.png",
+      "sha256": "d94060acb384d66084379f38a50a350bb4a8b6aa00107bf2d190cb233a7ba99b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/bakery-restored-390.png",
+      "sha256": "3d76b1d307c1f3c361ec525ee57773891d2790d01edc594c3e7524294e997d81"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/faith-expanded-1440.png",
+      "sha256": "8553391c1fb7aa26e2e4ad734d2748ea4829ca0c9b56bcf81d9ee5a90f7d5421"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/faith-expanded-390.png",
+      "sha256": "b1a3d96c1ac289d266f939aaf827aa980e55078bcfe0162d4e92917eacfedb3b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/faith-restored-1440.png",
+      "sha256": "ddb7ca4668a16535d0420dd2f598ce5c7dffcdc25bb164419c8028cb3b70e901"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/faith-restored-390.png",
+      "sha256": "6da0cad33f4d851bb490c30ccbe6c7448efdea6b51569b89e27f6d607d354ccd"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/candidate-current-page/report.json",
+      "sha256": "8c993f748df922f97f57e3da9a1d5c4e5b56f2ff7858b78e5989b507edcf47a5"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/artist-1440.png",
+      "sha256": "c2015a35726b66e4a460765d6c3d1d5135356ccb06732e968d76b23748a74d3b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/artist-390.png",
+      "sha256": "8947ac6a5d4f2b85d69f1ff6fb3619d14a0ed5fa2a7b2acaa07dfb88cfc6ecdc"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/bakery-1440.png",
+      "sha256": "0c54dda02b14d4353acb8f7fb01196266554536f0c531ca4ba19a10899644276"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/bakery-390.png",
+      "sha256": "a33069e0e97c233f73028fba6b67ef6918a9eb6a832ab34eb0d378c1d50f8263"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/church-1440.png",
+      "sha256": "e50fee1963e1a97a88ced15e4201517ac3872a021693488b55022b6c002fdee8"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/church-390.png",
+      "sha256": "1128ea098de449cd1aedff8fd3c7b24e1913f0d4f54c32fc8cdc22bfa311b32f"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/creator-1440.png",
+      "sha256": "249052fe6dd022f59604144546a0de3caa978f324bed6305151db2e518030edb"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/creator-390.png",
+      "sha256": "2af91ab7ea5534ceaebbdb58d4bbbcc5f481bfd37323aa12d4229e9d5f9182e7"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/event-1440.png",
+      "sha256": "e3dcdd2ce91cc195397ade7bc7737baf068416a0d02ec6916de752a2d4180d1e"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/event-390.png",
+      "sha256": "3a83f7274ee38e36e4148ae70c3d1e6fa6aba1abac5e9d691a29f51c11492a91"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/failed-church-thumbnail-1440.png",
+      "sha256": "eee843a5c8b4d92b8b574e12826a61158c6521946169d8003603aabefebea1af"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/failed-church-thumbnail-390.png",
+      "sha256": "2227b93e04c601f12ab5a51e597efd5cdd0bbed219e2734eb44d52b1257bc955"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/fullscreen-long-1440.png",
+      "sha256": "0c5083d972f315c336965370ea8781ff1bb1f434de420eafdaefd0d73f03a4b1"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/fullscreen-long-390.png",
+      "sha256": "258cf245f151be854f4360bf5c1d8b8f5d5036039e51cb01bf6ef76168fbb611"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/fullscreen-long-844.png",
+      "sha256": "8629cb212166376196d187eaf59cb1fc9b14312bd1dc8acaa4db003de08dccb4"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/hotel-1440.png",
+      "sha256": "fc00e0354e8830490923358306c53d998601af5e824136d24d783f435aafdd63"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/hotel-390.png",
+      "sha256": "a1dc77b109b403575ce70cca3a7262c36e2a3a4fd968cc4d5d228e9ccc7eba92"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/report.json",
+      "sha256": "12ed957a3ab839fbdad49964f99af13cb351174188c30fd64665ea6d76e9652d"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/restaurant-1440.png",
+      "sha256": "57fb4d604b587ce2de9c3a6158abc97c59547531a4f4a8979f8bce62ae0c6057"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/canonical-browser/restaurant-390.png",
+      "sha256": "0c0437bd42df5201d3e009876e1514b9221a8c47f81804682e32a22a164ccc4b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/bakery-gallery-current-1440.png",
+      "sha256": "4c56a21ec95a9ff2a319203c7800229a12cf6a555dd2d186c143d1b9050f019d"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/bakery-gallery-current-390.png",
+      "sha256": "f9c03efbc5e716202a6ffdc8da0de36325a31480ca44ea1cccdbb18c69eda9e2"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/cards-1440.html",
+      "sha256": "68b2ee65ea7c9f05c3020011cb0d59a2e008a747f817a3dad31e4bc7e56dbe9a"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/cards-1440.png",
+      "sha256": "807acb0f9436bbb6978a0ed47ad5bfd9c93d8974b82296861cad1a70e8bacf0e"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/cards-390.html",
+      "sha256": "55d3e2d2bf3c99db99ab9c87bfa3291f8bd7e2863e62b364598694fac9593ea4"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/cards-390.png",
+      "sha256": "a63bb4ba726a94b512e2c80eda28e5322670c96e3488b2d7ec415c90ad20bb57"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/cards-current-scrolled-1440.png",
+      "sha256": "9bba9c90c47ad5d05b5c02fea84f742c9d7e2a8f13d6e880cb7d0bdc0a804b43"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/corfu-1440.html",
+      "sha256": "46797d5eed14e9fd7a566ca5d5351de68f070d7de9082cffb900bfb244d8131d"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/corfu-1440.png",
+      "sha256": "4eeae718333daa35fe5bec8376ba98c76a25cc9df2db0aaae38a1ed800ef56d3"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/corfu-390.html",
+      "sha256": "97b8b86fd16ba939922c323d3ebc713b339c164242cd4805d755d93f54a2fc66"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/corfu-390.png",
+      "sha256": "b14a560335875eb65837518db49e5e8025b7ad9b994b88a62974c8fac719393f"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/current-gallery-journeys.json",
+      "sha256": "72ad688572af649abad670b2c8fb7759d87659c0d4fa504b7611ab765e92a06e"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/embassy-1440.html",
+      "sha256": "f66efb59bea7f86cb2f767e977cd62550b874407d7c1e742d121c4fda3debcf7"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/embassy-1440.png",
+      "sha256": "14829173acf9431348ab403a04c303c9acfcac1a3ad5dd65efe626dc8db1596b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/embassy-390.html",
+      "sha256": "f66efb59bea7f86cb2f767e977cd62550b874407d7c1e742d121c4fda3debcf7"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/embassy-390.png",
+      "sha256": "58bdf471ab588fbca0a504b4556c12ed255020e3b0589b469e438d3b28938d20"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/faith-1440.html",
+      "sha256": "cc26a6c1be223d2c487e91ac9df8cfee898ad79182498bac85ebad867d6f42bf"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/faith-1440.png",
+      "sha256": "11258e94543c48b81674158bb880ffb777380602d0f5462e7bf7ccbcdd7055ab"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/faith-390.html",
+      "sha256": "cc26a6c1be223d2c487e91ac9df8cfee898ad79182498bac85ebad867d6f42bf"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/faith-390.png",
+      "sha256": "84949746bdbc5742905258a0a9adfda5bd1330dccdb5ac6eddf5d36c95b2041e"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/faith-gallery-current-1440.png",
+      "sha256": "48e435d7471d6315de8ae6f7c14175020557a5bbd901af31098e2329056cae6b"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/faith-gallery-current-390.png",
+      "sha256": "12fd16ed064bf1686977fc899fef968d7746409a6a66c459020136d88c39aa15"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/hellenic-1440.html",
+      "sha256": "ca1b810997754c2d951b376d37da698c2b8ce1083c5d8f22ddc7af508ca3aada"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/hellenic-1440.png",
+      "sha256": "6ce2e2904bb33510e717f7ef7a1fad63cc5351e3b174b05ad29bad767305d570"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/hellenic-390.html",
+      "sha256": "ca1b810997754c2d951b376d37da698c2b8ce1083c5d8f22ddc7af508ca3aada"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/hellenic-390.png",
+      "sha256": "47d7451c003f632fece766c12870e06f97bcc832688266d6f92cd1ec203599bc"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/module-cache-headers.txt",
+      "sha256": "135a795a620a29255eab5911e4e88f23a3827fc8efbaccb43d75fc1fdab43e85"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/results.json",
+      "sha256": "8a90d4939feeadf28dfdfa9123f08c4066fc785efe9efc66b81c5c7511645317"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/sparse-1440.html",
+      "sha256": "bcc7bad96b858456bf5aae004b0cb2de15d8d9dd4f3f05fb5bc9f58194ae7a38"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/sparse-1440.png",
+      "sha256": "6d167b127ad1053cf2719f2826fe887ec708aab5597aba51ab89cff7c2ab4fa1"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/sparse-390.html",
+      "sha256": "bcc7bad96b858456bf5aae004b0cb2de15d8d9dd4f3f05fb5bc9f58194ae7a38"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/sparse-390.png",
+      "sha256": "ad3243454302524d1d3f31bd42a7bf913a307e4dfef894defe30e02bd07db4ad"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/current-live/style-cache-headers.txt",
+      "sha256": "b33e5c99079b28cf74b421722218826c844653989d187e3de99350882729afc6"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/historical-failure/church-collapsed-thumbnail.log",
+      "sha256": "168e0e87803822d12b555bdf98582d9df88f31567c9624f86a81218d2006c843"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/historical-failure/church-collapsed-thumbnail.png",
+      "sha256": "314f835ee54657cdfbd4db029c3bc88ecce5612898a010e9602296ae5056a42d"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/historical-failure/draft-landscape-stage-overflow.png",
+      "sha256": "5ee9df5c1d51e2d7f64424051a28d50c811210bc5bc4fce51cebc2be9438b8cc"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/source-manifest.json",
+      "sha256": "97e7629a2af0901dafe0d792c46133b999de46a7eabe8d3cf19fe6236c30128c"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-current-design-audit.mjs",
+      "sha256": "915c41647ae244035ca38ba3ae352c4cec261cb28322ab03da1f86f74d6c58db"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-check.log",
+      "sha256": "808008f5c175bab58b3b120be743f80ce2d9ded069560d4405c93970ad3cf1a5"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-existing-shared-env.mjs",
+      "sha256": "4d547b6ca7b0e9d5c5b6485959751b945dbc4f0159ef47e15ede0eb529e73f14"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-existing-shared-final.log",
+      "sha256": "9e19b0699af9e5c2168ab1aab4b380a405007740f4902dfaa5bf258eecc2b30f"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-existing-shared.log",
+      "sha256": "9e19b0699af9e5c2168ab1aab4b380a405007740f4902dfaa5bf258eecc2b30f"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-expand-restore-owner-final.log",
+      "sha256": "34dea2c6f86107fe93272fd9a47e41a2d5a9290dcd039e282ae5717957a33239"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-expand-restore-owner-frozen.log",
+      "sha256": "34dea2c6f86107fe93272fd9a47e41a2d5a9290dcd039e282ae5717957a33239"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-focused.log",
+      "sha256": "0905416e34d5c7b3685b6676c9bb8a4fea5cd9883d9e5c7788b194d43a241809"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-gallery-html.log",
+      "sha256": "26e843dbc1b7434ef3d6cda3a95414d7f36e767ba948bfb1282a99052868589a"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-live-gallery-candidate.mjs",
+      "sha256": "d7b32e309a2811655046a8a9802788f5bf67de7d7be22c6b057ac04fca38f012"
+    },
+    {
+      "path": "docs/audits/evidence/shared-photo-viewer-owner-2026-10-15/zoi-live-gallery-current.mjs",
+      "sha256": "d5834499718b5336b08d7040cfe1e8e92d68c923893c2640032ad1d781307ca2"
+    }
+  ]
+}
