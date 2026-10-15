@@ -1,0 +1,49 @@
+{
+  "kind": "fixed_vault_execution_role_correction",
+  "captured_at": "2026-10-15T02:39:00Z",
+  "prior_actual_trial": {
+    "run_id": 38671882009,
+    "head": "0fa1f38476a184b2ebdc3079dcb994a6702e23a0",
+    "request_id": "c346070c-d93e-440e-9fb8-c68063146bd4",
+    "outcome": "vault_unconfirmed",
+    "worker_dispatch_admitted_events": 0,
+    "worker_calls": 0,
+    "automatic_retry": false
+  },
+  "reconciliation": {
+    "request_removed_commit": "7ec789a",
+    "cron30_exact_command_md5": "2ade25bb2cc7e9ab304662844ca1acfa",
+    "cron30_restored_active_at": "2026-10-15T02:37:26.969016Z",
+    "cron10_inactive": true,
+    "dedicated_enrich_token_count": 1
+  },
+  "change": "Both fixed dedicated Vault SELECTs use the existing privileged execution role (read_only:false). No SQL write, ACL modification, new token, fallback key or arbitrary caller query. Values remain masked memory-only.",
+  "cause_boundary": "Actual trial refused Vault API response before token validation/dispatch. Supabase documents read-only role as supabase_read_only_user; actual prior index metadata demonstrated role difference. Exact upstream error was not retained or exposed. Correction remains pending actual hosted execution.",
+  "official_sources": [
+    "https://supabase.com/docs/reference/api/v1-read-only-query",
+    "https://supabase.com/docs/guides/platform/access-control"
+  ],
+  "controlled_tests": {
+    "passed": 28,
+    "worker_transport": "controlled",
+    "hosted_corrected_run": "not_yet"
+  },
+  "files": [
+    {
+      "path": "scripts/geography/run-finite-enrichment-trial.mjs",
+      "sha256": "0dc6fc984d2b8ba512132d0d4a110a540ec55ca0d3a66fdfc1d85d2b566dcbb8"
+    },
+    {
+      "path": "scripts/geography/run-scheduled-capture.mjs",
+      "sha256": "550b99a049b8a9289cb62c32c65cde1eefcd9f5c825611f8318663a5e662e677"
+    },
+    {
+      "path": "tests/unit/enrichment-finite-trial.test.mjs",
+      "sha256": "55169c0dd893a6b6c403dd892fc15cceb32293ec4e45b6365b29deaf1e17868a"
+    },
+    {
+      "path": "tests/unit/geography-scheduled-capture.test.mjs",
+      "sha256": "c05780ab8e3d673e112b1a42a0dcb8fc463d1c3fff2b77bf7e59cee3602c0f94"
+    }
+  ]
+}

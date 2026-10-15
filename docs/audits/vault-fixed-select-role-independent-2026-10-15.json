@@ -1,0 +1,30 @@
+{
+  "gate": "frozen four-path fixed SELECT source/mocked boundary accepted; actual corrected execution pending",
+  "source_manifest": "docs/audits/vault-fixed-select-role-root-2026-10-15.json",
+  "source_hashes_verified": true,
+  "independent_tests": {
+    "passed": 28,
+    "failed": 0,
+    "skipped": 0
+  },
+  "delta": "Only read_only:false on fixed dedicated Vault SELECTs in finite and scheduled controllers, plus assertions/comments. Fixed SQL, authority/source guards and logging boundaries unchanged.",
+  "safety": [
+    "No new SQL/ACL changes/token provisioning/fallback credential or arbitrary query input.",
+    "Existing tokens remain memory-only, masked before bounded worker request; unknown responses stop without retry.",
+    "Trusted repo/main execution, finite limits/current request and cron suppression retained."
+  ],
+  "primary_source": {
+    "url": "https://supabase.com/docs/reference/api/v1-read-only-query",
+    "finding": "Official separate /database/query/read-only endpoint names supabase_read_only_user. This does not independently establish exact role mapping of read_only:true body on /database/query; prior failure root cause remains unproven."
+  },
+  "actual_failed_trial": {
+    "run": 38671882009,
+    "worker_dispatches": 0,
+    "error": "vault_unconfirmed",
+    "request_removed": true,
+    "cron30_restored": "reported by root"
+  },
+  "production_writes": 0,
+  "secret_values_read": 0,
+  "worker_calls": 0
+}
