@@ -1,4 +1,5 @@
 /** Service-triggered bounded source research. Never applies coordinates. */
+import {captureAuthMode,consumeCaptureTicket} from './_ticket-auth.ts';
 import {runPublisherResearchJobs} from './_publisher-runner.js';
 import {runGeographyResearchJobs} from './_runner.js';
 import {sha256} from './_hash.js';
@@ -37,10 +38,11 @@ export function createHandler({runJobs=runGeographyResearchJobs,runPublisherJobs
  const serviceIO=(path:string,init:RequestInit,stage:string)=>io(path,init,workDeadline,stage);const serviceRPC=(name:string,args:Record<string,unknown>={})=>rpc(name,args,workDeadline);
  const respond=(status:number,value:unknown)=>new Response(JSON.stringify(value),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store'}});
  if(req.method!=='POST')return respond(405,{error:'method_not_allowed'});
- if(!authorized(req))return respond(401,{error:'unauthorized'});
+ const authMode=captureAuthMode(req,authorized(req));if(!authMode)return respond(401,{error:'unauthorized'});
  if(!enabled)return respond(503,{error:'source_consumer_disabled'});
  if(url!=='https://csebihpaychdkanjjsmz.supabase.co'||!service||!/^[a-z0-9-]{3,80}$/.test(bucket))return respond(503,{error:'private_service_configuration_required'});
  let input:any;try{const bytes=await cappedBytes(req.body,1024);input=bytes.byteLength?JSON.parse(new TextDecoder().decode(bytes)):{};if(!input||typeof input!=='object'||Array.isArray(input)||Object.keys(input).some(key=>!['verify_archive','strategy'].includes(key))||(Object.hasOwn(input,'strategy')&&(input.strategy!=='publisher_profiles_v1'||Object.hasOwn(input,'verify_archive')))||(Object.hasOwn(input,'verify_archive')&&(typeof input.verify_archive!=='string'||!/^[a-f0-9]{64}$/.test(input.verify_archive))))throw Error('invalid_action');}catch{return respond(400,{error:'invalid_bounded_action_body'});}
+ if(authMode==='ticket'){try{if(!await consumeCaptureTicket(req,input,(ticket,strategy)=>serviceRPC('geography_source_ticket_consume',{p_ticket:ticket,p_strategy:strategy})))return respond(401,{error:'unauthorized'});}catch{return respond(401,{error:'unauthorized'});}}
  let directory='',archivedBytes=0,captureLease:string|null=null,stage='private_bucket';
  try{
   // Refuse public archives before taking any lease or making source requests.

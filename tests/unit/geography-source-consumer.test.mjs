@@ -23,10 +23,10 @@ test('generated runner waits for sibling finish callbacks before releasing failu
 test('generated source transport obeys an already-expired global work deadline without issuing a request',async()=>{const{runGeographyResearchJobs}=await import('../../supabase/functions/geography-repair-source-consumer/_runner.js');const{mkdtemp,rm}=await import('node:fs/promises');const dir=await mkdtemp('/tmp/zoi-geography-');try{const r=await runGeographyResearchJobs([{id:'past',lease_id:'lease',listing_id:'past',status:'leased',input_fingerprint:'past',original:{name:'Fixture',website:'https://official.example.org/',address:'1 Main Street',city:'Melbourne',country:'Australia'}}],{directory:dir,deadline:Date.now()-1});assert.equal(r.source_requests,0);assert.equal(r.results[0].result.reason,'source_time_budget');}finally{await rm(dir,{recursive:true,force:true});}});
 
 // Pinned CLI v2.115.0 API walker (shared/functions/deploy.ts) requires import whitespace.
-test('API upload dependency walker includes all twelve source consumer runtime modules',async()=>{
+test('API upload dependency walker includes all thirteen source consumer runtime modules',async()=>{
  const pattern=/(?:import|export)\s+(?:type\s+)?(?:{[^{}]+}|.*?)\s*(?:from)?\s*['"](.*?)['"]|import\(\s*['"](.*?)['"]\)/gi;
  const queue=['index.ts'],seen=new Set();while(queue.length){const name=queue.pop();if(seen.has(name))continue;seen.add(name);const text=await readFile(new URL('../../supabase/functions/geography-repair-source-consumer/'+name,import.meta.url),'utf8');pattern.lastIndex=0;for(const m of text.matchAll(pattern)){const spec=m[1]??m[2];if(spec?.startsWith('./'))queue.push(spec.slice(2));}}
- assert.deepEqual([...seen].sort(),['_publisher.js','_publisher-runner.js','_publisher-policy.js','_filesystem.js','_coordinates.js','_document-quality.js','_hash.js','_native-request.js','_runner.js','_session.js','_transport.js','index.ts'].sort());
+ assert.deepEqual([...seen].sort(),['_publisher.js','_publisher-runner.js','_publisher-policy.js','_filesystem.js','_coordinates.js','_document-quality.js','_hash.js','_native-request.js','_runner.js','_session.js','_ticket-auth.ts','_transport.js','index.ts'].sort());
  assert.equal([...`import{a}from './_transport.js';`.matchAll(pattern)].length,0);
 });
 

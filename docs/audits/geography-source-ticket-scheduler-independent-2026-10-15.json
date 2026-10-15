@@ -1,0 +1,69 @@
+{
+  "reviewed_at": "2026-10-15T04:15:49.317875+00:00",
+  "reviewer": "independent enrichment specialist; implementation authored by QA specialist",
+  "decision": "accepted source candidate; disabled; production application, hosted ticket/capture and cron activation remain root gates",
+  "owner_manifest_sha256": "59d17b78d6968002f4352e4e9360a957400215c341b7f7a07781934349f1f937",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015040100_geography_source_capture_tickets.sql",
+      "sha256": "153b2168e511657dfaee3d7ac61f55141e6ef846afc2c77927d7c14732ca51ae",
+      "independently_verified": true
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "sha256": "a83db16ffbb06a4b09852fdae27d4580742e5ffbfdcae303087fcb7d55ec3d1e",
+      "independently_verified": true
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_ticket-auth.ts",
+      "sha256": "e6e0956bba27ea6b6a39415fb2bc4e36b33118f807746d3d40ed6f56c8b41042",
+      "independently_verified": true
+    },
+    {
+      "path": "tests/unit/geography-source-ticket-auth.test.mjs",
+      "sha256": "fc0a9c073caa9ff011de1547d3985c7b54b100d2c8cfdbf69981519d2bc809be",
+      "independently_verified": true
+    },
+    {
+      "path": "tests/unit/geography-source-consumer.test.mjs",
+      "sha256": "0bae69fee877ca06990badfd39e9590c5756d2e38e8145520b153f8b876c1283",
+      "independently_verified": true
+    },
+    {
+      "path": "tests/database/geography-source-capture-ticket.integration.mjs",
+      "sha256": "b79b4eb13dea5868b7b7f4a968d904b69e2e8d37b984b9e8394cc3d3d6487f75",
+      "independently_verified": true
+    },
+    {
+      "path": "tests/database/fixtures/geography-source-ticket-live.json",
+      "sha256": "a263b232a67b55a1884a31a0a73aa8725903fcf9298018f4bbe7d14e79736ddc",
+      "independently_verified": true
+    }
+  ],
+  "verification": {
+    "real_postgres_groups_passed": 14,
+    "focused_units_passed": 30,
+    "skipped": 0,
+    "deno_check": "Deno 2.9.6 check --no-lock --node-modules-dir=auto actual index.ts passed",
+    "runtime_dependency_graph": "all thirteen modules, including typed _ticket-auth.ts, traversed by actual pinned CLI dependency regex test",
+    "live_writes": 0,
+    "provider_calls": 0,
+    "source_edits": 0
+  },
+  "reviewed_boundaries": [
+    "Exact captured function definition hashes, owner, ACL, SECURITY DEFINER and empty search_path guards; platform net.http_post identity/ACL guard without changing PUBLIC queue grants.",
+    "Fixed project HTTPS function URL and strategy-only body; cap four; official50requests/15MB, publisher30requests/12MB. No caller URL or archive-read action admitted by ticket.",
+    "256-bit capability; private ledger stores SHA256 only; immutable purpose/project/strategy/caps/timestamps/net request identity; two-minute maximum admission expiry.",
+    "Atomic single-use consume with policy shared lock and ticket row lock; clock_timestamp after waiting. Concurrent tick/consume, disable/re-enable generation, explicit revocation and natural expiry tests passed.",
+    "Policy starts disabled; tick postgres-only, consume service-only, ledger/policy RLS and no PUBLIC/anon/authenticated/service table grants. No cron installed or automatically activated.",
+    "Five-minute admission interval and durable UTC-day288 ceiling include unused/expired reservations. Unknown queue request ID rolls back network enqueue and reservation in isolated transaction. No retry of unknown consume.",
+    "Existing private bucket, singleton capture lease, archive quota, robots/TLS/source guards, source-generation/owner checks and canonical finish remain in existing pipeline; ticket consume precedes those checks."
+  ],
+  "limits": [
+    "Platform queue remains readable to trusted database-login roles. A reader could race the intended same fixed one-use action; this is bounded capability admission, not queue privacy.",
+    "Existing legacy token mode is outside this ticket ledger. Root must disable/replace any automatic direct-token scheduler or route it through the same admission tick before claiming global daily limits.",
+    "Policy expiry blocks new admissions; an already admitted bounded110-second run may finish after expiry.",
+    "SQL fixtures use isolated controlled net.http_post and source queue boundaries. They do not prove actual hosted source capture, network queue response, cron installation or production catalogue coverage."
+  ],
+  "source_status": "No blocking source finding identified in frozen candidate."
+}
