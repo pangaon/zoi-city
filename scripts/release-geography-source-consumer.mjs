@@ -5,7 +5,7 @@ import{readFileSync}from'node:fs';import{createHash,randomBytes}from'node:crypto
 import{safeBackendError,safeWorkerError}from'./release-backend.mjs';
 export const PROJECT='csebihpaychdkanjjsmz',WORKER='geography-repair-source-consumer',BUCKET='geography-source-evidence',VAULT_NAME='geography_repair_source_token',REQUEST='ops/geography-source-consumer-release.json',MANIFEST='docs/audits/geography-source-consumer-release-manifest-2026-10-14.json';
 const SCRIPT='scripts/release-geography-source-consumer.mjs',HELPER='scripts/release-backend.mjs',CRON='geography-source-capture-v1';
-const files=new Set(['index.ts','_filesystem.js','_coordinates.js','_document-quality.js','_hash.js','_runner.js','_session.js','_transport.js'].map(p=>'supabase/functions/'+WORKER+'/'+p).concat(['scripts/geography/build-edge-source-consumer.mjs','tests/unit/geography-source-consumer.test.mjs','docs/audits/geography-source-consumer-setup-2026-10-14.md']));
+const files=new Set(['index.ts','_filesystem.js','_coordinates.js','_document-quality.js','_hash.js','_runner.js','_session.js','_transport.js','_native-request.js'].map(p=>'supabase/functions/'+WORKER+'/'+p).concat(['scripts/geography/build-edge-source-consumer.mjs','scripts/geography/hosted-pinned-source-request.mjs','tests/unit/geography-source-consumer.test.mjs','tests/unit/geography-hosted-pinned-request.test.mjs','tests/integration/geography-hosted-native-tls.test.mjs','docs/audits/geography-source-consumer-setup-2026-10-14.md']));
 const hash=value=>createHash('sha256').update(value).digest('hex');
 // Emit fixed labels only: never echo a bundler body, absolute path or arbitrary specifier.
 export async function safeHostedConsumerDiagnostic(response){
@@ -16,7 +16,7 @@ export async function safeHostedConsumerDiagnostic(response){
 }
 export function safeSourceModuleDiagnostic(error){
  const known=new Map(['node:https','node:dns/promises','node:fs/promises','node:crypto','node:path'].map(s=>[s,s]));
- for(const name of ['index.ts','_filesystem.js','_coordinates.js','_document-quality.js','_hash.js','_runner.js','_session.js','_transport.js'])known.set('./'+name,name);
+ for(const name of ['index.ts','_filesystem.js','_coordinates.js','_document-quality.js','_hash.js','_runner.js','_session.js','_transport.js','_native-request.js'])known.set('./'+name,name);
  let raw='';for(const field of ['stderr','stdout']){const value=error?.[field];if(typeof value==='string'||Buffer.isBuffer(value))raw+=String(value).slice(0,65536)+'\n';}
  const labels=new Set();for(const match of raw.matchAll(/(?:Module not found|Cannot find module|Could not resolve|Failed to resolve)[^\r\n]{0,100}?["']([^"'\r\n]{1,256})["']/gi)){const label=known.get(match[1]);if(label)labels.add(label);}
  return{module:labels.size===1?[...labels][0]:'unknown'};

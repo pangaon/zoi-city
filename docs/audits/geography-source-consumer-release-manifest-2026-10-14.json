@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-10-14T16:24:59.934670+00:00",
-  "status": "frozen_numeric_dns_timer_fix_hosted_canary_pending",
+  "generated_at": "2026-10-14T17:11:48.481153+00:00",
+  "status": "frozen_native_pinned_tls_fix_hosted_canary_pending",
   "release_owner": "root",
   "files": [
     {
@@ -35,28 +35,48 @@
     },
     {
       "path": "supabase/functions/geography-repair-source-consumer/_transport.js",
-      "sha256": "0745dbdb99e75de14a4c895794f3bbe8be78f215af1806d432e87baf0a9e0f48",
-      "bytes": 7176
+      "sha256": "8deee284a5382f80bd4bedc0ef0bcb66ff37d187aa6aec0e20681f1762e888f2",
+      "bytes": 6028
     },
     {
       "path": "scripts/geography/build-edge-source-consumer.mjs",
-      "sha256": "7ec52a60aa6b7b3a09a33620ee8cbe2d3d4b549f24caf7bcca9cc7f74a19afed",
-      "bytes": 6247
+      "sha256": "d27241d01baad633943b076a384c80082e0267b2cb5ae29071ba22dce5325cde",
+      "bytes": 6814
     },
     {
       "path": "tests/unit/geography-source-consumer.test.mjs",
-      "sha256": "33fbf24ed225326b6b65ced2089fd6e45238d6c79440f83fa461c3951f174313",
-      "bytes": 17822
+      "sha256": "1b47b8e1812f249bcceb4dc3e76f01510c956d68ff727087f75676876709e673",
+      "bytes": 17842
     },
     {
       "path": "docs/audits/geography-source-consumer-setup-2026-10-14.md",
-      "sha256": "88a6373a6f13c5dd2e81678030fd1e1a343a812ad22c0f0bceb504b0ed311322",
-      "bytes": 4323
+      "sha256": "c1c9e0d17cd53bfc9a3b155910c5de91b2eba51908f1b4330c06c47538923e6a",
+      "bytes": 5402
     },
     {
       "path": "supabase/functions/geography-repair-source-consumer/_filesystem.js",
       "sha256": "ad52c1b5860c3976a229c9226deebb73f14708be380623a5dec59d45181bb139",
       "bytes": 2072
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_native-request.js",
+      "sha256": "1c0432960c0b396a3321871f0415552d06e3860e11a0cec876e2a5a3dc998210",
+      "bytes": 6651
+    },
+    {
+      "path": "scripts/geography/hosted-pinned-source-request.mjs",
+      "sha256": "ac3bf10bc0c8ae40aeeff83c6913d461a1bd9878b1c530a5f71db2f993d6b335",
+      "bytes": 6572
+    },
+    {
+      "path": "tests/unit/geography-hosted-pinned-request.test.mjs",
+      "sha256": "73114fd3ba4a8b04057a8781ea7b65c171dd2238642273346bed837b66966010",
+      "bytes": 6395
+    },
+    {
+      "path": "tests/integration/geography-hosted-native-tls.test.mjs",
+      "sha256": "f9510a37e103b717f7ba10263db8bdd9dec7ceb1a39b0fc38a14313e11976acd",
+      "bytes": 3471
     }
   ],
   "validation": {
@@ -64,7 +84,10 @@
     "deno_typecheck": "passed Deno2.9.6",
     "local_actual_https": "Olympia official contact HTTP200,177803bytes,one request",
     "hosted_edge_runtime": "not yet exercised",
-    "cron_schedule": "not connected"
+    "cron_schedule": "not connected",
+    "focused_tests_passed": 43,
+    "local_actual_tls": "Deno2.9.6 pinned TCP\u2192TLS; original SNI/Host, hostname certificate success and mismatch refusal",
+    "hosted_capture": "not proved"
   },
   "coordinate_writes": 0,
   "provider_calls": 0,
