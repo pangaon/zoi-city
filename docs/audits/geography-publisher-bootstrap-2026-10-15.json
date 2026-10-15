@@ -1,0 +1,76 @@
+{
+  "generated_at": "2026-10-15T02:47:25.429877+00:00",
+  "status": "frozen_pending_independent_review",
+  "ownership": [
+    "scripts/release-geography-source-consumer.mjs",
+    "tests/unit/geography-source-consumer-release.test.mjs",
+    "docs/audits/geography-publisher-bootstrap-2026-10-15.json"
+  ],
+  "files": [
+    {
+      "path": "scripts/release-geography-source-consumer.mjs",
+      "sha256": "fd2d2954c8935bd966d5c01b90e6f505ba90e3dc4bc2d3f8e4339e8e8e3df705",
+      "bytes": 16761
+    },
+    {
+      "path": "tests/unit/geography-source-consumer-release.test.mjs",
+      "sha256": "016b03e954af85c740de42ca3b21f799a830b7f617389c35dbf32153835839da",
+      "bytes": 17529
+    }
+  ],
+  "request_contract": {
+    "canary_strategy": "publisher_profiles_v1",
+    "install_schedule": false,
+    "absent_strategy": "legacy empty-body official canary",
+    "caller_url": "not supported"
+  },
+  "exact_manifest_files": 26,
+  "publisher_admission": "Existing private bucket/budget/singleton prerequisites; exact four deployed function definitions, postgres owner, private postgres/service_role ACL and explicit role privilege checks before Vault/secret/deploy actions.",
+  "metadata_readback": {
+    "publisher_contract_verified": true,
+    "query_kind": "read-only pg_proc metadata",
+    "hash_method": "md5(pg_get_functiondef(oid))",
+    "definitions": {
+      "publisher_lease": "ab188abad781c14a80df7bbb882e1546",
+      "delegated_repair_lease": "7dee3566b96b2466515aba4097227661",
+      "repair_finish": "cf487fc76279292be05fad43b48e56db",
+      "publisher_cooldown": "4f8e71c2e0904292bdfcf3aea73a7f8c"
+    }
+  },
+  "canary_proof": [
+    "exact response strategy",
+    "1..4 finished jobs",
+    "zero provider, coordinate and website writes",
+    "1..30 source requests",
+    "1..processed_jobs private captured documents",
+    "bounded proposal count",
+    "fresh finished strategy-scoped supporting-source private archive SHA",
+    "existing readonly hosted SHA readback proof"
+  ],
+  "preserved": [
+    "first attempt only",
+    "exact expiring request/script/helper/source pins",
+    "no IO retries",
+    "Vault token memory only",
+    "fixed project/repository/main gate",
+    "exact deployment command",
+    "existing strict private net queue ACL schedule guard",
+    "publisher cannot install schedule"
+  ],
+  "tests": {
+    "focused_tests": 17,
+    "failures": 0,
+    "node_syntax": "passed",
+    "frozen_publisher_files_verified": 11
+  },
+  "production_mutations": 0,
+  "deployments": 0,
+  "seed_calls": 0,
+  "release_owner": "root",
+  "remaining": "Root owns manifest, request, workflow, deployment, seeding, activation and hosted acceptance. No publisher capture or population coverage claimed.",
+  "redirect_policy": {
+    "management": "error",
+    "hosted": "error",
+    "controlled_redirect_regression": "Both fixed endpoints refuse actual local HTTP302 responses; unexpected destination receives zero requests; one attempt each and no scheduling."
+  }
+}
