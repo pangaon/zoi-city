@@ -1,0 +1,62 @@
+{
+  "observed_at": "2026-10-15T04:47:10.131377+00:00",
+  "state": "Independent source/controlled safety gate accepted; disabled candidate, actual production journey not yet run",
+  "owner_audit_sha256": "5efc42f2d34116af10a8930f2187bfa6019805ed21952261bb22aba55a6e295b",
+  "files": [
+    {
+      "path": "scripts/auth-qa/company-private-browser.mjs",
+      "sha256": "85077e964345f30e12b00c8ec328badb3ad98ff32f990266542afd90c6054c47"
+    },
+    {
+      "path": "scripts/auth-qa/company-private-browser-ci.mjs",
+      "sha256": "5b5e0cb978beec27e11f56e5bb5931eef398b4d9f64e25796460af8e203efb2a"
+    },
+    {
+      "path": "scripts/auth-qa/company-private-browser-policy.mjs",
+      "sha256": "7c48a18bec5db022d577d3018466713226d768620ecade813f9f67ecc712ab28"
+    },
+    {
+      "path": "tests/unit/company-private-browser-qa.test.mjs",
+      "sha256": "4859054fd1ea2ed295a4fcc071612f9ed397eed08d45e69f49e51f66aa6b7b16"
+    },
+    {
+      "path": ".github/workflows/company-private-browser-qa.yml",
+      "sha256": "025c8a7c4473a143436013b4a30ef5e10894b7ace3f15cce1d932c86f8107724"
+    },
+    {
+      "path": "ops/company-private-browser-qa.json",
+      "sha256": "f94e1310594e6661a2b1b642b7d748da8c9842dcd55d8d1153f95a33c34bf33f"
+    }
+  ],
+  "independent_checks": {
+    "new_guards": 10,
+    "existing_model_handoff": 16,
+    "total_passed": 26,
+    "failed": 0,
+    "skipped": 0,
+    "syntax_modules": 3,
+    "disabled_cli": {
+      "enabled": false,
+      "network_requests": 0
+    }
+  },
+  "review": [
+    "Exact publicmain singleparent request-only diff, firstattempt,30min admission, exactcode/deployedweb hashes before credentials.",
+    "Only existing dedicatedQA identity/workspace; reusable servicecredential never browser/shared/logged; browser authmemory only, no founder/newAuthuser.",
+    "Browser fixedsite/privateCompanyroute, strictreadscope and5exactsynthetic minute writes/currentCAS only; no provider/Connect/plan/listing/company mutations from page.",
+    "Canonical Companycreate uses fresh originalnonce aftermissingreceipt; lost create response checked/cancelled through originalreceipt, never replayedblindly.",
+    "Finally checks exact originalrecordID/title/scope/owner/admin thenarchives withcurrentCAS andconfirms; separate alwayscleanup onlysameoriginalreceipt andboundedexpirygrace.",
+    "Unknown cleanup/nonce outcome throws; no successfulresult until browserclosed,Companyarchived andQAsessionloggedout. Sanitizedboolean result only."
+  ],
+  "limits": [
+    "Actual productionbrowser/sourcebytes/requestactivation notaccepted from localtests. Root mustconstructfresh exactrequest onlyafterreviewedsource merged anddeployedwebhashes available.",
+    "Infrastructure cancellation/lostrunner can interruptfinally/alwayscleanup; root must reconcile originalnonce ratherthan retryingcreate.",
+    "Canonical audit/privatehistory remains bydesign; syntheticminute mayremain in archivedCompanyhistory ifbrowserfails beforeitsfinalarchive. No hidden deletion."
+  ],
+  "live_operations": {
+    "network_requests": 0,
+    "DB_writes": 0,
+    "Auth_sessions": 0,
+    "provider_calls": 0
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "observed_at": "2026-10-15T12:01:52.647245+00:00",
+  "incident": "Production SQL connection timeouts and public profile503 during15Oct04:30\u201304:42UTC",
+  "resource_observations": {
+    "metrics_http_status": 500,
+    "disk_bytes_available": 6991560704,
+    "disk_bytes_total": 8416882688,
+    "health_endpoint_http400": "Not treated as evidence of service health; both documented encodings were rejected."
+  },
+  "recovery": {
+    "restart_requests": 1,
+    "workflow": 38682453698,
+    "source_commit": "af506b9d",
+    "restart_http_status": 200,
+    "accepted_at_approximately": "2026-10-15T04:38:19Z",
+    "job_failure_reason": "Earlier diagnostic health/metrics failures retained process exitCode; actual restart call succeeded. No restart retry.",
+    "recovery_workflow": 38682580054,
+    "actual_sql_accepted": true,
+    "actual_sql1_at": "2026-10-15T04:41:51.349619Z",
+    "provider_status_after": "ACTIVE_HEALTHY",
+    "public_london_profile_current_render_http": 200,
+    "public_recovery_observed_approximately": "2026-10-15T04:42:05Z"
+  },
+  "mutation_reconciliation": {
+    "first_scheduler_activation_attempt": "Observation timed out; explicit rollback/readback confirmed disabled and0tickets before next activation.",
+    "new_policy_activated_at": "2026-10-15T04:42:40.780975Z",
+    "data_loss_observed": false,
+    "restore_or_data_rewrite_performed": false,
+    "paid_upgrade_or_resize": false
+  },
+  "limitations": [
+    "Root cause not proven; successful restart does not prove recurrence prevention.",
+    "Public profile200 was inspected as current mission HTML; broader site availability monitoring remains separate.",
+    "Recovery request has expired and cannot repeat its original action."
+  ]
+}
