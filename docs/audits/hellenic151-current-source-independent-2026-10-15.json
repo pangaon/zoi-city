@@ -1,0 +1,167 @@
+{
+  "created_at": "2026-10-15T13:40:56.270914+00:00",
+  "reviewer": "/root/qa_next",
+  "state": "SOURCE ACCEPTANCE HELD: one published multi-price item loses all three variants; transaction safety independently passes",
+  "listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+  "source_report_sha256": "a30b9dde210de4b1630c765576a065322f1902305afb599425dda60859c93d4b",
+  "current_main_html_sha256": "6f47da18032ab53580b5a97fe3d1ab2e26eb1b0c1c3ceb7dc721899a6e0dc033",
+  "current_menu_html_sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267",
+  "source_verification": {
+    "independent_parser": "Python stdlib HTMLParser, complete retained current menu HTML, separate from JS extractor",
+    "report_frozen_proposal151_exact": true,
+    "raw_source_items": 151,
+    "all_fields_exact_items": 150,
+    "source_omissions": [
+      {
+        "source": {
+          "name": "Horio Olive Oil",
+          "price": "$18.00/500 ml $25.00/750 ml $70.00/3 lt",
+          "note": ""
+        },
+        "captured": {
+          "name": "Horio Olive Oil",
+          "note": "",
+          "price": ""
+        }
+      }
+    ],
+    "sections": [
+      [
+        "Spanakopita",
+        2
+      ],
+      [
+        "Tiropitakia",
+        2
+      ],
+      [
+        "Desserts",
+        2
+      ],
+      [
+        "List",
+        145
+      ]
+    ],
+    "tail": {
+      "name": "Sardines in Can",
+      "price": "$3.00",
+      "note": ""
+    },
+    "branch_jsonld_identity_and_address_exact": true,
+    "email_phone_jsonld_and_visible_links_exact": true,
+    "social_jsonld_and_visible_links_exact": true,
+    "all_image_hashes_exact": true,
+    "only_three_approved_images_in_proposal": true,
+    "bad_metadata_replaced_by_explicit_reviewed_fields": true,
+    "menu_source_url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+    "current_decoded_source_sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267"
+  },
+  "finding": {
+    "severity": "blocks source acceptance",
+    "item": "Horio Olive Oil",
+    "published_variants": [
+      "$18.00/500 ml",
+      "$25.00/750 ml",
+      "$70.00/3 lt"
+    ],
+    "report_and_proposal_price": "",
+    "report_and_proposal_note": "",
+    "cause": "Shared semantic food parser field(role) requires exactly one direct field; three food-price siblings all discarded. Frozen prior151 data has the same omission. Count151 and deep equality to prior accepted extraction did not prove raw price completeness.",
+    "required": "Generic bounded multiple-price handling, real retained source regression and freshly generated reviewed report/payload; no manual unbound canonical edits.",
+    "prior_evidence_correction": "Earlier food-full-menu-independent-2026-10-15 all151 field-match claim was made against extraction representation and missed multiple price siblings. This original-HTML cross-check corrects that claim; prior immutable audit is retained."
+  },
+  "copy_overrides": {
+    "accepted_as_source_supported": true,
+    "description": "Greek bakery and grocery in Livonia, Michigan, with spanakopita, tiropitakia, desserts and a published grocery selection. Check the official menu for item prices and contact the bakery about current availability.",
+    "tagline": "Greek baking and pantry favourites in Livonia",
+    "rejected_metadata": {
+      "description": "...",
+      "tagline": "null"
+    },
+    "claims_limit": "No in-stock, booking, checkout, provider connection or owner endorsement claim."
+  },
+  "images": {
+    "visually_inspected_all4": true,
+    "accepted_sha256": [
+      "236596f6e934a55b04e9d4bf72b88af71fb5b6788a4eb9b11ff900d3f0db7b74",
+      "3dbc0cb2f1c14ff2addf2afa2a1968ccbd0c7b1ea68b42b2903ab85266cc3d65",
+      "c76f4469109c50aaf2a56edc2713a377562579756abf08f678604b30ad8eb17f"
+    ],
+    "visuals": [
+      "bread, cheese, olives and grocery spread",
+      "filled pastry tray",
+      "powdered biscuit tray"
+    ],
+    "rejected_sha256": "190bef43a2b3cee72c2f53e8b9f3ecb3a89db8966d0963acdc29254f438e8444",
+    "rejection": "Generic Holiday Party promotional graphic; neither client food photography nor visual identity.",
+    "scope": "Retained official-page-linked photos; no ownership/commission endorsement inferred. Existing logo unchanged, not re-sourced by this capture."
+  },
+  "transaction_review": {
+    "files": [
+      {
+        "path": "ops/proposals/hellenic-full-menu-reviewed-20261015.json",
+        "sha256": "2140a2bd7a85fe067e6db816e9fdd370e8a6552696190640e0b499e264df1857"
+      },
+      {
+        "path": "ops/proposals/hellenic-full-menu-reviewed-20261015-apply.sql",
+        "sha256": "4c7a67974c42a6f3dd15e5ddc3f6318670d6424ca860b8c9cab5c4580433764a"
+      },
+      {
+        "path": "ops/proposals/hellenic-full-menu-reviewed-20261015-dryrun.sql",
+        "sha256": "dd57adb996cab9f3190c7a833ddd225b34a04891e705de11359f503830b98b36"
+      }
+    ],
+    "embedded_payload_matches_exact_proposal": true,
+    "apply_dryrun_same_body_before_final_commit_rollback": true,
+    "bounded_one_listing_row_lock": true,
+    "full_row_and_quality_cas": true,
+    "owner_authored_clear_design_visibility_address_source_context_protected": true,
+    "exact_existing_writer_lease_body_owner_acl_pinned": true,
+    "canonical_lease_and_writer_only": true,
+    "all_profile_payload_keys_read_back": true,
+    "coordinates_and_nonprofile_columns_unchanged": true,
+    "isolation_rehearsal": {
+      "checked_at": "2026-10-15T13:38:52.177Z",
+      "isolated_postgresql16": true,
+      "production_writes": 0,
+      "embedding_column_represented_as_text_only_for_null_fixture": true,
+      "checks": [
+        "Exact full captured listing fingerprint and authority definitions reproduced",
+        "Exact rollback proposal leases/applies all151 and restores complete original row with no lease",
+        "Committed variant retains151 and exact menu/provenance/protected fields",
+        "Replay refuses changed full fingerprint",
+        "Changed owner/address/explicit clear/source hold each refuse before lease",
+        "Canonical owner design authority refuses"
+      ]
+    },
+    "rehearsal_note": "Independent separate unix socket and port15762; reproduced exact captured full row, vector represented as text only for null fixture. No production mutations."
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/hellenic151-current-source-independent-2026-10-15/rehearsal-result.json",
+      "sha256": "5125a9d44a722a66a750f4911928c591b7425204000e8e604bc06bb72a9181e4"
+    },
+    {
+      "path": "docs/audits/evidence/hellenic151-current-source-independent-2026-10-15/rehearsal.log",
+      "sha256": "49f7740305ffdf36cec9ff2603ced7dcb02f1b013409abebbd6e71f181713370"
+    },
+    {
+      "path": "docs/audits/evidence/hellenic151-current-source-independent-2026-10-15/rehearse.mjs",
+      "sha256": "5cf76d7b23fd3b9023da722b75ca8475f25c20777d50a2708c4f27e809d1a0d6"
+    },
+    {
+      "path": "docs/audits/evidence/hellenic151-current-source-independent-2026-10-15/source-check.py",
+      "sha256": "e9fbfedd19d98fc8a7359546cc8f232ce86d77342bbcd37664d1b21ad32f3073"
+    },
+    {
+      "path": "docs/audits/evidence/hellenic151-current-source-independent-2026-10-15/source-result.json",
+      "sha256": "b39a0e6395e40f370845dba0c639e7cf44f57033fdb5ac600acbd5bb86941bc4"
+    }
+  ],
+  "production_writes": 0,
+  "new_network_source_fetches": 0,
+  "rendered_acceptance": "not exercised by this source review",
+  "journey_acceptance": "not exercised by this source review",
+  "next": "Root holds apply until generic parser fix, fresh report and exact reviewed payload accepted; root owns protected source release and actual rollback/commit/readback/render."
+}
