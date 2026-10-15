@@ -27,7 +27,9 @@ jobs:
 
       - name: Provision pinned Deno runtime for local TLS verification
         timeout-minutes: 3
-        run: npx --yes deno@2.9.6 --version
+        uses: denoland/setup-deno@22d081ff2d3a40755e97629de92e3bcbfa7cf2ed
+        with:
+          deno-version: v2.9.6
 
       - name: Syntax-check every inline <script> block
         run: npm run check
@@ -47,6 +49,8 @@ jobs:
 
       - name: Unit tests
         run: node scripts/run-tests.mjs tests --local
+        env:
+          ZOI_DENO_BIN: deno
 
   mobile-changes:
     runs-on: ubuntu-latest
