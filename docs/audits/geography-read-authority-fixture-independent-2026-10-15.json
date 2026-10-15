@@ -1,0 +1,68 @@
+{
+  "observed_at": "2026-10-15T12:44:30.743843+00:00",
+  "reviewer": "qa_next",
+  "scope": "Independent read-only review of root category fixture/schema correction; no live fixture execution or DDL by reviewer",
+  "source": {
+    "tree": "/workspaces/zoi-geography-live-release",
+    "head": "e6927116e32a893494e425f1b4ade415acdfd8e8",
+    "migration_sha256": "88167423b36ba6c3135822a19f330c1991f709767ad520b42d0c8dccce44a50b",
+    "integration_sha256": "6af2eb520fff0950c2cb93e8bddd2046b0365ad9ed5b4a272669a99d116de042",
+    "production_fixture_sha256": "b6546237c04000c67e5d38702826c458b234259f172620ba54520dacf0ca5908",
+    "category_fix_changes_migration": false,
+    "migration_hash_unchanged_before_after_independent_run": true,
+    "fixture_delta": "Declare bigint category, select existing restaurants category with missing-category refusal, set primary_category_id on synthetic listing. No production category insert. BEGIN/ROLLBACK and assertions remain.",
+    "local_schema_delta": "Correct primary_category_id from UUID mock to actual bigint and provide local restaurants category table/row.",
+    "prior_separate_root_delta": "Root separately added direct source_scope_mismatch, source_identity, association_member and organization/person hold coverage; these approved migration/test changes predate this fixture correction and are not attributed to fixture-only delta."
+  },
+  "actual_readonly_evidence": {
+    "migration_version": "20261015123543",
+    "migration_name": "geography_reviewed_read_authority",
+    "one_sql_statement": true,
+    "stored_sql_sha256": "88167423b36ba6c3135822a19f330c1991f709767ad520b42d0c8dccce44a50b",
+    "all_six_current_function_bodies_match_source_md5": {
+      "zoi.geography_read_authority_input": "8fbbfb1659177f08638f6de5d3fb4daf",
+      "zoi.geography_read_source_allowed": "1810bcab54161417022bd7f3f9a96a97",
+      "zoi.geography_read_authority_fingerprint": "905463e87eff1f63d560a61fca89ed87",
+      "zoi.geography_read_authority_changed": "957a050d46b9a61fbda9790a76bad710",
+      "public.geography_review_apply": "ef5693e833396c74a649ef40c7405e05",
+      "public.geography_reviewed_point": "5f8b2aaccf2cbe0c3862c4c0c46fd59e"
+    },
+    "private_helper_owners": "postgres",
+    "private_helper_acl": "{postgres=X/postgres}",
+    "full_row_CAS_helper_and_revert": "Unchanged definitions independently asserted by real PostgreSQL test against captured foundation.",
+    "primary_category_type": "bigint",
+    "existing_restaurants_category_id": 21,
+    "synthetic_listing_id": "ab700000-0000-4000-8000-000000000001",
+    "listing_absent": true,
+    "reviews_absent": true,
+    "epoch_absent": true
+  },
+  "independent_local_execution": {
+    "command": "node tests/database/geography-read-authority.integration.mjs",
+    "engine": "PostgreSQL16",
+    "passed_groups": 15,
+    "failed_groups": 0,
+    "production_writes": 0,
+    "exact_prepared_rollback_fixture_passed": true,
+    "new_receipt_survives_unrelated_menu_coverage_updated_at": true,
+    "relevant_away_and_back_cannot_resurrect": true,
+    "scope_holds_deny_new_and_existing_authority": true,
+    "legacy_remains_strict": true,
+    "full_row_write_replay_and_revert_CAS_remain_strict": true,
+    "concurrent_first_writers_one_winner": true,
+    "benchmark": {
+      "updates_each": 200,
+      "unrelated_ms": 27.138,
+      "relevant_ms": 33.056,
+      "unrelated_epoch_advances": 0,
+      "relevant_epoch_advances": 200
+    }
+  },
+  "limits": [
+    "Category fix supplies required synthetic business categorization; it does not weaken publication eligibility.",
+    "Reviewer did not reexecute the live rollback. Root reported execution; reviewer independently checked actual three absences and applied SQL/function identity.",
+    "Synthetic coordinates and source URLs in the rollback fixture prove database behavior only; zero actual source approvals, coordinate corrections or catalogue coverage are claimed.",
+    "No product UI or native journey evidence is added by this test."
+  ],
+  "reviewer_production_writes": 0
+}
