@@ -25,6 +25,10 @@ jobs:
         with:
           node-version: 24
 
+      - name: Provision pinned Deno runtime for local TLS verification
+        timeout-minutes: 3
+        run: npx --yes deno@2.9.6 --version
+
       - name: Syntax-check every inline <script> block
         run: npm run check
 
