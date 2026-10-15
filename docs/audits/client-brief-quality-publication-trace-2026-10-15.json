@@ -1,0 +1,456 @@
+{
+  "schema": "zoi.client-brief-quality-pipeline-trace.v1",
+  "date": "2026-10-15",
+  "state": "frozen_read_only_trace_and_unimplemented_proposal",
+  "base": "be60cb576b7a24ec3061448f80872835274f3097",
+  "worktree": "/workspaces/zoi-client-brief-publication-audit",
+  "production_actions": {
+    "http_by_this_specialist": 0,
+    "sql_reads": 0,
+    "sql_writes": 0,
+    "source_crawls": 0,
+    "paid_provider_calls": 0,
+    "policy_renewal": false,
+    "runtime_edits": false
+  },
+  "headline": "The system does not wait for an approved machine brief to show source facts. The missing link is canonical per-criterion evidence/review recording and explicit source/composition review, while the automatic audit request is intentionally disabled and expired.",
+  "pipeline": [
+    {
+      "stage": "Canonical public inventory/lead to enrichment",
+      "existing": "enrich_queue_lease and enrich_sample_lease return existing published/moderated eligible records; current owner/context lease gates bind enrich_apply. No new queue is required.",
+      "limit": "New admission/cadence packet is separate and frozen/independently accepted. It must not be edited here."
+    },
+    {
+      "stage": "Source extraction to individual machine brief",
+      "existing": "Normal worker derives typed identity and fresh extracted facts, then prepareClientBrief builds bounded schema1 draft_requires_review or deferred_payload_limit; errors preserve prior facts through existing writer.",
+      "limit": "Draft includes source evidence, actions, offering summaries and section arrangement; audience/differentiators are empty, visual identity/operations/acceptance unverified. It is research, not a complete individual home."
+    },
+    {
+      "stage": "Reviewed capture lane to brief",
+      "existing": "Food reviewed source path explicitly builds a brief from fresh reviewed fields; generic source_html and rendered return branches have no equivalent brief construction.",
+      "gap": "Non-Food reviewed imports can improve facts without receiving the current per-client brief. Any parity fix must build from fresh hash-bound fields only and retain unknown identity/manual review; never forge typed identity or freshen retained copy."
+    },
+    {
+      "stage": "Canonical fact publication",
+      "existing": "enrich_apply writes only machine namespace and coverage on existing eligible records. home_entity/seo_entity expose canonical public projections; API family adapters read source fields as fallbacks, preserving owner/raw explicit clears and source/manual-context holds.",
+      "limit": "This does not change publish/moderation state, create ownership, connect bookings, verify photos or approve client copy."
+    },
+    {
+      "stage": "Public composition",
+      "existing": "publishedHomeDesign chooses a valid owner-published design; otherwise briefHomeDesign accepts ONLY an eligible verified DRAFT arrangement rebuilt against current fields. Without either, canonical family templates still render.",
+      "gap": "Approved brief status is not implemented. Setting status=approved alone would currently disable this fallback.0 approved is unsupported-state telemetry, not a publication backlog count."
+    },
+    {
+      "stage": "Owner action",
+      "existing": "Business home editor reads authorized home_content_get snapshot; legacy content save publishes supported fields. Unified revision flow requires current owner workspace, current-session member role, private save, preview-bound exact revision, then owner/admin publish. Explicit clears remain authoritative.",
+      "limit": "Source-health tool reviews the website choice/hold, not the complete machine brief. No current machine-brief approval panel/transition exists. Founder-wide source research does not grant owner workspace authority."
+    },
+    {
+      "stage": "Automatic quality collection",
+      "existing": "Workflow validates a finite request before credentials/browser installation. Current ops/quality-audit-request.json is enabled:false and expired2026-10-01. Reason: production query timeout repair and user-reported failed-run emails.",
+      "gap": "Scheduled workflow is not an active round-clock audit. Current full-goal intent persists, but this trace does not renew the finite request or silently reactivate it."
+    },
+    {
+      "stage": "Aggregate task receipt",
+      "existing": "Collector observes classification OR verification, stores immutable local report, and calls listing_quality_task_finish. Verification checks390/1440 DOM and one supported local control, plus vCard if present.",
+      "limit": "Source fetch is not source visual review; browser.screens are DOM metrics rather than image screenshots; one gallery/details action is not every customer/owner journey. Automatic design is deliberately unsupported."
+    },
+    {
+      "stage": "Per-criterion acceptance",
+      "existing": "listing_quality_checklist and listing_quality_criterion_record exist with criterion revisions, exact current fingerprint, existing task lease, distinct specialist/reviewer actors, independent new artifact and7day freshness.",
+      "gap": "No runtime/script caller records this API; only an integration test calls it. Collector task_finish clears its lease. No bridge records per-criterion evidence before that finish, so private reviewed audits never become canonical signoffs."
+    }
+  ],
+  "concrete_findings": [
+    {
+      "id": "unsupported_approved_telemetry",
+      "evidence": "buildClientBrief always writes draft_requires_review; briefHomeDesign requires that exact state. No approval writer/UI was found.",
+      "remedy": "Report draft/identity/evidence/review states actually implemented. Do not invent approved counts or flip status without coherent read/review design."
+    },
+    {
+      "id": "disabled_finite_audit",
+      "evidence": {
+        "enabled": false,
+        "starts_at": "2026-09-30T15:51:45.884003Z",
+        "expires_at": "2026-10-01T15:46:45.884003Z",
+        "max_listings_per_run": 20,
+        "tasks": [
+          "classification",
+          "verification"
+        ],
+        "why": "Automatic execution paused while production query timeout is repaired and verified; user reported failed-run emails."
+      },
+      "remedy": "After bounded performance and source/receiver acceptance, root can separately approve a new bounded request. No automatic renewal, new paid provider, or policy extension here."
+    },
+    {
+      "id": "missing_criterion_runtime_bridge",
+      "evidence": "Repository callers of listing_quality_criterion_record outside SQL migrations: tests/database/listing-quality-criteria.integration.mjs only. scripts/quality/inventory-reports.mjs merely names checklist as not_fetched.",
+      "remedy": "Use the EXISTING canonical criterion writer, staged artifact publication and explicit independent review. Keep all source/render/journey judgments separate."
+    },
+    {
+      "id": "two_fingerprints_and_lease_order",
+      "evidence": "Quality lease source_fingerprint is listing_quality_fingerprint. Criterion recorder expects quality_criterion_fingerprint from checklist AND an active matching task lease for specialist stage. task_finish removes that lease.",
+      "remedy": "Read checklist under current canonical lease; preserve both fingerprints separately. Record eligible specialist criteria BEFORE task_finish; independently review later against exact current criterion fingerprint and revision."
+    },
+    {
+      "id": "reviewed_lane_brief_asymmetry",
+      "evidence": "reviewed-batch only constructs buildClientBrief inside if(food). Rendered and generic reviewed source lanes lack parity.",
+      "remedy": "Separate approved followup may reuse the bounded builder for fresh reviewed facts, preserving unknown identity/visual/operations states, all report hashes/owner/context guards and retained-copy provenance."
+    },
+    {
+      "id": "quality_identity_drift",
+      "evidence_file": "/home/codespace/.cache/zoi/client-brief-trace-20261015/typed-quality-contract-comparison.json",
+      "observed": "Controlled Bakery/CafeOrCoffeeShop/MusicGroup nodes qualify the worker typed-name check but are absent from quality classifier roles; Attorney professional qualifies worker but quality classifier refuses practice role.",
+      "limit": "These synthetic comparisons are parser contract evidence, not factual or branch identity approval. Never blindly expand roles or turn an organization into a person; exact current source/branch/family gates remain required."
+    },
+    {
+      "id": "legacy_status_telemetry",
+      "evidence": "Four of six current public snapshots have _enrich.status=ok and no crawl_status; none has a current brief.",
+      "remedy": "Report literal fields and semantic stored-source state separately.30 literal crawl_status=ok records does NOT mean only30 historical successful fetches; checked/fetched status still does not prove source correctness."
+    },
+    {
+      "id": "public_defaults_are_working_without_brief",
+      "evidence_file": "/home/codespace/.cache/zoi/client-brief-trace-20261015/six-canonical-offline-render-proof.json",
+      "observed": "All six retained current public projections produce family SSR with no brief, no published design and derived design null.",
+      "limit": "Local current-code SSR only; QA_next owns actual browser/action evidence. No complete client/category claim."
+    }
+  ],
+  "current_six_reused_without_http": [
+    {
+      "record": "artist-public",
+      "id": "1b05f29e-a57b-4ebf-8e23-56c8e05015d3",
+      "slug": "alexis-sorbas-band-berlin",
+      "entity_type": "artist",
+      "category": "musicians-djs",
+      "source_snapshot_sha256": "9c298935f99c1448684a30eb7eaeeaea9a4992db10bdce122177762a0dbc163b",
+      "source_snapshot_private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/artist-public.json",
+      "brief_present": false,
+      "source_identity_present": false,
+      "published_design_present": false,
+      "owner_content_keys": [],
+      "ownership": "not asserted from public projection",
+      "machine_status": "ok",
+      "machine_crawl_status": null,
+      "checked_at": "2026-10-04",
+      "source_blocked": null,
+      "source_block_reason": null,
+      "live_browser_journey": "QA_next independent task; not completed or claimed by this trace"
+    },
+    {
+      "record": "corfu-public",
+      "id": "ea2cc628-60ad-4fd5-b99b-984c763a6a49",
+      "slug": "ie-dublin-corfu-greek-restaurant",
+      "entity_type": "business",
+      "category": "restaurants",
+      "source_snapshot_sha256": "d2bdd9ac2b9550ff7c97028f9c0480149dcd7e5f1cc6e5919eaf282020d91a44",
+      "source_snapshot_private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/corfu-public.json",
+      "brief_present": false,
+      "source_identity_present": false,
+      "published_design_present": false,
+      "owner_content_keys": [],
+      "ownership": "not asserted from public projection",
+      "machine_status": "ok",
+      "machine_crawl_status": null,
+      "checked_at": "2026-10-15",
+      "source_blocked": null,
+      "source_block_reason": null,
+      "live_browser_journey": "QA_next independent task; not completed or claimed by this trace"
+    },
+    {
+      "record": "ekky-public",
+      "id": "83f5650e-ae53-48fe-878a-3a6ea7f54000",
+      "slug": "cy-nicosia-ekky-studio-architects",
+      "entity_type": "professional",
+      "category": "architects-engineers",
+      "source_snapshot_sha256": "7a3e249f8213f05802ee9fe485e7087f33e99ffc17a0a147b1ddceebfad79110",
+      "source_snapshot_private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/ekky-public.json",
+      "brief_present": false,
+      "source_identity_present": false,
+      "published_design_present": false,
+      "owner_content_keys": [],
+      "ownership": "not asserted from public projection",
+      "machine_status": null,
+      "machine_crawl_status": null,
+      "checked_at": "2026-09-11",
+      "source_blocked": null,
+      "source_block_reason": null,
+      "live_browser_journey": "QA_next independent task; not completed or claimed by this trace"
+    },
+    {
+      "record": "embassy-public",
+      "id": "2aa582e9-1142-4c06-9b06-056fa35f46bf",
+      "slug": "embassy-of-greece-london",
+      "entity_type": "organization",
+      "category": "consulates",
+      "source_snapshot_sha256": "79f2bcb5fda36327ae6852e9aa8aed8acada9706614ddb23e9d3ae6ba31acf0f",
+      "source_snapshot_private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/embassy-public.json",
+      "brief_present": false,
+      "source_identity_present": false,
+      "published_design_present": false,
+      "owner_content_keys": [],
+      "ownership": "not asserted from public projection",
+      "machine_status": null,
+      "machine_crawl_status": null,
+      "checked_at": "2026-09-07",
+      "source_blocked": "true",
+      "source_block_reason": "http403",
+      "live_browser_journey": "QA_next independent task; not completed or claimed by this trace"
+    },
+    {
+      "record": "hotel-public",
+      "id": "1b459f28-684b-4f03-bd8f-e7c88fc5abf0",
+      "slug": "corfu-mare-boutique-hotel-corfu",
+      "entity_type": "travel_place",
+      "category": "hotels",
+      "source_snapshot_sha256": "d382f23ffc9bcd89642fe76fa421d4700cb1c74753ca7790b49863bf759ba9dc",
+      "source_snapshot_private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/hotel-public.json",
+      "brief_present": false,
+      "source_identity_present": false,
+      "published_design_present": false,
+      "owner_content_keys": [],
+      "ownership": "not asserted from public projection",
+      "machine_status": "ok",
+      "machine_crawl_status": null,
+      "checked_at": "2026-09-30",
+      "source_blocked": null,
+      "source_block_reason": null,
+      "live_browser_journey": "QA_next independent task; not completed or claimed by this trace"
+    },
+    {
+      "record": "parish-public",
+      "id": "02e262c3-087f-40ae-aa3c-7c5d93371fef",
+      "slug": "saint-demetrios-greek-orthodox-church-union",
+      "entity_type": "church",
+      "category": "orthodox-churches",
+      "source_snapshot_sha256": "2b14ae39cf221db0066e576c80a274a8d00a5cd042cd287bcdd463d79fb7de91",
+      "source_snapshot_private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/parish-public.json",
+      "brief_present": false,
+      "source_identity_present": false,
+      "published_design_present": false,
+      "owner_content_keys": [],
+      "ownership": "not asserted from public projection",
+      "machine_status": "ok",
+      "machine_crawl_status": null,
+      "checked_at": "2026-09-23",
+      "source_blocked": null,
+      "source_block_reason": null,
+      "live_browser_journey": "QA_next independent task; not completed or claimed by this trace"
+    }
+  ],
+  "allowed_unclaimed_and_owner_boundary": {
+    "allowed": "Authorized canonical enrichment may add exact scoped source facts to machine fallbacks for an already public eligible listing, through existing current lease/writer only. Default family composition and eligible draft evidence arrangement can appear publicly without impersonating an owner.",
+    "requires_real_owner": "Private design/content revision activation, owner publication, authenticated operational configuration, provider credentials and owner-specific decisions retain current ownership/member/preview authority. No workspace is invented or claimed for convenience.",
+    "not_inferred": "Empty public owner_content does not prove unclaimed status; the public reader deliberately omits actual owner IDs. Safe plans use current canonical owner-managed/context evidence or mark ownership unknown.",
+    "holds": "Current owner/raw fields and explicit null/empty clears remain authoritative. Stale manual receipts, source scope/member/organization/branch holds and real crawl errors cannot be cleared by research/review metadata."
+  },
+  "proposed_shared_criterion_bridge": {
+    "state": "DESIGN ONLY; exact file ownership and independent review needed before runtime edits",
+    "first_packet_exact_paths": [
+      {
+        "path": "scripts/quality/criterion-report.mjs",
+        "new": true,
+        "purpose": "Pure bounded planner binding current checklist/criterion revision and both fingerprints to retained source/public projection/SSR/browser observations; per-criterion pending/blocked/eligible-specialist decisions, never blanket home complete."
+      },
+      {
+        "path": "scripts/quality/criterion-record.mjs",
+        "new": true,
+        "purpose": "Service-only client adapter for existing listing_quality_criterion_record. Requires immutable evidence artifact refs, exact current lease/revision/fingerprint, explicit stage/actor and independent reviewer evidence. Writes immutable pending request before RPC, verifies exact receipt; unknown outcome exact-resume only."
+      },
+      {
+        "path": "scripts/quality-collector.mjs",
+        "new": false,
+        "purpose": "Narrow stage-only collection/checklist snapshot and later explicit criterion-record-before-task-finish orchestration; preserve original source budgets/task lease and known receipt recovery. No implicit new source/content writes."
+      },
+      {
+        "path": "tests/unit/quality-criterion-bridge.test.mjs",
+        "new": true,
+        "purpose": "Source/render/journey evidence separation, all family/owner/clear/hold/partial-offering boundaries; unsupported checks cannot pass; stage-only no finish; unknown outcomes no retry or next lease."
+      },
+      {
+        "path": "tests/database/quality-criterion-bridge.integration.mjs",
+        "new": true,
+        "purpose": "Actual guarded canonical functions with two fingerprints/lease timing, stale source/revision/owner, independent actor/artifact, request idempotency, lost response and post-finish refusal."
+      }
+    ],
+    "optional_later_paths_not_yet_owned": [
+      {
+        "path": "scripts/quality/browser.mjs",
+        "purpose": "Retain real bounded screenshots and explicit safe local action receipts; no write/submit/payment/owner/provider actions. Any unexercised primary action remains a blocker."
+      },
+      {
+        "path": ".github/workflows/listing-quality.yml",
+        "purpose": "Publish bounded immutable evidence through EXISTING Actions artifact store BEFORE criterion RPC; preserve artifact URL+archive digest and entry hashes; specialist recording and task finish then separate receipt artifact. Independent reviewer stage must be a separate actual review, never CI self-signoff."
+      },
+      {
+        "path": "scripts/quality/ci.mjs",
+        "purpose": "Explicit bounded collect/stage/record/resume modes; no disabled-policy bypass or renewal. Public read mode has no service credential and cannot call lease/finish/criterion RPC."
+      },
+      {
+        "path": "scripts/quality/evidence.mjs",
+        "purpose": "Separate targeted source identity parity investigation with exact canonical family/branch rules; do not relax ambiguous types or infer source scope."
+      },
+      {
+        "path": "scripts/enrichment/reviewed-batch.mjs",
+        "purpose": "Separate fresh-only generic/rendered draft parity followup, no identity promotion/source approval or owner edits."
+      }
+    ],
+    "canonical_protocol": [
+      "Use existing canonical quality task lease for exact task classification/design/verification; no alternate queue, writer or lease. While automatic request is disabled, no automatic acquisition.",
+      "Read current listing_quality_checklist and bind criterion key/revision/family and criterion fingerprint separately from task lease fingerprint. Retain immutable actual source/public/render/action artifacts, original timestamps, exact hashes and source context.",
+      "Build a bounded plan for each applicable criterion. Metadata presence/HTTP200 are insufficient. Source identity/imagery/manual facts, visual design and unavailable owner/provider journeys stay unverified/blocked unless actually reviewed or exercised.",
+      "Archive evidence in existing Actions artifacts, retain HTTPS artifact URL and archive SHA256 plus exact entry hashes. Do not claim a local sha256 URI satisfies the existing HTTPS evidence API. No geography archive kind masquerade, public full HTML dump or competing store.",
+      "For supported explicit specialist decisions, prepare immutable request UUID/payload, then call existing criterion writer while exact task lease still valid. Never record after task_finish consumed the lease. Expired or changed context stops; no blind new lease/retry.",
+      "Call task_finish only after known per-criterion recording outcomes or an explicit plan-only/no-criterion decision. Aggregate task status remains separate from criterion/home completeness.",
+      "Independent reviewer must inspect original evidence AND new independently produced evidence, use distinct actor/stage and exact specialist ID/current fingerprint/revision/commit. Service trust boundary does not justify inventing independent review.",
+      "Persist exact receipts. Lost response resumes the same immutable request only; existing request replay can return historical recorded success, so reread current checklist before saying signed_off/current. Never promote stale replay to current acceptance.",
+      "Root approval of a fresh finite audit request/schedule is separate from source implementation. Shared affected families use the same planner and parameterized record context; six records are representative evidence, not catalogue completion."
+    ],
+    "public_read_mode_bounds": {
+      "proposal_only": true,
+      "no_service_key": true,
+      "no_lease_or_finish_or_record_rpc": true,
+      "listing_limit": "explicit maximum3 default; upper limit20 only under separately reviewed request",
+      "requests": "fixed public Zoi read endpoints and canonical source URLs only when separately authorized; explicit per-run request/byte/deadline and serial/per-host limits",
+      "browser": "current collector reports browser resource count outside source budget. Proposed execution must separately cap pages/resources/bytes/time, prohibit non-read calls except an explicit anonymous-read RPC allowlist, and never click submit/send/publish/payment/owner actions. Unsupported real journeys stay blocked.",
+      "no_paid_provider_or_unattended_review": true
+    },
+    "pass_scope_examples": {
+      "seo": "Can become eligible specialist evidence only from actual current canonical rendered title/description/canonical/indexability/structured data with exact listing context and source/projection comparison; not HTTP200 alone. Reviewer still separate.",
+      "functional": "One gallery/details control is partial. Every required primary action must have explicit safe exercise or blocker; never call a booking/provider connection verified from an external link.",
+      "identity_visual": "Typed name/URL match does not verify a photo/logo or every branch; source identity/family/address and visual judgments remain explicit.",
+      "owner_publish": "Actual current ownership/session/edit/preview/publish/readback required; unclaimed or unknown ownership is not fabricated into a pass.",
+      "food_menu": "Full source-retained totals/truncation, price variants/order and partial lunch scope must remain exact;17-item lunch cannot become entire offering."
+    },
+    "actual_contract_read_needed_before_implementation": "One bounded metadata capture of current listing_quality_task_lease/finish/checklist/criterion_record/quality_criterion_fingerprint/quality_family/listing_quality_state plus quality table ACL/constraints/triggers; no census or live write. Source fixtures here are tracked prerequisites, not a fresh actual catalog claim."
+  },
+  "baseline_validation": {
+    "existing_tests": 36,
+    "command": "node --test assets/enrichment/client-brief.test.mjs tests/unit/quality-collector.test.mjs tests/unit/quality-ci.test.mjs",
+    "log": "/home/codespace/.cache/zoi/client-brief-trace-20261015-tests.log",
+    "meaning": "Existing read/brief/collector contracts pass; proposal itself is NOT implemented or accepted."
+  },
+  "next_priority": "Root assigned bounded maintenance score candidate contract next. Keep admission and this trace immutable; no maintenance edits until exact ownership agreed.",
+  "code_pins": [
+    {
+      "path": "assets/enrichment/client-brief.mjs",
+      "sha256": "fca9f96640d64e18d0095ff6ac222219f5e71198be758433f7e97ce7e3dcd3a6"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_brief.js",
+      "sha256": "b60ffdfb50a64286cc319dba1df31fb6c9839e8f6420226865acd20896b4609c"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/index.ts",
+      "sha256": "af9ad208f445c69a173061d620b14c3e00a5838b9d157a690e363451f2ff6a8e"
+    },
+    {
+      "path": "scripts/enrichment/reviewed-batch.mjs",
+      "sha256": "0689368a4d296629d9d497e586b8db24a577db3f8ec732df1611cbfe7111b37b"
+    },
+    {
+      "path": "scripts/enrichment/source-html.mjs",
+      "sha256": "15a2510aed9aa3816c13948fd51d30e24203649058025600470adb070debbd17"
+    },
+    {
+      "path": "scripts/quality-collector.mjs",
+      "sha256": "aecb8235a9271fa4513a426452ff90d48eaff5938b4353171d6d96a6316c1d41"
+    },
+    {
+      "path": "scripts/quality/ci.mjs",
+      "sha256": "15a5820e6676555ea35dd53bda8397f00bcc583a7139f1a87b2dc6f28b593149"
+    },
+    {
+      "path": "scripts/quality/evidence.mjs",
+      "sha256": "29217d7a2aa3304f5572b1e64fd4f87db41da0388496111e369ccbb946c55ee9"
+    },
+    {
+      "path": "scripts/quality/browser.mjs",
+      "sha256": "dd4594e803119ea4ec33bdfe970313c3b1cddba5f2aaed8ab9b5f7881039e3ff"
+    },
+    {
+      "path": ".github/workflows/listing-quality.yml",
+      "sha256": "339bae97aa1bbdf03c95f5f628bc0e4c342d0bd7851e8a5f3a70f397a234ad5f"
+    },
+    {
+      "path": "ops/quality-audit-request.json",
+      "sha256": "01ad867d6e8034f09a0c3d457f9f026af82a1fba9415bcabedb5930d77323dcb"
+    },
+    {
+      "path": "api/_home-design.js",
+      "sha256": "2f1818cf60cc69d00051de4b62fca116ffa823c0006dde4b400da14c7420585a"
+    },
+    {
+      "path": "api/entity.js",
+      "sha256": "c44bfa8faac349ab3de128cf36fa0e9a900ebe14a697dbaf19ac24c06b668502"
+    },
+    {
+      "path": "api/_verticals.js",
+      "sha256": "a43367b0024c5b58d0186609d50e6c8598cfef325dc635c47bc125cce9f4113d"
+    },
+    {
+      "path": "assets/suite/bizpage.js",
+      "sha256": "5fa1054c446993127bcd67f81be90ab3caa37013a4f8fcbd8ecf25adfb3e493d"
+    },
+    {
+      "path": "assets/homes/design-editor-revision.mjs",
+      "sha256": "adea80a555c2953e4d59eb1a7ab353f2d2e12f60d752baef3681346c3dcee7cd"
+    },
+    {
+      "path": "assets/suite/source-health.mjs",
+      "sha256": "c83eeee5abe421013d62611169a4994adc17761309be67d0c2a67890c8bc0998"
+    },
+    {
+      "path": "supabase/migrations/20260930074014_listing_quality_criterion_signoffs.sql",
+      "sha256": "d9a09f6c5b14f2f4c2854ac405068e6584caaf5fca4841f28696db6ade25473b"
+    },
+    {
+      "path": "supabase/migrations/20260930162000_quality_lease_keyset_batches.sql",
+      "sha256": "9a17e4e525e752c78915244cfd2b38d79426787c2803b8434e9f5224394d2eaf"
+    },
+    {
+      "path": "supabase/migrations/20261014040454_home_unified_owner_revision.sql",
+      "sha256": "3a13fc19a85e8cc873cfa7601f5075f31a7c80afd02f14ee1b4dbaa3e2faebfb"
+    }
+  ],
+  "private_evidence": [
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/parish-offline-ssr.html",
+      "sha256": "7588d2c860b45e69e9c18dd91b06b90d2cb1c79e4c55db657648de7b645c4acb"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/embassy-offline-ssr.html",
+      "sha256": "07b09433e6cb4507269e2f95af0e852e0fe0bfaa92c7bda2eb76a84c3ca6a847"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/corfu-offline-ssr.html",
+      "sha256": "d1515fdbc9174e1abb5fbdcfa8889de285784023101e102d8db4d1cf7e9b5b85"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/ekky-offline-ssr.html",
+      "sha256": "5397e27b757a4354157871f3a5e4089680f49de96c528873c2a381be12061950"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/hotel-offline-ssr.html",
+      "sha256": "37ae167d4a494331457c4dd3cfdd4d272a23504ffd499cebfe697dfe7a450706"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/artist-offline-ssr.html",
+      "sha256": "1a3e0b9ee2c0a1dbaca869c6ab5557135cbc2b5e63b0a07f0655dc7c344f9c17"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/typed-quality-contract-comparison.json",
+      "sha256": "7bdd576176caedd72c01684153eba544846f102c1891bf1ac6751cf72578244a"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/client-brief-trace-20261015/six-canonical-offline-render-proof.json",
+      "sha256": "87ee4dc57bdb7bdad8f00b5381a0be8b2c0c907931594762eeb1cd2d749a470a"
+    }
+  ],
+  "limitations": [
+    "No new live SQL/HTTP/source operations performed. Actual snapshots are QA_next retained anonymous reads.",
+    "No approved brief state or operational approval invented.",
+    "Quality policy disabled/expired intentionally; this proposal does not renew it.",
+    "All source/manual/owner/publication and independent-review authority remains unchanged.",
+    "New metadata read and independent real-PG/runtime acceptance required before any implementation/release."
+  ]
+}

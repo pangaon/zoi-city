@@ -69,7 +69,7 @@ import {decodeSource} from './_decode.js';
 //   ENRICH_ENABLED=on                        kill switch; anything else = refuse
 //   REQUIRE_DNS_GUARD=true|false             default true. false runs with
 //                                            name-based checks only. Do not.
-//   ENRICH_BATCH=40                          listings per invocation
+//   ENRICH_BATCH=3                           listings per invocation (hard cap3)
 //
 // Schedule hourly alongside the other workers. It is idempotent and resumable:
 // zoi.enrich_queue orders by least-recently-checked, so repeated runs spread
@@ -82,7 +82,7 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 const ENABLED = (Deno.env.get("ENRICH_ENABLED") || "").toLowerCase() === "on";
 const REQUIRE_DNS = (Deno.env.get("REQUIRE_DNS_GUARD") || "true").toLowerCase() !== "false";
-const BATCH = Math.max(1, Math.min(200, Number(Deno.env.get("ENRICH_BATCH") || 40)));
+const BATCH = Math.max(1, Math.min(3, Number(Deno.env.get("ENRICH_BATCH") || 3)));
 // A dedicated shared secret, so authentication does not depend on which flavour
 // of service key the platform happens to inject. Projects on the newer API-key
 // system have several, and SUPABASE_SERVICE_ROLE_KEY is not necessarily the one
@@ -560,7 +560,7 @@ Deno.serve(async (req) => {
     const b = await boundedIO(deadline, RPC_MS, () => req.json());
     // Caller can bound the batch or select max3 existing listing IDs. Never a URL.
     if (b?.sample_ids !== undefined) sample = enrichmentSample(b.sample_ids);
-    if (b && typeof b.limit === "number") limit = Math.max(1, Math.min(200, Math.floor(b.limit)));
+    if (b && typeof b.limit === "number") limit = Math.max(1, Math.min(3, Math.floor(b.limit)));
   } catch (e) {
     if (req.body !== null) return new Response(JSON.stringify({ok:false,error:e instanceof Error && e.message === "invalid_enrichment_sample" ? e.message : "invalid_enrichment_request"}), {status:400,headers:{"Content-Type":"application/json"}});
   }
@@ -777,6 +777,20 @@ Deno.serve(async (req) => {
         queued: queue.length, stats, outcome: "unknown", reconciliation_required: true,
         leases: batch.map(row => ({slug: row.slug, lease_id: row.lease_id})),
       }), { status: 503, headers: { "Content-Type": "application/json" } });
+    }
+  }
+
+  // Both canonical lease lanes share the same server admission reservation.
+  // Release only after every attempted write has an exact known receipt. A lost
+  // lease/apply/release response keeps the charged flight until server expiry.
+  if (queue.length && batch.length) {
+    const flight = queue[0].lease_id;
+    try {
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(flight) || queue.some(row => row.lease_id !== flight)) throw new Error("invalid_admission_lease");
+      const result = await sbRpc("enrich_admission_release", {p_lease:flight}, deadline);
+      if (!result || result.ok !== true || typeof result.released !== "boolean") throw new Error("unconfirmed_admission_release");
+    } catch {
+      return new Response(JSON.stringify({ok:false,error:"enrichment_release_reconciliation_required",queued:queue.length,applied,stats,reconciliation_required:true}), {status:503,headers:{"Content-Type":"application/json"}});
     }
   }
 

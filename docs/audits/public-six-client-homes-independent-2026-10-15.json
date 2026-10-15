@@ -1,0 +1,562 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-15",
+  "reviewer": "qa_next",
+  "scope": "Six current public homes, six families, 390 and 1440 pixels; representative audit, not category-wide acceptance.",
+  "outcome": "ACTIONABLE_SHARED_HEADER_DEFECT_AND_CONTENT_GAPS",
+  "source_commit": "be60cb576b7a24ec3061448f80872835274f3097",
+  "deployment": {
+    "root_reported_id": "dpl_3mB7dTUHrstVj9b7YNW1BJc55iYJ",
+    "root_reported_status": "READY",
+    "independent_served_byte_binding": "63 observed asset paths match source commit exactly, zero mismatch; SSR HTML captured separately and depends on current public content."
+  },
+  "records": [
+    {
+      "key": "embassy",
+      "path": "/organization/embassy-of-greece-london",
+      "slug": "embassy-of-greece-london",
+      "public": {
+        "status": 200,
+        "ms": 170,
+        "sha256": "79f2bcb5fda36327ae6852e9aa8aed8acada9706614ddb23e9d3ae6ba31acf0f",
+        "bytes": 1198
+      }
+    },
+    {
+      "key": "corfu",
+      "path": "/business/ie-dublin-corfu-greek-restaurant",
+      "slug": "ie-dublin-corfu-greek-restaurant",
+      "public": {
+        "status": 200,
+        "ms": 104,
+        "sha256": "d2bdd9ac2b9550ff7c97028f9c0480149dcd7e5f1cc6e5919eaf282020d91a44",
+        "bytes": 2992
+      }
+    },
+    {
+      "key": "ekky",
+      "path": "/professional/cy-nicosia-ekky-studio-architects",
+      "slug": "cy-nicosia-ekky-studio-architects",
+      "public": {
+        "status": 200,
+        "ms": 111,
+        "sha256": "7a3e249f8213f05802ee9fe485e7087f33e99ffc17a0a147b1ddceebfad79110",
+        "bytes": 2242
+      }
+    },
+    {
+      "key": "parish",
+      "path": "/church/saint-demetrios-greek-orthodox-church-union",
+      "slug": "saint-demetrios-greek-orthodox-church-union",
+      "public": {
+        "status": 200,
+        "ms": 104,
+        "sha256": "2b14ae39cf221db0066e576c80a274a8d00a5cd042cd287bcdd463d79fb7de91",
+        "bytes": 3280
+      }
+    },
+    {
+      "key": "artist",
+      "path": "/artist/alexis-sorbas-band-berlin",
+      "slug": "alexis-sorbas-band-berlin",
+      "public": {
+        "status": 200,
+        "ms": 92,
+        "sha256": "9c298935f99c1448684a30eb7eaeeaea9a4992db10bdce122177762a0dbc163b",
+        "bytes": 2947
+      }
+    },
+    {
+      "key": "hotel",
+      "path": "/travel-place/corfu-mare-boutique-hotel-corfu",
+      "slug": "corfu-mare-boutique-hotel-corfu",
+      "public": {
+        "status": 200,
+        "ms": 91,
+        "sha256": "d382f23ffc9bcd89642fe76fa421d4700cb1c74753ca7790b49863bf759ba9dc",
+        "bytes": 3797
+      }
+    }
+  ],
+  "source_evidence": {
+    "fresh_official_reads": "Two bounded homepage GETs (Corfu and EKKY) and one hotel old-image HEAD. Other sites not freshly crawled. See official-source-observations.json.",
+    "projection": "Six bounded home_entity snapshots, all 200; no approved client brief/published design in projections. Empty owner_content does not prove unclaimed ownership. Four legacy status=ok records lack crawl_status; do not count them as uncrawled.",
+    "scope_gap": "No full official offerings crawl, owner editing, provider integration or catalogue-wide geography verification."
+  },
+  "rendered_evidence": {
+    "twelve_pages": "Six actual deployed canonical pages at both widths, 200, no horizontal overflow, no page errors. Source overlay absent.",
+    "old_screenshots": "Embassy now has dedicated service/contact/appointment guidance with one Zoi header identity; Corfu/EKKY current Explore cards contain whole logos with object-fit contain, including EKKY quick look."
+  },
+  "exercised_journeys": {
+    "embassy": "Prepare my visit local checklist opens/closes; official appointment handoff present. No appointment reserved or message sent.",
+    "corfu": "Actual Full menu card opens source dialog at both widths; official /our-menu link, Escape and focus restoration pass. No structured item/price completeness or provider booking claim.",
+    "ekky": "Hero CTA local checklist completes; explicit browser-only/no message/no consultation confirmation. Desktop header works. Actual390 header pointer fails after30s because hero intercepts it.",
+    "parish": "Worship/media opens, Escape/focus pass; no parish broadcast link present. Source schedule/provider booking not exercised.",
+    "artist": "Bring to my city opens actual sign-in gate, Escape/focus pass; no authenticated demand submission.",
+    "hotel": "Local stay plan accepts dates/guests, saves only on device and offers existing reservation-provider/email handoffs. No reservation or availability/stock proof."
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "shared_family": "professional",
+      "file": "assets/homes/templates/professional/style.css",
+      "reproduction": "Current EKKY390 header is fixed92px; CTA rect x263 y79 w105 h44 extends to123; hero starts92; centre elementFromPoint is SECTION.hero, actual pointer click30s fails. Desktop contained.",
+      "proposed_fix": "Intrinsic wrapping header height, title wrapping and full reachable44px navigation CTA; all four designs/populated/sparse/long-name tests before release.",
+      "status": "Root authorized separate CSS-only shared correction; no runtime change included in this frozen audit."
+    },
+    {
+      "severity": "medium",
+      "record": "hotel",
+      "detail": "Existing image URL responds200 text/html; actual client decodes no image and shows unavailable fallback. Room inventory/prices/availability not imported. Needs fresh source/content reconciliation; not a 404 claim."
+    },
+    {
+      "severity": "medium",
+      "record": "parish",
+      "detail": "Hero is90-year promotional/icon graphic labelled published photograph, not visually verified parish building image. Some36px carousel and40px giving controls remain below44. Worship dialog calls this church cathedral. Preserve distinct identity/media/wording defects."
+    },
+    {
+      "severity": "medium",
+      "record": "artist",
+      "detail": "Images remained pending with naturalWidth0 in initial bounded8s observation; no broken404 inference. Verified dates/recordings/video absent; action honestly gated by sign-in."
+    },
+    {
+      "severity": "medium",
+      "record": "ekky",
+      "detail": "Generic first-conversation heading/initials hero and absent detailed services/portfolio despite official project navigation; no per-record source completion claim."
+    },
+    {
+      "severity": "medium",
+      "record": "corfu",
+      "detail": "Official menu source is reachable through dialog but canonical structured menu/prices absent. Request table is external enquiry/provider handoff, not a Zoi reservation."
+    }
+  ],
+  "reliability": {
+    "parish_discovery": "One bounded church explore_search returned500 SQLSTATE57014 after3150ms; no retry. Parent provided known canonical parish slug for this six-record audit.",
+    "artist_summary": "Follow-up observed artist_demand_summary net::ERR_FAILED; retain failure, no authenticated demand success claim."
+  },
+  "probe_limitations": {
+    "initial_artist_read": "Initial safety allowlist blocked read-only inquiry_availability; corrected allowlist in follow-up, so initial availability failure is observer-induced and not reported as product defect.",
+    "corfu_locator": "Follow-up role-name regex did not match spaced actual card name,5s timeout. Corrected actual data-menu=0 selector passes; historical helper failures retained, not counted product failures.",
+    "no_mutations": "No SQL/Auth/writer/provider sends/paid requests; only browser-local preparation state. No retry loops."
+  },
+  "geography": "SaintDemetrios old40.6989,-74.2697 remains unverified at snapshot. Root finite legacy requeue is not a verified coordinate correction; zero corrected points claimed.",
+  "evidence_dir": "docs/audits/evidence/public-six-client-homes-independent-2026-10-15",
+  "evidence": {
+    "artist-1440-top.png": {
+      "sha256": "765b59fbb8bf4cc4aae4acf1b870395b5ed5f746bcf82398c94e3c854568b0e4",
+      "bytes": 161072
+    },
+    "parish-public.json": {
+      "sha256": "2b14ae39cf221db0066e576c80a274a8d00a5cd042cd287bcdd463d79fb7de91",
+      "bytes": 3280
+    },
+    "served-source-binding.json": {
+      "sha256": "16f51367cea57415461fa7f4208349484e51d85fb78380f8ef9d260d18cf83cc",
+      "bytes": 14315
+    },
+    "artist-390-completed-action.png": {
+      "sha256": "7d2beee12417fe6a42fcf7cda99fc9b97d6b497ace5aba6608a748f1dad1ccdd",
+      "bytes": 62322
+    },
+    "corfu-1440-render.json": {
+      "sha256": "ecfd81a8f4f16515e0ae932f7cfe1c442c0d1c43d00bc8895d742e3062a4f893",
+      "bytes": 9903
+    },
+    "explore-corfu-1440.png": {
+      "sha256": "0a9f347b2917d55ea28f4fd8cc552f03d083d3f7d06db9abf9d5ea06327caf92",
+      "bytes": 173362
+    },
+    "corfu-public.json": {
+      "sha256": "d2bdd9ac2b9550ff7c97028f9c0480149dcd7e5f1cc6e5919eaf282020d91a44",
+      "bytes": 2992
+    },
+    "explore-ekky-1440.png": {
+      "sha256": "4f2f1877a370afc54abd1a1d5debe319381777d786eaf464169579f918f3279b",
+      "bytes": 135744
+    },
+    "parish-1440-render.json": {
+      "sha256": "a63c750c4d991ff42fcaa09a53df6ad40551aa5815dbec37830c457d3df6c17e",
+      "bytes": 20690
+    },
+    "embassy-390-full.png": {
+      "sha256": "bddc3f3b7592ac9606da1527a34126c7d8fe8f73461bec949a3b39606daf0f90",
+      "bytes": 313031
+    },
+    "embassy-1440-render.json": {
+      "sha256": "a665188e49cde7dc377ac7be2ecb20f8e9500c49d03af36580757d67b3871af0",
+      "bytes": 12796
+    },
+    "corfu-menu-390-actual.png": {
+      "sha256": "43df9edd006a23809ae5f37d11124f71e50361e0d84f1199d79eca0ac298c235",
+      "bytes": 60961
+    },
+    "source-observations.log": {
+      "sha256": "b6f251b5da46bd47a59c8edf7208f4c3bd9819197992028760a893eb854d4c3a",
+      "bytes": 26847
+    },
+    "embassy-public.json": {
+      "sha256": "79f2bcb5fda36327ae6852e9aa8aed8acada9706614ddb23e9d3ae6ba31acf0f",
+      "bytes": 1198
+    },
+    "hotel-1440-render.json": {
+      "sha256": "07621e4d27350b4efe1b798a4cc3fc036458d7e3969296951c43e2a7cbc68304",
+      "bytes": 11611
+    },
+    "explore-1440-actual.json": {
+      "sha256": "a5aa644dbdd75106a3ee237c193f8925c2ae12e456f63e936216e9009d901ee7",
+      "bytes": 2509
+    },
+    "capture.mjs": {
+      "sha256": "bf0aa18e89391c9858fbc8978d928f5b8b99880aa5bb81b8e1aeb44d4ab2535c",
+      "bytes": 6593
+    },
+    "corfu-390-top.png": {
+      "sha256": "b797e4007632aa15967ec763bdd08f8afc18d0332ba4e78e00cce278727a0a34",
+      "bytes": 101357
+    },
+    "hotel-1440-top.png": {
+      "sha256": "5396c0d30efbf7abff7bf21d9be2cbac489775d2c501c0eccc5e27508649ef92",
+      "bytes": 147559
+    },
+    "artist-1440-completed-action.png": {
+      "sha256": "a0f8ee398a1b07c27fdd79073fc1481121a8dd770f293fd76552697e3b29ff40",
+      "bytes": 101565
+    },
+    "hotel-1440-action.png": {
+      "sha256": "e42c2839423d5d0b7517f73b3d7da8daa4f0bd0b66233c6ef41043b46b0622d7",
+      "bytes": 70054
+    },
+    "ekky-public.json": {
+      "sha256": "7a3e249f8213f05802ee9fe485e7087f33e99ffc17a0a147b1ddceebfad79110",
+      "bytes": 2242
+    },
+    "hotel-390-action.png": {
+      "sha256": "1353e227e5cf06795d52017c67332e09cc60f00cacb22f44d7507b20f7590da1",
+      "bytes": 54497
+    },
+    "corfu-390-followup-failure.png": {
+      "sha256": "b797e4007632aa15967ec763bdd08f8afc18d0332ba4e78e00cce278727a0a34",
+      "bytes": 101357
+    },
+    "ekky-1440-action.png": {
+      "sha256": "9efdde03d49ff5ab99e8ee47738a85228039821d7eedaeed46949c5565064e12",
+      "bytes": 139930
+    },
+    "projections.mjs": {
+      "sha256": "0fa616330c5511360d9eabbbf5d2a7eba90f355f6440ea406bdb50803a5184a8",
+      "bytes": 2026
+    },
+    "corfu-390-render.json": {
+      "sha256": "10e82a80cf76cad30c0c33b0aa3768b3afd500a74763a810e4f2e5058582bd43",
+      "bytes": 9697
+    },
+    "explore-390-actual.json": {
+      "sha256": "618125b68ff2e1305f26ae5de0d6200106cc0f961d372b5bfb17dae4066af5ae",
+      "bytes": 2435
+    },
+    "corfu-menu-journey.mjs": {
+      "sha256": "f102de1d06faa845a0d60fb060ff0ef9120f2e924fe8379fdf77ec8783bc20b2",
+      "bytes": 1433
+    },
+    "official-source-observations.json": {
+      "sha256": "8c237d84f3de0d8b00e26182cbcdf7069b7a4269c51be6433cc5b7864a50750c",
+      "bytes": 27363
+    },
+    "corfu-1440-followup-failure.png": {
+      "sha256": "ec045be86b7269fbb022d289fcecbff335b57d8ce1432099ed04fb1ae0154bc0",
+      "bytes": 361318
+    },
+    "parish-1440-completed-action.png": {
+      "sha256": "8cfbd71eb622c6b86d0bdf392190643afa16fe32318d8f8f5305f05e9214e748",
+      "bytes": 248300
+    },
+    "hotel-390-top.png": {
+      "sha256": "bec86acde67fed5b64399e92875d831daa9ece52b572b2d6da3d5d7ac3123db3",
+      "bytes": 92551
+    },
+    "completed-journeys.json": {
+      "sha256": "2cccd550b250c33e9feef7c920c37a2cc8caee718080151d380ca2491d0cd4bb",
+      "bytes": 8412
+    },
+    "ekky-1440-full.png": {
+      "sha256": "2deef70d7f70166817642c71da18141d95e842d77c636a55d6875f1a1fb6ea65",
+      "bytes": 352412
+    },
+    "artist-390-render.json": {
+      "sha256": "a86abd7b5dafc6ad4238e4042628470c1e12e66646c408189c3c061e64a9f423",
+      "bytes": 12810
+    },
+    "corfu-menu-1440-actual.png": {
+      "sha256": "639935b7e7faef0792b6f26e29afaa337594356cef1dbee14cd0d4157f6d460b",
+      "bytes": 110964
+    },
+    "ekky-1440-completed-action.png": {
+      "sha256": "6bef362a93aabb1e0239b0f14319777d82f33ffba3d839a22593bc0721ad6375",
+      "bytes": 149142
+    },
+    "artist-390-full.png": {
+      "sha256": "91a715d640c8eac6236e3d92386200e2895e24c9c7fa79c9fd2b1e98668cca51",
+      "bytes": 202770
+    },
+    "browser-results.json": {
+      "sha256": "d2368e32b8f4d911d6af46b9588efd3f0fc0735b98ad7be25f95a5a201f4e7ba",
+      "bytes": 187769
+    },
+    "discovery-receipts.json": {
+      "sha256": "8eecb53eef7e6b64d89997b954b6321f19ee314dce8071e8508178bb2296a2fc",
+      "bytes": 1788
+    },
+    "parish-390-top.png": {
+      "sha256": "c2057ed9f2e60c5422ea4d687e91c9df6ba6b73545f6b93b351d2e083ed1de2e",
+      "bytes": 163946
+    },
+    "ekky-390-top.png": {
+      "sha256": "2847cacd7390f385c3af93ddea9614db9c5cc25569b5079d7e60dcb5040c2f3e",
+      "bytes": 68022
+    },
+    "explore-corfu-390.png": {
+      "sha256": "48b93ca6322cdc387839554c92f8ca322000ce50f06d102f0ef437df9b0a8e6c",
+      "bytes": 160558
+    },
+    "embassy-390-render.json": {
+      "sha256": "5257fef984ec7769ab3291efc61199596c3810af3179c627befa51160f94e10e",
+      "bytes": 12381
+    },
+    "completed-journeys.log": {
+      "sha256": "39665d6e1d2e5dbd3f722a623482dfa5034000cd5e0dbe2dd97b149e270d28c1",
+      "bytes": 872
+    },
+    "ekky-390-failure.png": {
+      "sha256": "2847cacd7390f385c3af93ddea9614db9c5cc25569b5079d7e60dcb5040c2f3e",
+      "bytes": 68022
+    },
+    "artist-1440-full.png": {
+      "sha256": "da15146ddda3c25199ec1f35ea83dbeb0373f8b3d3c57d962c22388b986dd4e7",
+      "bytes": 389333
+    },
+    "ekky-390-completed-action.png": {
+      "sha256": "9f7c3f1d437e692c88aebc896d026953182bcbcfc435b72e5ae1450dae19cba4",
+      "bytes": 67162
+    },
+    "parish.json": {
+      "sha256": "78387feff5f1123d9a3c0e3e11e262d2df5d67e8b396050b9510dee5717b38d1",
+      "bytes": 100
+    },
+    "parish-390-render.json": {
+      "sha256": "c47e29519bf3541835dd0647b66ba66923a7743040fa6be01c5e1027c515facf",
+      "bytes": 20600
+    },
+    "hotel-390-full.png": {
+      "sha256": "f467f46fcdc3b17cb085d8e99f51cd4d43b42081cde9f512625ddf63d905c27c",
+      "bytes": 181977
+    },
+    "ekky.json": {
+      "sha256": "d9eae8b4f4a319c766e76357324fd264ebbb641bd6b5a6d95e2b2694c0a73614",
+      "bytes": 1461
+    },
+    "parish-390-full.png": {
+      "sha256": "92bf1c254ed717ef9ecd70ca3146b784b75fac839e8d3742f5fdb88078c25875",
+      "bytes": 627114
+    },
+    "hotel-public.json": {
+      "sha256": "d382f23ffc9bcd89642fe76fa421d4700cb1c74753ca7790b49863bf759ba9dc",
+      "bytes": 3797
+    },
+    "artist-public.json": {
+      "sha256": "9c298935f99c1448684a30eb7eaeeaea9a4992db10bdce122177762a0dbc163b",
+      "bytes": 2947
+    },
+    "embassy-390-top.png": {
+      "sha256": "ccf229a8b161bd2192bec39769b34e468c263ed523d847b0ac0c6ef116e3cb00",
+      "bytes": 67123
+    },
+    "capture.log": {
+      "sha256": "aba6e5b4a0e0dad3ca2c7c6074b645cdd6f9a9101b2a7f351493799e8ba5ab49",
+      "bytes": 7570
+    },
+    "embassy-1440-action.png": {
+      "sha256": "5064086e73caf38de3cdb3294abc9c1973b339a2569154a8bd2294be36fc5eb9",
+      "bytes": 168884
+    },
+    "artist-1440-render.json": {
+      "sha256": "a82c110b7df90a8b314cac3cff467f466439464934210475c4c6fad59a7b3547",
+      "bytes": 12996
+    },
+    "served-assets.json": {
+      "sha256": "4e35af5395453fd9615811aa43f17e1137b6bdc2e15a2a783363385ea56cb28d",
+      "bytes": 10692
+    },
+    "corfu.json": {
+      "sha256": "9bc469b49dce77bae18042ea3b51d83407b02cd6f13e3d4ed18f0935eab56779",
+      "bytes": 7869
+    },
+    "embassy-390-action.png": {
+      "sha256": "3f791f56e9e5aeee9fcc620a319e609a7ad632e111f6bd20885a67aba74708c1",
+      "bytes": 77892
+    },
+    "parish-390-completed-action.png": {
+      "sha256": "33a6158b4d29ebae628776e1907f739fe106008245d10b95835591c11549e431",
+      "bytes": 88793
+    },
+    "finish-journeys.mjs": {
+      "sha256": "7907a07d3c9e3a197d5f78432434976d2c58f55222ffe7d53250b9f52c603e1c",
+      "bytes": 5698
+    },
+    "corfu-390-full.png": {
+      "sha256": "5ac7446bc6bc645f33d20520116235834ae9cb409c20b84967cac92ea409efe1",
+      "bytes": 249046
+    },
+    "explore-ekky-390.png": {
+      "sha256": "c52ae3794e71bf2cfb7bfb690d50c10cdaae8c8fd6d8c317e317ebd4a19b8afe",
+      "bytes": 148563
+    },
+    "discover.mjs": {
+      "sha256": "c583393fea7a32e9ba37f14f0e3b0e8c538ff97d3417bdaa2e6cd18f94d1944a",
+      "bytes": 1718
+    },
+    "embassy-1440-top.png": {
+      "sha256": "60737ff41d35b31a1e92071fb06279a0184a6584da44ef31576aaadbf794a67e",
+      "bytes": 131161
+    },
+    "ekky-390-render.json": {
+      "sha256": "2f40e810c58289cec6fd9e48321ef9666ccead5a3e4f02b9eddfc565e138e362",
+      "bytes": 6699
+    },
+    "records.json": {
+      "sha256": "0e793d3f5a8fbd164727d67640b36b73d1b8e1178f818417f96ce63ee791b64f",
+      "bytes": 1798
+    },
+    "hotel-1440-full.png": {
+      "sha256": "8b7036a36d3ef37c25bef17396c46b928a5907c75c48a382b5b724d95fb49eab",
+      "bytes": 243045
+    },
+    "ekky-1440-top.png": {
+      "sha256": "b6673aefe4a8c4bb35f0e9bca740c467118196e11f59ee823effd43dc0eab11f",
+      "bytes": 120980
+    },
+    "ekky-390-full.png": {
+      "sha256": "0f172f810097285d581bd06c4eb76cbdc74ec441194f5ce2f858f9d813328a99",
+      "bytes": 264411
+    },
+    "artist-390-top.png": {
+      "sha256": "45bdd6bad58adde0b43d9d266680a83a921427178c8a2c63c333bcaa8eee8349",
+      "bytes": 55583
+    },
+    "embassy-1440-full.png": {
+      "sha256": "f90eda1c2fef017e03e632f667a4505c217e9874ca2bf65d1e633904f466af95",
+      "bytes": 353325
+    },
+    "corfu-menu-journey.json": {
+      "sha256": "0dcb5de27b4803dbb926c9b19880153b51e8e768d321f0d4dcce27a26677c3a2",
+      "bytes": 1887
+    },
+    "parish-1440-top.png": {
+      "sha256": "e1782d70933eedac293385a722e18a18da317189fa98dd509dab33aede8c7ac6",
+      "bytes": 709414
+    },
+    "ekky-1440-render.json": {
+      "sha256": "b17bd74e9199f88c059bcd50c7388d0898857a6177e2340c9c68a7cdfadf3613",
+      "bytes": 6881
+    },
+    "corfu-1440-top.png": {
+      "sha256": "ec045be86b7269fbb022d289fcecbff335b57d8ce1432099ed04fb1ae0154bc0",
+      "bytes": 361318
+    },
+    "ordinary-explore.json": {
+      "sha256": "d94b81263f81cd6cfc6ab573ad754c43ace931fb2e011757cab08f80582bf042",
+      "bytes": 25196
+    },
+    "parish-1440-full.png": {
+      "sha256": "c389c8aebfd94921c4318cda0c120367b0a3937f75674c75020c43042517c1fc",
+      "bytes": 1299715
+    },
+    "artist.json": {
+      "sha256": "0491d3004ec5d3a05d5d3a72f0c4673a46055f75da40e14f1318d3a9b0c3d7a3",
+      "bytes": 4062
+    },
+    "hotel-390-render.json": {
+      "sha256": "72d25d75c929947a591e3b1de2d57129b7bd3ccc81eb9ece912068239451f165",
+      "bytes": 11525
+    },
+    "corfu-1440-full.png": {
+      "sha256": "e11d7ee722a677c960036744519888cf84e6c2801ce9943f9893468928c0d6ff",
+      "bytes": 550419
+    },
+    "source-observations.mjs": {
+      "sha256": "1cb5cc55e893d49b3c1fded2accedc02240e0ac81acd4276ed69cda7a8444dc1",
+      "bytes": 1532
+    }
+  },
+  "raw_html_private_pins": {
+    "ekky-official.source.html": {
+      "sha256": "d094d42fe7e7a5da561b7e603336dfb026e231785b1e59c6e65f5738c5940b12",
+      "bytes": 505256,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/ekky-official.source.html"
+    },
+    "artist-390.served.html": {
+      "sha256": "3764a8ab29843208b96abca598e9a3bdeaba142c1c7cd32fe23d9afdb6494b2f",
+      "bytes": 14139,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/artist-390.served.html"
+    },
+    "artist-1440.served.html": {
+      "sha256": "3764a8ab29843208b96abca598e9a3bdeaba142c1c7cd32fe23d9afdb6494b2f",
+      "bytes": 14139,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/artist-1440.served.html"
+    },
+    "ekky-390.served.html": {
+      "sha256": "336d4be1adc77cd14fa28ac505f558dc5c6ee5cd464268e1860c0931229defb9",
+      "bytes": 9510,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/ekky-390.served.html"
+    },
+    "embassy-1440.served.html": {
+      "sha256": "8a0fe6b4b7854ff11b6aaacd3193cc1eab3331b7ed9bfbef2fdf0f4af56f95df",
+      "bytes": 17748,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/embassy-1440.served.html"
+    },
+    "corfu-official.source.html": {
+      "sha256": "a5ad0756f664d66731574f8da9e09315192514e2f9e1d2a7defb8ba5350795c6",
+      "bytes": 1781986,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/corfu-official.source.html"
+    },
+    "embassy-390.served.html": {
+      "sha256": "8a0fe6b4b7854ff11b6aaacd3193cc1eab3331b7ed9bfbef2fdf0f4af56f95df",
+      "bytes": 17748,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/embassy-390.served.html"
+    },
+    "corfu-390.served.html": {
+      "sha256": "4a25900027a8b5214d9d11b1160d7a206c281478a95ca91abcea4cf295c5d54a",
+      "bytes": 11249,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/corfu-390.served.html"
+    },
+    "ekky-1440.served.html": {
+      "sha256": "336d4be1adc77cd14fa28ac505f558dc5c6ee5cd464268e1860c0931229defb9",
+      "bytes": 9510,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/ekky-1440.served.html"
+    },
+    "parish-390.served.html": {
+      "sha256": "db97d23861fc6e64597976de55a4c97a79429c62dca7ee9b47e0f1bee81015d9",
+      "bytes": 19913,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/parish-390.served.html"
+    },
+    "hotel-1440.served.html": {
+      "sha256": "6ef8e6e9caa01b84f5605432a78a3d10319d0e28af96c524fad59334d68cc28f",
+      "bytes": 9021,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/hotel-1440.served.html"
+    },
+    "corfu-1440.served.html": {
+      "sha256": "4a25900027a8b5214d9d11b1160d7a206c281478a95ca91abcea4cf295c5d54a",
+      "bytes": 11249,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/corfu-1440.served.html"
+    },
+    "parish-1440.served.html": {
+      "sha256": "db97d23861fc6e64597976de55a4c97a79429c62dca7ee9b47e0f1bee81015d9",
+      "bytes": 19913,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/parish-1440.served.html"
+    },
+    "hotel-390.served.html": {
+      "sha256": "6ef8e6e9caa01b84f5605432a78a3d10319d0e28af96c524fad59334d68cc28f",
+      "bytes": 9021,
+      "private_path": "/home/codespace/.cache/zoi/public-six-homes-20261015/hotel-390.served.html"
+    }
+  }
+}

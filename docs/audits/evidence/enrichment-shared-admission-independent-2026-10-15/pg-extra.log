@@ -1,0 +1,33 @@
+PASS default60-minute bootstrap refuses all admissions and service-only early release without touching old rows
+PASS actual captured migration guards pass; full four-feed dashboard JSON and all listing rows unchanged; canonical writer exact
+PASS pre-migration legitimate lease remains usable by unchanged writer during bootstrap; no fabricated historical counter
+PASS hard cap3 and one shared normal/sample flight; no second leasing or counting
+PASS known completion releases once; replay and stale predecessor cannot release successor or refund counter
+PASS partial last daily capacity leases exactly2/1/0 rows and never exceeds864
+PASS sample lease shares the daily counter and partial capacity
+PASS zero candidate normal/sample calls preserve operational state and listings exactly
+PASS transaction rollback restores both reservation counter and leased listings atomically
+PASS expired previous UTC day starts a fresh budget only when actual rows are leased
+PASS UTC rollover never discards an active prior-day flight or mutates its counter
+PASS flight duration is at least15 minutes independent of caller-supplied short lease; long leases remain conservative
+PASS unknown completion retains attempts/flight until independent expiry; expiry does not refund attempts
+PASS malformed/unknown/future operational state fails closed without budget reset or listing change
+PASS real concurrent normal/sample transactions serialize before listing locks; only one flight/3 rows
+PASS waiting admission rereads committed state after row lock and uses post-lock UTC clock
+PASS actual unchanged canonical writer accepts exact current context and preserves owner copy
+PASS existing context/owner/source-hold canonical refusal remains effective and exact
+PASS no public state/lease/release authority; private admission helpers remain postgres-only
+PASS canonical writer final bytes remain identical after all admission, race and refusal cases
+PASS existing service progress writer cannot mutate the reserved operational key
+PASS original fresh/retry/cooldown/blocked candidate selection stays identical at unrestricted daily capacity
+PASS function ACL/config and table ACL/RLS/policy/default drift abort atomically before source/state changes
+PASS finite captured PG17 MAINTAIN and executable PG16 ACL serializations remain distinct; other majors are refused
+PASS exact schedule source rejects unknown legacy command hash atomically; actual30 tracked command matches retained live hash
+PASS cadence activation refuses drift in each installed admission/release/lease/writer contract before altering jobs
+PASS cadence refuses active original, enabled fullblast, changed command and competing enrichment jobs
+PASS controlled nonsecret legacy10 hash substitution proves existingjob30 activation preserves both IDs/commands and disabled10
+PASS guarded rollback restores only original hourly cadence without clearing flight/counter or changing commands
+PASS independent: prior-day bootstrap survives rollover and exact-ID service release without count/day changes
+PASS independent: non-UTC next-calendar-day session timezone cannot advance the shared UTC budget day
+PASS independent:288 canonical lease→actual writer→release cycles charge exactly864 rows, stop both lanes, next UTC day resets only on a real lease; writer remains byte-identical
+{"groups":32,"installed_contracts":[{"acl":"{postgres=X/postgres,service_role=X/postgres}","owner":"postgres","config":["search_path=\"\""],"signature":"enrich_admission_release(text)","volatility":"v","definition_md5":"9251d564b9ae3fe6cf11b8e021d007f6","security_definer":true},{"acl":"{postgres=X/postgres,service_role=X/postgres}","owner":"postgres","config":["search_path=\"\""],"signature":"enrich_sample_lease(uuid[])","volatility":"v","definition_md5":"e3b4e4c686b2e1194cf26febd6bee4a5","security_definer":true},{"acl":"{postgres=X/postgres}","owner":"postgres","config":["search_path=\"\""],"signature":"zoi.enrich_admission_available()","volatility":"v","definition_md5":"4d487be1714e98354c928c8c04b66db8","security_definer":true},{"acl":"{postgres=X/postgres}","owner":"postgres","config":["search_path=\"\""],"signature":"zoi.enrich_admission_reserve(text,integer,integer)","volatility":"v","definition_md5":"229eab4a427b83a7202c7a57f67a7820","security_definer":true},{"acl":"{postgres=X/postgres}","owner":"postgres","config":["search_path=\"\""],"signature":"zoi.enrich_apply(jsonb)","volatility":"v","definition_md5":"310678a4bd7d77d5467dbd07604349d9","security_definer":true},{"acl":"{postgres=X/postgres}","owner":"postgres","config":["search_path=\"\""],"signature":"zoi.enrich_queue_lease(integer,integer,integer)","volatility":"v","definition_md5":"01b9acf2167e117b40e92d736ff03374","security_definer":true}],"isolated_postgresql16":true,"production_mutations":0,"provider_calls":0,"actual_captured_lease_writer_dashboard_bodies":true,"schedule_positive_fixture_limit":"Only legacy10 command hash substituted; command deliberately not retrieved. Exact source negative hash and all installed-function gates tested; root actual rollback gate required.","unrelated_dashboard_dependencies":"fixed isolated founder/job/geography stubs equal before/after","embedding_fixture_type":"text for unused vector column; no vector operations","current_utc_day":"2026-10-15"}
