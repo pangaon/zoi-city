@@ -1,0 +1,33 @@
+{
+  "status": "Actual index installed and SQL timing verified; HTTP recovery pending",
+  "reviewer": "root plus independent QA source gate",
+  "source": "supabase/migrations/20261015040525_owner_workspace_listing_lookup.sql",
+  "source_sha256": "ef56d0fc7f8e87d61b9411b9c1f3dc68754543ecb91839e85e21d44b51b40350",
+  "actual_ledger": "20261015040630",
+  "before": {
+    "missing_owner_workspace_index": true,
+    "equality_plan": "sequential scan",
+    "rows_removed": 40254,
+    "explain_execution_ms": 3147.436,
+    "full_bizpage_status_ms": 6366.202,
+    "http_private_blob_preflight_failure": {
+      "run": 38679027146,
+      "stage": "auth_scope",
+      "http_status": 500,
+      "sqlstate": "not captured; timeout remains inference"
+    }
+  },
+  "after": {
+    "index_ready": true,
+    "index_valid": true,
+    "equality_plan": "index scan",
+    "explain_execution_ms": 55.017,
+    "explain_planning_ms": 979.048,
+    "full_bizpage_status_ms": 82.751,
+    "existing_real_dedicated_qa_sid_rollback": true,
+    "function_definition_md5_unchanged": "018939a802c845cf39ba59a0391ce742",
+    "data_or_auth_changes": false,
+    "timeout_settings_changes": false
+  },
+  "next": "Fresh separately reviewed bounded HTTP blob exercise; no automatic retry or claimed HTTP recovery from SQL alone"
+}
