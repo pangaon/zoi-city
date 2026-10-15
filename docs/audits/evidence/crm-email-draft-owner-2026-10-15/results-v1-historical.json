@@ -1,0 +1,77 @@
+{
+  "state": "isolated_real_postgresql_actual_mounted_modules_not_live",
+  "baseline": "635758f58a6dbeb6c9da2ae3449234ee6fc18c91",
+  "checks": 15,
+  "results": [
+    {
+      "name": "actual writer and current authority guards pin exact baseline; drift refuses atomically",
+      "passed": true
+    },
+    {
+      "name": "untouched canonical writer keeps scalar contract and valid legacy save",
+      "passed": true
+    },
+    {
+      "name": "exact actor/workspace/nonce/payload replay creates one canonical draft and refuses changed payload",
+      "passed": true
+    },
+    {
+      "name": "replay retains immutable snapshot and current owner edits; foreign actor and tenant reuse refused",
+      "passed": true
+    },
+    {
+      "name": "globally unique nonce refuses another currently authorized actor rather than creating a duplicate",
+      "passed": true
+    },
+    {
+      "name": "explicit cancellation prevents delayed creates and removed saved drafts are never recreated",
+      "passed": true
+    },
+    {
+      "name": "invalid payloads, anonymous calls, direct ledger access and receipt mutation refused",
+      "passed": true
+    },
+    {
+      "name": "two real concurrent requests retain one immutable receipt and one campaign",
+      "passed": true
+    },
+    {
+      "name": "current role, valid account and live current session required for writes and receipt recovery",
+      "passed": true
+    },
+    {
+      "name": "real workspace lock wait rechecks a completed role revocation before any save",
+      "passed": true
+    },
+    {
+      "name": "session expiration during actual canonical campaign row wait rolls back writer and receipt",
+      "passed": true
+    },
+    {
+      "name": "contact tags and draft persistence never change consent, unsubscribe/suppression or create an outbox",
+      "passed": true
+    },
+    {
+      "name": "root-only production rollback proof executes locally with exact new contracts and zero customer writes",
+      "passed": true
+    },
+    {
+      "name": "mounted Contacts→Email 390 light: sparse source/explicit tag, lost-response retry/reload, canonical reopen/list failure, cancellation, revoked access and account/session/workspace changes",
+      "passed": true
+    },
+    {
+      "name": "mounted Contacts→Email 1440 dark: sparse source/explicit tag, lost-response retry/reload, canonical reopen/list failure, cancellation, revoked access and account/session/workspace changes",
+      "passed": true
+    }
+  ],
+  "source_to_result": "Actual audience_list tag filter→existing Contacts control→existing Email editor→new receipt wrapper→untouched email_campaign_save→canonical email_campaign_list reopen",
+  "transport": "Synthetic current Auth claims and fixed localhost SQL RPC adapter, no production tokens or requests. Optional delivery summary remains unavailable; no provider/send/schedule/outbox action.",
+  "consent_suppression_unchanged": true,
+  "rpc_names": [
+    "audience_access",
+    "audience_list",
+    "email_campaign_list",
+    "email_campaign_draft_save",
+    "email_campaign_draft_status"
+  ]
+}
