@@ -1,0 +1,115 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "outcome": "Accepted frozen offline population measurement and conservative suspicion report. No record accuracy, official boundary, current street-address verification or correction accepted.",
+  "source_tree": "/tmp/zoi-geography-population-mismatch",
+  "owner_audit_sha256": "88033daba40cdb512307a0a5dd68a7d87e838ffc4b51c172b04438bc1d49c334",
+  "source_pins": {
+    "scripts/geography/population-mismatch-audit.mjs": "4800464602fcff4b10cc17c13f79333fabcb6cc5441821c778f7ed11fc93e49d",
+    "tests/unit/geography-population-mismatch.test.mjs": "4bde5368d908ccf5260e062d9c16de12c6f567a08c76a1148f50dbe8a2c8eda8"
+  },
+  "independent_verification": {
+    "focused_tests": 17,
+    "full_retained_dataset_recompute": {
+      "source_files": {
+        "scripts/geography/population-mismatch-audit.mjs": "4800464602fcff4b10cc17c13f79333fabcb6cc5441821c778f7ed11fc93e49d",
+        "tests/unit/geography-population-mismatch.test.mjs": "4bde5368d908ccf5260e062d9c16de12c6f567a08c76a1148f50dbe8a2c8eda8"
+      },
+      "private_manifest_sha256": "8ff55b25e2756b5666be931234b92e54713e2df6f565bb39928977d441f382b3",
+      "private_files_verified": 36,
+      "page_count": 19,
+      "row_count": 37903,
+      "strict_id_order_no_gaps_vs_snapshot": true,
+      "collected_projection_md5": "ba0cd347b9d494d177f40d590b54ce1f",
+      "owner_private_full_report_sha256": "fcb2d7d8b8739b10d0bfe0ce2247c6bef4f05e1d309471d21beaaefce3cea6e4",
+      "independent_private_full_report_sha256": "fcb2d7d8b8739b10d0bfe0ce2247c6bef4f05e1d309471d21beaaefce3cea6e4",
+      "byte_identical": true
+    },
+    "separate_Python_distance_and_denominators": {
+      "independent_Python_spherical_distances_checked": 9484,
+      "unique_far_city_suspicions": 159,
+      "unique_suspect_union": 1291,
+      "all_bucket_denominators": 37903,
+      "authoritative_address_or_boundary_verifications": 0,
+      "actual_corrections": 0,
+      "writes": 0
+    },
+    "archive_checks": "GeoNames archive SHA9e70c809\u2026 +retained uncompressed city/country hashes verified; Natural Earth ZIP SHA45bebe2a\u2026 actual5.1.1version and extracted SHP/DBF/PRJ bytes verified against archive.",
+    "new_downloads_or_SQL": 0
+  },
+  "measurement": {
+    "eligible_records": 37903,
+    "coordinates_present_and_valid": 16508,
+    "missing_pair": 21395,
+    "unique_suspected_records": 1291,
+    "flag_counts_overlap_do_not_sum": {
+      "city_name_only_referenced_in_other_countries": 390,
+      "stored_source_identity_or_scope_hold": 178,
+      "stored_source_street_literal_differs": 352,
+      "stored_source_country_differs": 17,
+      "stored_source_city_literal_differs": 301,
+      "point_in_different_unambiguous_coarse_country_interior": 46,
+      "point_far_from_unique_declared_city_reference": 159
+    },
+    "city_distance_assessable": 9484,
+    "city_distance_suspects": 159,
+    "coarse_country_assessable": 3158,
+    "coarse_country_suspects": 46,
+    "authoritative_country_boundaries_assessed": 0,
+    "independent_current_address_locations_verified": 0,
+    "corrections": 0,
+    "coordinate_writes": 0
+  },
+  "method_review": {
+    "country_city": "Exact NFKC/case/whitespace names and GeoNames aliases; declared recognized country restricts matches; only one same-country anchor allows distance. No nearest-place reassignment/fuzzy correction.",
+    "distance": "100km threshold is conservative triage, not city administrative extent. Independent Python checked every9484 reported anchor distance against original retained GeoNames coordinates;159threshold flags agree.",
+    "coarse_polygon": "Retained Natural Earth5.1.1generalized map-unit polygons. Parser bounds/version/WGS84/rings, holes/overlaps/territory/dispute/dateline/polar exclusions checked. Only unique eligible main-country unit, unambiguous containing unit and >50km from mapped coast/border qualifies. No sovereign legal/source-address authority claim.",
+    "stored_source": "Literal/source-address disagreements and source holds are independent unverified evidence; machine attribution may be wrong/stale. Missing values remain unassessed.",
+    "receipt_scope": "No geography_reviewed_point/current receipt input, no accepted marker count/revocation or proof that159are unreviewed or incorrect.",
+    "privacy": "Population snapshot is allowlisted public location/source metadata plus owner boolean and projected-input fingerprint. Contact fields/full profiles/embedding/owner IDs omitted; full private reports remain private."
+  },
+  "snapshot_boundary": {
+    "measured_before": "2026-10-15 15:47:54.958465+00",
+    "measured_after": "2026-10-15 16:00:21.718137+00",
+    "before_after_and_collected_same_count_and_projection_digest": true,
+    "atomic_transaction": false,
+    "away_and_back_changes_excluded": false,
+    "post_restart_current_count_claim": false,
+    "prior139population_delta_is_not_corrections": true
+  },
+  "limits": [
+    "1,291flags are overlapping suspects, not verified errors; unflagged is not verified.",
+    "GeoNames cities1000 omits smaller places; country-label coverage gaps include Netherlands/Czech Republic/Cote D Ivoire. Gazetteer points are not city boundaries.",
+    "Natural Earth is generalized2022-vintage cartography; no current geopolitical or authoritative country/street-location verification.",
+    "Each suspect still needs exact current identity, ownership/branch/source/address/precision review and existing guarded canonical writer/receipt before any change.",
+    "All production SQL held during root health incident; this review uses frozen private files only.",
+    "Offline script has no hosted runtime/migration release; root owns reporting integration and future authorized work."
+  ],
+  "no_live_actions": true,
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/geography-population-mismatch-independent-2026-10-15/aggregate-report.json",
+      "sha256": "aedbe41be824711e6664555ed8b4bd5ea93b9599289e55b97805d23d5122ed2b"
+    },
+    {
+      "path": "docs/audits/evidence/geography-population-mismatch-independent-2026-10-15/geography-population-independent-distances.json",
+      "sha256": "7d2d2a1c6985597f8e8e604e99b90ecf10fdcb1cc1821062d90f5773d8a645b3"
+    },
+    {
+      "path": "docs/audits/evidence/geography-population-mismatch-independent-2026-10-15/geography-population-independent-distances.py",
+      "sha256": "5ee61dd44246aa9af4cd5436e9cf94245b6c3ef5f3525a0437477157454a4625"
+    },
+    {
+      "path": "docs/audits/evidence/geography-population-mismatch-independent-2026-10-15/geography-population-independent-focused.log",
+      "sha256": "5bcc3d43b2087f185079e3bf21a0b54d80c4e9c9193edb6cd89d5f673ee90d24"
+    },
+    {
+      "path": "docs/audits/evidence/geography-population-mismatch-independent-2026-10-15/geography-population-independent-report.log",
+      "sha256": "bf26be34f55584bbedf0bda69d3383e06e82cd61328ba5f00369fea12c0eb4f9"
+    },
+    {
+      "path": "docs/audits/evidence/geography-population-mismatch-independent-2026-10-15/reproduction-proof.json",
+      "sha256": "93173c3b1cbe317983f39ce7bf46d542e3651ca626dd235b699475617d2a749e"
+    }
+  ]
+}

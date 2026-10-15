@@ -1,0 +1,745 @@
+{
+  "kind": "geography_population_suspected_mismatch_owner_analysis",
+  "at": "2026-10-15T16:09:39.271923+00:00",
+  "status": "Frozen source-specialist read-only population measurement; independent review pending. No correction approved or applied.",
+  "worktree": "/tmp/zoi-geography-population-mismatch",
+  "branch": "geography-population-mismatch-20261015",
+  "base_commit": "c8fa2781eeb0b9c8f325088391349d048125372e",
+  "owned_files": {
+    "scripts/geography/population-mismatch-audit.mjs": "4800464602fcff4b10cc17c13f79333fabcb6cc5441821c778f7ed11fc93e49d",
+    "tests/unit/geography-population-mismatch.test.mjs": "4bde5368d908ccf5260e062d9c16de12c6f567a08c76a1148f50dbe8a2c8eda8"
+  },
+  "population": {
+    "schema_version": 1,
+    "kind": "read_only_geography_population_triage",
+    "captured_at": "2026-10-15 16:00:21.718137+00",
+    "snapshot_integrity": {
+      "eligible_predicate": "published;moderationclean/cleared;duplicate_status<>confirmed_duplicate;marketplace_status IS DISTINCT FROM hidden",
+      "before": {
+        "eligible": 37903,
+        "projection_fingerprint": "ba0cd347b9d494d177f40d590b54ce1f",
+        "measured_at": "2026-10-15 15:47:54.958465+00"
+      },
+      "after": {
+        "eligible": 37903,
+        "projection_fingerprint": "ba0cd347b9d494d177f40d590b54ce1f",
+        "measured_at": "2026-10-15 16:00:21.718137+00"
+      },
+      "collected_projection_fingerprint": "ba0cd347b9d494d177f40d590b54ce1f",
+      "count_and_projection_fingerprint_unchanged": true,
+      "atomic_transaction_snapshot": false,
+      "boundary": "19 stable ID pages; before/after complete aggregate count+id/projected-input MD5 equals collected rows. Concurrent away/back changes cannot be excluded. No full profiles/embeddings/contact fields read for this population export."
+    },
+    "records": 37903,
+    "buckets": {
+      "coordinate_pair": {
+        "assessable": 16508,
+        "unassessed": 21395,
+        "flagged": 0,
+        "unflagged": 16508,
+        "unassessed_reasons": {
+          "missing_pair": 21395
+        }
+      },
+      "country_reference": {
+        "assessable": 35614,
+        "unassessed": 2289,
+        "flagged": 0,
+        "unflagged": 35614,
+        "unassessed_reasons": {
+          "missing_country": 2084,
+          "country_not_in_reference": 205
+        }
+      },
+      "city_country_reference": {
+        "assessable": 29942,
+        "unassessed": 7961,
+        "flagged": 390,
+        "unflagged": 29552,
+        "unassessed_reasons": {
+          "missing_city": 1136,
+          "name_not_in_cities1000": 4850,
+          "country_unresolved": 1975
+        }
+      },
+      "city_reference_distance": {
+        "assessable": 9484,
+        "unassessed": 28419,
+        "flagged": 159,
+        "unflagged": 9325,
+        "unassessed_reasons": {
+          "coordinate_pair_unavailable": 21395,
+          "ambiguous_exact_city_in_country": 4691,
+          "no_exact_city_in_country": 722,
+          "canonical_context_missing_or_unresolved": 1611
+        }
+      },
+      "stored_source_country": {
+        "assessable": 810,
+        "unassessed": 37093,
+        "flagged": 17,
+        "unflagged": 793,
+        "unassessed_reasons": {
+          "stored_source_country_missing": 36970,
+          "country_reference_unresolved": 123
+        }
+      },
+      "stored_source_city": {
+        "assessable": 936,
+        "unassessed": 36967,
+        "flagged": 301,
+        "unflagged": 635,
+        "unassessed_reasons": {
+          "comparison_value_missing": 36967
+        }
+      },
+      "stored_source_street": {
+        "assessable": 546,
+        "unassessed": 37357,
+        "flagged": 352,
+        "unflagged": 194,
+        "unassessed_reasons": {
+          "comparison_value_missing": 37357
+        }
+      },
+      "source_scope_metadata": {
+        "assessable": 37903,
+        "unassessed": 0,
+        "flagged": 178,
+        "unflagged": 37725,
+        "unassessed_reasons": {}
+      },
+      "coarse_country_polygon": {
+        "assessable": 3158,
+        "unassessed": 34745,
+        "flagged": 46,
+        "unflagged": 3112,
+        "unassessed_reasons": {
+          "coordinate_pair_unavailable": 21395,
+          "within_50km_of_coast_border_or_map_unit_boundary": 9966,
+          "declared_map_unit_or_territory_identity_uncertain": 1121,
+          "declared_country_unresolved": 1611,
+          "point_ocean_overlap_disputed_or_territory_uncertain": 650,
+          "polar_or_antimeridian_uncertainty": 2
+        }
+      },
+      "country_boundary": {
+        "assessable": 0,
+        "unassessed": 37903,
+        "flagged": 0,
+        "unflagged": 0,
+        "unassessed_reasons": {
+          "no_retained_administrative_polygons": 37903
+        }
+      },
+      "address_location_verification": {
+        "assessable": 0,
+        "unassessed": 37903,
+        "flagged": 0,
+        "unflagged": 0,
+        "unassessed_reasons": {
+          "no_independent_current_address_source_review_in_this_analysis": 37903
+        }
+      }
+    },
+    "suspected_unique_records": 1291,
+    "overlapping_flag_counts": {
+      "city_name_only_referenced_in_other_countries": 390,
+      "stored_source_identity_or_scope_hold": 178,
+      "stored_source_street_literal_differs": 352,
+      "stored_source_country_differs": 17,
+      "stored_source_city_literal_differs": 301,
+      "point_in_different_unambiguous_coarse_country_interior": 46,
+      "point_far_from_unique_declared_city_reference": 159
+    },
+    "countries": {
+      "Unresolved country": {
+        "records": 2084,
+        "records_with_suspected_flags": 32
+      },
+      "United States": {
+        "records": 11049,
+        "records_with_suspected_flags": 275
+      },
+      "United Kingdom": {
+        "records": 3259,
+        "records_with_suspected_flags": 80
+      },
+      "Greece": {
+        "records": 10982,
+        "records_with_suspected_flags": 419
+      },
+      "Australia": {
+        "records": 2661,
+        "records_with_suspected_flags": 63
+      },
+      "Canada": {
+        "records": 2316,
+        "records_with_suspected_flags": 178
+      },
+      "Cyprus": {
+        "records": 1116,
+        "records_with_suspected_flags": 38
+      },
+      "Switzerland": {
+        "records": 160,
+        "records_with_suspected_flags": 3
+      },
+      "Philippines": {
+        "records": 3,
+        "records_with_suspected_flags": 0
+      },
+      "Brazil": {
+        "records": 68,
+        "records_with_suspected_flags": 0
+      },
+      "France": {
+        "records": 266,
+        "records_with_suspected_flags": 0
+      },
+      "South Africa": {
+        "records": 390,
+        "records_with_suspected_flags": 13
+      },
+      "Germany": {
+        "records": 1126,
+        "records_with_suspected_flags": 24
+      },
+      "Belgium": {
+        "records": 356,
+        "records_with_suspected_flags": 5
+      },
+      "Kenya": {
+        "records": 54,
+        "records_with_suspected_flags": 2
+      },
+      "Italy": {
+        "records": 247,
+        "records_with_suspected_flags": 89
+      },
+      "New Zealand": {
+        "records": 180,
+        "records_with_suspected_flags": 11
+      },
+      "Ireland": {
+        "records": 65,
+        "records_with_suspected_flags": 2
+      },
+      "Cameroon": {
+        "records": 29,
+        "records_with_suspected_flags": 2
+      },
+      "Tanzania": {
+        "records": 93,
+        "records_with_suspected_flags": 5
+      },
+      "Czech Republic": {
+        "records": 27,
+        "records_with_suspected_flags": 1
+      },
+      "Zimbabwe": {
+        "records": 23,
+        "records_with_suspected_flags": 1
+      },
+      "Netherlands": {
+        "records": 177,
+        "records_with_suspected_flags": 6
+      },
+      "Guatemala": {
+        "records": 61,
+        "records_with_suspected_flags": 10
+      },
+      "Uganda": {
+        "records": 99,
+        "records_with_suspected_flags": 5
+      },
+      "Argentina": {
+        "records": 52,
+        "records_with_suspected_flags": 1
+      },
+      "Denmark": {
+        "records": 31,
+        "records_with_suspected_flags": 1
+      },
+      "Botswana": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Sweden": {
+        "records": 148,
+        "records_with_suspected_flags": 2
+      },
+      "Mexico": {
+        "records": 42,
+        "records_with_suspected_flags": 1
+      },
+      "Egypt": {
+        "records": 30,
+        "records_with_suspected_flags": 0
+      },
+      "Bulgaria": {
+        "records": 4,
+        "records_with_suspected_flags": 0
+      },
+      "Hong Kong": {
+        "records": 4,
+        "records_with_suspected_flags": 0
+      },
+      "Austria": {
+        "records": 146,
+        "records_with_suspected_flags": 2
+      },
+      "Venezuela": {
+        "records": 6,
+        "records_with_suspected_flags": 0
+      },
+      "Indonesia": {
+        "records": 13,
+        "records_with_suspected_flags": 0
+      },
+      "Czechia": {
+        "records": 6,
+        "records_with_suspected_flags": 0
+      },
+      "Albania": {
+        "records": 10,
+        "records_with_suspected_flags": 0
+      },
+      "Hungary": {
+        "records": 27,
+        "records_with_suspected_flags": 1
+      },
+      "Spain": {
+        "records": 73,
+        "records_with_suspected_flags": 2
+      },
+      "San Marino": {
+        "records": 2,
+        "records_with_suspected_flags": 1
+      },
+      "Portugal": {
+        "records": 26,
+        "records_with_suspected_flags": 0
+      },
+      "Democratic Republic of the Congo": {
+        "records": 67,
+        "records_with_suspected_flags": 7
+      },
+      "Madagascar": {
+        "records": 25,
+        "records_with_suspected_flags": 1
+      },
+      "United Arab Emirates": {
+        "records": 19,
+        "records_with_suspected_flags": 0
+      },
+      "Chile": {
+        "records": 23,
+        "records_with_suspected_flags": 0
+      },
+      "Romania": {
+        "records": 14,
+        "records_with_suspected_flags": 0
+      },
+      "Norway": {
+        "records": 27,
+        "records_with_suspected_flags": 1
+      },
+      "Malta": {
+        "records": 3,
+        "records_with_suspected_flags": 0
+      },
+      "Poland": {
+        "records": 33,
+        "records_with_suspected_flags": 5
+      },
+      "Nicaragua": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "South Korea": {
+        "records": 8,
+        "records_with_suspected_flags": 0
+      },
+      "Colombia": {
+        "records": 21,
+        "records_with_suspected_flags": 0
+      },
+      "Malawi": {
+        "records": 21,
+        "records_with_suspected_flags": 1
+      },
+      "Ukraine": {
+        "records": 9,
+        "records_with_suspected_flags": 0
+      },
+      "Luxembourg": {
+        "records": 18,
+        "records_with_suspected_flags": 1
+      },
+      "Belize": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Samoa": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Uruguay": {
+        "records": 6,
+        "records_with_suspected_flags": 0
+      },
+      "Pakistan": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Turkey": {
+        "records": 33,
+        "records_with_suspected_flags": 0
+      },
+      "Benin": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Central African Republic": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Nigeria": {
+        "records": 8,
+        "records_with_suspected_flags": 0
+      },
+      "Georgia": {
+        "records": 3,
+        "records_with_suspected_flags": 0
+      },
+      "Ecuador": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Chad": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Fiji": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Zambia": {
+        "records": 3,
+        "records_with_suspected_flags": 0
+      },
+      "Faroe Islands": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Finland": {
+        "records": 5,
+        "records_with_suspected_flags": 0
+      },
+      "Mozambique": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Haiti": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Tonga": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Iceland": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Mauritius": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Panama": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Israel": {
+        "records": 3,
+        "records_with_suspected_flags": 0
+      },
+      "Serbia": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Singapore": {
+        "records": 7,
+        "records_with_suspected_flags": 0
+      },
+      "Monaco": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Republic of the Congo": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Ethiopia": {
+        "records": 2,
+        "records_with_suspected_flags": 0
+      },
+      "Tunisia": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Guinea": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Seychelles": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Gibraltar": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Russia": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Cote D'Ivoire": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Ghana": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      },
+      "Eswatini": {
+        "records": 1,
+        "records_with_suspected_flags": 0
+      }
+    },
+    "families": {
+      "school": {
+        "records": 1874,
+        "records_with_suspected_flags": 59
+      },
+      "organization": {
+        "records": 5278,
+        "records_with_suspected_flags": 72
+      },
+      "business": {
+        "records": 8615,
+        "records_with_suspected_flags": 308
+      },
+      "event": {
+        "records": 1643,
+        "records_with_suspected_flags": 44
+      },
+      "church": {
+        "records": 10095,
+        "records_with_suspected_flags": 364
+      },
+      "artist": {
+        "records": 1127,
+        "records_with_suspected_flags": 27
+      },
+      "sports": {
+        "records": 250,
+        "records_with_suspected_flags": 3
+      },
+      "creator": {
+        "records": 1150,
+        "records_with_suspected_flags": 48
+      },
+      "professional": {
+        "records": 5104,
+        "records_with_suspected_flags": 175
+      },
+      "travel_place": {
+        "records": 911,
+        "records_with_suspected_flags": 83
+      },
+      "vendor": {
+        "records": 1539,
+        "records_with_suspected_flags": 95
+      },
+      "venue": {
+        "records": 317,
+        "records_with_suspected_flags": 13
+      }
+    },
+    "distance_threshold_km": 100,
+    "coarse_boundary_reference": {
+      "shp": "e62f2508578b812aeca46cd3d2f208e0a6ff141fb0d4048c0d984839f7917bcc",
+      "dbf": "0e0c5817fbf299fe9f65ba5f1e5abe66b5a84d6d16bda5b7fafba3861f2e5b20",
+      "version": "5.1.1"
+    },
+    "coarse_boundary_uncertainty_km": 50,
+    "reference_sha256": {
+      "country_info": "c5997ea659df5bcf42509eb937064d172b2a998bb873608603e8421d714a9974",
+      "cities": "15db319e22f9907bbdee6e21aa5046d06e0c9db11fb4549b0983b5d45f37020b"
+    },
+    "verified_corrections": 0,
+    "coordinate_writes": 0,
+    "provider_calls": 0,
+    "limits": [
+      "GeoNames populated-place references are points, not administrative boundaries or address evidence.",
+      "At least100km from a unique exact city-country reference is a conservative suspicion threshold, not proof of an incorrect place.",
+      "cities1000 omits smaller places and may lack aliases; matching only another country is a suspicion about reference coverage, not a verified country error.",
+      "Stored machine source fields may be stale, held or wrongly attributed; comparisons do not validate source identity or establish which value is correct.",
+      "Optional Natural Earth map-unit containment is generalized de-facto cartographic suspicion only. Only unique main-country units without dispute/territory flags and points more than50km from every mapped coast/border are assessable; polar/dateline and other uncertain cases are unassessed.",
+      "No authoritative country boundary, coast, territory or street/address location is verified by this analysis.",
+      "Shared stored-position diagnosis has no current reviewed-point receipt input; it does not measure or revoke accepted receipts.",
+      "Unflagged means this detector found no suspicion; it does not mean verified."
+    ]
+  },
+  "snapshot": {
+    "eligible_predicate": "published;moderationclean/cleared;duplicate_status<>confirmed_duplicate;marketplace_status IS DISTINCT FROM hidden",
+    "before": {
+      "eligible": 37903,
+      "projection_fingerprint": "ba0cd347b9d494d177f40d590b54ce1f",
+      "measured_at": "2026-10-15 15:47:54.958465+00"
+    },
+    "after": {
+      "eligible": 37903,
+      "projection_fingerprint": "ba0cd347b9d494d177f40d590b54ce1f",
+      "measured_at": "2026-10-15 16:00:21.718137+00"
+    },
+    "collected_projection_fingerprint": "ba0cd347b9d494d177f40d590b54ce1f",
+    "count_and_projection_fingerprint_unchanged": true,
+    "atomic_transaction_snapshot": false,
+    "boundary": "19 stable ID pages; before/after complete aggregate count+id/projected-input MD5 equals collected rows. Concurrent away/back changes cannot be excluded. No full profiles/embeddings/contact fields read for this population export."
+  },
+  "prior_comparator": {
+    "eligible": 37764,
+    "measured_at": "2026-10-15T14:21:18.421045Z",
+    "source": "docs/audits/geography-census-current-root-2026-10-15.json",
+    "current_delta": 139,
+    "meaning": "Different measured population, not a claim139coordinate corrections."
+  },
+  "methods": {
+    "city": "Retained GeoNames cities1000,171228populated-place records,918150exactUnicode/case/space-normalized name/alternate-name keys. Declaredcountry restricts matching; exactly1same-country place required for distance. No fuzzy matching or nearest-city reassignment.",
+    "distance": "Great-circle distance>=100km from uniqueexactdeclaredcity-country anchor is only suspicion.100kmchosen conservatively to avoid counting common adjacent suburbs/metro variation as verified error; it is not an administrative boundary.",
+    "stored_source": "Read-only comparisons of already-stored address_parts against canonical text. Country codes need recognized exact GeoNames label/ISO2/3; city aliases require same unique reference; streets compare normalized literal values/prefixfulladdress. Missingvalues unassessed. Holds/identity attribution remain unverified.",
+    "coarse_polygon": "Natural Earth5.1.1mapunits; bounded sourceSHP/DBF/WGS84 parser, exactISO2mapping, uniqueeligible maincountry record, no dispute/territory/metropolitan-mapunit ambiguity. Actualpoint must lieinside exactly1eligible unit and>50km from every mapped coast/border; |lat|>65 or |lng|>178, missingpairs, ocean/overlap/dispute/territory and uncertain country mappings unassessed. Everyresult remainscartographic suspicion only.",
+    "current_receipts": "Not queried by this analysis. Stored position diagnosis gets no currentreceiptinput and cannot report/revoke acceptedstreetreceiptstatus. Root existing current8streetpoint census remains separate historical evidence.",
+    "country_label_coverage_gaps": {
+      "Czech Republic": 27,
+      "Netherlands": 177,
+      "Cote D'Ivoire": 1
+    }
+  },
+  "datasets": {
+    "geonames": {
+      "country_info_sha256": "c5997ea659df5bcf42509eb937064d172b2a998bb873608603e8421d714a9974",
+      "cities_uncompressed_sha256": "15db319e22f9907bbdee6e21aa5046d06e0c9db11fb4549b0983b5d45f37020b",
+      "retained_archive_path": "/home/codespace/.codex/private-evidence/zoi-global-geography/2026-10-14/geonames/cities1000.zip",
+      "archive_sha256": "9e70c809e62b33199ebcb703ab0a27fa8a864cc06460bdfa6b60e23b88b9101b",
+      "source_url": "https://download.geonames.org/export/dump/cities1000.zip",
+      "new_downloads": 0
+    },
+    "naturalearth": {
+      "source_page": "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-0-details/",
+      "download_url": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_map_units.zip",
+      "final_url": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_map_units.zip",
+      "at": "2026-10-15T16:02:10.095733+00:00",
+      "version_expected": "5.1.1",
+      "advertised_mb": 4.77,
+      "bytes": 5003719,
+      "sha256": "45bebe2aaf8bf42b9daf4428594925bcb11eabd32fe9dc6e0acf681438053eb5",
+      "headers": {
+        "Content-Type": "application/zip",
+        "Content-Length": "5003719",
+        "ETag": "\"c8c5f917934c61d99eda1266af4e59bf\"",
+        "Last-Modified": "Fri, 13 May 2022 05:20:49 GMT"
+      },
+      "members": [
+        {
+          "name": "ne_10m_admin_0_map_units.README.html",
+          "bytes": 92821
+        },
+        {
+          "name": "ne_10m_admin_0_map_units.VERSION.txt",
+          "bytes": 7
+        },
+        {
+          "name": "ne_10m_admin_0_map_units.cpg",
+          "bytes": 5
+        },
+        {
+          "name": "ne_10m_admin_0_map_units.dbf",
+          "bytes": 1124400
+        },
+        {
+          "name": "ne_10m_admin_0_map_units.prj",
+          "bytes": 145
+        },
+        {
+          "name": "ne_10m_admin_0_map_units.shp",
+          "bytes": 8878092
+        },
+        {
+          "name": "ne_10m_admin_0_map_units.shx",
+          "bytes": 2484
+        }
+      ],
+      "license_url": "https://www.naturalearthdata.com/about/terms-of-use/",
+      "license": "Public domain",
+      "purpose": "Conservative coarse suspicion only; not authoritative country/address correction",
+      "paid_calls": 0,
+      "actual_version": "5.1.1",
+      "license_verified_via": "Official NaturalEarth Terms of Use webpage read through web tool2026-10-15: raster/vector data publicdomain, commercialuse allowed. Raw urllibcopy attempt returned406; no claim local raw licensebody was retained."
+    },
+    "license_primary_source": "https://www.naturalearthdata.com/about/terms-of-use/",
+    "version_scope_primary_source": "https://www.naturalearthdata.com/downloads/10m-cultural-vectors/10m-admin-0-details/",
+    "data_vintage": "Archive HTTP Last-Modified2022-05-13; version5.1.1verified. Not a claim current2026geopolitical boundaries or sovereign legal authority.",
+    "failed_literal_download": "Official page literal duplicatedhttp URL returned500before approvedNACIS equivalent; successfularchivebytes5003719below6000000bound. No largerfallback/loop."
+  },
+  "privacy": {
+    "full_rows_committed": false,
+    "private_archive": "/home/codespace/.cache/zoi/geography-population-mismatch-private-20261015",
+    "private_snapshot_sha256": "31122ae27aec50a43fa166602fe93fdc3c6c1d727d1387d7402560978b78a378",
+    "private_report_sha256": "fcb2d7d8b8739b10d0bfe0ce2247c6bef4f05e1d309471d21beaaefce3cea6e4",
+    "manifest": "population-evidence-manifest.json",
+    "manifest_sha256": "8ff55b25e2756b5666be931234b92e54713e2df6f565bb39928977d441f382b3",
+    "allowlist": "ID/slug/publicname/type/address/city/country/point/precision/website/sourceURL/placeID/ownerboolean/necessarymachineconflictfields/projectionfingerprint. No full profiles, embeddings, ownerIDs or contacts in populationexport.",
+    "separate_duplicate_compatibility_metadata": "Earlier10route investigation files in sameprivate directory are separate and not inputs to this population census."
+  },
+  "validation": {
+    "focused_command": "node --test tests/unit/geography-population-mismatch.test.mjs",
+    "focused_pass": 17,
+    "focused_fail": 0,
+    "actual_retained_dataset_run": "node scripts/geography/population-mismatch-audit.mjs PRIVATE/population-snapshot.json RETAINED/geonames/countryInfo.txt PRIVATE/cities1000.txt NEW_PRIVATE_OUTPUT.json PRIVATE/ne_10m_admin_0_map_units",
+    "actual37903_processed": true,
+    "reference_counts": {
+      "geonames_places": 171228,
+      "naturalearth_map_units": 298,
+      "eligible_coarse_main_units": 178
+    },
+    "all_bucket_denominators_equal37903": true,
+    "unique_suspected_union": 1291,
+    "overlap_warning": "Flag totals overlap and must not be added as unique listings. The390city-name-only-other-country flags can reflect gazetteer coverage/aliases; they are not390verifiedcountrymismatches.",
+    "node_syntax": "passed",
+    "git_diff_check": "passed",
+    "runtime_or_migration_release": "None required for offline measurement; no hosted/runtime behavior changed.",
+    "independent_acceptance": "Pending distinct reviewer artifact."
+  },
+  "operations": {
+    "canonical_writes": 0,
+    "coordinate_precision_status_writes": 0,
+    "leases": 0,
+    "new_source_jobs": 0,
+    "retries_or_policy_extension": 0,
+    "geocoder_provider_calls": 0,
+    "paid_calls": 0,
+    "source_crawl_batches": 0,
+    "successful_free_boundary_archives": 1,
+    "production_SQL": "All further production SQL/export reads paused at root health-reconciliation instruction after completedmatchingaftercensus."
+  },
+  "remaining": [
+    "Independent analysis/source/reproducibility review.",
+    "Review actual retained official evidence for suspected records through existing jobs/receipts; never convert flags to automatic corrections.",
+    "All37903were measured; most remain unassessable for actual address/authoritative country boundary verification, with per-bucket denominators recorded.",
+    "A separate root-owned operational health reconciliation precedes further productionSQL/capture."
+  ]
+}

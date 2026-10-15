@@ -1,0 +1,364 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "outcome": "Accepted six real isolated canonical owner-edit lifecycles for published email/description/photo removal and replacement. The actual public projection, not invented owner_content, is consumed by web and native. No product fix required.",
+  "related_frozen_source_audit": "published-field-presence-independent-2026-10-15.json",
+  "source_manifest_sha256": "19718306bb3a4de17ac71a606b780a0f6fa82bed531a4c6d3904c1108f9557bd",
+  "scope": {
+    "families": [
+      "restaurant",
+      "bakery"
+    ],
+    "fields": [
+      "email",
+      "description",
+      "photo_url"
+    ],
+    "modes": [
+      "actual editor replacement",
+      "actual editor blank produces JSON null",
+      "canonical RPC explicit empty string"
+    ],
+    "cases": 6
+  },
+  "contract_proof": {
+    "production_read": "Bounded metadata-only pg_proc queries, five function SHA hashes and three definitions. No customer rows/Auth data read and no writes.",
+    "five_current_function_bodies_match_exercised_local": [
+      {
+        "sha256": "c8a1bbb53cf71d550fb356b75708e9dbdd5d5b4d778e1714362cc1f7a2747cfb",
+        "signature": "zoi.bizpage_save_before_revision(uuid,uuid,text,text,text,text,text,text,text,jsonb)"
+      },
+      {
+        "sha256": "a098d506a53e69d416fabd74e3519e0a25136515f1e031f5373fa0a2dd1a185b",
+        "signature": "zoi.home_content_save_before_revision(uuid,uuid,text,uuid,jsonb,jsonb)"
+      },
+      {
+        "sha256": "35e3ae9d8def2acc1aae5204ac9e9746766b21120fe1f47ddf74a687b2234902",
+        "signature": "zoi.public_owner_content(uuid)"
+      },
+      {
+        "sha256": "52f17cbcb09ead92f35fc6d4efd44557ac01b9ea3fabae9ccb0dafde58fbb84f",
+        "signature": "home_revision_change(uuid,uuid,uuid,integer,text,jsonb,jsonb,integer)"
+      },
+      {
+        "sha256": "573641a51ed15bf8e8c6b62c2fa5fa87c12d9d7c626a4df540dee4e06b7755a9",
+        "signature": "home_revision_publish(uuid,uuid,uuid,integer,uuid)"
+      }
+    ],
+    "current_definitions": "published-presence-owner-actual-contracts.json",
+    "initial_fixture_difference": "Baseline public projection omitted website and underlying writers differed in authority checks. Installed three freshly retained current definitions into isolated PG and reran all six cases successfully. Final evidence pins current contracts.",
+    "canonical_unified_editor": "Existing real mountRevision, home_revision_change, private preview route/data/confirm, home_revision_publish, public_owner_content used. Existing authorization/table fixture retained; no new writer/schema/source/auth mechanism."
+  },
+  "findings": {
+    "three_fields_exist_in_editor": true,
+    "private_save_and_preview_leave_public_row_unchanged": true,
+    "preview_shows_selected_replacement_or_clear": true,
+    "explicit_null_keys_survive_public_owner_content": true,
+    "source_enrichment_byte_identical": true,
+    "reopen_matches_published_selection": true,
+    "web_render_uses_actual_sql_projection": true,
+    "native_normalizer_and_actual_Profile_use_actual_sql_projection": true,
+    "native_header_and_item_question_contact_current": true,
+    "no_stale_email_description_photo_resurrection": true,
+    "empty_semantics": "UI blank serializes null; canonical empty-string draft remains empty in private content then existing bizpage_save NULLIF normalizes it to SQL NULL. Public jsonb_build_object retains all three explicit NULL keys. Empty string representation is intentionally not preserved after publish."
+  },
+  "results": [
+    {
+      "family": "restaurant",
+      "mode": "replacement",
+      "three_fields": [
+        "email",
+        "description",
+        "photo_url"
+      ],
+      "saved_draft_preserves_input": {
+        "email": "new@food.example",
+        "description": "Owner replacement description",
+        "photo_url": "https://food.example/new.jpg"
+      },
+      "actual_published_owner_content": {
+        "email": "new@food.example",
+        "description": "Owner replacement description",
+        "photo_url": "https://food.example/new.jpg"
+      },
+      "public_unchanged_before_publish": true,
+      "preview_current": true,
+      "source_profile_unchanged": true,
+      "reopened": true,
+      "web_actual_projection": true,
+      "native_actual_projection": true,
+      "ui_empty_normalizes_to_null": false,
+      "canonical_empty_normalizes_to_null": false,
+      "passed": true
+    },
+    {
+      "family": "restaurant",
+      "mode": "ui-blank",
+      "three_fields": [
+        "email",
+        "description",
+        "photo_url"
+      ],
+      "saved_draft_preserves_input": {
+        "email": null,
+        "description": null,
+        "photo_url": null
+      },
+      "actual_published_owner_content": {
+        "email": null,
+        "description": null,
+        "photo_url": null
+      },
+      "public_unchanged_before_publish": true,
+      "preview_current": true,
+      "source_profile_unchanged": true,
+      "reopened": true,
+      "web_actual_projection": true,
+      "native_actual_projection": true,
+      "ui_empty_normalizes_to_null": true,
+      "canonical_empty_normalizes_to_null": false,
+      "passed": true
+    },
+    {
+      "family": "restaurant",
+      "mode": "canonical-empty",
+      "three_fields": [
+        "email",
+        "description",
+        "photo_url"
+      ],
+      "saved_draft_preserves_input": {
+        "email": "",
+        "description": "",
+        "photo_url": ""
+      },
+      "actual_published_owner_content": {
+        "email": null,
+        "description": null,
+        "photo_url": null
+      },
+      "public_unchanged_before_publish": true,
+      "preview_current": true,
+      "source_profile_unchanged": true,
+      "reopened": true,
+      "web_actual_projection": true,
+      "native_actual_projection": true,
+      "ui_empty_normalizes_to_null": false,
+      "canonical_empty_normalizes_to_null": true,
+      "passed": true
+    },
+    {
+      "family": "bakery",
+      "mode": "replacement",
+      "three_fields": [
+        "email",
+        "description",
+        "photo_url"
+      ],
+      "saved_draft_preserves_input": {
+        "email": "new@food.example",
+        "description": "Owner replacement description",
+        "photo_url": "https://food.example/new.jpg"
+      },
+      "actual_published_owner_content": {
+        "email": "new@food.example",
+        "description": "Owner replacement description",
+        "photo_url": "https://food.example/new.jpg"
+      },
+      "public_unchanged_before_publish": true,
+      "preview_current": true,
+      "source_profile_unchanged": true,
+      "reopened": true,
+      "web_actual_projection": true,
+      "native_actual_projection": true,
+      "ui_empty_normalizes_to_null": false,
+      "canonical_empty_normalizes_to_null": false,
+      "passed": true
+    },
+    {
+      "family": "bakery",
+      "mode": "ui-blank",
+      "three_fields": [
+        "email",
+        "description",
+        "photo_url"
+      ],
+      "saved_draft_preserves_input": {
+        "email": null,
+        "description": null,
+        "photo_url": null
+      },
+      "actual_published_owner_content": {
+        "email": null,
+        "description": null,
+        "photo_url": null
+      },
+      "public_unchanged_before_publish": true,
+      "preview_current": true,
+      "source_profile_unchanged": true,
+      "reopened": true,
+      "web_actual_projection": true,
+      "native_actual_projection": true,
+      "ui_empty_normalizes_to_null": true,
+      "canonical_empty_normalizes_to_null": false,
+      "passed": true
+    },
+    {
+      "family": "bakery",
+      "mode": "canonical-empty",
+      "three_fields": [
+        "email",
+        "description",
+        "photo_url"
+      ],
+      "saved_draft_preserves_input": {
+        "email": "",
+        "description": "",
+        "photo_url": ""
+      },
+      "actual_published_owner_content": {
+        "email": null,
+        "description": null,
+        "photo_url": null
+      },
+      "public_unchanged_before_publish": true,
+      "preview_current": true,
+      "source_profile_unchanged": true,
+      "reopened": true,
+      "web_actual_projection": true,
+      "native_actual_projection": true,
+      "ui_empty_normalizes_to_null": false,
+      "canonical_empty_normalizes_to_null": true,
+      "passed": true
+    }
+  ],
+  "test_environment": {
+    "postgresql": "Isolated PG16 port15944 unix socket only, initdb trust fixture; stopped and removed in finally.",
+    "owner_browser": "Actual owner editor and inert preview API with local RPC transport to real isolated PG. Browser sign-in/current production session are not exercised.",
+    "native_browser": "Actual unchanged Profile/Food renderer on RN-Web/font adapter; existing home_entity boundary supplied the exact freshly returned SQL projection. No fabricated owner field overlay.",
+    "network": "Browser requests limited to exclusive localhost; all external image/provider requests refused. No send/order/reservation claim."
+  },
+  "input_pins": [
+    {
+      "path": "tests/database/food-owner-full-menu.integration.mjs",
+      "sha256": "cf0784e8df38ac34501c7508ce383d8f93f85298078a76347aa5445cb4e8a04f"
+    },
+    {
+      "path": "tests/database/owner-content-writers.fixture.sql",
+      "sha256": "7d77de53d2cd2d8fe7fa11565fbff4da0713fafcca2795c32535e466e1b1c831"
+    },
+    {
+      "path": "supabase/migrations/20260930075049_owner_content_versioned_save.sql",
+      "sha256": "0b2bd672b8db5253a64ba1c5f5447ef1b79f93c968bdc53f5ac8c2208ce442c4"
+    },
+    {
+      "path": "supabase/migrations/20260930043408_owner_home_design_drafts_and_publication.sql",
+      "sha256": "e1821791c2c3843e6af8400f97c3e44d91204f85141bef2c47571dc44406cf3d"
+    },
+    {
+      "path": "supabase/migrations/20260930065121_owner_media_and_channels.sql",
+      "sha256": "eb6605039de6d736e2be59ef310487cb880fa6f4712715a05717601498be1194"
+    },
+    {
+      "path": "supabase/migrations/20260930184500_event_publicity_owner_content.sql",
+      "sha256": "3fde2e1c6bbe05a1e1494160666fe48cb7f5e152e0fc0eb736d84f0292598a3a"
+    },
+    {
+      "path": "supabase/migrations/20260930214309_owner_content_social_authority_snapshot.sql",
+      "sha256": "413be36c5176dba4313124d2657df0a2d49296867cf8f59226e93bb17beca1fa"
+    },
+    {
+      "path": "supabase/migrations/20261001031621_hospitality_owner_catalogue.sql",
+      "sha256": "979478af7c556527d55a0c5f8ffc7e7a755f3a1f29c1b7912658d1a2a68a5837"
+    },
+    {
+      "path": "supabase/migrations/20261014040454_home_unified_owner_revision.sql",
+      "sha256": "3a13fc19a85e8cc873cfa7601f5075f31a7c80afd02f14ee1b4dbaa3e2faebfb"
+    },
+    {
+      "path": "supabase/migrations/20261015123754_expand_owner_menu_item_capacity.sql",
+      "sha256": "66c8f6b11c8777633174ac282d7d4b85a61522cb497b40fd2287eb61981364a1"
+    },
+    {
+      "path": "assets/homes/design-editor-revision.mjs",
+      "sha256": "adea80a555c2953e4d59eb1a7ab353f2d2e12f60d752baef3681346c3dcee7cd"
+    },
+    {
+      "path": "api/home-revision-preview.js",
+      "sha256": "7fc4d4011dbc6747070e89d2b75911e2c1edb462f340d88b80e49be308847442"
+    }
+  ],
+  "no_product_edits": true,
+  "production_writes": 0,
+  "installed_artifact_claim": false,
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/0-canonical-empty-native.png",
+      "sha256": "dccc6cde555733d55d9e4f1e29862b83b4f61f965f837e5c9dd6fd53eaa0c915"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/0-canonical-empty-owner.png",
+      "sha256": "9bd6c26b79a79bbe84f8513568e8ff87696b4431ffec55498462f316a70c3a9c"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/0-replacement-native.png",
+      "sha256": "dccc6cde555733d55d9e4f1e29862b83b4f61f965f837e5c9dd6fd53eaa0c915"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/0-replacement-owner.png",
+      "sha256": "c9ad157f7fd739aae0581c056fc507743baa3900e31be790424f578dcaa3df80"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/0-ui-blank-native.png",
+      "sha256": "dccc6cde555733d55d9e4f1e29862b83b4f61f965f837e5c9dd6fd53eaa0c915"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/0-ui-blank-owner.png",
+      "sha256": "ea3ab01d920ed022862a6ab39276f58c470e2d2fe6a219cc23d5087145902319"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/1-canonical-empty-native.png",
+      "sha256": "3cda2ef06228bd33de879d09953297f22561ada2625d1a87e1bb6d6119590c7f"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/1-canonical-empty-owner.png",
+      "sha256": "09b8381a40e73c2119c47fa068b06fe85b50c578a2258bb568561b55943e43d0"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/1-replacement-native.png",
+      "sha256": "3cda2ef06228bd33de879d09953297f22561ada2625d1a87e1bb6d6119590c7f"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/1-replacement-owner.png",
+      "sha256": "1cf111cf554f96c10d02588d75735aa3eab78215032d2d2f73593cc03c0443a4"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/1-ui-blank-native.png",
+      "sha256": "3cda2ef06228bd33de879d09953297f22561ada2625d1a87e1bb6d6119590c7f"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/1-ui-blank-owner.png",
+      "sha256": "1cf111cf554f96c10d02588d75735aa3eab78215032d2d2f73593cc03c0443a4"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/canonical-functions.json",
+      "sha256": "a029bb519350a69f0525558866a9b1c52700424a5c90c4d29f84e86dcf0f93ce"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/owner-presence-results.json",
+      "sha256": "1aed61e42e4232f87db7b948d4bac590cfe3d9be5cae967c080e87e1b905fa92"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/published-presence-owner-actual-contracts.json",
+      "sha256": "f16a061d37d997a3e15fa9a99f0a78c626d83a209e2fa894ca616b2590f2754c"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/published-presence-owner-independent-current.log",
+      "sha256": "8bbac05ce720c2186f43abbfdc63466e540a2ccbd04078e1ee4cba78cf65a0a0"
+    },
+    {
+      "path": "docs/audits/evidence/published-field-owner-flow-independent-2026-10-15/published-presence-owner-independent.mjs",
+      "sha256": "03fde4e4d31e15e90e80bc91719825e8b2a572cd32cd56ae30d0c022cb650f84"
+    }
+  ]
+}

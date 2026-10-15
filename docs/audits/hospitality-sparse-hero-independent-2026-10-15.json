@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "outcome": "Accepted single CSS sparse/failed hospitality hero layout correction.",
+  "source_tree": "/tmp/zoi-hospitality-sparse-root",
+  "source": {
+    "path": "assets/homes/templates/hospitality/style.css",
+    "sha256": "e0a8f0c4279d1395e1d183910ad2a5cfe03172a0cc078e57f6d0daf16a0b3d55"
+  },
+  "runtime_delta": "Only final missing-direct-image/failed-image selector adds flow-root and min-height0; existing populated hero layout unchanged.",
+  "independent_verification": {
+    "actual_canonical_renderer_client_cases": 24,
+    "designs": [
+      "concierge",
+      "atelier",
+      "table",
+      "parea"
+    ],
+    "widths": [
+      390,
+      1440
+    ],
+    "scenarios": [
+      "absent image",
+      "failed image",
+      "valid image"
+    ],
+    "before_after": "Original HEAD CSS vs exact candidate CSS; missing/failed hero no longer reserves photograph height; valid hero height exactly unchanged. No horizontal overflow or page errors.",
+    "exercised": "Existing local stay plan date input/save/next-step, explicit saved-on-device/no-reservation wording; no booking provider operation.",
+    "visual": "Reviewed390 Concierge sparse full journey; four phone screenshots retained.",
+    "helper_delta": "Copied root helper to independent output and added deny-by-default external network routing; only localhost and synthetic intercepted image host allowed.",
+    "diff_check": "pass"
+  },
+  "no_live_actions": true,
+  "limits": [
+    "Controlled fixture imagery and local plans; no real photography/provider/production deployment claim.",
+    "Root owns deployment and actual sparse-client acceptance."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/atelier-390.png",
+      "sha256": "8446a44d65bb345cfebcfaf2d3c0bb3de41bacdc105ba67d7f836d09ca083e28"
+    },
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/browser.log",
+      "sha256": "d779ca98935bce95ef474440f1032c7c7d7e160c23efd83413335af70bad185c"
+    },
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/concierge-390.png",
+      "sha256": "7e5b750ddde8d76ccfa3fda7b336205c0d4e132ccf776c010017297415d1aa80"
+    },
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/parea-390.png",
+      "sha256": "0ff16dcc280006954debabff871f2fac1882a395421a48499bc03d0b8206795f"
+    },
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/result.json",
+      "sha256": "4c96e402405a147b7dfb7e19190c48fc1d4c97445d99dc27d0ed561f5a9f783f"
+    },
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/table-390.png",
+      "sha256": "df1f8bc4fcf8c93a70e33f0b7f4ca4c656a4c2d799a609c1c74c8eb753be6329"
+    },
+    {
+      "path": "docs/audits/evidence/hospitality-sparse-hero-independent-2026-10-15/verify.mjs",
+      "sha256": "579e3adc2c3f2ed1a917a525439809442a420e682daf7304a1a35393ff87837d"
+    }
+  ]
+}

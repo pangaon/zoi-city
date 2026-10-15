@@ -1,0 +1,112 @@
+{
+  "schema": 2,
+  "date": "2026-10-15",
+  "worktree": "/tmp/zoi-parea-audience-v2",
+  "baseline": "f26484237805a6138a37acbe579fb8f414e493de",
+  "status": "superseding source frozen, local correction verified; independent acceptance and root release pending",
+  "source_manifest": {
+    "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/source-manifest.json",
+    "sha256": "4d250b3e04a3fdc41b1b69e2925fa4aa78920443eee23e821fadbc61a4fec6bb"
+  },
+  "prior_packet": {
+    "worktree": "/tmp/zoi-parea-audience-work",
+    "manifest_sha256": "265d4a9cf08596ee173905279e6d22a855839554bd1c4a93afacc85f8b221575",
+    "audit_sha256": "b29276d56d6bd4f16bf5b5310f88ac696c1ea8805a412b93417a014ef1075a79",
+    "immutable": true,
+    "original_source_metadata_pg_and_browser_evidence_retained": true
+  },
+  "finding": "Independent reviewer held Work selection revalidation, changed the search, then released the old read; the previous contact name was still inserted. Zero writes.",
+  "correction": "Every contact query edit invalidates pending selection/loading epoch and releases obsolete busy state. Work keeps existing cached local filtering; Audience keeps existing server-search row clearing. No reader/authority/writer/math change.",
+  "changed_from_v1": [
+    "assets/contacts/workspace-picker.mjs",
+    "tests/browser/parea-saved-contacts/verify.cjs"
+  ],
+  "validation": {
+    "regression_fails_before_fix": true,
+    "focused_pass": 30,
+    "controlled_browser_pass": 23,
+    "race_viewports": [
+      390,
+      1440
+    ],
+    "race_assertions": [
+      "Changing query before old revalidation returns preserves existing manual label and quantity4.",
+      "Fresh selection after invalidation works.",
+      "Rapid fresh Alex selection before releasing old Maria response remains Alex after old read returns.",
+      "No contact/guest/provider writes."
+    ],
+    "unchanged_database_basis": "Original canonical PostgreSQL/mounted5 groups plus29-definition guard remain retained; independent reviewer also passed V1 exact PG path. No DB fixture/schema/writer changed in V2, so no redundant PG rerun.",
+    "no_production_read_or_write": true
+  },
+  "commands": {
+    "browser": "NODE_PATH=/workspaces/zoi-city-release/node_modules CHROMIUM_EXECUTABLE_PATH=/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome ZOI_PAREA_CONTACT_BROWSER=/tmp/independent-parea-v2 node tests/browser/parea-saved-contacts/verify.cjs",
+    "focused": "node --test tests/unit/guest-contacts.test.mjs tests/unit/contact-picker.test.mjs tests/unit/workspace-contacts.test.mjs tests/unit/parea-roster-plan.test.mjs tests/unit/invitation-share.test.mjs tests/unit/parea-readiness.test.mjs tests/unit/host-allocation-client.test.mjs"
+  },
+  "limits": [
+    "Original explicit-workspace/500-reader/30-visible selection bounds remain.",
+    "Controlled Auth/phone/local browser evidence is not production Auth or actual OS contact-permission proof.",
+    "No live feature claim; root owns release."
+  ],
+  "evidence_files": [
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/browser.log",
+      "sha256": "93f4a8d91c16bbdb2ae1e62113020a29cd6d8f0380d9a0021261d444ab7da423"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/failing-regression-before-fix/audience-1440.png",
+      "sha256": "84542d187225eaec06d5c1b1ecdb81449864823261b7e9395ca75604dd71f10f"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/failing-regression-before-fix/audience-390.png",
+      "sha256": "8f87543fa691c242e79e4c717c67e38b15aca804794e040722d4fb118cecf429"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/failing-regression-before-fix/failure.html",
+      "sha256": "2930233bbb3297499fd560962cd1d703a32af6ac4905b7092efadf0406c2d44b"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/failing-regression-before-fix/failure.png",
+      "sha256": "4f408413bf1ea522fd6201c61322977d9f741e17597af0861a23f4a72237bd5b"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/failing-regression-before-fix/results.json",
+      "sha256": "8a312045bc6dca6b058d510b34d9bba3c106e6e254e181d8dadd52b9d6fc4a62"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/failing-regression.log",
+      "sha256": "86c8587eb0bc098b4d65436ad16e5af575667fbfd85e6dabe2076f11f328bbff"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/final-browser/audience-1440.png",
+      "sha256": "84542d187225eaec06d5c1b1ecdb81449864823261b7e9395ca75604dd71f10f"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/final-browser/audience-390.png",
+      "sha256": "acbb3f5f2d0a42f57f0dd31793a9b462ed3999a0b2d73cceb936bbd873edc987"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/final-browser/results.json",
+      "sha256": "d26cd57ffeb9940021416467fdce56a2d04c1b29828e5c8b45e197bf695ab92b"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/focused.log",
+      "sha256": "f9fd9636f0d2c2e829e1ee5991aebc005d3c01b88d4bc195fe08d80a1aff2eb6"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/historical-v1-owner-audit.json",
+      "sha256": "b29276d56d6bd4f16bf5b5310f88ac696c1ea8805a412b93417a014ef1075a79"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/historical-v1-source-manifest.json",
+      "sha256": "265d4a9cf08596ee173905279e6d22a855839554bd1c4a93afacc85f8b221575"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/source-manifest.json",
+      "sha256": "4d250b3e04a3fdc41b1b69e2925fa4aa78920443eee23e821fadbc61a4fec6bb"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-v2-2026-10-15/v1-to-v2.patch",
+      "sha256": "6a06438b0ef39a7729ed6f0ee3b3bdb61fe4eafd2f2766d9c8714f4730d07544"
+    }
+  ]
+}
