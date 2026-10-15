@@ -7,17 +7,18 @@ const fixedErrors=new Set(['invalid_source_url','unsafe_source_url','unsafe_sour
  * @param {{sourceFetch?:any,archiveSource?:any,finishJob?:any,cooldownHost?:any,deadline?:number}} options */
 export async function runPublisherResearchJobs(jobs,{sourceFetch,archiveSource,finishJob,cooldownHost,deadline=Date.now()+70000}={}){
  if(!Array.isArray(jobs)||jobs.length>8||typeof archiveSource!=='function'||typeof finishJob!=='function'||typeof cooldownHost!=='function')throw Error('bounded_publisher_archive_and_service_callbacks_required');
- const ids=new Set(),hosts=new Set();for(const j of jobs){const host=new URL(j.original?.source_url||'').hostname.replace(/^www\./,'');if(j.strategy!=='publisher_profiles_v1'||j.status!=='leased'||!/^[a-f0-9-]{36}$/.test(j.id||'')||!/^[a-f0-9-]{36}$/.test(j.lease_id||'')||!/^[a-f0-9]{32}$/.test(j.input_fingerprint||'')||j.original?.source_kind!=='supporting_publisher_profile'||ids.has(j.id)||hosts.has(host))throw Error('distinct_current_publisher_jobs_required');ids.add(j.id);hosts.add(host);}
+ const ids=new Set(),hosts=new Map();for(const j of jobs){const host=new URL(j.original?.source_url||'').hostname.replace(/^www\./,'');if(j.strategy!=='publisher_profiles_v1'||j.status!=='leased'||!/^[a-f0-9-]{36}$/.test(j.id||'')||!/^[a-f0-9-]{36}$/.test(j.lease_id||'')||!/^[a-f0-9]{32}$/.test(j.input_fingerprint||'')||j.original?.source_kind!=='supporting_publisher_profile'||ids.has(j.id)||(hosts.has(host)&&hosts.get(host)!==j.original.source_url))throw Error('distinct_current_publisher_jobs_required');ids.add(j.id);hosts.set(host,j.original.source_url);}
  const session=sourceFetch?null:geographyResearchSession({maxRequests:30,maxBytes:12000000,deadline:Math.min(deadline,Date.now()+70000)}),fetchSource=sourceFetch||session.sourceFetch,results=[];
- let archivedDocuments=0;
+ let archivedDocuments=0;const documents=new Map(),archives=new Map(),cooledHosts=new Set();
  for(const job of jobs){const row={...job.original,id:job.listing_id};let result;try{
   if(new URL(row.source_url).protocol==='http:')throw Error('publisher_registered_http_unsupported');
-  const page=await fetchSource(row.source_url);const body=page.text;if(typeof body!=='string'||Buffer.byteLength(body)>1500000)throw Error('source_too_large');
+  if(!documents.has(row.source_url))documents.set(row.source_url,Promise.resolve().then(()=>fetchSource(row.source_url)));
+  const page=await documents.get(row.source_url);const body=page.text;if(typeof body!=='string'||Buffer.byteLength(body)>1500000)throw Error('source_too_large');
   result=researchPublisherProfile(body,row,{url:page.url,httpStatus:page.status});
   // Archive acknowledgement is bound to exact bytes; failure never finishes this lease.
-  let archive;try{archive=await archiveSource({job_id:job.id,sha256:sha256(body),bytes:Buffer.byteLength(body),body});}catch{throw Object.assign(Error('publisher_private_archive_unconfirmed'),{archiveFailure:true});}
+  let archive;try{if(!archives.has(row.source_url))archives.set(row.source_url,Promise.resolve().then(()=>archiveSource({job_id:job.id,sha256:sha256(body),bytes:Buffer.byteLength(body),body})));archive=await archives.get(row.source_url);}catch{throw Object.assign(Error('publisher_private_archive_unconfirmed'),{archiveFailure:true});}
   if(archive?.private!==true||archive.sha256!==sha256(body)||archive.bytes!==Buffer.byteLength(body))throw Object.assign(Error('publisher_private_archive_unconfirmed'),{archiveFailure:true});
-  archivedDocuments++;
+  archivedDocuments=archives.size;
   // A redirected different document is retained privately but cannot be bound
   // to the registered publisher identity or proposed as its evidence.
   if(result.reason==='publisher_document_branch_changed'){result={...result,status:'source_blocked',source:null,proposed:null};}
@@ -26,7 +27,8 @@ export async function runPublisherResearchJobs(jobs,{sourceFetch,archiveSource,f
  const finished=await finishJob(job.id,job.lease_id,result);
  if(!finished||![result.status,'input_changed'].includes(finished.status)||finished.coordinate_writes!==0)throw Error('publisher_finish_unconfirmed');
  const changed=finished.status==='input_changed';
- if(!changed&&result.reason==='source_challenge'&&result.source?.sha256)await cooldownHost(job.id,result.source.sha256);
+ const host=new URL(row.source_url).hostname.replace(/^www\./,'');
+ if(!changed&&result.reason==='source_challenge'&&result.source?.sha256&&!cooledHosts.has(host)){await cooldownHost(job.id,result.source.sha256);cooledHosts.add(host);}
  results.push({job_id:job.id,listing_id:job.listing_id,status:finished.status,reason:changed?'listing_changed_during_capture':result.reason,proposal:!changed&&!!result.proposed});
  }
  return{results,archived_documents:archivedDocuments,source_requests:session?.stats.requests??null,complete:false,provider_calls:0,coordinate_writes:0,website_writes:0,database_results_persisted:true};
