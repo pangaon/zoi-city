@@ -1,0 +1,26 @@
+[
+  {
+    "acl": "{postgres=X/postgres,service_role=X/postgres}",
+    "md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+    "owner": "postgres",
+    "config": [
+      "search_path=\"\""
+    ],
+    "signature": "zoi.maintenance_candidate_ids()",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_candidate_ids()\n RETURNS uuid[]\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE s jsonb;after_id uuid;chosen uuid[];\nBEGIN\n IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN ARRAY[]::uuid[];END IF;\n SELECT value INTO s FROM zoi.delivery_state WHERE key='listing_score_cursor_v1' FOR UPDATE;\n IF s IS NULL OR jsonb_typeof(s) IS DISTINCT FROM 'object' OR s->'version' IS DISTINCT FROM '1'::jsonb OR NOT(s?'after_id') OR EXISTS(SELECT 1 FROM jsonb_object_keys(s)k WHERE k NOT IN('version','after_id')) THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n IF s->'after_id' IS DISTINCT FROM 'null'::jsonb THEN\n  IF jsonb_typeof(s->'after_id') IS DISTINCT FROM 'string' OR coalesce(s->>'after_id','')!~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n  after_id:=(s->>'after_id')::uuid;\n END IF;\n -- Two bounded PK seeks; the second runs only when the first found zero IDs.\n -- It is never a second batch: at most 1000 IDs are selected in total.\n IF after_id IS NULL THEN\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n ELSE\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l WHERE l.id>after_id ORDER BY l.id LIMIT 1000)c;\n  IF cardinality(chosen)=0 THEN\n   SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n  END IF;\n END IF;\n IF cardinality(chosen)>0 THEN\n  UPDATE zoi.delivery_state SET value=jsonb_build_object('version',1,'after_id',chosen[cardinality(chosen)]::text),updated_at=clock_timestamp() WHERE key='listing_score_cursor_v1';\n END IF;\n RETURN chosen;\nEND $function$\n",
+    "volatility": "v",
+    "security_definer": true
+  },
+  {
+    "acl": "{postgres=X/postgres,service_role=X/postgres}",
+    "md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+    "owner": "postgres",
+    "config": [
+      "search_path=\"\""
+    ],
+    "signature": "zoi.run_maintenance()",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.run_maintenance()\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE changed integer;candidates uuid[];\nBEGIN\n  -- A second cron/manual invocation must not compete for the same rows.\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN; END IF;\n  candidates:=zoi.maintenance_candidate_ids();\n  WITH selected AS MATERIALIZED (\n    SELECT l.* FROM unnest(candidates) WITH ORDINALITY c(id,ord)\n    CROSS JOIN LATERAL (SELECT row.* FROM zoi.listings row WHERE row.id=c.id FOR UPDATE OF row SKIP LOCKED)l\n    ORDER BY c.ord\n  ), scores AS MATERIALIZED (\n    SELECT id,\n      round(((CASE WHEN description IS NOT NULL AND length(description)>10 THEN 1 ELSE 0 END)\n       +(CASE WHEN website IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN address IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN phone IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN primary_category_id IS NOT NULL THEN 1 ELSE 0 END))::numeric/5,3) AS completeness,\n      least(1.0,round((CASE verification_status WHEN 'admin_verified' THEN 0.9 WHEN 'owner_verified' THEN 0.85\n        WHEN 'partner_verified' THEN 0.8 WHEN 'source_verified' THEN 0.6 WHEN 'owner_claimed' THEN 0.5 ELSE 0.3 END\n        +CASE source_trust_tier WHEN 'official' THEN 0.1 WHEN 'partner' THEN 0.08 WHEN 'public_directory' THEN 0.05 ELSE 0 END)::numeric,3)) AS trust,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date THEN 0.2\n        WHEN last_seen_at>now()-interval '14 days' THEN 0.95 ELSE 0.6 END AS freshness,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date-14\n         AND coalesce(profile->>'recurring','')<>'annual' THEN 'archived' ELSE publish_status END AS next_status\n    FROM selected\n  ), due AS (\n    SELECT s.* FROM scores s JOIN zoi.listings l USING(id)\n    WHERE ROW(l.completeness_score,l.trust_score,l.freshness_score,l.publish_status)\n      IS DISTINCT FROM ROW(s.completeness,s.trust,s.freshness,s.next_status)\n    ORDER BY s.id LIMIT 1000\n  )\n  UPDATE zoi.listings l SET completeness_score=d.completeness,trust_score=d.trust,\n    freshness_score=d.freshness,publish_status=d.next_status\n  FROM due d WHERE l.id=d.id;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  INSERT INTO zoi.audit_log(actor,action,target_type,reason)\n    VALUES('cron','run_maintenance','listing',format('Bounded score/freshness/archive maintenance: %s changed rows',changed));\nEND;\n$function$\n",
+    "volatility": "v",
+    "security_definer": false
+  }
+]

@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:03:29.304367+00:00",
+  "state": "Independent source/database review and actual production rollback passed; protected release and actual installation pending",
+  "baseline": "bfdb308e0880e9d05c0a182cbb79a01cc0479314",
+  "manifest_sha256": "180e95272e64a4c5c1e0f993016e5d1401190ebf347f2af83e7e4ecb1efbc2a3",
+  "source_sha256": "8f0774798f48c041d16eecece95d7079b3de722efae02a3df726836fe1f4beeb",
+  "review": "Fixed private cursor selects at most1000 primary-key IDs before expensive profile/scoring reads. Full preserved formulas and main invoker authority; helper only advances its fixed operational key and reads IDs. Advisory lock precedes cursor and row locks. Round-robin/no-op advancement, rollback, contention and actual trigger behavior passed21independent PostgreSQL groups. Original main recovered byte-exact by reversing selection-only hunks.",
+  "actual_rollback": {
+    "timeout_seconds": 5,
+    "lock_timeout_seconds": 1,
+    "selected_count": 1000,
+    "main_md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+    "helper_md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+    "main_security_definer": false,
+    "helper_anon": false,
+    "helper_authenticated": false,
+    "helper_service": true,
+    "after_rollback": "Original main9d70cd4a restored; helper/cursor absent; admission bootstrap and job31 unchanged"
+  },
+  "dependency": "Actual accepted post-admission dashboard47af16fd2d7d5e165ffcce23ef89a862",
+  "limits": [
+    "Does not prove cause of earlier public API timeouts",
+    "Actual scheduled scoring/runtime acceptance still required",
+    "No source crawl, owner-content or cron cadence change"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-root-2026-10-15/source-manifest.json",
+      "sha256": "180e95272e64a4c5c1e0f993016e5d1401190ebf347f2af83e7e4ecb1efbc2a3",
+      "bytes": 2750
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-root-2026-10-15/actual-rollback.json",
+      "sha256": "8fdf3f4137815411ca03f7089f448f9f6ba3aa1cdefecbc84772cbcae19734ba",
+      "bytes": 2229
+    }
+  ]
+}
