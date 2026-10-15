@@ -1,0 +1,38 @@
+{
+  "scope": "Fixed enrichment index metadata preflight; no live requests or mutations by QA",
+  "status": "source_and_mocked_boundary_accepted_live_execution_pending",
+  "prior_actual_run": {
+    "id": "38668082606",
+    "reported_by": "root",
+    "error": "metadata_refused",
+    "outcome": "not_attempted",
+    "index_absent": true
+  },
+  "decision": "Use read_only:false for the fixed metadata SELECT, preserving current_user postgres and all exact ownership/body/ACL/index checks. API role mapping is not documented in the cited schema; supabase_read_only_user causation remains inference.",
+  "primary_source": "https://supabase.com/docs/reference/api/v1-run-a-query",
+  "source_observation": "Official request schema supports optional read_only boolean; it does not specify current_user for that mode.",
+  "diagnostics": "Only four validated boolean metadata fields; no role strings, arbitrary fields, raw response bodies, errors, credentials or query results emitted.",
+  "verification": {
+    "command": "node --test tests/unit/enrichment-index-once.test.mjs",
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "includes": [
+      "preflight transport failure remains not_attempted despite privileged API mode",
+      "exact postgres authority guard remains",
+      "source/owner drift never dispatches DDL",
+      "fixed SELECT/DDL only, no alternate SQL or retries",
+      "safe four-boolean diagnostics discard injected credential field",
+      "post-dispatch failure requires reconciliation"
+    ]
+  },
+  "source_sha256": {
+    "scripts/geography/run-index-once.mjs": "0632c64477ed2782129c2baac9f6cf6ead323dfbc6fd58050f115033ac1f689a",
+    "tests/unit/enrichment-index-once.test.mjs": "304315c5abdefdb121300326fb54860d22ad6910a7a5b105c549dc1ac385c737"
+  },
+  "operational_limits": [
+    "No successful CREATE INDEX CONCURRENTLY demonstrated by this delta.",
+    "Root must merge code first and create a new correctly hash-pinned request-only main commit.",
+    "Existing index exactness and post-build verification still required."
+  ]
+}
