@@ -1,4 +1,4 @@
-import {briefBlocked} from '../enrichment/client-brief.mjs';
+import {briefBlocked,reviewedFoodReceiptCurrent,reviewedFoodErrorDeferred} from '../enrichment/client-brief.mjs';
 import {officialSourceQuarantined,officialSourceEntity,selectedOfficialWebsite} from '../enrichment/official-source-policy.mjs';
 // Shared food presentation only. Canonical menus and owner revisions remain the
 // source of truth; this module creates no order, reservation or stored offering.
@@ -9,7 +9,7 @@ const documentKey=value=>{try{const u=new URL(value);return ['http:','https:'].i
 const flagged=v=>v===true||v==='true';
 export function foodSourceHeld(entity){
  const raw=entity?.profile?._enrich,q=object(raw),registered=documentKey(selectedOfficialWebsite(entity)),source=typeof q.source_url==='string'?documentKey(q.source_url):null;
- return !!(!registered||!source||source!==registered||briefBlocked(q)||officialSourceQuarantined(entity)||q.crawl_status==='error'||(typeof q.identity_scope==='string'?q.identity_scope.trim():q.identity_scope)||q.source_affiliation||q.member||q.association_member||['source_scope_mismatch','source_challenge','challenge'].some(k=>flagged(q[k]))||['association_directory','association_member','supporting_publisher_profile'].includes(q.source_kind));
+ return !!(!registered||!source||source!==registered||briefBlocked(q)||officialSourceQuarantined(entity)||q.crawl_status==='error'&&!(reviewedFoodErrorDeferred(q)&&reviewedFoodReceiptCurrent(entity))||q.source_identity?.verification==='reviewed_official_visible_branch'&&!reviewedFoodReceiptCurrent(entity)||(typeof q.identity_scope==='string'?q.identity_scope.trim():q.identity_scope)||q.source_affiliation||q.member||q.association_member||['source_scope_mismatch','source_challenge','challenge'].some(k=>flagged(q[k]))||['association_directory','association_member','supporting_publisher_profile'].includes(q.source_kind));
 }
 export function foodReadEntity(entity){entity=officialSourceEntity(entity);if(!foodSourceHeld(entity))return entity;const q=object(entity?.profile?._enrich),keep=['source_url','checked_at','blocked','blocked_reason','status','crawl_status','scope_review_required','organization_identity_quarantine','identity_scope','source_kind','source_affiliation','source_scope_mismatch','source_challenge','challenge','association_member','member'];return {...entity,profile:{...object(entity.profile),_enrich:Object.fromEntries(keep.filter(k=>Object.hasOwn(q,k)).map(k=>[k,k==='member'?true:q[k]]))}};}
 export function foodMedia(entity,media={}){
@@ -40,4 +40,15 @@ export function mountFoodMenu(root,{sections=[],onQuestion=()=>{}}={}){
  const submit=e=>e.preventDefault(),change=()=>{limit=FOOD_PAGE_SIZE;filter();},reset=e=>{e.preventDefault();input.value='';limit=FOOD_PAGE_SIZE;filter();input.focus();},click=e=>{const b=e.target.closest('button');if(!b)return;if(b.hasAttribute('data-food-more')){limit+=FOOD_PAGE_SIZE;filter(true);return;}if(b.hasAttribute('data-food-all')){limit=Infinity;filter(true);return;}if(b.hasAttribute('data-food-less')){limit=FOOD_PAGE_SIZE;filter();input.focus();return;}if(!b.hasAttribute('data-food-question'))return;const[si,ii]=b.dataset.foodQuestion.split(':').map(Number),item=sections[si]?.items[ii];if(item)onQuestion(item,b);};
  input.addEventListener('input',change);select?.addEventListener('change',change);form.addEventListener('submit',submit);form.addEventListener('reset',reset);menu.addEventListener('click',click);filter();
  return()=>{input.removeEventListener('input',change);select?.removeEventListener('change',change);form.removeEventListener('submit',submit);form.removeEventListener('reset',reset);menu.removeEventListener('click',click);};
+}
+
+
+/** Source-bound selection labels never relabel owner-authored menu links. */
+export function reviewedFoodMenuLabel(entity,profile={}){
+ const owner=object(entity?.owner_content),raw=object(entity?.profile),layers=[owner,object(owner.profile),raw];
+ if(layers.some(layer=>['menu','menu_url'].some(key=>Object.hasOwn(layer,key))))return null;
+ const q=object(raw._enrich),coverage=object(q.food_source_coverage),identity=object(q.source_identity),proof=object(q.provenance),hash=identity.review_sha256;
+ if(foodSourceHeld(entity)||identity.verification!=='reviewed_official_visible_branch'||!/^[a-f0-9]{64}$/.test(hash||'')||proof.source_identity!=='reviewed_official_visible_branch#sha256='+hash||coverage.identity_review_sha256!==hash||coverage.menu_kind!=='lunch'||coverage.menu_label!=='Lunch menu'||coverage.entire_business_offering!==false||coverage.source_url!==profile.menu_source||profile.menu_url!==coverage.source_url||!Number.isInteger(coverage.retained_items)||coverage.retained_items<0)return null;
+ const count=Array.isArray(profile.menu)?profile.menu.reduce((n,s)=>n+(Array.isArray(s.items)?s.items.length:0),0):0;if(count!==coverage.retained_items)return null;
+ return{label:'Lunch menu'+(count?' · '+count+' '+(count===1?'item':'items'):''),source_label:'Lunch menu on the official website',count,entire_business_offering:false};
 }

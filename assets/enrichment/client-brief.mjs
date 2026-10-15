@@ -11,6 +11,29 @@ export function briefURL(value){if(typeof value!=='string'||value.length>2048)re
 function sameSource(a,b){try{const x=new URL(a),y=new URL(b);return x.protocol===y.protocol&&x.hostname.replace(/^www\./,'')===y.hostname.replace(/^www\./,'')&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search;}catch{return false;}}
 function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
 
+export const reviewedFoodReviewNeeded='reviewed_visible_food_requires_review';
+export function reviewedFoodDeferralProfile(prior={}){return{crawl_status:'error',last_error:prior.crawl_status==='error'&&prior.last_error!==reviewedFoodReviewNeeded?(typeof prior.last_error==='string'&&prior.last_error?prior.last_error:'reviewed_visible_food_existing_source_error'):reviewedFoodReviewNeeded};}
+/** Public canonical readers provide an owner-safe derived validity bit. Raw
+ * trusted canonical rows may prove the same complete context explicitly. */
+export function reviewedFoodReceiptCurrent(entity){
+ const e=object(entity),q=object(e.profile?._enrich),identity=object(q.source_identity),bound=object(identity.canonical_context),leaseContext=object(e.existing_enrich?._lease_source_context);
+ if(identity.verification!=='reviewed_official_visible_branch'||!Object.keys(bound).length)return false;
+ const basic={listing_id:e.listing_id||e.id,name:e.name,entity_type:e.entity_type,website:e.website,address:e.address??leaseContext.address,city:e.city??leaseContext.city,country:e.country??leaseContext.country,category_slug:e.category_slug};
+ if(Object.entries(basic).some(([key,value])=>value===undefined||bound[key]!==value))return false;
+ if(bound.owner_user_id!==null||bound.owner_workspace_id!==null)return false;
+ const extra=['primary_category_id','owner_user_id','owner_workspace_id','claim_status'];if(extra.some(key=>Object.hasOwn(e,key)&&e[key]!==bound[key]))return false;
+ if(Object.hasOwn(e,'reviewed_food_receipt_current'))return e.reviewed_food_receipt_current===true;
+ return extra.every(key=>Object.hasOwn(e,key)&&e[key]===bound[key]);
+}
+export const reviewedFoodErrorDeferred=q=>q?.source_identity?.verification==='reviewed_official_visible_branch'&&q?.crawl_status==='error'&&q?.last_error===reviewedFoodReviewNeeded;
+
+// This distinct receipt is created only by the explicitly reviewed Food lane.
+// The normal worker still derives identity exclusively from typed source JSON-LD.
+function hasReviewedFoodIdentity(p,listing,url,proof){
+ const identity=object(p.source_identity),coverage=object(p.food_source_coverage),hash=identity.review_sha256;
+ return identity.verification==='reviewed_official_visible_branch'&&/^[a-f0-9]{64}$/.test(hash||'')&&identity.name===listing.name&&identity.expected_entity_type===listing.entity_type&&['business','vendor'].includes(listing.entity_type)&&/(?:restaurant|taverna|baker)/i.test(identity.category_slug||'')&&(!listing.category_slug||listing.category_slug===identity.category_slug)&&sameSource(identity.source_url,url)&&proof.source_identity==='reviewed_official_visible_branch#sha256='+hash&&coverage.identity_verification===identity.verification&&coverage.identity_review_sha256===hash&&coverage.source_url===p.menu_source&&coverage.menu_kind==='lunch'&&coverage.entire_business_offering===false;
+}
+
 /** Literal source metadata sentinels only. Owner/raw values and listing names
  * are never passed through this fallback classifier. */
 export const sourceCopyPlaceholder=value=>typeof value==='string'&&/^(?:\.\.\.|…|null|undefined|\[object Object\])$/i.test(value.normalize('NFKC').trim());
@@ -33,9 +56,9 @@ export function retainedSourceCopy(row,current,url){
 
 export function buildClientBrief({listing,profile={},provenance={},sourceURL,checkedAt=new Date().toISOString(),sources=[]}){
  const p=object(profile),proof=object(provenance),url=briefURL(sourceURL),registered=briefURL(listing?.website);
- if(!url||!registered||!text(listing?.name)||!text(listing?.entity_type)||p.crawl_status==='error'||briefBlocked(p))return null;
+ if(!url||!registered||!text(listing?.name)||!text(listing?.entity_type)||p.crawl_status==='error'&&!(reviewedFoodErrorDeferred(p)&&reviewedFoodReceiptCurrent({...listing,profile:{_enrich:p}}))||briefBlocked(p))return null;
  const member=object(p.member),matchedMember=member.provenance?.identity_match===true&&identityMatches(listing.name,member.name)&&sameSource(member.source_url,url);
- const matchedSource=hasIdentity(object(p.source_identity),listing,url,proof);
+ const matchedReviewedFood=hasReviewedFoodIdentity(p,listing,url,proof),matchedSource=hasIdentity(object(p.source_identity),listing,url,proof)||matchedReviewedFood;
  const familyConflict=p.source_identity?.verification==='entity_family_review_required'&&p.source_identity?.name===listing.name&&sameSource(p.source_identity.source_url,url);
  // Redirects to another property or organization cannot compose this client.
  if(!sameSource(url,registered))return null;
@@ -81,7 +104,7 @@ export function buildClientBrief({listing,profile={},provenance={},sourceURL,che
  if(actions.some(a=>a.kind==='booking'))needs.push({tool:'booking_provider',state:'external_link_only'});
  if(offerings.some(o=>o.kind==='rooms'))needs.push({tool:'accommodation_inventory',state:'not_connected_by_source_extraction'});
  const brief={schema_version:1,status:'draft_requires_review',listing:{id:text(listing.listing_id||listing.id,80)||null,slug:text(listing.slug,200),name:text(listing.name),entity_type:text(listing.entity_type,80)},
-  source:{registered_url:registered,url,retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
+  source:{registered_url:registered,url,retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedReviewedFood?'reviewed_official_visible_branch':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
   offering:offerings,audience:[],differentiators:[],description:has('description')&&!sourceCopyPlaceholder(p.description)?{text:text(p.description,1200),evidence:evidence('description')}:null,
   primary_actions:actions,visual_assets:visuals,tools_needed:needs,unknowns,
   composition:{section_order:sectionOrder,evidenced_sections:available,copy_generated:false,hidden_sections:[]},
@@ -103,7 +126,7 @@ export function buildClientBrief({listing,profile={},provenance={},sourceURL,che
 /** Public arrangement consumes no draft claims, copy, media or actions. */
 export function briefHomeDesign(entity){
  const enrich=object(entity?.profile?._enrich),brief=object(enrich.client_brief);
- if(brief.schema_version!==1||brief.status!=='draft_requires_review'||brief.source?.identity_match!==true||enrich.crawl_status==='error'||briefBlocked(enrich)||brief.listing?.id!==entity.id||brief.listing?.name!==entity.name||brief.listing?.entity_type!==entity.entity_type||!sameSource(brief.source?.registered_url,entity.website)||!sameSource(brief.source?.url,enrich.source_url)||!sameSource(brief.source?.url,entity.website))return null;
+ if(brief.schema_version!==1||brief.status!=='draft_requires_review'||brief.source?.identity_match!==true||enrich.source_identity?.verification==='reviewed_official_visible_branch'&&!reviewedFoodReceiptCurrent(entity)||enrich.crawl_status==='error'&&!(reviewedFoodErrorDeferred(enrich)&&reviewedFoodReceiptCurrent(entity))||briefBlocked(enrich)||brief.listing?.id!==entity.id||brief.listing?.name!==entity.name||brief.listing?.entity_type!==entity.entity_type||!sameSource(brief.source?.registered_url,entity.website)||!sameSource(brief.source?.url,enrich.source_url)||!sameSource(brief.source?.url,entity.website))return null;
  const owner=object(entity.owner_content),ownerProfile=object(owner.profile),raw=object(entity.profile);
  const importedFields=['menu','menu_url','menu_image_urls','services','rooms','dining','venues','phone','email','hours','photos','photo_urls','gallery','photo_url','hero','hero_url','hero_image','logo_url','listen','embeds','video_urls','social','social_links','order_url','reserve_url','booking_url'];
  if(Object.hasOwn(entity,'services')||importedFields.some(field=>[owner,ownerProfile,raw].some(layer=>Object.hasOwn(layer,field))))return null;

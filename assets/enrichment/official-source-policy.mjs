@@ -1,3 +1,4 @@
+import {reviewedFoodReceiptCurrent,reviewedFoodErrorDeferred,briefBlocked} from './client-brief.mjs';
 // Pure outward website policy. Never writes owner content or supplies replacement URLs.
 const object=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};
 const own=(x,k)=>Object.hasOwn(object(x),k);
@@ -7,7 +8,7 @@ const context=e=>e?.media_input&&typeof e.media_input==='object'?{...e,...e.medi
 // _enrich is machine content, never an owner override. Keep the review receipt
 // available to owner tools, but do not project a known wrong source's content.
 const receiptKeys=new Set(['source_url','provenance','checked_at','last_attempt_at','last_success_at','media_expires_at','blocked','blocked_reason','last_error','status','crawl_status','lease','source_kind','identity_scope','scope_review_required','organization_identity_quarantine','source_affiliation','member_source','publisher_source_evidence','email_conflict','phone_conflict']);
-export function sourceIdentityContentHeld(entity){return object(context(entity)?.profile?._enrich).blocked_reason==='source_scope_mismatch';}
+export function sourceIdentityContentHeld(entity){const e=context(entity),q=object(e?.profile?._enrich);return q.blocked_reason==='source_scope_mismatch'||q.source_identity?.verification==='reviewed_official_visible_branch'&&(!reviewedFoodReceiptCurrent(e)||selectedOfficialWebsite(e)!==officialSiteURL(e.website)||q.crawl_status==='error'&&!reviewedFoodErrorDeferred(q)||briefBlocked(q)||['scope_review_required','organization_identity_quarantine','source_scope_mismatch','source_challenge','challenge'].some(k=>flagged(q[k]))||!!q.identity_scope||['member','association_member','source_affiliation'].some(k=>own(q,k))||['association_directory','association_member','supporting_publisher_profile'].includes(q.source_kind));}
 function receiptOnly(value){return Object.fromEntries(Object.entries(object(value)).filter(([key])=>receiptKeys.has(key)));}
 export function officialSiteURL(value){try{if(typeof value!=='string')return '';const u=new URL(value);return ['http:','https:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}
 // Outbound contact only: a legacy bare hostname is not verified source identity.

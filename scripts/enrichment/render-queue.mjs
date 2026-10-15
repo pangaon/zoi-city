@@ -1,4 +1,4 @@
-import {sourceCopyProfile,retainedSourceCopy} from '../../assets/enrichment/client-brief.mjs';
+import {sourceCopyProfile,retainedSourceCopy,reviewedFoodDeferralProfile} from '../../assets/enrichment/client-brief.mjs';
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {serviceCredential} from '../quality/ci.mjs';
@@ -11,6 +11,7 @@ const norm=v=>String(v||'').normalize('NFKC').toLowerCase().replace(/[\p{P}\p{S}
 export function automaticRenderedPayload(row,report,hash){
  if(typeof row.source_fingerprint!=='string'||!row.source_fingerprint.trim()||report.source_fingerprint!==row.source_fingerprint)throw Error('source_capture_fingerprint_mismatch');
  const refusal=reason=>({slug:row.slug,website:row.website,lease_id:row.lease_id,profile:{crawl_status:'error',last_error:reason},provenance:{}});
+ if(row.existing_enrich?.source_identity?.verification==='reviewed_official_visible_branch')return{slug:row.slug,website:row.website,lease_id:row.lease_id,profile:reviewedFoodDeferralProfile(row.existing_enrich),provenance:{}};
  if(row.owner_managed)return refusal('owner_managed_render_review');
  if(report.status==='repair_required')return refusal(report.reason||'rendered_source_unavailable');
  if(report.source?.http_status!==200||!report.render?.sha256||!report.source?.sha256)return refusal('rendered_source_incomplete');
@@ -46,7 +47,7 @@ export async function runRenderQueue({directory='rendered-source-evidence',env=p
  const rows=await rpc('enrich_source_queue_lease',{p_limit:3});if(!Array.isArray(rows)||rows.length>3)throw Error('enrichment_lease_unconfirmed');
  // Reject incomplete adapter receipts before visiting any source or applying a result.
  if(rows.some(row=>typeof row?.source_fingerprint!=='string'||!row.source_fingerprint.trim()))throw Error('source_capture_fingerprint_missing');
- for(const row of rows){let report;try{report=await render(row);}catch(e){report={schema:1,listing_id:row.listing_id,website:row.website,status:'repair_required',reason:sourceFailureReason(e),specialist:'enrichment'};}
+ for(const row of rows){let report;try{report=row.existing_enrich?.source_identity?.verification==='reviewed_official_visible_branch'?{schema:1,listing_id:row.listing_id,website:row.website,status:'repair_required',reason:'reviewed_visible_food_requires_review'}:await render(row);}catch(e){report={schema:1,listing_id:row.listing_id,website:row.website,status:'repair_required',reason:sourceFailureReason(e),specialist:'enrichment'};}
   // The lease fingerprint is authoritative metadata, never supplied by page content.
   report={...report,source_fingerprint:row.source_fingerprint};
   const hash=sha256(canonical(report));await writeFile(path.join(directory,hash+'.json'),canonical(report),{flag:'wx',mode:0o600});

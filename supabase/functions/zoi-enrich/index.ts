@@ -135,7 +135,7 @@ import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
-import { sourceCopyPlaceholder } from "../../../assets/enrichment/client-brief.mjs";
+import { sourceCopyPlaceholder, reviewedFoodDeferralProfile } from "../../../assets/enrichment/client-brief.mjs";
 import { assessMachineSourceIdentity } from "./_source-identity.js";
 import { extractStructuredMenu } from "./_menus.js";
 import { extractStructuredServices, structuredSourceContextMatches } from "./_services.js";
@@ -582,6 +582,13 @@ Deno.serve(async (req) => {
   for (const row of queue) {
     if (Date.now() >= deadline - RPC_MS) { bump("stopped-time-budget"); break; }
 
+    // A manual branch review never grants unattended typed-source authority.
+    if ((row.existing_enrich?.source_identity as Record<string, unknown> | undefined)?.verification === "reviewed_official_visible_branch") {
+      bump("reviewed-visible-food-review-required");
+      batch.push({slug:row.slug,website:row.website,lease_id:row.lease_id,
+        profile:reviewedFoodDeferralProfile(row.existing_enrich),provenance:{}});
+      continue;
+    }
     const identity = memberLeaseGuard(row);
     const identityStatus = identity.handled ? identity.profile : {};
     let v;
