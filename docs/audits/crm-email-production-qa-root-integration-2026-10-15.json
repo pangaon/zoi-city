@@ -15,5 +15,18 @@
   "fixture_tag_sha256": "4f50b57d23b5bf8e21d998ad5b17a5966725c04c736d610ecc3075e82a986301",
   "admission": "Disabled; independent review/protected merge/exact served web/source/request-only main commit required.",
   "actual_auth_or_customer_writes": false,
-  "root_fixture_cleanup": "Exact root-provisioned dedicated synthetic contact1591aa86-3492-4966-a348-2e33f9857b9c fullrow6c21db459eb43cd828b7e8603b93db14 must be removed separately after actual browser run. No contact writer in harness. No consent/provider operations."
+  "root_fixture_cleanup": "Exact root-provisioned dedicated synthetic contact1591aa86-3492-4966-a348-2e33f9857b9c fullrow6c21db459eb43cd828b7e8603b93db14 must be removed separately after actual browser run. No contact writer in harness. No consent/provider operations.",
+  "required_ci_runtime_setup_repair": {
+    "run": 38753939170,
+    "failed_attempts": [
+      1,
+      2
+    ],
+    "observed": "Only unchanged nativeTLS fixture failed; unpinned npx runtime launch killed by20s deadline, no stdout/stderr. Cached local test passed0.86s.",
+    "cold_setup_reproduction": "New isolated npmcache installation+actualtest took29.1s, passed with separated setup.",
+    "fix": "PinDeno2.9.6;60s runtimeversion/bootstrap beforehook; offline actualsocket/TLSprobe retains20s deadline and every original assertion.",
+    "product_runtime_change": false,
+    "qa_manifest_paths_changed": false,
+    "required_checks": "New sourcecommit fullCI mustpass; no further blind reruns of failedattempts."
+  }
 }
