@@ -4,6 +4,7 @@ import {readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 export const REPOSITORY='pangaon/zoi-city',PROJECT='csebihpaychdkanjjsmz';
+export const REVIEWED_WORKER_BUNDLE='a5d42b00bfdd11562a6b7d9b5882ddfeca85de867e7e90e6b899e94f7e2276bb';
 export const REQUEST_PATH='ops/enrichment-finite-trial-request.json',WORKFLOW_PATH='.github/workflows/enrichment-finite-trial.yml';
 export const VAULT_QUERY="SELECT decrypted_secret AS private_token FROM vault.decrypted_secrets WHERE name='enrich_token'";
 export const PREFLIGHT_QUERY=`SELECT EXISTS(SELECT 1 FROM pg_proc WHERE oid='zoi.enrich_queue_lease(integer,integer,integer)'::regprocedure AND md5(prosrc)='eec0542367704b3460ed603a27de8c35' AND pg_get_userbyid(proowner)='postgres' AND proacl::text='{postgres=X/postgres}' AND prosecdef AND proconfig=ARRAY['search_path=""']) AS queue_exact,
@@ -22,8 +23,8 @@ export async function runFiniteTrial({env=process.env,read=p=>readFileSync(p,'ut
  if(env.GITHUB_ACTIONS!=='true'||env.GITHUB_REPOSITORY!==REPOSITORY||env.GITHUB_REF!=='refs/heads/main'||env.GITHUB_EVENT_NAME!=='push'||!/^[a-f0-9]{40}$/.test(env.GITHUB_SHA||'')||!/^\d+$/.test(env.GITHUB_RUN_ID||''))fail('trusted_main_required');
  if(env.GITHUB_RUN_ATTEMPT!=='1')fail('replay_refused');
  const event=parse(read(env.GITHUB_EVENT_PATH),262144),raw=read(REQUEST_PATH),r=parse(raw,4096);
- const keys='budget_review,budgets_metered,end_at,estimated_max_http_requests_per_run,estimated_max_response_bytes_per_run,estimated_trial_http_requests,estimated_trial_response_bytes,issued_at,max_invocations,parent_sha,request_id,schema_version,script_sha256,start_before,worker_version,workflow_sha256';
- if(Object.keys(r).sort().join(',')!==keys||r.schema_version!==1||r.max_invocations!==12||r.budgets_metered!==false||r.estimated_max_http_requests_per_run!==42||r.estimated_max_response_bytes_per_run!==63000000||r.estimated_trial_http_requests!==504||r.estimated_trial_response_bytes!==756000000||r.worker_version!==62||r.budget_review!=='conservative_42_requests_63MB_per_run_not_metered_accepted'||!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(r.request_id||'')||event.ref!=='refs/heads/main'||event.forced||event.deleted||event.after!==env.GITHUB_SHA||!/^[a-f0-9]{40}$/.test(event.before||'')||event.before==='0'.repeat(40)||r.parent_sha!==event.before)fail('request_invalid');
+ const keys='budget_review,budgets_metered,end_at,estimated_max_http_requests_per_run,estimated_max_response_bytes_per_run,estimated_trial_http_requests,estimated_trial_response_bytes,issued_at,max_invocations,parent_sha,request_id,schema_version,script_sha256,start_before,worker_bundle_sha256,worker_version,workflow_sha256';
+ if(Object.keys(r).sort().join(',')!==keys||r.schema_version!==1||(!Number.isInteger(r.max_invocations)||r.max_invocations<1||r.max_invocations>12)||r.budgets_metered!==false||r.estimated_max_http_requests_per_run!==42||r.estimated_max_response_bytes_per_run!==63000000||r.estimated_trial_http_requests!==42*r.max_invocations||r.estimated_trial_response_bytes!==63000000*r.max_invocations||(!Number.isInteger(r.worker_version)||r.worker_version<62)||r.worker_bundle_sha256!==REVIEWED_WORKER_BUNDLE||r.budget_review!=='conservative_42_requests_63MB_per_run_not_metered_accepted'||!/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/.test(r.request_id||'')||event.ref!=='refs/heads/main'||event.forced||event.deleted||event.after!==env.GITHUB_SHA||!/^[a-f0-9]{40}$/.test(event.before||'')||event.before==='0'.repeat(40)||r.parent_sha!==event.before)fail('request_invalid');
  admission(r,now(),true);
  if(r.script_sha256!==hash(read(fileURLToPath(import.meta.url)))||r.workflow_sha256!==hash(read(WORKFLOW_PATH)))fail('code_changed');
  const access=env.SUPABASE_ACCESS_TOKEN,github=env.GITHUB_TOKEN;
@@ -42,7 +43,7 @@ export async function runFiniteTrial({env=process.env,read=p=>readFileSync(p,'ut
  async function gate(){
   const current=await gh('/contents/'+REQUEST_PATH+'?ref=main');if(current.encoding!=='base64'||typeof current.content!=='string'||hash(Buffer.from(current.content,'base64'))!==hash(raw))fail('request_cancelled');
   const rows=await query(PREFLIGHT_QUERY);if(!Array.isArray(rows)||rows.length!==1||Object.keys(rows[0]).sort().join(',')!=='index_ready,overlap_suppressed,queue_exact,sample_exact'||Object.values(rows[0]).some(x=>x!==true))fail('schema_unconfirmed');
-  let worker;try{const x=await fetcher('https://api.supabase.com/v1/projects/'+PROJECT+'/functions/zoi-enrich',{headers:{Authorization:'Bearer '+access},redirect:'error',signal:AbortSignal.timeout(15000)});if(!x.ok)throw Error();worker=await json(x,16384);}catch{fail('worker_changed');}if(worker.slug!=='zoi-enrich'||worker.status!=='ACTIVE'||worker.version!==r.worker_version)fail('worker_changed');
+  let worker;try{const x=await fetcher('https://api.supabase.com/v1/projects/'+PROJECT+'/functions/zoi-enrich',{headers:{Authorization:'Bearer '+access},redirect:'error',signal:AbortSignal.timeout(15000)});if(!x.ok)throw Error();worker=await json(x,16384);}catch{fail('worker_changed');}if(worker.slug!=='zoi-enrich'||worker.status!=='ACTIVE'||!Number.isInteger(worker.version)||worker.version<r.worker_version||worker.ezbr_sha256!==r.worker_bundle_sha256)fail('worker_changed');
  }
  admission(r,now(),true);let attempts=0,lastStart=null,totalQueued=0,totalApplied=0;
  for(let i=0;i<r.max_invocations;i++){
