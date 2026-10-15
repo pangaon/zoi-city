@@ -1,0 +1,10 @@
+file:///workspaces/zoi-map-saved-pointer-work/tests/browser/map-saved-pointer/verify.mjs:38
+  for(const state of['Expanded','Compact','Full list']){await tools();await page.getByRole('button',{name:state,exact:true}).click();await zoomPair();await page.evaluate(()=>zoiMap.jumpTo({bearing:25}));const compass=page.getByRole('button',{name:'Drag to rotate map, click to reset north',exact:true});assert.ok((await hit(compass)).hit);await compass.click();await page.waitForFunction(()=>Math.abs(zoiMap.getBearing())<.1);assert.equal(await page.evaluate(()=>zoiMap===mapIdentity&&document.querySelector('.maplibregl-ctrl-group')===nativeIdentity),true);currentCase.checks.push({sheet:state,zoomInOut:true,compass:true,targets44:true,retainedMapAndControl:true});}
+                                                                                                                                                                                                                                                                                                                                ^
+
+ReferenceError: Cannot access 'hit' before initialization
+    at file:///workspaces/zoi-map-saved-pointer-work/tests/browser/map-saved-pointer/verify.mjs:38:321
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at process.processImmediate (node:internal/timers:472:9)
+
+Node.js v24.14.0

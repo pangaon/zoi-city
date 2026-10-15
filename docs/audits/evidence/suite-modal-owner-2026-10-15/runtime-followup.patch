@@ -1,0 +1,305 @@
+diff --git a/assets/suite/audience.js b/assets/suite/audience.js
+index c1ae288a..a82ee6be 100644
+--- a/assets/suite/audience.js
++++ b/assets/suite/audience.js
+@@ -94,18 +94,18 @@
+         'border-left:3px solid var(--green);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:12.5px;color:var(--tx);}' +
+       '.zu-consent svg{flex:0 0 auto;width:16px;height:16px;color:var(--green);margin-top:2px;}' +
+       '.zu-consent b{color:var(--green);}' +
+-      '.zu-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;' +
+-        'padding:16px;z-index:9999;}' +
+-      '.zu-modal-card{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:18px;width:100%;' +
+-        'max-width:560px;max-height:88vh;overflow:auto;}' +
+-      '.zu-modal-card h3{margin:0 0 12px;font-size:16px;font-weight:700;}' +
++      '.zu-modal,.zu-modal *{box-sizing:border-box}.zu-modal{position:fixed;inset:0;top:var(--suite-modal-top,0px);bottom:auto;height:var(--suite-modal-height,100dvh);background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;' +
++        'padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));z-index:9999;overflow:auto;overscroll-behavior:contain}' +
++      '.zu-modal-card{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;width:100%;' +
++        'max-width:560px;max-height:calc(var(--suite-modal-height,100dvh) - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;overflow:hidden;}' +
++      '.zu-modal-head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line2);flex:0 0 auto}.zu-modal-card h3{margin:0;font-size:16px;font-weight:700;min-width:0;overflow-wrap:anywhere}.zu-modal-close{width:44px;height:44px;flex:0 0 44px;justify-content:center;padding:0;font-size:20px}.zu-modal-body{padding:16px 18px;min-height:0;overflow:auto;overscroll-behavior:contain}.zu-modal :is(button,select,input:not([type=checkbox]):not([type=radio])){min-height:44px}.zu-modal label:has(input:is([type=checkbox],[type=radio])){min-height:44px}.zu-modal :focus-visible{outline:3px solid var(--acc);outline-offset:2px}.zu-modal button{min-width:44px}@media(max-width:640px){.zu-modal :is(input,textarea,select){font-size:16px}}.zu-modal [data-z=preview]{overflow-x:auto}.zu-modal .zu-imp-table td{overflow-wrap:anywhere}.zu-modal .zu-ta{font-size:16px;}' +
+       '.zu-imp-summary{font-size:12px;color:var(--mut);margin:8px 0;}' +
+       '.zu-imp-summary b{color:var(--tx);}' +
+       '.zu-imp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}' +
+       '.zu-imp-table th,.zu-imp-table td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;}' +
+       '.zu-imp-table th{color:var(--mut);font-size:10.5px;text-transform:uppercase;}' +
+       '.zu-bad{color:#ff8080;}' +
+-      '.zu-modal-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}' +
++      '.zu-modal-acts{display:flex;gap:8px;justify-content:flex-end;margin:0;padding:12px 18px;border-top:1px solid var(--line2);flex-wrap:wrap;flex:0 0 auto;}' +
+       '@media(max-width:640px){.zu-sel{max-width:none;flex:1 1 140px;}}';
+     var s = doc.createElement('style');
+     s.id = STYLE_ID;
+@@ -446,21 +446,21 @@
+       if(!active()||!canWrite)return;if(closeImport)closeImport();
+       var overlay = el('div', 'zu-modal');
+       overlay.innerHTML =
+-        '<div class="zu-modal-card">' +
+-          '<h3>Import contacts from CSV</h3>' +
++        '<div class="zu-modal-card" role="dialog" aria-modal="true" aria-label="Import contacts from CSV">' +
++          '<div class="zu-modal-head"><h3>Import contacts from CSV</h3><button type="button" class="zu-btn ghost zu-modal-close" data-z="close" aria-label="Close">×</button></div><div class="zu-modal-body">' +
+           '<div class="zu-consent">' +
+             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>' +
+             '<div><b>Only import contacts who agreed to hear from you.</b> Imported contacts are not automatically eligible for marketing emails. ' +
+               'Record each recipient’s permission in their contact form before sending.</div>' +
+           '</div>' +
+           '<div class="zu-field"><label>Columns: <span class="zu-hint">name, email, phone, tags (pipe | separated), nameday, notes</span></label>' +
+-            '<textarea class="zu-ta" data-z="csv" placeholder="name,email,phone,tags,nameday,notes&#10;Maria K,maria@example.com,+1..,customers|vip,Aug 15,Met at market"></textarea></div>' +
++            '<textarea class="zu-ta" data-z="csv" aria-label="CSV contacts" placeholder="name,email,phone,tags,nameday,notes&#10;Maria K,maria@example.com,+1..,customers|vip,Aug 15,Met at market"></textarea></div>' +
+           '<div class="zu-actions" style="margin-bottom:8px">' +
+-            '<label class="zu-btn ghost sm" style="cursor:pointer">Choose file…' +
+-              '<input type="file" data-z="file" accept=".csv,text/csv,text/plain" style="display:none"></label>' +
++            '<button type="button" class="zu-btn ghost sm" data-z="choose-file">Choose file…</button>' +
++              '<input type="file" data-z="file" accept=".csv,text/csv,text/plain" style="display:none">' +
+             '<button class="zu-btn ghost sm" data-z="parse">Preview</button>' +
+           '</div>' +
+-          '<div data-z="preview"></div>' +
++          '<div data-z="preview"></div></div>' +
+           '<div class="zu-modal-acts">' +
+             '<button class="zu-btn ghost" data-z="cancel">Cancel</button>' +
+             '<button class="zu-btn pri" data-z="do" disabled>Import</button>' +
+@@ -469,11 +469,17 @@
+       document.body.appendChild(overlay);
+ 
+       function mq(id) { return overlay.querySelector('[data-z="' + id + '"]'); }
++      var restoreFocus=document.activeElement,releaseTrap=null,closed=false;
+       closeImport=close;importDirty=false;overlay.addEventListener('input',function(){importDirty=true;});
+-      function close() { importDirty=false;closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay); importState.parsed = null; }
++      function close() { if(closed)return;closed=true;importDirty=false;closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay);importState.parsed=null;document.removeEventListener('keydown',onKey);if(releaseTrap)releaseTrap({restore:active()});else if(active()&&restoreFocus?.isConnected)restoreFocus.focus(); }
++      function onKey(e){if(e.key==='Escape'){e.preventDefault();close();}}
++      var focusHelper=C.trapFocus||global.ZoiCore?.trapFocus;
++      if(focusHelper)releaseTrap=focusHelper(overlay.querySelector('.zu-modal-card'),{modal:true,onEscape:close,restoreFocus:restoreFocus,lockScroll:true,viewport:overlay,initialFocus:()=>mq('close')});
++      else document.addEventListener('keydown',onKey);
+ 
+       overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
+-      mq('cancel').addEventListener('click', close);
++      mq('cancel').addEventListener('click', close);mq('close').addEventListener('click',close);
++      mq('choose-file').addEventListener('click',function(){if(active())mq('file').click();});
+ 
+       mq('file').addEventListener('change', function () {
+         var f = this.files && this.files[0];
+diff --git a/assets/suite/calendar.js b/assets/suite/calendar.js
+index 54e95975..15ae5c08 100644
+--- a/assets/suite/calendar.js
++++ b/assets/suite/calendar.js
+@@ -278,15 +278,15 @@
+       '.zk-empty{color:var(--mut);font-size:12.5px;text-align:center;padding:34px 14px;border:1px dashed var(--line);border-radius:12px;background:var(--bg2)}',
+       '.zk-wempty{color:var(--dim);font-size:10.5px;text-align:center;padding:6px 2px}',
+       /* modal */
+-      '.zk-ov{position:fixed;inset:0;background:rgba(4,6,10,.66);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;z-index:9000;overflow:auto}',
+-      '.zk-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
++      '.zk-ov,.zk-ov *{box-sizing:border-box}.zk-ov{position:fixed;inset:0;top:var(--suite-modal-top,0px);bottom:auto;height:var(--suite-modal-height,100dvh);background:rgba(4,6,10,.66);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));z-index:9000;overflow:auto;overscroll-behavior:contain}',
++      '.zk-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;max-height:calc(var(--suite-modal-height,100dvh) - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
+       '.zk-modal.wide{max-width:760px}',
+-      '.zk-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line2)}',
+-      '.zk-mh h3{margin:0;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:9px}',
+-      '.zk-mx{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
++      '.zk-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line2);flex:0 0 auto}',
++      '.zk-mh h3{margin:0;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:9px;min-width:0;overflow-wrap:anywhere}',
++      '.zk-mx{width:44px;height:44px;flex:0 0 44px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
+       '.zk-mx:hover{border-color:var(--acc);color:var(--acc)}',
+-      '.zk-mb{padding:16px 18px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow:auto}',
+-      '.zk-mf{padding:13px 18px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}',
++      '.zk-mb{padding:16px 18px;display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto;overscroll-behavior:contain}.zk-mb>*{flex-shrink:0}.zk-modal :is(button,select,input:not([type=checkbox]):not([type=radio])){min-height:44px}.zk-modal label:has(input:is([type=checkbox],[type=radio])){min-height:44px}.zk-modal :focus-visible{outline:3px solid var(--acc);outline-offset:2px}.zk-modal button{min-width:44px}@media(max-width:640px){.zk-modal :is(input,textarea,select){font-size:16px}}',
++      '.zk-mf{padding:13px 18px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;flex:0 0 auto}',
+       '.zk-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 6px;display:block}',
+       '.zk-badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:20px}',
+       '.zk-badge.draft{background:rgba(107,114,128,.18);color:#c2c8d2}',
+@@ -1325,17 +1325,21 @@
+     function openModal(title, iconSvg, wide) {
+       var ov = el('div', 'zk-ov');
+       var modal = el('div', 'zk-modal' + (wide ? ' wide' : ''));
++      modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label',title);
+       modal.innerHTML =
+         '<div class="zk-mh"><h3>' + (iconSvg || '') + esc(title) + '</h3>' +
+-        '<button class="zk-mx" data-role="close">×</button></div>' +
++        '<button type="button" class="zk-mx" data-role="close" aria-label="Close">×</button></div>' +
+         '<div class="zk-mb" data-role="body"></div>' +
+         '<div class="zk-mf" data-role="foot"></div>';
+       ov.appendChild(modal);
+       doc.body.appendChild(ov);
+-      function close() { modalClosers.delete(close);if (ov.parentNode) ov.parentNode.removeChild(ov); doc.removeEventListener('keydown', onKey); }
+-      function onKey(e) { if (e.key === 'Escape') close(); }
++      var restoreFocus=doc.activeElement,releaseTrap=null,closed=false;
++      function close() { if(closed)return;closed=true;modalClosers.delete(close);if (ov.parentNode) ov.parentNode.removeChild(ov);doc.removeEventListener('keydown',onKey);if(releaseTrap)releaseTrap({restore:scopeActive()});else if(scopeActive()&&restoreFocus?.isConnected)restoreFocus.focus(); }
++      function onKey(e) { if (e.key === 'Escape') {e.preventDefault();close();} }
+       modalClosers.add(close);
+-      doc.addEventListener('keydown', onKey);
++      var focusHelper=C.trapFocus||global.ZoiCore?.trapFocus;
++      if(focusHelper)releaseTrap=focusHelper(modal,{modal:true,onEscape:close,restoreFocus:restoreFocus,lockScroll:true,viewport:ov});
++      else doc.addEventListener('keydown',onKey);
+       ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+       modal.querySelector('[data-role="close"]').addEventListener('click', close);
+       return { ov: ov, body: modal.querySelector('[data-role="body"]'), foot: modal.querySelector('[data-role="foot"]'), close: close };
+diff --git a/assets/suite/composer.js b/assets/suite/composer.js
+index 3d82cd50..29cde225 100644
+--- a/assets/suite/composer.js
++++ b/assets/suite/composer.js
+@@ -378,13 +378,13 @@
+       '.zc-alt.set{background:var(--gold);color:#1a1205}',
+       '.zc-altrow{display:flex;gap:8px;align-items:center;margin-top:8px}',
+       /* ---- modal (templates, shortcuts) ---- */
+-      '.zc-ov{position:fixed;inset:0;background:rgba(4,6,10,.66);display:flex;align-items:flex-start;justify-content:center;padding:6vh 16px;z-index:9000;overflow:auto}',
+-      '.zc-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
+-      '.zc-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line)}',
+-      '.zc-mh h3{margin:0;font-size:15.5px;font-weight:800}',
+-      '.zc-mx{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
++      '.zc-ov,.zc-ov *{box-sizing:border-box}.zc-ov{position:fixed;inset:0;top:var(--suite-modal-top,0px);bottom:auto;height:var(--suite-modal-height,100dvh);background:rgba(4,6,10,.66);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));z-index:9000;overflow:auto;overscroll-behavior:contain}',
++      '.zc-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;max-height:calc(var(--suite-modal-height,100dvh) - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
++      '.zc-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);flex:0 0 auto}',
++      '.zc-mh h3{margin:0;font-size:15.5px;font-weight:800;min-width:0;overflow-wrap:anywhere}',
++      '.zc-mx{width:44px;height:44px;flex:0 0 44px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
+       '.zc-mx:hover{border-color:var(--acc);color:var(--acc)}',
+-      '.zc-mb{padding:16px 18px;display:flex;flex-direction:column;gap:12px;max-height:66vh;overflow:auto}',
++      '.zc-mb{padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto;overscroll-behavior:contain}.zc-mb>*{flex-shrink:0}.zc-mb .zc-tpl .zc-grow{display:grid;gap:4px;overflow:hidden}.zc-modal :is(button,select,input:not([type=checkbox]):not([type=radio])){min-height:44px}.zc-modal label:has(input:is([type=checkbox],[type=radio])){min-height:44px}.zc-modal :focus-visible{outline:3px solid var(--acc);outline-offset:2px}.zc-modal button{min-width:44px}@media(max-width:640px){.zc-modal :is(input,textarea,select){font-size:16px}}',
+       '.zc-tpl{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--bg3);text-align:left;cursor:pointer;color:var(--tx);font:inherit}',
+       '.zc-tpl:hover{border-color:var(--acc)}',
+       '.zc-tpl .zc-tn{font-weight:800;font-size:13px}',
+@@ -1419,12 +1419,13 @@
+       m.querySelector('h3').textContent = title;
+       ov.appendChild(m);
+       (doc.body || doc.documentElement).appendChild(ov);
+-      var restoreFocus = doc.activeElement;
++      var restoreFocus = doc.activeElement, releaseTrap = null, closed = false;
+       function close() {
+-        modalClosers.delete(close);
++        if(closed)return;closed=true;modalClosers.delete(close);
+         if (ov.parentNode) ov.parentNode.removeChild(ov);
+         doc.removeEventListener('keydown', onKey, true);
+-        try { if (restoreFocus && restoreFocus.focus) restoreFocus.focus(); } catch (e) {}
++        if(releaseTrap)releaseTrap({restore:scopeActive()});
++        else try { if(scopeActive()&&restoreFocus?.isConnected)restoreFocus.focus(); } catch (e) {}
+       }
+       function focusables() {
+         return Array.prototype.slice.call(m.querySelectorAll('button,input,textarea,select,[href]'))
+@@ -1440,11 +1441,13 @@
+         else if (!e.shiftKey && doc.activeElement === last) { e.preventDefault(); first.focus(); }
+       }
+       modalClosers.add(close);
+-      doc.addEventListener('keydown', onKey, true);
++      var focusHelper=C.trapFocus||global.ZoiCore?.trapFocus;
++      if(focusHelper)releaseTrap=focusHelper(m,{modal:true,onEscape:close,restoreFocus:restoreFocus,lockScroll:true,viewport:ov});
++      else doc.addEventListener('keydown', onKey, true);
+       ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+       m.querySelector('[data-role="close"]').addEventListener('click', close);
+       global.setTimeout(function () {
+-        var f = focusables();
++        if(closed||!scopeActive())return;var f = focusables();
+         if (f.length) f[f.length > 1 ? 1 : 0].focus();
+       }, 0);
+       return { body: m.querySelector('[data-role="body"]'), close: close };
+diff --git a/assets/zoi-core.js b/assets/zoi-core.js
+index 5faee75f..293c60a4 100644
+--- a/assets/zoi-core.js
++++ b/assets/zoi-core.js
+@@ -279,31 +279,93 @@
+   };
+ 
+   /* ---- Modal Focus Trap (Accessibility Helper) ---- */
++  // Ephemeral bindings only: each existing dialog owns its disposer. The linked
++  // active binding lets a nested dialog close without releasing its parent.
+   var _activeFocusTrap = null;
+-  function trapFocus(container) {
+-    if (!container) return;
+-    releaseFocus();
+-    var focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
+-    if (!focusables.length) return;
+-    var first = focusables[0], last = focusables[focusables.length - 1];
+-    first.focus();
+-    function handleTab(e) {
+-      if (e.key !== 'Tab') return;
+-      if (e.shiftKey) {
+-        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+-      } else {
+-        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
++  function trapFocus(container, options) {
++    if (!container) return function () {};
++    var opts = options || {}, doc = container.ownerDocument || document;
++    if (!opts.modal) releaseFocus(); // Preserve the original single-trap API.
++    var entry = { container: container, previous: _activeFocusTrap, release: null,
++      lockScroll: !!opts.lockScroll, savedOverflow: null }, dead = false;
++    var opener = opts.restoreFocus || doc.activeElement, timer, observer;
++    var viewport = opts.viewport, visual = global.visualViewport;
++    var oldHeight = viewport && viewport.style.getPropertyValue('--suite-modal-height');
++    var oldTop = viewport && viewport.style.getPropertyValue('--suite-modal-top');
++    var addedTabindex = !container.hasAttribute('tabindex');
++    _activeFocusTrap = entry;
++    if (entry.lockScroll) {
++      var other = entry.previous;while (other && !other.lockScroll) other = other.previous;
++      if (!other) entry.savedOverflow = doc.body.style.overflow;
++      doc.body.style.overflow = 'hidden';
++    }
++    function visible(node) {
++      return node && node.isConnected && !node.matches(':disabled') && node.tabIndex >= 0 &&
++        !node.closest('[hidden],[inert],[aria-hidden="true"]') && node.getClientRects().length &&
++        global.getComputedStyle(node).visibility !== 'hidden';
++    }
++    function focusables() {
++      return Array.prototype.slice.call(container.querySelectorAll('a[href],button,input,select,textarea,summary,[contenteditable="true"],[tabindex]')).filter(visible);
++    }
++    function focus(node) { if (node && node.isConnected) { try { node.focus({preventScroll:true});node.scrollIntoView({block:'nearest',inline:'nearest'}); } catch (_) { node.focus(); } } }
++    function focusFirst(reverse) {
++      var nodes = focusables(), target = nodes[reverse ? nodes.length - 1 : 0];
++      if (!target) { if (addedTabindex) container.tabIndex = -1;target = container; }
++      focus(target);
++    }
++    function onKey(event) {
++      if (dead || _activeFocusTrap !== entry || event.defaultPrevented) return;
++      if (event.key === 'Escape' && typeof opts.onEscape === 'function') {
++        event.preventDefault();event.stopPropagation();opts.onEscape();return;
++      }
++      if (event.key !== 'Tab') return;
++      var nodes = focusables(), at = doc.activeElement;
++      if (!nodes.length || !container.contains(at) || at === container ||
++          event.shiftKey && at === nodes[0] || !event.shiftKey && at === nodes[nodes.length - 1]) {
++        event.preventDefault();focusFirst(!!event.shiftKey);
+       }
+     }
+-    container.addEventListener('keydown', handleTab);
+-    _activeFocusTrap = { container: container, handler: handleTab };
+-  }
+-  function releaseFocus() {
+-    if (_activeFocusTrap && _activeFocusTrap.container && _activeFocusTrap.handler) {
+-      _activeFocusTrap.container.removeEventListener('keydown', _activeFocusTrap.handler);
+-      _activeFocusTrap = null;
++    function onFocus(event) { if (!dead && _activeFocusTrap === entry && !container.contains(event.target)) focusFirst(false); }
++    function fitViewport() {
++      if (!viewport || dead) return;
++      viewport.style.setProperty('--suite-modal-height', (visual ? visual.height : global.innerHeight) + 'px');
++      viewport.style.setProperty('--suite-modal-top', (visual ? visual.offsetTop : 0) + 'px');
++      if (_activeFocusTrap === entry && container.contains(doc.activeElement)) doc.activeElement.scrollIntoView({block:'nearest',inline:'nearest'});
++    }
++    function release(settings) {
++      if (dead) return;dead = true;clearTimeout(timer);observer && observer.disconnect();
++      doc.removeEventListener('keydown', onKey);doc.removeEventListener('focusin', onFocus);
++      if (visual) { visual.removeEventListener('resize', fitViewport);visual.removeEventListener('scroll', fitViewport); }
++      global.removeEventListener('resize', fitViewport);
++      var top = _activeFocusTrap === entry, next = _activeFocusTrap;
++      if (top) _activeFocusTrap = entry.previous;
++      else { while (next && next.previous !== entry) next = next.previous;if (next) next.previous = entry.previous; }
++      if (entry.savedOverflow !== null) {
++        var owner = _activeFocusTrap;while (owner && !owner.lockScroll) owner = owner.previous;
++        if (owner) owner.savedOverflow = entry.savedOverflow;
++        else if (doc.body.style.overflow === 'hidden') doc.body.style.overflow = entry.savedOverflow;
++      }
++      if (viewport) {
++        if (oldHeight) viewport.style.setProperty('--suite-modal-height',oldHeight);else viewport.style.removeProperty('--suite-modal-height');
++        if (oldTop) viewport.style.setProperty('--suite-modal-top',oldTop);else viewport.style.removeProperty('--suite-modal-top');
++      }
++      if (addedTabindex && container.getAttribute('tabindex') === '-1') container.removeAttribute('tabindex');
++      if (top && opts.modal && (!settings || settings.restore !== false)) {
++        var target = opener && opener.isConnected && (!_activeFocusTrap || _activeFocusTrap.container.contains(opener)) ? opener : null;
++        if (target) focus(target);
++        else if (_activeFocusTrap) { var remaining = _activeFocusTrap.container.querySelector('button:not([disabled]),input:not([disabled]),[tabindex]');focus(remaining || _activeFocusTrap.container); }
++      }
+     }
++    entry.release = release;
++    doc.addEventListener('keydown', onKey);doc.addEventListener('focusin', onFocus);
++    if (viewport) { if (visual) {visual.addEventListener('resize',fitViewport);visual.addEventListener('scroll',fitViewport);}global.addEventListener('resize',fitViewport);fitViewport(); }
++    observer = new MutationObserver(function () { if (!container.isConnected) release(); });
++    observer.observe(doc.documentElement,{childList:true,subtree:true});
++    function initial() { if (dead || _activeFocusTrap !== entry || !container.isConnected) return;var target = typeof opts.initialFocus === 'function' ? opts.initialFocus() : opts.initialFocus;if (visible(target)) focus(target);else focusFirst(false); }
++    if (opts.modal) timer = global.setTimeout(initial,0);else initial();
++    return release;
+   }
++  function releaseFocus() { while (_activeFocusTrap) _activeFocusTrap.release({restore:false}); }
+ 
+   /* ---- Rate Limiting Helper (Abuse Guard) ---- */
+   var _rateLimitStore = {};

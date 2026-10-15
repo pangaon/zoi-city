@@ -1,0 +1,21 @@
+{
+  "schema": "zoi.studio-cleanup-independent-owner-correction.v1",
+  "at": "2026-10-15T19:46:09.716190+00:00",
+  "reviewer": "/root/owner_next",
+  "original_audit_sha256": "1993613db12361749e39ca42fcbf598e94c1ea6f8013f3d3c84fae9784d039da",
+  "status": "accepted_final_explicit_owner_bytes_already_tested",
+  "correction": "The original audit nonblocking owner-default note is superseded. Root added explicit OWNERpostgres and metadata assertion before the reviewer copied source; the root message arrived later. Therefore exact frozen scheduler9453/teste998 already tested10+12groups enforce final owner/secdef/emptysearchpath. Original audit retained unchanged; source hashes and acceptance unchanged. No new source or test rerun.",
+  "explicit_owner_statement": "ALTER FUNCTION zoi.studio_media_schedule_cleanup()OWNER TO postgres;",
+  "fixture_assertion": "proowner=postgres and prosecdef and proconfig=[search_path empty]",
+  "source": [
+    {
+      "path": "supabase/migrations/20261015192005_studio_media_bounded_cleanup_schedule.sql",
+      "sha256": "9453df1b2b98c145366ec912af35214daa803ff73b9d09eb00b43c8d6cd8f4a0"
+    },
+    {
+      "path": "tests/database/studio-media-cleanup-schedule.integration.mjs",
+      "sha256": "e9981a484931a9ac50c160263f8c8bccece0c9b99a8fc72b10315b8dd8c09006"
+    }
+  ],
+  "production_actions": []
+}

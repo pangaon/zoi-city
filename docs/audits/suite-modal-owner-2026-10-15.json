@@ -1,0 +1,144 @@
+{
+  "schema": "zoi.suite-modal-owner.v1",
+  "frozen_at_utc": "2026-10-15T19:21:02.669418+00:00",
+  "status": "source_controlled_browser_ready_for_independent_review_not_live",
+  "worktree": "/workspaces/zoi-suite-modal-work",
+  "baseline": "ae2afa53f9ddd118aa07b9e24cbf2d4c5c2ce922",
+  "source_manifest": {
+    "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/source-manifest.json",
+    "sha256": "00aca457c0732f99b546deef00d7fc0b4e57990809a8275dbfb0378abc87b7dc"
+  },
+  "scope": [
+    "assets/zoi-core.js",
+    "assets/suite/composer.js",
+    "assets/suite/calendar.js",
+    "assets/suite/audience.js"
+  ],
+  "before_evidence": "Current-main7ab89 controlled actual modules at390\u00d7390 and1440\u00d7390: Composer/Calendar Close30\u00d730; Calendar lacks dialog semantics/focus containment; Contacts lacks dialog semantics, initial focus behind dialog and Escape fails. Original /tmp screenshots lost at container restart; persisted executed-tool output and original probe source preserved separately. Four runtime files remained unchanged between7ab89 andae2afa prior to this packet.",
+  "outcome": "Existing Suite overlays share dynamic focus/disposal lifecycle, topmost Escape/Tab, exact opener and original body overflow restoration, visual viewport height, bounded scrolling body with reachable header/footer,44px targets and phone16px inputs. Contacts CSV now named dialog with Close, keyboard-native file button, initial permission note and existing consent/writer unchanged. Composer cards retain readable natural height.",
+  "implementation": "Existing ZoiCore trapFocus gains optional backwards-compatible modal lifecycle; original single-trap/releaseFocus remains. Composer/Calendar/Audience use existing helper with module scope disposal; no new overlay, writer, Auth behavior, schema/store/library/provider call. Existing helper fallback remains for controlled older callers.",
+  "verification": {
+    "focused_existing": 28,
+    "actual_controlled_browser_groups": 20,
+    "viewports": [
+      "390\u00d7390",
+      "1440\u00d7390",
+      "390\u00d7240 resize"
+    ],
+    "themes": [
+      "dark populated/sparse forms",
+      "light sparse calendar queue"
+    ],
+    "keyboard": [
+      "dynamic Tab/Shift+Tab",
+      "Escape/focus return",
+      "real browser filechooser via keyboard",
+      "nested topmost/empty/out-of-order/legacy helper",
+      "disconnected dialog release"
+    ],
+    "recovery": [
+      "invalid CSV preview then valid retry",
+      "account switch",
+      "workspace switch",
+      "Contacts\u2192existing inline Email"
+    ],
+    "canonical_writes": 0,
+    "production_actions": 0,
+    "provider_network_calls": 0,
+    "visual_review": [
+      "390 populated/sparse Contacts",
+      "390 Composer cards after overlap correction",
+      "390 Calendar footer",
+      "1440 light Calendar queue"
+    ],
+    "limits": "Controlled Chromium and existing actual frontend modules; no live authenticated acceptance, OS mobile keyboard or native phone permission claim. No writer change, so no additional DB mutation test introduced."
+  },
+  "commands": [
+    "node --test tests/unit/core-session.test.mjs tests/unit/composer-ai.test.mjs tests/unit/email-persistence.test.mjs",
+    "ZOI_SUITE_MODAL_EVIDENCE=<distinct-persistent-dir> node tests/browser/suite-modal-usability.mjs",
+    "git diff --check"
+  ],
+  "remaining": [
+    "Independent source/browser review",
+    "Root merge raster then apply exact Suite followup patch; rerun existing raster mounted journeys on combined source",
+    "Root protected deployment and actual live verification"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/calendar-populated-1440.png",
+      "sha256": "ec8bc0051fc096abe6fa730ee06d1829f45c89155d18c89650fa027d301dcf60"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/calendar-populated-390.png",
+      "sha256": "0e1c07375ba7b662912d2b7fd0f9dd30a81f0b96749062f3f00e1b8ec4ba477f"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/calendar-queue-light-1440.png",
+      "sha256": "cff04c5f2245c16644cbd59a53b7b3733f95f6b3bda0628187b9b31ccfe0edc6"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/composer-populated-1440.png",
+      "sha256": "f80b95b337c4b66cd0d8d8c5c9e35827156ee61e9c340b956ef8532d3a194cac"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/composer-populated-390.png",
+      "sha256": "8740c6b2d39a818feb36a8f7919fa96539dfe4917dcd74d5ef6ff37a9d2f4b4c"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/composer-sparse-1440.png",
+      "sha256": "5146e18a11144a367fbb879cfadbaf67213066036dfe0c0cad2f8b70c80013e7"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/composer-sparse-390.png",
+      "sha256": "cf77a4fee5179a2f7ae4814aed9d21557397567b8627dfd096a1c7e947c0fed7"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/contacts-error-390.png",
+      "sha256": "b60549b74a1c8bcdc4bb2165ffb7382c6bcf06ff4ec3df705989be45919c6b7c"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/contacts-populated-1440.png",
+      "sha256": "a2445473a6635b8621d39230a7f09f2f3ab2b35caa47129082404c040e09ff68"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/contacts-populated-390.png",
+      "sha256": "29911ebf05ab5a3cdcdf45723a4632587727d9e6c7a5140040591b2999fd38ca"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/contacts-sparse-390.png",
+      "sha256": "8bca1a56d9e9b38f93909c9f44c6c201519f4bb2d5cf35cf30f3b939227a216d"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/browser/results.json",
+      "sha256": "eb8e5d21c51c07560cdc0333f03edb6214c30d87dee3c62afb34ce0e62a30574"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/historical-before-probe-output.txt",
+      "sha256": "30a79cc5dfd1c83c1e53047b0cb375de0850261d641e1d2db23dbb572c206f23"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/historical-before-probe.mjs",
+      "sha256": "c5fff82387d4b7ff0933bac560289015c6f5d7b12ad0f906dec366f68fa3adfe"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/runtime-followup.patch",
+      "sha256": "e9372106bee5e753f4924dba815af4d4abaf5523d29f4604fe22462eca2feec8"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/source-boundaries.json",
+      "sha256": "2dc2a768749ff521aa757c401623e08bf3edd35845e5a8922ef9dc0bbdc07ee4"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/source-manifest.json",
+      "sha256": "00aca457c0732f99b546deef00d7fc0b4e57990809a8275dbfb0378abc87b7dc"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/suite-modal-focused.log",
+      "sha256": "55c4314d10416b951e7f9685e7302f23fa1e77f6afc3af840635875a8a40cc22"
+    },
+    {
+      "path": "docs/audits/evidence/suite-modal-owner-2026-10-15/suite-modal-owner.log",
+      "sha256": "a18dcfffe61b95cc3b69653a919111c2b7d6af81bdee85b8ad929adc0d54d1b9"
+    }
+  ]
+}

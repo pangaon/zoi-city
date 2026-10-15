@@ -1,0 +1,25 @@
+PASS exact retained10 definitions installed; writer security drift refuses before any ledger; canonical bodies and ACLs unchanged
+PASS actual first-Studio7 and asset7 definitions/schema/policies pinned; new sidecar/functions/restrictive policies installed locally
+PASS private sidecar/trigger cannot be read or called directly; public methods have exact current-user versus service ACLs and empty search paths
+PASS both new restrictive policies preserve unrelated legacy upload/delete behavior and deny malformed ungranted reserved paths
+PASS root-only catalog/ACL/Storage restrictive-policy/no-session rollback fixture passes locally without grants/assets/posts
+node:internal/modules/esm/resolve:275
+    throw new ERR_MODULE_NOT_FOUND(
+          ^
+
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module '/home/codespace/.cache/assets/studio/image-composition.mjs' imported from /home/codespace/.cache/zoi/suite-modal-independent-20261015/raster-core.integration.mjs
+    at finalizeResolution (node:internal/modules/esm/resolve:275:11)
+    at moduleResolve (node:internal/modules/esm/resolve:865:10)
+    at defaultResolve (node:internal/modules/esm/resolve:991:11)
+    at #cachedDefaultResolve (node:internal/modules/esm/loader:719:20)
+    at #resolveAndMaybeBlockOnLoaderThread (node:internal/modules/esm/loader:736:38)
+    at ModuleLoader.resolveSync (node:internal/modules/esm/loader:765:52)
+    at #resolve (node:internal/modules/esm/loader:701:17)
+    at ModuleLoader.getOrCreateModuleJob (node:internal/modules/esm/loader:621:35)
+    at onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:650:32)
+    at TracingChannel.tracePromise (node:diagnostics_channel:350:14) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///home/codespace/.cache/assets/studio/image-composition.mjs'
+}
+
+Node.js v24.14.0

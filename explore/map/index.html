@@ -152,6 +152,7 @@
 
   /* tooltip */
   .maplibregl-popup{z-index:14}
+  .m-place-tooltip,.m-place-tooltip *{pointer-events:none}
   .maplibregl-popup-content{
     background:color-mix(in srgb,var(--card) 94%,transparent);color:var(--tx);
     border:1px solid var(--line);border-radius:12px;padding:9px 12px;
@@ -916,7 +917,7 @@
   }
 
   /* ---------- popup ---------- */
-  var pop = new MB.Popup({ closeButton: false, closeOnClick: false, offset: 14, maxWidth: '250px' });
+  var pop = new MB.Popup({ closeButton: false, closeOnClick: false, offset: 14, maxWidth: '250px', className: 'm-place-tooltip' });
   function tip(p, lngLat) {
     document.querySelectorAll('.m-row[data-slug]').forEach(function(row){row.classList.toggle('m-row-hovered',row.dataset.slug===p.s);});
     document.querySelectorAll('.m-pin[data-slug]').forEach(function(pin){pin.classList.toggle('m-hover',pin.dataset.slug===p.s);});
@@ -1235,13 +1236,15 @@
     var cityView=options&&options.cityViewport;
     if(!map){status('The map is starting. Try your search in a moment.',false,3500);return;}
     query=$('q').value.trim();$('clearq').hidden=!query;showAll();refresh();setSheet(false);
-    if(!ready){if(cityView)map.jumpTo({center:cityView.center,zoom:11,pitch:0,bearing:0});status(cityView?'Exploring '+cityView.label+' — city view only; map tiles are loading.':'Place search is available while map tiles load.',false,3500);writeUrl();return;}
+    // An explicit city shortcut is a viewport intent. The async list refresh
+    // may still contain the previous city's rows; never fit those stale bounds.
+    // This camera center does not supply or approve any listing coordinates.
+    if(cityView){map.stop();map.jumpTo({center:cityView.center,zoom:11,pitch:0,bearing:0});status('Exploring '+cityView.label+' — city view only.'+(!ready?' Map tiles are loading.':' Choose a place to check its published address.'),false,6000);writeUrl();return;}
+    if(!ready){status('Place search is available while map tiles load.',false,3500);writeUrl();return;}
     var found=listState.items,bounds=mapTools.matchBounds(found.filter(mapPositionEligible));
     if(bounds){var inset=mapViewportInsets();if(matchMedia('(max-width:860px)').matches&&inset.height-inset.top-inset.bottom<120){setSheet(true);inset=mapViewportInsets();}var padding=mapTools.focusOptions({lng:bounds[0][0],lat:bounds[0][1]},inset).padding;if(bounds[0][0]===bounds[1][0]&&bounds[0][1]===bounds[1][1])animateMap({center:bounds[0],zoom:11,pitch:0,bearing:0,padding:padding,retainPadding:false,duration:900,essential:false});else map.fitBounds(bounds,{padding:padding,maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else {
-      // A city shortcut may orient the camera to its named city. This is only
-      // a viewport: it never supplies or approves a listing's coordinates.
-      map.stop();map.jumpTo({center:cityView?cityView.center:[0,0],zoom:cityView?11:0.6,pitch:0,bearing:0});
-      status(cityView?'Exploring '+cityView.label+' — city view only. Choose a place to check its published address.':'World view — no street-level positions in these loaded results. Browse the place list for details.',false,6000);
+      map.stop();map.jumpTo({center:[0,0],zoom:0.6,pitch:0,bearing:0});
+      status('World view — no street-level positions in these loaded results. Browse the place list for details.',false,6000);
     }writeUrl();
   }
   $('mapsearch').addEventListener('submit',function(e){e.preventDefault();if(query!==$('q').value.trim()){query=$('q').value.trim();mapSearchIntent();}showMatches();});

@@ -1,0 +1,36 @@
+✔ composer calls authenticated caption generation and returns only provider text (6.056129ms)
+✔ missing authentication never sends an AI request (1.443651ms)
+✔ composer preserves drafts on unavailable provider (1.327524ms)
+✔ composer preserves drafts on unauthorised workspace (1.178286ms)
+✔ composer preserves drafts on provider error (1.13165ms)
+✔ composer preserves drafts on malformed response (1.123164ms)
+✔ composer preserves drafts on empty caption (1.132952ms)
+✔ composer uses refreshed authentication (1.180099ms)
+✔ AI suggestions require explicit application and reject stale editor state (0.903244ms)
+✔ community publishing sends only the saved post id, never mutable editor content (1.582249ms)
+✔ canonical source context must finish before actual Composer dispatches a save (0.961863ms)
+✔ unconfirmed canonical save response never becomes a successful Composer save (0.967874ms)
+✔ parallel expired requests share one refresh (40.830932ms)
+✔ refresh completion cannot restore a signed-out session (1.542696ms)
+✔ transient refresh failure retains refresh credentials (1.243859ms)
+✔ invalid refresh clears expired credentials (1.285526ms)
+✔ RPC timeout aborts and never retries mutation (22.117817ms)
+✔ application error envelopes cannot be success receipts (1.350347ms)
+✔ signout clears locally even if remote revocation fails (1.524712ms)
+✔ a signed-out request cannot expose its previous account response (2.451831ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: null (6.521297ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: false (0.815881ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: {"ok":false} (0.729941ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: {"ok":true} (0.795323ms)
+✔ confirmed save retains the latest local snapshot before list refresh (1.010735ms)
+✔ email mutation guard prevents overlapping requests and locks editable controls (1.015102ms)
+✔ email scheduling is blocked when the actual provider is unavailable (1.828548ms)
+✔ receipt-backed UI refuses a bare UUID without actor/workspace/request proof; the legacy writer stays scalar (0.868369ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 138.120938

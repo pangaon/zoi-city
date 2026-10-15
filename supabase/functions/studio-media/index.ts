@@ -12,6 +12,17 @@ async function rpc(name:string,args:unknown,token:string){
  const r=await request('/rest/v1/rpc/'+name,token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(args)}),value=await r.json();
  if(!r.ok||value?.ok===false||value?.error)throw Error(value.message||value.error||'studio_media_request_unconfirmed');return value;
 }
+// Maintenance callers may hold a different valid service API credential from
+// the function environment. The service-only RPC ACL is the authority check;
+// neither string equality nor an unverified JWT claim grants cleanup access.
+async function maintenanceCandidates(credential:string){
+ const r=await fetch(BASE+'/rest/v1/rpc/studio_media_cleanup_candidates',{method:'POST',redirect:'error',headers:{apikey:credential,...(credential.startsWith('sb_secret_')?{}:{Authorization:'Bearer '+credential}),'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(20000)});
+ if(r.status===401||r.status===403)return null;
+ if(r.status!==200)throw Error('studio_media_cleanup_authority_unconfirmed');
+ const ids=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(await readBoundedBody(r,8192,20000)));
+ if(!Array.isArray(ids)||ids.length>20||ids.some((id:unknown)=>typeof id!=='string'||!UUID.test(id)))throw Error('studio_media_cleanup_authority_unconfirmed');
+ return ids as string[];
+}
 function validPath(path:unknown){return typeof path==='string'&&path.length>0&&path.length<=1800&&!/(^\/|\/$|\/\/|(^|\/)\.\.?($|\/)|[\x00-\x1f\x7f\\?#])/.test(path);}
 function same(a:unknown,b:unknown){return JSON.stringify(a)===JSON.stringify(b);}
 function grant(value:any,purpose:string,args:any){
@@ -69,9 +80,13 @@ Deno.serve(async(req:Request)=>{
  try{
   const action=new URL(req.url).searchParams.get('action')||'commit',bearer=req.headers.get('authorization')||'';token=/^Bearer [^\s]+$/.test(bearer)?bearer.slice(7):'';
   if(action==='cleanup'){
-   if(!SERVICE||token!==SERVICE)return reply(401,{ok:false,error:'sign_in_required'});
-   const ids=await rpc('studio_media_cleanup_candidates',{},SERVICE);if(!Array.isArray(ids)||ids.length>20)throw Error('studio_media_cleanup_unconfirmed');
-   await cleanup(ids);return reply(200,{ok:true,requests_checked:ids.length});
+   const apiKey=req.headers.get('apikey')||'',credential=bearer?token:apiKey;
+   if(!SERVICE||!credential||credential.length>4096||bearer&&!token||apiKey&&token&&apiKey!==token||! /^(?:sb_secret_[A-Za-z0-9_-]+|[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+)$/.test(credential))return reply(401,{ok:false,error:'sign_in_required'});
+   let ids:string[]|null;
+   try{ids=await maintenanceCandidates(credential);}catch{return reply(503,{ok:false,error:'studio_media_cleanup_authority_unconfirmed',retryable:true,cleanup_complete:false});}
+   if(ids===null)return reply(401,{ok:false,error:'sign_in_required'});
+   try{await cleanup(ids);}catch{return reply(503,{ok:false,error:'studio_media_cleanup_unconfirmed',retryable:true,cleanup_complete:false});}
+   return reply(200,{ok:true,requests_checked:ids.length});
   }
   if(!['commit','recover','cancel'].includes(action))return reply(400,{ok:false,error:'invalid_action'});
   if(!token||token===SERVICE)return reply(401,{ok:false,error:'sign_in_required'});

@@ -1,0 +1,120 @@
+{
+  "schema": "zoi.studio-media.cleanup-credential-auth.owner.v1",
+  "at": "2026-10-15T19:37:23.145676+00:00",
+  "owner": "/root/enrichment_next",
+  "worktree": "/workspaces/zoi-studio-cleanup-auth-work",
+  "base_commit": "cc806c05cb5ffce75535277d89693fb65580d80f",
+  "status": "frozen_for_independent_review_not_deployed",
+  "problem": "A valid service-role API credential in existing Vault can differ from the Edge environment service credential. Exact bearer string comparison rejected that authorized maintenance caller before its existing service-only RPC could validate authority. No credential value was read, printed, rotated or changed.",
+  "changes": {
+    "auth_boundary": "Supplied bounded credential is validated only against fixed-origin POST studio_media_cleanup_candidates with its existing service-only RPC ACL. No unverified role decoding/string equality grants authority; anon/authenticated/publishable/malformed/unknown/refused cannot start cleanup plans/deletes.",
+    "headers": "Legacy service JWT uses supplied credential as apikey and Bearer. sb_secret uses apikey only for RPC; supports maintenance bearer transport or explicit apikey alternate with conflict refusal. No arbitrary incoming headers/host/path forwarded.",
+    "bounds": "Credential\u22644096; exact successful HTTP200, bounded8192byte JSON response, entire candidate array\u226420 and everyUUID validated before any cleanup. Existing plan\u22642 paths, both5MiB uploads and all source/owner/SID/proof caps unchanged.",
+    "cleanup": "After caller authority confirmation, existing configured-service cleanup plan/delete/finish path is reused. Unknown auth/plan/delete/finish responses fail closed with fixed safe503 result, no retry/fallback or secret-bearing exception text.",
+    "unchanged": "All ordinary user getUser/request/prepare/upload/readback/proof/save/recover/cancel/currentSID bytes unchanged. No schema/migration/cron/Vault/key/deployment changes."
+  },
+  "source_boundary": {
+    "path": "/home/codespace/.cache/zoi/studio-cleanup-auth-20261015/source-boundary-proof.json",
+    "sha256": "0663ffc44d5e1d95feb90195b2c480a893121a5c61f9c1017ec0d10923787cc5",
+    "bytes": 460
+  },
+  "ownership_manifest": [
+    {
+      "path": "supabase/functions/studio-media/index.ts",
+      "sha256": "876319da1e71e9cf3150ee696b3b022abe3875aca16f89356d64069256a20a11",
+      "bytes": 12727
+    },
+    {
+      "path": "tests/unit/studio-media-cleanup-auth.test.mjs",
+      "sha256": "90b859ff4c955ed725a914f9af7047d9184325ce795b05f7dd67230258baa819",
+      "bytes": 8038
+    }
+  ],
+  "packaging3": [
+    {
+      "path": "supabase/functions/studio-media/index.ts",
+      "sha256": "876319da1e71e9cf3150ee696b3b022abe3875aca16f89356d64069256a20a11",
+      "bytes": 12727
+    },
+    {
+      "path": "assets/community/media-rules.mjs",
+      "sha256": "126f0378a0b8a393494bea42ade498b9e28e6e3aeffd56e77975bb601f898469",
+      "bytes": 5147
+    },
+    {
+      "path": "assets/documents/bounded-body.mjs",
+      "sha256": "ecb212d46b99b242de2a1e49bb000607b6646e66a723f6d1458b4bfe659df1ed",
+      "bytes": 1472
+    }
+  ],
+  "validation": {
+    "focused": {
+      "command": "node --test tests/unit/studio-media-cleanup-auth.test.mjs tests/unit/studio-raster-workflow.test.mjs",
+      "passed": 39,
+      "failed": 0,
+      "evidence": {
+        "path": "/home/codespace/.cache/zoi/studio-cleanup-auth-20261015/focused.log",
+        "sha256": "2b07f41e58e8abacb1e01511246ee2619f30852f66072adcf46ef987fe5134ba",
+        "bytes": 4008
+      },
+      "actual_handler_cases": 33,
+      "workflow_cases": 6,
+      "coverage": [
+        "different valid legacy JWT and secret API key proper headers plus sameconfiguredsecret",
+        "fixed RPC route and exact privilege sequence before configured-service plan/delete/finish",
+        "missing/malformed/conflicting/oversized/publishable credentials beforeIO",
+        "user/anon/refused credentials stop after sole caller-scope RPC, no configured-service fallback",
+        "unknown network/redirect/5xx/202/malformed/oversized/error/invalid or over20 candidates produce no plan/delete",
+        "failed plan/delete/unknown finish remain unconfirmed, no raw credential/provider error in response"
+      ]
+    },
+    "database_edge": {
+      "command": "PGPORT=15936 ZOI_STUDIO_RASTER_EVIDENCE=/your/new/private/database node tests/database/studio-raster.integration.mjs",
+      "passed_groups": 49,
+      "failed": 0,
+      "evidence": {
+        "path": "/home/codespace/.cache/zoi/studio-cleanup-auth-20261015/database/results.json",
+        "sha256": "e4b6437dfa10db9bcea0e000153cb93154ee9e72c8cfb2d418f4655c17f4d169",
+        "bytes": 5575
+      },
+      "log": {
+        "path": "/home/codespace/.cache/zoi/studio-cleanup-auth-20261015/database.log",
+        "sha256": "52436860a96d2fd1e01b253a62679913a123ff402f5b48d69e5dab28e31e2c97",
+        "bytes": 3953
+      },
+      "meaning": "Unmodified existing isolated actual-schema/Storage-policy suite proves service-only candidate ACL and actual-handler uploads/readback/proof/current-session save/recover/cancel/failure/concurrency behavior remains. HTTP maintenance caller variants are controlled isolated handler tests; no actual Vault credential or live cleanup exercised."
+    },
+    "cached_deno": {
+      "command": "/home/codespace/.npm/_npx/7a40be787520bede/node_modules/deno/deno check --cached-only --node-modules-dir=none supabase/functions/studio-media/index.ts",
+      "passed": true,
+      "evidence": {
+        "path": "/home/codespace/.cache/zoi/studio-cleanup-auth-20261015/deno.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    },
+    "diff_check": {
+      "command": "git diff --check",
+      "passed": true
+    }
+  },
+  "actual_baseline_from_root": {
+    "main": "cc806c05cb5ffce75535277d89693fb65580d80f",
+    "Studio_schema_ledger": "20261015191818",
+    "studio_media_edge_version": 1,
+    "served_files": 3,
+    "bounded_live_observation": "Root reported service-only cleanup_candidates HTTP200[] with existing credential and old Edge cleanup401; specialist did not read credential or replay live requests.",
+    "bundle_sha256_prefix": "1d0c224a"
+  },
+  "remaining": [
+    "Independent review and root release/actual empty candidates request using existing credential",
+    "Root-owned separate15minute cleanup schedule migration remains unimplemented/unapplied pending accepted auth correction",
+    "No actual scheduled cleanup or production delete acceptance claimed"
+  ],
+  "production_writes": 0,
+  "schema_changes": 0,
+  "paid_calls": 0,
+  "external_network_calls": 0,
+  "secrets_read_or_changed": 0,
+  "deployment_or_cron_changes": 0
+}

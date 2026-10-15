@@ -1,0 +1,73 @@
+{
+  "studio_raster": {
+    "migration_source": "supabase/migrations/20261015180036_studio_media_image_composition_verified.sql",
+    "migration_sha256": "d19c51e0b662f325ea1f1b3d1addcccfbe09c11248d667afc917e0f03cecb97b",
+    "actual_ledger": [
+      {
+        "version": "20261015191818",
+        "name": "studio_media_image_composition_verified"
+      }
+    ],
+    "installed_probe": [
+      {
+        "result": "studio_media_catalog_and_no_session_probe_passed"
+      }
+    ],
+    "edge_version": 1,
+    "edge_status": "ACTIVE",
+    "edge_bundle": "1d0c224a2a8d206b9892c46e691fd83cf7fec35741c948e4d3532ce37113da46",
+    "actual_served_files": [
+      {
+        "name": "supabase/functions/studio-media/index.ts",
+        "bytes": 11233,
+        "sha256": "1c8c5809eeab080754e45f05e09a923b99bff0dec86f997ade5e1caeed87f5c0"
+      },
+      {
+        "name": "assets/community/media-rules.mjs",
+        "bytes": 5147,
+        "sha256": "126f0378a0b8a393494bea42ade498b9e28e6e3aeffd56e77975bb601f898469"
+      },
+      {
+        "name": "assets/documents/bounded-body.mjs",
+        "bytes": 1472,
+        "sha256": "ecb212d46b99b242de2a1e49bb000607b6646e66a723f6d1458b4bfe659df1ed"
+      }
+    ],
+    "positive_owner_journey": "Unverified: archived QAfixture; no published owner authority. No founder session renewal.",
+    "cleanup_auth_gap": [
+      {
+        "id": 15724,
+        "status_code": 401,
+        "timed_out": false,
+        "content": "{\"ok\":false,\"error\":\"sign_in_required\"}"
+      }
+    ]
+  },
+  "cleanup_schedule_rehearsal": {
+    "result": [
+      {
+        "rehearsal": {
+          "job": [
+            {
+              "name": "zoi-studio-media-cleanup",
+              "active": true,
+              "schedule": "3,18,33,48 * * * *"
+            }
+          ],
+          "function": "zoi.studio_media_schedule_cleanup()",
+          "no_work_result": null,
+          "scheduler_owner": "postgres"
+        }
+      }
+    ],
+    "after_rollback": [
+      {
+        "helper_after_rollback": null,
+        "jobs_after_rollback": 0,
+        "cleanup_candidates": 0
+      }
+    ],
+    "permanent_install": false
+  },
+  "scope": "Actual deployed raster source/schema/gates are separate from positive ownerupload. Pendingcleanupauth/schedule are rollback-only; no cron installed/no objectdeleted."
+}

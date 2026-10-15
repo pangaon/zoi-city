@@ -94,18 +94,18 @@
         'border-left:3px solid var(--green);border-radius:9px;padding:9px 12px;margin-bottom:12px;font-size:12.5px;color:var(--tx);}' +
       '.zu-consent svg{flex:0 0 auto;width:16px;height:16px;color:var(--green);margin-top:2px;}' +
       '.zu-consent b{color:var(--green);}' +
-      '.zu-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;' +
-        'padding:16px;z-index:9999;}' +
-      '.zu-modal-card{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;padding:18px;width:100%;' +
-        'max-width:560px;max-height:88vh;overflow:auto;}' +
-      '.zu-modal-card h3{margin:0 0 12px;font-size:16px;font-weight:700;}' +
+      '.zu-modal,.zu-modal *{box-sizing:border-box}.zu-modal{position:fixed;inset:0;top:var(--suite-modal-top,0px);bottom:auto;height:var(--suite-modal-height,100dvh);background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;' +
+        'padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));z-index:9999;overflow:auto;overscroll-behavior:contain}' +
+      '.zu-modal-card{background:var(--bg2);border:1px solid var(--line2);border-radius:14px;width:100%;' +
+        'max-width:560px;max-height:calc(var(--suite-modal-height,100dvh) - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;overflow:hidden;}' +
+      '.zu-modal-head{display:flex;align-items:center;gap:12px;justify-content:space-between;padding:12px 18px;border-bottom:1px solid var(--line2);flex:0 0 auto}.zu-modal-card h3{margin:0;font-size:16px;font-weight:700;min-width:0;overflow-wrap:anywhere}.zu-modal-close{width:44px;height:44px;flex:0 0 44px;justify-content:center;padding:0;font-size:20px}.zu-modal-body{padding:16px 18px;min-height:0;overflow:auto;overscroll-behavior:contain}.zu-modal :is(button,select,input:not([type=checkbox]):not([type=radio])){min-height:44px}.zu-modal label:has(input:is([type=checkbox],[type=radio])){min-height:44px}.zu-modal :focus-visible{outline:3px solid var(--acc);outline-offset:2px}.zu-modal button{min-width:44px}@media(max-width:640px){.zu-modal :is(input,textarea,select){font-size:16px}}.zu-modal [data-z=preview]{overflow-x:auto}.zu-modal .zu-imp-table td{overflow-wrap:anywhere}.zu-modal .zu-ta{font-size:16px;}' +
       '.zu-imp-summary{font-size:12px;color:var(--mut);margin:8px 0;}' +
       '.zu-imp-summary b{color:var(--tx);}' +
       '.zu-imp-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px;}' +
       '.zu-imp-table th,.zu-imp-table td{padding:5px 8px;border-bottom:1px solid var(--line);text-align:left;}' +
       '.zu-imp-table th{color:var(--mut);font-size:10.5px;text-transform:uppercase;}' +
       '.zu-bad{color:#ff8080;}' +
-      '.zu-modal-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}' +
+      '.zu-modal-acts{display:flex;gap:8px;justify-content:flex-end;margin:0;padding:12px 18px;border-top:1px solid var(--line2);flex-wrap:wrap;flex:0 0 auto;}' +
       '@media(max-width:640px){.zu-sel{max-width:none;flex:1 1 140px;}}';
     var s = doc.createElement('style');
     s.id = STYLE_ID;
@@ -446,21 +446,21 @@
       if(!active()||!canWrite)return;if(closeImport)closeImport();
       var overlay = el('div', 'zu-modal');
       overlay.innerHTML =
-        '<div class="zu-modal-card">' +
-          '<h3>Import contacts from CSV</h3>' +
+        '<div class="zu-modal-card" role="dialog" aria-modal="true" aria-label="Import contacts from CSV">' +
+          '<div class="zu-modal-head"><h3>Import contacts from CSV</h3><button type="button" class="zu-btn ghost zu-modal-close" data-z="close" aria-label="Close">×</button></div><div class="zu-modal-body">' +
           '<div class="zu-consent">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>' +
             '<div><b>Only import contacts who agreed to hear from you.</b> Imported contacts are not automatically eligible for marketing emails. ' +
               'Record each recipient’s permission in their contact form before sending.</div>' +
           '</div>' +
           '<div class="zu-field"><label>Columns: <span class="zu-hint">name, email, phone, tags (pipe | separated), nameday, notes</span></label>' +
-            '<textarea class="zu-ta" data-z="csv" placeholder="name,email,phone,tags,nameday,notes&#10;Maria K,maria@example.com,+1..,customers|vip,Aug 15,Met at market"></textarea></div>' +
+            '<textarea class="zu-ta" data-z="csv" aria-label="CSV contacts" placeholder="name,email,phone,tags,nameday,notes&#10;Maria K,maria@example.com,+1..,customers|vip,Aug 15,Met at market"></textarea></div>' +
           '<div class="zu-actions" style="margin-bottom:8px">' +
-            '<label class="zu-btn ghost sm" style="cursor:pointer">Choose file…' +
-              '<input type="file" data-z="file" accept=".csv,text/csv,text/plain" style="display:none"></label>' +
+            '<button type="button" class="zu-btn ghost sm" data-z="choose-file">Choose file…</button>' +
+              '<input type="file" data-z="file" accept=".csv,text/csv,text/plain" style="display:none">' +
             '<button class="zu-btn ghost sm" data-z="parse">Preview</button>' +
           '</div>' +
-          '<div data-z="preview"></div>' +
+          '<div data-z="preview"></div></div>' +
           '<div class="zu-modal-acts">' +
             '<button class="zu-btn ghost" data-z="cancel">Cancel</button>' +
             '<button class="zu-btn pri" data-z="do" disabled>Import</button>' +
@@ -469,11 +469,17 @@
       document.body.appendChild(overlay);
 
       function mq(id) { return overlay.querySelector('[data-z="' + id + '"]'); }
+      var restoreFocus=document.activeElement,releaseTrap=null,closed=false;
       closeImport=close;importDirty=false;overlay.addEventListener('input',function(){importDirty=true;});
-      function close() { importDirty=false;closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay); importState.parsed = null; }
+      function close() { if(closed)return;closed=true;importDirty=false;closeImport=null;if (overlay.parentNode) overlay.parentNode.removeChild(overlay);importState.parsed=null;document.removeEventListener('keydown',onKey);if(releaseTrap)releaseTrap({restore:active()});else if(active()&&restoreFocus?.isConnected)restoreFocus.focus(); }
+      function onKey(e){if(e.key==='Escape'){e.preventDefault();close();}}
+      var focusHelper=C.trapFocus||global.ZoiCore?.trapFocus;
+      if(focusHelper)releaseTrap=focusHelper(overlay.querySelector('.zu-modal-card'),{modal:true,onEscape:close,restoreFocus:restoreFocus,lockScroll:true,viewport:overlay,initialFocus:()=>mq('close')});
+      else document.addEventListener('keydown',onKey);
 
       overlay.addEventListener('click', function (e) { if (e.target === overlay) close(); });
-      mq('cancel').addEventListener('click', close);
+      mq('cancel').addEventListener('click', close);mq('close').addEventListener('click',close);
+      mq('choose-file').addEventListener('click',function(){if(active())mq('file').click();});
 
       mq('file').addEventListener('change', function () {
         var f = this.files && this.files[0];

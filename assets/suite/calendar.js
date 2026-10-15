@@ -278,15 +278,15 @@
       '.zk-empty{color:var(--mut);font-size:12.5px;text-align:center;padding:34px 14px;border:1px dashed var(--line);border-radius:12px;background:var(--bg2)}',
       '.zk-wempty{color:var(--dim);font-size:10.5px;text-align:center;padding:6px 2px}',
       /* modal */
-      '.zk-ov{position:fixed;inset:0;background:rgba(4,6,10,.66);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:5vh 16px;z-index:9000;overflow:auto}',
-      '.zk-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
+      '.zk-ov,.zk-ov *{box-sizing:border-box}.zk-ov{position:fixed;inset:0;top:var(--suite-modal-top,0px);bottom:auto;height:var(--suite-modal-height,100dvh);background:rgba(4,6,10,.66);backdrop-filter:blur(3px);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));z-index:9000;overflow:auto;overscroll-behavior:contain}',
+      '.zk-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;max-height:calc(var(--suite-modal-height,100dvh) - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.5)}',
       '.zk-modal.wide{max-width:760px}',
-      '.zk-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:15px 18px;border-bottom:1px solid var(--line2)}',
-      '.zk-mh h3{margin:0;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:9px}',
-      '.zk-mx{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
+      '.zk-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line2);flex:0 0 auto}',
+      '.zk-mh h3{margin:0;font-size:15.5px;font-weight:800;display:flex;align-items:center;gap:9px;min-width:0;overflow-wrap:anywhere}',
+      '.zk-mx{width:44px;height:44px;flex:0 0 44px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}',
       '.zk-mx:hover{border-color:var(--acc);color:var(--acc)}',
-      '.zk-mb{padding:16px 18px;display:flex;flex-direction:column;gap:14px;max-height:70vh;overflow:auto}',
-      '.zk-mf{padding:13px 18px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end}',
+      '.zk-mb{padding:16px 18px;display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto;overscroll-behavior:contain}.zk-mb>*{flex-shrink:0}.zk-modal :is(button,select,input:not([type=checkbox]):not([type=radio])){min-height:44px}.zk-modal label:has(input:is([type=checkbox],[type=radio])){min-height:44px}.zk-modal :focus-visible{outline:3px solid var(--acc);outline-offset:2px}.zk-modal button{min-width:44px}@media(max-width:640px){.zk-modal :is(input,textarea,select){font-size:16px}}',
+      '.zk-mf{padding:13px 18px;border-top:1px solid var(--line2);display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;flex:0 0 auto}',
       '.zk-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 6px;display:block}',
       '.zk-badge{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;padding:4px 10px;border-radius:20px}',
       '.zk-badge.draft{background:rgba(107,114,128,.18);color:#c2c8d2}',
@@ -1325,17 +1325,21 @@
     function openModal(title, iconSvg, wide) {
       var ov = el('div', 'zk-ov');
       var modal = el('div', 'zk-modal' + (wide ? ' wide' : ''));
+      modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-label',title);
       modal.innerHTML =
         '<div class="zk-mh"><h3>' + (iconSvg || '') + esc(title) + '</h3>' +
-        '<button class="zk-mx" data-role="close">×</button></div>' +
+        '<button type="button" class="zk-mx" data-role="close" aria-label="Close">×</button></div>' +
         '<div class="zk-mb" data-role="body"></div>' +
         '<div class="zk-mf" data-role="foot"></div>';
       ov.appendChild(modal);
       doc.body.appendChild(ov);
-      function close() { modalClosers.delete(close);if (ov.parentNode) ov.parentNode.removeChild(ov); doc.removeEventListener('keydown', onKey); }
-      function onKey(e) { if (e.key === 'Escape') close(); }
+      var restoreFocus=doc.activeElement,releaseTrap=null,closed=false;
+      function close() { if(closed)return;closed=true;modalClosers.delete(close);if (ov.parentNode) ov.parentNode.removeChild(ov);doc.removeEventListener('keydown',onKey);if(releaseTrap)releaseTrap({restore:scopeActive()});else if(scopeActive()&&restoreFocus?.isConnected)restoreFocus.focus(); }
+      function onKey(e) { if (e.key === 'Escape') {e.preventDefault();close();} }
       modalClosers.add(close);
-      doc.addEventListener('keydown', onKey);
+      var focusHelper=C.trapFocus||global.ZoiCore?.trapFocus;
+      if(focusHelper)releaseTrap=focusHelper(modal,{modal:true,onEscape:close,restoreFocus:restoreFocus,lockScroll:true,viewport:ov});
+      else doc.addEventListener('keydown',onKey);
       ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
       modal.querySelector('[data-role="close"]').addEventListener('click', close);
       return { ov: ov, body: modal.querySelector('[data-role="body"]'), foot: modal.querySelector('[data-role="foot"]'), close: close };
