@@ -26,3 +26,6 @@ export function companyBrowserFence(company,{expiresAt=Infinity,now=Date.now}={}
  return permittedRequest(r,null)||(['ops_records_list','ops_audit_list'].includes(fn)&&b.p_workspace===QA.workspace&&(fn==='ops_records_list'?same(b,{p_workspace:QA.workspace,p_kind:null,p_include_archived:false}):b.p_record===company&&b.p_limit===50&&Object.keys(b).length===3));
  }catch{return false;}}};
 }
+
+const QA_STAGES=new Set(["request","web_source","session","company_create","browser_open","browser_endpoint","browser_connect","browser_attach","browser_navigation","browser_ready","browser_identity","minute_create","minute_edit","minute_history","minute_receipt","page_reload","record_reopen","record_reload","minute_archive","minute_restore","minute_final_archive","browser_close","cleanup","evidence"]);
+export function safeCompanyFailure(error,fallback="request"){return{status:"company_private_browser_unconfirmed",stage:QA_STAGES.has(error?.qaStage)?error.qaStage:QA_STAGES.has(fallback)?fallback:"unknown",cleanup:"canonical cleanup required; original request only"};}

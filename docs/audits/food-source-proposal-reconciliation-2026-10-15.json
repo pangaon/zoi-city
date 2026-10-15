@@ -1,0 +1,194 @@
+{
+  "created_at": "2026-10-15T12:02:48.544518+00:00",
+  "status": "frozen for independent root review and production rollback-only gate; not applied",
+  "specialist": "/root/enrichment_next",
+  "changed_paths": [
+    {
+      "path": "ops/proposals/food-source-reviewed-20261015-dryrun.sql",
+      "sha256": "677c08474efaf9f7a3b15d50eee1c216fe631775c504c658c7af62f0ad9c4100"
+    },
+    {
+      "path": "ops/proposals/food-source-reviewed-20261015-apply.sql",
+      "sha256": "5fa07f871a98b580874b0d155df2c02cf88a4934774f0e5e121c45dfba9fdadc"
+    },
+    {
+      "path": "tests/integration/food-source-proposal-proof.mjs",
+      "sha256": "10e8d8c64656d301df973d054946b885774b420c8e90ad266fa8a299277249fe"
+    }
+  ],
+  "existing_plan": {
+    "path": "docs/audits/food-production-source-plan-2026-10-15.json",
+    "sha256": "fca7ce1a3e5be5d134ff01d0751caba8cd6584f35d0b25499cf34c71230d2ed5"
+  },
+  "production_preflight": {
+    "read_only": true,
+    "captured_at": "2026-10-15T11:58:56.544415+00:00",
+    "listings": [
+      {
+        "listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+        "row_fingerprint": "bac459ce1c1416ab37af78bfa8c8d6e4",
+        "unowned": true
+      },
+      {
+        "listing_id": "ea2cc628-60ad-4fd5-b99b-984c763a6a49",
+        "row_fingerprint": "8ab5dc41636e130d2a10639bcc27072d",
+        "unowned": true
+      }
+    ],
+    "private_snapshot_sha256": "397071f584c167d305d6de45a10181604897335fab955cba76d9df1aea5f0989",
+    "private_snapshot_path": "/home/codespace/.codex/private-evidence/zoi-food-home-2026-10-15/food-proposal-bounded-snapshot.json",
+    "all_seven_canonical_function_contracts_pinned": true,
+    "live_writes": 0
+  },
+  "transaction_contract": {
+    "exact_target_rows": 2,
+    "listing_lock_order": "UUID ascending before canonical sample lease",
+    "lease": "existing public.enrich_sample_lease(uuid[]) only",
+    "writer": "existing public.enrich_apply(jsonb) only; prior machine facts and per-field provenance merged",
+    "direct_listing_updates": false,
+    "abort_on": [
+      "full canonical row fingerprint drift",
+      "owner user or workspace present",
+      "authored proposed field or explicit clear present",
+      "raw website override or clear present",
+      "home design revision exists",
+      "source identity/address/website drift",
+      "current machine hold or missing exact bound source",
+      "existing lease present",
+      "canonical writer/helper definition owner or ACL drift",
+      "lease context mismatch",
+      "either apply acknowledgement missing",
+      "retained machine facts/provenance or unrelated listing fields changed",
+      "menu count/hash/readback changed"
+    ],
+    "dryrun_and_apply_prefix_equal": true,
+    "dryrun_ends": "ROLLBACK then exact before-fingerprint proof",
+    "apply_ends": "COMMIT only after exact two-row readback, then sanitized post-fingerprint receipt"
+  },
+  "local_postgres_rehearsal": {
+    "captured_at": "2026-10-15T12:02:17.680Z",
+    "scope": "isolated PostgreSQL16 with exact captured writer/helper definitions and two retained canonical rows; embedding type text only because both embeddings null and local vector extension unavailable; exact full fingerprints reproduced",
+    "production_mutations": 0,
+    "results": [
+      {
+        "name": "captured two-row full fingerprints reproduce locally",
+        "passed": true
+      },
+      {
+        "name": "exact rollback-only proposal leases applies verifies then restores both full rows",
+        "passed": true
+      },
+      {
+        "name": "exact committed variant produces 100 retained menu items and two acknowledgements",
+        "passed": true
+      },
+      {
+        "name": "committed proposal refuses replay against changed full fingerprints",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects owner user even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects owner workspace even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects raw website clear even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects raw menu clear even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects source challenge even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects identity scope even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects missing bound source even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects branch address drift even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "independent direct guard rejects canonical home revision even with fingerprint updated in local test only",
+        "passed": true
+      },
+      {
+        "name": "exact helper contract rejects definition drift",
+        "passed": true
+      }
+    ]
+  },
+  "retained_source_proof": {
+    "command": "node tests/integration/food-retained-source-proof.mjs",
+    "passed": 5,
+    "skipped": 0,
+    "scope": "actual retained official source hashes through the worker extraction/linked-menu/current branch guard; no network or live writes"
+  },
+  "source_assets": [
+    {
+      "file": "hellenic-logo.png",
+      "url": "https://static.spotapps.co/website_images/ab_websites/268653_website_v1/logo.png",
+      "http_status": 200,
+      "bytes": 155507,
+      "sha256": "b8081b3a72ca29ec822780c291a92b53c67a7a77f0ec6e5060465e47454b3404",
+      "content_type": "image/png",
+      "source_url": "https://hellenicbakery.com/",
+      "source_sha256": "bbfd8172b3dbc4d7005fad739436e3442efb501e874dd7740602f105510fcce8",
+      "retrieved_at": "2026-10-15T03:57:27.483Z",
+      "listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+      "role": "brand_logo",
+      "visually_reviewed": true,
+      "reviewed_by": "zoi-delivery/enrichment-specialist",
+      "public_application": "requires_independent_review_and_root_application",
+      "exact_asset_bytes_hash_verified_in_this_review": true,
+      "exact_linked_from_html_bytes_hash_verified_in_this_review": true,
+      "visual_recheck": "Hellenic Bakery & market olive/wheat logo; tray of real pies. Source-linked asset identity reviewed; no claim of photo authorship or rights."
+    },
+    {
+      "file": "hellenic-source-image.bin",
+      "url": "https://cdn.spotapps.co/spothopper/image/fetch/f_auto,q_auto:best,c_fit,h_1200/http://static.spotapps.co/spots/75/e78fa78ade4030915730185cb5a419/:original",
+      "http_status": 200,
+      "bytes": 312884,
+      "sha256": "3dbc0cb2f1c14ff2addf2afa2a1968ccbd0c7b1ea68b42b2903ab85266cc3d65",
+      "content_type": "image/jpeg",
+      "source_url": "https://hellenicbakery.com/",
+      "source_sha256": "bbfd8172b3dbc4d7005fad739436e3442efb501e874dd7740602f105510fcce8",
+      "retrieved_at": "2026-10-15T03:57:27.638Z",
+      "listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+      "role": "photograph",
+      "visually_reviewed": true,
+      "reviewed_by": "zoi-delivery/enrichment-specialist",
+      "public_application": "requires_independent_review_and_root_application",
+      "exact_asset_bytes_hash_verified_in_this_review": true,
+      "exact_linked_from_html_bytes_hash_verified_in_this_review": true,
+      "visual_recheck": "Hellenic Bakery & market olive/wheat logo; tray of real pies. Source-linked asset identity reviewed; no claim of photo authorship or rights."
+    }
+  ],
+  "coverage": {
+    "reviewed_clients": 2,
+    "full_catalogue_complete": false,
+    "hellenic_retained_items": 100,
+    "hellenic_source_items": 151,
+    "hellenic_brief_summary_items": 30,
+    "corfu": "menu page handoff only; linked PDF inaccessible, no dishes/prices inferred"
+  },
+  "remaining_root_gates": [
+    "Independent review of these frozen SQL hashes",
+    "Exact production rollback-only execution and before-fingerprint proof",
+    "Separately authorized committed execution only after successful rollback gate",
+    "Actual public projection and rendered/exercised Hellenic/Corfu production journeys",
+    "Exact deployed source worker bundle/version acceptance",
+    "Native structured menu/editor parity remains open"
+  ],
+  "claim": "Only source-bound reviewed food proposals are prepared; no production home, coordinate or provider completion is claimed."
+}
