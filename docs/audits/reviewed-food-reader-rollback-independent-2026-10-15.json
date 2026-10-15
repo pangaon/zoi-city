@@ -1,0 +1,29 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-15T15:20:45.667995+00:00",
+  "reviewer": "/root/qa_next",
+  "state": "Accepted final root rollback-only SQL by bounded read-only source/shape review; actual production execution remains root-owned.",
+  "sql_path": "/home/codespace/.cache/zoi/three-kretans-reviewed-root-20261015/reader-rollback.sql",
+  "sql_sha256": "9fccad50ce572a3d897e77651e09cef7b4802a6cbd19cbc79c28f02077156e53",
+  "migration_sha256": "25328681ac6b3ae3921474945a602d2156c600e192373e8f10722e7f3433d240",
+  "exact_merged_source_commit": "f26484237805a6138a37acbe579fb8f414e493de",
+  "verified": [
+    "Exact full frozen migration bytes appear once inside explicit BEGIN/ROLLBACK with lock/statement/idle transaction limits.",
+    "Only TEMP snapshot writes and local composite-row assignments; no persistent listing/lease/fact writer invoked.",
+    "Two snapshot rows required; missing/changed actual rows or raw public JSON fail using LEFT JOIN and IS DISTINCT FROM.",
+    "Manual current/deferred/real-error/stale composite assertions fail closed on missing/null fields; helper metadata absence fails closed.",
+    "Final helper absence and original reader definition hash are returned after ROLLBACK.",
+    "Composite variable l is preserved; inner SQL table alias is actual_listing, eliminating PL/pgSQL ambiguity."
+  ],
+  "review_findings_corrected": [
+    "Original <> JSON comparisons were nullable; changed to IS DISTINCT FROM.",
+    "Original inner JOIN omitted missing rows/count check; now count2 plus LEFT JOIN and missing-row/hash/JSON checks.",
+    "Helper metadata check now rejects absent/null metadata.",
+    "Original inner alias l conflicted with declared composite variable l. Tiny isolated PostgreSQL16 reproducer proved ambiguous l.id; root renamed alias and refs."
+  ],
+  "scope_limits": [
+    "No production SQL execution, migration application, source capture or factual mutation by reviewer.",
+    "Tiny isolated alias parser reproduction only; prior full22-PG independent packet not repeated.",
+    "This is reader migration rollback verification, not source/factual apply or full-home acceptance."
+  ]
+}
