@@ -1,0 +1,420 @@
+{
+  "captured_at": "2026-10-15",
+  "scope": "One bounded read-only metadata reconciliation after root confirmed database recovery. No listing/contact/post/customer rows.",
+  "columns": [
+    {
+      "type": "uuid",
+      "table": "ai_generation_draft_receipts",
+      "column": "request_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ai_generation_draft_receipts",
+      "column": "actor_auth",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ai_generation_draft_receipts",
+      "column": "workspace_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ai_generation_draft_receipts",
+      "column": "generation_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "integer",
+      "table": "ai_generation_draft_receipts",
+      "column": "item_index",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "ai_generation_draft_receipts",
+      "column": "context",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ai_generation_draft_receipts",
+      "column": "link_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "ai_generation_draft_receipts",
+      "column": "post_snapshot",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "ai_generation_draft_receipts",
+      "column": "created_at",
+      "default": "now()",
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "social_posts",
+      "column": "id",
+      "default": "gen_random_uuid()",
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "social_posts",
+      "column": "media",
+      "default": "'[]'::jsonb",
+      "not_null": false
+    },
+    {
+      "type": "text[]",
+      "table": "social_posts",
+      "column": "channels",
+      "default": "'{}'::text[]",
+      "not_null": false
+    },
+    {
+      "type": "text",
+      "table": "social_posts",
+      "column": "status",
+      "default": "'draft'::text",
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "social_posts",
+      "column": "meta",
+      "default": "'{}'::jsonb",
+      "not_null": false
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "social_posts",
+      "column": "created_at",
+      "default": "now()",
+      "not_null": false
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "social_posts",
+      "column": "updated_at",
+      "default": "now()",
+      "not_null": false
+    },
+    {
+      "type": "uuid",
+      "table": "editorial_draft_receipts",
+      "column": "request_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "editorial_draft_receipts",
+      "column": "actor_auth",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "editorial_draft_receipts",
+      "column": "workspace_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "editorial_draft_receipts",
+      "column": "payload",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "editorial_draft_receipts",
+      "column": "link_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "editorial_draft_receipts",
+      "column": "post_snapshot",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "editorial_draft_receipts",
+      "column": "created_at",
+      "default": "now()",
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "email_draft_requests",
+      "column": "actor_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "email_draft_requests",
+      "column": "request_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "email_draft_requests",
+      "column": "workspace_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "text",
+      "table": "email_draft_requests",
+      "column": "state",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "jsonb",
+      "table": "email_draft_requests",
+      "column": "payload",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "uuid",
+      "table": "email_draft_requests",
+      "column": "campaign_id",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "jsonb",
+      "table": "email_draft_requests",
+      "column": "snapshot",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "email_draft_requests",
+      "column": "created_at",
+      "default": "clock_timestamp()",
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "creator_mutation_receipts",
+      "column": "actor_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "creator_mutation_receipts",
+      "column": "request_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "text",
+      "table": "creator_mutation_receipts",
+      "column": "state",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "text",
+      "table": "creator_mutation_receipts",
+      "column": "action",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "bytea",
+      "table": "creator_mutation_receipts",
+      "column": "args_hash",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "uuid",
+      "table": "creator_mutation_receipts",
+      "column": "campaign_id",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "uuid",
+      "table": "creator_mutation_receipts",
+      "column": "entity_id",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "integer",
+      "table": "creator_mutation_receipts",
+      "column": "entity_version",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "boolean",
+      "table": "creator_mutation_receipts",
+      "column": "operator_required",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "creator_mutation_receipts",
+      "column": "created_at",
+      "default": "clock_timestamp()",
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ops_mutation_receipts",
+      "column": "actor_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ops_mutation_receipts",
+      "column": "request_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "uuid",
+      "table": "ops_mutation_receipts",
+      "column": "workspace_id",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "text",
+      "table": "ops_mutation_receipts",
+      "column": "state",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "type": "text",
+      "table": "ops_mutation_receipts",
+      "column": "action",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "bytea",
+      "table": "ops_mutation_receipts",
+      "column": "args_hash",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "uuid",
+      "table": "ops_mutation_receipts",
+      "column": "record_id",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "text",
+      "table": "ops_mutation_receipts",
+      "column": "kind",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "integer",
+      "table": "ops_mutation_receipts",
+      "column": "version",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "type": "timestamp with time zone",
+      "table": "ops_mutation_receipts",
+      "column": "created_at",
+      "default": "clock_timestamp()",
+      "not_null": true
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "62569b74f0831a60bf2d2688f0e48ac5",
+      "signature": "social_save_post(uuid,text,text[],timestamp with time zone,text,jsonb,text,jsonb,uuid)",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "663211d51b2cf63c8c457e2a52e48781",
+      "signature": "home_entity(text)",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "d5e39d01982e0a8103e71d2e296d28cd",
+      "signature": "zoi.home_content_authorize(uuid,uuid)",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "70cb927f126f251f229c450bf9f792e8",
+      "signature": "zoi.suite_current_session()",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "0a1b64d6adee0e63726bab3c08b0be53",
+      "signature": "zoi.assert_workspace_write(uuid,text[])",
+      "volatility": "v",
+      "security_definer": true
+    }
+  ]
+}

@@ -51,3 +51,12 @@ regressions. Complete child unions override stale native width; the whole nav
 row decides overflow while the narrower scroll viewport controls page/reveal
 math. Layout failures have at most two extra measurement passes; no polling
 loop or ScrollView remount is used.
+
+The additional native-text-without-dimensions cases keep the hook's reported
+fontScale fixed at1 while text metrics change to2 and back. Labels, IDs and
+route stay unchanged; content-size and tab onLayout callbacks stay suppressed.
+The actual row height layout event must trigger a complete measurement even
+when row width is unchanged. The exact previous1b95 source fails this case;
+the one-handler correction passes it at390/320 along with the prior20cases.
+This models the observed0683 installed failure; it does not prove the native
+Dimensions event stream. Installed acceptance remains open until a new build.

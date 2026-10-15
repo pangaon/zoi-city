@@ -443,6 +443,9 @@
       channels: (ctx.channels || []).slice(),
       editId: null,
       originMeta: {},
+      businessCreative: null,
+      businessCreativeNeedsReview: false,
+      businessCreativeUpdatedAt: null,
       importedChannels: null,
       scheduledAt: null,   // ISO string or null
       // the Orthodox layer
@@ -465,16 +468,21 @@
     wrap.appendChild(left);
     wrap.appendChild(right);
     root.appendChild(wrap);
-    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, ended=false, modalClosers=new Set();
+    var actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, workspaceAtMount=ctx.ws, authAtMount=C.auth, sessionAtMount=composerSessionId(), ended=false, modalClosers=new Set();
+    function composerSessionId(){try{var claims=JSON.parse(global.atob(authAtMount.token.call(authAtMount).split('.')[1].replace(/-/g,'+').replace(/_/g,'/'))),sid=claims.session_id;return String(claims.sub||'').toLowerCase()===String(actorAtMount||'').toLowerCase()&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(sid||'')?sid.toLowerCase():'';}catch(_){return '';}}
     function dispose(message){
       if(ended)return;
       // Keep same-account navigation recovery, but never save an outgoing
       // account's pending keystrokes under the next signed-in identity.
-      if(root.contains(wrap)&&ctx.ws===workspaceAtMount&&(C.auth&&C.auth.load&&C.auth.load()?.user_id)===actorAtMount&&state.S&&typeof ta!=='undefined'){
+      if(!businessCreativeSessionChanged&&root.contains(wrap)&&ctx.ws===workspaceAtMount&&(C.auth&&C.auth.load&&C.auth.load()?.user_id)===actorAtMount&&state.S&&typeof ta!=='undefined'){
         var pendingDraft=snapshotDraft();
         if(state.S.draftIsMeaningful(pendingDraft))state.S.saveDraft(workspaceAtMount,pendingDraft,null,actorAtMount);
       }
       ended=true;
+      businessCreative?.destroy();
+      state.businessCreative=null;state.businessCreativeNeedsReview=false;
+      root.querySelectorAll('*').forEach(function(n){if('value'in n)n.value='';n.textContent='';Array.from(n.attributes||[]).forEach(function(a){n.removeAttribute(a.name);});});
+      state.media=[];state.alts={};state.overrides={};state.originMeta={};state.posts=[];
       if(typeof saveTimer!=='undefined'&&saveTimer)global.clearTimeout(saveTimer);
       scopeObserver.disconnect();
       ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.removeEventListener(n,scopeChanged);});
@@ -483,12 +491,25 @@
     }
     function scopeActive(){
       if(ended)return false;
+      if(!sessionAtMount||composerSessionId()!==sessionAtMount){
+        businessCreativeSessionChanged=true;
+        try{businessCreative?.workflow.clearPrivate();global.sessionStorage.removeItem('zoi.business-creative:'+String(actorAtMount).toLowerCase()+':'+sessionAtMount+':'+workspaceAtMount);state.S?.clearDraft(workspaceAtMount,null,actorAtMount);}catch(_){}
+        dispose('Your session changed. Reopen Composer to continue.');return false;
+      }
       if(!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(actorAtMount||'')||!/^([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i.test(workspaceAtMount||'')||!root.isConnected||!root.contains(wrap)||ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount){dispose();return false;}
       return true;
     }
     function scopeChanged(){scopeActive();}
     var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(doc.body,{childList:true,subtree:true});
     ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
+    var businessCreative=null,businessCreativeReady=Promise.resolve(),businessCreativeSessionChanged=false,businessCreativeUnavailable=false;
+    // When the optional source module cannot load, only an exact-key absence
+    // permits ordinary drafts. This reads the same protocol; it creates no store.
+    function businessRequestState(){
+      try{var sid=composerSessionId();if(!sid)return 'unknown';
+        return global.sessionStorage.getItem('zoi.business-creative:'+String(actorAtMount).toLowerCase()+':'+sid.toLowerCase()+':'+workspaceAtMount)===null?'none':'pending';
+      }catch(_){return 'unknown';}
+    }
     var originalToast=toast;toast=function(){if(scopeActive())originalToast.apply(null,arguments);};
     function clearOnDenied(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');}
     var originalRpc=C.api.rpc.bind(C.api), originalAuth=C.auth;
@@ -504,6 +525,8 @@
     /* ----- LEFT: draft-restore banner (filled only if there is a draft) ----- */
     var bannerBox = el('div');
     left.appendChild(bannerBox);
+
+    var businessCreativeSlot=el('div');left.appendChild(businessCreativeSlot);
 
     /* ----- LEFT: Greek caption starters ----- */
     var tplBox = el('div', 'zc-tpl-box');
@@ -736,6 +759,7 @@
         chips.innerHTML = '<span class="zc-sub">No channels found. Connect social accounts to target networks.</span>';
         return;
       }
+      if(state.businessCreative)chips.appendChild(el('p','zc-hint','Private creative draft · destinations are not selected here. Review the saved draft in Calendar.'));
       state.channels.forEach(function (ch) {
         var n = netFor(ch.platform);
         var chip = el('button', 'zc-chip');
@@ -757,6 +781,7 @@
             onBodyChange();
           });
         }
+        if(state.businessCreative){chip.disabled=true;chip.title='Private creative draft. Review destinations in Calendar after saving.';}
         chips.appendChild(chip);
       });
     }
@@ -1048,6 +1073,14 @@
       if(!scopeActive())return;
       renderCounters();
       previews.innerHTML = '';
+      if(state.businessCreative){
+        var creativePreview=el('article','zc-card zbc-private-preview');
+        creativePreview.appendChild(el('p','zc-sub','Private creative preview · Not sent'));
+        creativePreview.appendChild(el('strong',null,state.businessCreative.entity?.name||'Business creative'));
+        var copy=el('p',null,ta.value);copy.style.whiteSpace='pre-wrap';creativePreview.appendChild(copy);
+        state.media.forEach(function(url){var image=doc.createElement('img');image.src=url;image.alt=state.alts[url]||'';image.referrerPolicy='no-referrer';creativePreview.appendChild(image);});
+        previews.appendChild(creativePreview);renderOverrideTabs();renderChecks();return;
+      }
       var sel = selectedChannels();
       if (!sel.length) {
         previews.innerHTML = '<div class="zc-empty">Select at least one connected network to see live previews.</div>';
@@ -1513,6 +1546,10 @@
     function snapshotDraft() {
       return {
         body: ta.value,
+        businessCreative: state.businessCreative,
+        businessCreativeNeedsReview: state.businessCreativeNeedsReview,
+        businessCreativePostId: state.businessCreative?state.editId:null,
+        businessCreativeUpdatedAt: state.businessCreativeUpdatedAt,
         media: state.media.slice(),
         alts: state.alts,
         overrides: state.overrides,
@@ -1537,6 +1574,9 @@
     }
     function applyStoredDraft(d) {
       ta.value = String(d.body || '');
+      state.businessCreative=d.businessCreative&&typeof d.businessCreative==='object'?d.businessCreative:null;
+      state.businessCreativeNeedsReview=d.businessCreativeNeedsReview===true;
+      if(state.businessCreative&&/^[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}$/i.test(d.businessCreativePostId||'')){state.editId=d.businessCreativePostId;state.businessCreativeUpdatedAt=d.businessCreativeUpdatedAt;renderEditBanner();}
       state.media = Array.isArray(d.media) ? d.media.slice(0, 4) : [];
       state.alts = d.alts && typeof d.alts === 'object' ? d.alts : {};
       state.overrides = d.overrides && typeof d.overrides === 'object' ? d.overrides : {};
@@ -1583,7 +1623,18 @@
     /* Apply a whole post (from the Calendar) into the composer. */
     function applyImportedTargets(){if(state.importedChannels===null)return;state.selected={};state.channels.forEach(function(ch){var want=state.importedChannels;if(ch.connected&&netFor(ch.platform)&&(want.includes(String(ch.id))||want.includes(normPlat(ch.platform))))state.selected[ch.id]=true;});}
     var linkedContextReady=Promise.resolve();
-    function applyIncomingPost(h) {
+    function applyIncomingPost(h,businessConfirmed) {
+      if(h.meta?.business_creative&&!businessConfirmed){
+        linkedContextReady=businessCreativeReady.then(async function(){
+          if(!businessCreative)throw Error('Business draft tools could not load. Reopen this saved draft.');
+          var saved=await businessCreative.workflow.open(h.id);if(!scopeActive())throw Error('Your workspace changed.');
+          state.businessCreative={listing:saved.listing,entity:saved.source};state.businessCreativeUpdatedAt=saved.post.updated_at;
+          state.businessCreativeNeedsReview=!saved.source_current;applyIncomingPost(saved.post,true);
+          if(!saved.source_current)toast('Published business details changed. Review and copy current details before updating this draft. Your saved copy is retained.');
+        });linkedContextReady.catch(function(error){if(scopeActive())toast(error.message);});return;
+      }
+      if(!businessConfirmed){state.businessCreative=null;state.businessCreativeNeedsReview=false;state.businessCreativeUpdatedAt=null;}
+
       state.editId = h.id || null;
       ta.value = String(h.body || '');
       var media = Array.isArray(h.media) ? h.media : [];
@@ -1903,6 +1954,11 @@
     async function savePost(status, scheduledAtIso, opts) {
       opts = opts || {};
       await linkedContextReady;
+      await businessCreativeReady;
+      if(businessCreativeUnavailable&&(state.businessCreative||state.originMeta?.business_creative||businessRequestState()!=='none'))throw Error('Business draft safety tools could not load. Retry them before saving; your editor content is retained.');
+      if(businessCreative?.workflow.pending())throw Error('Check the unconfirmed business draft save before making another change.');
+      if(state.businessCreativeNeedsReview)throw Error('The business selection changed. Review and copy current details again, or clear Composer to start a manual draft.');
+      if(state.businessCreative&&(status!=='draft'||opts.publishNow))throw Error('Business creatives use Save draft here. Open the saved draft in Calendar to review existing destination tools.');
       if(!scopeActive())throw Error('The workspace changed. Reopen this draft.');
       var editorialContext=state.originMeta&&state.originMeta.editorial;
       if(editorialContext&&opts.publishNow)throw Error('Source-backed calendar drafts use an explicit scheduled time on their occurrence date. Review the source, choose a destination and schedule this draft.');
@@ -1922,7 +1978,16 @@
         p_meta: buildMeta(),
         p_id: state.editId
       };
-      var res = await C.api.rpc('social_save_post', params, { auth: 'require' });
+      var res;
+      if(state.businessCreative){
+        if(!businessCreative)throw Error('Business draft recovery could not load. Retry loading this tool before saving.');
+        if(!currentCampaign())throw Error('Add a campaign name before saving this business creative.');
+        var creativeMeta=Object.assign({},params.p_meta);delete creativeMeta.business_creative;delete creativeMeta.client_listing_id;
+        try{var creativeReceipt=await businessCreative.workflow.save(state.businessCreative,{body:params.p_body,media:params.p_media,meta:creativeMeta,id:state.editId,expectedUpdatedAt:state.editId?state.businessCreativeUpdatedAt:null});
+          if(creativeReceipt.state!=='saved'||creativeReceipt.post?.status!=='draft')throw Error('The saved post changed or was removed. Open Calendar to review it.');
+          res=creativeReceipt.post;state.businessCreativeUpdatedAt=res.updated_at;state.originMeta=JSON.parse(JSON.stringify(res.meta||{}));
+        }finally{businessCreative.refreshRecovery();}
+      }else res=await C.api.rpc('social_save_post', params, { auth: 'require' });
       if(!res||!res.id||res.workspace_id!==workspaceAtMount)throw Error('The saved post could not be confirmed. Reload the draft before continuing.');
       state.editId = res.id;
 
@@ -1951,6 +2016,8 @@
       if(!scopeActive())return;
       var pubBtn = q('publish');
       var note = q('publishnote');
+      if(state.businessCreative){pubBtn.disabled=true;q('schedule').disabled=true;note.style.display='block';note.textContent='Save this private business creative as a draft. Review existing destination tools in Calendar after saving.';return;}
+      q('schedule').disabled=false;
       /* The old gate keyed off ctx.avail.publish alone, which is about external
          networks. It disabled Publish even when the one channel that works was
          selected — the flagship tool switched off while its only live destination
@@ -2202,6 +2269,7 @@
       });
     });
     q('clear').addEventListener('click', function () {
+      if(businessCreative?.workflow.pending()){toast('Check or cancel the unconfirmed business draft before clearing.');return;}
       if (global.confirm && !global.confirm('Clear everything in the composer?')) return;
       ta.value = '';
       state.media = [];
@@ -2213,6 +2281,7 @@
       state.threadMode = false;
       state.scheduledAt = null;
       state.editId = null;
+      state.originMeta={};state.businessCreative=null;state.businessCreativeNeedsReview=false;state.businessCreativeUpdatedAt=null;
       if (state.S) state.S.clearDraft(workspaceAtMount, null, actorAtMount);
       bannerBox.innerHTML = '';   // and with it the "editing an existing post" notice
       q('threadtoggle').checked = false;
@@ -2222,7 +2291,7 @@
       renderMedia();
       renderThread();
       renderPreviews();
-      renderLit();
+      renderLit();renderChips();applyGating();
       toast('Composer cleared.');
     });
 
@@ -2297,6 +2366,29 @@
       renderChips();
       applyGating();
     }
+
+    /* The existing caption/media editor remains the creative canvas. */
+    function loadBusinessCreative(retry){businessCreativeUnavailable=false;return import('/assets/studio/business-creative.mjs'+(retry?'?retry='+global.crypto.randomUUID():'' )).then(function(module){
+      if(!scopeActive())return;
+      if(!doc.querySelector('link[data-business-creative-css]')){var css=doc.createElement('link');css.rel='stylesheet';css.href='/assets/studio/business-creative.css';css.dataset.businessCreativeCss='';doc.head.appendChild(css);}
+      businessCreative=module.mountBusinessCreative(businessCreativeSlot,{C:Object.assign({},C,{auth:originalAuth}),workspace:workspaceAtMount,current:scopeActive,
+        onScopeLost:function(){businessCreativeSessionChanged=true;dispose('Your workspace access or session changed. Reopen Composer to continue.');},
+        onSourceChange:function(){if(state.businessCreative)state.businessCreativeNeedsReview=true;},
+        onRecovered:async function(post){if(!scopeActive())return;state.businessCreative=null;state.businessCreativeNeedsReview=false;applyIncomingPost(post);},
+        apply:async function(source){
+          if(!scopeActive())return;
+          if(businessCreative.workflow.pending())throw Error('Check the earlier draft save first.');
+          var previousId=state.editId,updating=!!(previousId&&state.businessCreative&&state.businessCreative.listing===source.listing);
+          if(previousId&&!updating)throw Error('Clear Composer before starting a business creative from another saved post.');
+          if((ta.value.trim()||state.media.length||state.editId)&&global.confirm&&!global.confirm('Replace this editor content with the selected published business details? Saved posts stay unchanged until you save.'))return;
+          state.editId=updating?previousId:null;if(!updating)state.businessCreativeUpdatedAt=null;state.originMeta={};state.businessCreative=source;state.businessCreativeNeedsReview=false;
+          state.selected={};state.importedChannels=[];state.media=source.image?[source.image]:[];state.alts={};state.overrides={};state.threadMode=false;state.thread=[''];state.scheduledAt=null;
+          ta.value=source.description||'';q('firstcomment').value='';q('date').value='';q('time').value='';q('threadtoggle').checked=false;
+          q('lu_campaign').readOnly=false;bannerBox.replaceChildren();renderChips();renderMedia();renderThread();onBodyChange();applyGating();ta.focus();
+        }
+      });
+    }).catch(function(error){businessCreativeUnavailable=true;if(scopeActive()){businessCreativeSlot.replaceChildren();businessCreativeSlot.appendChild(el('p','zc-hint','Business draft tools could not load. Your editor content is retained. Retry before saving.'));var retryButton=el('button','zc-btn','Retry business draft tools');retryButton.type='button';retryButton.onclick=function(){if(scopeActive())businessCreativeReady=loadBusinessCreative(true);};businessCreativeSlot.appendChild(retryButton);}});}
+    businessCreativeReady=loadBusinessCreative(false);
 
     /* ---------- initial render ---------- */
     state.channels = withCommunity(state.channels);

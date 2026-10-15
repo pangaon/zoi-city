@@ -1,0 +1,1 @@
+const fs=require('node:fs');const original=fs.readFileSync;const baseline=original("/home/codespace/.cache/zoi/native-nav-row-event-independent-20261015/AppChrome-before.tsx");fs.readFileSync=function(path,options){if(String(path)==="/tmp/zoi-native-font-layout-event-root/mobile/src/AppChrome.tsx")return options?baseline.toString():baseline;return original.apply(this,arguments)};

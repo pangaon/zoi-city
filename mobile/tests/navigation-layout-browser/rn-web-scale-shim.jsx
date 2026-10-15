@@ -3,8 +3,9 @@
 import{createContext,forwardRef,useContext,useImperativeHandle,useRef}from'react';import*as Web from'react-native-web';
 export*from'react-native-web';
 export const FontScaleContext=createContext(1);
+export const ReportedFontScaleContext=createContext(null);
 export const Text=forwardRef((props,ref)=>{const scale=useContext(FontScaleContext),style=Web.StyleSheet.flatten(props.style)||{};return <Web.Text {...props} ref={ref} style={[props.style,{fontSize:(style.fontSize||14)*scale,...(style.lineHeight?{lineHeight:style.lineHeight*scale}:{})}]}/>});
-export function useWindowDimensions(){return{...Web.useWindowDimensions(),fontScale:useContext(FontScaleContext)}}
+export function useWindowDimensions(){const actual=useContext(FontScaleContext),reported=useContext(ReportedFontScaleContext);return{...Web.useWindowDimensions(),fontScale:reported??actual}}
 
 // Test-only controls model the installed hot-font failure: no native content
 // size callback, and optionally late measurements from an older layout pass.

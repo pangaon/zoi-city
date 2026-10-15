@@ -1,0 +1,62 @@
+[
+  {
+    "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+    "owner": "postgres",
+    "config": [
+      "search_path=\"\""
+    ],
+    "body_md5": "663211d51b2cf63c8c457e2a52e48781",
+    "signature": "public.home_entity(text)",
+    "volatility": "s",
+    "definition_md5": "73f866cdced061a329d1c5b7e827c6e0",
+    "security_definer": true
+  },
+  {
+    "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+    "owner": "postgres",
+    "config": [
+      "search_path=zoi, public"
+    ],
+    "body_md5": "62569b74f0831a60bf2d2688f0e48ac5",
+    "signature": "public.social_save_post(uuid,text,text[],timestamptz,text,jsonb,text,jsonb,uuid)",
+    "volatility": "v",
+    "definition_md5": "d0302700d93948ac3892d766972272c2",
+    "security_definer": true
+  },
+  {
+    "acl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "config": [
+      "search_path=\"\""
+    ],
+    "body_md5": "0a1b64d6adee0e63726bab3c08b0be53",
+    "signature": "zoi.assert_workspace_write(uuid,text[])",
+    "volatility": "v",
+    "definition_md5": "0eb31592700a28d08bb01e2c7582e699",
+    "security_definer": true
+  },
+  {
+    "acl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "config": [
+      "search_path=\"\""
+    ],
+    "body_md5": "d5e39d01982e0a8103e71d2e296d28cd",
+    "signature": "zoi.home_content_authorize(uuid,uuid)",
+    "volatility": "v",
+    "definition_md5": "18ded417594a6a0e430e38725e6c35c6",
+    "security_definer": true
+  },
+  {
+    "acl": "{postgres=X/postgres}",
+    "owner": "postgres",
+    "config": [
+      "search_path=\"\""
+    ],
+    "body_md5": "70cb927f126f251f229c450bf9f792e8",
+    "signature": "zoi.suite_current_session()",
+    "volatility": "s",
+    "definition_md5": "8ceef7877aeb972d09d8694f6c85dff7",
+    "security_definer": true
+  }
+]
