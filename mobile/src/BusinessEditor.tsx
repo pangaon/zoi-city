@@ -1,6 +1,7 @@
 import { LIGHT } from './brand';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, AppState, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, AppState, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import { useAuth } from './Auth';

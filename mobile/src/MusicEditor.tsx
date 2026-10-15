@@ -1,7 +1,8 @@
 import { ownerRevisionRequired, ownerRPC } from './businessOwner';
 import { OwnerEditorHandoff } from './OwnerEditorHandoff';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useAuth } from './Auth';
 import { musicDraft, musicFields, musicPatch } from './music';
 function Action({label,run,disabled=false}:{label:string;run:()=>void;disabled?:boolean}){return <Pressable accessibilityRole="button" accessibilityState={{disabled}} disabled={disabled} onPress={run} style={[s.action,disabled&&{opacity:.5}]}><Text style={s.link}>{label}</Text></Pressable>;}

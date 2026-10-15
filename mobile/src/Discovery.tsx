@@ -1,6 +1,7 @@
 import { DiscoveryLocation } from "./DiscoveryLocation";
 import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
+import {ScaleText as Text} from './ScaleText';
 import {
   ActivityIndicator,
   BackHandler,
@@ -11,7 +12,6 @@ import {
   ScrollView,
   Share,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from "react-native";

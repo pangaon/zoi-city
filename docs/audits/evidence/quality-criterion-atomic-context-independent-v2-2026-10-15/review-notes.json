@@ -1,0 +1,52 @@
+{
+  "source_ownership": "Reviewer edits only NEW independent V2 probe/audit/evidence; six frozen sources and author evidence remain exact. Root retains integration/release ownership.",
+  "historical_V1": "Held audit and probe not altered; owner V2 includes exact pinned historical copies.",
+  "environment": {
+    "postgres": "16",
+    "ports": [
+      15963,
+      15964
+    ],
+    "listen_addresses": "empty",
+    "unique_private_sockets": true,
+    "all_owned_clusters_stopped_removed": true,
+    "socket_absence_checked": true,
+    "short_socket_paths_used": true
+  },
+  "verification": {
+    "node_check_passed": 5,
+    "test_failures": 0,
+    "independent_probe_safe": 13,
+    "retained_pg_groups": 50,
+    "retained_focused_tests": 27
+  },
+  "qualification_notes": [
+    "Initial V2 diff inspection used the root abbreviated migration filename and found no file; corrected to the exact manifest _v2.sql filename before any test.",
+    "V1/V2 whole pre-new-test slice is different only because V2 appends helper declarations; exact original41 test-body prefix is byte-identical.",
+    "vercel.json is a required import-time readonly dependency beyond the six declared manifest dependencies and is additionally pinned in isolation.json."
+  ],
+  "docs": [
+    {
+      "url": "https://www.postgresql.org/docs/17/xfunc-volatility.html",
+      "application": "VOLATILE obtains fresh snapshots for executed queries; STABLE input-only helpers remain appropriate."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/17/transaction-iso.html",
+      "application": "READ COMMITTED statement snapshots refresh; unsupported stronger snapshot modes explicitly refused."
+    },
+    {
+      "url": "https://www.postgresql.org/docs/17/functions-datetime.html",
+      "application": "clock_timestamp authority against actual wall time after locking."
+    }
+  ],
+  "actual_boundary": {
+    "new_database_reads": 0,
+    "database_writes": 0,
+    "lease_signoff_finish_actions": 0,
+    "policy_renewal_or_ci_activation": 0,
+    "credentials_actions": 0,
+    "provider_actions": 0,
+    "hosted_artifact_publications": 0,
+    "ADB": 0
+  }
+}

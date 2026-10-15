@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { useAuth } from './Auth';
 import { bioPayload, bioReceipt, type BioDraft } from './creator';
 const empty:BioDraft={slug:'',title:'',tagline:'',theme:'light',links:[],photo_url:'',published:false};

@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {Linking,Pressable,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Linking,Pressable,View} from 'react-native';
 import {useAuth} from './Auth';
 import {sponsorFulfillmentLink} from './sponsorFulfillment';
 export function SponsorFulfillmentHandoff({workspace,application,event,offset=0,disabled=false}:{workspace:string;application:string;event:string;offset?:number;disabled?:boolean}){

@@ -1,5 +1,6 @@
 import {useRef,useState} from 'react';
-import {Linking,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Linking,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
 import {FOOD_PAGE_SIZE,foodMenuView,foodQuestionDraft,type NativeFood,type FoodItem} from './foodMenu';
 export function FoodMenu({food}:{food:NativeFood}){
  const[query,setQuery]=useState(''),[section,setSection]=useState<number|null>(null),[limit,setLimit]=useState(FOOD_PAGE_SIZE),[question,setQuestion]=useState(''),[linkError,setLinkError]=useState('');

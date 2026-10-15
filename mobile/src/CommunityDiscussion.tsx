@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,ScrollView,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,ScrollView,View} from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import {communityCommentReceipt,communityComments,communityPost} from './community';
 import {SocialAction as Action,SocialAvatar,SocialField as Field,socialStyle as s,useSocialScope} from './CommunityUI';

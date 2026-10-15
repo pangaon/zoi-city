@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {Image,Platform,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Image,Platform,View} from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import {File,Paths} from 'expo-file-system';
 import {randomUUID} from 'expo-crypto';

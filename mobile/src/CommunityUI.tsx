@@ -1,6 +1,7 @@
 import{LIGHT}from'./brand';
 import {useEffect,useRef,useState} from 'react';
-import {Image,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Image,Pressable,StyleSheet,TextInput,View} from 'react-native';
 import {useAuth} from './Auth';
 import {communityError} from './community';
 import {communityMediaURL} from './communityMedia';

@@ -2,7 +2,8 @@ import {RESOURCE_KINDS,quantityLabel} from '../../assets/event-planner/model.mjs
 import { BookingReschedule } from './BookingReschedule';
 import { AvailabilityPlanner } from './AvailabilityPlanner';
 import { useRef, useState, useEffect } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
 import { useAuth } from './Auth';
 import { localInput, displayTime, zonedToInstant } from '../../assets/bookings/model.mjs';
 import { operatorItemData, operatorReceipt, operatorSlotTime } from './bookingOperator';

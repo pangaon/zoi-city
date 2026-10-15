@@ -1,6 +1,7 @@
 import {openCompanyPrivate} from './companyPrivateHandoff';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useAuth, operationsRequestStore } from './Auth';
 import {randomUUID} from 'expo-crypto';
 import {createOperationsRecovery,operationsDenied} from '../../assets/operations/recovery.mjs';

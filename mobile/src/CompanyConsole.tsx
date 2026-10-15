@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
-import {Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Pressable,StyleSheet,TextInput,View} from 'react-native';
 import {assignedName,companyDeadline,nativeCompanyConsole,WORK_FILTERS,type CompanyMember} from './companyConsole';
 import type {OpsRecord} from './operations';
 

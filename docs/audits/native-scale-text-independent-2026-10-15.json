@@ -1,0 +1,147 @@
+{
+  "at": "2026-10-15T22:12:35.082146+00:00",
+  "outcome": "ACCEPTED_SOURCE_AND_CONTROLLED_RECONCILIATION_ONLY__INSTALLED_ANDROID_HYPOTHESIS_UNPROVEN",
+  "accepted": true,
+  "reviewer": "qa_next",
+  "source_author": "owner_next",
+  "tree": "/workspaces/zoi-native-scale-text-independent",
+  "frozen_source": {
+    "tree": "/workspaces/zoi-native-scale-text-work",
+    "base": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+    "audit_sha256": "fcaf8773b2a68a97ce1a2c184dd89da4a53b54b277c35ec0608f0883cf7cb9aa",
+    "manifest_sha256": "05ec53bdf41b0b38f276d82cddcf8fd53413e9d5e0e0a9ace4b3c50df0fedd53",
+    "owned_sources": 63,
+    "runtime": 55,
+    "tests": 8,
+    "owner_evidence_hashes_verified": 102,
+    "all63_before_after_pins_exact": true,
+    "readonly_context_exact": true
+  },
+  "independent_manifest": {
+    "path": "docs/audits/evidence/native-scale-text-independent-2026-10-15/independent-manifest.json",
+    "sha256": "7701c5fff483950887bbe483167c71bbb5995918d16703ae0d78ccaeca98c06a",
+    "bytes": 25827
+  },
+  "mechanical_source_review": {
+    "complete_source_reversals_to_actual_git": 54,
+    "jsx_nodes_preserved": 1211,
+    "all_existing_bodies_input_auth_map_source_logic_byteidentical": true,
+    "nested_nonText_JSX_descendants": [],
+    "nonJSX_Text_references": [],
+    "current_main_binding": {
+      "current_main": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+      "base": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+      "unchanged_runtime_files": 54
+    },
+    "existing_test_exact_reversal": true
+  },
+  "independent_verification": {
+    "full_mobile": {
+      "tests": 506,
+      "pass": 506,
+      "fail": 0,
+      "skip": 0
+    },
+    "typescript": "PASS existing pinned strict compiler",
+    "owner_host_browser_reproduced": 9,
+    "additional_realReact_RNweb_reconciler": {
+      "cases": 12,
+      "direct_Text_baselines": 6,
+      "wrapper_cases": 6,
+      "platforms": [
+        "android adapter",
+        "ios adapter",
+        "web"
+      ],
+      "strictMode": [
+        false,
+        true
+      ],
+      "scale_sequence": [
+        0.85,
+        1,
+        1.3,
+        2,
+        2,
+        3,
+        1
+      ],
+      "checks": [
+        "native host changes only when actual controlled scale changes; same-scale/ordinary parent update retains host",
+        "web host never replaces for controlled font scale",
+        "nested Text and outer Text preserve content and handler functions; press event works",
+        "object and callback refs point to current host; callback replacement at same scale preserves host and detaches old ref",
+        "unsaved input DOM/value, parent lifetime and camera/map reference retained",
+        "allowFontScaling=false/maxFontSizeMultiplier=1/numberOfLines/selectable/styles forwarded; no new default cap",
+        "caller stable React key cannot prevent child NativeText font key replacement"
+      ]
+    },
+    "realReact_element_construction": {
+      "cases": 30,
+      "refs": [
+        "callback",
+        "object"
+      ],
+      "checks": [
+        "actual React19 forwardRef/element construction",
+        "adversarial props.key and props.ref cannot override internal native host key or forwarded ref argument",
+        "frozen nested React child/event/style objects preserved by identity",
+        "unspecified font scaling/style/maxFont multiplier remain unspecified"
+      ]
+    },
+    "expo_web": "Owner exact source/proof hash verified; not independently reexported. Root owns coherent export/release.",
+    "source_originals_edited": false,
+    "ADB_EAS_SQL_provider_actions": 0
+  },
+  "ref_qualification": {
+    "initial_probe_failure": "Expected returned callback cleanup function to execute in RNweb. Exact installed dependency discards callback return; direct NativeText baseline and wrapper both use callback(null) instead. Original failing log/report retained.",
+    "corrected_probe": "Explicit baseline parity and real old-ref null detach/new-ref attach checks, with refEvents preserved for every case. No application change or assertion relaxation over a source regression.",
+    "native_source": "Actual installed RN0.86 useMergeRefs supports callback cleanup returns; wrapper forwards callback unchanged. This is static source evidence, not actual Android ref or paragraph-cache proof."
+  },
+  "setup_qualification": "Initial sparse review checkout lacked existing shared assets and four historical JSON fixtures; those runs failed dependency/file lookup. Materialized exact existing Git bytes, including correcting reviewer-relative checkout paths, then complete506/TS passed. No application/test assertions or owner source changed to hide those failures. Historical incomplete-checkout log retained.",
+  "react_component_review": {
+    "result": "No source blocker found",
+    "details": [
+      "Tiny unconditional-hook forwardRef component; no effects, data fetch, global state or dependency changes",
+      "Only native Text host is keyed by actual hook fontScale; parent/navigation/input/map are not keyed",
+      "Default and caller accessibility/font behavior stays authoritative; no new manual font sizing or font cap",
+      "Current1211 sites contain no nonText JSX descendant/stateful input/map under replaced Text host",
+      "Dimensions notifications can rerender text wrappers across viewport changes, but unchanged primitive key retains native host; controlled case confirms no remount loop"
+    ]
+  },
+  "required_installed_gate": {
+    "status": "OPEN; seventh installed artifact remains failing",
+    "prior_audit_sha256": "19fe82af45bac078e99fd662652eef2704cb5798e089c004049ff2463638c6f8",
+    "required": [
+      "Normal Android Settings font1\u21922\u2192resume on current selected map; read labels/address/actions",
+      "Close/re-expand/scroll at font2 without stale paragraph bounds/clipped glyphs",
+      "Home, More all5 sections and sparse/populated form labels/validation plus unsaved input retained",
+      "Selected camera/WebView/location policy preserved, no automatic GPS prompt; restorefont1"
+    ],
+    "not_established": [
+      "Android paragraph cache refresh",
+      "OS Dimensions fontScale delivery under missing event",
+      "actual native text selection/pressability transient state preservation",
+      "actual owner/provider transaction behavior"
+    ]
+  },
+  "primary_sources": [
+    {
+      "title": "React Native Text",
+      "url": "https://reactnative.dev/docs/text"
+    },
+    {
+      "title": "React Native useWindowDimensions",
+      "url": "https://reactnative.dev/docs/usewindowdimensions"
+    },
+    {
+      "title": "React forwardRef",
+      "url": "https://react.dev/reference/react/forwardRef"
+    },
+    {
+      "title": "Expo57 versioned docs",
+      "url": "https://docs.expo.dev/versions/v57.0.0/"
+    }
+  ],
+  "scope": "Shared text implementation acceptance only. Not installed artifact acceptance or completion of native/maps/30areas/987catalogue goal."
+}

@@ -1,6 +1,7 @@
 import {VenueReferenceEditor,useMeasuredReference} from './VenueReferences';
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { Pressable, Share, StyleSheet, TextInput, View } from 'react-native';
 import Svg, { Polygon, Rect, Image as SvgImage, Text as SvgText } from 'react-native-svg';
 import { AsyncStorage, useAuth } from './Auth';
 import { createLayout, validateLayout, seatRows, updateObjects, summarize, parseLayout, projectPoint } from '../../assets/tickets/venue-model.mjs';

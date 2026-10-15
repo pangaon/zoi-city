@@ -1,0 +1,112 @@
+{
+  "at": "2026-10-15T21:53:32.642411+00:00",
+  "status": "HELD_SOURCE__INDEPENDENT_ADVERSARIAL_CORRECTNESS_FAILURES",
+  "accepted": false,
+  "reviewer": "atomic_review",
+  "author": "qa_next",
+  "tree": "/workspaces/zoi-quality-criterion-atomic-review-20261015",
+  "frozen_source_tree": "/workspaces/zoi-quality-criterion-atomic-context-work",
+  "baseline": "0d96dac3f623e31c6a206c29e7d74dbaa1a27228",
+  "owner_audit_sha256": "014bf6d7f991a208cfebb93fa06351dd452be1fd5670728c96cf265049e0535f",
+  "owner_manifest_sha256": "2b3e22f584ab9542f3f14cc3ff940e5f6aded1a4114d59395f748dad444b8e3c",
+  "source_hashes_match": true,
+  "owned_sources": [
+    {
+      "path": "scripts/quality/criterion-report.mjs",
+      "sha256": "f9df940fd97889556d5209b8f94094ceabab264c49227c967d1c4e6826360db6",
+      "bytes": 10282
+    },
+    {
+      "path": "scripts/quality/criterion-record.mjs",
+      "sha256": "23b52b89ccb05ed24c9bd60b1984842edb1bd5e7b646b9198acb0b87edb0814d",
+      "bytes": 18252
+    },
+    {
+      "path": "supabase/migrations/20261015213530_quality_criterion_atomic_current_context.sql",
+      "sha256": "2dbf3b6401f805b5ecddbb7152214499d74c5af86a0cae8c312b03112ab5b6fb",
+      "bytes": 21518
+    },
+    {
+      "path": "tests/database/quality-criterion-atomic-context.integration.mjs",
+      "sha256": "a0e47f62350e4d2226404d6fd9b2efe988f4994878b9ebf5f32a28343ecdbb88",
+      "bytes": 27949
+    },
+    {
+      "path": "tests/database/fixtures/quality-criterion-atomic-context-actual-contracts.json",
+      "sha256": "6ed60470197cd50b891e10734d0c29c20272fb51d2587a4990a759cdd1e2ea4f",
+      "bytes": 27540
+    },
+    {
+      "path": "tests/unit/quality-criterion-atomic-context.test.mjs",
+      "sha256": "85ac5046c685e36a3569a017e3b20bf90641fc78640f7796e6ba90ce35e69a04",
+      "bytes": 31001
+    }
+  ],
+  "independent_manifest": {
+    "path": "docs/audits/evidence/quality-criterion-atomic-context-independent-2026-10-15/independent-manifest.json",
+    "sha256": "b00a597bf5136c113f84c139c0c9f02ddef62fd63d4c0dd1b1da6c97dcc41397",
+    "bytes": 5997
+  },
+  "findings": [
+    {
+      "id": "ATOMIC-R1",
+      "severity": "high",
+      "lines": [
+        48,
+        65,
+        79,
+        89,
+        91
+      ],
+      "title": "Transaction snapshot can bypass exact current tip and criterion revision",
+      "observed": [
+        "REPEATABLE READ snapshot established before another canonical writer commits: same expected_latest_id=null accepted twice, both current=true, two rows.",
+        "REPEATABLE READ snapshot established before actual revision publisher commits revision2: stale revision1 inserted current=true while fresh reader reports revision2."
+      ],
+      "cause": "Advisory/row/table locks serialize but do not refresh a repeatable-read MVCC snapshot. Reader and writer admit all isolation levels.",
+      "required": "Explicitly reject isolation modes without fresh statement snapshots (in current reader and recorder), or independently prove an equivalent snapshot freshness protocol. Add retained regressions."
+    },
+    {
+      "id": "ATOMIC-R2",
+      "severity": "high",
+      "lines": [
+        99,
+        103
+      ],
+      "title": "Time-based authority checks use transaction start instead of current wall clock",
+      "observed": [
+        "Lease expired at canonical call, but transaction opened before expiry: specialist insert current=true.",
+        "Specialist older than7 days at reviewer call, but transaction opened before cutoff: reviewer insert current=true."
+      ],
+      "cause": "now() remains transaction_timestamp() across lock waits and long transactions.",
+      "required": "Validate lease expiry and referenced specialist age against clock_timestamp() after locks, with boundary/long-transaction regressions."
+    }
+  ],
+  "verification": {
+    "retained_focused_tests_passed": 27,
+    "retained_pg_groups_passed": 41,
+    "independent_probe_groups": 8,
+    "independent_unsafe_observations": 4,
+    "independent_safe_observations": 4,
+    "original_actual_contracts_match": true,
+    "default_production_adapter_refuses_before_rpc": true,
+    "strict_acl_source_hold_and_locks": "Retained checks pass; independent malformed corpus and read-after-writer lock coherence checks pass. These do not override the reproduced failures.",
+    "source_unchanged_after_review": true
+  },
+  "production_state": {
+    "new_actual_reads": 0,
+    "actual_writes": 0,
+    "actual_leases_signoffs_finishes": 0,
+    "production_recorder_rpc": 0,
+    "artifact_publication": false,
+    "provider_action": false,
+    "task_finish_lease_fingerprints_tables_modified": false,
+    "all_owned_private_pg_clusters_stopped_removed": true
+  },
+  "limits": [
+    "All observations use isolated synthetic rows and original captured canonical function bodies; no production schema application or production journey acceptance.",
+    "Actual listing triggers absent and unused vector represented as text, as disclosed in author fixture.",
+    "Free-form actor identities and hosted artifact provenance remain unapproved operational boundaries.",
+    "Source acceptance is held; root rollback/release/actor/artifact gates remain separate."
+  ]
+}

@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import {ScaleText as Text} from './ScaleText';
 import {
   AppState,
   Pressable,
   Share,
   StyleSheet,
-  Text,
   TextInput,
   View,
 } from "react-native";

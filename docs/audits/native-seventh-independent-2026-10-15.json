@@ -1,0 +1,490 @@
+{
+  "schema_version": 1,
+  "at": "2026-10-15T21:55:34.766697+00:00",
+  "outcome": "INSTALLED PARTIAL PASS; real normal-Settings large-text clipping BLOCKER retained. No source fixes or builds performed.",
+  "artifact": {
+    "source_commit": "0d96dac3f623e31c6a206c29e7d74dbaa1a27228",
+    "artifact_id": "8a15a8e3",
+    "apk_bytes": 85570395,
+    "apk_sha256": "4b37513c9b3ddf57560fcf90629ebb106660c680809697d8208527e141648ece",
+    "binding": "Root supplied installed binding and binary manifest retained; reviewer exercised existing installed emulator5554 directly, did not reinstall/pull/rebuild.",
+    "MainActivity_configChanges": 3221229488,
+    "fontScale_bit_present": true
+  },
+  "device": {
+    "physical_size": [
+      1080,
+      2400
+    ],
+    "density_dpi": 420,
+    "density": 2.625,
+    "ADB": "Exclusive handed over by root; explicitly returned after restoration."
+  },
+  "passed": [
+    "Actual Android TEXT_READING_SETTINGS font slider set2.0 then same MainActivity resume preserves expanded map and Hellenic selection/camera visually. Initial expanded text relayout readable.",
+    "Expanded selected name/address/actions reachable through scroll; Close stays accessible, target uses actual accessibility label Close expanded map.",
+    "All sections opens atfont2 with full Home/Discover/Community/Events/Grow labels and current Discover marker, nativeBack dismisses without changing selectedplace.",
+    "Opening Location options alone creates no app GPS request. Explicit Use my location once enters locating; after watch registration injected emulatorGPS yields5m one-time snapshot; realplatform high-accuracy request then providerOFF proves subscription stops.",
+    "Hide location clears snapshot. ExplicitCancel ignores later injectedfix; background whilelocating unregisters and laterfix remainsignored afterresume, Hellenic retained.",
+    "Revoked-permission setup yields denied/Open app settings without automaticprompt; actual Settings Allow only whileusing\u2192resume produces noautomaticlocationrequest; explicitnewUse gets5m snapshot.",
+    "Background afterready clears snapshot.",
+    "Restored font_scale1.0,location_mode3,fine+coarsegranted,originalUSER_SET/noUSER_FIXED; no active snapshot; ADB returned."
+  ],
+  "blockers": [
+    {
+      "id": "N7-FONT-RELAYOUT",
+      "severity": "high",
+      "reproduction": [
+        "Start selected Hellenic map expanded atfont1.",
+        "Open actual Android TEXT_READING_SETTINGS and tap Font size slidermaximum; settingsget returns2.0.",
+        "Resume existing MainActivity: textinitiallyreadable, selection/camera retained.",
+        "Tap actual Close expanded map: unchangedTextlabels use1x layoutbounds while glyphsremain2x, clipping toolbar/fulltools/locationoptions/selectedname/address/actions.",
+        "OpenMore: newlymountedmodal fulltextworks. NativeBack thenExpand again preserves theclipping of unchangedlabels."
+      ],
+      "evidence": [
+        "normal-settings-return-font2-expanded.png",
+        "normal2-close-expanded.png",
+        "normal2-expand-again.png",
+        "font-text-bounds.json"
+      ],
+      "not_synthetic_only": true,
+      "source_observations": [
+        "ManifestfontScale flag handles activityrecreation but is insufficient for installed textrelayout.",
+        "Pinned localRN0.86.3 DeviceInfo updatesfontScale onHostResume; Hostconfig path has enableFontScaleChangesUpdatingLayout true and updatesmetrics/requestLayout.",
+        "ParagraphShadowNode caches Content and measuredLayouts; getContent returnscachedcontent before rereading layoutContext.fontSizeMultiplier. These are plausible staleparagraph boundaries, not a proven exact native rootcause.",
+        "FreshlymountedMore/header/dynamicClose text renderscorrectly while unchangedtextsclip."
+      ],
+      "proposed_followup": "Prove a shared nativeText wrapper remounting only its RNText host on useWindowDimensions.fontScale change; preserve default allowFontScaling, every parent/application state and WebView/camera/watch. Candidate exact paths listed separately; needs root ownership approval, controlled verification and coherent installed acceptance. No font cap, fixed font height, wholeApp/Discover key reset or JS source edit made.",
+      "proposed_runtime_paths": [
+        "mobile/src/ScaleText.tsx (new)",
+        "mobile/src/Discovery.tsx",
+        "mobile/src/AppChrome.tsx",
+        "mobile/src/DiscoveryMap.android.tsx",
+        "mobile/src/DiscoveryMap.native.tsx",
+        "mobile/src/DiscoveryMap.web.tsx",
+        "mobile/src/MapLocationControl.tsx"
+      ]
+    }
+  ],
+  "qualifications": [
+    "Root prior foregroundADB font verifier failed because it used nonexistent Close full-screen map; that exact failure/history is retained, not converted into a pass. This independent normalSettings actualslider probe establishes a separate real blocker.",
+    "Permissiondenial was initialized via pmrevoke/clearflags; app returned denial without a first-use OSpermissionprompt. Do not claim an actual tappedOSdeny dialogue. Recovery did use the actual app-settings grant UI.",
+    "EmulatorGPS is a synthetic injected platformlocation, not physicalGPS performance/accuracy proof or explanation of prior Balancedtimeouts.",
+    "Extra manualpan/farParisfix probe is inconclusive because cached emulator fixes can win; no passclaimed for newfarfix/camera exactness.",
+    "Camera retention throughSettings/expandclose is visual sameHellenicpin/nearbyroadcontext, not numericWebViewcameratelemetry.",
+    "No database/owner/profile/providerwrites,sends,sourcechanges orbuilds.",
+    "This is one installedAndroid7 artifact, not iOS/allroutes/allsite/globalgeography acceptance."
+  ],
+  "source_basis": [
+    {
+      "path": "mobile/plugins/with-font-scale.cjs",
+      "sha256": "7b6886b3da62f4e83726186e8c910e22372a7c791a4468c5580c918e8fcde3db",
+      "bytes": 734
+    },
+    {
+      "path": "mobile/src/Discovery.tsx",
+      "sha256": "2c3208afdde5ca3a673774ab0e23c4ae5a5e5c7bc743efb45e057022ad636782",
+      "bytes": 37261
+    },
+    {
+      "path": "mobile/src/AppChrome.tsx",
+      "sha256": "a32625e64be1e140fc9de6f0bdddd51730143f61a4b0c751e444501ef94d1f38",
+      "bytes": 11567
+    },
+    {
+      "path": "mobile/src/DiscoveryMap.android.tsx",
+      "sha256": "c3fe516bc9eb8cdc7f52a96e49223451a1ac15d7f05b6b9c5a46d2156652a404",
+      "bytes": 6774
+    },
+    {
+      "path": "mobile/src/MapLocationControl.tsx",
+      "sha256": "ebc8b2c18ef3270881fda3b54c8416b83f9ef145c9a38d264a987f94bb58ebe9",
+      "bytes": 2667
+    },
+    {
+      "path": "mobile/src/useMapLocation.ts",
+      "sha256": "28d086a7f860ee2dcde8ea70688ae294117063ff19c0f8b6681e66b9da905006",
+      "bytes": 2455
+    },
+    {
+      "path": "assets/map-data/foreground-location.mjs",
+      "sha256": "c20db70cb0c9eda7d1bda395036b7fa94fbef51c90343dc75acf0b3fafec42ee",
+      "bytes": 4370
+    },
+    {
+      "path": "mobile/package.json",
+      "sha256": "52667c9adc7d0909a176f5c44fbdf9fd578d9710a720328ad4571eaaba540913",
+      "bytes": 1235
+    }
+  ],
+  "private_cache": "/home/codespace/.cache/zoi/native-seventh-independent-20261015",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/font-text-bounds.json",
+      "sha256": "9c7c0fa8194a3c39684577eea93490d4597f375566a6d746351823868400630c",
+      "bytes": 7016
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-after-settings-grant.png",
+      "sha256": "9e864a7250718a006b04d8bafbe34e63fdcbffa59a4e634839636d782b1f8672",
+      "bytes": 423421
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-after-settings-grant.xml",
+      "sha256": "56f168187d8ad6c9f93c04b978ba94266316e54355282462028ab8f01a8f40be",
+      "bytes": 32285
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-app-permissions.png",
+      "sha256": "b88d05a3dc948cafa6dff319430e1b0994ee093fd0eafe53d5d675870074aa32",
+      "bytes": 159097
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-app-permissions.xml",
+      "sha256": "cd6d0ae9b9c6a62a63d042738bdb9a5540a395fa6b74369fb6489d43aebe09aa",
+      "bytes": 21055
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-app-settings.png",
+      "sha256": "9e27567ade4b70bc93d60c9c8766b58167ea2dfa5622add48f604a6e381a8a46",
+      "bytes": 148409
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-app-settings.xml",
+      "sha256": "5ec4384973fd9a332d616f89a0ccdab335029a6dc19e276ffb1e01f1465d6b59",
+      "bytes": 15009
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-background-locating.png",
+      "sha256": "515b02c6fb3940c60fd1c1b73b72edd9c2e7d696105241dc4188bcb659558b64",
+      "bytes": 424633
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-background-locating.xml",
+      "sha256": "25270b4211998c8fb0f241c24cd4423ebd82663ae9ff0b17e8ba90f64f61f0ee",
+      "bytes": 32946
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-background-return.png",
+      "sha256": "ffc6650e646b733ccb25bfa0ebab8957496beab839aa86ba084d18cdfae5da8b",
+      "bytes": 423390
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-background-return.xml",
+      "sha256": "56f168187d8ad6c9f93c04b978ba94266316e54355282462028ab8f01a8f40be",
+      "bytes": 32285
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-cancel-late-fix.png",
+      "sha256": "2ad19ce0585fab1fbd951c9cb7f1b683486bda77d97b55ff35ba3c5db2225f91",
+      "bytes": 423380
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-cancel-late-fix.xml",
+      "sha256": "56f168187d8ad6c9f93c04b978ba94266316e54355282462028ab8f01a8f40be",
+      "bytes": 32285
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-cancel-locating.png",
+      "sha256": "515b02c6fb3940c60fd1c1b73b72edd9c2e7d696105241dc4188bcb659558b64",
+      "bytes": 424633
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-cancel-locating.xml",
+      "sha256": "25270b4211998c8fb0f241c24cd4423ebd82663ae9ff0b17e8ba90f64f61f0ee",
+      "bytes": 32946
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-denied.png",
+      "sha256": "a1dfd46f3dccdf3308c6d90e2efa1898a646ce436836226adfc843a3adba9622",
+      "bytes": 424628
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-denied.xml",
+      "sha256": "1ca2a81e6d7036c15aafdf3ba5b277fa6ec7be5a4e1b4c67dd07009f0e7dd021",
+      "bytes": 32994
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-first-after-fix.png",
+      "sha256": "2077a55a1500f8f381f6da46f5cab5f1ddb74fc8810e279de59909737627c006",
+      "bytes": 431399
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-first-after-fix.xml",
+      "sha256": "b62519a2cd993cfb388a2eb3e22e987665b49b8436818bd58492061f3c82ec15",
+      "bytes": 33352
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-hidden.png",
+      "sha256": "2ad19ce0585fab1fbd951c9cb7f1b683486bda77d97b55ff35ba3c5db2225f91",
+      "bytes": 423380
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-hidden.xml",
+      "sha256": "56f168187d8ad6c9f93c04b978ba94266316e54355282462028ab8f01a8f40be",
+      "bytes": 32285
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-lifecycle-result.json",
+      "sha256": "f8f2699b851419c56d455f50c077fb9fa50c1507afde20f2063687dbe27fdd90",
+      "bytes": 225
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-lifecycle.py",
+      "sha256": "73ac29197964d0352734a4f06320dff54124f08462c412a84ffe679be69e307b",
+      "bytes": 2060
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-locating-first.png",
+      "sha256": "65040457d95a3ef3c05bb4d7815229e26928a845e11a86959a08e307925491c3",
+      "bytes": 424934
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-locating-first.xml",
+      "sha256": "25270b4211998c8fb0f241c24cd4423ebd82663ae9ff0b17e8ba90f64f61f0ee",
+      "bytes": 32946
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-location-permissions.png",
+      "sha256": "ff9c9bc6c7e765b2a64533d43b6e864a6bbcf1de6c733e6ae3400240c6ff632b",
+      "bytes": 110978
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-location-permissions.xml",
+      "sha256": "8b4767bde78e9ce4a889972cc3fd722535ccdedcfd25c6aea016478546e3eb9c",
+      "bytes": 12513
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-manual-result.json",
+      "sha256": "b71511a90cfae4f43b78ae37e5caeb382249becd1181a1238f47087387ea34cf",
+      "bytes": 171
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-options-no-request.png",
+      "sha256": "f5057f586c590f83cbc9bf34fae8d1b3e1218fa0eccf65f7f2ccb8b5e893a37f",
+      "bytes": 423456
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-options-no-request.xml",
+      "sha256": "56f168187d8ad6c9f93c04b978ba94266316e54355282462028ab8f01a8f40be",
+      "bytes": 32285
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-ready-background-return.png",
+      "sha256": "c0d7dc466dc2e6ddb49025f654bd1dc2663a626f10fad8d22e2503f7e492f0e5",
+      "bytes": 413818
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-ready-background-return.xml",
+      "sha256": "ecbcd83998094e923fcfde75e2b5af8c80fdb77595b7658d50ca3dda4dd9d526",
+      "bytes": 28284
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-regrant-explicit-fix.png",
+      "sha256": "8da286bcb9d6f72a3b52249fde068ad1b6cddab28cd94c4bebab59bffc5c7cd5",
+      "bytes": 449426
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-regrant-explicit-fix.xml",
+      "sha256": "8cf4f10ea93a9cf69cfa744527fefd16d50a879f569c532893aa30dce7e00f5f",
+      "bytes": 33352
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-regrant-explicit-locating.png",
+      "sha256": "f6bc75689c9fd18254eccc79201cfe71d2c0bb5b442183518660d4459c4e7c7f",
+      "bytes": 424830
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-regrant-explicit-locating.xml",
+      "sha256": "25270b4211998c8fb0f241c24cd4423ebd82663ae9ff0b17e8ba90f64f61f0ee",
+      "bytes": 32946
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-settings-granted.png",
+      "sha256": "a5e96c1babe835a15049930d66c9b8cab3d74727d7d51e57b10dc006f8a7fc1d",
+      "bytes": 124569
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/gps-settings-granted.xml",
+      "sha256": "9c5a1633cad65de18784accf7a9918d062f2b5db61eff5703a16717e8e5a502a",
+      "bytes": 14457
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/initial-state.json",
+      "sha256": "6fa243e84bcc2e31d2756bbfa58c8ee285740a39b9231ceacca01087696f56aa",
+      "bytes": 3679
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/location-platform-summary.json",
+      "sha256": "be952a4329b8bcbd3b9c48dffa4684347330647faaeaf26fc0acb464f7a28ba7",
+      "bytes": 21375
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal-settings-return-font2-expanded.png",
+      "sha256": "b6ba89705832d52e2eb78f5e56000ed7cd108470c686655c4b2f85f186dddaa6",
+      "bytes": 614103
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal-settings-return-font2-expanded.xml",
+      "sha256": "f252e511ccc8783d7bdf56990ae2a81e201bd484f0b055e59d24e9fc73781e15",
+      "bytes": 18479
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-close-expanded.png",
+      "sha256": "d5fb7642c49aee9d1d8991910da5887ec38082ca9ab98d4f003a47661f50854a",
+      "bytes": 341754
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-close-expanded.xml",
+      "sha256": "1483b5fe4eeff3dcd89002936cad648cb1c2ab0ad919d6a294471e4ae590c6a4",
+      "bytes": 31259
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-expand-again.png",
+      "sha256": "a37ae693a3d565848a1e1f67d95b9de9f9b1ec2c8215b83231d6525e7fed4915",
+      "bytes": 578486
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-expand-again.xml",
+      "sha256": "491e6ecc8ab83c42033252b6545d7a860de7302cf1b79b4640568350f847b908",
+      "bytes": 21626
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-expanded-selected-scroll.png",
+      "sha256": "6482f9dc640614635ae7d064f7a7e9d38b3f3a75057ae6573fe6a97c2ddacc95",
+      "bytes": 316293
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-expanded-selected-scroll.xml",
+      "sha256": "b1bedc9e0d1618ae54e8f2e39ca312838430328fcfad9c2d5ed43e42f10db392",
+      "bytes": 21520
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-more-back.png",
+      "sha256": "a35ef9b45e406daa868c692a456ac4cf98c8cabd5c0f9a96e26ea08281b6faba",
+      "bytes": 340403
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-more-back.xml",
+      "sha256": "1483b5fe4eeff3dcd89002936cad648cb1c2ab0ad919d6a294471e4ae590c6a4",
+      "bytes": 31259
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-more.png",
+      "sha256": "99864cbd250368b8f1989de90edf3ccbd73017bc135f15f2fae4b5f0804670cd",
+      "bytes": 286493
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/normal2-more.xml",
+      "sha256": "819d69201ac96528163207281017355e351b042e74c1a5d6484954e994c46493",
+      "bytes": 9728
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/restored-final.png",
+      "sha256": "c0d7dc466dc2e6ddb49025f654bd1dc2663a626f10fad8d22e2503f7e492f0e5",
+      "bytes": 413818
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/restored-final.xml",
+      "sha256": "ecbcd83998094e923fcfde75e2b5af8c80fdb77595b7658d50ca3dda4dd9d526",
+      "bytes": 28284
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/restored-state.json",
+      "sha256": "07896b7d0c3f07c1c285a777d6185d573aa1fcf301dcac775f176cf715488fe5",
+      "bytes": 437
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/rn-DeviceInfoModule.kt",
+      "sha256": "040080efb91ef0ce6249fdb78b49dd99b5ae2112b307a24e648256bd6067cf67",
+      "bytes": 5642
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/rn-ParagraphShadowNode.cpp",
+      "sha256": "22053df9c418b4580c546d3c9db7fe09ff7db39fb6def658ee8806fce5dbf849",
+      "bytes": 15592
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/rn-ReactHostImpl.kt",
+      "sha256": "506b5f20604c62fef9d9986236c77c41a844f44229f1abab74304fa8fd6e4af9",
+      "bytes": 63984
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/rn-ReactNativeFeatureFlagsDefaults.kt",
+      "sha256": "124bef07c29942a793d2b24a4a7b3d43bb3c750dc01c67dd9697a60ac8145b85",
+      "bytes": 6910
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/root-hot-font-result.json",
+      "sha256": "045a1bef8fd1bf539608e1d6e3680c32fd4a5d86b24632ab7a1ad72356a54d48",
+      "bytes": 46
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/root-hot-font.log",
+      "sha256": "93f912850e57b1f6113863bebb630ba9d2d8fe3a9b35a623caf2b68c348e2d09",
+      "bytes": 713
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/root-hot-font.py",
+      "sha256": "dfa4c0f874d9a8ab96452ccecfcb2b7159dcbe00588e1c2c042245cdb3da6875",
+      "bytes": 2348
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/root-packaged-manifest-activities.json",
+      "sha256": "1380731abdbf6487df66c3ca9bb9b8a5d2f62e9f49ead7e002770de5803209f7",
+      "bytes": 778
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/root-seventh-artifact-install-binding.json",
+      "sha256": "56df9a94cc1d2ced8f86095ea6640cc39ece33e683b958c9e56e95430a01589f",
+      "bytes": 431
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/settings-font-entry.png",
+      "sha256": "5151f143c350e587e4d8826453fa42d4e8d7688470357afe7bd4fc981969214c",
+      "bytes": 221939
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/settings-font-entry.xml",
+      "sha256": "565183d517637bf316e75df66060beb6fc3b291c97030356dbce45a56f3417fe",
+      "bytes": 24585
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/settings-font-max.png",
+      "sha256": "fd9082f6a71685d5ea4afcf9691b5669284251f16fec9874f723fa83fd661330",
+      "bytes": 233033
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/settings-font-max.xml",
+      "sha256": "f831cd310e29dcbbb40ab0bcefc56ab9960d8eeedd6fa0d264e18a241dbf12be",
+      "bytes": 1893
+    },
+    {
+      "path": "docs/audits/evidence/native-seventh-independent-2026-10-15/source-basis.json",
+      "sha256": "6d97249775a5a4a69790d6c8214cdc4047d3b0a6bf8b600fd245e5d533026a8e",
+      "bytes": 1396
+    }
+  ],
+  "rn_readonly_basis": [
+    {
+      "package": "react-native0.86.3",
+      "path": "ReactAndroid/src/main/java/com/facebook/react/modules/deviceinfo/DeviceInfoModule.kt",
+      "sha256": "040080efb91ef0ce6249fdb78b49dd99b5ae2112b307a24e648256bd6067cf67"
+    },
+    {
+      "package": "react-native0.86.3",
+      "path": "ReactAndroid/src/main/java/com/facebook/react/runtime/ReactHostImpl.kt",
+      "sha256": "506b5f20604c62fef9d9986236c77c41a844f44229f1abab74304fa8fd6e4af9"
+    },
+    {
+      "package": "react-native0.86.3",
+      "path": "ReactCommon/react/renderer/components/text/ParagraphShadowNode.cpp",
+      "sha256": "22053df9c418b4580c546d3c9db7fe09ff7db39fb6def658ee8806fce5dbf849"
+    },
+    {
+      "package": "react-native0.86.3",
+      "path": "ReactAndroid/src/main/java/com/facebook/react/internal/featureflags/ReactNativeFeatureFlagsDefaults.kt",
+      "sha256": "124bef07c29942a793d2b24a4a7b3d43bb3c750dc01c67dd9697a60ac8145b85"
+    }
+  ]
+}

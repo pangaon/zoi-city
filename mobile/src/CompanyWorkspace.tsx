@@ -1,4 +1,5 @@
-import {Pressable,StyleSheet,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Pressable,StyleSheet,View} from 'react-native';
 import {companyJourney} from '../../assets/operations/company-journey.mjs';
 import {canWrite,type OpsRecord} from './operations';
 import type {nativeCompanyWork} from './companyWorkspace';

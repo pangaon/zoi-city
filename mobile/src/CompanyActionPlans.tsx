@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,AppState,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,AppState,Pressable,StyleSheet,TextInput,View} from 'react-native';
 import {ACTION_PLANS,actionPlanContext} from '../../assets/operations/company-action-plan-model.mjs';
 import {createCompanyActionPlan} from '../../assets/operations/company-action-plan-controller.mjs';
 import {createOperationsRecovery,operationsDenied} from '../../assets/operations/recovery.mjs';

@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {Platform,Pressable,StyleSheet,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Platform,Pressable,StyleSheet,View} from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import {randomUUID} from 'expo-crypto';
 import {useAuth} from './Auth';

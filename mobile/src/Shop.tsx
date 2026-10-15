@@ -1,6 +1,7 @@
 import {unavailableLines} from '../../assets/commerce/unavailable.mjs';
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,AppState,Image,Linking,Pressable,ScrollView,Share,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,AppState,Image,Linking,Pressable,ScrollView,Share,StyleSheet,TextInput,View} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {basketAdd,basketRead,basketTotals,COMMERCE,commerceImage,commerceProduct,commerceReceipt,productLink,initialVariant as chooseInitialVariant,singleDefaultVariant,variantLabel,type BasketItem} from './commerce';
 const KEY='zoi.buygreek.basket.v1';

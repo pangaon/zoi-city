@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {ScaleText as Text} from './ScaleText';
+import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { LIGHT } from "./brand";
 import { discoveryRead } from "./discoveryRead";
 import { cleanLocation } from "./discovery";

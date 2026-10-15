@@ -1,0 +1,97 @@
+{
+  "at": "2026-10-15T22:01:09.352617+00:00",
+  "status": "ACCEPTED_ISOLATED_V2_SOURCE__ROOT_ROLLBACK_RELEASE_AND_OPERATIONAL_ADMISSION_PENDING",
+  "accepted_scope": "Exact6 frozen sources as pinned; independent isolated source correctness only. No production recording or operational completion authority.",
+  "accepted": true,
+  "reviewer": "atomic_review",
+  "author": "qa_next",
+  "tree": "/workspaces/zoi-quality-criterion-atomic-review-v2-20261015",
+  "frozen_source_tree": "/workspaces/zoi-quality-criterion-atomic-context-v2",
+  "baseline": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+  "owner_audit_sha256": "aa046e13514f7ba616fe77e6e26f9c2a4f2a39ebd185e6d7b0af16b8a0cacc94",
+  "owner_manifest_sha256": "922c091102ae349397653f94399b84d4447d3dc19d8f1a3e6cbb7c99dedc9066",
+  "owned_sources": [
+    {
+      "path": "scripts/quality/criterion-report.mjs",
+      "sha256": "f9df940fd97889556d5209b8f94094ceabab264c49227c967d1c4e6826360db6",
+      "bytes": 10282
+    },
+    {
+      "path": "scripts/quality/criterion-record.mjs",
+      "sha256": "23b52b89ccb05ed24c9bd60b1984842edb1bd5e7b646b9198acb0b87edb0814d",
+      "bytes": 18252
+    },
+    {
+      "path": "supabase/migrations/20261015215429_quality_criterion_atomic_current_context_v2.sql",
+      "sha256": "21d7dca0c52953523a72a9adc285e25f439d38f46caf87cf98e730c1081d2912",
+      "bytes": 22163
+    },
+    {
+      "path": "tests/database/quality-criterion-atomic-context.integration.mjs",
+      "sha256": "c2d503e87dc8e5a90464a5454c26e82a5813c7c6467f87bb9c2116f811a3e7e3",
+      "bytes": 34916
+    },
+    {
+      "path": "tests/database/fixtures/quality-criterion-atomic-context-actual-contracts.json",
+      "sha256": "6ed60470197cd50b891e10734d0c29c20272fb51d2587a4990a759cdd1e2ea4f",
+      "bytes": 27540
+    },
+    {
+      "path": "tests/unit/quality-criterion-atomic-context.test.mjs",
+      "sha256": "85ac5046c685e36a3569a017e3b20bf90641fc78640f7796e6ba90ce35e69a04",
+      "bytes": 31001
+    }
+  ],
+  "source_hashes_match_before_after": true,
+  "independent_manifest": {
+    "path": "docs/audits/evidence/quality-criterion-atomic-context-independent-v2-2026-10-15/independent-manifest.json",
+    "sha256": "0d9d67fe87fb3ace13004edb428b05c7bd1a53d5ee63ace79490a078fdd3f4c9",
+    "bytes": 5127
+  },
+  "prior_held_packet": {
+    "audit_sha256": "5de33c074cbac653b8a1d8c607c66f8776d165a1f2154681ece85c6c885a394c",
+    "probe_sha256": "4476196ccde76d311b06176c19aed3e5d379e1492fb9dae8f6aedee6a1fbc07f",
+    "preserved": true
+  },
+  "findings": {
+    "open_blockers": [],
+    "V1_ATOMIC_R1": "Closed by first-statement exact READ COMMITTED admission for reader/checklist/record including replay; stale repeatable-read tip and revision counterexamples explicitly refuse, while stale READ COMMITTED payloads revalidate against current committed rows.",
+    "V1_ATOMIC_R2": "Closed by post-lock clock_timestamp lease and specialist age authority checks; independent DO-precondition assertions verify transaction start precedes boundary and actual time passes it before refusal.",
+    "volatility": "Public lock-taking entrypoints and database/clock-reading assembler VOLATILE; hold/context pure captured-value helpers STABLE. Retained tests validate committed revision/tip visibility after waits.",
+    "guard_timing": "Each unsupported isolation mode refuses all3 entrypoints under held advisory locks before150ms statement timeout (observed9-10ms), including sameUUID historical replay."
+  },
+  "verification": {
+    "focused_tests": 27,
+    "retained_pg_groups": 50,
+    "prior41_body_byte_identical_prefix": true,
+    "independent_probe_groups": 13,
+    "independent_probe_safe": 13,
+    "four_counterexamples_refused": true,
+    "original_actual_contracts_fixture_equal": true,
+    "four_unchanged_sources_match_V1": true,
+    "default_production_refuses_before0RPC": true,
+    "full_listing_hash_unchanged_retained_case": true,
+    "JS_PG_digest_encoding_separation_retained": true,
+    "source_holds_null_tip_lease_replay": "Malformed held source corpus, absent/foreign/null exact CAS, historical replay after expiry and hold current=false, and committed tip visibility independently verified.",
+    "syntax_checks": 5
+  },
+  "production_state": {
+    "new_actual_reads": 0,
+    "actual_writes": 0,
+    "actual_leases_signoffs_finishes": 0,
+    "default_production_record_rpc": 0,
+    "artifact_publication": false,
+    "provider_action": false,
+    "policy_renewal_ci_activation": false,
+    "task_finish_lease_fingerprints_tables_modified": false,
+    "own_private_pg_clusters_stopped_removed": true
+  },
+  "limits": [
+    "Source acceptance is limited to these exact bytes and dependencies; root must perform separate bounded actual rollback/release gates.",
+    "No production recording adapter activation, trusted actor admission, real hosted immutable artifact publication/access, owner/provider journey acceptance or automated completion authority.",
+    "Synthetic isolated all77 listing column fixture uses unused vector as text and no actual listing triggers. Original captured quality/lease/finish/revision function contracts are exact.",
+    "Default production recorder still refuses before0RPC. Explicit named isolated test modes remain test-only operational assumptions.",
+    "Original lease/finish functions remain byte-identical with their existing semantics; this packet changes criterion recording/currentness only.",
+    "Finite policy/CI workflows and prior production limitations remain unchanged."
+  ]
+}
