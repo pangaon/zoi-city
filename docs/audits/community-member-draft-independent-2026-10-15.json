@@ -1,0 +1,188 @@
+{
+  "observed_at": "2026-10-15T04:45:25.677663+00:00",
+  "state": "Source/current authority/private draft controlled journeys accepted; media production safety prerequisite remains OPEN",
+  "source_worktree": "/workspaces/zoi-community-draft-recovery",
+  "source_manifest": "677201527f6525b87c05261422133d28ad803f441ce483e59e5dcf0f4ec88b18",
+  "owner_audit_sha256": "72aaea34c532e895bb9541512efc18060ae0252729b924eaf83ce2909a839095",
+  "files_verified": [
+    {
+      "path": "assets/community/member-draft.mjs",
+      "sha256": "16083ac469d63a8bedbf725bf6be2b5be0310a716455df292eb9037ffd41ff49"
+    },
+    {
+      "path": "assets/community/experience.mjs",
+      "sha256": "4d37da6285339f68c01041a2c14c6ebe103a933613ede07bce084d3c9d6459f9"
+    },
+    {
+      "path": "community/index.html",
+      "sha256": "e4c3ae8a3061ea44b0ca78cfb88d357ccad955badd92489c940e07f8b10b2b22"
+    },
+    {
+      "path": "mobile/src/communityDraft.ts",
+      "sha256": "1e886ea322bf5f0577581e2133f9478cecf25688de5729624e303c909273b00d"
+    },
+    {
+      "path": "mobile/src/CommunityPublish.tsx",
+      "sha256": "ba9b524a6ddd859cbf6514cd8e698e8d220ddebaeec659056f3c4d52ff3d71b3"
+    },
+    {
+      "path": "mobile/src/CommunityMediaPicker.tsx",
+      "sha256": "e275c27f6168d2b73b0e932c4dcc60300adc662ced3d7db948a880159e295cfb"
+    },
+    {
+      "path": "mobile/src/Community.tsx",
+      "sha256": "0bbaf599e58eeaa7a5f995019c0f9154d11b6493ce920cc477eed8d00e86709e"
+    },
+    {
+      "path": "supabase/functions/community-media/index.ts",
+      "sha256": "0c0e886321656c279433f39a29d5051ab81d35d5e2c831a375ed85d70f429a84"
+    },
+    {
+      "path": "supabase/migrations/20261015041204_community_member_private_draft_lifecycle.sql",
+      "sha256": "e650df06cb7d32f5706d4c67a7825087235ba565c8c8c2240bfa9317ad6855d6"
+    },
+    {
+      "path": "tests/unit/community-member-draft.test.mjs",
+      "sha256": "2420e1428d20683d77ea96bbef563071fab68732856b898528126a0463798a1a"
+    },
+    {
+      "path": "tests/unit/community-member-draft-native-scope.test.mjs",
+      "sha256": "536031988ffab730860257b28390de8773fd60b97b06500d6286f5901b8ba38a"
+    },
+    {
+      "path": "tests/unit/community-draft-preview-edge.test.mjs",
+      "sha256": "bfc5420d939d9fd9ccf995d0b129a276ebfc349394289eeb0ec7786340356817"
+    },
+    {
+      "path": "tests/database/community-member-draft.integration.mjs",
+      "sha256": "35285ced9baac7f4e01688f6ed3ffba7ee9c28208006b68fb47ac3b810d4baa3"
+    },
+    {
+      "path": "tests/database/community-member-draft-production-rollback.sql",
+      "sha256": "4aa14ad67d42bc3d294bc2e8651e8d33f20a1589e119bfbf1ffc424fee8777c5"
+    },
+    {
+      "path": "tests/database/fixtures/community-member-draft-authority-live.json",
+      "sha256": "03534dc5e9e6167fae73cd204a906df0c2a84e39c0c7f47b9db9efb97802293e"
+    },
+    {
+      "path": "tests/browser/community-member-draft/verify.mjs",
+      "sha256": "fe191a60368f25367c21f34d012b737624a7df950284fb1ac48f35d6c8d524f1"
+    },
+    {
+      "path": "tests/browser/community-member-draft/verify-web.mjs",
+      "sha256": "8ead2d6c12318ec344e7c61543f8bdd6819e8444c5490ccf443d6c6860c87a85"
+    }
+  ],
+  "independent_results": {
+    "focused_units": 32,
+    "real_PG_groups": 19,
+    "combined_PG_browser_groups": 21,
+    "actual_web_Core_SQL_Edge_controlled_storage_cases": 6,
+    "actual_Expo_RNWeb_SQL_cases": 6,
+    "viewports": [
+      390,
+      1440
+    ],
+    "failed": 0,
+    "skipped": 0
+  },
+  "source_review": [
+    "Exact dependency guards preserve canonical Community entrypoints; scoped current-session/profile/advisory locks and final expiry checks.",
+    "Private adjunct requires ordinary current member, no workspace; actor+account immutable nonce receipts, CAS versions, cancellation tombstones, history and one active draft.",
+    "Account switches/refresh await fences clear private view; WebLocks cover pending marker dispatch/receipt; only opaque reference newly persisted.",
+    "Saved private media holds survive orphan cleanup; authenticated bounded private preview rechecks authority after Storage. Current byte/MIME size read is not storedSHA proof.",
+    "Exact-version explicit canonical publish/delete recovery exercised only in isolated SQL/controlled browser."
+  ],
+  "visual_review": "Actual390px generated viewport inspected: private photo and editable alt text, readable2column draft actions, explicit separate Publish, no clipped controls. Existing light palette; dark parity not newly claimed.",
+  "browser_reports": [
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/browser.json",
+      "sha256": "e073d57b9ed68458de5e6949778e70bf9fbe38d60142ba82ac5afea2ab3469a4",
+      "result": {
+        "basis": "Actual Expo/RN source and actual isolated PostgreSQL; controlled HTTP adapter; no production writes/provider calls. Media upload/preview exercised separately by real Edge module+SQL tests, not claimed as device upload.",
+        "cases": [
+          {
+            "width": 390,
+            "passed": true,
+            "journey": "actual native Expo/RN -> actual isolated canonical SQL; full metadata private draft -> committed lost reply -> opaque recovery -> leave/reopen -> edit/CAS/history -> explicit publish -> real feed -> committed lost-delete reply -> reload -> opaque receipt check -> confirmed own deletion"
+          },
+          {
+            "width": 390,
+            "passed": true,
+            "journey": "actual sign-out while committed private-save reply held -> private composer unmount and late reply ignored; original opaque recovery survives"
+          },
+          {
+            "width": 390,
+            "passed": true,
+            "journey": "actual expired session -> private history denial -> native private form/history clear; opaque recovery never contains private text"
+          },
+          {
+            "width": 1440,
+            "passed": true,
+            "journey": "actual native Expo/RN -> actual isolated canonical SQL; full metadata private draft -> committed lost reply -> opaque recovery -> leave/reopen -> edit/CAS/history -> explicit publish -> real feed -> committed lost-delete reply -> reload -> opaque receipt check -> confirmed own deletion"
+          },
+          {
+            "width": 1440,
+            "passed": true,
+            "journey": "actual sign-out while committed private-save reply held -> private composer unmount and late reply ignored; original opaque recovery survives"
+          },
+          {
+            "width": 1440,
+            "passed": true,
+            "journey": "actual expired session -> private history denial -> native private form/history clear; opaque recovery never contains private text"
+          }
+        ]
+      }
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/web-browser.json",
+      "sha256": "a6d0d5c60fc086f43c3cc616192848314b90918892d441988daa8cb88916bdcf",
+      "result": {
+        "basis": "Actual Core/web composer/media Edge -> actual isolated PostgreSQL, controlled immutable Storage byte adapter. No production writes, real Storage service or provider calls.",
+        "cases": [
+          {
+            "width": 390,
+            "passed": true,
+            "journey": "actual web composer -> actual media Edge byte validation/immutable controlled Storage -> canonical private SQL draft/media hold -> lost reply opaque check -> authenticated byte preview -> reload/reopen metadata/media -> edit -> existing canonical publish -> real feed"
+          },
+          {
+            "width": 390,
+            "passed": true,
+            "journey": "actual Core final beforeDispatch guard fences account change while new private mutation delegation held; no network write and private DOM cleared"
+          },
+          {
+            "width": 390,
+            "passed": true,
+            "journey": "actual expired session -> private web history denied -> private text and retained media cleared from dialog"
+          },
+          {
+            "width": 1440,
+            "passed": true,
+            "journey": "actual web composer -> actual media Edge byte validation/immutable controlled Storage -> canonical private SQL draft/media hold -> lost reply opaque check -> authenticated byte preview -> reload/reopen metadata/media -> edit -> existing canonical publish -> real feed"
+          },
+          {
+            "width": 1440,
+            "passed": true,
+            "journey": "actual Core final beforeDispatch guard fences account change while new private mutation delegation held; no network write and private DOM cleared"
+          },
+          {
+            "width": 1440,
+            "passed": true,
+            "journey": "actual expired session -> private web history denied -> private text and retained media cleared from dialog"
+          }
+        ]
+      }
+    }
+  ],
+  "release_blockers": [
+    "Existing legacy service community_media_finish can mark ready without stored-byte digest/current upload grant; existing fresh/409 retry path lacks complete stored-body readback. Separate author hardeningA/B candidate required before verified-media lifecycle production release.",
+    "No live production Auth/RPC/Storage/feed publication or new native binary acceptance performed by this review.",
+    "Other original40Community outcomes remain individually open; no fullCommunity completion claim."
+  ],
+  "actual_calls": {
+    "production_writes": 0,
+    "provider_calls": 0,
+    "new_auth_sessions": 0
+  }
+}

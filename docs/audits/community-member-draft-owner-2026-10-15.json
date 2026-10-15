@@ -1,0 +1,227 @@
+{
+  "schema_version": 1,
+  "status": "source frozen; controlled candidate accepted locally, independent review pending; production paused and stored-byte hardening prerequisite open",
+  "worktree": "/workspaces/zoi-community-draft-recovery",
+  "base": "b8b37e48",
+  "capability": "Ordinary signed-in member explicit private durable draft Save/Reopen/CAS/history -> verified existing private media -> exact saved-version canonical Community publication -> actual feed -> owned durable delete recovery. No business workspace required; no social provider dependency.",
+  "authority_scope": "Existing forty Community outcomes remain open individually. This vertical addresses member post lifecycle only.",
+  "scope_links": [
+    "0689ff9da25ba189",
+    "485e158aa05fe748",
+    "6f8c4c784c980f7b",
+    "b568cd14ceb604f3",
+    "28f789eb8b097dd0"
+  ],
+  "original_recovery": {
+    "artifact": "docs/audits/original-worktree-recovery-classification-2026-10-15.json",
+    "greek_expressions": "Original sixteen SVG expression pack remains valid unfinished scope. Existing likes are boolean, so no persisted-reaction claim. Future explicit allowlisted one-member reaction contract needed; original files untouched."
+  },
+  "files": [
+    {
+      "path": "assets/community/member-draft.mjs",
+      "sha256": "16083ac469d63a8bedbf725bf6be2b5be0310a716455df292eb9037ffd41ff49"
+    },
+    {
+      "path": "assets/community/experience.mjs",
+      "sha256": "4d37da6285339f68c01041a2c14c6ebe103a933613ede07bce084d3c9d6459f9"
+    },
+    {
+      "path": "community/index.html",
+      "sha256": "e4c3ae8a3061ea44b0ca78cfb88d357ccad955badd92489c940e07f8b10b2b22"
+    },
+    {
+      "path": "mobile/src/communityDraft.ts",
+      "sha256": "1e886ea322bf5f0577581e2133f9478cecf25688de5729624e303c909273b00d"
+    },
+    {
+      "path": "mobile/src/CommunityPublish.tsx",
+      "sha256": "ba9b524a6ddd859cbf6514cd8e698e8d220ddebaeec659056f3c4d52ff3d71b3"
+    },
+    {
+      "path": "mobile/src/CommunityMediaPicker.tsx",
+      "sha256": "e275c27f6168d2b73b0e932c4dcc60300adc662ced3d7db948a880159e295cfb"
+    },
+    {
+      "path": "mobile/src/Community.tsx",
+      "sha256": "0bbaf599e58eeaa7a5f995019c0f9154d11b6493ce920cc477eed8d00e86709e"
+    },
+    {
+      "path": "supabase/functions/community-media/index.ts",
+      "sha256": "0c0e886321656c279433f39a29d5051ab81d35d5e2c831a375ed85d70f429a84"
+    },
+    {
+      "path": "supabase/migrations/20261015041204_community_member_private_draft_lifecycle.sql",
+      "sha256": "e650df06cb7d32f5706d4c67a7825087235ba565c8c8c2240bfa9317ad6855d6"
+    },
+    {
+      "path": "tests/unit/community-member-draft.test.mjs",
+      "sha256": "2420e1428d20683d77ea96bbef563071fab68732856b898528126a0463798a1a"
+    },
+    {
+      "path": "tests/unit/community-member-draft-native-scope.test.mjs",
+      "sha256": "536031988ffab730860257b28390de8773fd60b97b06500d6286f5901b8ba38a"
+    },
+    {
+      "path": "tests/unit/community-draft-preview-edge.test.mjs",
+      "sha256": "bfc5420d939d9fd9ccf995d0b129a276ebfc349394289eeb0ec7786340356817"
+    },
+    {
+      "path": "tests/database/community-member-draft.integration.mjs",
+      "sha256": "35285ced9baac7f4e01688f6ed3ffba7ee9c28208006b68fb47ac3b810d4baa3"
+    },
+    {
+      "path": "tests/database/community-member-draft-production-rollback.sql",
+      "sha256": "4aa14ad67d42bc3d294bc2e8651e8d33f20a1589e119bfbf1ffc424fee8777c5"
+    },
+    {
+      "path": "tests/database/fixtures/community-member-draft-authority-live.json",
+      "sha256": "03534dc5e9e6167fae73cd204a906df0c2a84e39c0c7f47b9db9efb97802293e"
+    },
+    {
+      "path": "tests/browser/community-member-draft/verify.mjs",
+      "sha256": "fe191a60368f25367c21f34d012b737624a7df950284fb1ac48f35d6c8d524f1"
+    },
+    {
+      "path": "tests/browser/community-member-draft/verify-web.mjs",
+      "sha256": "8ead2d6c12318ec344e7c61543f8bdd6819e8444c5490ccf443d6c6860c87a85"
+    }
+  ],
+  "design": [
+    "Private draft adjunct reuses existing canonical Community feed, context, verified media and publication receipt stores. social_posts is workspace-bound and cannot safely hold ordinary member drafts. No new feed/scheduler/social provider store.",
+    "One active draft per current account/profile, at most four photos or one video; only ready owned post-purpose canonical asset IDs. No inferred locality or sensitive identity.",
+    "Draft media hold prevents orphan cleanup/discard while current draft references it. Publishing/discarding releases hold. Historical versions do not hold orphan bytes forever.",
+    "Current session user/session SHARE locks then current mapped profile UPDATE, existing Community auth advisory serialization; reads and immutable receipts reauthorize. Draft/current/history/nonce bind both auth account and canonical profile.",
+    "Strict existing body/owner/ACL/search_path guards before patching only legacy publish/delete/media_begin/discard/cleanup; global community_actor and other relationship functions unchanged. Final clock revalidation follows admitted mutations/reads.",
+    "Private current/history/request tables RLS + no direct PUBLIC/anon/authenticated/service access. Ordinary member entry RPCs authenticated-only; no workspace membership requirement.",
+    "New browser recovery references contain opaque account/nonce/action only; full payload stays in memory and canonical private DB. WebLocks serialize tabs; native process locks serialize device requests. Same-nonce immutable payload retry, explicit check/cancel and malformed receipt retention.",
+    "Native post-token and web actual Core beforeDispatch fences prevent stale account dispatch; unknown saved/deleted replies remain recoverable after reopen. Refusal clears current private form/history/media.",
+    "Draft image preview is authenticated fixed-private-path byte proxy, bounded8MiB/deadline, redirect rejection, current-authority reread after Storage bytes, private/no-store; anonymous attached-media GET unchanged. Video resumes metadata only; no transcoding/adaptive playback claim.",
+    "Existing legacy uncertain publications still replay same canonical nonce until resolved; new publications never write private text into browser storage. Other historical Community profile/comment/report recovery storage is outside this vertical."
+  ],
+  "acceptance": {
+    "unit": {
+      "command": "node --test tests/unit/community-member-draft.test.mjs tests/unit/community-member-draft-native-scope.test.mjs tests/unit/community-draft-preview-edge.test.mjs tests/unit/community-media-edge.test.mjs tests/unit/community-media.test.mjs tests/unit/community-publish.test.mjs",
+      "passed_checks": 32
+    },
+    "postgres": {
+      "command": "node tests/database/community-member-draft.integration.mjs",
+      "passed_groups": 19,
+      "basis": "Exact read-only captured actual current-session and canonical Community function definitions/owners/ACLs; isolated existing Community relational fixture plus own actual new constraints. Auth JWT accessors are GUC facade. Legacy unrelated table schema is reduced fixture, not whole production schema."
+    },
+    "native_browser": {
+      "command": "COMMUNITY_DRAFT_BROWSER=1 node tests/database/community-member-draft.integration.mjs",
+      "passed_cases": 6,
+      "widths": [
+        390,
+        1440
+      ],
+      "basis": "Actual Expo57/RN app+transport through controlled HTTP -> actual isolated canonical SQL; no binary build/device/store/provider actions."
+    },
+    "web_browser": {
+      "command": "COMMUNITY_DRAFT_WEB=1 node tests/database/community-member-draft.integration.mjs",
+      "passed_cases": 6,
+      "widths": [
+        390,
+        1440
+      ],
+      "basis": "Actual Core/web composer + actual media Edge validator -> isolated canonical SQL + controlled immutable Storage bytes. Chromium omits multipart file bytes in intercepted postDataBuffer; adapter reconstructs only the exact selected known fixture PNG; no validator/auth bypass.",
+      "post_visual_delta_rerun": "20groups/6webcases pass after only private actions two-column markup delta; native and SQL source unchanged."
+    },
+    "typescript": "native tsc noEmit passes with existing /workspaces/zoi-native-live-release/mobile/node_modules; no dependency changes",
+    "syntax": "Web source and new modules parse; git diff --check passes",
+    "visual": "Inspected actual native390 saved form/history, web390 private image/actions viewport and web1440 form. New private actions corrected to two readable columns using existing button styles. Existing Community palette remained light; dark visual parity not claimed.",
+    "combined": {
+      "command": "COMMUNITY_DRAFT_WEB=1 COMMUNITY_DRAFT_BROWSER=1 node tests/database/community-member-draft.integration.mjs",
+      "passed_groups": 21,
+      "browser_cases": 12
+    }
+  },
+  "production_fixture": {
+    "path": "tests/database/community-member-draft-production-rollback.sql",
+    "local_private_schema_denial": true,
+    "assertions": 19,
+    "absence_flags": 6,
+    "actual_live_run": false,
+    "note": "ROOT ONLY after health/schema gate. Existing dedicated QA account/current session; new expired synthetic session only. Positive canonical text publication is uncommitted inside rollback, never visible to other transactions. No provider or real Storage calls. No authority helper overrides or real QA role/session changes."
+  },
+  "release_gates": [
+    "Complete separately reviewed Community stored-byte verification/current upload-grant hardening and close legacy service-finalizer bypass before safe media lifecycle release claim. Current17 stay frozen while that delta is designed; no live calls.",
+    "Independent source/SQL/browser acceptance and frozen hash check.",
+    "Production health incident must be resolved before any live schema/fixture action.",
+    "Root exact current dependency metadata admission, additive migration apply and reviewed rollback proof; no child live writes.",
+    "Deploy updated media Edge + coherent web source/cache version before native feature availability. Actual root-controlled private Storage upload/preview/visibility/deletion proof needed; controlled byte adapter is not production Storage evidence.",
+    "Root coherent native binary release/device validation including actual media picker, interruption/backgrounding and private cache cleanup."
+  ],
+  "remaining": [
+    "Existing Community service-only media_finish can mark pending assets ready without stored-byte hash or stored actor/session grant. Existing Edge fresh/409 path inspects incoming bytes but skips stored-blob readback. Current private preview checks size/MIME/current authority, not canonical SHA. ROOT requested separate reviewed grant + verified finalizer + Edge readback hardening before claiming safe stored-blob proof; this candidate alone does not close that prerequisite.",
+    "Greek expressions require real persisted reaction contract; sixteen original artworks not marked operational.",
+    "Other Community relationship/profile/comment/moderation entry points retain existing actor helper; this is not complete global current-session audit/acceptance.",
+    "Longer video/stories/resumable chunks/transcoding/adaptive streaming/captions, conversations/Parea, appeals/rights/younger-user protections remain their original outcomes.",
+    "Saved private video has metadata resume and canonical publish; no authenticated video playback preview in this bounded image proxy.",
+    "History UI shows latest20 saved draft versions; API supports p_before. Full history pager and private account-erasure retention policy remain open.",
+    "Native actual device release, production Storage/service and published production journey remain unaccepted."
+  ],
+  "live_writes_by_child": false,
+  "provider_calls": false,
+  "paid_services": false,
+  "binary_builds": false,
+  "evidence_directory": "docs/audits/evidence/community-member-draft-owner-2026-10-15",
+  "source_manifest_sha256": "677201527f6525b87c05261422133d28ad803f441ce483e59e5dcf0f4ec88b18",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/1440-saved-private-draft.png",
+      "sha256": "166841661c487e230c6bdd787c88ada806ba07b6e9d665629a55e00429e93628",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/1440-web-private-actions-viewport.png",
+      "sha256": "abff27540952e1e8a9712b21edf4dcdc30e1b0f0ae222acd7257a5c37e0d5969",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/1440-web-private-form-viewport.png",
+      "sha256": "370e5fe3ad3b627601dac5f3e079c2ae19ea417155b75ab58756333c921be53d",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/1440-web-private-media.png",
+      "sha256": "85124642ce17380affd21d4f6b642ed4d9a8fccbbe28079e4a3b7b9f71f44712",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/390-saved-private-draft.png",
+      "sha256": "804145eea2dc650b3e93ddb12af401b147d5274d014bc766a7d7c139bf2b6227",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/390-web-private-actions-viewport.png",
+      "sha256": "86bf9e225b6195acd9887dda4f058bac14f4aa2b6d2681323ab2925b538da446",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/390-web-private-form-viewport.png",
+      "sha256": "7b0f1f7b9c012e2369733145afe18926d1e7e4242f090a16b25358cae8f2e44e",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/390-web-private-media.png",
+      "sha256": "fab02245b9aab593a50a4eef9523f26ba467011f79b4b6f3a6f8f7295d88886a",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/browser.json",
+      "sha256": "e073d57b9ed68458de5e6949778e70bf9fbe38d60142ba82ac5afea2ab3469a4",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/web-browser.json",
+      "sha256": "a6d0d5c60fc086f43c3cc616192848314b90918892d441988daa8cb88916bdcf",
+      "state": "controlled candidate journey evidence"
+    },
+    {
+      "path": "docs/audits/evidence/community-member-draft-owner-2026-10-15/web-failure.json",
+      "sha256": "673f19da6e1737fb59189d0c0f4d682959ebaa1f66bd79352f77d932ab625820",
+      "state": "superseded controlled fixture diagnostics"
+    }
+  ]
+}

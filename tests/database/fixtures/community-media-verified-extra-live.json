@@ -1,0 +1,41 @@
+{
+  "basis": "One root-authorized read-only dependency metadata/body capture after health recovery; no member records or secrets.",
+  "functions": [
+    {
+      "nspname": "public",
+      "proname": "community_media_finish",
+      "args": "p_id uuid",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "body_md5": "83501ab0e655d6b9283ffe67d41c454a",
+      "definition": "CREATE OR REPLACE FUNCTION public.community_media_finish(p_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE a zoi.community_media_assets;\nBEGIN\n SELECT * INTO a FROM zoi.community_media_assets WHERE id=p_id FOR UPDATE;\n IF NOT FOUND OR a.state='discarded' THEN RAISE EXCEPTION 'media_unavailable'; END IF;\n UPDATE zoi.community_media_assets SET state='ready',finalized_at=coalesce(finalized_at,now()) WHERE id=p_id RETURNING * INTO a;\n RETURN jsonb_build_object('ok',true,'asset',zoi.community_media_projection(a));\nEND $function$\n"
+    },
+    {
+      "nspname": "public",
+      "proname": "community_profile_save",
+      "args": "p_expected_version integer, p_data jsonb",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "body_md5": "a8aff03041e92a620caf4460967c2195",
+      "definition": "CREATE OR REPLACE FUNCTION public.community_profile_save(p_expected_version integer, p_data jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$declare actor uuid;p zoi.community_profiles;prior zoi.community_profiles;topics text[];avatar uuid;v_url text;v_handle text;begin\n actor:=zoi.community_actor();perform 1 from zoi.user_profiles where id=actor for update;select * into prior from zoi.community_profiles where profile_id=actor for update;\n if prior.profile_id is not null and p_expected_version=0 then if prior.initial_data is distinct from p_data then raise exception 'community_version_conflict';end if;return jsonb_build_object('ok',true,'profile',zoi.community_profile(actor,actor)||jsonb_build_object('avatar_media_id',prior.avatar_media_id));end if;\n v_handle:=lower(btrim(p_data->>'handle'));if jsonb_typeof(p_data) is distinct from 'object' or octet_length(p_data::text)>12000 or coalesce(v_handle,'') !~ '^[a-z0-9_]{3,30}$' or v_handle in('admin','administrator','support','zoi','buygreek','moderator','official') or length(btrim(coalesce(p_data->>'display_name',''))) not between 1 and 80 or length(coalesce(p_data->>'bio',''))>400 or length(coalesce(p_data->>'city',''))>120 or length(coalesce(p_data->>'country',''))>120 then raise exception 'community_invalid_profile';end if;\n topics:=zoi.community_topic_array(coalesce(p_data->'interests','[]'),8);avatar:=nullif(p_data->>'avatar_media_id','')::uuid;v_url:=zoi.community_avatar_url(actor,avatar);\n if exists(select 1 from zoi.community_profiles where community_profiles.handle=v_handle and profile_id<>actor) then raise exception 'community_handle_taken';end if;\n if prior.profile_id is null then if p_expected_version is distinct from 0 then raise exception 'community_version_conflict';end if;\n insert into zoi.community_profiles(profile_id,handle,display_name,bio,city,country,interests,avatar_media_id,avatar_url,initial_data) values(actor,v_handle,btrim(p_data->>'display_name'),coalesce(p_data->>'bio',''),nullif(btrim(p_data->>'city'),''),nullif(btrim(p_data->>'country'),''),topics,avatar,v_url,p_data) returning * into p;\n else if prior.version is distinct from p_expected_version then raise exception 'community_version_conflict';end if;\n update zoi.community_profiles set handle=v_handle,display_name=btrim(p_data->>'display_name'),bio=coalesce(p_data->>'bio',''),city=nullif(btrim(p_data->>'city'),''),country=nullif(btrim(p_data->>'country'),''),interests=topics,avatar_media_id=avatar,avatar_url=v_url,version=version+1,updated_at=clock_timestamp() where profile_id=actor returning * into p;end if;\n return jsonb_build_object('ok',true,'profile',zoi.community_profile(actor,actor)||jsonb_build_object('avatar_media_id',p.avatar_media_id));end $function$\n"
+    },
+    {
+      "nspname": "zoi",
+      "proname": "community_media_avatar",
+      "args": "p_actor uuid, p_asset uuid",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "body_md5": "9586ee3179661513783cb3d765ee49e2",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.community_media_avatar(p_actor uuid, p_asset uuid)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n PERFORM 1 FROM zoi.community_media_assets WHERE id=p_asset AND profile_id=p_actor AND state='ready' AND mime_type LIKE 'image/%' FOR UPDATE;\n IF NOT FOUND THEN RAISE EXCEPTION 'invalid_avatar_media';END IF;RETURN zoi.community_media_url(p_asset);\nEND $function$\n"
+    }
+  ]
+}

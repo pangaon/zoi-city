@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "status": "Investigation complete: no current100-item truncation defect found; focused acceptance frozen",
+  "base": "2ff3284a47ea0984212ed30ea8318fcc69027ad7",
+  "worktree": "/workspaces/zoi-owner-menu-recovery",
+  "customer_outcome": "An owner can accept/edit a100-item imported menu without losing unchanged dishes and explicitly remove one dish.",
+  "finding": "Nested menu item schema overrides generic50-row limit with100. The canonical writer accepts100 per section. Existing over-limit collections refuse read/save rather than silently truncate. No runtime edit was necessary.",
+  "source_files": [
+    {
+      "path": "tests/database/food-owner-large-menu.integration.mjs",
+      "sha256": "5ce860cb9d0380ccaa28d951c159cf15ff3ee5e1223225ba2b320d542fe92e53"
+    }
+  ],
+  "reviewed_runtime": [
+    {
+      "path": "assets/suite/_vertical-forms.js",
+      "sha256": "afc4d08d80de312d3df5a262094999af187f245c2e603a12dd9e1a096fd60469"
+    },
+    {
+      "path": "assets/suite/_vertical-ui.js",
+      "sha256": "72f30b66b91fa356295b2f02c4d74b6273274279188a702a57aecca044450b5a"
+    },
+    {
+      "path": "assets/homes/design-editor-revision.mjs",
+      "sha256": "adea80a555c2953e4d59eb1a7ab353f2d2e12f60d752baef3681346c3dcee7cd"
+    },
+    {
+      "path": "supabase/migrations/20261014040454_home_unified_owner_revision.sql",
+      "sha256": "3a13fc19a85e8cc873cfa7601f5075f31a7c80afd02f14ee1b4dbaa3e2faebfb"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/food-owner-large-menu-2026-10-15/large-menu-0-owner-item100.png",
+      "sha256": "82835e8dc96b0d1ac557aa284d810ec3a590404ed5d9ea44613847976e4293cd"
+    },
+    {
+      "path": "docs/audits/evidence/food-owner-large-menu-2026-10-15/large-menu-0-public-item100.png",
+      "sha256": "e6bd11345ec48071e1860b755e37c5179a2da171f6cc701379c760a5fc7ac7d3"
+    },
+    {
+      "path": "docs/audits/evidence/food-owner-large-menu-2026-10-15/large-menu-1-owner-item100.png",
+      "sha256": "6a9047e54fa23de2cddd2823b0d22f8baa24e6e2539b062a8dfe05d3cd3cfdd1"
+    },
+    {
+      "path": "docs/audits/evidence/food-owner-large-menu-2026-10-15/large-menu-1-public-item100.png",
+      "sha256": "9adc8155124b002d066e61042bb38858a36bff063460348b5a28fa04d9f25515"
+    },
+    {
+      "path": "docs/audits/evidence/food-owner-large-menu-2026-10-15/owner-results.json",
+      "sha256": "9f5e7309fc8f8e96a4495e88d3cadcfb872c7b22cedaa9dfaa6b317c26e18cc7"
+    }
+  ],
+  "cases": [
+    {
+      "family": "restaurant",
+      "width": 1440,
+      "initial_sections": [
+        100
+      ],
+      "full100_loaded": true,
+      "edit_save_preview_publish_reload_all100": true,
+      "unchanged_fields_exact": true,
+      "explicit_item94_remove_leaves99": true,
+      "last_item100_survives": true,
+      "actual_mounted_owner_editor": true,
+      "real_isolated_postgresql": true,
+      "production_writes": false
+    },
+    {
+      "family": "bakery",
+      "width": 390,
+      "initial_sections": [
+        94,
+        6
+      ],
+      "full100_loaded": true,
+      "edit_save_preview_publish_reload_all100": true,
+      "unchanged_fields_exact": true,
+      "explicit_item94_remove_leaves99": true,
+      "last_item100_survives": true,
+      "actual_mounted_owner_editor": true,
+      "real_isolated_postgresql": true,
+      "production_writes": false
+    }
+  ],
+  "acceptance": "Actual mounted owner editor, canonical preview API and restaurant/bakery public renderer with real isolated PostgreSQL migrations/writers; controlled owner/auth HTTP transport.100 imported _enrich.menu items loaded, one name explicitly edited, all others including source currency strings/Market price/absent price preserved, private save leaves published source untouched, saved preview renders100, publish/readback/reload all100; remove item94 explicitly then99 survive, last item100 still public/searchable.",
+  "command": "ZOI_PLAYWRIGHT_MODULE=/workspaces/zoi-city-release/node_modules/playwright-core/index.mjs CHROMIUM_EXECUTABLE_PATH=/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome node tests/database/food-owner-large-menu.integration.mjs",
+  "remaining": [
+    "Independent reviewer may run test against final integrated source",
+    "Actual production owner journey and native browser handoff remain separate acceptance",
+    "This does not import the remaining51 of Hellenic151-source items or increase the intentional100-item extraction cap."
+  ],
+  "production_writes": false,
+  "provider_calls": 0,
+  "runtime_changes": [],
+  "portability": "Uses declared playwright-core dependency by default; optional explicit Playwright module/Chromium/evidence env overrides. No /tmp package dependency or fixed personal browser installation required."
+}
