@@ -1,0 +1,231 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-15T15:04:01.108343+00:00",
+  "reviewer": "/root/qa_next",
+  "state": "Accepted frozen source correction for coherent native build; installed Android/iOS acceptance remains open and lead-owned.",
+  "source": {
+    "worktree": "/tmp/zoi-native-large-text-work",
+    "baseline": "b0c13d0597d4eb3f1a46d58ad9df68de895a0e39",
+    "owner_audit_sha256": "fd29773d9217904f4e498c2e0c8afaa484bd0e07cc1bd900350ade5372a678db",
+    "manifest": {
+      "path": "docs/audits/evidence/native-large-text-navigation-owner-2026-10-15/source-manifest.json",
+      "sha256": "7838a19827de11c396595deb436117fc2f6a8d6062b0f67ced8456bce7c669d2"
+    },
+    "source_files_verified": 11,
+    "owner_evidence_files_verified": 28,
+    "runtime_paths": [
+      "mobile/App.tsx",
+      "mobile/src/AppChrome.tsx",
+      "mobile/src/navigationLayout.ts"
+    ],
+    "files": [
+      {
+        "path": "mobile/App.tsx",
+        "sha256": "941617fe007037bbe795ffdb29e4410263667b3d7ed73bf70bdf9ffe7e543e1d"
+      },
+      {
+        "path": "mobile/src/AppChrome.tsx",
+        "sha256": "517df8ae74efaf32d5466984138becbc53572424a988b4a55770e7819fd25c58"
+      },
+      {
+        "path": "mobile/src/navigationLayout.ts",
+        "sha256": "96b0e2387c26bcd940dea33fde0cdbcfea9aac85bfbb6ad71f27e479ae57c4de"
+      },
+      {
+        "path": "mobile/tests/navigationLayout.test.mjs",
+        "sha256": "9daf6440b74642aa99010622023523c55f97d26de4c656889becfd5f8de217db"
+      },
+      {
+        "path": "mobile/tests/navigation-layout-browser/fixture.jsx",
+        "sha256": "049d14094dab3396c906bac4e07d9a86be14f1d841cbff2a6b85c322cb29395c"
+      },
+      {
+        "path": "mobile/tests/navigation-layout-browser/rn-web-scale-shim.jsx",
+        "sha256": "56d66d2a9b6c90257788b265f707b1daaccfb9b55118d11308a59f480d369081"
+      },
+      {
+        "path": "mobile/tests/navigation-layout-browser/build.cjs",
+        "sha256": "4c15517ee0de23f72dd555bd7384ae1982e9f5f4be770a6d53506775dcf4688d"
+      },
+      {
+        "path": "mobile/tests/navigation-layout-browser/verify.mjs",
+        "sha256": "fd2d6af8e374e9f43d55217ea624b6ec5fb82718be94dbfd52840bcbd4df83cd"
+      },
+      {
+        "path": "mobile/tests/navigation-layout-browser/README.md",
+        "sha256": "abe6ea863793ebd42f1b8ff782db0dada37e98f94f2620200cdc5d38ec1d26d3"
+      },
+      {
+        "path": "mobile/src/brand.ts",
+        "sha256": "4e0800060fe34bb41114900b0f5e9b18463f2010225da377cd68afa34c9f597d"
+      },
+      {
+        "path": "mobile/assets/zoi-logo.png",
+        "sha256": "08db50bee5caf18a878cb8468ced301d74c92bffd7b308678fb95e4f75514ff1"
+      }
+    ]
+  },
+  "source_review": [
+    "Existing route/auth/profile/error/screen subtree is byte-identical (3515 bytes); all existing application logic preceding the return is unchanged apart from the shared chrome import. No map/business/Community writer, account-switch behavior or destination IDs changed.",
+    "Existing five destination IDs, labels and icons are preserved. Header home/account callbacks and tab navigation retain the same profile/link-error clearing behavior. Real logo/brand bytes are unchanged.",
+    "Intrinsic label geometry preserves system scaling without a font cap, numberOfLines limit or fixed label height. Scroll viewport adapts from measured content/available width; each complete selected/focused tab is revealed with inset.",
+    "Previous/more arrows change scroll offset only. Active state remains bound to the existing route. RAF cleanup and dependency changes reveal current selection after font scale/orientation/route changes; no startup map permission or implicit navigation was added.",
+    "Long Greek and explicit newline labels remain whole when selected; accessible full labels/selected states and account/home controls remain present. Measured controls meet at least 44px in the controlled adapter.",
+    "Header stacks the tagline at high font scale on narrow widths; labels wrap naturally. New scroll controls, full label rendering and current-tab focus are coherent with horizontal touch/keyboard use."
+  ],
+  "verification": [
+    {
+      "kind": "independent focused actual navigation and existing map tests",
+      "passed": 16,
+      "failed": 0,
+      "command": "node --test mobile/tests/navigationLayout.test.mjs mobile/tests/foreground-map-location.test.mjs mobile/tests/android-map-recovery.test.mjs",
+      "evidence": "native-navigation-independent-focused.log"
+    },
+    {
+      "kind": "independent TypeScript",
+      "result": "pass",
+      "command": "mobile/node_modules/.bin/tsc --noEmit -p mobile",
+      "evidence": "native-navigation-independent-types.log"
+    },
+    {
+      "kind": "independent actual RN-Web controlled component journeys",
+      "passed": 18,
+      "failed": 0,
+      "viewports": [
+        "320x740",
+        "390x844",
+        "844x390",
+        "780x900"
+      ],
+      "font_scales": [
+        1,
+        2
+      ],
+      "labels": [
+        "English",
+        "long Greek",
+        "explicit Greek newlines"
+      ],
+      "journeys": [
+        "all five existing destination callbacks",
+        "home/account callbacks",
+        "scroll arrows without navigation",
+        "focus reveal then Enter/Space activation",
+        "current full selected label and target bounds",
+        "external route/font/orientation transition",
+        "no horizontal document overflow"
+      ],
+      "evidence": "controlled-browser/report.json",
+      "scope": "Actual AppHeader/PrimaryNavigation and installed React/RN-Web in isolated local fixture. Fixture-only text/font-line-height scaling adapter, not native font renderer or installed APK. No network/API/Auth/provider/device operations."
+    },
+    {
+      "kind": "visual inspection",
+      "files": [
+        "controlled-browser/el-844-390-font2.png",
+        "controlled-browser/el-390-font2-explicit-newlines.png"
+      ],
+      "result": "Greek 2x landscape retains full header/account and usable arrows. Explicit-newline selected Community label and focus outline fit; neighbouring offscreen tabs remain accessible through scroll controls."
+    },
+    {
+      "kind": "independent source preservation and freeze",
+      "result": "11 source and 28 owner evidence pins verified before/after local tests; independent body/prefix/logo proof retained. No owner files edited. Owner full 478-test result is read/hash-verified evidence, not claimed as a separate reviewer rerun.",
+      "evidence": "independent-source-proof.json"
+    }
+  ],
+  "limitations": [
+    "No installed candidate acceptance: currently installed older APK cannot verify these new three runtime files.",
+    "Real Android/iOS font metrics, safe-area integration, assistive technology and native build acceptance remain with lead. RN-Web point scaling is a documented approximation.",
+    "This chrome-only fixture does not establish whole-screen content layout or every product flow at large text. Existing route/body preservation and focused map regressions bound the source change.",
+    "No new EAS build, ADB operation, dependency installation or live production mutation was performed. Community private-browser packet remains frozen and separate."
+  ],
+  "evidence_files": [
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-320-740-font1.png",
+      "sha256": "23e29a7a667378b0e0d56f6d446e233ee3de6bdbb3797acd66dd8ed859e6ee2a"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-320-740-font2.png",
+      "sha256": "6dde716407c5d71b10456db013068681403246ceaadceddfc6a4b8c33f58d117"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-390-844-font1.png",
+      "sha256": "152a2cb5bed38c43c09cb02df04a02320392be5ed95d45f050e178d65852feb4"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-390-844-font2.png",
+      "sha256": "7841932c89fd2f77f5685e811535664bc1b780022e6732b8161bb93dfaf000e9"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-390-font2-explicit-newlines.png",
+      "sha256": "187081f9a79a78b4aa6684955e665083804b66908068e4cdabbce330dff6c841"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-780-900-font1.png",
+      "sha256": "aeefb41c9f68206852beb166542f1fb3884fc47f58985fc4507db5bc92470c4f"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-780-900-font2.png",
+      "sha256": "c47b00d39f289533cbb709835e96b85dd5bbe39c3d322221f2bb2f549557a1e9"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-844-390-font1.png",
+      "sha256": "c037f1f234d72309b8676ae7d961f43d9cf001a63e17256b46c9ca229f9d8472"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/el-844-390-font2.png",
+      "sha256": "de95912b8fa2b99f8e9411bedb00f5ec6eaa7dd9fef3cc7d8bd2cbac643c4990"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-320-740-font1.png",
+      "sha256": "71ddc1d2b549c60b5ec4634fff3352295f0aabf94c46301a822d5b97a77dfc1f"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-320-740-font2.png",
+      "sha256": "a4ef935e1ed3216b76da457d47a9c549a57429da12cacdb3c5fb620d1483a0db"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-390-844-font1.png",
+      "sha256": "f1294a5e09974ec6dc80fec1060724c519573cc8762d0e7d72c95b0d8657e0a8"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-390-844-font2.png",
+      "sha256": "5624624ea4c378be6b279468d90023444703a247ed508aa2b6b0fee007b40f58"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-780-900-font1.png",
+      "sha256": "73aea5c0b8dd36ee810cd4eb242ce9dd3840458139a600ddbd3a067272a4c9ee"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-780-900-font2.png",
+      "sha256": "e9883447d21e851f33aec52b2f06b9b8f948436f200d38d361a29ee783a15beb"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-844-390-font1.png",
+      "sha256": "31e3cb9b67fb6ed919d8d6b7b47efa84fc22c4f3c2b1e69d49ccdc7b7c589547"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/en-844-390-font2.png",
+      "sha256": "a2c8cb0e2526e1fc898f33dc7d7ee6857c1cfdcbd875da773c31e04f5079ea66"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/controlled-browser/report.json",
+      "sha256": "b66f2e918c038dc40ece34dc36b14ef3bfc4fed5948091b653c7f5ddbd7f0580"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/independent-source-proof.json",
+      "sha256": "e53066a2c0a72c2003bc2735d426c12d3a032bbd1f8c7527b5b86ed0bd8207da"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/native-navigation-independent-browser.log",
+      "sha256": "a03e8f40aec461b46714ab1902be3e2bbb972d069b1f860109ef93b9534764de"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/native-navigation-independent-focused.log",
+      "sha256": "f84d32d6cf75a9c8ec46b1183e8dea236138791e6019fbf52d16b93219aa189a"
+    },
+    {
+      "path": "docs/audits/evidence/native-large-text-navigation-independent-2026-10-15/native-navigation-independent-types.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

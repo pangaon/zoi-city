@@ -1,3 +1,4 @@
+import {publishedField,publishedEmail} from '../assets/homes/published-fields.mjs';
 import {publishedDirections} from '../assets/homes/directions.mjs';
 import {officialURL} from '../assets/homes/official-url.mjs';
 import {withHomeNavigation} from './_home-navigation.js';
@@ -147,7 +148,7 @@ function socialArr(e){
 function jsonld(e,url){
   var o={ '@context':'https://schema.org', '@type':schemaType(e), name:e.name, url:url };
   var picked = verticalFor(e), profile = profileForVertical(picked.v, profileOf(e), e);
-  var description = cleanPublicText(e.description || profile.about || profile.description);
+  var description = cleanPublicText(publishedField(e,'description',e.description || profile.about || profile.description));
   if(description) o.description=description;
   if(e.address||e.city){
     o.address={ '@type':'PostalAddress' };
@@ -214,7 +215,7 @@ function page(e, related, completeness){
   var eyebrow = (typeof V.eyebrow === 'function' ? V.eyebrow(e, sub) : sub) || pretty(e.entity_type);
   var catLabel = pretty(e.category_slug) || pretty(e.entity_type);
   var title = e.meta_title || (e.name + (e.city ? ' — ' + e.city : '') + ' | Zoi');
-  var publicDescription = cleanPublicText(e.description || p.about || p.description);
+  var publicDescription = cleanPublicText(publishedField(e,'description',e.description || p.about || p.description));
   var desc = cleanPublicText(e.meta_description) || publicDescription || (e.name + (e.city?(' in '+e.city):'') + ' — connect with the Greek world on Zoi.');
   var mapHref = publishedDirections(e);
 
@@ -233,7 +234,7 @@ function page(e, related, completeness){
   if(mapHref)   acts.push({ label:'Directions', href: mapHref, icon: IC.pin, external:true });
   /* Contact was simply absent. An email is the one action a visitor wants that
      does not need a phone call, and 40% of enriched listings have one. */
-  var contactEmail = e.email || (p && p.email) || '';
+  var contactEmail = publishedEmail(e,e.email || (p && p.email) || '');
   if(contactEmail && /.+@.+\..+/.test(contactEmail)) {
     acts.push({ label:'Contact', href:'mailto:'+contactEmail
       + '?subject=' + encodeURIComponent('Enquiry via Zoi \u2014 ' + (e.name||'')),

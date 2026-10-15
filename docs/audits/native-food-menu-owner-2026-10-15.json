@@ -1,0 +1,272 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "baseline": "576c0b7d8063f23cfdf7b43c93b72d476640c1ef",
+  "outcome": "Native published Food menu browsing implemented through existing home_entity and canonical web models, with no separate reader or writer. Source accepted locally; actual installed APK acceptance pending root.",
+  "source_manifest": {
+    "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/source-manifest.json",
+    "sha256": "f70ffcd150dec24cad31caef084d13df8117ef96b4c3aa234d88fbcff1bcd847"
+  },
+  "runtime_paths": [
+    "mobile/src/Profile.tsx",
+    "mobile/src/profile.ts",
+    "mobile/src/foodMenu.ts",
+    "mobile/src/FoodMenu.tsx",
+    "mobile/metro.config.js"
+  ],
+  "behavior": [
+    "BusinessProfile reads published home_entity and retains full context through shared foodReadEntity/family/profile/menu models. No private draft projection or inferred unowned identity.",
+    "All151 canonical source items remain searchable from the initial12. Official section names/counts,12-more/all/fewer, sparse/held/owner-clear/removal states are retained.",
+    "Question is a selectable local draft with explicit email/call/site handoff. Nothing is sent, ordered or reserved. Failed links can be retried through other contact options.",
+    "Section radio choices expose checked state; clear brings All sections back into view. Search submit dismisses keyboard and outer native scroll retains handled control taps.",
+    "Existing non-Food profile routes/actions are unchanged apart from the established published-home wrapper read."
+  ],
+  "verification": {
+    "mobile_tests": 482,
+    "focused_new_and_existing_profile_tests": 19,
+    "typescript": "pass",
+    "diff_check": "pass",
+    "controlled_actual_Profile_Food_cases": 15,
+    "viewports": [
+      "390x844",
+      "844x390"
+    ],
+    "scales": [
+      1,
+      2
+    ],
+    "evidence_cases": [
+      "bakery and restaurant151",
+      "whole-source tail search",
+      "real four source sections",
+      "12\u219224\u2192all\u219212",
+      "source handoff",
+      "private question and email handoff",
+      "failed link recovery",
+      "150 after owner removal",
+      "owner explicit clear",
+      "sparse and source hold",
+      "long Greek keyboard/focus",
+      "actual Profile read failure\u2192retry\u2192unpublish clearing",
+      "exact retained anonymous production home_entity mounted"
+    ],
+    "raw_public_values_comparison": {
+      "basis": "Independent Python exact comparison of public home_entity raw menu against actual normalizeProfile\u2192foodForProfile output. No same-model expected value.",
+      "public_response_sha256": "124871f71b13a7a4df2c9ca5056b52bf35630a69043cb9ac382b263364276287",
+      "all151_names_prices_notes_match": true,
+      "sections": [
+        [
+          "Spanakopita",
+          2
+        ],
+        [
+          "Tiropitakia",
+          2
+        ],
+        [
+          "Desserts",
+          2
+        ],
+        [
+          "List",
+          145
+        ]
+      ],
+      "tail": {
+        "name": "Sardines in Can",
+        "price": "$3.00",
+        "note": ""
+      },
+      "public_source_coverage_sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267",
+      "source_records": "Public production response captured earlier by root; no live action in this packet."
+    }
+  },
+  "read_only_shared_dependencies": [
+    {
+      "path": "api/_verticals.js",
+      "sha256": "a43367b0024c5b58d0186609d50e6c8598cfef325dc635c47bc125cce9f4113d"
+    },
+    {
+      "path": "assets/homes/food-offering.mjs",
+      "sha256": "a2070348ad8f1c60f5aecd6add4ac209064b0b352010bb9c630468bf7ee85c6d"
+    },
+    {
+      "path": "assets/homes/templates/restaurant/model.mjs",
+      "sha256": "9159547b7bd504f29bcb9806f7f0b4181225cc2d9c8af6d3fff555d01d55a973"
+    },
+    {
+      "path": "assets/homes/templates/bakery/model.mjs",
+      "sha256": "93d01d4a585ccbf7150639731ab0f4baeffc984d6140d3ecddad59dcc0800dbb"
+    },
+    {
+      "path": "assets/enrichment/official-source-policy.mjs",
+      "sha256": "f77468e4d720145f71ef9a08a83afe8eb43582be5c408dcbef6139e844fcbdfd"
+    },
+    {
+      "path": "assets/enrichment/client-brief.mjs",
+      "sha256": "d0888635355c529eac18be812162a8952d66d7298e84fcf6bc81bd2b43ecfbc3"
+    }
+  ],
+  "manual_receipt_integration_dependency": "Pending shared manual Food receipt helpers/model and actual server boolean projection are root-owned release work. Native passes original home_entity to them and displays canonical menuLinks labels including scoped Lunch menu after integration; it never derives whole-business coverage from raw metadata. Combined dependency acceptance remains separate.",
+  "limits": [
+    "No EAS, ADB, production read/write, Auth, provider submission or paid action was performed.",
+    "RN Web fixture-only font scaling and controlled Auth/unrelated-panel boundaries are documented; actual Android/iOS font metrics, native keyboard and screen-reader verification remain root.",
+    "This source is not yet an installed native capability. Web and native artifact releases remain distinct.",
+    "The retained official-source parser fixture and retained production public response have separately recorded source hashes/dates; no claim of a fresh source crawl."
+  ],
+  "react_review": "Small component plus pure adapter/filter, bounded canonical data, keyed profile reset, functional state updates, explicit accessible labels/checked state, no font scaling cap/new library/global store or editor.",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/actual-public-390-font2.png",
+      "sha256": "aa3ee176260e9afdb07f5b26c6ae5804b008a17dd0b059cbd978a5acc4d4724f"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-390-font1-initial.png",
+      "sha256": "a21fb17a571c43093619d90143070d28a3c2f39ea25cb3f79d10ec0b3b9fa767"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-390-font1-question.png",
+      "sha256": "312647addf3c070d45aa7a8cedf1c9183a1f443f9be7e134303d38ce3d68b5b6"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-390-font1-tail151.png",
+      "sha256": "bda11d10aeebbe017d698fa5171ea3d8f664cb8daf3a519748211c7ffb5b5697"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-390-font2-initial.png",
+      "sha256": "7b17de1c88e6984f7d8f13692251513d061a022422b261dfb6fc6ba0da8b9359"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-390-font2-question.png",
+      "sha256": "75653b47afa1a293d872bf3a2bc04883112d4ff77e55697226dbf6b8f078c70f"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-390-font2-tail151.png",
+      "sha256": "e2af2539ac2a98a70ab06ee9a329fb2a07d817c663c9a890ad3d2d94a0163514"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-844-font1-initial.png",
+      "sha256": "f3541e2798bae7537ae1ff4912e8a683f43c76e0d02bfdea4495f594ce16c8f3"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-844-font1-question.png",
+      "sha256": "a39b1cbb6b251080139c5821947e92416a6862152f145a2e2a35d6582f288980"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-844-font1-tail151.png",
+      "sha256": "0f5d1bc007ce54f64b06537c1a6490b309b7659fc51a64fd54180422d0ccc9cc"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-844-font2-initial.png",
+      "sha256": "072a94dd20836cbee2d4e3b6e3cb88a809acd4a237569ba36b85546bae067e9f"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-844-font2-question.png",
+      "sha256": "e0b36941897ac0258b625766b976f8fa01702818b3dbc8e7e88c05cc78702a44"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/bakery-844-font2-tail151.png",
+      "sha256": "ca021ef137b0df99de84034f4e35cd0c102bb18baba7f0879ed94cdc53c7997d"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/clear-390-font2.png",
+      "sha256": "3b5d33d10fa2b8b6bba635d1355a655578a37f3bfce482f62e592b4e39f25977"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/greek-390-font2.png",
+      "sha256": "fd7620b5f24ddd342866a6a0c958b48b2d52a6888e7e5ded036c44367916ab03"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/held-390-font2.png",
+      "sha256": "3b5d33d10fa2b8b6bba635d1355a655578a37f3bfce482f62e592b4e39f25977"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/removed-390-font2.png",
+      "sha256": "8ef1ade4b2291efc190808f2cd1e96a8c80f1097232e9e86d5cf5a3ac28d00ea"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/report.json",
+      "sha256": "bfa6c7ed9282977517a00e288c69de2728329ba5cb60682b9b7611967b1ab122"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-390-font1-initial.png",
+      "sha256": "99c064a9d6820f4c9501213ca39802fedf900bbd7272513e4a5347f62b3510c7"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-390-font1-question.png",
+      "sha256": "312647addf3c070d45aa7a8cedf1c9183a1f443f9be7e134303d38ce3d68b5b6"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-390-font1-tail151.png",
+      "sha256": "bda11d10aeebbe017d698fa5171ea3d8f664cb8daf3a519748211c7ffb5b5697"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-390-font2-initial.png",
+      "sha256": "13aa2a811185ecf79efee8eb9ef785603b708437d0406994b7bf6e7db53aa680"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-390-font2-question.png",
+      "sha256": "75653b47afa1a293d872bf3a2bc04883112d4ff77e55697226dbf6b8f078c70f"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-390-font2-tail151.png",
+      "sha256": "e2af2539ac2a98a70ab06ee9a329fb2a07d817c663c9a890ad3d2d94a0163514"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-844-font1-initial.png",
+      "sha256": "fd41268b57c7634d25d89e94ab5f1d51c2eaf14d0459dc7a505fb87f9deb1121"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-844-font1-question.png",
+      "sha256": "a39b1cbb6b251080139c5821947e92416a6862152f145a2e2a35d6582f288980"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-844-font1-tail151.png",
+      "sha256": "0f5d1bc007ce54f64b06537c1a6490b309b7659fc51a64fd54180422d0ccc9cc"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-844-font2-initial.png",
+      "sha256": "569c03deb002b6034127dc4fca0a9bae6c2415d6414884d5079e1fb549e12b7a"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-844-font2-question.png",
+      "sha256": "e0b36941897ac0258b625766b976f8fa01702818b3dbc8e7e88c05cc78702a44"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/restaurant-844-font2-tail151.png",
+      "sha256": "ca021ef137b0df99de84034f4e35cd0c102bb18baba7f0879ed94cdc53c7997d"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/controlled-browser/sparse-390-font2.png",
+      "sha256": "3b5d33d10fa2b8b6bba635d1355a655578a37f3bfce482f62e592b4e39f25977"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/exact-public-source-comparison.json",
+      "sha256": "98fb937536063d6d614d799a2dcc1d1e2fe3ef7a28de57c72718b0aac75a3472"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/source-manifest.json",
+      "sha256": "f70ffcd150dec24cad31caef084d13df8117ef96b4c3aa234d88fbcff1bcd847"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/zoi-native-food-all-tests-frozen.log",
+      "sha256": "304554c5efe0d816a6a3ac41c74caed2b405e1eac008a59e06e7b99313cb9091"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/zoi-native-food-browser-build-frozen.log",
+      "sha256": "b36e7bbe830f4ba63d98b46578e6eeaae56117a1f68ad6775157c387f2b17674"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/zoi-native-food-browser-frozen.log",
+      "sha256": "5d397923b7a51aa192444f7fc9e31d1ce3a2d2f9cc5523f06a70cd93c0114341"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/zoi-native-food-focused-final.log",
+      "sha256": "0fa206ec4ede11aa338a82bb76c23f92328786d11111e3b90ac239aa8fbadbf6"
+    },
+    {
+      "path": "docs/audits/evidence/native-food-menu-owner-2026-10-15/zoi-native-food-types-frozen.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
