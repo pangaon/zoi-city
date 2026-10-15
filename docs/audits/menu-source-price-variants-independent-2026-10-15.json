@@ -1,0 +1,126 @@
+{
+  "created_at": "2026-10-15T13:52:06.535881+00:00",
+  "reviewer": "/root/qa_next",
+  "state": "ACCEPTED shared source parser fix and retained raw source fidelity; fresh recipe/report/reviewed payload and root live apply remain gated separately",
+  "base_commit": "afe271b3fc507e745ee2ab8ce6ed63d1db753773",
+  "author_audit_sha256": "8382e0245c1a7c37ea2f08f55ddcbd7fb022ca1865de75d4a508c2b0a32a74a1",
+  "frozen_sources": [
+    {
+      "path": "supabase/functions/zoi-enrich/_menus.js",
+      "sha256": "ee8e49146fcaae49dffb1498b14dd5fe006f4e4e1320f05740facf29c677e86f"
+    },
+    {
+      "path": "scripts/enrichment/source-errors.mjs",
+      "sha256": "24e50aebe6cec0547753b8d9f681066cddaf6ea0f6dcf780f0dc723dad4f7740"
+    },
+    {
+      "path": "tests/unit/menu-source-price-variants.test.mjs",
+      "sha256": "a91c97bf0d57ae07d7b00eacdc879e97125eec268931a0ac9c618a855e603a00"
+    }
+  ],
+  "scope": "Read-only independent review; only new independent audit/evidence files written. No author/root source edits, production operations, provider calls, fresh source requests or emulator control.",
+  "source_result": {
+    "independent_parser": "Python stdlib HTMLParser raw direct DOM fields",
+    "source_sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267",
+    "all151_name_price_note_order_exact_match": true,
+    "all_other150_items_unchanged": true,
+    "changed_item": [
+      {
+        "before": {
+          "name": "Horio Olive Oil",
+          "note": "",
+          "price": ""
+        },
+        "after": {
+          "name": "Horio Olive Oil",
+          "price": "$18.00/500 ml | $25.00/750 ml | $70.00/3 lt",
+          "note": ""
+        }
+      }
+    ],
+    "source_variants": [
+      "$18.00/500 ml",
+      "$25.00/750 ml",
+      "$70.00/3 lt"
+    ],
+    "sections": [
+      [
+        "Spanakopita",
+        2
+      ],
+      [
+        "Tiropitakia",
+        2
+      ],
+      [
+        "Desserts",
+        2
+      ],
+      [
+        "List",
+        145
+      ]
+    ],
+    "total": 151,
+    "truncated": false,
+    "limits_unchanged": {
+      "items": 300,
+      "per_section": 300,
+      "sections": 20,
+      "bytes": 120000
+    }
+  },
+  "policy_review": {
+    "multiple_direct_source_price_fields": "All alternatives preserve source order and full literal currency/size values. Horio stays one item; no new menu categories or source facts.",
+    "price_limit_100": "Alternatives join with | only when complete joined price fits100 chars.",
+    "note_limit_600": "Long complete price alternatives move to note with complete original description; no partial prefix.",
+    "malformed_or_overflow": "Entire unresolved item omitted; unique signatures add to observed total and set menu_truncated=true. Fully unresolved menu throws exact source_menu_price_variants_unresolved.",
+    "failure_classification": "Only exact new fixed error string is added; no raw URLs/provider logs exposed. Actual controlled worker emits only error metadata, no replacement menu/brief.",
+    "single_price_behavior": "Unchanged.",
+    "canonical_source_bounds": "300total/300perSection/20sections/120000UTF8bytes; title100/name160/price100/note600 unchanged.",
+    "ownership_guarantees": "No changes to owner data, identity/branch/source verification, reviewed-source bindings, leases or canonical writer. Retained source\u2192reviewed payload\u2192public bakery model and explicit owner clear checks remain passing.",
+    "dedup_preserved": "Main includes dedupPR67; runtime diff touches only semantic price alternatives and coverage accounting."
+  },
+  "verification": {
+    "focused_tests": 68,
+    "passed": 68,
+    "failed": 0,
+    "skipped": 0,
+    "current_source_hash_pinned": true,
+    "all151_original_dom_fields_match": true,
+    "other150_unchanged": true,
+    "real_guarded_capture_all_unresolved_refused": true,
+    "actual_worker_error_only_controlled": true,
+    "prior_rows_unchanged_in_controlled_failures": true,
+    "retained_old_source_end_to_end_model_and_owner_clear": true,
+    "cached_only_deno_check": "pass",
+    "git_diff_check": "pass",
+    "final_source_hashes_unchanged": true
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/menu-price-variants-independent-2026-10-15/deno.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/audits/evidence/menu-price-variants-independent-2026-10-15/fixed-dom-result.json",
+      "sha256": "6b9dda5b9a201c0db435ce5e4759138ea127222cf68f58911c7d10dbb9a6799a"
+    },
+    {
+      "path": "docs/audits/evidence/menu-price-variants-independent-2026-10-15/fixed-extractor-result.json",
+      "sha256": "867d5e6a3332b4baedcf554b249c2e769036870a0e470062b6e882bb79871fe0"
+    },
+    {
+      "path": "docs/audits/evidence/menu-price-variants-independent-2026-10-15/focused.log",
+      "sha256": "aff891ab95cd838c927e426ebdb3b1d241c11480bef1808b25145e3320031b65"
+    }
+  ],
+  "corrects": "Horio price omission recorded in hellenic151-current-source-independent-2026-10-15.json. That finding audit and prior immutable evidence remain retained.",
+  "remaining": [
+    "Root protected source integration/release",
+    "Fresh recipe capture, report and reviewed SQL payload comparison against exact same raw source and all151fields",
+    "Root production rollback-only rehearsal then exact commit and canonical/public readback",
+    "Actual rendered390/1440 and customer journeys; installed native acceptance separately"
+  ],
+  "production_writes": 0
+}

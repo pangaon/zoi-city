@@ -1,0 +1,89 @@
+{
+  "date": "2026-10-15",
+  "scope": "Generic direct semantic publisher price alternatives; source extraction and controlled failure evidence only. No production writes, leases, paid calls, deployment or completed-home claim.",
+  "worktree": "/tmp/zoi-menu-price-variants",
+  "branch": "fix-source-menu-price-variants-20261015",
+  "base_commit": "afe271b3fc507e745ee2ab8ce6ed63d1db753773",
+  "owned_files": [
+    {
+      "path": "supabase/functions/zoi-enrich/_menus.js",
+      "sha256": "ee8e49146fcaae49dffb1498b14dd5fe006f4e4e1320f05740facf29c677e86f"
+    },
+    {
+      "path": "scripts/enrichment/source-errors.mjs",
+      "sha256": "24e50aebe6cec0547753b8d9f681066cddaf6ea0f6dcf780f0dc723dad4f7740"
+    },
+    {
+      "path": "tests/unit/menu-source-price-variants.test.mjs",
+      "sha256": "a91c97bf0d57ae07d7b00eacdc879e97125eec268931a0ac9c618a855e603a00"
+    }
+  ],
+  "problem": "More than one direct food-price child previously became an empty item price. The exact current Hellenic source has three Horio Olive Oil size/price siblings.",
+  "policy": {
+    "single_price": "Unchanged existing extraction behavior.",
+    "multiple_prices": "One source item; every direct literal price/size in publisher order joined by |. Price length at most100; if longer all alternatives and existing description are retained in note at most600. Malformed, empty or oversized alternative or unretainable description omits the entire item. No prefix alternatives or invented fields.",
+    "omission": "Unique omitted item signatures contribute to observed menu_total_items and menu_truncated=true. If no valid menu survives, throw source_menu_price_variants_unresolved, retained by the source-errors fixed allowlist and the existing worker error lane.",
+    "bounds": "300 items/300 per section/20 sections/120000 bytes; name160,price100,note600,section100 unchanged.",
+    "fences": "No owner, identity, lease, website, branch, writer or menu-bound changes."
+  },
+  "actual_source": {
+    "url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+    "private_path": "/home/codespace/.cache/zoi/hellenic151-source-current-20261015/a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267.source.html",
+    "sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267",
+    "retained_items": 151,
+    "original_total": 151,
+    "sections": 4,
+    "truncated": false,
+    "changed_item": {
+      "name": "Horio Olive Oil",
+      "price": "$18.00/500 ml | $25.00/750 ml | $70.00/3 lt",
+      "note": ""
+    }
+  },
+  "validation": {
+    "focused_tests": 68,
+    "failed": 0,
+    "current_source_hash_pinned": true,
+    "actual_linked_capture_unresolved_refused": true,
+    "actual_worker_unresolved_error_only": true,
+    "prior_record_not_mutated_by_controlled_capture_or_worker": true,
+    "retained_old_source_integration": {
+      "sha256": "98327c9a383605c9630e977d3715b67aa4a7a8b967533c74bae09a61ffb1f6df",
+      "items": 151,
+      "source_to_reviewed_payload_to_public_bakery_model": true,
+      "owner_explicit_menu_clear": true
+    },
+    "cached_deno_check": "pass",
+    "node_syntax": "pass",
+    "git_diff_check": "pass",
+    "network_requests": 0,
+    "production_writes": 0,
+    "sql_calls": 0,
+    "actual_production_lease": false,
+    "browser_journey_acceptance": false,
+    "independent_original_source_gate": "required before root production apply"
+  },
+  "test_command": "ZOI_MENU_PRICE_SOURCE=<private current source path> ZOI_FOOD_RETAINED_SOURCE_PROOF=1 ZOI_FOOD_VARIANT_SOURCE_DIR=/home/codespace/.cache/zoi/food-three-client-proposals-private-20261015 node --test tests/unit/menu-source-price-variants.test.mjs tests/unit/menu-source-variant-identity.test.mjs tests/unit/food-full-menu.test.mjs tests/unit/enrichment-menu.test.mjs tests/unit/reviewed-food-source.test.mjs tests/unit/food-source-pipeline.test.mjs tests/unit/food-source-branch-independent.test.mjs",
+  "private_evidence": {
+    "directory": "/home/codespace/.cache/zoi/menu-source-price-variants-20261015",
+    "files": [
+      {
+        "name": "zoi-menu-price-variants-deno.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "tracked-delta.patch",
+        "sha256": "ae1405d50aa50407abf8a34427d6355f533d051b2e108c31ffffa8acd6729181"
+      },
+      {
+        "name": "zoi-menu-price-variants-unit.log",
+        "sha256": "8478d9a88590e714697271b7ff16210b142cc3579d98f0d24bde30b67fb5772c"
+      },
+      {
+        "name": "zoi-menu-price-variants-retained.log",
+        "sha256": "c5a46a13b65be9352714741ecb74189f3e55cd35947f38033a1b0e7e481a6b47"
+      }
+    ]
+  },
+  "integration": "Current main already includes dedup PR67; this runtime delta changes only semantic price processing. Prior dedup and three-client freezes remain unchanged. Root owns release and source fact application."
+}
