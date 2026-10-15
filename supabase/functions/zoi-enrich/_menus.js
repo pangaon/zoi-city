@@ -59,7 +59,7 @@ function extractSemanticFoodMenu(html,source){
   else{const classes=attribute(' '+match[0],'class').split(/\s+/),node={classes,start:match.index+match[0].length,end:null,parent:stack.at(-1)||null,children:[]};if(node.parent)node.parent.children.push(node);nodes.push(node);stack.push(node);}
  }
  if(stack.length)return null;
- const sections=[],seen=new Set(),itemsBySection=new Map();
+ const sections=[],seen=new Set(),omitted=new Set(),itemsBySection=new Map();
  for(const node of nodes.filter(n=>n.classes.includes('food-item-holder'))){let parent=node.parent;while(parent&&!parent.classes.includes('food-menu-grid-item-content'))parent=parent.parent;if(parent){if(!itemsBySection.has(parent))itemsBySection.set(parent,[]);itemsBySection.get(parent).push(node);}}
  for(const section of nodes.filter(n=>n.classes.includes('food-menu-grid-item-content'))){
   const fragment=clean.slice(section.start,section.end),headings=[...fragment.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/gi)];if(headings.length!==1)continue;
@@ -68,9 +68,24 @@ function extractSemanticFoodMenu(html,source){
    const item=clean.slice(node.start,node.end),names=[...item.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>/gi)];if(names.length!==1)continue;
    const name=text(entities(names[0][1]));if(!name)continue;
    const field=role=>{const fields=node.children.filter(n=>n.classes.includes(role));return fields.length===1?text(entities(clean.slice(fields[0].start,fields[0].end))):'';};
-   const literal=field('food-price'),price=literal&&/^[£€$]\s*\d/.test(literal)&&literal.length<=80?literal:'',note=field('food-item-description'),signature=JSON.stringify([title,name,price,note]);if(seen.has(signature))continue;seen.add(signature);items.push({name,price,note});
+   const literals=node.children.filter(n=>n.classes.includes('food-price')).map(n=>text(entities(clean.slice(n.start,n.end)))),description=field('food-item-description');
+   let price='',note=description;
+   if(literals.length>1){
+    // These are publisher-defined alternatives for one item. Retain every size
+    // and price in source order, or omit the whole item with explicit coverage.
+    const signature=JSON.stringify([title,name,literals,description]),joined=literals.join(' | ');
+    if(description.length>600||!literals.every(v=>v.length<=600&&/^[£€$]\s*\d+(?:[.,]\d{1,2})?(?:\s*\/\s*[^|<>]+)?$/.test(v))){omitted.add(signature);continue;}
+    if(joined.length<=100)price=joined;
+    else{note=joined+(description?' — '+description:'');if(note.length>600){omitted.add(signature);continue;}}
+   }else{const literal=literals[0]||'';price=literal&&/^[£€$]\s*\d/.test(literal)&&literal.length<=80?literal:'';}
+   const signature=JSON.stringify([title,name,price,note]);if(seen.has(signature))continue;seen.add(signature);items.push({name,price,note});
   }
   if(items.length)sections.push({section:title,items});
  }
- return boundedMenu(sections,source,'html-semantic-food-fields');
+ const result=boundedMenu(sections,source,'html-semantic-food-fields');
+ if(omitted.size){
+  if(!result)throw new Error('source_menu_price_variants_unresolved');
+  result.menu_total_items+=omitted.size;result.menu_truncated=true;
+ }
+ return result;
 }
