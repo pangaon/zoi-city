@@ -1,0 +1,51 @@
+name: Dedicated QA private Community bytes
+on:
+  push:
+    branches: [main]
+    paths: ['ops/community-media-blob-qa.json']
+permissions:
+  contents: read
+concurrency:
+  group: dedicated-community-private-byte-qa
+  cancel-in-progress: false
+jobs:
+  private-bytes:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main' && github.event.repository.private == false && github.event.repository.visibility == 'public' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Exact trusted expiring request and source checks
+        id: admission
+        run: node scripts/auth-qa/community-media-blob-ci.mjs check
+      - name: Controlled scope and cleanup checks before credentials
+        run: node --test tests/unit/community-media-blob-qa.test.mjs
+      - name: Actual dedicated QA private Storage gate
+        if: steps.admission.outputs.enabled == 'true'
+        id: blob
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/auth-qa/community-media-blob-ci.mjs run
+      - name: Reconcile original two request-scoped assets after interruption
+        if: always() && steps.admission.outputs.enabled == 'true' && steps.blob.outcome != 'skipped'
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/auth-qa/community-media-blob-ci.mjs cleanup
+      - name: Only sanitized booleans and synthetic asset IDs
+        if: always() && steps.admission.outputs.enabled == 'true' && steps.blob.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: community-private-bytes-${{ github.run_id }}
+          path: |
+            qa-community-blob-evidence/result.json
+            qa-community-blob-evidence/failure.json
+          if-no-files-found: error
+          retention-days: 7

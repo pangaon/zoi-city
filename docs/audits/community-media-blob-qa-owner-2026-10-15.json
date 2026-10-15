@@ -1,0 +1,91 @@
+{
+  "observed_at": "2026-10-15T12:38:00.597748+00:00",
+  "state": "Disabled source candidate for independent review; no live schema, Edge, Auth, Storage or public content mutation by author",
+  "baseline": "8c8fe88bd054c18e73e54eb1ca89451e47a6c7c6",
+  "worktree": "/workspaces/zoi-community-blob-qa",
+  "files": [
+    {
+      "path": "scripts/auth-qa/community-media-blob-ci.mjs",
+      "sha256": "406d0be58bfb1b65b2a1a709c74ba8d209d334e6a9bdd0213e74804bc00051c5"
+    },
+    {
+      "path": "scripts/auth-qa/community-media-blob-policy.mjs",
+      "sha256": "4393959a743700d445a63d606fe7fbcd3b9dc3521d6bb75e4134f9ef0964f1e9"
+    },
+    {
+      "path": "tests/unit/community-media-blob-qa.test.mjs",
+      "sha256": "fa75c3c93e0256f372765dd22abdf56719d80e80b708297fd8703fd10bc7cd5f"
+    },
+    {
+      "path": ".github/workflows/community-media-blob-qa.yml",
+      "sha256": "46ed8087f921eb259f1941a01bf992c4d064de3449f75a3fd35d73e8b979d781"
+    },
+    {
+      "path": "ops/community-media-blob-qa.json",
+      "sha256": "7187d1e8e2a4d61b1dc5dfedb22d703a462df21470e0c145365b20fb3ed467c3"
+    }
+  ],
+  "contracts": [
+    "Trusted public-main push only, single parent, request-file-only diff, first attempt, exact request shape, exact16 code/workflow/test/local-import hashes and actual Edge ACTIVE bundle hash. Main run admission lasts at most30minutes; one-hour extra grace permits original-asset cleanup only.",
+    "Disabled example is exactly enabled:false. Check emits enabled=false to GitHub step output and gates all credential-bearing run/cleanup and artifact steps. Disabled local CLI performed zero network requests.",
+    "Require current accepted member-draft baseline plus phase A, private Community bucket, exact verified-finish/grant/member-actor bodies and old finish body before any upload test. Phase B is intentionally not admitted for this gate. Root owns all schema/source integration/deployment/activation.",
+    "Reuse existing withQaSession and serviceCredential helpers. Existing dedicated QA identity/profile/workspace only; no founder, new user, outbound email or global session revocation. Access/refresh/service credentials remain in memory and service keys are masked.",
+    "Two deterministic UUID-format nonces derive solely from the fresh approved request. Each is canonically reserved once; path must equal dedicated QA profile ID/asset ID. Every subsequent upload/replay/reverify and cleanup stays within these same two assets.",
+    "Positive real73-byte valid PNG upload, same nonce replay, actual private object GET SHA256 plus exact parser metadata, ordinary authenticated private-object denial, unattached public Edge denial, and ready reverify using only asset ID with no file in the request.",
+    "Second valid PNG has identical MIME/size/parser dimensions but different content/digest. It is installed only at the exact canonically reserved QA object using nonupsert service write. Edge upload must refuse media_byte_proof_mismatch and leave canonical asset pending without proof.",
+    "After the first temporary QA session is locally logged out by the existing helper, same original verified grant/metadata must refuse with the canonical media_grant_unavailable RPC400 while its asset remains ready. Other sessions are not revoked.",
+    "Canonical cleanup is in finally and also a separate always workflow stage. It discovers only exact two request-derived nonces plus exact QA profile through a fixed bounded read-only Management SELECT; checks immutable purpose/MIME/size/SHA/parser metadata/state and unique IDs/nonces; then authenticates a fresh local QA session and calls per-asset Edge discard. No global cleanup endpoint, direct row delete, timestamp adjustment or immutable grant/proof deletion.",
+    "Each discarded object is checked absent using service private GET; fixed metadata SELECT confirms assets discarded with storage deletion recorded. Missing reservations are never recreated by cleanup. Immutable audit/grant/proof history stays retained.",
+    "Only result.json and failure.json are uploaded. Result is booleans plus up to two synthetic asset IDs, written only after complete local logout and canonical cleanup. Failure uses fixed stages/booleans/IDs only, no arbitrary errors, body, email, grant, path, URL, token, screenshot or trace.",
+    "A separate cleanup stage reads current canonical state first and skips a repeated discard when storage deletion is already confirmed; it still checks private-object absence."
+  ],
+  "controlled_verification": {
+    "passed": 10,
+    "failed": 0,
+    "skipped": 0,
+    "syntax_modules": 3,
+    "import_graph": "Every static local import in the actual CLI/credential/session and Edge graph is pinned.",
+    "recovery": "Lost upload response closes the original reservation and never replaces it; cleanup failure rejects acceptance.",
+    "fixture": "Two deterministic valid PNGs,73bytes each, identical parser metadata, distinct SHA256.",
+    "disabled_cli": {
+      "enabled": false,
+      "network_requests": 0
+    },
+    "live_auth_sessions_created": 0,
+    "live_storage_operations": 0,
+    "public_posts_created": 0,
+    "provider_calls": 0,
+    "confirmed_cleanup_replay": "Second cleanup verifies private-object absence and does not repeat an already confirmed canonical discard."
+  },
+  "root_gates": [
+    "Review exact source/fixed SQL/header/session/cleanup guards and controlled failure paths.",
+    "Integrate the reviewed harness and Community baseline/phase A/Edge first. Construct a separate fresh request-only main commit with current hashes and exact deployed bundle. Do not issue a founder session or revive expired access.",
+    "Run one actual private Storage gate and independently inspect result/failure plus exact original scope. If interrupted, reconcile the original request rather than repeating create/upload blindly.",
+    "Only root applies phase B after real private Storage acceptance; then root executes the separate actual SQL rollback fixture and deployed member journeys."
+  ],
+  "limits": [
+    "Controlled transport tests are not actual Supabase Storage acceptance. No run was triggered by author.",
+    "This harness exercises private media bytes and recovery. It does not create a public post or prove public feed, native installed UI, video processing or full Community acceptance.",
+    "Infrastructure cancellation can interrupt finally; the always stage recovers exact original assets while its runner and cleanup admission remain available. Root must reconcile original nonces manually after lost runner, expired grace or changed source/bundle.",
+    "The logged-out-grant refusal is an actual gate to verify, not an already observed production claim. It targets only the new local session.",
+    "Current old helper withQaSession includes existing owner-workspace/home read preflight; an unrelated preflight outage can block the media run before asset writes."
+  ],
+  "source_storage": "Synthetic body only; no factual client media is read or modified.",
+  "source_fast_forward": "Fast-forwarded isolated harness tree to accepted merged Community PR55; owned new harness files preserved. All ten focused tests and the static import pin check pass against this actual merged source.",
+  "read_only_production_preflight": {
+    "source": "Exact PHASE_A_SQL exported by candidate",
+    "phase_a_only": true,
+    "database_mutations": 0,
+    "Auth_sessions": 0,
+    "private_Storage_operations": 0,
+    "limit": "Only bounded bucket/function metadata read, not an actual private byte gate."
+  },
+  "root_reported_deployment": {
+    "baseline_ledger": "20261015122305",
+    "phase_a_ledger": "20261015122314",
+    "Edge": "community-media15",
+    "bundle_sha256": "5424fadc4e684acaade95c1d4f00ef583451b7d5a9b486ed4879d101f76e7c35",
+    "phase_b": "unapplied; root requires actual Storage acceptance first",
+    "evidence_class": "Root report; this author independently checked only the exact read-only phase-A admission SQL."
+  }
+}
