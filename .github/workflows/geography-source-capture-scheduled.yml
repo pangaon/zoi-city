@@ -1,0 +1,27 @@
+name: Geography bounded source capture
+on:
+  schedule:
+    - cron: '2-59/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: geography-source-capture-scheduled
+  cancel-in-progress: false
+jobs:
+  capture:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main' && github.event.repository.private == false && github.event.repository.visibility == 'public' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Invoke one private bounded source batch
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/geography/run-scheduled-capture.mjs
