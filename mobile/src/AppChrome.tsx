@@ -1,5 +1,6 @@
 import{useCallback,useEffect,useLayoutEffect,useRef,useState}from'react';
-import{Image,Modal,Platform,Pressable,ScrollView,StyleSheet,Text,useWindowDimensions,View}from'react-native';
+import {ScaleText as Text} from './ScaleText';
+import{Image,Modal,Platform,Pressable,ScrollView,StyleSheet,useWindowDimensions,View}from'react-native';
 import{SHELL as C}from'./brand';
 import{clampNavigationOffset,navigationContentExtent,pageNavigationOffset,revealNavigationOffset,type NavigationBox}from'./navigationLayout';
 export const PRIMARY_TABS=[{id:'home',icon:'⌂',label:'Home'},{id:'discover',icon:'◎',label:'Discover'},{id:'community',icon:'☷',label:'Community'},{id:'tickets',icon:'◇',label:'Events'},{id:'grow',icon:'↗',label:'Grow'}]as const;

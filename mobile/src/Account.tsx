@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { AsyncStorage, drafts, useAuth } from './Auth';
 import { validPostReceipt } from './drafts';
 import {WorkspaceTeamPanel} from './WorkspaceTeam';

@@ -1,6 +1,7 @@
 import {SelectedSeatPhotos,useMeasuredReference} from './VenueReferences';
 import {Fragment,memo,useMemo,useState} from 'react';
-import {Pressable,StyleSheet,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Pressable,StyleSheet,View} from 'react-native';
 import Svg,{Polygon,Rect,Image as SvgImage,Text as SvgText} from 'react-native-svg';
 import {projectPoint} from '../../assets/tickets/venue-model.mjs';
 import type {Seat} from './seating';

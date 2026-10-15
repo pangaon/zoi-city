@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,Alert,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,Alert,Pressable,StyleSheet,TextInput,View} from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import {useAuth,youthRequestStore} from './Auth';
 import{createYouthRecovery,youthRpc,youthDenied,youthReaderIdentity}from'./youthRecovery';

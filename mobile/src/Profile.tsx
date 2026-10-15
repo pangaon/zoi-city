@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useAuth } from './Auth';
 import { normalizeProfile, publicURL, plain, profileImageEventMode, profileMapLink } from './profile';
 import { musicDraft, musicFields } from './music';

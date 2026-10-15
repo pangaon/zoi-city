@@ -1,6 +1,7 @@
 import {quantityLabel} from '../../assets/event-planner/model.mjs';
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,Pressable,StyleSheet,TextInput,View} from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import {useAuth} from './Auth';
 import {displayTime} from '../../assets/bookings/model.mjs';

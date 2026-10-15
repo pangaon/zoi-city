@@ -1,0 +1,75 @@
+--- held-v1
+
++++ v2
+
+@@ -1,3 +1,4 @@
+
++-- V2 supersedes HELD/unapplied phaseA; original migration is preserved only in its frozen tree.
+ BEGIN;
+ SET LOCAL statement_timeout='5s';
+ SET LOCAL lock_timeout='1s';
+@@ -37,7 +38,7 @@
+
+ CREATE FUNCTION zoi.quality_criterion_context(c zoi.quality_criteria,s zoi.quality_signoffs,p_task_fp text,p_criterion_fp text,p_hold jsonb) RETURNS jsonb LANGUAGE sql STABLE SET search_path='' AS $context$
+  SELECT jsonb_build_object('schema','zoi.quality.criterion-atomic-context.v1','task_fingerprint',p_task_fp,'criterion_fingerprint',p_criterion_fp,'server_requirement_sha256',encode(sha256(convert_to(jsonb_build_array(c.key,c.revision,c.family,c.title,c.task,c.evidence_kind,c.requirement)::text,'UTF8')),'hex'),'requirement_descriptor',jsonb_build_object('key',c.key,'revision',c.revision,'family',c.family,'title',c.title,'task',c.task,'evidence_kind',c.evidence_kind,'requirement',c.requirement),'source_hold_snapshot',p_hold->'snapshot','source_context_valid',p_hold->'valid','expected_latest_id',s.id)
+ $context$;
+-CREATE FUNCTION zoi.quality_checklist_snapshot(l zoi.listings) RETURNS jsonb LANGUAGE plpgsql STABLE SET search_path='' AS $snapshot$
++CREATE FUNCTION zoi.quality_checklist_snapshot(l zoi.listings) RETURNS jsonb LANGUAGE plpgsql VOLATILE SET search_path='' AS $snapshot$
+ DECLARE criteria jsonb;fp text;task_fp text;h jsonb:=zoi.quality_source_hold_state(l);visible boolean:=coalesce(l.publish_status='published'AND l.moderation_status IN('clean','cleared')AND coalesce(l.marketplace_status,'')<>'hidden',false);
+ BEGIN
+  IF h->>'valid'='true' THEN fp:=zoi.quality_criterion_fingerprint(l);task_fp:=zoi.listing_quality_fingerprint(l);END IF;
+@@ -45,9 +46,10 @@
+
+  FROM(SELECT DISTINCT ON(key)* FROM zoi.quality_criteria ORDER BY key,revision DESC)c LEFT JOIN LATERAL(SELECT x.* FROM zoi.quality_signoffs x WHERE x.listing_id=l.id AND x.criterion=c.key AND x.revision=c.revision ORDER BY x.recorded_at DESC,x.id DESC LIMIT 1)s ON true WHERE c.family IN('*',zoi.quality_family(l),'category:'||l.primary_category_id);
+  RETURN jsonb_build_object('listing_id',l.id,'category_id',l.primary_category_id,'family',zoi.quality_family(l),'source_fingerprint',fp,'criteria',criteria,'complete',jsonb_array_length(criteria)>0 AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(criteria)c WHERE c->>'status'<>'signed_off'));
+ END $snapshot$;
+-CREATE FUNCTION public.listing_quality_current_source_context(p_listing uuid) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' SET lock_timeout='1s' AS $reader$
++CREATE FUNCTION public.listing_quality_current_source_context(p_listing uuid) RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path='' SET lock_timeout='1s' AS $reader$
+ DECLARE keys text[];k text;l zoi.listings;h jsonb;ck jsonb;
+ BEGIN
++ IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN RAISE EXCEPTION 'criterion_read_committed_required';END IF;
+  -- Global catalogue keys only (<=300), sorted before listing/category/catalogue locks.
+  SELECT array_agg(key ORDER BY key)INTO keys FROM(SELECT DISTINCT key FROM zoi.quality_criteria)x;
+  IF coalesce(cardinality(keys),0) NOT BETWEEN 1 AND 300 THEN RAISE EXCEPTION 'criterion_catalogue_bounds';END IF;
+@@ -59,18 +61,22 @@
+
+  h:=zoi.quality_source_hold_state(l);ck:=zoi.quality_checklist_snapshot(l);
+  RETURN jsonb_build_object('schema','zoi.quality.current-source-context.v1','contract_version','atomic-v1','listing_id',l.id,'criterion_fingerprint',ck->'source_fingerprint','task_fingerprint',CASE WHEN h->>'valid'='true' THEN zoi.listing_quality_fingerprint(l) END,'source_context_valid',h->'valid','source_held',h->'held','source_hold_snapshot',h->'snapshot','existing_enrich',CASE WHEN h->>'valid'='true' THEN h->'snapshot' ELSE '{}'::jsonb END,'checklist',ck,'observed_at',clock_timestamp());
+ END $reader$;
+-CREATE OR REPLACE FUNCTION public.listing_quality_checklist(p_listing uuid) RETURNS jsonb LANGUAGE sql VOLATILE SECURITY DEFINER SET search_path='' SET lock_timeout='1s' AS $checklist$
+- SELECT public.listing_quality_current_source_context(p_listing)->'checklist'
+-$checklist$;
++CREATE OR REPLACE FUNCTION public.listing_quality_checklist(p_listing uuid) RETURNS jsonb LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path='' SET lock_timeout='1s' AS $checklist$
++BEGIN
++ IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN RAISE EXCEPTION 'criterion_read_committed_required';END IF;
++ RETURN public.listing_quality_current_source_context(p_listing)->'checklist';
++END $checklist$;
+ CREATE OR REPLACE FUNCTION public.listing_quality_criterion_record(p_request uuid, p_listing uuid, p_criterion text, p_revision integer, p_stage text, p_actor text, p_specialist uuid, p_lease text, p_fingerprint text, p_commit text, p_status text, p_evidence jsonb)
+  RETURNS jsonb
+  LANGUAGE plpgsql
++ VOLATILE
+  SECURITY DEFINER
+  SET search_path TO ''
+  SET lock_timeout TO '1s'
+ AS $function$
+ DECLARE l zoi.listings;c zoi.quality_criteria;s zoi.quality_signoffs;old zoi.quality_signoffs;body jsonb;result zoi.quality_signoffs;lease jsonb;h jsonb;tip zoi.quality_signoffs;ctx jsonb;ck jsonb;current_item jsonb;
+ BEGIN
++ IF current_setting('transaction_isolation') IS DISTINCT FROM 'read committed' THEN RAISE EXCEPTION 'criterion_read_committed_required';END IF;
+  body:=jsonb_build_array(p_listing,p_criterion,p_revision,p_stage,p_actor,p_specialist,p_lease,p_fingerprint,p_commit,p_status,p_evidence);
+  PERFORM pg_advisory_xact_lock(hashtextextended(p_request::text,72110));SELECT * INTO old FROM zoi.quality_signoffs WHERE request_id=p_request;
+  IF FOUND AND old.request IS DISTINCT FROM body THEN RAISE EXCEPTION 'request_conflict';END IF;
+@@ -96,11 +102,11 @@
+
+  IF p_status='passed' AND (jsonb_array_length(p_evidence->'blockers')<>0 OR p_evidence->>'performed' IS DISTINCT FROM 'true' OR NOT coalesce((zoi.listing_quality_state(l)->>'public_eligible')::boolean,false)) THEN RAISE EXCEPTION 'blockers_prevent_signoff';END IF;
+  IF p_stage='specialist' THEN
+  lease:=l.profile#>'{_enrich,lease}';
+- IF p_lease IS NULL OR lease->>'id' IS DISTINCT FROM p_lease OR lease->>'task' IS DISTINCT FROM c.task OR lease->>'fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l) OR coalesce(zoi.enrich_timestamp(lease->>'expires_at'),'-infinity')<=now() OR p_specialist IS NOT NULL THEN RAISE EXCEPTION 'existing_quality_lease_required';END IF;
++ IF p_lease IS NULL OR lease->>'id' IS DISTINCT FROM p_lease OR lease->>'task' IS DISTINCT FROM c.task OR lease->>'fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l) OR coalesce(zoi.enrich_timestamp(lease->>'expires_at'),'-infinity')<=clock_timestamp() OR p_specialist IS NOT NULL THEN RAISE EXCEPTION 'existing_quality_lease_required';END IF;
+  ELSE
+  IF tip.id IS DISTINCT FROM p_specialist THEN RAISE EXCEPTION 'independent_current_specialist_required';END IF;
+  SELECT * INTO s FROM zoi.quality_signoffs WHERE id=p_specialist;
+- IF s.id IS NULL OR s.stage<>'specialist' OR s.status<>'passed' OR s.listing_id<>p_listing OR s.criterion<>c.key OR s.revision<>c.revision OR s.source_fingerprint<>p_fingerprint OR s.release_commit<>p_commit OR s.actor=p_actor OR s.evidence#>>'{atomic_context,schema}' IS DISTINCT FROM 'zoi.quality.criterion-atomic-context.v1' OR s.recorded_at<now()-interval '7 days' THEN RAISE EXCEPTION 'independent_review_required';END IF;
++ IF s.id IS NULL OR s.stage<>'specialist' OR s.status<>'passed' OR s.listing_id<>p_listing OR s.criterion<>c.key OR s.revision<>c.revision OR s.source_fingerprint<>p_fingerprint OR s.release_commit<>p_commit OR s.actor=p_actor OR s.evidence#>>'{atomic_context,schema}' IS DISTINCT FROM 'zoi.quality.criterion-atomic-context.v1' OR s.recorded_at<clock_timestamp()-interval '7 days' OR s.recorded_at>clock_timestamp()+interval '5 minutes' THEN RAISE EXCEPTION 'independent_review_required';END IF;
+  IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(p_evidence->'refs') r WHERE NOT EXISTS(SELECT 1 FROM jsonb_array_elements(s.evidence->'refs') oldref WHERE oldref->>'sha256'=r->>'sha256')) THEN RAISE EXCEPTION 'independent_review_artifact_required';END IF;
+  IF EXISTS(SELECT 1 FROM zoi.quality_signoffs x WHERE x.listing_id=p_listing AND x.criterion=c.key AND x.recorded_at>s.recorded_at AND x.stage='specialist') THEN RAISE EXCEPTION 'specialist_superseded';END IF;
+  END IF;

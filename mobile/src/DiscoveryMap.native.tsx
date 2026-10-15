@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, View, Text, Pressable, Linking } from "react-native";
+import {ScaleText as Text} from './ScaleText';
+import { StyleSheet, View, Pressable, Linking } from "react-native";
 import MapView, { Marker, Circle, type Region } from "react-native-maps";
 import { LIGHT } from "./brand";
 import type { DiscoveryMapProps } from "./DiscoveryMap.types";

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useAuth } from './Auth';
 import { prioritize } from '../../assets/priorities/engine.mjs';
 import { loadSources } from '../../assets/priorities/sources.mjs';

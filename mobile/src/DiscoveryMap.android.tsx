@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from "react";
-import {ActivityIndicator,Linking,Pressable,StyleSheet,Text,View} from "react-native";
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,Linking,Pressable,StyleSheet,View} from "react-native";
 import {WebView} from "react-native-webview";
 import {LIGHT} from "./brand";
 import {fullMapToolsLink} from "./discovery";

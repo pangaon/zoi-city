@@ -1,0 +1,187 @@
+{
+  "at": "2026-10-15T21:57:47.255058+00:00",
+  "status": "FROZEN_V2_SOURCE_PASS__INDEPENDENT_REACCEPTANCE_AND_ROOT_ROLLBACK_PENDING",
+  "tree": "/workspaces/zoi-quality-criterion-atomic-context-v2",
+  "baseline": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+  "manifest": {
+    "path": "docs/audits/evidence/quality-criterion-atomic-context-owner-v2-2026-10-15/source-manifest.json",
+    "sha256": "922c091102ae349397653f94399b84d4447d3dc19d8f1a3e6cbb7c99dedc9066",
+    "bytes": 4570
+  },
+  "owned_files": [
+    {
+      "path": "scripts/quality/criterion-report.mjs",
+      "sha256": "f9df940fd97889556d5209b8f94094ceabab264c49227c967d1c4e6826360db6",
+      "bytes": 10282
+    },
+    {
+      "path": "scripts/quality/criterion-record.mjs",
+      "sha256": "23b52b89ccb05ed24c9bd60b1984842edb1bd5e7b646b9198acb0b87edb0814d",
+      "bytes": 18252
+    },
+    {
+      "path": "supabase/migrations/20261015215429_quality_criterion_atomic_current_context_v2.sql",
+      "sha256": "21d7dca0c52953523a72a9adc285e25f439d38f46caf87cf98e730c1081d2912",
+      "bytes": 22163
+    },
+    {
+      "path": "tests/database/quality-criterion-atomic-context.integration.mjs",
+      "sha256": "c2d503e87dc8e5a90464a5454c26e82a5813c7c6467f87bb9c2116f811a3e7e3",
+      "bytes": 34916
+    },
+    {
+      "path": "tests/database/fixtures/quality-criterion-atomic-context-actual-contracts.json",
+      "sha256": "6ed60470197cd50b891e10734d0c29c20272fb51d2587a4990a759cdd1e2ea4f",
+      "bytes": 27540
+    },
+    {
+      "path": "tests/unit/quality-criterion-atomic-context.test.mjs",
+      "sha256": "85ac5046c685e36a3569a017e3b20bf90641fc78640f7796e6ba90ce35e69a04",
+      "bytes": 31001
+    }
+  ],
+  "original_v1": {
+    "tree": "/workspaces/zoi-quality-criterion-atomic-context-work",
+    "audit_sha256": "014bf6d7f991a208cfebb93fa06351dd452be1fd5670728c96cf265049e0535f",
+    "original_preserved": true,
+    "unchanged_sources": 4,
+    "delta_sources": 2
+  },
+  "original_failures": {
+    "independent_audit_sha256": "5de33c074cbac653b8a1d8c607c66f8776d165a1f2154681ece85c6c885a394c",
+    "probe_sha256": "4476196ccde76d311b06176c19aed3e5d379e1492fb9dae8f6aedee6a1fbc07f",
+    "reproduced_before_fix": [
+      "Expired lease accepted because now() used transaction start",
+      "Specialist older than7 wall-clock days accepted in older reviewer transaction",
+      "Stale RR snapshot accepted second same-tip specialist under different UUID",
+      "Stale RR snapshot accepted revision1 after canonical revision2 committed"
+    ],
+    "original_scripts_results_unchanged": true,
+    "historical_copies_not_executed": true
+  },
+  "narrow_revision": {
+    "new_migration_created_by": "Supabase CLI2.115.0 migration new quality_criterion_atomic_current_context_v2",
+    "wall_clock": "Every authority time check in new criterion reader/writer/replay uses clock_timestamp(); no now() remains in new SQL. Both lease expiry and specialist7-day guard evaluate after locks. Reviewer future5-minute window matches checklist/replay currentness.",
+    "isolation": "First instruction in public current-source reader, public checklist and canonical writer (including replay) rejects any transaction_isolation except exact read committed. It does not attempt to change caller isolation.",
+    "volatility": "Public lock-taking entrypoints and the table/clock-reading checklist assembler explicitly VOLATILE. Pure captured-value hold/context helpers remain STABLE. Reader/writer subsequent SPI statements obtain current committed snapshots after lock waits.",
+    "preserved": "Identical locks/ordering, source holds/latest-ID CAS, requirement schema/PG-vs-JS digests, RPC signatures/ACL/tables/fingerprints/lease/finish/revision publisher/finite policy; four unchanged report/recorder/unit/fixture sources match original held freeze byte for byte.",
+    "deployment": "Full superseding migration against unchanged actual canonical9 functions; original held13530 migration is not applied or included as a prerequisite. No production activation."
+  },
+  "verification": {
+    "unit_passed": 27,
+    "prior41_pg_groups_retained_without_weakening": true,
+    "pg": {
+      "at": "2026-10-15T21:56:38.803Z",
+      "pass": true,
+      "groups": [
+        "guarded migration refuses exact body/ACL/revision publisher drift atomically",
+        "same canonical stores and fingerprint/lease/finish/revision functions preserved",
+        "reader and all private helpers retain strict service/postgres ACLs",
+        "specialist and independent reviewer record current exact tips without touching listing facts",
+        "fresh fingerprint cannot bypass current source hold {\"scope_review_required\":true}",
+        "fresh fingerprint cannot bypass current source hold {\"blocked_reason\":\"source_scope_mismatch\"}",
+        "fresh fingerprint cannot bypass current source hold {\"organization_identity_quarantine\":true}",
+        "fresh fingerprint cannot bypass current source hold {\"source_identity\":{\"verification\":\"scope_review_required\"}}",
+        "fresh fingerprint cannot bypass current source hold {\"source_scope_mismatch\":\"true\"}",
+        "fresh fingerprint cannot bypass current source hold {\"identity_scope\":\"organization\"}",
+        "fresh fingerprint cannot bypass current source hold {\"source_kind\":\"association_member\"}",
+        "fresh fingerprint cannot bypass current source hold {\"member\":false}",
+        "fresh fingerprint cannot bypass current source hold {\"crawl_status\":\"error\"}",
+        "fresh fingerprint cannot bypass current source hold {\"blocked\":{\"malformed\":true}}",
+        "malformed and oversized source contexts stay invalid ahead of historical signoffs",
+        "blocked decision remains blocked and cannot create a reviewer pass",
+        "stale owner clear refuses without changing current facts",
+        "stale owner transfer refuses without changing current facts",
+        "stale address refuses without changing current facts",
+        "stale source refuses without changing current facts",
+        "stale category refuses without changing current facts",
+        "stale visibility refuses without changing current facts",
+        "new canonical revision refuses stale payload and is reflected coherently in reader",
+        "all expected-context fields and explicit latest-null presence are server CAS",
+        "same expected tip allows only one of two distinct specialist UUIDs",
+        "reviewer race against replacement specialist has one exact-tip winner",
+        "two reviewer UUIDs do not both sign off the same specialist tip",
+        "same UUID lost-response recovery preserves historical receipt and reports later holds as noncurrent",
+        "superseded and revised receipts replay historically without new rows",
+        "legacy receipt stays historical and cannot be silently upgraded",
+        "non-ASCII descriptor and distinct PostgreSQL/JS digest encodings remain explicit",
+        "listing share lock blocks content updates and reader context remains current until commit",
+        "criteria SHARE lock blocks actual revision publisher insert and key phantom",
+        "hold introduced during canonical insertion waits for existing listing SHARE lock",
+        "new catalogue key between key capture and SHARE acquisition refuses coherent read",
+        "same timestamp specialist IDs require exact tip rather than greater-than time heuristic",
+        "future tip cannot be superseded by fabricated timestamps or a hidden extra row",
+        "writer records actual post-lock time even from an older transaction start",
+        "wrong or expired original lease and removed source do not create signoffs",
+        "actual archive preparation and atomic adapter recover committed loss then independent review through exact canonical RPCs",
+        "existing task lease/finish functions preserve lock ordering without changing criterion contracts",
+        "independent expired-lease counterexample refuses after wall-clock boundary despite older transaction start",
+        "independent stale-specialist counterexample refuses past seven wall-clock days in older transaction",
+        "independent repeatable-read stale null-tip counterexample refuses before a second specialist insert",
+        "independent repeatable-read stale revision counterexample refuses after canonical revision2 commit",
+        "all current reader checklist writer and historical replay entrypoints reject unsupported isolation before current results",
+        "read-committed writer refreshes SPI snapshot after earlier snapshot and a competing specialist commit",
+        "volatile reader snapshot sees revision published while it waits for catalogue SHARE lock",
+        "volatile reader sees current specialist committed after outer query starts and advisory wait",
+        "snapshot readers using tables or wall-clock are VOLATILE while captured-value helpers remain STABLE"
+      ],
+      "source_sha256": "21d7dca0c52953523a72a9adc285e25f439d38f46caf87cf98e730c1081d2912",
+      "limits": [
+        "Synthetic isolated listing rows use all77 actual column names/types except unused vector as text; actual listing triggers are not installed. Exact captured eight quality functions and actual revision publisher are installed.",
+        "No production action, automatic approval, actor admission, actual hosted artifact publication or task finish. Default production adapter remains zero-RPC."
+      ]
+    },
+    "new_groups": [
+      "independent expired-lease counterexample refuses after wall-clock boundary despite older transaction start",
+      "independent stale-specialist counterexample refuses past seven wall-clock days in older transaction",
+      "independent repeatable-read stale null-tip counterexample refuses before a second specialist insert",
+      "independent repeatable-read stale revision counterexample refuses after canonical revision2 commit",
+      "all current reader checklist writer and historical replay entrypoints reject unsupported isolation before current results",
+      "read-committed writer refreshes SPI snapshot after earlier snapshot and a competing specialist commit",
+      "volatile reader snapshot sees revision published while it waits for catalogue SHARE lock",
+      "volatile reader sees current specialist committed after outer query starts and advisory wait",
+      "snapshot readers using tables or wall-clock are VOLATILE while captured-value helpers remain STABLE"
+    ],
+    "boundary_preconditions": "Both wall-clock tests assert transaction start is before boundary and actual clock is after it, otherwise fail fixture rather than falsely pass refusal.",
+    "stale_snapshot_preconditions": "RR transactions explicitly SELECT quality rows before marker and concurrent canonical commit; wait-marker handshake ensures ordering.",
+    "positive_snapshot_cases": "Read-committed stale payload refuses after competing commit; readers see current revision/tip committed while they wait for catalogue/advisory locks.",
+    "isolation_matrix": "READ UNCOMMITTED/REPEATABLE READ/SERIALIZABLE each refuse current reader, checklist and sameUUID historical replay before any current result. Normal READ COMMITTED replay remains valid.",
+    "private_pg": "15948 socket; stopped and removed by finally",
+    "commands": [
+      "ZOI_CRITERION_ATOMIC_EVIDENCE=<unique persistent directory> PGPORT=15948 node tests/database/quality-criterion-atomic-context.integration.mjs",
+      "node --test tests/unit/quality-criterion-atomic-context.test.mjs",
+      "node --check source/test modules and owned whitespace/diff checks"
+    ]
+  },
+  "primary_docs": [
+    {
+      "title": "PostgreSQL17 Function Volatility Categories",
+      "url": "https://www.postgresql.org/docs/17/xfunc-volatility.html",
+      "application": "STABLE keeps calling-query snapshot; VOLATILE obtains fresh snapshot for executed queries; clock-dependent assembler must not promise stable value."
+    },
+    {
+      "title": "PostgreSQL17 Transaction Isolation",
+      "url": "https://www.postgresql.org/docs/17/transaction-iso.html",
+      "application": "RR snapshot does not refresh merely because advisory/table locks were acquired. Only READ COMMITTED is supported by this contract."
+    },
+    {
+      "title": "PostgreSQL17 Date/Time Functions",
+      "url": "https://www.postgresql.org/docs/17/functions-datetime.html",
+      "application": "clock_timestamp gives actual time, unlike transaction_timestamp/now."
+    }
+  ],
+  "production": {
+    "default_recorder_rpc": 0,
+    "actual_db_reads": 0,
+    "actual_ddl_or_mutation": 0,
+    "actual_leases_signoffs_finishes": 0,
+    "artifact_publication": false,
+    "policy_renewal_or_ci_activation": false
+  },
+  "remaining_limits": [
+    "Independent reviewer must reaccept source, and root owns actual bounded rollback/release gate.",
+    "Actor identity/admission and actual immutable hosted artifact publication/access remain separate unapproved operational gates; no automation complete claim.",
+    "Task lease/finish original canonical bodies retain their existing semantics and are unchanged; bridge never calls production finish.",
+    "Synthetic isolated all77 listing columns (unused vector text), no actual listing triggers. Retained owner/source/full-row immutability proof is isolated evidence, not production owner/provider acceptance."
+  ]
+}

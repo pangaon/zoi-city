@@ -1,6 +1,7 @@
 import{DARK}from'./brand';
 import {useEffect,useRef,useState}from'react';
-import {ActivityIndicator,AppState,Image,Linking,Modal,Pressable,SafeAreaView,ScrollView,Share,StyleSheet,Text,TextInput,View,useWindowDimensions}from'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,AppState,Image,Linking,Modal,Pressable,SafeAreaView,ScrollView,Share,StyleSheet,TextInput,View,useWindowDimensions}from'react-native';
 import{LinearGradient}from'expo-linear-gradient';
 import{randomUUID}from'expo-crypto';
 import{useAuth,artistDemandRequests}from'./Auth';

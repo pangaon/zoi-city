@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
-import {Image,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Image,Pressable,StyleSheet,TextInput,View} from 'react-native';
 import {imageReference,layoutViewImage,referenceDimensions,safeVenueImage} from '../../assets/tickets/venue-reference.mjs';
 import {validateLayout} from '../../assets/tickets/venue-model.mjs';
 export function VenuePhoto({photo}:{photo:{url:string;caption:string;label?:string;source?:string}}){const [failed,setFailed]=useState(false);useEffect(()=>setFailed(false),[photo.url]);let url;try{url=safeVenueImage(photo.url);}catch{return null;}return <View style={s.panel}><Text style={s.label}>Organizer-provided {photo.source==='seat'?'seat':photo.source==='section'?'section':'venue'} photo{photo.label?' · '+photo.label:''}</Text>{failed?<Text style={s.body}>This organizer image is unavailable.</Text>:<Image source={{uri:url}} accessibilityLabel={photo.caption} resizeMode="contain" style={{height:210,width:'100%'}} onError={()=>setFailed(true)}/>}<Text style={s.body}>{photo.caption}</Text><Text style={s.small}>Provided by the organizer. It is not a verified sightline or a reconstructed view from the selected seat.</Text></View>;}

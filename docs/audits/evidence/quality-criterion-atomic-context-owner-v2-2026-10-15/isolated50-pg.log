@@ -1,0 +1,51 @@
+PASS guarded migration refuses exact body/ACL/revision publisher drift atomically
+PASS same canonical stores and fingerprint/lease/finish/revision functions preserved
+PASS reader and all private helpers retain strict service/postgres ACLs
+PASS specialist and independent reviewer record current exact tips without touching listing facts
+PASS fresh fingerprint cannot bypass current source hold {"scope_review_required":true}
+PASS fresh fingerprint cannot bypass current source hold {"blocked_reason":"source_scope_mismatch"}
+PASS fresh fingerprint cannot bypass current source hold {"organization_identity_quarantine":true}
+PASS fresh fingerprint cannot bypass current source hold {"source_identity":{"verification":"scope_review_required"}}
+PASS fresh fingerprint cannot bypass current source hold {"source_scope_mismatch":"true"}
+PASS fresh fingerprint cannot bypass current source hold {"identity_scope":"organization"}
+PASS fresh fingerprint cannot bypass current source hold {"source_kind":"association_member"}
+PASS fresh fingerprint cannot bypass current source hold {"member":false}
+PASS fresh fingerprint cannot bypass current source hold {"crawl_status":"error"}
+PASS fresh fingerprint cannot bypass current source hold {"blocked":{"malformed":true}}
+PASS malformed and oversized source contexts stay invalid ahead of historical signoffs
+PASS blocked decision remains blocked and cannot create a reviewer pass
+PASS stale owner clear refuses without changing current facts
+PASS stale owner transfer refuses without changing current facts
+PASS stale address refuses without changing current facts
+PASS stale source refuses without changing current facts
+PASS stale category refuses without changing current facts
+PASS stale visibility refuses without changing current facts
+PASS new canonical revision refuses stale payload and is reflected coherently in reader
+PASS all expected-context fields and explicit latest-null presence are server CAS
+PASS same expected tip allows only one of two distinct specialist UUIDs
+PASS reviewer race against replacement specialist has one exact-tip winner
+PASS two reviewer UUIDs do not both sign off the same specialist tip
+PASS same UUID lost-response recovery preserves historical receipt and reports later holds as noncurrent
+PASS superseded and revised receipts replay historically without new rows
+PASS legacy receipt stays historical and cannot be silently upgraded
+PASS non-ASCII descriptor and distinct PostgreSQL/JS digest encodings remain explicit
+PASS listing share lock blocks content updates and reader context remains current until commit
+PASS criteria SHARE lock blocks actual revision publisher insert and key phantom
+PASS hold introduced during canonical insertion waits for existing listing SHARE lock
+PASS new catalogue key between key capture and SHARE acquisition refuses coherent read
+PASS same timestamp specialist IDs require exact tip rather than greater-than time heuristic
+PASS future tip cannot be superseded by fabricated timestamps or a hidden extra row
+PASS writer records actual post-lock time even from an older transaction start
+PASS wrong or expired original lease and removed source do not create signoffs
+PASS actual archive preparation and atomic adapter recover committed loss then independent review through exact canonical RPCs
+PASS existing task lease/finish functions preserve lock ordering without changing criterion contracts
+PASS independent expired-lease counterexample refuses after wall-clock boundary despite older transaction start
+PASS independent stale-specialist counterexample refuses past seven wall-clock days in older transaction
+PASS independent repeatable-read stale null-tip counterexample refuses before a second specialist insert
+PASS independent repeatable-read stale revision counterexample refuses after canonical revision2 commit
+PASS all current reader checklist writer and historical replay entrypoints reject unsupported isolation before current results
+PASS read-committed writer refreshes SPI snapshot after earlier snapshot and a competing specialist commit
+PASS volatile reader snapshot sees revision published while it waits for catalogue SHARE lock
+PASS volatile reader sees current specialist committed after outer query starts and advisory wait
+PASS snapshot readers using tables or wall-clock are VOLATILE while captured-value helpers remain STABLE
+{"pass":true,"groups":50}

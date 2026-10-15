@@ -1,4 +1,5 @@
-import {Pressable,StyleSheet,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {Pressable,StyleSheet,View} from 'react-native';
 import {LIGHT} from './brand';
 import {ownerSource,type OwnerSnapshot} from './businessOwner';
 export function BusinessSourceReview({snapshot,draft,disabled,onUse,onFocus}:{snapshot:OwnerSnapshot;draft:Record<string,any>;disabled:boolean;onUse:(value:string)=>void;onFocus:()=>void}){

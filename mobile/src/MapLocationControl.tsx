@@ -1,4 +1,5 @@
-import {Linking,Pressable,StyleSheet,Text,View} from 'react-native';import {useState} from 'react';import {LIGHT} from './brand';
+import {ScaleText as Text} from './ScaleText';
+import {Linking,Pressable,StyleSheet,View} from 'react-native';import {useState} from 'react';import {LIGHT} from './brand';
 import {deviceLocationLabel} from '../../assets/map-data/foreground-location.mjs';
 const messages:Record<string,string>={permission:'Waiting for location permission…',locating:'Finding your device location…',denied:'Location access is off. You can still browse any city.',services_off:'Device location is switched off. You can still browse any city.',timeout:'Location took too long. Try again or browse a city.',unavailable:'Device location is unavailable. Try again or browse a city.',expired:'Your location snapshot expired. Tap to find it again.'};
 export function MapLocationControl({state,onRequest,onClear,disabled=false,inline=false}:{state:any,onRequest:()=>void,onClear:()=>void,disabled?:boolean;inline?:boolean}){

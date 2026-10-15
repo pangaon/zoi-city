@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {AppState,Platform,Pressable,StyleSheet,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {AppState,Platform,Pressable,StyleSheet,View} from 'react-native';
 import {Directory,File,Paths} from 'expo-file-system';
 import {randomUUID} from 'expo-crypto';
 import * as Sharing from 'expo-sharing';

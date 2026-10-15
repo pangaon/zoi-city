@@ -1,5 +1,6 @@
 import { createElement, useEffect, useRef, useState } from "react";
-import { Text, View, Pressable } from "react-native";
+import {ScaleText as Text} from './ScaleText';
+import { View, Pressable } from "react-native";
 import { LIGHT } from "./brand";
 import { exactPins, fullMapToolsLink } from "./discovery";
 import { matchBounds, focusOptions } from "../../assets/map-data/loader.mjs";

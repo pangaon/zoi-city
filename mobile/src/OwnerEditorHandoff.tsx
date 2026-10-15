@@ -1,6 +1,7 @@
 import { LIGHT } from './brand';
 import { useEffect, useRef, useState } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { useAuth } from './Auth';
 import { openOwnerEditor } from './ownerEditorHandoff';
 export function OwnerEditorHandoff({listingId,name,disabled,onReload,localDraftRetained=false}:{listingId:string;name:string;disabled:boolean;onReload:()=>void;localDraftRetained?:boolean}){

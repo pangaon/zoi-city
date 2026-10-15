@@ -1,6 +1,7 @@
 import {placeDestination} from './placeNavigation';
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import {useAuth} from './Auth';
 import {inquiryId} from './inquiries';

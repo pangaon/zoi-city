@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
 import {useAuth} from './Auth';
 import {YouthFamily,YouthOperator} from './Youth';
 import {calendarDay,calendarMeta,calendarRange,calendarWhen} from './calendar';

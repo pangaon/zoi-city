@@ -1,5 +1,6 @@
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import {useAuth,creatorRequestStore} from './Auth';
 import {CreatorRecovery} from './creatorRecovery';

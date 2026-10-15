@@ -1,5 +1,6 @@
 import {useEffect,useState} from 'react';
-import {ActivityIndicator,AppState,Image,Pressable,StyleSheet,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,AppState,Image,Pressable,StyleSheet,View} from 'react-native';
 import {communityMediaURL,videoAutoplay} from './communityMedia';
 import {useEvent} from 'expo';
 import {useVideoPlayer,VideoView} from 'expo-video';

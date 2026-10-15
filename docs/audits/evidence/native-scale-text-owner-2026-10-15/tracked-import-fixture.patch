@@ -1,0 +1,698 @@
+diff --git a/mobile/App.tsx b/mobile/App.tsx
+index 7004ffbc..5e9acd73 100644
+--- a/mobile/App.tsx
++++ b/mobile/App.tsx
+@@ -20,7 +20,8 @@ import { profileImageEventMode } from './src/profile';
+ import { InquiriesScreen, InquiryInbox } from './src/Inquiries';
+ import { inquiryId } from './src/inquiries';
+ import { StatusBar } from 'expo-status-bar';
+-import { ActivityIndicator, Image, Linking, Platform, Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar as NativeStatusBar, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './src/ScaleText';
++import { ActivityIndicator, Image, Linking, Platform, Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar as NativeStatusBar, StyleSheet, TextInput, View } from 'react-native';
+ import { useEffect, useRef, useState } from 'react';
+ import { AuthProvider, useAuth } from './src/Auth';
+ import { AccountPanel, CommunityComposer } from './src/Account';
+diff --git a/mobile/src/Account.tsx b/mobile/src/Account.tsx
+index cf2844d1..862a2017 100644
+--- a/mobile/src/Account.tsx
++++ b/mobile/src/Account.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import { AsyncStorage, drafts, useAuth } from './Auth';
+ import { validPostReceipt } from './drafts';
+ import {WorkspaceTeamPanel} from './WorkspaceTeam';
+diff --git a/mobile/src/AppChrome.tsx b/mobile/src/AppChrome.tsx
+index 2947772f..4889496d 100644
+--- a/mobile/src/AppChrome.tsx
++++ b/mobile/src/AppChrome.tsx
+@@ -1,5 +1,6 @@
+ import{useCallback,useEffect,useLayoutEffect,useRef,useState}from'react';
+-import{Image,Modal,Platform,Pressable,ScrollView,StyleSheet,Text,useWindowDimensions,View}from'react-native';
++import {ScaleText as Text} from './ScaleText';
++import{Image,Modal,Platform,Pressable,ScrollView,StyleSheet,useWindowDimensions,View}from'react-native';
+ import{SHELL as C}from'./brand';
+ import{clampNavigationOffset,navigationContentExtent,pageNavigationOffset,revealNavigationOffset,type NavigationBox}from'./navigationLayout';
+ export const PRIMARY_TABS=[{id:'home',icon:'⌂',label:'Home'},{id:'discover',icon:'◎',label:'Discover'},{id:'community',icon:'☷',label:'Community'},{id:'tickets',icon:'◇',label:'Events'},{id:'grow',icon:'↗',label:'Grow'}]as const;
+diff --git a/mobile/src/ArtistHome.tsx b/mobile/src/ArtistHome.tsx
+index a8bf750f..2ed3559f 100644
+--- a/mobile/src/ArtistHome.tsx
++++ b/mobile/src/ArtistHome.tsx
+@@ -1,6 +1,7 @@
+ import{DARK}from'./brand';
+ import {useEffect,useRef,useState}from'react';
+-import {ActivityIndicator,AppState,Image,Linking,Modal,Pressable,SafeAreaView,ScrollView,Share,StyleSheet,Text,TextInput,View,useWindowDimensions}from'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,AppState,Image,Linking,Modal,Pressable,SafeAreaView,ScrollView,Share,StyleSheet,TextInput,View,useWindowDimensions}from'react-native';
+ import{LinearGradient}from'expo-linear-gradient';
+ import{randomUUID}from'expo-crypto';
+ import{useAuth,artistDemandRequests}from'./Auth';
+diff --git a/mobile/src/AvailabilityPlanner.tsx b/mobile/src/AvailabilityPlanner.tsx
+index b5d53652..5cb1f918 100644
+--- a/mobile/src/AvailabilityPlanner.tsx
++++ b/mobile/src/AvailabilityPlanner.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import { randomUUID } from 'expo-crypto';
+ import { useAuth } from './Auth';
+ import { displayTime } from '../../assets/bookings/model.mjs';
+diff --git a/mobile/src/BookingOperator.tsx b/mobile/src/BookingOperator.tsx
+index 36c36d1a..7ef74e47 100644
+--- a/mobile/src/BookingOperator.tsx
++++ b/mobile/src/BookingOperator.tsx
+@@ -2,7 +2,8 @@ import {RESOURCE_KINDS,quantityLabel} from '../../assets/event-planner/model.mjs
+ import { BookingReschedule } from './BookingReschedule';
+ import { AvailabilityPlanner } from './AvailabilityPlanner';
+ import { useRef, useState, useEffect } from 'react';
+-import { ActivityIndicator, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { localInput, displayTime, zonedToInstant } from '../../assets/bookings/model.mjs';
+ import { operatorItemData, operatorReceipt, operatorSlotTime } from './bookingOperator';
+diff --git a/mobile/src/BookingReschedule.tsx b/mobile/src/BookingReschedule.tsx
+index b6d948fc..8bd43bdd 100644
+--- a/mobile/src/BookingReschedule.tsx
++++ b/mobile/src/BookingReschedule.tsx
+@@ -1,6 +1,7 @@
+ import {quantityLabel} from '../../assets/event-planner/model.mjs';
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth} from './Auth';
+ import {displayTime} from '../../assets/bookings/model.mjs';
+diff --git a/mobile/src/Bookings.tsx b/mobile/src/Bookings.tsx
+index a49d9b4d..9358093b 100644
+--- a/mobile/src/Bookings.tsx
++++ b/mobile/src/Bookings.tsx
+@@ -2,7 +2,8 @@ import {quantityLabel} from '../../assets/event-planner/model.mjs';
+ import { BookingReschedule } from './BookingReschedule';
+ import { bookingWindow } from '../../assets/bookings/reschedule-model.mjs';
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, AppState, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, AppState, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import { randomUUID } from 'expo-crypto';
+ import { useAuth } from './Auth';
+ import { bookingCatalog, bookingReceipt, validBooking, venueTime, type Booking } from './booking';
+diff --git a/mobile/src/BusinessEditor.tsx b/mobile/src/BusinessEditor.tsx
+index bce62a84..f857e986 100644
+--- a/mobile/src/BusinessEditor.tsx
++++ b/mobile/src/BusinessEditor.tsx
+@@ -1,6 +1,7 @@
+ import { LIGHT } from './brand';
+ import { useEffect, useMemo, useRef, useState } from 'react';
+-import { ActivityIndicator, AppState, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, AppState, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import * as SecureStore from 'expo-secure-store';
+ import { useAuth } from './Auth';
+diff --git a/mobile/src/BusinessSourceReview.tsx b/mobile/src/BusinessSourceReview.tsx
+index 7931e82a..79765ea5 100644
+--- a/mobile/src/BusinessSourceReview.tsx
++++ b/mobile/src/BusinessSourceReview.tsx
+@@ -1,4 +1,5 @@
+-import {Pressable,StyleSheet,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Pressable,StyleSheet,View} from 'react-native';
+ import {LIGHT} from './brand';
+ import {ownerSource,type OwnerSnapshot} from './businessOwner';
+ export function BusinessSourceReview({snapshot,draft,disabled,onUse,onFocus}:{snapshot:OwnerSnapshot;draft:Record<string,any>;disabled:boolean;onUse:(value:string)=>void;onFocus:()=>void}){
+diff --git a/mobile/src/Community.tsx b/mobile/src/Community.tsx
+index 70807f67..a81dc3aa 100644
+--- a/mobile/src/Community.tsx
++++ b/mobile/src/Community.tsx
+@@ -3,7 +3,8 @@ import{LIGHT}from'./brand';
+ import {AccountPanel} from './Account';
+ import {communityIntentLabel,communityResume,communityActorChanged,type CommunityIntent,type CommunityRoute} from './communityIntent';
+ import {useCallback,useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,FlatList,Image,Pressable,RefreshControl,ScrollView,Share,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,FlatList,Image,Pressable,RefreshControl,ScrollView,Share,View} from 'react-native';
+ import {useAuth} from './Auth';
+ import {CommunityPublish} from './CommunityPublish';
+ import {CommunityVideo} from './CommunityVideo';
+diff --git a/mobile/src/CommunityDiscussion.tsx b/mobile/src/CommunityDiscussion.tsx
+index 7d1cd985..e727227a 100644
+--- a/mobile/src/CommunityDiscussion.tsx
++++ b/mobile/src/CommunityDiscussion.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,ScrollView,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,ScrollView,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {communityCommentReceipt,communityComments,communityPost} from './community';
+ import {SocialAction as Action,SocialAvatar,SocialField as Field,socialStyle as s,useSocialScope} from './CommunityUI';
+diff --git a/mobile/src/CommunityMediaPicker.tsx b/mobile/src/CommunityMediaPicker.tsx
+index ba7b8f9e..1a3adbea 100644
+--- a/mobile/src/CommunityMediaPicker.tsx
++++ b/mobile/src/CommunityMediaPicker.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {Image,Platform,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Image,Platform,View} from 'react-native';
+ import * as ImagePicker from 'expo-image-picker';
+ import {File,Paths} from 'expo-file-system';
+ import {randomUUID} from 'expo-crypto';
+diff --git a/mobile/src/CommunityProfile.tsx b/mobile/src/CommunityProfile.tsx
+index f55ed08a..d0345def 100644
+--- a/mobile/src/CommunityProfile.tsx
++++ b/mobile/src/CommunityProfile.tsx
+@@ -2,7 +2,8 @@ import {DiscoveryLocation} from './DiscoveryLocation';
+ import {discoveryPrivateRpc} from './discoveryScope';
+ import {pickCommunityMedia,uploadCommunityMedia,discardPickedMedia,type PickedCommunityMedia} from './CommunityMediaPicker';
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Image,ScrollView,Switch,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Image,ScrollView,Switch,View} from 'react-native';
+ import {communityFlag,communityProfile,communityProfileData,communityTopics} from './community';
+ import {SocialAction as Action,SocialAvatar,SocialField as Field,socialStyle as s,useSocialScope} from './CommunityUI';
+ export function CommunityProfileScreen({id,back,posts,signIn}:{id:string;back:()=>void;posts:(id:string)=>void;signIn:()=>void}){const {client,session,current,read,run,busy,error}=useSocialScope();const [profile,setProfile]=useState<any>(null),[notice,setNotice]=useState(''),[confirm,setConfirm]=useState(false);const load=async()=>{const value=await read('community_profile_get',{p_handle:null,p_profile:id});if(value?.ok!==true)throw Error('This profile could not be loaded.');const p=value.profile?communityProfile(value.profile):null;if(p&&p.id!==id)throw Error('The requested profile was not returned.');if(current())setProfile(p);};useEffect(()=>{run(load);},[id]);const follow=()=>run(async()=>{const v=communityFlag(await client.rpc('community_follow_set',{p_profile:id,p_follow:!profile.followed}),id,'following',!profile.followed);if(current())setProfile({...profile,followed:v.following,follower_count:v.follower_count});});return <ScrollView contentContainerStyle={s.content}><Action label="Back from member profile" run={back}/>{busy?<ActivityIndicator/>:null}{error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}{notice?<Text style={s.body}>{notice}</Text>:null}<Action label="Refresh member profile" disabled={busy} run={()=>run(load)}/>{profile?<><View style={s.panel}><SocialAvatar profile={profile} size={84}/><Text style={s.title}>{profile.display_name}</Text>{profile.handle?<Text style={s.label}>@{profile.handle}</Text>:null}<Text style={s.body}>{profile.bio}</Text>{profile.city||profile.country?<Text style={s.small}>{[profile.city,profile.country].filter(Boolean).join(' · ')}</Text>:null}<Text style={s.label}>{profile.follower_count} followers · {profile.following_count} following · {profile.post_count} posts</Text><View style={s.row}>{profile.interests.map((t:string)=><Text key={t} style={s.small}>#{t}</Text>)}</View><Action label="Read this member’s posts" disabled={busy} run={()=>posts(id)}/>{!profile.mine&&profile.handle?(session?<Action label={profile.followed?'Following · unfollow':'Follow member'} selected={profile.followed} disabled={busy} run={follow}/>:<Action label="Sign in to follow" run={signIn}/>):null}</View>{session&&!profile.mine?<View style={s.panel}><Text style={s.heading}>Your feed controls</Text><Action label="Mute this member" disabled={busy} run={()=>run(async()=>{communityFlag(await client.rpc('community_mute_set',{p_profile:id,p_muted:true}),id,'muted',true);if(current())setNotice('Member muted in your feeds and notifications. Manage muted accounts in your community settings.');})}/><Action label={confirm?'Confirm block member':'Block this member'} disabled={busy} run={()=>{if(!confirm){setConfirm(true);return;}run(async()=>{communityFlag(await client.rpc('community_block_set',{p_profile:id,p_blocked:true}),id,'blocked',true);if(current()){setProfile(null);setNotice('Member blocked in your authenticated views and interactions. Public posts remain accessible on the public internet.');}});}}/></View>:null}</>:!busy?<Text style={s.body}>This public profile is unavailable or has not been configured.</Text>:null}</ScrollView>;}
+diff --git a/mobile/src/CommunityPublish.tsx b/mobile/src/CommunityPublish.tsx
+index 0c4e9fc1..4df0814c 100644
+--- a/mobile/src/CommunityPublish.tsx
++++ b/mobile/src/CommunityPublish.tsx
+@@ -1,7 +1,8 @@
+ import {memberDraftSignature} from '../../assets/community/member-draft.mjs';
+ import {nativeMemberDraft,memberDraftRpc} from './communityDraft';
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,ScrollView,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,ScrollView,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {communityRequests,drafts,useAuth} from './Auth';
+ import {communityTopics,communityPublicationRequest,communityPublicationReceipt} from './community';
+diff --git a/mobile/src/CommunityUI.tsx b/mobile/src/CommunityUI.tsx
+index a5ca0ff8..cb2b40db 100644
+--- a/mobile/src/CommunityUI.tsx
++++ b/mobile/src/CommunityUI.tsx
+@@ -1,6 +1,7 @@
+ import{LIGHT}from'./brand';
+ import {useEffect,useRef,useState} from 'react';
+-import {Image,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Image,Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {useAuth} from './Auth';
+ import {communityError} from './community';
+ import {communityMediaURL} from './communityMedia';
+diff --git a/mobile/src/CommunityVideo.tsx b/mobile/src/CommunityVideo.tsx
+index 6a313674..38105b81 100644
+--- a/mobile/src/CommunityVideo.tsx
++++ b/mobile/src/CommunityVideo.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useState} from 'react';
+-import {ActivityIndicator,AppState,Image,Pressable,StyleSheet,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,AppState,Image,Pressable,StyleSheet,View} from 'react-native';
+ import {communityMediaURL,videoAutoplay} from './communityMedia';
+ import {useEvent} from 'expo';
+ import {useVideoPlayer,VideoView} from 'expo-video';
+diff --git a/mobile/src/CompanyActionPlans.tsx b/mobile/src/CompanyActionPlans.tsx
+index 0c7e7673..464f615f 100644
+--- a/mobile/src/CompanyActionPlans.tsx
++++ b/mobile/src/CompanyActionPlans.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,AppState,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,AppState,Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {ACTION_PLANS,actionPlanContext} from '../../assets/operations/company-action-plan-model.mjs';
+ import {createCompanyActionPlan} from '../../assets/operations/company-action-plan-controller.mjs';
+ import {createOperationsRecovery,operationsDenied} from '../../assets/operations/recovery.mjs';
+diff --git a/mobile/src/CompanyConsole.tsx b/mobile/src/CompanyConsole.tsx
+index 2c87c4f0..4c2ca4b1 100644
+--- a/mobile/src/CompanyConsole.tsx
++++ b/mobile/src/CompanyConsole.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useState} from 'react';
+-import {Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {assignedName,companyDeadline,nativeCompanyConsole,WORK_FILTERS,type CompanyMember} from './companyConsole';
+ import type {OpsRecord} from './operations';
+ 
+diff --git a/mobile/src/CompanyHandover.tsx b/mobile/src/CompanyHandover.tsx
+index 855f0a8c..8f7d8ba5 100644
+--- a/mobile/src/CompanyHandover.tsx
++++ b/mobile/src/CompanyHandover.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {AppState,Platform,Pressable,StyleSheet,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {AppState,Platform,Pressable,StyleSheet,View} from 'react-native';
+ import {Directory,File,Paths} from 'expo-file-system';
+ import {randomUUID} from 'expo-crypto';
+ import * as Sharing from 'expo-sharing';
+diff --git a/mobile/src/CompanyWorkspace.tsx b/mobile/src/CompanyWorkspace.tsx
+index 08db5aa0..1e25a417 100644
+--- a/mobile/src/CompanyWorkspace.tsx
++++ b/mobile/src/CompanyWorkspace.tsx
+@@ -1,4 +1,5 @@
+-import {Pressable,StyleSheet,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Pressable,StyleSheet,View} from 'react-native';
+ import {companyJourney} from '../../assets/operations/company-journey.mjs';
+ import {canWrite,type OpsRecord} from './operations';
+ import type {nativeCompanyWork} from './companyWorkspace';
+diff --git a/mobile/src/Creator.tsx b/mobile/src/Creator.tsx
+index 298891c7..37dd55da 100644
+--- a/mobile/src/Creator.tsx
++++ b/mobile/src/Creator.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, Linking, Pressable, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Linking, Pressable, StyleSheet, Switch, TextInput, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { bioPayload, bioReceipt, type BioDraft } from './creator';
+ const empty:BioDraft={slug:'',title:'',tagline:'',theme:'light',links:[],photo_url:'',published:false};
+diff --git a/mobile/src/CreatorStudio.tsx b/mobile/src/CreatorStudio.tsx
+index eb0e2bdf..86b937f1 100644
+--- a/mobile/src/CreatorStudio.tsx
++++ b/mobile/src/CreatorStudio.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth,creatorRequestStore} from './Auth';
+ import {CreatorRecovery} from './creatorRecovery';
+diff --git a/mobile/src/Discovery.tsx b/mobile/src/Discovery.tsx
+index b9911437..8020c877 100644
+--- a/mobile/src/Discovery.tsx
++++ b/mobile/src/Discovery.tsx
+@@ -1,6 +1,7 @@
+ import { DiscoveryLocation } from "./DiscoveryLocation";
+ import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
+ import { useEffect, useMemo, useRef, useState } from "react";
++import {ScaleText as Text} from './ScaleText';
+ import {
+   ActivityIndicator,
+   BackHandler,
+@@ -11,7 +12,6 @@ import {
+   ScrollView,
+   Share,
+   StyleSheet,
+-  Text,
+   TextInput,
+   View,
+ } from "react-native";
+diff --git a/mobile/src/DiscoveryLocation.tsx b/mobile/src/DiscoveryLocation.tsx
+index 5150f57c..33ba4f89 100644
+--- a/mobile/src/DiscoveryLocation.tsx
++++ b/mobile/src/DiscoveryLocation.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useState } from "react";
+-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
++import {ScaleText as Text} from './ScaleText';
++import { Pressable, StyleSheet, TextInput, View } from "react-native";
+ import { LIGHT } from "./brand";
+ import { discoveryRead } from "./discoveryRead";
+ import { cleanLocation } from "./discovery";
+diff --git a/mobile/src/DiscoveryMap.android.tsx b/mobile/src/DiscoveryMap.android.tsx
+index 8c4af596..e1190ad7 100644
+--- a/mobile/src/DiscoveryMap.android.tsx
++++ b/mobile/src/DiscoveryMap.android.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from "react";
+-import {ActivityIndicator,Linking,Pressable,StyleSheet,Text,View} from "react-native";
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Linking,Pressable,StyleSheet,View} from "react-native";
+ import {WebView} from "react-native-webview";
+ import {LIGHT} from "./brand";
+ import {fullMapToolsLink} from "./discovery";
+diff --git a/mobile/src/DiscoveryMap.native.tsx b/mobile/src/DiscoveryMap.native.tsx
+index 384748df..1d11df3d 100644
+--- a/mobile/src/DiscoveryMap.native.tsx
++++ b/mobile/src/DiscoveryMap.native.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useRef, useState } from "react";
+-import { StyleSheet, View, Text, Pressable, Linking } from "react-native";
++import {ScaleText as Text} from './ScaleText';
++import { StyleSheet, View, Pressable, Linking } from "react-native";
+ import MapView, { Marker, Circle, type Region } from "react-native-maps";
+ import { LIGHT } from "./brand";
+ import type { DiscoveryMapProps } from "./DiscoveryMap.types";
+diff --git a/mobile/src/DiscoveryMap.web.tsx b/mobile/src/DiscoveryMap.web.tsx
+index 602017bc..40da3e30 100644
+--- a/mobile/src/DiscoveryMap.web.tsx
++++ b/mobile/src/DiscoveryMap.web.tsx
+@@ -1,5 +1,6 @@
+ import { createElement, useEffect, useRef, useState } from "react";
+-import { Text, View, Pressable } from "react-native";
++import {ScaleText as Text} from './ScaleText';
++import { View, Pressable } from "react-native";
+ import { LIGHT } from "./brand";
+ import { exactPins, fullMapToolsLink } from "./discovery";
+ import { matchBounds, focusOptions } from "../../assets/map-data/loader.mjs";
+diff --git a/mobile/src/Documents.tsx b/mobile/src/Documents.tsx
+index e3256b67..943ae634 100644
+--- a/mobile/src/Documents.tsx
++++ b/mobile/src/Documents.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, AppState, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, AppState, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import * as DocumentPicker from 'expo-document-picker';
+ import { Directory, File, Paths } from 'expo-file-system';
+ import { randomUUID } from 'expo-crypto';
+diff --git a/mobile/src/EventHome.tsx b/mobile/src/EventHome.tsx
+index 8e4748eb..c11894af 100644
+--- a/mobile/src/EventHome.tsx
++++ b/mobile/src/EventHome.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useState} from 'react';
+-import {ActivityIndicator,Image,Linking,Pressable,ScrollView,Share,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Image,Linking,Pressable,ScrollView,Share,StyleSheet,TextInput,View} from 'react-native';
+ import {eventRequest,venueRequest,selectedTables,signatureTables} from '../../assets/homes/templates/events/model.mjs';
+ const sources:Record<string,string>={'9d969028-74cb-4b49-97f1-58eba8fc0e69':'entertainment/signatureproductions-6aa61d','d1b70222-4ef5-4d22-bbdd-db0279d5083e':'venue/parkview-manor-banquet-hall-north-york'};
+ export function EventHomeTools({listing}:{listing:string}){const [entity,setEntity]=useState<any>(null),[error,setError]=useState(''),[retry,setRetry]=useState(0),[tables,setTables]=useState<number[]>([]),[quantity,setQuantity]=useState('2'),[occasion,setOccasion]=useState('Wedding'),[date,setDate]=useState(''),[guests,setGuests]=useState(''),[notes,setNotes]=useState(''),[prepared,setPrepared]=useState(''),[expanded,setExpanded]=useState(false);const source=sources[listing];useEffect(()=>{let active=true;const controller=new AbortController();setEntity(null);setError('');setPrepared('');setTables([]);if(!source)return;fetch('https://www.zoi.city/showcase/'+source+'/source.json',{signal:controller.signal}).then(async r=>{if(!r.ok)throw Error();const e=await r.json();if(e.id!==listing||!['venue','entertainment'].includes(e.family)||typeof e.contact_url!=='string'||!e.contact_url.startsWith(e.family==='venue'?'https://www.parkviewmanor.ca/':'https://www.signatureproductions.ca/'))throw Error();if(active)setEntity(e)}).catch(()=>{if(active)setError('The official venue information could not be loaded. Retry to view the tools.')});return()=>{active=false;controller.abort()}},[listing,retry,source]);if(!source)return null;const run=async(fn:()=>unknown|Promise<unknown>)=>{try{setError('');await fn()}catch{setError('This action could not be completed. Please try again.')}};const action=(label:string,fn:()=>void)=> <Pressable accessibilityRole="button" style={s.button} onPress={fn}><Text style={s.link}>{label}</Text></Pressable>;const change=(setter:(x:string)=>void)=>(value:string)=>{setter(value);setPrepared('')};return <View style={s.panel}><Text style={s.title}>{entity?.family==='entertainment'?'Your concert, your preferences':'Explore & plan your occasion'}</Text>{error?<Text accessibilityRole="alert" style={s.error}>{error}</Text>:null}{!entity?error?action('Retry official information',()=>setRetry(x=>x+1)):<ActivityIndicator/>:<><Text style={s.body}>{entity.intro}</Text>{action(expanded?'Close planning tools':'Open planning tools',()=>setExpanded(x=>!x))}{expanded?<>{entity.family==='entertainment'?<><Text style={s.heading}>Giannis Ploutarchos & Andromache</Text><Text style={s.body}>20 March 2027 · Parkview Manor{ '\n'}Doors20:00 · Show22:00. 10 seats per table/booth; non-food event.</Text><Image source={{uri:entity.poster}} accessibilityLabel="Official March20 2027 concert poster" resizeMode="contain" style={s.poster}/><Text style={s.heading}>Official table plan</Text><Text style={s.body}>Select up to three preferred numbers. These are requests, not held or available inventory. Swipe the actual source plan to inspect it.</Text><ScrollView horizontal><Image source={{uri:entity.floorplan}} accessibilityLabel="Official numbered table and booth map; stage at bottom" style={{width:800,height:659}} resizeMode="contain"/></ScrollView><Text accessibilityLiveRegion="polite" style={s.body}>Preferences: {tables.join(', ')||'None'}</Text><View style={s.grid}>{signatureTables.map((t:{id:number})=><Pressable key={t.id} accessibilityRole="button" accessibilityLabel={'Prefer table or booth '+t.id} accessibilityState={{selected:tables.includes(t.id)}} style={[s.number,tables.includes(t.id)&&s.selected]} onPress={()=>{if(tables.includes(t.id))setTables(tables.filter(x=>x!==t.id));else if(tables.length<3)setTables(selectedTables([...tables,t.id]));else setError('Choose up to three preferences. Remove one before adding another.');setPrepared('')}}><Text style={s.link}>{t.id}</Text></Pressable>)}</View><Text style={s.label}>Requested tickets</Text><TextInput accessibilityLabel="Requested tickets" keyboardType="number-pad" value={quantity} onChangeText={change(setQuantity)} style={s.input}/><Text style={s.small}>Printed source prices are not a quote. Confirm currency, charges and terms directly.</Text></>:<><Text style={s.body}>Three ballrooms. The official venue-wide advertised range is50–1,000guests; room-specific capacity and availability require confirmation.</Text>{action('Open actual Matterport tour ↗',()=>{void run(()=>Linking.openURL(entity.tour_url))})}<Text style={s.small}>The real interactive tour opens in your browser. It is not a native room reconstruction.</Text><Text style={s.label}>Occasion</Text><View style={s.grid}>{['Wedding','Corporate event','Prom / semi-formal','Other celebration'].map(v=><Pressable key={v} accessibilityRole="button" accessibilityState={{selected:occasion===v}} onPress={()=>{setOccasion(v);setPrepared('')}} style={[s.button,occasion===v&&s.selected]}><Text style={s.link}>{v}</Text></Pressable>)}</View><Text style={s.label}>Preferred date · YYYY-MM-DD</Text><TextInput accessibilityLabel="Preferred date YYYY-MM-DD" value={date} onChangeText={change(setDate)} placeholder="2027-03-20" style={s.input}/><Text style={s.label}>Guests</Text><TextInput accessibilityLabel="Guest count" keyboardType="number-pad" value={guests} onChangeText={change(setGuests)} style={s.input}/><Text style={s.label}>Occasion details</Text><TextInput accessibilityLabel="Occasion details" value={notes} onChangeText={change(setNotes)} multiline maxLength={1500} placeholder="Room, access and menu questions. Avoid sensitive personal details." style={s.input}/>{action('Official menus ↗',()=>{void run(()=>Linking.openURL(entity.menu_url))})}</>}{action('Prepare enquiry',()=>{try{setError('');setPrepared(entity.family==='entertainment'?eventRequest({tables,quantity:Number(quantity)},entity):venueRequest({occasion,date,guests:Number(guests),notes},entity))}catch(e){setError(e instanceof Error?e.message:'Review your enquiry details.')}})}{prepared?<><Text selectable style={s.body}>{prepared}</Text>{action('Share prepared note',()=>{void run(()=>Share.share({message:prepared}))})}{action('Continue to official request ↗',()=>{void run(()=>Linking.openURL(entity.contact_url))})}<Text style={s.small}>Prepared only. Nothing is sent, booked, held or paid by this tool.</Text></>:null}<Text style={s.small}>Official sources checked {entity.source_checked_at}. Confirm current details with the business.</Text></>:null}</>}</View>}
+diff --git a/mobile/src/EventPlanner.tsx b/mobile/src/EventPlanner.tsx
+index 9aa708da..f7d56318 100644
+--- a/mobile/src/EventPlanner.tsx
++++ b/mobile/src/EventPlanner.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,AppState,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,AppState,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {privateRequests,useAuth} from './Auth';
+ import {inquiryId} from './inquiries';
+diff --git a/mobile/src/EventSeatMap.tsx b/mobile/src/EventSeatMap.tsx
+index 4fbccca5..d52e2688 100644
+--- a/mobile/src/EventSeatMap.tsx
++++ b/mobile/src/EventSeatMap.tsx
+@@ -1,6 +1,7 @@
+ import {SelectedSeatPhotos,useMeasuredReference} from './VenueReferences';
+ import {Fragment,memo,useMemo,useState} from 'react';
+-import {Pressable,StyleSheet,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Pressable,StyleSheet,View} from 'react-native';
+ import Svg,{Polygon,Rect,Image as SvgImage,Text as SvgText} from 'react-native-svg';
+ import {projectPoint} from '../../assets/tickets/venue-model.mjs';
+ import type {Seat} from './seating';
+diff --git a/mobile/src/Festival.tsx b/mobile/src/Festival.tsx
+index 05a2101b..06aae672 100644
+--- a/mobile/src/Festival.tsx
++++ b/mobile/src/Festival.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Pressable,ScrollView,Share,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Pressable,ScrollView,Share,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth} from './Auth';
+ import {SponsorFulfillmentHandoff} from './SponsorFulfillmentHandoff';
+diff --git a/mobile/src/FoodMenu.tsx b/mobile/src/FoodMenu.tsx
+index b87c4a04..ddf00003 100644
+--- a/mobile/src/FoodMenu.tsx
++++ b/mobile/src/FoodMenu.tsx
+@@ -1,5 +1,6 @@
+ import {useRef,useState} from 'react';
+-import {Linking,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Linking,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {FOOD_PAGE_SIZE,foodMenuView,foodQuestionDraft,type NativeFood,type FoodItem} from './foodMenu';
+ export function FoodMenu({food}:{food:NativeFood}){
+  const[query,setQuery]=useState(''),[section,setSection]=useState<number|null>(null),[limit,setLimit]=useState(FOOD_PAGE_SIZE),[question,setQuestion]=useState(''),[linkError,setLinkError]=useState('');
+diff --git a/mobile/src/Groups.tsx b/mobile/src/Groups.tsx
+index d51a5fd3..91ff771c 100644
+--- a/mobile/src/Groups.tsx
++++ b/mobile/src/Groups.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {useAuth} from './Auth';
+ import {YouthFamily,YouthOperator} from './Youth';
+ import {calendarDay,calendarMeta,calendarRange,calendarWhen} from './calendar';
+diff --git a/mobile/src/Inquiries.tsx b/mobile/src/Inquiries.tsx
+index aeb93150..d1644e39 100644
+--- a/mobile/src/Inquiries.tsx
++++ b/mobile/src/Inquiries.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth,inquiryRequests} from './Auth';
+ import {InquiryRecovery,inquiryRecoveryResult,type InquiryMarker} from './inquiryRecovery';
+diff --git a/mobile/src/MapLocationControl.tsx b/mobile/src/MapLocationControl.tsx
+index 048d588d..fd01c78f 100644
+--- a/mobile/src/MapLocationControl.tsx
++++ b/mobile/src/MapLocationControl.tsx
+@@ -1,4 +1,5 @@
+-import {Linking,Pressable,StyleSheet,Text,View} from 'react-native';import {useState} from 'react';import {LIGHT} from './brand';
++import {ScaleText as Text} from './ScaleText';
++import {Linking,Pressable,StyleSheet,View} from 'react-native';import {useState} from 'react';import {LIGHT} from './brand';
+ import {deviceLocationLabel} from '../../assets/map-data/foreground-location.mjs';
+ const messages:Record<string,string>={permission:'Waiting for location permission…',locating:'Finding your device location…',denied:'Location access is off. You can still browse any city.',services_off:'Device location is switched off. You can still browse any city.',timeout:'Location took too long. Try again or browse a city.',unavailable:'Device location is unavailable. Try again or browse a city.',expired:'Your location snapshot expired. Tap to find it again.'};
+ export function MapLocationControl({state,onRequest,onClear,disabled=false,inline=false}:{state:any,onRequest:()=>void,onClear:()=>void,disabled?:boolean;inline?:boolean}){
+diff --git a/mobile/src/MusicEditor.tsx b/mobile/src/MusicEditor.tsx
+index 135e628f..7f51a3a5 100644
+--- a/mobile/src/MusicEditor.tsx
++++ b/mobile/src/MusicEditor.tsx
+@@ -1,7 +1,8 @@
+ import { ownerRevisionRequired, ownerRPC } from './businessOwner';
+ import { OwnerEditorHandoff } from './OwnerEditorHandoff';
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { musicDraft, musicFields, musicPatch } from './music';
+ function Action({label,run,disabled=false}:{label:string;run:()=>void;disabled?:boolean}){return <Pressable accessibilityRole="button" accessibilityState={{disabled}} disabled={disabled} onPress={run} style={[s.action,disabled&&{opacity:.5}]}><Text style={s.link}>{label}</Text></Pressable>;}
+diff --git a/mobile/src/NativeParea.tsx b/mobile/src/NativeParea.tsx
+index dfa822f1..2248eb0b 100644
+--- a/mobile/src/NativeParea.tsx
++++ b/mobile/src/NativeParea.tsx
+@@ -1,10 +1,10 @@
+ import { useEffect, useRef, useState } from "react";
++import {ScaleText as Text} from './ScaleText';
+ import {
+   AppState,
+   Pressable,
+   Share,
+   StyleSheet,
+-  Text,
+   TextInput,
+   View,
+ } from "react-native";
+diff --git a/mobile/src/Operations.tsx b/mobile/src/Operations.tsx
+index 9fbcccf8..19b464f4 100644
+--- a/mobile/src/Operations.tsx
++++ b/mobile/src/Operations.tsx
+@@ -1,6 +1,7 @@
+ import {openCompanyPrivate} from './companyPrivateHandoff';
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import { useAuth, operationsRequestStore } from './Auth';
+ import {randomUUID} from 'expo-crypto';
+ import {createOperationsRecovery,operationsDenied} from '../../assets/operations/recovery.mjs';
+diff --git a/mobile/src/OrganizationCalendar.tsx b/mobile/src/OrganizationCalendar.tsx
+index d2972b48..23999bf2 100644
+--- a/mobile/src/OrganizationCalendar.tsx
++++ b/mobile/src/OrganizationCalendar.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth} from './Auth';
+ import {calendarDay,calendarMeta,calendarPublic,calendarRange,calendarWhen} from './calendar';
+diff --git a/mobile/src/OwnerEditorHandoff.tsx b/mobile/src/OwnerEditorHandoff.tsx
+index 6e8de738..ddb7e13e 100644
+--- a/mobile/src/OwnerEditorHandoff.tsx
++++ b/mobile/src/OwnerEditorHandoff.tsx
+@@ -1,6 +1,7 @@
+ import { LIGHT } from './brand';
+ import { useEffect, useRef, useState } from 'react';
+-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { Linking, Pressable, StyleSheet, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { openOwnerEditor } from './ownerEditorHandoff';
+ export function OwnerEditorHandoff({listingId,name,disabled,onReload,localDraftRetained=false}:{listingId:string;name:string;disabled:boolean;onReload:()=>void;localDraftRetained?:boolean}){
+diff --git a/mobile/src/Priorities.tsx b/mobile/src/Priorities.tsx
+index c8d62888..01fdea89 100644
+--- a/mobile/src/Priorities.tsx
++++ b/mobile/src/Priorities.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Linking, Pressable, StyleSheet, TextInput, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { prioritize } from '../../assets/priorities/engine.mjs';
+ import { loadSources } from '../../assets/priorities/sources.mjs';
+diff --git a/mobile/src/Profile.tsx b/mobile/src/Profile.tsx
+index a5683dc9..e58cdf02 100644
+--- a/mobile/src/Profile.tsx
++++ b/mobile/src/Profile.tsx
+@@ -1,5 +1,6 @@
+ import { useEffect, useState } from 'react';
+-import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { normalizeProfile, publicURL, plain, profileImageEventMode, profileMapLink } from './profile';
+ import { musicDraft, musicFields } from './music';
+diff --git a/mobile/src/Shop.tsx b/mobile/src/Shop.tsx
+index 344498bd..c048fbcc 100644
+--- a/mobile/src/Shop.tsx
++++ b/mobile/src/Shop.tsx
+@@ -1,6 +1,7 @@
+ import {unavailableLines} from '../../assets/commerce/unavailable.mjs';
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,AppState,Image,Linking,Pressable,ScrollView,Share,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,AppState,Image,Linking,Pressable,ScrollView,Share,StyleSheet,TextInput,View} from 'react-native';
+ import AsyncStorage from '@react-native-async-storage/async-storage';
+ import {basketAdd,basketRead,basketTotals,COMMERCE,commerceImage,commerceProduct,commerceReceipt,productLink,initialVariant as chooseInitialVariant,singleDefaultVariant,variantLabel,type BasketItem} from './commerce';
+ const KEY='zoi.buygreek.basket.v1';
+diff --git a/mobile/src/SponsorFulfillmentHandoff.tsx b/mobile/src/SponsorFulfillmentHandoff.tsx
+index 0137dd90..c29c2e85 100644
+--- a/mobile/src/SponsorFulfillmentHandoff.tsx
++++ b/mobile/src/SponsorFulfillmentHandoff.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {Linking,Pressable,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Linking,Pressable,View} from 'react-native';
+ import {useAuth} from './Auth';
+ import {sponsorFulfillmentLink} from './sponsorFulfillment';
+ export function SponsorFulfillmentHandoff({workspace,application,event,offset=0,disabled=false}:{workspace:string;application:string;event:string;offset?:number;disabled?:boolean}){
+diff --git a/mobile/src/Tickets.tsx b/mobile/src/Tickets.tsx
+index eaa3d025..d350de84 100644
+--- a/mobile/src/Tickets.tsx
++++ b/mobile/src/Tickets.tsx
+@@ -5,7 +5,8 @@ const generalGuard = new GeneralReservationGuard(AsyncStorage);
+ import {guestEventHostLink, organiserEventHostLink, scopedEventHostRpc} from './eventHostLink';
+ import {EventSeatMap} from './EventSeatMap';
+ import { useCallback, useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, AppState, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, AppState, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+ import { randomUUID } from 'expo-crypto';
+ import { useAuth } from './Auth';
+ import { plain } from './profile';
+diff --git a/mobile/src/Timekeeping.tsx b/mobile/src/Timekeeping.tsx
+index 91d8aacb..2526a9f2 100644
+--- a/mobile/src/Timekeeping.tsx
++++ b/mobile/src/Timekeeping.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,AppState,Platform,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,AppState,Platform,Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {Directory,File,Paths} from 'expo-file-system';
+ import * as Sharing from 'expo-sharing';
+diff --git a/mobile/src/Trips.tsx b/mobile/src/Trips.tsx
+index 16c9b5c5..54f859d9 100644
+--- a/mobile/src/Trips.tsx
++++ b/mobile/src/Trips.tsx
+@@ -1,6 +1,7 @@
+ import {placeDestination} from './placeNavigation';
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Linking,Pressable,ScrollView,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth} from './Auth';
+ import {inquiryId} from './inquiries';
+diff --git a/mobile/src/Venue.tsx b/mobile/src/Venue.tsx
+index 77273eac..40529c39 100644
+--- a/mobile/src/Venue.tsx
++++ b/mobile/src/Venue.tsx
+@@ -1,6 +1,7 @@
+ import {VenueReferenceEditor,useMeasuredReference} from './VenueReferences';
+ import { Fragment, useEffect, useRef, useState } from 'react';
+-import { Pressable, Share, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { Pressable, Share, StyleSheet, TextInput, View } from 'react-native';
+ import Svg, { Polygon, Rect, Image as SvgImage, Text as SvgText } from 'react-native-svg';
+ import { AsyncStorage, useAuth } from './Auth';
+ import { createLayout, validateLayout, seatRows, updateObjects, summarize, parseLayout, projectPoint } from '../../assets/tickets/venue-model.mjs';
+diff --git a/mobile/src/VenueReferences.tsx b/mobile/src/VenueReferences.tsx
+index 429617f5..96b7fb64 100644
+--- a/mobile/src/VenueReferences.tsx
++++ b/mobile/src/VenueReferences.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useState} from 'react';
+-import {Image,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Image,Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {imageReference,layoutViewImage,referenceDimensions,safeVenueImage} from '../../assets/tickets/venue-reference.mjs';
+ import {validateLayout} from '../../assets/tickets/venue-model.mjs';
+ export function VenuePhoto({photo}:{photo:{url:string;caption:string;label?:string;source?:string}}){const [failed,setFailed]=useState(false);useEffect(()=>setFailed(false),[photo.url]);let url;try{url=safeVenueImage(photo.url);}catch{return null;}return <View style={s.panel}><Text style={s.label}>Organizer-provided {photo.source==='seat'?'seat':photo.source==='section'?'section':'venue'} photo{photo.label?' · '+photo.label:''}</Text>{failed?<Text style={s.body}>This organizer image is unavailable.</Text>:<Image source={{uri:url}} accessibilityLabel={photo.caption} resizeMode="contain" style={{height:210,width:'100%'}} onError={()=>setFailed(true)}/>}<Text style={s.body}>{photo.caption}</Text><Text style={s.small}>Provided by the organizer. It is not a verified sightline or a reconstructed view from the selected seat.</Text></View>;}
+diff --git a/mobile/src/Volunteer.tsx b/mobile/src/Volunteer.tsx
+index ee39f23f..88f51693 100644
+--- a/mobile/src/Volunteer.tsx
++++ b/mobile/src/Volunteer.tsx
+@@ -4,7 +4,8 @@ import {randomUUID} from 'expo-crypto';
+ import {PrivateRequestStore} from './privateRequests';
+ import {createVolunteerRecovery,volunteerRpc,volunteerDenied} from './volunteerOperations';
+ import { useEffect, useRef, useState } from 'react';
+-import { ActivityIndicator, AppState, Platform, Pressable, ScrollView, Share, StyleSheet, Text, TextInput, View } from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import { ActivityIndicator, AppState, Platform, Pressable, ScrollView, Share, StyleSheet, TextInput, View } from 'react-native';
+ import { useAuth } from './Auth';
+ import { displayTime, localInput, zonedToInstant } from '../../assets/bookings/model.mjs';
+ import { organizationId, publicOpportunities, registrationReceipt, shiftAction } from './volunteer';
+diff --git a/mobile/src/WorkspaceTeam.tsx b/mobile/src/WorkspaceTeam.tsx
+index 5f5b5074..a71b9698 100644
+--- a/mobile/src/WorkspaceTeam.tsx
++++ b/mobile/src/WorkspaceTeam.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {Platform,Pressable,StyleSheet,Text,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {Platform,Pressable,StyleSheet,View} from 'react-native';
+ import * as SecureStore from 'expo-secure-store';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth} from './Auth';
+diff --git a/mobile/src/Youth.tsx b/mobile/src/Youth.tsx
+index 8ccdab3f..5ab0fff4 100644
+--- a/mobile/src/Youth.tsx
++++ b/mobile/src/Youth.tsx
+@@ -1,5 +1,6 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {ActivityIndicator,Alert,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';
++import {ScaleText as Text} from './ScaleText';
++import {ActivityIndicator,Alert,Pressable,StyleSheet,TextInput,View} from 'react-native';
+ import {randomUUID} from 'expo-crypto';
+ import {useAuth,youthRequestStore} from './Auth';
+ import{createYouthRecovery,youthRpc,youthDenied,youthReaderIdentity}from'./youthRecovery';
+diff --git a/mobile/tests/foreground-map-location.test.mjs b/mobile/tests/foreground-map-location.test.mjs
+index e006e56a..ba9ec5df 100644
+--- a/mobile/tests/foreground-map-location.test.mjs
++++ b/mobile/tests/foreground-map-location.test.mjs
+@@ -1,7 +1,7 @@
+ import test from 'node:test';import assert from 'node:assert/strict';import vm from 'node:vm';import {readFileSync} from 'node:fs';import ts from 'typescript';
+ import {createForegroundLocation,validatedDeviceFix} from '../../assets/map-data/foreground-location.mjs';
+ const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
+-function compiled(path,mocks){const module={exports:{}};const js=ts.transpileModule(source(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext(js,{module,exports:module.exports,require:name=>{if(!(name in mocks))throw Error('Unexpected module '+name);return mocks[name]},setTimeout,clearTimeout,console,document:undefined});return module.exports;}
++function compiled(path,mocks){mocks={'./ScaleText':{ScaleText:mocks['react-native']?.Text},...mocks};const module={exports:{}};const js=ts.transpileModule(source(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext(js,{module,exports:module.exports,require:name=>{if(!(name in mocks))throw Error('Unexpected module '+name);return mocks[name]},setTimeout,clearTimeout,console,document:undefined});return module.exports;}
+ function hookFixture(platform='android'){const effects=[],events={},fixes=[];let state,receiver,removed=0,prompts=0;const React={useState:initial=>[initial,next=>state=next],useRef:value=>({current:value}),useEffect:fn=>effects.push(fn)},AppState={currentState:'active',addEventListener:(name,fn)=>{if(platform!=='android'&&['focus','blur'].includes(name))throw Error('unsupported_AppState_event');events[name]=fn;return{remove:()=>delete events[name]}}},Location={Accuracy:{Balanced:3,High:4},hasServicesEnabledAsync:async()=>true,getForegroundPermissionsAsync:async()=>({status:'undetermined',canAskAgain:true}),requestForegroundPermissionsAsync:async()=>{prompts++;return{status:'granted'}},watchPositionAsync:async(options,success)=>{assert.equal(options.mayShowUserSettingsDialog,false);assert.equal(options.accuracy,platform==='android'?4:3);receiver=success;return{remove:()=>removed++}}};
+  const{useMapLocation}=compiled('../src/useMapLocation.ts',{'react':React,'react-native':{AppState,Platform:{OS:platform}},'expo-location':Location,'../../assets/map-data/foreground-location.mjs':{createForegroundLocation}});const hook=useMapLocation('manual-city',(f,intent)=>fixes.push({f,intent}));const cleanups=effects.map(fn=>fn());return{hook,events,fixes,state:()=>state,prompts:()=>prompts,removed:()=>removed,deliver:()=>receiver({timestamp:Date.now(),coords:{latitude:0,longitude:0,accuracy:35}}),cleanup:()=>cleanups.forEach(fn=>fn?.())};}
+ test('actual native hook has no startup permission; gesture gets one fix; background clears without preference writes',async()=>{const h=hookFixture();assert.equal(h.prompts(),0);await h.hook.request();assert.equal(h.prompts(),1);h.deliver();assert.equal(h.state().phase,'ready');assert.equal(h.removed(),1);assert.equal(h.fixes[0].f.latitude,0);h.events.change('background');assert.equal(h.state().fix,null);h.cleanup();assert.equal(Object.keys(h.events).length,0);});

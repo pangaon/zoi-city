@@ -1,7 +1,8 @@
 import {memberDraftSignature} from '../../assets/community/member-draft.mjs';
 import {nativeMemberDraft,memberDraftRpc} from './communityDraft';
 import {useEffect,useRef,useState} from 'react';
-import {ActivityIndicator,ScrollView,Text,View} from 'react-native';
+import {ScaleText as Text} from './ScaleText';
+import {ActivityIndicator,ScrollView,View} from 'react-native';
 import {randomUUID} from 'expo-crypto';
 import {communityRequests,drafts,useAuth} from './Auth';
 import {communityTopics,communityPublicationRequest,communityPublicationReceipt} from './community';
