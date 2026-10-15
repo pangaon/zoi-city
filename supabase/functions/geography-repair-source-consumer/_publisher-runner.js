@@ -19,7 +19,10 @@ export async function runPublisherResearchJobs(jobs,{sourceFetch,archiveSource,f
   let archive;try{archive=await archiveSource({job_id:job.id,sha256:sha256(body),bytes:Buffer.byteLength(body),body});}catch{throw Object.assign(Error('publisher_private_archive_unconfirmed'),{archiveFailure:true});}
   if(archive?.private!==true||archive.sha256!==sha256(body)||archive.bytes!==Buffer.byteLength(body))throw Object.assign(Error('publisher_private_archive_unconfirmed'),{archiveFailure:true});
   archivedDocuments++;
-  result.source={...result.source,private_archive:archive.reference,archive_format:'decoded_utf8_sha256',pages:[{url:page.url,sha256:sha256(body),bytes:Buffer.byteLength(body)}]};
+  // A redirected different document is retained privately but cannot be bound
+  // to the registered publisher identity or proposed as its evidence.
+  if(result.reason==='publisher_document_branch_changed'){result={...result,status:'source_blocked',source:null,proposed:null};}
+  else result.source={...result.source,private_archive:archive.reference,archive_format:'decoded_utf8_sha256',pages:[{url:page.url,sha256:sha256(body),bytes:Buffer.byteLength(body)}]};
  }catch(error){if(error?.archiveFailure)throw error;if(!fixedErrors.has(error?.message))throw Error('publisher_runtime_unconfirmed');const reason=error.message;result={status:'source_blocked',reason,source:null,proposed:null,precision:'unknown',confidence:'supporting_source_unverified',coordinate_writes:0,website_writes:0};}
  const finished=await finishJob(job.id,job.lease_id,result);
  if(!finished||![result.status,'input_changed'].includes(finished.status)||finished.coordinate_writes!==0)throw Error('publisher_finish_unconfirmed');

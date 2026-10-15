@@ -1,0 +1,51 @@
+{
+  "kind": "publisher_registered_document_redirect_refusal",
+  "prior_actual_run": 38674423927,
+  "prior_failure": {
+    "http_status": 503,
+    "stage": "job_finish",
+    "sqlstate": "P0001",
+    "current_job_leases": 4,
+    "capture_lock_released": true
+  },
+  "actual_readonly_source_repro": {
+    "registered_url": "https://lykeionellinidon.com",
+    "final_url": "https://lykeionellinidon.com/el",
+    "http_status": 200,
+    "bytes": 139209,
+    "requests": 3,
+    "coordinate_or_listing_writes": 0
+  },
+  "correction": "Archive exact returned bytes, but when parser refuses changed registered-document identity, finish only a source-blocked outcome with null source and proposal. The SQL exact-document authority guard stays unchanged.",
+  "controlled_real_postgres": {
+    "groups": 4,
+    "original_redirect_result_rejected": "publisher_source_authority_required",
+    "corrected_refusal_recorded": true,
+    "authority_guard_unchanged": true,
+    "coordinate_writes": 0,
+    "website_writes": 0
+  },
+  "boundary": "Actual generic P0001 did not disclose its exception label; the exact registered-document failure is reproduced with the observed redirect and deployed guard. Corrected hosted acceptance is pending. Do not reset prior failed or leased jobs.",
+  "files": [
+    {
+      "path": "scripts/geography/publisher-job-runner.mjs",
+      "sha256": "d77b6a83c3d8438ee756f151203c80f4a6ec3aa03b5d21020a663740934c88a0"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher-runner.js",
+      "sha256": "a2a65ec68a789afecf7bfa26821eb09dcb3ee873463803e3199cd6a9cc9d5190"
+    },
+    {
+      "path": "tests/unit/geography-publisher-job-runner.test.mjs",
+      "sha256": "0651c3e631dd07dc4cafcbd0e172736bfeeeba442d9beb4ed5ccbcb4991c9dc5"
+    },
+    {
+      "path": "tests/database/publisher-source-consumer.integration.mjs",
+      "sha256": "dac879aa6ab3d7c2a0da70b22c8f0725ac199d4693f55dce9bbe9913af4a8cff"
+    },
+    {
+      "path": "docs/audits/geography-source-consumer-release-manifest-2026-10-14.json",
+      "sha256": "71863c71b04e3ac887ac7ca6bfeac5c906a6a621b3ba437264914a70a44e486f"
+    }
+  ]
+}

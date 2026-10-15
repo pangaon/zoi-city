@@ -21,3 +21,9 @@ test('unknown runtime faults abort before finish without misclassifying a publis
  await assert.rejects(runPublisherResearchJobs([job],h.options),e=>e.message==='publisher_runtime_unconfirmed');
  assert.deepEqual(h.events,[]);
 });
+
+test('different returned document is archived without attaching it to registered publisher evidence',async()=>{
+ const h=harness();h.options.sourceFetch=async()=>({url:'https://www.lgr.co.uk/directory/el/',status:200,text:card});
+ h.options.finishJob=async(_id,_lease,r)=>{h.events.push('finish');assert.equal(r.reason,'publisher_document_branch_changed');assert.equal(r.status,'source_blocked');assert.equal(r.source,null);assert.equal(r.proposed,null);return{status:r.status,coordinate_writes:0};};
+ const r=await runPublisherResearchJobs([job],h.options);assert.deepEqual(h.events,['archive','finish']);assert.equal(r.archived_documents,1);assert.equal(r.results[0].proposal,false);assert.equal(r.coordinate_writes,0);
+});

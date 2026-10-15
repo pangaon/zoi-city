@@ -39,4 +39,19 @@ const stale=service('geography_publisher_lease','4');assert.ok(stale.length>0);c
 const staleResult=await runPublisherResearchJobs([target],{sourceFetch:async url=>{if(!changed){q(`update zoi.listings set owner_user_id='${id(999)}'where id=${quote(target.listing_id)}::uuid`);changed=true;}return{url,status:200,text:'<title>One moment, please...</title>'};},archiveSource:async p=>({private:true,sha256:p.sha256,bytes:p.bytes,reference:'fixture-private'}),finishJob:async(job,lease,r)=>service('geography_repair_finish',`${quote(job)}::uuid,${quote(lease)}::uuid,${json(r)}`),cooldownHost:async()=>assert.fail('changed owner cannot create host observation')});assert.equal(staleResult.results[0].status,'input_changed');assert.equal(staleResult.results[0].proposal,false);assert.equal(q(`select source is null from zoi.geography_repair_jobs where id=${quote(target.id)}::uuid`),'t');
 console.log('PASS actual owner takeover during capture refuses proposal and archive association through deployed finish CAS');
 
+
+// Real same-host / -> /el response cannot be registered-document evidence.
+add(4,'https://lykeionellinidon.com','Lykeion ton Ellinidon Free Famagusta Annex');
+const redirected=service('geography_publisher_lease','4').find(j=>j.listing_id===id(4));assert.ok(redirected);
+const redirectedBody='<h1>Lykeion ton Ellinidon</h1><p>Organization information</p>';
+const{researchPublisherProfile}=await import('../../scripts/geography/publisher-profile-research.mjs');
+const unbound=researchPublisherProfile(redirectedBody,{...redirected.original,id:redirected.listing_id},{url:'https://lykeionellinidon.com/el',httpStatus:200});
+assert.equal(unbound.reason,'publisher_document_branch_changed');
+assert.throws(()=>service('geography_repair_finish',`${quote(redirected.id)}::uuid,${quote(redirected.lease_id)}::uuid,${json(unbound)}`),/publisher_source_authority_required/);
+let redirectArchived=false;
+const redirectResult=await runPublisherResearchJobs([redirected],{sourceFetch:async()=>({url:'https://lykeionellinidon.com/el',status:200,text:redirectedBody}),archiveSource:async p=>{redirectArchived=true;return{private:true,sha256:p.sha256,bytes:p.bytes,reference:'fixture-private'}},finishJob:async(job,lease,r)=>{assert(redirectArchived);assert.equal(r.source,null);assert.equal(r.proposed,null);return service('geography_repair_finish',`${quote(job)}::uuid,${quote(lease)}::uuid,${json(r)}`)},cooldownHost:async()=>assert.fail('different document is not a challenge on the registered source')});
+assert.equal(redirectResult.results[0].status,'source_blocked');assert.equal(redirectResult.results[0].proposal,false);assert.equal(redirectResult.archived_documents,1);
+assert.equal(q(`select reason='publisher_document_branch_changed'and(source is null or source='null'::jsonb)and(proposed is null or proposed='null'::jsonb)from zoi.geography_repair_jobs where id=${quote(redirected.id)}::uuid`),'t');
+console.log('PASS different registered document response remains private archived bytes, is refused as authoritative evidence, and records a source-only blocked outcome without weakening SQL');
+
 }finally{if(started)try{execFileSync(join(bin,'pg_ctl'),['-D',join(dir,'data'),'-m','immediate','-w','stop'],{stdio:'ignore'});}catch{}rmSync(dir,{recursive:true,force:true});}
