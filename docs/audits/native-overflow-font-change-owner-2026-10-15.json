@@ -1,0 +1,198 @@
+{
+  "kind": "native_overflow_font_change_source_owner",
+  "at": "2026-10-15T16:44:51.209949+00:00",
+  "worktree": "/tmp/zoi-native-overflow-font-change",
+  "branch": "fix-native-overflow-font-change-20261015",
+  "base_commit": "08d16fe5eb9c7ad9c692e193e30b77789b338b8d",
+  "status": "SOURCE FROZEN awaiting root independent review; old Android46 installed defect remains OPEN",
+  "source_manifest": {
+    "path": "docs/audits/evidence/native-overflow-font-change-owner-2026-10-15/source-manifest.json",
+    "sha256": "bd5c2c4f1338b1be881fbfd66063aeac1284c5f57d7cdb10419a78de16fd3a04"
+  },
+  "owned_files": {
+    "mobile/src/AppChrome.tsx": "a4467836116932d167d8ccb675bd72d23833b0987cdba3363a36b5999b962735",
+    "mobile/src/navigationLayout.ts": "8102b83f4f8ea91a9083fdbc18a578b27f74389f5ad42ad80f4c1377c31a8853",
+    "mobile/tests/navigationLayout.test.mjs": "7a0e42de47038ad31eac0ddc67523710980b1533690c4a58218a3858e791b3df",
+    "mobile/tests/navigation-layout-browser/fixture.jsx": "a51db90e8daff7c0e9040896caba5148a19ff36e4fd3f6dbee7b22eeb24ab102",
+    "mobile/tests/navigation-layout-browser/rn-web-scale-shim.jsx": "e8b1382ffd1d95c030b9439c50144301168e13f72898483f5a9e330d8a83eeb8",
+    "mobile/tests/navigation-layout-browser/verify.mjs": "7835a213f2dc9e293489213bb8037c8a6c2f360f4f3b3ad6ffdf2cc18fa87f0e",
+    "mobile/tests/navigation-layout-browser/README.md": "6c82dae4389909535b8b005ed570f62df91dec936dc5660e730c335bbd35621d"
+  },
+  "change": [
+    "Explicit RAF-coalesced measureLayout of retained refs against actual native content host remeasures every current tab on font/width/viewport/order/label/icon changes, including unchanged child boxes.",
+    "Monotonic pass tokens and current child/parent-ref checks reject stale callbacks. Complete finite child union plus8trailing padding supersedes initial native content-size fallback.",
+    "Preserve last settled extent during refresh to avoid arrow-induced viewport oscillation. Whole navigation-row width decides need for arrows; actual scroll viewport still controls clamp/page/reveal.",
+    "Failed/missing/nonfinite/ref-replaced measurements never commit a partial union; at most two extra attempts. Unmount/layout-generation cleanup invalidates pending pass and RAF.",
+    "No ScrollView key/remount, route/body/Auth/permissions/platform orientation/provider changes; existing44px arrow/tab controls and selected/focus reveal retained."
+  ],
+  "validation": {
+    "focused": {
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0,
+      "command": "node --test mobile/tests/navigationLayout.test.mjs"
+    },
+    "typescript": "mobile/node_modules/.bin/tsc --noEmit -p mobile PASS",
+    "diff_check": "PASS",
+    "controlled_actual_RN_Web": {
+      "passed": 20,
+      "existing": 18,
+      "new_hot_font": 2,
+      "new_cases": "390/320 same mounted component, BOTH native content-size and tab onLayout suppressed after mount; hotgrow\u2192shrink, width/labels/reorder changes; captured old measurements released after newer settled generation; Grow/selected/focus reachability,44px targets, no route callback until deliberate Enter.",
+      "command": "BUNDLE_PATH=/tmp/UNIQUE.js node mobile/tests/navigation-layout-browser/build.cjs; BUNDLE_PATH=/tmp/UNIQUE.js OUTPUT_DIR=/tmp/UNIQUE node mobile/tests/navigation-layout-browser/verify.mjs",
+      "dependency_install": false
+    },
+    "negative_reproduction": "Identical new hot-font regression run against exact previous08d16fe5 AppChrome source fails on Grow reveal at390 with callbacks suppressed; retained failure/log/screens.",
+    "prior_candidate": "First child-union-only candidate passed existing18 but shrink regression failed because arrow-reduced viewport caused hysteresis. Final full-row threshold removes that trap; historical failure retained.",
+    "source_preservation": {
+      "App_tsx_unchanged_sha256": "941617fe007037bbe795ffdb29e4410263667b3d7ed73bf70bdf9ffe7e543e1d",
+      "AppHeader_body_unchanged": true,
+      "navigation_styles_unchanged": true,
+      "native_runtime_method": "RN0.86.3 ScrollView.js exposes getInnerViewRef; generated ScrollViewImperativeMethods declares it, legacy .d.ts omits it. Fabric ReactNativeElement.measureLayout requires actual native host reference; getInnerViewNode numeric handle is not substituted.",
+      "measurement_retry_limit": 2,
+      "measurement_failed_or_removed_tab": "no partial commit; preserve settled extent, retry at most twice; async tokens/ref-target checks refuse obsolete callbacks"
+    }
+  },
+  "evidence": {
+    "evidence/native-overflow-font-change-owner-2026-10-15/tsc.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/baseline-defect.log": {
+      "bytes": 482,
+      "sha256": "63e990c5db33f9bb573b87085a3c92276bd13ed210255f7973e0bdc281126507"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/focused.log": {
+      "bytes": 985,
+      "sha256": "b3260de6e564ec205a74ce48a9361b696b29ac10ca11995ba56232fd8ca1dc7b"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/preservation.json": {
+      "bytes": 655,
+      "sha256": "4e9af3f632ecc508ccd62c54f4aa0a326cef5e0933c6d4ab5de0309d503f0ba0"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser.log": {
+      "bytes": 986,
+      "sha256": "8474bb951421939f08479ebfa7c80850edf85d58531803fd2c7dab7cac5d2e4f"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/source-manifest.json": {
+      "bytes": 1007,
+      "sha256": "bd5c2c4f1338b1be881fbfd66063aeac1284c5f57d7cdb10419a78de16fd3a04"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/prior-candidate-shrink-failure/failure.png": {
+      "bytes": 21001,
+      "sha256": "a0153133706eaf55487203a6813b2bee76401766eb143eddf7ced3c8a9de3d93"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/prior-candidate-shrink-failure/failure.json": {
+      "bytes": 133,
+      "sha256": "aecbcbd147099e9f902cc8c85dc056a75a2677ec3f58badd2c26af0fb974950d"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/hot-font-no-layout-events-320.png": {
+      "bytes": 30146,
+      "sha256": "7dde3374774ba18878b433bec8d4090544adbb10c858a671ea06acda2de162b1"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-844-390-font2.png": {
+      "bytes": 38230,
+      "sha256": "89c84a19fe496bd3501e24a8908ce846a85bd11a711ae9ad4340384f1b29f5e2"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-390-844-font1.png": {
+      "bytes": 20750,
+      "sha256": "f1294a5e09974ec6dc80fec1060724c519573cc8762d0e7d72c95b0d8657e0a8"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-390-font2-explicit-newlines.png": {
+      "bytes": 33954,
+      "sha256": "187081f9a79a78b4aa6684955e665083804b66908068e4cdabbce330dff6c841"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-780-900-font1.png": {
+      "bytes": 29228,
+      "sha256": "aeefb41c9f68206852beb166542f1fb3884fc47f58985fc4507db5bc92470c4f"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-320-740-font2.png": {
+      "bytes": 24623,
+      "sha256": "a4ef935e1ed3216b76da457d47a9c549a57429da12cacdb3c5fb620d1483a0db"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-390-844-font1.png": {
+      "bytes": 23403,
+      "sha256": "2472ace7853e9c7e1a9dfd799da6c17680b3b67a6eaf47fb74a48043879630d8"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-780-900-font2.png": {
+      "bytes": 41405,
+      "sha256": "c47b00d39f289533cbb709835e96b85dd5bbe39c3d322221f2bb2f549557a1e9"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-780-900-font2.png": {
+      "bytes": 32463,
+      "sha256": "e9883447d21e851f33aec52b2f06b9b8f948436f200d38d361a29ee783a15beb"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-844-390-font2.png": {
+      "bytes": 29494,
+      "sha256": "a2c8cb0e2526e1fc898f33dc7d7ee6857c1cfdcbd875da773c31e04f5079ea66"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-320-740-font1.png": {
+      "bytes": 21278,
+      "sha256": "6b36e39d250917f0df0969f2300c563ff6098f8e9a092ddb251f726fb0f14aed"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-320-740-font2.png": {
+      "bytes": 28223,
+      "sha256": "6dde716407c5d71b10456db013068681403246ceaadceddfc6a4b8c33f58d117"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-844-390-font1.png": {
+      "bytes": 26312,
+      "sha256": "c037f1f234d72309b8676ae7d961f43d9cf001a63e17256b46c9ca229f9d8472"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-844-390-font1.png": {
+      "bytes": 20125,
+      "sha256": "31e3cb9b67fb6ed919d8d6b7b47efa84fc22c4f3c2b1e69d49ccdc7b7c589547"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-320-740-font1.png": {
+      "bytes": 18666,
+      "sha256": "71ddc1d2b549c60b5ec4634fff3352295f0aabf94c46301a822d5b97a77dfc1f"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/hot-font-no-layout-events-390.png": {
+      "bytes": 30146,
+      "sha256": "7dde3374774ba18878b433bec8d4090544adbb10c858a671ea06acda2de162b1"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-390-844-font2.png": {
+      "bytes": 26987,
+      "sha256": "f3b3e7d462c476acf233d343d37d4d82fe5b241ed7b37654e335cf8a0b0e60dc"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/report.json": {
+      "bytes": 40661,
+      "sha256": "60f24861fc410f9f0706b717e8946359d4f38d0d80a853c4b52a386a1deb27a8"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/en-780-900-font1.png": {
+      "bytes": 22905,
+      "sha256": "73aea5c0b8dd36ee810cd4eb242ce9dd3840458139a600ddbd3a067272a4c9ee"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/controlled-browser/el-390-844-font2.png": {
+      "bytes": 29655,
+      "sha256": "8d857f4429b345845821cfd94a0743003b3ba64f871ef0145f60e61051119d61"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/baseline-defect/failure.png": {
+      "bytes": 30359,
+      "sha256": "649d1cc923de0594b363ae029bfdd555389cf4c4110e0f4a9e4f9d31f32bb08b"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/baseline-defect/report.json": {
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    "evidence/native-overflow-font-change-owner-2026-10-15/baseline-defect/failure.json": {
+      "bytes": 133,
+      "sha256": "aecbcbd147099e9f902cc8c85dc056a75a2677ec3f58badd2c26af0fb974950d"
+    }
+  },
+  "limitations": [
+    "Controlled RN-Web text-scaling adapter is not installed Android/iOS font/layout evidence.",
+    "Actual installed Android46 d148 hot-font defect is not closed by this source packet. Root owns source review, coherent future build and installed hot1\u21922\u21921 validation.",
+    "No live route/provider/Auth/body capabilities verified or changed by this packet."
+  ],
+  "operations": {
+    "ADB": 0,
+    "EAS_builds": 0,
+    "provider_calls": 0,
+    "production_SQL": 0,
+    "live_Auth": 0,
+    "product_data_writes": 0,
+    "new_dependencies": 0,
+    "external_network": 0,
+    "controlled_localhost_browser_HTTP": true
+  }
+}

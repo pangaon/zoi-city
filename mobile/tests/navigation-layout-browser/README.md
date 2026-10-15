@@ -37,3 +37,17 @@ Original installed7b13 screenshot/XML are retained separately as defect evidence
 The lead owns the next coherent binary build and real installed acceptance;
 these tests do not certify that APK, screen-reader behavior or real device
 font metrics. Use a separate output folder for independent review.
+
+Hot-font regression also suppresses both onContentSizeChange and tab onLayout
+after mount in the fixture-only adapter. It exercises grow/shrink, width changes,
+reordered and changed labels, and releases captured old measurement callbacks
+after newer layouts settle. This verifies retained-ref measurement and callback
+tokens through the actual component, not an Android device metric claim. The
+installed46c1b645 hot-font defect remains open until a coherent future APK is
+independently exercised.
+
+Set ZOI_HOT_FONT_ONLY=1 on verify to run only the two390/320 hot-font
+regressions. Complete child unions override stale native width; the whole nav
+row decides overflow while the narrower scroll viewport controls page/reveal
+math. Layout failures have at most two extra measurement passes; no polling
+loop or ScrollView remount is used.
