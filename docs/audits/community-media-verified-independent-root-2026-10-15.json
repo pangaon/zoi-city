@@ -57,5 +57,6 @@
     "standalone_suites": 2,
     "native_typescript": true,
     "inline_js_and_html_lint": true
-  }
+  },
+  "root_portability_delta": "Replaced hardcoded local TypeScript package in native scope unit with Node24 built-in stripping in isolated VM; actual transport execution and three assertions retained. CI previously failed only because the local package path does not exist on GitHub runner. Corrected focused checks pass."
 }
