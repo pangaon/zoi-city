@@ -1,0 +1,48 @@
+{
+  "observed_at": "2026-10-15T13:19:38.399366+00:00",
+  "reviewer": "qa_next",
+  "verdict": "Narrow Community cleanup void204 response fix accepted before root Edge deployment. Actual new-upload Storage acceptance remains separate.",
+  "tree": "/workspaces/zoi-geography-live-release",
+  "files": [
+    {
+      "path": "supabase/functions/community-media/index.ts",
+      "sha256": "3bd5d05c354f4f1f6b11be29c97c144170a6394ee6efce5721df97d7c983a28a"
+    },
+    {
+      "path": "tests/unit/community-media-edge.test.mjs",
+      "sha256": "e2e404b16f4d1d16a21adf5ca9ef1af1a900256fb90f40783bca50afc85ddd4c"
+    }
+  ],
+  "actual_readonly_contract": {
+    "signature": "public.community_media_cleanup_finish(text[])",
+    "returns": "void",
+    "definition_md5": "dd9c61b0e502c219baea44c1fc1473e8",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres}",
+    "security_definer": true,
+    "search_path": "empty"
+  },
+  "code_review": [
+    "Only exact community_media_cleanup_finish RPC accepts204 asnull completion. This private helper has no asset/verification receipt to return.",
+    "Canonical authenticated discard must fence the original asset and Storage DELETE must already succeed before cleanup_finish is called. No failed deletion is treated as cleanup success.",
+    "Every other RPC still requires parseable JSON and existing positive result validation; ordinary reservation/verification204 remains refused.",
+    "No caller, path, grant, session, storage upsert, upload parser/SHA, byteproof, owner or publication gate changes."
+  ],
+  "independent_checks": {
+    "focused_edge_byteproof_preview_media": 22,
+    "failed": 0,
+    "actual_controlled_handler_void204_discard_case": true,
+    "ordinary204_cannot_substitute_asset_receipt": true,
+    "diff_check": true
+  },
+  "limits": [
+    "Reviewer used bounded metadata SELECT only; no live cleanup_finish call, upload, deletion, Auth or Storage mutation.",
+    "Root reported previous run38740955487 reached session_refusal and actual discarded/storage_deleted/absent objects. This gate does not claim a successful actual replacement Edge byte journey.",
+    "Root owns deployment version16, exact source readback and a fresh explicitly admitted actual Storage gate; phaseB acceptance remains separate."
+  ],
+  "production_mutations": 0,
+  "evidence": {
+    "path": "docs/audits/evidence/community-void204-independent-2026-10-15/focused22.log",
+    "sha256": "05fc0c6fadf2033b1fe27b0a37810e9a1b655f7bdc222f0bf518fd89caf6f955"
+  }
+}

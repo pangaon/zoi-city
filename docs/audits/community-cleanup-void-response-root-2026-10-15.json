@@ -1,0 +1,34 @@
+{
+  "created_at": "2026-10-15T13:17:00Z",
+  "owner": "/root",
+  "problem": "Actual Community byte test38740955487 reached session_refusal then cleanup reported canonical_cleanup_unconfirmed. Both exact dedicatedQA assets944b180e-1996-4d15-96ef-a378b958a626 and8e830ecd-cc22-45c0-bfa9-3f3dfb470fc7 were actually discarded, storage_deleted=true and both Storage objects absent. Existing grants had no current Auth sessions.",
+  "actual_contract": {
+    "signature": "public.community_media_cleanup_finish(text[])",
+    "returns": "void",
+    "definition_md5": "dd9c61b0e502c219baea44c1fc1473e8",
+    "acl": "{postgres=X/postgres,service_role=X/postgres}"
+  },
+  "failure_cause": "Edge RPC helper unconditionally parsed JSON after a successful void204 cleanup-completion response. Successful canonical discard and object removal preceded the false409.",
+  "fix": "Accept204 only for the exact community_media_cleanup_finish RPC. No auth, grant, storage, SQL writer or byte-proof changes. Other RPC204responses remain failures.",
+  "verification": {
+    "actual_handler_focused": 27,
+    "passed": 27,
+    "log": "Private cache community-void-cleanup-root.log",
+    "coverage": [
+      "Actual discard handler canonical fence\u2192Storage DELETE\u2192void204complete\u2192id success",
+      "Ordinary asset RPC204still refused",
+      "Existing byte proof, ready reverify, current-session and preview gates retained"
+    ]
+  },
+  "state": "Independent exact source accepted; source release and actual corrected Edge byte gate pending. PhaseB remains unapplied.",
+  "files": [
+    {
+      "path": "supabase/functions/community-media/index.ts",
+      "sha256": "3bd5d05c354f4f1f6b11be29c97c144170a6394ee6efce5721df97d7c983a28a"
+    },
+    {
+      "path": "tests/unit/community-media-edge.test.mjs",
+      "sha256": "e2e404b16f4d1d16a21adf5ca9ef1af1a900256fb90f40783bca50afc85ddd4c"
+    }
+  ]
+}
