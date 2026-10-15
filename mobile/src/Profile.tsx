@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useAuth } from './Auth';
-import { normalizeProfile, publicURL, plain, profileImageEventMode } from './profile';
+import { normalizeProfile, publicURL, plain, profileImageEventMode, profileMapLink } from './profile';
 import { musicDraft, musicFields } from './music';
 import { BookingPanel } from './Bookings';
 import { EventHomeTools } from './EventHome';
@@ -12,13 +12,14 @@ export function BusinessProfile({ slug, back, signIn, volunteer, enquiry, calend
   const { client } = useAuth(); const [profile, setProfile] = useState<ReturnType<typeof normalizeProfile>>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState(''); const [retry, setRetry] = useState(0); const [imageFailed, setImageFailed] = useState(false);const [imageFit,setImageFit]=useState<'center'|'cover'>('center');
   useEffect(() => { let active = true; setLoading(true); setProfile(null); setError(''); setImageFailed(false);setImageFit('center'); client.request('/rest/v1/rpc/home_entity', { p_slug: slug }).then(data => { if (active) setProfile(normalizeProfile(data)); }).catch(() => { if (active) setError('This profile could not be loaded. Please try again.'); }).finally(() => { if (active) setLoading(false); }); return () => { active = false; }; }, [slug, retry, client]);
   const open = async (url: string) => { try { await Linking.openURL(url); } catch { setError('Your device could not open this link. Please try another contact option.'); } };
+  const mapLink=profile?profileMapLink(profile):'';
   const music = profile && ['artist','musician'].includes(profile.type) ? musicDraft(profile.profile) : null;
   const action = (label: string, url: string) => <Pressable key={label} accessibilityRole="link" accessibilityLabel={label} onPress={() => open(url)} style={s.action}><Text style={s.link}>{label} ↗</Text></Pressable>;
   if(profile?.type==='artist'&&uuid(profile.id)&&!loading&&!error)return <ArtistHome key={profile.id} profile={profile} back={back} signIn={signIn} shows={shows} enquiry={enquiry}/>;
   return <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}><Pressable accessibilityRole="button" onPress={back} style={s.action}><Text style={s.link}>← Back</Text></Pressable>{loading ? <ActivityIndicator color="#116CBA" /> : null}{error ? <View accessibilityRole="alert" style={s.panel}><Text style={s.body}>{error}</Text><Pressable accessibilityRole="button" onPress={() => setRetry(v => v + 1)} style={s.action}><Text style={s.link}>Try again</Text></Pressable></View> : null}{!loading && !error && !profile ? <Text style={s.body}>This listing is not available. It may have been moved or unpublished.</Text> : null}{profile ? <>
     {profile.photo && !imageFailed ? <Image source={{ uri: profile.photo }} resizeMode={imageFit} onLoad={event=>setImageFit(profileImageEventMode(event))} accessibilityLabel={profile.name} style={s.photo} onError={() => setImageFailed(true)} /> : <View style={s.initial}><Text style={s.monogram}>{profile.name.slice(0, 1).toUpperCase()}</Text></View>}
     <Text style={s.eyebrow}>{profile.type || 'The Greek world'}</Text><Text style={s.title}>{profile.name}</Text>{profile.verified ? <Text style={s.verified}>Verified listing</Text> : null}{profile.location ? <Text style={s.body}>{profile.location}</Text> : null}
-    <View style={s.row}>{profile.website ? action('Website', profile.website) : null}{profile.phoneHref ? action('Call ' + profile.phone, profile.phoneHref) : profile.phone ? <Text selectable style={s.body}>{profile.phone}</Text> : null}{/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) ? action('Email', 'mailto:' + encodeURIComponent(profile.email)) : null}{profile.addressLookup ? action('Find published address', profile.addressLookup.href) : null}</View>
+    <View style={s.row}>{profile.website ? action('Website', profile.website) : null}{profile.phoneHref ? action('Call ' + profile.phone, profile.phoneHref) : profile.phone ? <Text selectable style={s.body}>{profile.phone}</Text> : null}{/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email) ? action('Email', 'mailto:' + encodeURIComponent(profile.email)) : null}{mapLink ? action('Map & directions', mapLink) : profile.addressLookup ? action('Find published address', profile.addressLookup.href) : null}</View>
     <EventHomeTools key={profile.id} listing={profile.id} />
     {profile.food ? <FoodMenu key={profile.id} food={profile.food} /> : null}
     {profile.description ? <View style={s.panel}><Text style={s.heading}>About</Text><Text style={s.body}>{profile.description}</Text></View> : null}

@@ -1,0 +1,75 @@
+{
+  "reviewer": "/root/qa_next",
+  "source_tree": "/tmp/zoi-native-navigation-access-root",
+  "base": "7d5d5e88e5e13e151bdec327679f43846eed9673",
+  "at": "2026-10-15T18:11:14.629763+00:00",
+  "status": "accepted_source_and_controlled_journeys_only",
+  "production_actions": [],
+  "checks": {
+    "frozen_owner_source_and_evidence_pins": "all35 aggregate owner pins matched before and after; source unchanged",
+    "focused": "19 tests, 0 failures, 0 skips: navigationLayout.test.mjs + profile-map-handoff.test.mjs + profile.test.mjs",
+    "typescript": "mobile/node_modules/.bin/tsc --noEmit -p mobile exited0"
+  },
+  "installed_limit": "Fourth installed 4ecf77a6 still has the hot-font missing-arrow defect. These new sources are not in that artifact. No ADB/EAS/Auth/SQL/network/provider actions by reviewer.",
+  "schema": "zoi.independent-native-profile-map-review.v1",
+  "owner_audit": {
+    "path": "/tmp/zoi-native-navigation-access-root/docs/audits/native-profile-map-owner-2026-10-15.json",
+    "bytes": 5076,
+    "sha256": "5283a8112178903a0a286707f3eaf72ee79d933bac6a9bd716cb95e03422f241"
+  },
+  "source_files": [
+    {
+      "path": "mobile/src/Profile.tsx",
+      "bytes": 9115,
+      "sha256": "ec369ec99819e01ce37ff74cf29ecd58f96620dafa1f3328191e2d71b3336854"
+    },
+    {
+      "path": "mobile/src/profile.ts",
+      "bytes": 8752,
+      "sha256": "51d3ef0414013632f09c39e63fcebdc2a479a60ad1e808b3c5930321b5035633"
+    },
+    {
+      "path": "mobile/tests/profile-map-handoff.test.mjs",
+      "bytes": 1538,
+      "sha256": "637ed295634396018c03e27bc4dd09a26ff35dd1592c9f3f0888ad611a412716"
+    },
+    {
+      "path": "mobile/tests/food-menu-browser/verify-map-handoff.mjs",
+      "bytes": 3482,
+      "sha256": "e087bb8519537792d39bae26e72396cf694b207a8bfed7b71f1f11329a4af5b4"
+    }
+  ],
+  "verification": {
+    "mounted": "4 independently rerun actual BusinessProfile cases390portrait/844landscape \u00d71x/2x. Retained anonymous Hellenic source fixture; controlled Auth/Linking only. Exactlyone Map & directions action, canonical current business slug as sole query key,44px target, link failure visible, retry restores profile, Food preserved, no overflow/browser errors.",
+    "food_regression": "15 independently rerun original actual Profile/Food component cases pass including151tail/prices, sparse/held/ownerclears/readretry/unpublish.",
+    "source_review": "Pure profileMapLink validates current normalized UUID/slug, rejects path/query/fragment/control/malformedUTF16/oversize values; encodeURIComponent carries one canonical slug only. Invalid identity retains published-address lookup; dedicated ArtistHome early return unchanged. No coordinates/precision/private context included. App.tsx existing Linking listener handles discoveryLink and clears profile before opening Discover. Discovery existing selected request rereads home_entity then geography_reviewed_point with ID/current intent revision guard; errors keep address fallback. Existing source files outside four owned paths not edited.",
+    "tests": "3 mapidentity/alias/unicode/invalid/privatecontext tests plus12profile+4navigation focused pass."
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-profile-map-independent-2026-10-15/mounted/result.json",
+      "bytes": 1377,
+      "sha256": "585e414dc97d8486ca5f1c2826d15c6ede5e2a1a61fdd40169199e3b15608a09"
+    },
+    {
+      "path": "docs/audits/evidence/native-profile-map-independent-2026-10-15/mounted/profile-map-390-font2.png",
+      "bytes": 42848,
+      "sha256": "2c01d0bf0b97747775a0e552b50d263c30316f6dcf9fd1ce28af90bb59617de7"
+    },
+    {
+      "path": "docs/audits/evidence/native-profile-map-independent-2026-10-15/mounted/profile-map-844-font2.png",
+      "bytes": 20740,
+      "sha256": "1152247dd350e1e33ec8cd56a22b5a841e057905a865d2db14c03cd0cd859ec9"
+    },
+    {
+      "path": "docs/audits/evidence/native-profile-map-independent-2026-10-15/food-regression/report.json",
+      "bytes": 2872,
+      "sha256": "bfa6c7ed9282977517a00e288c69de2728329ba5cb60682b9b7611967b1ab122"
+    }
+  ],
+  "remaining": [
+    "Protected integration/release.",
+    "Future installed generic Profile\u2192native map\u2192current reviewed marker\u2192numeric directions; sparse invalid identity/address fallback and AndroidBack. Linking is controlled here; no external navigation provider or routing execution claim.",
+    "Dedicated ArtistHome retains existing separate behavior."
+  ]
+}

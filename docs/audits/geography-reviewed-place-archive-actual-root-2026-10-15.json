@@ -1,0 +1,610 @@
+{
+  "schema": "zoi.actual-geography-release.v1",
+  "at": "2026-10-15T19:00:57.925942+00:00",
+  "source_commit": "7ab89cd9e8c355b8bef05f890439359710010381",
+  "schema_install": {
+    "ledger": [
+      {
+        "name": "reviewed_official_place_destination",
+        "version": "20261015181305"
+      }
+    ],
+    "source": "supabase/migrations/20261015165924_reviewed_official_place_destination.sql",
+    "source_sha256": "3a22bab271706d388be8823c1093b347d925222ffe043ca252335a9affe8b720",
+    "functions": [
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "a6d10dbbedb1f4a9aff4a3010b3a03d0",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.maintain_seo_identity_keys()",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "d9bde7523cd57ea383fa2f77ec609e89",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_source_generation(uuid)",
+        "volatility": "s",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "979e6dbac201900f10e2a1cdb7a4d226",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.schema_type(text,text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "a87a595c8e9db085fb12e066aa66f1fd",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_repair_strategy_input(zoi.listings,text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "86de5ced4bc9ae28b48240ee6b149323",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.ensure_listing_slug()",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "3f9e0896e6308211fd0366917f2ae68c",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_repair_record_application(uuid,uuid)",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "65dc127bf783ad7f87d9d656b9b8afaa",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_reviewed_place_proof(jsonb,jsonb,zoi.listings,zoi.geography_repair_jobs)",
+        "volatility": "s",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "baca38034b9b0974465026eff8aec89d",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_read_authority_changed()",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "3a452d0b2b9902436360a47d3a575e4e",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_read_authority_input(zoi.listings)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "ac9235a21dafc3931bfee9b06703796c",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_place_norm(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "9b7223dd2e6752ca28762e9e8e1ab869",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_review_apply(uuid,uuid,text,text,jsonb)",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "ecae4cf96a5794c0eb44154b145ef6eb",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_read_source_allowed(zoi.listings)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "33ecf575f3c07144a0f90177791f03f3",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_url_component(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "3a441e4585bf57f2b1da52a9c816029b",
+        "owner": "postgres",
+        "config": null,
+        "signature": "zoi.seo_pluralize(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "e16849417c9c87d6a2ad8a4482dbb051",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.claim_owner_changed()",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": null,
+        "md5": "f3f56fbc83395559e0b883f610182017",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.auto_seo_fill()",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "1c1408dd9992138e1dd7a6490c17f88b",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_source_enqueue_one(zoi.listings,text,bigint)",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": null,
+        "md5": "1f8b6687e304c5f6502235344d4f0b7a",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.set_updated_at()",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "059ca37c376f88162bc84423c543b024",
+        "owner": "postgres",
+        "config": [
+          "search_path=zoi, public"
+        ],
+        "signature": "zoi.skip_noop_listing_update()",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "0f974f98a350a12633ddb0201f6ce25e",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_place_anchor_href(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "18f04ea6d4ae44e2a6b7f6d9258e8e9c",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_publisher_host(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "2370a3d4d34208172a01eb35751b2c0d",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_place_quote(bytea,jsonb,text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "4a83d0513384898300eb5e924f12f59a",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_source_authority_input(zoi.listings)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "905be3e3473f808c3c50a4a6f5e7279c",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog, pg_temp"
+        ],
+        "signature": "zoi.publish_gate(text,text,bigint,text,text,text,text,text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "48db3959fc1281e9f09af3ff8164dae6",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.tg_apply_publish_gate()",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "45ca783e5e2b06098a7c025a69347b9f",
+        "owner": "postgres",
+        "config": null,
+        "signature": "zoi.seo_text(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "f0ebb7ba92e72b6bd34b43acc2676789",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.guard_listing_quality_receipts()",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "e6f2ba4421641428065b817ad47bd3e8",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_review_revert(uuid,text)",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "e2b3362b5f0ee526063b9d5d4665256b",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_repair_input(zoi.listings)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "6681315c7a01314ba7851d65c6fd2dce",
+        "owner": "postgres",
+        "config": null,
+        "signature": "zoi.seo_name(text,text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "9b36fe6c6fabbe222376430aacf73323",
+        "owner": "postgres",
+        "config": null,
+        "signature": "zoi.seo_slug(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_reviewed_point(uuid)",
+        "volatility": "s",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "b9949947fae26d1a1e265dd0abb99e36",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_place_html_decode(text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "6d842320cba4f04697493b746ecea663",
+        "owner": "postgres",
+        "config": [
+          "search_path=pg_catalog, pg_temp"
+        ],
+        "signature": "zoi.listing_quality(text,text,text,text,bigint,text)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "c81c146a5aebfa684c5223eb4d18f3a7",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_publisher_held(zoi.listings)",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "de128d988072e26b8c5b2c0bd6d5d65f",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_source_eligible(zoi.listings)",
+        "volatility": "s",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "2d8c2ea0fb88550e057c51004100add1",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_source_listing_changed()",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "2757c108471ef5a863f4700e615e34d8",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_read_authority_fingerprint(zoi.listings)",
+        "volatility": "s",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "b77ed3d5d9004f1957503c2f848fe4c8",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_fingerprint(zoi.listings)",
+        "volatility": "s",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "f17b227663468c63feaafdda7caf903f",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.maintain_seo_projection()",
+        "volatility": "v",
+        "security_definer": true
+      }
+    ],
+    "listing_trigger_count": 12,
+    "new_kind_reviews": 0
+  },
+  "worker": {
+    "slug": "geography-repair-source-consumer",
+    "version": 25,
+    "status": "ACTIVE",
+    "verify_jwt": false,
+    "ezbr_sha256": "b4c9cb6e1fd9d72f746e2584e7a14f3c3220d4671e337c5335c261546d21c582"
+  },
+  "served_files": [
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "bytes": 15970,
+      "sha256": "dd6163b6b9bcd2ce2147633b73387d36e96716d8557edd378e655b20c16b868f"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_ticket-auth.ts",
+      "bytes": 1555,
+      "sha256": "e6e0956bba27ea6b6a39415fb2bc4e36b33118f807746d3d40ed6f56c8b41042"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher-runner.js",
+      "bytes": 4993,
+      "sha256": "d189eec6afeeb8f5f71f8d9b0412356bca77c233ca529b24ed6755820e907a44"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher.js",
+      "bytes": 6191,
+      "sha256": "9ff1be3f56d1c27735d2968ebba137a659096aa191f6427c72ba57d5c756e838"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_document-quality.js",
+      "bytes": 2516,
+      "sha256": "ed21fc9df59039292cd5cb14d00c4514c041b04d06018046ed6b0d778e6b6b9f"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher-policy.js",
+      "bytes": 5705,
+      "sha256": "7e8554ca2d39714d77c5187331196511e0af54a8216a1852ac683a194d289b90"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_client-brief.js",
+      "bytes": 18747,
+      "sha256": "65d67d4c4143c0b63229925bb5bd0dff9ccb8f77661f48c034ba8168bfc71ebb"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_member-source.js",
+      "bytes": 10501,
+      "sha256": "ef854f902a1461371df2cba711d310191d0b50de2c52dd955fd89011db611633"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_transport.js",
+      "bytes": 6028,
+      "sha256": "8deee284a5382f80bd4bedc0ef0bcb66ff37d187aa6aec0e20681f1762e888f2"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_native-request.js",
+      "bytes": 6651,
+      "sha256": "1c0432960c0b396a3321871f0415552d06e3860e11a0cec876e2a5a3dc998210"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_hash.js",
+      "bytes": 382,
+      "sha256": "f18ff36b4cb3ec1cf743162d414fdd625c653ac01c79ec55620453418bc7e7e9"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_session.js",
+      "bytes": 2435,
+      "sha256": "04fc302981f5c5c8f0e40241fee4d89c2530928d737e834764e05128afafbe51"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_runner.js",
+      "bytes": 5360,
+      "sha256": "c39029c3abe9a36969d32df97d9c9d597f2c006351f0ceec2ab8fa97ba23eb81"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_filesystem.js",
+      "bytes": 2072,
+      "sha256": "ad52c1b5860c3976a229c9226deebb73f14708be380623a5dec59d45181bb139"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_coordinates.js",
+      "bytes": 20752,
+      "sha256": "59719d47fdc579b72a33a240155d67441d58e057e6141ae5ca20ea1cb211c5ee"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_place-evidence.js",
+      "bytes": 6900,
+      "sha256": "6ab4030aa0af68d1146f8b886d1f037a9f00a2bc0d3745b70469a6c503c1543d"
+    }
+  ],
+  "ordinary_scheduled_batch": {
+    "ticket": "5123d401-6486-4ab0-8b60-2f06c04a83b1",
+    "issued_at": "2026-10-15T18:21:00.719015Z",
+    "http_status": 200,
+    "processed_jobs": 4,
+    "source_requests": 10,
+    "coordinate_writes": 0,
+    "provider_calls": 0,
+    "jobs": [
+      {
+        "id": "03c45b1b-53c5-47d7-94af-d8951702ca0c",
+        "listing_id": "0eb9a0a1-52f3-4318-b925-af531b5b0df6",
+        "status": "unresolved",
+        "captured_at": "2026-10-15 18:21:13.457057+00",
+        "private_archive": "geography-source-evidence",
+        "archive_format": "decoded_utf8_sha256",
+        "page_count": 3,
+        "archived_objects": 3
+      },
+      {
+        "id": "01cd1255-9e02-4d07-83d9-ef8d11592b6e",
+        "listing_id": "133922ab-904f-49cc-94b4-c430da041fcf",
+        "status": "unresolved",
+        "captured_at": "2026-10-15 18:21:08.212132+00",
+        "private_archive": "geography-source-evidence",
+        "archive_format": "decoded_utf8_sha256",
+        "page_count": 2,
+        "archived_objects": 2
+      },
+      {
+        "id": "0152c071-4683-489b-a08f-a42c047edb83",
+        "listing_id": "155e3558-3f48-4ed2-b7a4-9688a3f6177e",
+        "status": "unresolved",
+        "captured_at": "2026-10-15 18:21:05.5661+00",
+        "private_archive": "geography-source-evidence",
+        "archive_format": "decoded_utf8_sha256",
+        "page_count": 1,
+        "archived_objects": 1
+      },
+      {
+        "id": "0265e472-0e6e-490b-980e-e2f053b51776",
+        "listing_id": "0f0509af-5e6d-4114-b73d-43b4d11a1b6b",
+        "status": "source_blocked",
+        "captured_at": "2026-10-15 18:21:03.654726+00",
+        "private_archive": "geography-source-evidence",
+        "archive_format": "decoded_utf8_sha256",
+        "page_count": 0,
+        "archived_objects": 0
+      }
+    ],
+    "proof_limit": "Canonical jobs retain private archive/sourceformat;6 archived storage objects across3 unresolved records;1sourceblocked without pages. Edge25 source verifiesactualreadback before completion. This catalog query does not itself download archive bytes."
+  },
+  "security_advisors": {
+    "at": "2026-10-15T18:24:13.480Z",
+    "categories": [
+      "rls_enabled_no_policy",
+      "function_search_path_mutable",
+      "extension_in_public",
+      "anon_security_definer_function_executable",
+      "authenticated_security_definer_function_executable",
+      "auth_leaked_password_protection"
+    ],
+    "new_categories": 0,
+    "zero_overall_findings": false
+  },
+  "limits": [
+    "Zero actual new-kind reviews/coordinate corrections. Manual two-reviewer boundary remains.",
+    "Original finite capture admission/caps/expiry unchanged; no forced capture or policy extension.",
+    "Capture success is not source accuracy or completed listing acceptance."
+  ]
+}
