@@ -1,6 +1,7 @@
 import { communityTopics } from "./community.ts";
 import {
   hasStreetPosition,
+  positionStatus,
   hasReviewedPosition,
   reviewedSelectedPlace,
   isMappableRow,
@@ -155,11 +156,7 @@ export function scopedPoints(
   );
 }
 export function pointStatus(point: any) {
-  return hasStreetPosition(point)
-    ? "Street-level position"
-    : point
-      ? "Approximate area · no precise pin"
-      : "Map position not available";
+  return positionStatus(point);
 }
 export function exactPins(points: any[]) {
   return points.filter(hasStreetPosition);

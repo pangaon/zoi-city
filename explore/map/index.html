@@ -419,7 +419,7 @@
     return PRECISION[String((p && p.precision) || '').toLowerCase()] || UNKNOWN_PRECISION;
   }
   function mapPositionEligible(p){return (mapPositionsComplete||p&&p.reviewedSelected===true)&&mapTools.hasStreetPosition(p);}
-  function precisionLabel(p) { return p&&p.reviewedSelected&&p.reviewedPosition?'Reviewed selected street position':p&&p.unmapped?'Map position not selected':!mapPositionsComplete?'Map position awaiting complete checks':(p&&p.position_conflict)||!precisionOf(p).exact?'Address awaiting map verification':(p.reviewedPosition||p.position_diagnosis?.reviewed?'Reviewed street position':precisionOf(p).label+' · awaiting review'); }
+  function precisionLabel(p) { return p&&p.unmapped?'Map position not selected':!mapPositionsComplete&&!p?.reviewedSelected?'Map position awaiting complete checks':mapTools.positionStatus(p); }
 
   /* Numeric routing requires the fresh receipt-backed entity to match this
    * point. Other records offer a clearly labelled published-address search;
@@ -1062,8 +1062,8 @@
   function renderBrowseFooter() {
     if (listState.mode !== 'all') return;
     var area=areaState(),items=listState.items,located=items.filter(mapPositionEligible).length;
-    var context=area.active?'In these loaded results':'In the loaded list';
-    $('pfoot').innerHTML='<p>'+context+': '+fmtN(located)+' with street-level map positions; '+fmtN(items.length-located)+' awaiting a map position.</p>'+
+    var context=area.active?'In these loaded results':'In the loaded list',coverage=mapTools.positionCoverage(items.filter(mapPositionEligible));
+    $('pfoot').innerHTML='<p>'+context+': '+fmtN(coverage.reviewed)+' reviewed map positions; '+fmtN(coverage.unverified)+' stored positions awaiting independent verification; '+fmtN(items.length-located)+' awaiting a map position.</p>'+
       (directoryPending?'<p role="status">Map positions are loading. These place results are ready to use.</p>':directoryError||!mapPositionsComplete?'<p role="status">Map position coverage is incomplete. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button></p>':'')+
       (area.active&&located===0?'<p>No street-level positions in these loaded results. Browse the list for details.</p>':'')+
       (area.active?''+(area.error?'<p role="status">'+esc(area.error)+'</p>':'')+(area.busy?'<p role="status">Loading additional places…</p>':!area.done?'<button type="button" data-area-more>'+ (area.error?'Retry area results':'Load more area results')+'</button>':''):'')+
@@ -1073,8 +1073,8 @@
   function coverageNote() {
     if(directoryPending)return 'Street locations are loading in the background ('+fmtN(directoryLoaded)+' records read). You can use these place results now. Pins wait for position checks.';
     if(directoryError)return '<strong>Street locations could not load.</strong> Place search and published addresses are still available. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button>';
-    var parts = [],located=ALL.filter(mapPositionEligible).length;
-    parts.push('The global map feed has '+fmtN(ALL.length)+' loaded records, including '+fmtN(located)+' with street-level map positions.');
+    var parts = [],located=ALL.filter(mapPositionEligible).length,coverage=mapTools.positionCoverage(ALL.filter(mapPositionEligible));
+    parts.push('The global map feed has '+fmtN(ALL.length)+' loaded records, including '+fmtN(coverage.reviewed)+' reviewed map positions and '+fmtN(coverage.unverified)+' stored positions awaiting independent verification.');
     if (totalListings) parts.push('The full directory contains '+fmtN(totalListings)+' listings worldwide.');
     parts.push('Search an area to load additional directory results here, including places without coordinates, or browse <a href="/explore">Explore</a>.');
     if(!mapPositionsComplete)parts.push('Coordinate coverage is incomplete; pins are withheld until a complete check. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button>');
@@ -1550,7 +1550,7 @@
 
     if (!MB || typeof MB.Map !== 'function') { $('nowebgl').hidden = false; return; }
 
-    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261014-adaptive-map-feed'),import('/assets/map-data/preview.mjs?v=20261014-map-interactions'),import('/assets/map-data/interactions.mjs?v=20261014-map-interactions')]);mapTools=modules[0];previewModule=modules[1];mapInteractions=modules[2].mountMapInteractions($('map-interactions'),{getMap:function(){return map;},getOrigin:function(){return here;},getSelected:function(){return selected;},params:new URLSearchParams(location.search),changed:function(){showAll();refresh();writeUrl();},fit:showMatches,focus:choose,locate:function(){$('tNear').click();},sheet:function(mode){setSheet(mode==='compact');$('stage').classList.toggle('m-full-list',mode==='full');if(map)map.resize();}});}
+    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261015-map-provenance'),import('/assets/map-data/preview.mjs?v=20261014-map-interactions'),import('/assets/map-data/interactions.mjs?v=20261014-map-interactions')]);mapTools=modules[0];previewModule=modules[1];mapInteractions=modules[2].mountMapInteractions($('map-interactions'),{getMap:function(){return map;},getOrigin:function(){return here;},getSelected:function(){return selected;},params:new URLSearchParams(location.search),changed:function(){showAll();refresh();writeUrl();},fit:showMatches,focus:choose,locate:function(){$('tNear').click();},sheet:function(mode){setSheet(mode==='compact');$('stage').classList.toggle('m-full-list',mode==='full');if(map)map.resize();}});}
     catch(error){$('ptitle').textContent='Map tools could not start';$('pbody').innerHTML='<div class="m-empty">Browse <a href="/explore">Explore</a>, or reload this page.</div>';return;}
 
     C.api.rpc('home_stats', {}, { auth: 'anon' }).then(function (s) {

@@ -1,0 +1,41 @@
+{
+  "observed_at": "2026-10-15T04:29:07.313067+00:00",
+  "kind": "read_only_shared_source_contract_audit",
+  "count_interpretation": "Native2185 reported by root installed runtime is drawable stored street precision, not independently reviewed positions. No new live population count performed in this audit.",
+  "shared_paths": [
+    "assets/map-data/coordinate-integrity.mjs",
+    "assets/map-data/loader.mjs",
+    "mobile/src/discovery.ts",
+    "mobile/src/Discovery.tsx",
+    "explore/map/index.html"
+  ],
+  "findings": [
+    {
+      "id": "legacy_claim_is_drawable",
+      "evidence": "diagnosePosition maps street/address/rooftop to street; absent receipt yields legacy_street_unreviewed yet drawable=true. Numeric routes require reviewed receipt separately.",
+      "implication": "Stored claim may be valid but is not independent accuracy proof."
+    },
+    {
+      "id": "partial_conflict_exclusion",
+      "evidence": "Known city/town/village/country/region centroid methods downgrade. Shared cohort excludes multiple city/country or >8 distinct addresses. Precision disagreement,2\u20138 distinct addresses,source scope and extent reasons alone set review_required without disabling drawable.",
+      "implication": "Proven conflicting and suspicious points are not uniformly withheld. Shared-building duplicates alone do not prove displacement."
+    },
+    {
+      "id": "web_native_shared_contract",
+      "evidence": "Both consume complete adaptive explore_geo feed, mapPositionFields then validatePositionCohorts, then hasStreetPosition. Android embed uses same eligibility. Labels describe street-level positions without separating receipt-backed vs legacy claims.",
+      "implication": "A shared correction applies across web/native, followed by a new native binary when affected packaged modules change."
+    }
+  ],
+  "recommended_order": [
+    "Measure counts by receipt-backed, legacy claimed, explicit centroid, conflicting metadata and cohort, preserving listing IDs and published eligibility.",
+    "Withhold proven contradictory provenance/source-scope points consistently; retain legitimate unreviewed sources with an explicit unverified basis rather than treating all2185 as wrong.",
+    "Review bounded suspicious cohorts against exact address/source; do not move points or bulk geocode from cosmetic flags.",
+    "Show reviewed and stored/unverified counts separately; numeric directions remain receipt-backed."
+  ],
+  "boundaries": {
+    "writes": 0,
+    "paid_geocode": 0,
+    "global_accuracy_claim": false,
+    "live2185_recount": false
+  }
+}

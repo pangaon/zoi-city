@@ -132,7 +132,7 @@ test("coarse, missing, fake centroids and conflicted street coordinates never be
     { ...base, slug: "d", geo_precision: "street", city: "Other" },
   ]);
   assert.equal(exactPins(points).length, 1);
-  assert.match(pointStatus(points[0]), /Approximate/);
+  assert.match(pointStatus(points[0]), /under review/);
   assert.match(pointStatus(null), /not available/);
   points = discoveryPoints(
     Array.from({ length: 9 }, (_, i) => ({
