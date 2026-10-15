@@ -29,3 +29,11 @@ test('native Fournos chain root contacts cannot replace branch base or explicit 
  assert.equal(normalizeProfile(e).phone,e.phone);assert.equal(normalizeProfile({...e,phone:null}).phone,'');assert.equal(normalizeProfile(e).profile.hours,undefined);assert.equal(normalizeProfile(e).profile.menu_url,e.profile._enrich.menu_url);
  assert.equal(normalizeProfile({...e,owner_content:{phone:null}}).phone,'');assert.equal(normalizeProfile({...e,profile:{...e.profile,phone:'+27 99 1234567'},phone:null}).phone,'+27 99 1234567');
 });
+
+test('native uses same identity-scoped source services, suppresses branch/quarantine claims and preserves authoritative clears',()=>{
+ const e={id:'10000000-0000-4000-8000-000000000031',name:'Fixture Professional',entity_type:'professional',website:'https://fixture.example.org/branch?office=one',profile:{_enrich:{source_url:'https://fixture.example.org/branch?office=one',services:[{name:'Published food photography',summary:'Source service summary',url:'https://unconfirmed.example.org/booking'}],provenance:{services:'identity_scoped_offer_catalog',source_identity:'exact_name_typed_jsonld'},source_identity:{name:'Fixture Professional',source_url:'https://fixture.example.org/branch?office=one',schema_type:'Person',expected_entity_type:'professional',verification:'exact_name_typed_jsonld'}}}};
+ assert.deepEqual(normalizeProfile(e).services,['Published food photography']);assert.equal(normalizeProfile(e).profile.services[0].url,undefined);
+ for(const patch of[{source_url:'https://fixture.example.org/branch?office=two'},{scope_review_required:true},{organization_identity_quarantine:'true'},{source_identity:null},{provenance:{}}]){const p=normalizeProfile({...e,profile:{_enrich:{...e.profile._enrich,...patch}}});assert.deepEqual(p.services,[]);assert.equal(p.profile.services,undefined);}
+ for(const patch of[{owner_content:{profile:{services:[]}}},{owner_content:{services:null}},{profile:{...e.profile,services:[]}},{services:null}])assert.deepEqual(normalizeProfile({...e,...patch}).services,[]);
+ const owner={...e,owner_content:{profile:{services:[{name:'Owner confirmed service'}]}},profile:{_enrich:{...e.profile._enrich,scope_review_required:true}}};assert.deepEqual(normalizeProfile(owner).services,['Owner confirmed service']);
+});

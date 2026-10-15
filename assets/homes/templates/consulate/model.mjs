@@ -1,5 +1,5 @@
 import{officialSourceQuarantined}from'../../../enrichment/official-source-policy.mjs';
-import{briefBlocked}from'../../../enrichment/client-brief.mjs';
+import{briefBlocked,scopedSourceServices}from'../../../enrichment/client-brief.mjs';
 import{DIPLOMATIC_SOURCE_PROFILES}from'./source-profiles.mjs';
 import{orderedRecords}from'../design.mjs';
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
@@ -14,7 +14,8 @@ export function diplomaticEntity(e){
  return /\b(?:embass(?:y|ies)|consulat(?:e|es)|consular|diplomatic)\b/i.test(category)||/^(?:(?:honorary |general )?consulate(?: general)? of|embassy of|consular office(?: of)?)\b/i.test(text(e.name))||/^Greek (?:embassy|consulate)\b/i.test(text(e.name));
 }
 function countryMatches(actual,expected){return({ 'United Kingdom':['united kingdom','gb','uk','great britain'],Canada:['canada','ca'],Australia:['australia','au']}[expected]||[norm(expected)]).includes(norm(actual));}
-function sourceProfile(e,website){const q=object(e.profile?._enrich);if(officialSourceQuarantined(e)||briefBlocked(q)||q.source_scope_mismatch===true||q.source_scope_mismatch==='true'||['association_directory','association_member','publisher_profile'].includes(q.source_kind)||q.identity_scope==='organization'||q.source_affiliation||q.member?.affiliation||q.association_member)return null;return DIPLOMATIC_SOURCE_PROFILES.find(p=>p.id===e.id&&norm(p.name)===norm(e.name)&&norm(p.city)===norm(e.city)&&countryMatches(e.country,p.country)&&documentKey(p.website)&&documentKey(p.website)===documentKey(website))||null;}
+function sourceHeld(e){const q=object(e.profile?._enrich);return officialSourceQuarantined(e)||briefBlocked(q)||q.source_scope_mismatch===true||q.source_scope_mismatch==='true'||['association_directory','association_member','publisher_profile'].includes(q.source_kind)||q.identity_scope==='organization'||q.source_affiliation||q.member?.affiliation||q.association_member;}
+function sourceProfile(e,website){if(sourceHeld(e))return null;return DIPLOMATIC_SOURCE_PROFILES.find(p=>p.id===e.id&&norm(p.name)===norm(e.name)&&norm(p.city)===norm(e.city)&&countryMatches(e.country,p.country)&&documentKey(p.website)&&documentKey(p.website)===documentKey(website))||null;}
 const email=v=>/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(text(v))?text(v):'';
 const phone=v=>/^\+?[\d ()-]{7,30}$/.test(text(v))?text(v):'';
 export function consulateContent(entity,design={}){
@@ -23,7 +24,7 @@ export function consulateContent(entity,design={}){
  const explicit=key=>layers.find(layer=>has(layer,key));
  const value=(key,fallback)=>{const layer=explicit(key);return layer?layer[key]:has(e,key)?e[key]:fallback;};
  const website=safeURL(value('website','')),source=sourceProfile(e,website);
- const serviceLayer=explicit('services')||(has(e,'services')?e:null),services=serviceLayer?(Array.isArray(serviceLayer.services)?serviceLayer.services:[]).map((v,i)=>typeof v==='string'?{id:'owner-'+i,name:text(v),summary:'',url:''}:{id:'owner-'+i,name:text(v?.name||v?.title),summary:text(v?.summary||v?.description),url:safeURL(v?.url)}).filter(v=>v.name).slice(0,30):source?.services||[];
+ const serviceLayer=explicit('services')||(has(e,'services')?e:null),structured=!serviceLayer&&!sourceHeld(e)?scopedSourceServices({...e,website}):[],services=serviceLayer?(Array.isArray(serviceLayer.services)?serviceLayer.services:[]).map((v,i)=>typeof v==='string'?{id:'owner-'+i,name:text(v),summary:'',url:''}:{id:'owner-'+i,name:text(v?.name||v?.title),summary:text(v?.summary||v?.description),url:safeURL(v?.url)}).filter(v=>v.name).slice(0,30):structured.length?structured.map((v,i)=>({id:'source-'+i,name:v.name,summary:v.description,url:''})):source?.services||[];
  const bookingLayer=explicit('booking_url')||(has(e,'booking_url')?e:null);
  const appointment=bookingLayer?(safeURL(bookingLayer.booking_url)?{name:'Appointment link',url:safeURL(bookingLayer.booking_url),note:'Continue on the published appointment website. Zoi does not confirm availability.'}:null):!serviceLayer?source?.appointment||null:null;
  const contacts=(source?.contacts||[]).map(c=>({...c,email:explicit('email')?'':email(c.email),phone:explicit('phone')?'':phone(c.phone)}));
@@ -37,5 +38,5 @@ export function consulateContent(entity,design={}){
   jurisdiction:source?.jurisdiction||'',jurisdiction_url:source?.jurisdiction_url||'',visit_note:source?.visit_note||'Contact the mission to confirm the service, required documents and visiting arrangements before travelling.',visit_source:source?.visit_source||'',
   useful_links:source?.useful_links||[],source_url:source?.contact_url||website,source_checked_at:source?.checked_at||'',source_profile_applied:!!source,
   hours:explicit('hours')?text(explicit('hours').hours):'',photo:explicit('photo_url')?safeURL(explicit('photo_url').photo_url):'',
-  source_coverage:source?'individually sourced mission pages':'published listing fields; individual mission research pending'};
+  source_coverage:source?'individually sourced mission pages':structured.length?'verified structured services; remaining mission research pending':'published listing fields; individual mission research pending'};
 }

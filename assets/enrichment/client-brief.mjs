@@ -5,9 +5,10 @@ const sections=['intro','offerings','gallery','calendar','media','socials','cont
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
 const text=(v,max=300)=>typeof v==='string'?v.trim().slice(0,max):'';
 const list=v=>Array.isArray(v)?v:[];
+const heldSource=p=>p?.blocked_reason==='source_scope_mismatch'||p?.scope_review_required===true||p?.scope_review_required==='true'||p?.organization_identity_quarantine===true||p?.organization_identity_quarantine==='true';
 export const briefBlocked=profile=>profile?.blocked===true||profile?.blocked==='true'||profile?.status==='blocked'||profile?.crawl_status==='blocked';
 export function briefURL(value){if(typeof value!=='string'||value.length>2048)return null;try{const u=new URL(value);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password&&!u.port?u.href:null;}catch{return null;}}
-function sameSource(a,b){try{const x=new URL(a),y=new URL(b);return x.hostname.replace(/^www\./,'')===y.hostname.replace(/^www\./,'')&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'');}catch{return false;}}
+function sameSource(a,b){try{const x=new URL(a),y=new URL(b);return x.protocol===y.protocol&&x.hostname.replace(/^www\./,'')===y.hostname.replace(/^www\./,'')&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search;}catch{return false;}}
 function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
 
 export function buildClientBrief({listing,profile={},provenance={},sourceURL,checkedAt=new Date().toISOString(),sources=[]}){
@@ -25,6 +26,7 @@ export function buildClientBrief({listing,profile={},provenance={},sourceURL,che
  const add=(kind,name,field,detail='',price='')=>{name=text(name,160);if(name){offeringCount++;if(offerings.length<30)offerings.push({kind,name,detail:text(detail,500),price:text(price,80)||null,evidence:evidence(field)});}};
  if(has('menu'))for(const group of list(p.menu))for(const item of list(group?.items))add('menu_item',item?.name,'menu',item?.note,item?.price);
  for(const field of ['rooms','dining','venues'])if(has(field))for(const item of list(p[field]))add(field,item?.name,field,item?.detail);
+ if(has('services')&&!heldSource(p))for(const item of list(p.services))add('service',typeof item==='string'?item:item?.name||item?.title,'services',typeof item==='string'?'':item?.description||item?.summary);
  if(matchedMember)for(const specialty of list(member.specialties))add('specialty',specialty,'member');
  const actions=[];
  const link=(kind,label,value,field,state)=>{const href=briefURL(value);if(href&&has(field))actions.push({kind,label,url:href,state,evidence:evidence(field)});};
@@ -84,7 +86,7 @@ export function briefHomeDesign(entity){
  if(brief.schema_version!==1||brief.status!=='draft_requires_review'||brief.source?.identity_match!==true||enrich.crawl_status==='error'||briefBlocked(enrich)||brief.listing?.id!==entity.id||brief.listing?.name!==entity.name||brief.listing?.entity_type!==entity.entity_type||!sameSource(brief.source?.registered_url,entity.website)||!sameSource(brief.source?.url,enrich.source_url)||!sameSource(brief.source?.url,entity.website))return null;
  const owner=object(entity.owner_content),ownerProfile=object(owner.profile),raw=object(entity.profile);
  const importedFields=['menu','menu_url','menu_image_urls','services','rooms','dining','venues','phone','email','hours','photos','photo_urls','gallery','photo_url','hero','hero_url','hero_image','logo_url','listen','embeds','video_urls','social','social_links','order_url','reserve_url','booking_url'];
- if(importedFields.some(field=>[owner,ownerProfile,raw].some(layer=>Object.hasOwn(layer,field))))return null;
+ if(Object.hasOwn(entity,'services')||importedFields.some(field=>[owner,ownerProfile,raw].some(layer=>Object.hasOwn(layer,field))))return null;
  const order=brief.composition?.section_order,available=brief.composition?.evidenced_sections;
  if(!Array.isArray(order)||order.length!==sections.length||new Set(order).size!==sections.length||order.some(s=>!sections.includes(s))||!Array.isArray(available)||available.some(s=>!sections.includes(s)))return null;
  // Validate against evidence rebuilt from the current machine fields, not an
@@ -92,4 +94,14 @@ export function briefHomeDesign(entity){
  const current=buildClientBrief({listing:{...entity,listing_id:entity.id},profile:enrich,provenance:enrich.provenance,sourceURL:enrich.source_url,checkedAt:brief.source.retrieved_at});
  if(!current||current.source.identity_match!==true||JSON.stringify(current.composition.section_order)!==JSON.stringify(order))return null;
  return {schema_version:1,section_order:order,hidden_sections:[],copy:{},item_order:{offerings:[]}};
+}
+
+/** Current source statements only. Owner/raw fields, including explicit clears,
+ * remain authoritative. Does not approve credentials, availability or bookings. */
+export function scopedSourceServices(entity){
+ const raw=object(entity?.profile),p=object(raw._enrich),owner=object(entity?.owner_content);
+ if([entity,owner,object(owner.profile),raw].some(layer=>Object.hasOwn(object(layer),'services'))||!Array.isArray(p.services)||!text(p.provenance?.services,2000)||p.provenance.services==='aggregator-branding-excluded'||p.crawl_status==='error'||briefBlocked(p)||heldSource(p)||p.source_affiliation||p.member||['association_directory','association_member','supporting_publisher_profile'].includes(p.source_kind))return [];
+ try{const registered=new URL(entity.website),source=new URL(p.source_url),identity=new URL(p.source_identity?.source_url);if(registered.protocol!=='https:'||source.protocol!=='https:'||!sameSource(registered.href,source.href)||registered.search!==source.search||!sameSource(identity.href,source.href)||identity.search!==source.search)return [];}catch{return [];}
+ if(p.source_identity?.expected_entity_type!==entity.entity_type||!hasIdentity(object(p.source_identity),entity,p.source_url,object(p.provenance)))return [];
+ return p.services.map(item=>({name:text(typeof item==='string'?item:item?.name||item?.title,160),description:text(typeof item==='string'?'':item?.description||item?.summary,500)})).filter(item=>item.name).slice(0,30);
 }
