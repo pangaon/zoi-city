@@ -1,0 +1,68 @@
+{
+  "schema": "zoi.quality.criterion-bridge-owner.v3",
+  "date": "2026-10-15",
+  "state": "FROZEN_STAGE_ONLY_SOURCE_PRODUCTION_RECORDING_UNAVAILABLE",
+  "worktree": "/workspaces/zoi-quality-criterion-bridge-v3",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "previous_v2": {
+    "path": "/workspaces/zoi-quality-criterion-bridge-v2/docs/audits/quality-criterion-bridge-owner-v2-2026-10-15.json",
+    "sha256": "7f64d2af217d448b45b2ef1f0680b1e542bd345f77be2b8ef69ca3f317c5611c",
+    "frozen_source_unchanged": true
+  },
+  "source_manifest": {
+    "path": "docs/audits/evidence/quality-criterion-bridge-owner-v3-2026-10-15/source-manifest.json",
+    "sha256": "bc2c044d71cd0167ed24cf64cd39cb7eef56c86646cdc3dd797c597938fe45a9"
+  },
+  "scope": "Only recorder bounded-snapshot reuse and new focused IO race regression changed versus frozen V2. Same6owned/12readonly pins; no schema/writer/policy/CI/activation changes.",
+  "fixed_boundary": "Retained source-entry sidecar no longer uses unbounded readFile(path) after lstat. Same bounded O_NOFOLLOW/O_NONBLOCK descriptor snapshot as archive, with16MiB limit plus at most one overflow byte; fstat validates actualopeneddescriptor is regular before reading. SHA uses that privatebyte snapshot.",
+  "meaningful_regressions": {
+    "oversize_after_path_check_before_open": "16MiB+1 replacement rejects with0bytes read.",
+    "symlink_after_path_check_before_open": "O_NOFOLLOW refuses;0bytes read.",
+    "fifo_after_path_check_before_open": "O_NONBLOCK/fstat refuses;0bytes read; no block.",
+    "path_replacement_after_open": "Descriptor retains exactoriginalbytes; original entry SHA passes, newpathname bytes never substituted.",
+    "growth_after_descriptor_stat": "Read consumes at mostoriginalstat size+1 then rejects as changed; no unboundedread."
+  },
+  "validation": {
+    "focused": 46,
+    "real_pg_groups": 29,
+    "commands": [
+      "node --test tests/unit/quality-criterion-bridge.test.mjs tests/unit/quality-collector.test.mjs tests/unit/quality-ci.test.mjs",
+      "ZOI_CRITERION_EVIDENCE=/absolute/new/result.json node tests/database/quality-criterion-bridge.integration.mjs"
+    ],
+    "node_syntax_and_diff": "PASS",
+    "cluster": "15943 isolated, stopped/removed."
+  },
+  "unchanged_critical_contracts": [
+    "Production default recordCriterion refuses before any RPC. Isolated legacy test mode does not authorize production.",
+    "All original sourcehold/current-atomic-context/archivebinding/lock/concurrent/killedprocess/unknownresume regressions remainpassing.",
+    "Existing canonicalwriter still lacks atomic sourcehold+record gate; actualproductionrecording remains blocked pending separatelyreviewedservercontract.",
+    "Remote immutableartifact publication/access and real actor admission remainfuture rootpacket."
+  ],
+  "actual_operations": {
+    "production_SQL": 0,
+    "quality_writes": 0,
+    "Auth": 0,
+    "ADB": 0,
+    "EAS": 0,
+    "provider_calls": 0
+  },
+  "evidence_dir": "docs/audits/evidence/quality-criterion-bridge-owner-v3-2026-10-15",
+  "evidence": {
+    "focused.log": {
+      "sha256": "8bfc41a8ec4c6b5dc52eee95649c7860ee15ebd9abe390b7135ac3d7c90bae96",
+      "bytes": 4771
+    },
+    "pg.log": {
+      "sha256": "9b102a1508ca7a001aa0a507c59e1670f68546022c2e8b956a166e047f8932b6",
+      "bytes": 2364
+    },
+    "pg-result.json": {
+      "sha256": "66fdda14496995b9434ca612cf5d5fdad3c1ce5b1dd11ccbf488cb1630d49145",
+      "bytes": 2810
+    },
+    "original-sidecar-counterexample.json": {
+      "sha256": "7e406c24a9b16e762aee806779cbc1b1ec8a29f95092155109c2f5ba5a5a2846",
+      "bytes": 560
+    }
+  }
+}

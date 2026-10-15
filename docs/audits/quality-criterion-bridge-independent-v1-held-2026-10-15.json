@@ -1,0 +1,105 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:05:09.821029+00:00",
+  "status": "HELD_THREE_CONCRETE_BLOCKERS_ORIGINAL_FREEZE_UNCHANGED",
+  "source_manifest_sha256": "b781cbc7a5b9ec37d032af9a97888e156c93d325ccc3c69186fb4822d4ed6b50",
+  "author_worktree": "/workspaces/zoi-quality-criterion-bridge-work",
+  "review_tree": "/workspaces/zoi-quality-criterion-bridge-independent",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "baseline_tests": {
+    "focused_passed": 37,
+    "real_pg_groups_passed": 19,
+    "private_pg_port": 15944,
+    "source_pins_after": "6 owned and12 readonly exact",
+    "extra_readonly_dependency_note": "Five transitive imports/config files materialized and pinned to author baseline for sparse review; no source deltas."
+  },
+  "findings": [
+    {
+      "id": "C1",
+      "path": "scripts/quality/criterion-report.mjs",
+      "problem": "Existing scope_review_required, blocked_reason source_scope_mismatch, organization_identity_quarantine or source_identity.verification scope_review_required is ignored and discarded from lease_snapshot. Each permits eligible specialist and an actual canonical awaiting_independent_review record while stored hold remains.",
+      "evidence": "holds-and-archive-counterexample.json; actual-pg-counterexamples.json",
+      "required": "Preserve all relevant known source/identity hold state in deterministic snapshot and block passing decisions; verify currentness/end-to-end canonical refusal."
+    },
+    {
+      "id": "C2",
+      "path": "scripts/quality/criterion-record.mjs",
+      "problem": "Archive_file is separately reopened for hashing, listing and extraction. Replacing pathname after hash permits an entry absent from original claimed archive to satisfy proof from replacement archive. Controlled wrapper replaces file then delegates real unzip; original claimed ZIP contains only unrelated.txt.",
+      "evidence": "holds-and-archive-counterexample.json",
+      "required": "One immutable bounded byte snapshot must underlie archive SHA and every listing/extraction step; retain path/type/escape/decompression bounds."
+    },
+    {
+      "id": "C3",
+      "path": "scripts/quality/criterion-record.mjs",
+      "problem": "Same-directory unresolved check and pending-file creation are not atomic. Two distinct UUID requests concurrently pass the check; first canonical write commits then loses response, second returns current:true despite unresolved first. Reproduced using exact8 captured canonical functions with two real records.",
+      "evidence": "pending-race-counterexample.json; actual-pg-counterexamples.json",
+      "required": "Atomic stable-directory admission through request/currentness/write/recovery; no different request while unknown, including concurrent entry. Crash recovery fail-closed and original UUID payload retained."
+    }
+  ],
+  "additional_real_pg_counterexample_groups": 2,
+  "security_boundary": "Canonical service ACLs and8existing function bodies remain unchanged. Explicit trusted-service booleans do not authenticate a human or establish actual GitHub publication. No quality activation/publication/criterion/lease/finish production writes.",
+  "activation_gates_still_open": [
+    "Actual immutable Actions artifact upload/access/digest verification",
+    "Authenticated specialist and independent reviewer admission",
+    "Explicit real source/render/customer/owner/provider evidence per current requirement",
+    "Reviewed orchestration from staging to eventual task finish",
+    "Separate finite admission/policy activation"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/actual-pg-counterexamples.json",
+      "sha256": "df0fe11da3dff4874b95064e9c50d64734890673c62829059dd81bdbc02d3460",
+      "bytes": 602
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/actual-pg-counterexamples.log",
+      "sha256": "2fad1afb53d0ab90ba874182cfa84ba44a77fc37af3145c7d49608fad177905d",
+      "bytes": 209
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/counterexample-manifest.json",
+      "sha256": "d17ba99623be83436bb4391732b4e1fc649b865be2148cabb2f48bb5eb935fe4",
+      "bytes": 4725
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/extra-readonly-dependencies.json",
+      "sha256": "0ceef9ca18df4d8d6f78befbd19bc1e8eab162b73d4293b0b45c3b7f7ee6d9cf",
+      "bytes": 520
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/focused.log",
+      "sha256": "01fbf248efd9ab499a6058b26d163ffa9d4ad178a342fe6e8142e75129afdb0e",
+      "bytes": 3834
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/holds-and-archive-counterexample.json",
+      "sha256": "52a0293d39fa582e90a6192d13fb3020d7c7efcb0cbd11404471173270c45eec",
+      "bytes": 1340
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/owner-audit.json",
+      "sha256": "6072109dba6e8028b4fb6dbcae01370ababcb08f1a831e04159ff56350a699c2",
+      "bytes": 9150
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/owner-source-manifest.json",
+      "sha256": "b781cbc7a5b9ec37d032af9a97888e156c93d325ccc3c69186fb4822d4ed6b50",
+      "bytes": 2267
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/pending-race-counterexample.json",
+      "sha256": "803b2e5f2e997c911990a3c8f0c4d5f060036c7ee32ddd08585c52d98cbea0d9",
+      "bytes": 988
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/pg-result.json",
+      "sha256": "18198151f2c67503da64837168411e9cf8dd3fafd0829983e60ecfa71e5b63bc",
+      "bytes": 1956
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v1-2026-10-15/pg.log",
+      "sha256": "aee256aac59f8534d9ff0708a5b70c7e83ebd0c97dc3378988bad372094ec23f",
+      "bytes": 1530
+    }
+  ]
+}

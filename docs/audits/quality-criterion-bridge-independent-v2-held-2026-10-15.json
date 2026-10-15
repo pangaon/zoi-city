@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:21:35.777183+00:00",
+  "status": "HELD_ONE_REMAINING_ENTRY_IO_BOUND_ORIGINAL_THREE_REPAIRS_PASS",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "source_manifest_sha256": "60cfc3aeea7165c2b14bfeed4d0d2d8a765f3fecc839a0132a8356aee846fdb2",
+  "review_tree": "/workspaces/zoi-quality-criterion-bridge-v2-independent",
+  "pins_after_review": "6owned12readonly exact",
+  "tests": {
+    "focused_passed": 45,
+    "real_pg_groups": 29,
+    "isolated_port": 15946,
+    "cleanup": "Test stopped/removed its isolated cluster."
+  },
+  "accepted_repairs": [
+    "Relevant original and current source holds preserved; actual postlease/prewrite/postwrite context cases exercised.",
+    "One fixed archive descriptor/byte Buffer supplies hash/list/decompression/CRC checks; actual after-open path replacement independently continues using original bytes/hash.",
+    "Atomic stable-directory lock serializes distinct UUIDs, preserves unknown original request; cross-process and crash tests pass.",
+    "Production record default refuses before any RPC; existing canonical writer lacks atomic sourcehold gate, explicitly documented by29PG groups. No human/publication authority inferred."
+  ],
+  "remaining_finding": {
+    "id": "C4",
+    "path": "scripts/quality/criterion-record.mjs",
+    "site": "verifyProducedArtifacts retained entry readFile(target) after lstat",
+    "reproduction": "At the actual readFile I/O boundary, replace previously checked small regular sidecar with16MiB+1 regular bytes, then delegate actual readFile. Verifier consumes16777217 bytes before digest rejection despite declared16777216 maximum. FIFO replacement at same boundary is also structurally unbounded; no FIFO counterexample run required for the observed size violation.",
+    "observed": "artifact_entry_digest_mismatch after oversize bytes consumed",
+    "required": "Use bounded regular nofollow/nonblocking single-descriptor snapshot for retained entry bytes too; retain exact digest/containment checks. No schema/writer change."
+  },
+  "production_status": "Stage-only source candidate; production criterion recording, actual immutable Actions publication/access and authenticated human admission remain unavailable. This audit is not complete-client acceptance.",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/byte-snapshot-probe.mjs",
+      "sha256": "c26d31e54b254dd772c00627773023af3fe44f720fff574466a9ac7fae9d2623",
+      "bytes": 2778
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/byte-snapshot-result.json",
+      "sha256": "7e406c24a9b16e762aee806779cbc1b1ec8a29f95092155109c2f5ba5a5a2846",
+      "bytes": 560
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/focused.log",
+      "sha256": "4f0e12d81dfda285b6829b714f4dc554f190a46d96b6ad23e5d2ebe90afe497d",
+      "bytes": 4659
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/owner-audit.json",
+      "sha256": "7f64d2af217d448b45b2ef1f0680b1e542bd345f77be2b8ef69ca3f317c5611c",
+      "bytes": 10493
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/owner-source-manifest.json",
+      "sha256": "60cfc3aeea7165c2b14bfeed4d0d2d8a765f3fecc839a0132a8356aee846fdb2",
+      "bytes": 2437
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/pg-result.json",
+      "sha256": "66fdda14496995b9434ca612cf5d5fdad3c1ce5b1dd11ccbf488cb1630d49145",
+      "bytes": 2810
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v2-2026-10-15/pg.log",
+      "sha256": "9b102a1508ca7a001aa0a507c59e1670f68546022c2e8b956a166e047f8932b6",
+      "bytes": 2364
+    }
+  ]
+}

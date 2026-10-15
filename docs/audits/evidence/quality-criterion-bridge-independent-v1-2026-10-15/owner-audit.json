@@ -1,0 +1,103 @@
+{
+  "schema": "zoi.quality.criterion-bridge-owner.v1",
+  "date": "2026-10-15",
+  "state": "FROZEN_SOURCE_FOR_INDEPENDENT_REVIEW_STAGE_ONLY_NOT_ACTIVATED",
+  "author": "qa_next",
+  "worktree": "/workspaces/zoi-quality-criterion-bridge-work",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "design_trace": {
+    "path": "/workspaces/zoi-client-brief-publication-audit/docs/audits/client-brief-quality-publication-trace-2026-10-15.json",
+    "sha256": "7c5ae5377424976f500319d5a20a73ced7fa3e86f11c3141453b429d49dd33c0"
+  },
+  "scope": "Exactly six approved source/test/fixture paths; no migration, canonical writer, lease, finite request, CI, role or provider changes.",
+  "source_manifest": {
+    "path": "docs/audits/evidence/quality-criterion-bridge-owner-2026-10-15/source-manifest.json",
+    "sha256": "b781cbc7a5b9ec37d032af9a97888e156c93d325ccc3c69186fb4822d4ed6b50"
+  },
+  "actual_contract_capture": {
+    "operations": 1,
+    "transaction": "BEGIN READ ONLY; SET LOCAL statement_timeout=5s; SET LOCAL lock_timeout=1s; bounded pg_proc definitions/ACL and2quality-table constraints/RLS/triggers; ROLLBACK",
+    "result": "successful",
+    "functions": 8,
+    "tables": 2,
+    "evidence": "actual-contracts.json",
+    "listing_reads": 0,
+    "catalogue_scan": false,
+    "actual_criterion_or_lease_or_finish_writes": 0
+  },
+  "contracts": {
+    "planner": "buildCriterionReport consumes a current canonical checklist and original existing quality lease, keeping task fingerprint and criterion fingerprint separate. Every applicable criterion receives pending/blocked/eligible-explicit state; complete always false. Explicit decisions bind current listing/category/family/criterion/revision/requirement digest/release and exact evidence kind. HTTP200 or a passed harness is not a decision.",
+    "proof_gates": "Source and visual criteria require explicit manual review. Owner/category journeys require actual owner authority and owner journey attestation. Functional/family operations require every required action/provider state; missing declarations refuse. Evidence older than7days refuses. Existing source holds and visibility remain blockers.",
+    "artifact_gate": "Exact numeric immutable HTTPS GitHub Actions run/artifact URI plus archive SHA and1\u201312 entry path/SHA/kind pins. Local ZIP bytes and each declared entry extracted from that same archive are hashed, compared with retained entry files, bounded and checked for path escape. A sha256 URI or unrelated sidecar alone cannot qualify.",
+    "trusted_service_boundary": "Explicit approved stage+actor+decision/requirement digest is mandatory; existing canonical service-only RPC ACL remains final authority. This module does not authenticate a human reviewer or prove remote Actions artifact existence. Future root-owned upload/admission must verify actual publication and actor authority before invoking it; no production artifact has been uploaded by this packet.",
+    "specialist": "prepareCriterionRequest rebuilds deterministic report before preparing payload. recordCriterion reads current checklist, persists immutable original UUID+complete exact request before canonical criterion RPC, rereads current checklist/latest receipt ID/stage/actor/commit/status after it. Canonical original task lease must still be live; finish-first test refuses.",
+    "reviewer": "Exact current passed specialist ID, distinct actor, same release and new independent archive digest required. Canonical writer enforces7day/current revision/fingerprint and specialist supersession. Same harness rerun alone does not establish manual review.",
+    "uncertainty": "Lost writer response or unconfirmed current receipt stores sanitized uncertainty and stops. Same UUID/payload only under explicit resume; changed UUID blocked while another pending request in the same stable directory is unresolved. A canonical historical replay never becomes a current claim without current fingerprint/revision/latest-ID recheck. Caller must preserve one stable request directory; choosing a fresh directory is not an authorized recovery.",
+    "stage_collector": "New opt-in --stage-criteria requires release SHA before acquiring any fresh lease, reads current checklist, stages percriterion plan with no explicit automatic passes, writes pending stage marker, then stops BEFORE task_finish. Removing the flag on --resume cannot bypass the persisted marker. Ordinary lease expiry remains unchanged. Legacy default/manual behavior unchanged and automatic request stays disabled/expired.",
+    "separate_states": "Aggregate task finish, criterion specialist evidence, independently current signoff, client-brief draft and complete operational home are separate. No approved machine brief state or category completion is invented."
+  },
+  "validation": {
+    "focused_command": "node --test tests/unit/quality-criterion-bridge.test.mjs tests/unit/quality-collector.test.mjs tests/unit/quality-ci.test.mjs",
+    "focused_pass": 37,
+    "database_command": "ZOI_CRITERION_EVIDENCE=/absolute/unique/result.json node tests/database/quality-criterion-bridge.integration.mjs",
+    "database_groups": 19,
+    "database_checks": [
+      "all eight captured canonical bodies exact after local installation",
+      "service only checklist and criterion writer reject ordinary roles",
+      "specialist recorded under original lease before actual finish, reviewer remains separate",
+      "finishing first consumes lease and canonical specialist writer refuses",
+      "lost response after real commit exact UUID resumes without a second signoff or lease",
+      "stale owner explicit clear refuses before record and preserves new content",
+      "stale source identity refuses before record and preserves new content",
+      "stale machine source content refuses before record and preserves new content",
+      "stale ownership context refuses before record and preserves new content",
+      "stale address context refuses before record and preserves new content",
+      "stale visibility refuses before record and preserves new content",
+      "criterion revision refuses old proposal without accepting old requirement digest",
+      "same actor reviewer and unchanged archive cannot claim independent review",
+      "expired lease and wrong original lease fail canonical writer",
+      "blocked evidence remains blocked and never permits reviewer pass",
+      "historical canonical replay after owner change exists but adapter refuses currentness",
+      "reviewer lost response resumes original request and independently current receipt",
+      "a later specialist supersedes an earlier reviewer proposal",
+      "all canonical bodies unchanged after bridge exercise; no alternate writer or criteria created"
+    ],
+    "database_basis": "Actual captured8canonical function bodies are installed byte-exact and pg_get_functiondef MD5 equality asserted before/after. Isolated synthetic listing/table shape; tracked enrich_timestamp helper and criteria DDL. No actual owner/provider exercise. PG16 private port15943/socket and temp cluster removed in finally.",
+    "syntax": "node --check new runtime and integration scripts pass",
+    "diff": "git diff --check pass"
+  },
+  "remaining_activation_qualifiers": [
+    "Independent source review required.",
+    "Root-owned actual immutable Actions artifact publication/access/digest validation and authenticated specialist/reviewer admission packet remains unimplemented; no fake published artifact claim.",
+    "Collector stage marker intentionally stops; orchestration to consume known explicit criterion results and then finish is a separate reviewed packet.",
+    "Actual source/visual/customer/owner/provider proof must be produced for each required current criterion; synthetic PG evidence is not client acceptance.",
+    "Current disabled/expired finite audit policy remains untouched. No new schedule, service credential retrieval, production signoff or renewal."
+  ],
+  "dependencies": {
+    "local_runtime": "Node builtins plus existing evidence helper. ZIP inspection uses installed unzip with bounded5s processes/buffers; tests use installed zip and PostgreSQL16. No new package/install.",
+    "reference_docs": [
+      "https://supabase.com/docs/reference/javascript/rpc",
+      "https://supabase.com/changelog.md"
+    ],
+    "reference_note": "Changelog index fetched; current schema/RPC contract is verified by exact actual metadata, not assumed from docs. No Supabase client/schema API changed."
+  },
+  "evidence_dir": "docs/audits/evidence/quality-criterion-bridge-owner-2026-10-15",
+  "evidence": {
+    "actual-contracts.json": {
+      "sha256": "cc99060771aa076c42176a3daf81e4b21ad46d37b88a0e8072aa4946ee9d81c6",
+      "bytes": 21160
+    },
+    "focused.log": {
+      "sha256": "16fd9f994a85bacd5effb3b87a326f53e8011cfb90a835d79ff6fd52b84be6bd",
+      "bytes": 3839
+    },
+    "pg.log": {
+      "sha256": "aee256aac59f8534d9ff0708a5b70c7e83ebd0c97dc3378988bad372094ec23f",
+      "bytes": 1530
+    },
+    "pg-result.json": {
+      "sha256": "18198151f2c67503da64837168411e9cf8dd3fafd0829983e60ecfa71e5b63bc",
+      "bytes": 1956
+    }
+  }
+}
