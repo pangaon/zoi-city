@@ -1,0 +1,161 @@
+{
+  "at": "2026-10-15T19:58:21Z",
+  "pr": 86,
+  "head": "db87d6dc40fd6e53512986b4c76921c1db41d1a5",
+  "main": "32f35249fea9aa6b0f37f4274dfb4b690ad4eb62",
+  "ci": 38797487337,
+  "ci_result": "success",
+  "deployment": "dpl_DBbbCy1U78fTUQUuu3fW4Nwhnjgu",
+  "edge": {
+    "version": 2,
+    "status": "ACTIVE",
+    "bundle": "bd4bb2605cebd660662539addb63a66ef49aee335dbfef194d1e3c7468ca9f2b",
+    "exact_files": 3
+  },
+  "vault_maintenance_actual": [
+    {
+      "id": 15775,
+      "status_code": 200,
+      "timed_out": false,
+      "content": "{\"ok\":true,\"requests_checked\":0}"
+    }
+  ],
+  "anonymous_cleanup": {
+    "status": 401,
+    "error": "sign_in_required"
+  },
+  "schedule": [
+    {
+      "actual": {
+        "job": [
+          {
+            "id": 35,
+            "name": "zoi-studio-media-cleanup",
+            "active": true,
+            "command": "select zoi.studio_media_schedule_cleanup();",
+            "schedule": "3,18,33,48 * * * *",
+            "username": "postgres"
+          }
+        ],
+        "ledger": [
+          {
+            "name": "studio_media_bounded_cleanup_schedule",
+            "version": "20261015195545"
+          }
+        ],
+        "function": {
+          "acl": "{postgres=X/postgres}",
+          "md5": "1e8c8db3c700102d208056797a02995a",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "definer": true,
+          "signature": "zoi.studio_media_schedule_cleanup()",
+          "anon_execute": false,
+          "service_execute": false,
+          "authenticated_execute": false
+        }
+      }
+    }
+  ],
+  "security": {
+    "names_unchanged": true,
+    "categories": [
+      {
+        "name": "rls_enabled_no_policy",
+        "level": "INFO"
+      },
+      {
+        "name": "function_search_path_mutable",
+        "level": "WARN"
+      },
+      {
+        "name": "extension_in_public",
+        "level": "WARN"
+      },
+      {
+        "name": "anon_security_definer_function_executable",
+        "level": "WARN"
+      },
+      {
+        "name": "authenticated_security_definer_function_executable",
+        "level": "WARN"
+      },
+      {
+        "name": "auth_leaked_password_protection",
+        "level": "WARN"
+      }
+    ],
+    "counts": {
+      "before": [
+        {
+          "name": "rls_enabled_no_policy",
+          "count": 296
+        },
+        {
+          "name": "function_search_path_mutable",
+          "count": 19
+        },
+        {
+          "name": "extension_in_public",
+          "count": 3
+        },
+        {
+          "name": "anon_security_definer_function_executable",
+          "count": 174
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "count": 511
+        },
+        {
+          "name": "auth_leaked_password_protection",
+          "count": 1
+        }
+      ],
+      "after": [
+        {
+          "name": "rls_enabled_no_policy",
+          "count": 296
+        },
+        {
+          "name": "function_search_path_mutable",
+          "count": 19
+        },
+        {
+          "name": "extension_in_public",
+          "count": 3
+        },
+        {
+          "name": "anon_security_definer_function_executable",
+          "count": 174
+        },
+        {
+          "name": "authenticated_security_definer_function_executable",
+          "count": 511
+        },
+        {
+          "name": "auth_leaked_password_protection",
+          "count": 1
+        }
+      ]
+    }
+  },
+  "schedule_first_run": {
+    "status": "actual_natural_succeeded",
+    "rows": [
+      {
+        "jobid": 35,
+        "runid": 110388,
+        "status": "succeeded",
+        "return_message": "1 row",
+        "start_time": "2026-10-15 20:03:00.658872+00",
+        "end_time": "2026-10-15 20:03:00.720157+00"
+      }
+    ],
+    "duration_ms": 61.285,
+    "scope": "Actualscheduledexecution succeeded; no expiredgrant/objectdeletejourney acceptance."
+  },
+  "scope": "Actualauth probe0candidate/0cleanup. No expiredgrant objectdelete journey exercised. Positivepublished-ownerupload remainsunverified."
+}
