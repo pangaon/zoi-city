@@ -1,0 +1,93 @@
+{
+  "created_at": "2026-10-15T12:35:13.902644+00:00",
+  "reviewer": "/root/enrichment_next",
+  "status": "Independent source/runtime gate accepted for root integration and production proof; not a live release or catalogue-wide correction claim",
+  "read_only_review": true,
+  "production_mutations": 0,
+  "reviewed_files": [
+    {
+      "path": "supabase/migrations/20261015120726_geography_reviewed_read_authority.sql",
+      "sha256": "88167423b36ba6c3135822a19f330c1991f709767ad520b42d0c8dccce44a50b"
+    },
+    {
+      "path": "tests/database/geography-read-authority.integration.mjs",
+      "sha256": "4caa0d4bae6ede3bcafce67ac4d31271920ee3a2c1a07c28f188fb201d97db5e"
+    },
+    {
+      "path": "tests/database/fixtures/geography-read-authority-live.json",
+      "sha256": "e788d29254ade7971138e04445afa754357f276e4471e4db7d0302e61dd08719"
+    },
+    {
+      "path": "tests/database/geography-read-authority-production-rollback.sql",
+      "sha256": "21e6bd92f50a94af1ef8672f93db3d9a760c05948abc0bbf80b6702af72b3fdd"
+    }
+  ],
+  "original_specialist_audit": {
+    "path": "docs/audits/geography-read-authority-owner-2026-10-15.json",
+    "sha256": "71ab560dfba208c4869bdb7a09e8eba5571bd204d60a4926bcc261fcbeaae466",
+    "root_delta_files": [
+      "supabase/migrations/20261015120726_geography_reviewed_read_authority.sql",
+      "tests/database/geography-read-authority.integration.mjs"
+    ],
+    "remaining_original_manifest_files_exact": true
+  },
+  "findings_resolved": [
+    {
+      "finding": "Typed _enrich.source_identity could change branch/identity without changing canonical columns or enumerated source flags.",
+      "correction": "Exact source_identity object is now in narrow read-authority input; any change/restoration advances epoch and cannot revive old read receipt."
+    },
+    {
+      "finding": "Direct source_scope_mismatch, association_member and organization-scoped person records needed the same refusal as actual public map scope.",
+      "correction": "Current helper rejects both true/string true direct scope mismatch, association_member, and organization scope for artist/creator/professional. Tests cover invalidation/fresh refusal/away-back restoration."
+    },
+    {
+      "finding": "Legacy NULL-authority receipt with unchanged full-row hash could return a point despite current held source; locally reproduced with original canonical writer before migration.",
+      "correction": "source_allowed applies outside legacy/new CASE; held legacy now refuses without row mutation, epoch creation, re-signing or promotion. Unheld legacy retains original strict full-row equality."
+    }
+  ],
+  "reviewed_invariants": {
+    "full_row_geography_fingerprint_and_revert": "Exact original definitions and ACLs retained, exercised by PG suite. Existing replay, application snapshot and revert CAS remain full-row.",
+    "new_read_authority": "Lazy private per-listing epoch only after successful fresh canonical reviewed write. No listing row-type change, catalogue seed or legacy authority backfill.",
+    "epoch": "Relevant branch/source/identity/owner/visibility/point/provenance change increments existing epoch under listing-first lock ordering; away-and-back cannot revive receipt. Unreviewed listings gain no epoch from ordinary edits.",
+    "benign_edits": "Menu, description, media, hours, coverage and crawl/updated timestamps retain a newly reviewed point. They still invalidate full-row write replay/revert as before.",
+    "read_contract": "Same public five-field return and execute ACLs; point/request/listing/precision/reverted/full proof binding retained. Current _geo request ID uses exact review primary-key lookup.",
+    "security": "Epoch table RLS enabled, all API roles denied epoch table/private helpers; no grant broadening or role bypass.",
+    "bounded_performance": "Independent local200irrelevant updates27.831ms and200relevant updates33.73ms; no full-catalogue performance claim."
+  },
+  "verification": {
+    "command": "node tests/database/geography-read-authority.integration.mjs",
+    "passed_groups": 15,
+    "skipped": 0,
+    "engine": "isolated PostgreSQL16 +pgcrypto, fixture schema and synthetic rows",
+    "real_concurrent_clients": "Two competing first-review writers serialize: one accepted and one stale full-row refusal, one receipt/epoch.",
+    "prepared_production_rollback_fixture": "Exact frozen SQL ran locally and left no listing, receipt or epoch. Actual production execution remains root-owned.",
+    "source_edits_by_reviewer": 0
+  },
+  "stalactites_prepared_review": {
+    "listing_id": "054dd95e-5253-4a86-9630-fe91c3f29c90",
+    "request_id": "841902d0-c90e-4547-9338-d1af00e13ac7",
+    "report_sha256": "a6233e188010879770f729f9b28a07e1d7cf59337822581fd4e42d0b641ffb5e",
+    "request_sha256": "721c092f33274d8cdf5dd0a8c10393a87d93ec674d484eab5976c523778a9e21",
+    "canonical_coordinateSnapshot_and_reviewCoordinateCandidate": "passed against frozen snapshot/report/review",
+    "report_text_and_review_in_transport": "byte/object exact",
+    "official_source_sha256": "e581b946d8676c703a05327e8696b66b8f80e6ccb8e0f6a1ebfbefe45470ba85",
+    "municipal_source_sha256": "114c8784f816923a84918dc1fb09380decfa5a087bd231d963f6cf86d81a8c2e",
+    "source_evidence": "Retained official Restaurant JSON-LD exact name/street/Melbourne/AU/point; municipal named-venue address and data-listing map point corroborate same pair. Exact retained bytes hashes verified independently. No browser maps/API request.",
+    "point": {
+      "latitude": -37.8110808,
+      "longitude": 144.9670491
+    },
+    "candidate_equals_stored": true,
+    "coordinate_corrections": 0,
+    "classification": "provenance revalidation only; source-published named venue point, no entrance/rooftop certification",
+    "remaining": "Root must re-read current full-row/owner/source authority and execute once only if current CAS and source evidence remain accepted. Stale input requires renewed review, not blind snapshot replacement."
+  },
+  "remaining_root_gates": [
+    "Reviewed exact source integration and production migration metadata/ACL readback",
+    "Actual production rollback-only fixture",
+    "Fresh Stalactites current snapshot and canonical application, if still eligible",
+    "Actual deployed API→marker→selected destination→directions and native consumer journey",
+    "Separate read-only reporting-reader follow-up; geography_repair_record_application is a full-row WRITE CAS and must remain unchanged",
+    "Catalogue-wide source/address repairs remain open; this accepted source packet is not global map completion"
+  ]
+}

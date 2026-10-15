@@ -1,0 +1,164 @@
+{
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "b77ed3d5d9004f1957503c2f848fe4c8",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_fingerprint(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_fingerprint(p_listing zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(to_jsonb(p_listing)::text)\n$function$\n",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "534a3f6b8a5c57fccc2eb741e87c58b2",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "geography_review_apply(uuid,uuid,text,text,jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_review_apply(p_request uuid, p_listing uuid, p_expected text, p_report_text text, p_review jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE\n l zoi.listings; prior zoi.geography_reviews; report jsonb; c jsonb;b jsonb;\n named_parts text[]; payload jsonb; receipt jsonb; before_geo jsonb; report_hash text;\n lat double precision;lng double precision; south double precision;north double precision;\n west double precision;east double precision;review_time timestamptz;source_host text;website_host text;source_path text;website_path text;\nBEGIN\n IF p_request IS NULL OR p_listing IS NULL OR p_expected IS NULL\n OR p_report_text IS NULL OR octet_length(p_report_text)>32768\n OR jsonb_typeof(p_review) IS DISTINCT FROM 'object' OR octet_length(p_review::text)>16384\n THEN RAISE EXCEPTION 'invalid_geography_review';END IF;\n report:=p_report_text::jsonb;\n report_hash:=encode(extensions.digest(convert_to(p_report_text,'UTF8'),'sha256'),'hex');\n payload:=jsonb_build_object('listing',p_listing,'expected',p_expected,'report',report,'report_hash',report_hash,'review',p_review);\n PERFORM pg_advisory_xact_lock(hashtextextended('geography-review:'||p_request::text,0));\n SELECT * INTO l FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND OR l.owner_user_id IS NOT NULL OR l.owner_workspace_id IS NOT NULL\n OR l.publish_status IS DISTINCT FROM 'published' OR coalesce(l.moderation_status,'') NOT IN('clean','cleared')\n OR coalesce(l.marketplace_status,'')='hidden' THEN RAISE EXCEPTION 'geography_listing_unavailable';END IF;\n IF l.profile IS NOT NULL AND jsonb_typeof(l.profile) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'geography_profile_shape_invalid';END IF;\n SELECT * INTO prior FROM zoi.geography_reviews WHERE request_id=p_request;\n IF FOUND THEN\n  IF prior.payload IS DISTINCT FROM payload THEN RAISE EXCEPTION 'geography_request_conflict';END IF;\n  IF prior.reverted_at IS NOT NULL THEN RAISE EXCEPTION 'geography_review_reverted';END IF;\n  IF zoi.geography_fingerprint(l) IS DISTINCT FROM prior.after_fingerprint THEN RAISE EXCEPTION 'geography_snapshot_changed';END IF;\n  RETURN prior.receipt;\n END IF;\n IF zoi.geography_fingerprint(l) IS DISTINCT FROM p_expected\n OR p_review->>'database_snapshot' IS DISTINCT FROM p_expected\n OR report->>'listing_id' IS DISTINCT FROM p_listing::text\n OR report->>'source_fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l)\n THEN RAISE EXCEPTION 'geography_snapshot_changed';END IF;\n IF report->>'status' IS DISTINCT FROM 'review_required'\n OR report->>'reason' IS DISTINCT FROM 'coordinate_plausibility_review_required'\n OR p_review->>'report_sha256' IS DISTINCT FROM report_hash\n OR p_review->'exact_address_confirmed' IS DISTINCT FROM 'true'::jsonb\n OR p_review->'not_area_centroid' IS DISTINCT FROM 'true'::jsonb\n OR length(btrim(coalesce(p_review->>'reviewer',''))) NOT BETWEEN 1 AND 160\n OR length(btrim(coalesce(p_review->>'specialist',''))) NOT BETWEEN 1 AND 160\n OR lower(btrim(p_review->>'reviewer'))=lower(btrim(p_review->>'specialist'))\n THEN RAISE EXCEPTION 'independent_geography_review_required';END IF;\n review_time:=(p_review->>'reviewed_at')::timestamptz;\n IF review_time IS NULL OR review_time<clock_timestamp()-interval '7 days'\n OR review_time>clock_timestamp()+interval '5 minutes' THEN RAISE EXCEPTION 'geography_review_expired';END IF;\n source_host:=lower(substring(report->>'source_url' FROM '^https://([^/:?#@]+)(?:/|$)'));\n website_host:=lower(substring(l.website FROM '^https://([^/:?#@]+)(?:/|$)'));\n IF source_host IS NULL OR website_host IS NULL\n OR regexp_replace(source_host,'^www\\.','')<>regexp_replace(website_host,'^www\\.','')\n OR coalesce(report->>'source_sha256','')!~'^[0-9a-f]{64}$'\n THEN RAISE EXCEPTION 'geography_source_mismatch';END IF;\n c:=report->'candidate';b:=p_review->'locality_extent';\n source_path:=regexp_replace(regexp_replace(report->>'source_url','^https://[^/]+',''),'[?#].*$','');\n website_path:=rtrim(regexp_replace(regexp_replace(l.website,'^https://[^/]+',''),'[?#].*$',''),'/');\n -- Conservative property scoping: raw URL prefixes are not safe when a\n -- browser/server could normalize dot segments or encoded separators first.\n -- Reject ambiguous forms instead of guessing their decoded destination.\n IF strpos(report->>'source_url',chr(92))>0 OR strpos(l.website,chr(92))>0\n OR source_path ~* '(^|/)[.]{1,2}(/|$)|//|%(2e|2f|5c|25)'\n OR website_path ~* '(^|/)[.]{1,2}(/|$)|//|%(2e|2f|5c|25)'\n THEN RAISE EXCEPTION 'geography_source_path_noncanonical';END IF;\n IF report->'schema' IS DISTINCT FROM '1'::jsonb\n OR report->>'kind' IS DISTINCT FROM 'official_coordinate_dry_run'\n OR report->'http_status' IS DISTINCT FROM '200'::jsonb\n OR coalesce(report->>'snapshot_sha256','')!~'^[0-9a-f]{64}$'\n OR coalesce(c->>'evidence_kind','') NOT IN('jsonld','official_destination','reviewed_named_place_shortlink')\n OR lower(btrim(c->>'name')) IS DISTINCT FROM lower(btrim(l.name))\n OR p_review->'official_source_confirmed' IS DISTINCT FROM 'true'::jsonb\n OR p_review->'candidate_address' IS DISTINCT FROM c->'address'\n OR jsonb_typeof(c->'address') IS DISTINCT FROM 'object'\n OR length(btrim(coalesce(c#>>'{address,street}','')))=0\n OR length(btrim(coalesce(c#>>'{address,city}','')))=0\n OR length(btrim(coalesce(c#>>'{address,country}','')))=0\n OR p_review->>'stored_address' IS DISTINCT FROM l.address\n OR p_review->>'stored_city' IS DISTINCT FROM l.city\n OR p_review->>'stored_country' IS DISTINCT FROM l.country\n OR (c->>'evidence_kind'<>'reviewed_named_place_shortlink' AND website_path<>'' AND source_path<>website_path AND left(source_path,length(website_path)+1)<>website_path||'/')\n THEN RAISE EXCEPTION 'geography_identity_review_required';END IF;\n IF c->>'evidence_kind'='reviewed_named_place_shortlink' THEN\n  IF p_review->'publisher_contact_scope' IS DISTINCT FROM 'true'::jsonb\n  OR p_review->'named_place_confirmed' IS DISTINCT FROM 'true'::jsonb\n  OR p_review->>'destination_purpose' IS DISTINCT FROM 'place_location'\n  OR p_review->>'source_sha256' IS DISTINCT FROM report->>'source_sha256'\n  OR coalesce(report->>'identity_review_sha256','')!~'^[0-9a-f]{64}$'\n  OR p_review->>'identity_review_sha256' IS DISTINCT FROM report->>'identity_review_sha256'\n  OR coalesce(c->>'capture_sha256','')!~'^[0-9a-f]{64}$'\n  OR coalesce(c->>'contact_card_sha256','')!~'^[0-9a-f]{64}$'\n  OR p_review->>'capture_sha256' IS DISTINCT FROM c->>'capture_sha256'\n  OR p_review->>'contact_card_sha256' IS DISTINCT FROM c->>'contact_card_sha256'\n  OR p_review->>'destination_url' IS DISTINCT FROM c->>'evidence_url'\n  OR p_review->>'shortlink_url' IS DISTINCT FROM c->>'shortlink_url'\n  OR p_review->>'place_id' IS DISTINCT FROM c->>'place_id'\n  OR coalesce(c->>'shortlink_url','')!~'^https://maps[.]app[.]goo[.]gl/[A-Za-z0-9]+$'\n  OR c->'destination_locality' IS DISTINCT FROM b\n  THEN RAISE EXCEPTION 'geography_named_place_review_required';END IF;\n  named_parts:=regexp_match(c->>'evidence_url','^https://www[.]google[.]com/maps/place/([^/]+)/@[^/]+/data=!4m9!3m8!1s(0x[0-9a-f]+:0x[0-9a-f]+)!5m2!4m1!1i2!8m2!3d(-?[0-9]+(?:[.][0-9]+)?)!4d(-?[0-9]+(?:[.][0-9]+)?)!16s[^!?#]+(?:[?][^#]+)?$','i');\n  IF named_parts IS NULL OR lower(zoi.geography_url_component(named_parts[1])) IS DISTINCT FROM lower(l.name)\n  OR named_parts[2] IS DISTINCT FROM c->>'place_id'\n  OR (named_parts[3])::double precision IS DISTINCT FROM (c->>'latitude')::double precision\n  OR (named_parts[4])::double precision IS DISTINCT FROM (c->>'longitude')::double precision\n  OR EXISTS(SELECT 1 FROM regexp_split_to_table(split_part(c->>'evidence_url','?',2),'&') AS item WHERE item<>'' AND split_part(item,'=',1) NOT IN('entry','g_ep','skid'))\n  THEN RAISE EXCEPTION 'geography_named_destination_mismatch';END IF;\n END IF;\n IF c->>'evidence_kind'='official_destination' AND (\n p_review->>'destination_purpose' IS DISTINCT FROM 'place_location'\n OR p_review->>'destination_url' IS DISTINCT FROM c->>'evidence_url'\n OR coalesce(c->>'evidence_url','')!~'^https://(www\\.)?google\\.com/maps/dir/')\n THEN RAISE EXCEPTION 'geography_destination_review_required';END IF;\n IF c->>'precision' IS DISTINCT FROM 'source_published'\n OR jsonb_typeof(c->'latitude') IS DISTINCT FROM 'number' OR jsonb_typeof(c->'longitude') IS DISTINCT FROM 'number'\n OR jsonb_typeof(b->'south') IS DISTINCT FROM 'number' OR jsonb_typeof(b->'north') IS DISTINCT FROM 'number'\n OR jsonb_typeof(b->'west') IS DISTINCT FROM 'number' OR jsonb_typeof(b->'east') IS DISTINCT FROM 'number'\n OR coalesce(b->>'source_url','')!~'^https://[^/:?#@]+/' THEN RAISE EXCEPTION 'geography_locality_evidence_required';END IF;\n lat:=(c->>'latitude')::double precision;lng:=(c->>'longitude')::double precision;\n south:=(b->>'south')::double precision;north:=(b->>'north')::double precision;\n west:=(b->>'west')::double precision;east:=(b->>'east')::double precision;\n IF south< -90 OR north>90 OR west< -180 OR east>180 OR south>=north OR west>=east\n OR north-south>5 OR east-west>5 OR lat<south OR lat>north OR lng<west OR lng>east OR(lat=0 AND lng=0)\n THEN RAISE EXCEPTION 'geography_outside_reviewed_locality';END IF;\n before_geo:=jsonb_build_object('latitude',l.latitude,'longitude',l.longitude,'geo_precision',l.geo_precision,\n 'profile_was_null',l.profile IS NULL,'had_geo',coalesce(l.profile,'{}'::jsonb)?'_geo','geo',l.profile->'_geo');\n UPDATE zoi.listings SET latitude=lat,longitude=lng,geo_precision='street',\n profile=coalesce(l.profile,'{}'::jsonb)||jsonb_build_object('_geo',jsonb_build_object(\n 'precision','street','method','reviewed_official_source','source_url',report->>'source_url',\n 'source_sha256',report->>'source_sha256','report_sha256',report_hash,'reviewer',p_review->>'reviewer',\n 'reviewed_at',review_time,'request_id',p_request)),updated_at=clock_timestamp()\n WHERE id=p_listing RETURNING * INTO l;\n receipt:=jsonb_build_object('ok',true,'request_id',p_request,'listing_id',p_listing,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision,'report_sha256',report_hash,\n 'after_snapshot',zoi.geography_fingerprint(l));\n INSERT INTO zoi.geography_reviews(request_id,listing_id,payload,receipt,before_geo,after_fingerprint)\n VALUES(p_request,p_listing,payload,receipt,before_geo,zoi.geography_fingerprint(l));\n RETURN receipt;\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "e6f2ba4421641428065b817ad47bd3e8",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "geography_review_revert(uuid,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_review_revert(p_request uuid, p_expected text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE r zoi.geography_reviews;l zoi.listings;\nBEGIN\n IF p_request IS NULL OR p_expected IS NULL THEN RAISE EXCEPTION 'invalid_geography_review';END IF;\n PERFORM pg_advisory_xact_lock(hashtextextended('geography-review:'||p_request::text,0));\n SELECT * INTO r FROM zoi.geography_reviews WHERE request_id=p_request;\n IF NOT FOUND THEN RAISE EXCEPTION 'geography_review_missing';END IF;\n SELECT * INTO l FROM zoi.listings WHERE id=r.listing_id FOR UPDATE;\n IF NOT FOUND OR l.owner_user_id IS NOT NULL OR l.owner_workspace_id IS NOT NULL\n THEN RAISE EXCEPTION 'geography_listing_unavailable';END IF;\n IF r.reverted_at IS NOT NULL THEN RETURN jsonb_build_object('ok',true,'reverted',true,'request_id',p_request);END IF;\n IF p_expected IS DISTINCT FROM r.after_fingerprint OR zoi.geography_fingerprint(l) IS DISTINCT FROM r.after_fingerprint\n THEN RAISE EXCEPTION 'geography_snapshot_changed';END IF;\n UPDATE zoi.listings SET latitude=(r.before_geo->>'latitude')::double precision,\n longitude=(r.before_geo->>'longitude')::double precision,geo_precision=r.before_geo->>'geo_precision',\n profile=CASE WHEN r.before_geo->'profile_was_null'='true'::jsonb THEN NULL WHEN r.before_geo->'had_geo'='true'::jsonb THEN jsonb_set(coalesce(l.profile,'{}'::jsonb),'{_geo}',r.before_geo->'geo') ELSE coalesce(l.profile,'{}'::jsonb)-'_geo' END,\n updated_at=clock_timestamp() WHERE id=r.listing_id;\n UPDATE zoi.geography_reviews SET reverted_at=clock_timestamp() WHERE request_id=p_request;\n RETURN jsonb_build_object('ok',true,'reverted',true,'request_id',p_request);\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "md5": "96ab6ffd834c20e8f75e69a788bbc0d6",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "geography_reviewed_point(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_reviewed_point(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT jsonb_build_object('listing_id',l.id,'request_id',r.request_id,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision)\n FROM zoi.listings l JOIN zoi.geography_reviews r ON r.listing_id=l.id\n WHERE l.id=p_listing AND l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n AND l.marketplace_status IS DISTINCT FROM 'hidden'\n AND l.duplicate_status <> 'confirmed_duplicate'\n AND l.owner_user_id IS NULL AND l.owner_workspace_id IS NULL\n AND r.reverted_at IS NULL AND r.after_fingerprint=zoi.geography_fingerprint(l)\n AND l.profile->'_geo'->>'request_id'=r.request_id::text\n AND r.receipt->>'listing_id'=l.id::text AND r.receipt->>'request_id'=r.request_id::text\n AND r.receipt->'latitude'=to_jsonb(l.latitude) AND r.receipt->'longitude'=to_jsonb(l.longitude)\n AND r.receipt->>'precision'=l.geo_precision AND l.geo_precision='street'\n ORDER BY r.created_at DESC LIMIT 1\n$function$\n",
+      "security_definer": true
+    }
+  ],
+  "observed_at": "2026-10-15T12:07:27.53141+00:00",
+  "review_columns": [
+    {
+      "name": "request_id",
+      "type": "uuid"
+    },
+    {
+      "name": "listing_id",
+      "type": "uuid"
+    },
+    {
+      "name": "payload",
+      "type": "jsonb"
+    },
+    {
+      "name": "receipt",
+      "type": "jsonb"
+    },
+    {
+      "name": "before_geo",
+      "type": "jsonb"
+    },
+    {
+      "name": "after_fingerprint",
+      "type": "text"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "reverted_at",
+      "type": "timestamp with time zone"
+    }
+  ],
+  "listing_columns": [
+    "id",
+    "entity_type",
+    "name",
+    "slug",
+    "legal_name",
+    "display_name",
+    "description",
+    "primary_category_id",
+    "tags",
+    "language_support",
+    "greek_language_available",
+    "city",
+    "region",
+    "province_state",
+    "country",
+    "neighborhood",
+    "address",
+    "latitude",
+    "longitude",
+    "region_id",
+    "phone",
+    "email",
+    "website",
+    "source_id",
+    "source_url",
+    "source_type",
+    "source_trust_tier",
+    "source_last_checked_at",
+    "first_seen_at",
+    "last_seen_at",
+    "last_verified_at",
+    "verification_status",
+    "claim_status",
+    "owner_user_id",
+    "duplicate_status",
+    "moderation_status",
+    "publish_status",
+    "freshness_score",
+    "completeness_score",
+    "trust_score",
+    "profile",
+    "field_meta",
+    "trust_badges",
+    "created_at",
+    "updated_at",
+    "created_by",
+    "updated_by",
+    "search_tsv",
+    "meta_title",
+    "meta_description",
+    "canonical_path",
+    "schema_type",
+    "og_image",
+    "hreflang_alt",
+    "sells_products",
+    "offers_services",
+    "is_professional",
+    "bookable",
+    "booking_type",
+    "service_on_demand",
+    "marketplace_status",
+    "price_range",
+    "hours",
+    "rating",
+    "rating_count",
+    "photo_url",
+    "amenities",
+    "geo_precision",
+    "embedding",
+    "keywords",
+    "onboarding_path",
+    "social_links",
+    "ingestion_source",
+    "owner_workspace_id",
+    "place_id",
+    "region_code",
+    "region_native"
+  ],
+  "review_triggers": [],
+  "quality_function": "CREATE OR REPLACE FUNCTION zoi.listing_quality_fingerprint(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(l.name,l.entity_type,l.website,l.source_url,l.primary_category_id,l.owner_workspace_id,l.publish_status,l.moderation_status,l.marketplace_status,coalesce(l.profile,'{}')-'_enrich'-'_coverage'-'_geo')::text)\n$function$\n"
+}
