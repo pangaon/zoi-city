@@ -1,0 +1,49 @@
+{
+  "captured_at": "2026-10-15T12:25:39.799Z",
+  "groups": 27,
+  "isolated_PostgreSQL16": true,
+  "production_mutations": 0,
+  "legacy_leases": "refused unchanged until normal expiry; no resets or blind write retries",
+  "after_contracts": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "enrich_sample_lease(uuid[])",
+      "definition_md5": "15626a3b9a0f095af32bb748627e651a",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.enrich_apply(jsonb)",
+      "definition_md5": "310678a4bd7d77d5467dbd07604349d9",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.enrich_authority_fingerprint(zoi.listings)",
+      "definition_md5": "f88710fbc5694cccad696f7550429a65",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.enrich_queue_lease(integer,integer,integer)",
+      "definition_md5": "950a5ee4f0fad7fa4700805d0ac034ee",
+      "security_definer": true
+    }
+  ]
+}

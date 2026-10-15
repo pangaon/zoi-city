@@ -1,0 +1,261 @@
+{
+  "created_at": "2026-10-15T12:31:05.562005+00:00",
+  "status": "frozen for independent review; no production apply or release by specialist",
+  "owner": "/root/enrichment_next",
+  "base_commit": "6fa886d73cf67392ab266fcc36af256ee6d66314",
+  "frozen_files": [
+    {
+      "path": "scripts/enrichment/source-html.mjs",
+      "sha256": "15a2510aed9aa3816c13948fd51d30e24203649058025600470adb070debbd17"
+    },
+    {
+      "path": "scripts/enrichment/reviewed-batch.mjs",
+      "sha256": "e2c6134b44dec6aa70253dcd72d9f5dcb5660f5d9e2780a855c31e6d5e1dd5f1"
+    },
+    {
+      "path": "scripts/enrichment/render-capture.mjs",
+      "sha256": "9e4bb4db25dde63011fbab524dd34a0f4c2983ad0a22cd4f7953fc5e3765ab52"
+    },
+    {
+      "path": "supabase/migrations/20261015121224_enrichment_lease_authority_context.sql",
+      "sha256": "200ad930d62090809ae5a019736e14282649b5573e79ccd632ca5a536e613182"
+    },
+    {
+      "path": "tests/database/enrichment-authority-context.integration.mjs",
+      "sha256": "48190cef70cd0a8e2ce676ef926ce7c9652bcdd341a091bd16e415e376e2641c"
+    },
+    {
+      "path": "tests/database/enrichment-authority-context-production-rollback.sql",
+      "sha256": "1b6af2794ec79274a708764aa91c71fdea7f68288a4c08da1b226577b7eb7d38"
+    },
+    {
+      "path": "tests/database/fixtures/enrichment-authority-context-live.json",
+      "sha256": "f3776dc49df1c6ca4ac5f3bb5996be280f9dc5bb52ca468271a9037698ac5f2f"
+    },
+    {
+      "path": "tests/unit/reviewed-food-source.test.mjs",
+      "sha256": "cf907604c2e895d73439214f512f5cbe23a1e98826f17176f7edf5209b79ee3d"
+    },
+    {
+      "path": "tests/unit/source-html.test.mjs",
+      "sha256": "7ae85fb758e5a24b0f6adb34d89f112ca8ca3576f91f6afb84a029bca6337cf6"
+    },
+    {
+      "path": "tests/integration/reviewed-food-retained-proof.mjs",
+      "sha256": "47b8f96ae0f9ba9e7a316c769883d249a613e0966d218ce2936be87e0673e4e5"
+    },
+    {
+      "path": "tests/unit/reviewed-source-html.test.mjs",
+      "sha256": "8fdeb9034acf74d5a471a7da00b3e91219847f5040ee42f8d527e978d180fd27"
+    }
+  ],
+  "outcome": "A reusable reviewed Food source lane can carry exact source-bound menus or menu-page handoffs, coverage and draft briefs through the existing writer payload. Canonical enrichment leases gain a server-derived context/authority fence checked after the existing listing row lock.",
+  "canonical_authority": {
+    "migration_created_by_cli": "SupabaseCLI2.115.0 migration new enrichment_lease_authority_context",
+    "new_store_or_writer": false,
+    "normal_and_sample_lease_shapes_unchanged": true,
+    "metadata_added": [
+      "authority_version=1",
+      "authority_fingerprint"
+    ],
+    "authority_inputs": [
+      "existing listing_quality_fingerprint (identity, website, category, owner workspace, visibility and complete authored/raw profile except machine/quality/geography namespaces)",
+      "listing ID and slug",
+      "owner user and workspace",
+      "claim and duplicate status",
+      "address, city, country, region, province, neighborhood, region/place IDs",
+      "latitude, longitude and geo precision",
+      "entire current _enrich machine facts/provenance/identity/holds, excluding only lease and transient _lease_source_context"
+    ],
+    "client_supplied_authority": false,
+    "legacy_lease_policy": "Existing leases remain unchanged. New writer refuses all writes, including failure receipts, when authority_version/fingerprint is absent or differs. Normal expiry permits a fresh ordinary lease. No backfill/reset or blind ambiguous-write retry.",
+    "operational_apply_gate": "Root must use a quiet enrichment window and check no invocation is still executing the old writer body. CREATE OR REPLACE cannot retroactively change an old in-flight invocation.",
+    "definition_guard_scope": [
+      "zoi.enrich_queue_lease(integer,integer,integer)",
+      "public.enrich_sample_lease(uuid[])",
+      "zoi.enrich_apply(jsonb)",
+      "zoi.listing_quality_fingerprint(zoi.listings)"
+    ],
+    "new_helper_acl": "postgres-only; invoker SQL stable, empty search_path; no existing ACL changes",
+    "after_contracts": [
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "enrich_sample_lease(uuid[])",
+        "definition_md5": "15626a3b9a0f095af32bb748627e651a",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.enrich_apply(jsonb)",
+        "definition_md5": "310678a4bd7d77d5467dbd07604349d9",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.enrich_authority_fingerprint(zoi.listings)",
+        "definition_md5": "f88710fbc5694cccad696f7550429a65",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.enrich_queue_lease(integer,integer,integer)",
+        "definition_md5": "950a5ee4f0fad7fa4700805d0ac034ee",
+        "security_definer": true
+      }
+    ]
+  },
+  "reviewed_food_lane": {
+    "source_capture": "Existing DNS/robots/redirect/byte/time-budget guarded session; at most one literal same-origin HTML menu child. No guessed URL, cross-origin menu, PDF text inference or new browser network.",
+    "bounds": {
+      "capture_deadline_ms": 40000,
+      "existing_request_cap": 80,
+      "existing_total_byte_cap": 15000000,
+      "document_byte_cap": 1500000,
+      "menu_child_pages": 1,
+      "existing_decoded_images_cap": 4,
+      "retained_menu_items_cap": 100,
+      "menu_sections_cap": 30,
+      "brief_offerings_cap": 30
+    },
+    "evidence": [
+      "exact decoded UTF8 source hash for primary and menu page",
+      "private immutable source documents mode0400 in existing private evidence directory",
+      "explicit source typed identity and canonical branch context",
+      "exact menu payload hash",
+      "source-reported original total or explicit unknown",
+      "retained/truncated coverage",
+      "reviewer approval bound to report hash and prior machine snapshot"
+    ],
+    "manual_gate": "review.food_offering_confirmed must be true; owner-managed sources, held/mismatched/unbound prior facts and changed current lease branch context refuse Food import. Existing canonical owner content/writers remain authoritative.",
+    "preservation": "Prior facts and provenance are retained; the new brief uses fresh reviewed fields only. Server _lease_source_context is stripped from incoming stored machine facts. Owner raw/profile fields and explicit clears continue to override imported menus in both public families.",
+    "unknown_menu": "A real verified HTML menu page without extracted items is a source handoff:0retained items, unknown total/truncation, no invented dishes/prices.",
+    "completion_claim": false
+  },
+  "cache_strategy": {
+    "name": "reviewed-food-source-v1",
+    "resume_identity": "listing ID + website + source fingerprint + capture_kind + sourceHTMLRecipeHash",
+    "recipe_hash_inputs": "source capture body, explicit14-file transitive guard/capture dependency list, existing extractor body/helper hash and exact Node version",
+    "legacy_artifacts": "Retained unchanged; pre-food source_html captures use their previous immutable namespace. New recipe receives one bounded attempt and resumes its own result on repetition.",
+    "same_recipe_automatic_retry": false
+  },
+  "verification": {
+    "focused_units": {
+      "command": "node --test tests/unit/reviewed-food-source.test.mjs tests/unit/source-html.test.mjs tests/unit/reviewed-source-html.test.mjs tests/unit/rendered-source.test.mjs tests/unit/source-home-adapters.test.mjs tests/unit/source-identity-gate.test.mjs",
+      "passed": 64,
+      "skipped": 0
+    },
+    "real_postgres": {
+      "captured_at": "2026-10-15T12:23:22.884Z",
+      "groups": 27,
+      "isolated_PostgreSQL16": true,
+      "production_mutations": 0,
+      "legacy_leases": "refused unchanged until normal expiry; no resets or blind write retries",
+      "after_contracts": [
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "enrich_sample_lease(uuid[])",
+          "definition_md5": "15626a3b9a0f095af32bb748627e651a",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_apply(jsonb)",
+          "definition_md5": "310678a4bd7d77d5467dbd07604349d9",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_authority_fingerprint(zoi.listings)",
+          "definition_md5": "f88710fbc5694cccad696f7550429a65",
+          "security_definer": false
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_queue_lease(integer,integer,integer)",
+          "definition_md5": "950a5ee4f0fad7fa4700805d0ac034ee",
+          "security_definer": true
+        }
+      ]
+    },
+    "retained_official_source": {
+      "captured_at": "2026-10-15T12:29:05.605Z",
+      "scope": "actual retained official Hellenic source bytes through generic reviewed source capture and existing-writer payload; controlled transport and public model, no SQL apply or browser acceptance",
+      "listing_id": "373f6d89-03b6-4c58-b293-93a805885f5b",
+      "source_url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+      "source_sha256": "98327c9a383605c9630e977d3715b67aa4a7a8b967533c74bae09a61ffb1f6df",
+      "primary_sha256": "bbfd8172b3dbc4d7005fad739436e3442efb501e874dd7740602f105510fcce8",
+      "retained_items": 100,
+      "original_total": 151,
+      "truncated": true,
+      "brief_items": 30,
+      "exact_literal_price": true,
+      "public_bakery_model_items": 100,
+      "source_documents_requested": 2,
+      "external_requests": 0,
+      "production_writes": 0,
+      "actual_production_lease": false
+    },
+    "diff_check": "passed"
+  },
+  "root_production_fixture": {
+    "path": "tests/database/enrichment-authority-context-production-rollback.sql",
+    "local_execution_passed": true,
+    "actual_production_execution": false,
+    "scope": "Two synthetic unowned listings only: exact current source lease/write succeeds; changed branch fails with byte-identical refused row; full transaction rollback and two-row absence. No source/provider call."
+  },
+  "remaining": [
+    "Independent reviewer gate on these frozen files",
+    "Root source integration/release and exact production migration/metadata readback",
+    "Root actual production rollback fixture",
+    "Root ordinary live queue/worker acceptance after migration",
+    "Actual browser/customer and native journeys remain distinct; these tests include public model projection only",
+    "Other source families and full catalogue coverage remain unfinished; this packet is the reusable Food lane, not catalogue-wide client completion"
+  ],
+  "frozen_food2client_sql": "Historical two-row proposal files remain untouched in /workspaces/zoi-food-home-work; root reported they are committed after production rollback gate.",
+  "independent_review_correction": {
+    "reviewer": "/root/owner_next",
+    "finding": "Unresolved Food capture or no current Food fields could fall through generic merge, clear blocked/status and revive an old imported menu.",
+    "fix": "Reject unresolved Food metadata and any prior held Food keys before hasFields early return or generic prior merge.",
+    "regression": "Linked unresolved and absent-menu captures with prior blocked or crawl_status error, each with menu array, menu_url or canonical menu_image_urls, are refused (12 combinations).",
+    "existing_test_contract": "Generic preservation fixture now retains prior booking_url/provenance rather than requiring revival of a held menu_url; remaining assertions preserved.",
+    "changed_from_previous_freeze": [
+      "scripts/enrichment/reviewed-batch.mjs",
+      "tests/unit/reviewed-food-source.test.mjs",
+      "tests/unit/reviewed-source-html.test.mjs"
+    ],
+    "other_frozen_files_unchanged": true,
+    "menu_image_urls": "Prior-held detection only; this does not authorize a new reviewed image-menu import."
+  }
+}

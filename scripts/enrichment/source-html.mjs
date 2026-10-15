@@ -1,6 +1,7 @@
 /** Reviewed-only SSR evidence, reusing the deployed extractor and existing source guards.
  * This is source HTML, never a substitute or fabricated hash for a browser render. */
 import {mkdir,readFile,writeFile} from 'node:fs/promises';
+import {readFileSync} from 'node:fs';
 import path from 'node:path';
 import {sourceURL,createSourceSession,requestPage} from '../quality/source-fetch.mjs';
 import {inspectSourceDocument} from '../../supabase/functions/zoi-enrich/_document-quality.js';
@@ -8,8 +9,16 @@ import {memberLeaseGuard} from '../../supabase/functions/zoi-enrich/_member.js';
 import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
 import {extractRenderedSource,extractorHash} from './extractor.mjs';
 import {launchSourceBrowser} from './render-source.mjs';
-import {sha256} from '../quality/evidence.mjs';
+import {canonical,sha256} from '../quality/evidence.mjs';
+import {supplementaryPages} from '../../supabase/functions/zoi-enrich/_images.js';
+import {sourceClientIdentity} from '../../supabase/functions/zoi-enrich/_brief.js';
+import {structuredSourceContextMatches} from '../../supabase/functions/zoi-enrich/_services.js';
 
+// The source cache changes strategy when its extraction, guards or runtime do.
+// This explicit dependency list covers the capture helpers and their local imports;
+// extractorHash separately includes the worker extraction body and seven helpers.
+const recipeFiles=['./source-html.mjs','./extractor.mjs','./render-source.mjs','../quality/source-fetch.mjs','../quality/evidence.mjs','../../supabase/functions/zoi-enrich/_member.js','../../supabase/functions/zoi-enrich/_scope.js','../../supabase/functions/zoi-enrich/_source-identity.js','../../supabase/functions/zoi-enrich/_document-quality.js','../../supabase/functions/zoi-enrich/_brief.js','../../supabase/functions/zoi-enrich/_services.js','../../assets/enrichment/client-brief.mjs','../../assets/enrichment/member-source.mjs','../../assets/enrichment/association-cards.mjs'];
+export const sourceHTMLRecipeHash=sha256(canonical({strategy:'reviewed-food-source-v1',node:process.versions.node,extractor_sha256:extractorHash,files:Object.fromEntries(recipeFiles.map(file=>[file,sha256(readFileSync(new URL(file,import.meta.url)))]))}));
 const MAX_PIXELS=20000000;
 const publicHTML=html=>html.replace(/<(script|style|noscript|template)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'').replace(/<!--[\s\S]*?-->/g,'').replace(/\s(?:on[a-z]+|value)\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi,'');
 const dimensions=(width,height)=>{if(!Number.isInteger(width)||!Number.isInteger(height)||width<1||height<1||width>12000||height>12000||width*height>MAX_PIXELS)throw Error('source_image_dimensions');return{width,height};};
@@ -50,6 +59,53 @@ async function retainImage(directory,hash,bytes){
  await mkdir(directory,{recursive:true,mode:0o700});const file=path.join(directory,hash+'.image');
  try{await writeFile(file,bytes,{flag:'wx',mode:0o400});}catch(e){if(e.code!=='EEXIST'||sha256(await readFile(file))!==hash)throw Error('source_image_artifact_mismatch');}
 }
+const object=value=>value&&typeof value==='object'&&!Array.isArray(value)?value:{};
+const foodSourceHeld=(prior,website)=>{
+ const flagged=value=>value===true||value==='true';
+ if(flagged(prior.blocked)||prior.status==='blocked'||['blocked','error'].includes(prior.crawl_status)||prior.blocked_reason==='source_scope_mismatch'||['scope_review_required','organization_identity_quarantine','source_scope_mismatch','source_challenge','challenge'].some(key=>flagged(prior[key]))||prior.identity_scope||prior.member||prior.association_member||prior.source_affiliation||['association_directory','association_member','supporting_publisher_profile'].includes(prior.source_kind))return true;
+ const document=value=>{try{const url=new URL(value);return url.protocol+'//'+url.hostname.replace(/^www\./,'')+url.pathname.replace(/\/$/,'')+url.search;}catch{return null;}};
+ if(prior.source_url)return !document(prior.source_url)||document(prior.source_url)!==document(website);
+ return Object.keys(prior).some(key=>!['lease','_lease_source_context','provenance','checked_at','last_attempt_at','status','crawl_status'].includes(key));
+};
+const foodFields=['menu','menu_source','menu_source_format','menu_total_items','menu_truncated'];
+async function retainSourceDocument(directory,html){
+ const hash=sha256(html),file=path.join(directory,hash+'.source.html');
+ await mkdir(directory,{recursive:true,mode:0o700});
+ try{await writeFile(file,html,{flag:'wx',mode:0o400});}catch(error){if(error.code!=='EEXIST'||sha256(await readFile(file))!==hash)throw Error('source_document_artifact_mismatch');}
+ return hash;
+}
+// Reviewed food evidence uses the same canonical branch context and structured
+// identity checks as the worker. A linked page cannot lend another branch's menu.
+async function captureFoodOffering(row,source,extracted,{directory,session,deadline}){
+ const linked=supplementaryPages(source.text,source.url).find(page=>page.purpose==='menu');
+ if(!extracted.profile.menu&&!linked)return null;
+ const prior=object(row.existing_enrich),context=object(prior._lease_source_context);
+ const unresolved=reason=>({state:'unresolved',reason,customer_journey_verified:false});
+ if(row.owner_managed!==false||row.owner_workspace_id)return unresolved('owner_review_required');
+ if(foodSourceHeld(prior,row.website))return unresolved('source_hold_review_required');
+ const client={...row,city:context.city,country:context.country,address:context.address};
+ const identity=sourceClientIdentity(client,source.text,source.url);
+ if(identity?.verification!=='exact_name_typed_jsonld'||!structuredSourceContextMatches(source.text,client,source.url))return unresolved('source_identity_or_branch_unconfirmed');
+ await bounded(deadline,()=>retainSourceDocument(directory,source.text));
+ let document=source,fields=extracted.profile;
+ if(!fields.menu&&linked){
+  const target=sourceURL(linked.url);
+  const response=await bounded(deadline,()=>session.sourceFetch(target.href));
+  if(response.status!==200)return unresolved('menu_source_unavailable');
+  const final=sourceURL(response.url);
+  if(final.origin!==new URL(source.url).origin)return unresolved('menu_source_origin_changed');
+  if(typeof response.text!=='string'||Buffer.byteLength(response.text)>1500000)return unresolved('menu_source_too_large');
+  const quality=inspectSourceDocument(response.text);
+  if(quality.source_state==='source_challenge'||quality.requires_rendering||/cf-chl-|\/cdn-cgi\/challenge-platform\//i.test(response.text))return unresolved('menu_source_unavailable');
+  if(!structuredSourceContextMatches(response.text,client,final.href,{linkedSupplement:true}))return unresolved('menu_branch_unconfirmed');
+  document={...response,url:final.href};fields=extractRenderedSource(response.text,final.href).profile;
+ }
+ const hasMenu=Array.isArray(fields.menu)&&fields.menu.length>0;
+ if(!hasMenu&&!linked)return unresolved('menu_items_unavailable');
+ const hash=await bounded(deadline,()=>retainSourceDocument(directory,document.text)),retained=hasMenu?fields.menu.reduce((n,section)=>n+(Array.isArray(section.items)?section.items.length:0),0):0;
+ const total=Number.isInteger(fields.menu_total_items)?fields.menu_total_items:null;
+ return{state:'captured_pending_review',source_url:document.url,source_sha256:hash,hash_basis:'decoded_utf8',linked_from_sha256:sha256(source.text),primary_source_url:source.url,primary_identity:identity,canonical_context:context,kind:hasMenu?'structured_menu':'menu_handoff',menu_sha256:hasMenu?sha256(canonical(fields.menu)):null,source_format:hasMenu?fields.menu_source_format:'source_document_handoff',original_total:total,retained_items:retained,truncated:typeof fields.menu_truncated==='boolean'?fields.menu_truncated:null,total_state:total===null?'unreported_by_extractor':'observed',retrieved_at:new Date().toISOString(),profile:hasMenu?Object.fromEntries(foodFields.filter(key=>Object.hasOwn(fields,key)).map(key=>[key,fields[key]])):{menu_url:document.url},customer_journey_verified:false};
+}
 export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40000,executablePath=process.env.CHROMIUM_EXECUTABLE_PATH,launch,decoderFactory=offlineDecoder}={}){
  if(!directory)throw Error('source_image_directory_required');
  if(!/^[0-9a-f-]{36}$/i.test(row?.listing_id||row?.id||''))throw Error('invalid_listing_identity');
@@ -77,6 +133,8 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
  if(extracted.profile.email_conflict){profile.email=null;profile.email_conflict=extracted.profile.email_conflict;}
  else if(extracted.profile.email_conflict===null&&typeof profile.email==='string'&&/^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(profile.email))profile.email_conflict=null;
  if(publisher){for(const key of Object.keys(profile))if(!['description','tagline','site_lang'].includes(key))delete profile[key];profile.source_kind='label_artist_profile';const spotify=extracted.profile.listen?.spotify;try{const u=new URL(spotify);if(u.protocol==='https:'&&u.hostname==='open.spotify.com'&&!u.username&&!u.password&&/^\/artist\/[A-Za-z0-9]{22}\/?$/.test(u.pathname))profile.listen={spotify:'https://open.spotify.com'+u.pathname.replace(/\/$/,'')};}catch{}}
+ const food=publisher?null:await captureFoodOffering(row,source,extracted,{directory,session,deadline});
+ if(food?.state==='captured_pending_review')Object.assign(profile,food.profile);
  let candidates=[...new Set(extracted.profile.photo_urls||[])].slice(0,4);
  if(publisher&&row.publisher_photo_urls!==undefined){if(!Array.isArray(row.publisher_photo_urls)||!row.publisher_photo_urls.length||row.publisher_photo_urls.length>4||new Set(row.publisher_photo_urls).size!==row.publisher_photo_urls.length||row.publisher_photo_urls.some(url=>!(extracted.profile.photo_urls||[]).includes(url)))throw Error('publisher_photo_not_in_source');candidates=row.publisher_photo_urls;}
  const images=[],rejected=[];let decoder;
@@ -97,6 +155,6 @@ export async function captureSourceHTML(row,{directory,session=null,timeoutMs=40
   }
  }finally{await closeDecoder(decoder);}
  if(images.length){profile.photo_urls=images.map(x=>x.url);profile.hero_url=images[0].url;profile.photo_url=images[0].url;}
- if(!profile.phone&&!profile.email&&!images.length&&!['rooms','dining','venues','amenities'].some(k=>profile[k]?.length)&&String(profile.description||'').length<80)throw Error('source_html_no_useful_fields');
- return{schema:2,capture_kind:'source_html',source_scope:publisher?'record_label':'official_site',...(publisher?{publisher_identity:{listing_id:row.listing_id||row.id,name:row.name,source_url:source.url,kind:'label_artist_profile'}}:{}),listing_id:row.listing_id||row.id,website:row.website,source_fingerprint:row.source_fingerprint,html:publicHTML(source.text),collected_at:new Date().toISOString(),review_required:true,render:null,source:{url:source.url,title,http_status:source.status,sha256:sha256(source.text),...quality},extractor_sha256:extractorHash,profile,images,rejected_images:rejected,network:{...session.stats},aggregator:false,provenance:Object.fromEntries(Object.keys(profile).map(k=>[k,'official-source-html:'+source.url]))};
+ if(!profile.menu?.length&&!profile.menu_url&&!profile.phone&&!profile.email&&!images.length&&!['rooms','dining','venues','amenities'].some(k=>profile[k]?.length)&&String(profile.description||'').length<80)throw Error('source_html_no_useful_fields');
+ return{schema:2,capture_kind:'source_html',capture_recipe_sha256:sourceHTMLRecipeHash,source_scope:publisher?'record_label':'official_site',...(publisher?{publisher_identity:{listing_id:row.listing_id||row.id,name:row.name,source_url:source.url,kind:'label_artist_profile'}}:{}),listing_id:row.listing_id||row.id,website:row.website,source_fingerprint:row.source_fingerprint,html:publicHTML(source.text),collected_at:new Date().toISOString(),review_required:true,render:null,source:{url:source.url,title,http_status:source.status,sha256:sha256(source.text),...quality},extractor_sha256:extractorHash,profile,...(food?{food_offering:Object.fromEntries(Object.entries(food).filter(([key])=>key!=='profile'))}:{}),images,rejected_images:rejected,network:{...session.stats},aggregator:false,provenance:Object.fromEntries(Object.keys(profile).map(k=>[k,'official-source-html:'+source.url]))};
 }
