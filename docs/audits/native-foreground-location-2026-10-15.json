@@ -1,0 +1,213 @@
+{
+  "generated_at": "2026-10-15T03:12:22.876319+00:00",
+  "status": "source_frozen_pending_independent_review_and_new_native_artifact",
+  "baseline_commit": "251e34e29714cec973f809d3ead07591c2a35a2d",
+  "release_owner": "root",
+  "files": [
+    {
+      "path": "assets/map-data/foreground-location.mjs",
+      "sha256": "c20db70cb0c9eda7d1bda395036b7fa94fbef51c90343dc75acf0b3fafec42ee",
+      "bytes": 4370
+    },
+    {
+      "path": "assets/map-data/embedded.mjs",
+      "sha256": "0fd9d407805d7bbd8a3b2f03c0e992664823b5da1cd05b91360ecdfa1c2b4656",
+      "bytes": 7577
+    },
+    {
+      "path": "mobile/src/useMapLocation.ts",
+      "sha256": "b4ab17d184ee332393f5c78bbc0ba94d4e45f004521db3bec22ed08f7cc75011",
+      "bytes": 2104
+    },
+    {
+      "path": "mobile/src/MapLocationControl.tsx",
+      "sha256": "c862b5de63ba2354703812ee4b7ee8bbfbfa705b5839a4e2f0c1cb8f71a16036",
+      "bytes": 2494
+    },
+    {
+      "path": "mobile/src/DiscoveryMap.android.tsx",
+      "sha256": "44f2c2d82e696286d76c1a1e199c0998680ec4c88d4067e03caebff0ba125d00",
+      "bytes": 6118
+    },
+    {
+      "path": "mobile/src/DiscoveryMap.native.tsx",
+      "sha256": "21b564f664b3839d1fc3def86920ef53ebb0d725b81fced01f85b961b2692ea6",
+      "bytes": 9282
+    },
+    {
+      "path": "mobile/src/DiscoveryMap.web.tsx",
+      "sha256": "a0fee961a0ef107b497a1f215e2196f48d710402602e83724465f0a235be79bc",
+      "bytes": 11825
+    },
+    {
+      "path": "mobile/package.json",
+      "sha256": "52667c9adc7d0909a176f5c44fbdf9fd578d9710a720328ad4571eaaba540913",
+      "bytes": 1235
+    },
+    {
+      "path": "mobile/package-lock.json",
+      "sha256": "f7f2fc1de0b5d675a7eb37e7b62ff355eae032582046462f3f75292324817db2",
+      "bytes": 249344
+    },
+    {
+      "path": "mobile/app.json",
+      "sha256": "7d1c7a4724eadb4effa695245c2f8e259951ee00711406bf265ce4eadfe01b64",
+      "bytes": 1971
+    },
+    {
+      "path": "tests/unit/foreground-location.test.mjs",
+      "sha256": "338e647ba9010ffcd7ed04910c432690a03e7c58afb82012555778897ed3582b",
+      "bytes": 5076
+    },
+    {
+      "path": "mobile/tests/foreground-map-location.test.mjs",
+      "sha256": "4bf65f4741264b259c4c7f5517a3b6e4d96abcc789a61c7536a61a06c5e63d1e",
+      "bytes": 11038
+    },
+    {
+      "path": "mobile/tests/android-map-recovery.test.mjs",
+      "sha256": "32d302d46d033bc9801a47e81947a12fcedaf0836fae400c64b30b3849bff049",
+      "bytes": 7908
+    },
+    {
+      "path": "docs/operations/native-foreground-location.md",
+      "sha256": "8f6a4ffcfa3953cd609fe08070247806df08223dd57814d3388f66bfab7b8c3d",
+      "bytes": 3600
+    }
+  ],
+  "package": {
+    "name": "expo-location",
+    "version": "57.0.21",
+    "sdk": "Expo57",
+    "official_docs": "https://docs.expo.dev/versions/v57.0.0/sdk/location/",
+    "registry_integrity": "sha512-up1e2Dqo4vzhyqzVB9ssRoP3p+VlIU6wJBHqipBenCijJYwnxAJjYv4nlBN0jRGk+4CixufCIkE9y2ZLH6594g=="
+  },
+  "source_behavior": [
+    "user gesture only; no startup permission request",
+    "one fresh device fix; stop watch after valid result",
+    "twenty-second timeout and explicit cancel/retry",
+    "foreground/focus/scope/unmount cleanup, including late subscription removal",
+    "manual gestures and selection invalidate camera intent",
+    "late initial catalogue data cannot override chosen camera",
+    "device snapshot marker plus actual reported accuracy; no GPS/live navigation assertion",
+    "measured zero coordinates accepted",
+    "two-minute snapshot retention; hide clears immediately",
+    "no profile/home-city/listing/preference writes",
+    "Android WebView geolocation remains disabled"
+  ],
+  "configuration_introspection": {
+    "ios_location_keys": [
+      "NSLocationWhenInUseUsageDescription"
+    ],
+    "ios_background_modes": [],
+    "android_location_permissions": [
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ],
+    "background_motion_foreground_service_permissions_enabled": false
+  },
+  "verification": {
+    "focused_lifecycle_and_component_groups": 19,
+    "full_mobile_tests": 475,
+    "mobile_failures": 0,
+    "mobile_skipped": 0,
+    "typescript": "passed",
+    "react_best_practices": "reviewed cleanup, current callbacks, bounded effects, gesture-only actions and accessible control labels",
+    "controlled_browser": {
+      "status": "passed",
+      "viewport": "390x844",
+      "actual_components": [
+        "DiscoveryMap.web.tsx",
+        "useMapLocation.ts",
+        "MapLocationControl.tsx"
+      ],
+      "map": "actual MapLibre with controlled empty basemap",
+      "location": "controlled Expo adapter; no device GPS claim",
+      "checks": [
+        "no startup prompt",
+        "permission on press",
+        "real drag suppresses late camera movement",
+        "late selected place and changed selected position preserve chosen camera",
+        "snapshot marker/accuracy",
+        "explicit refresh centers",
+        "hide",
+        "denied/settings",
+        "services off",
+        "cancel ignores late fix"
+      ],
+      "js_errors": []
+    }
+  },
+  "private_evidence": [
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/bundle.js",
+      "sha256": "68c63d8f2d9e63d1b33c6d310ea50093170b9ddb3417c51ed4ce7cad95a2b983",
+      "bytes": 1397296
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/denied-390.png",
+      "sha256": "5a137a2b56a8ae9eab674ca61193a34f165d8048799822ca3c443dc7f0e76790",
+      "bytes": 14501
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/entry.tsx",
+      "sha256": "03a633ccdb49393b79e3dcfbd1fe42456b971241d73eda4af4f0db6179147a44",
+      "bytes": 579
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/expo-config-introspection.json",
+      "sha256": "91faef4534d8ee7e09f207f7bd6d4fb24991a27322c8bc8f6e6a6a2722a6319b",
+      "bytes": 10363
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/location-snapshot-390.png",
+      "sha256": "355b839ee6916601897210f05d287c6d400dc79f9970ee74ae39b67129c46996",
+      "bytes": 15547
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/location.mjs",
+      "sha256": "c469d5d549978e94c212da377840e62f4c83e5558d1507a3fa136289528704bf",
+      "bytes": 638
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/native.mjs",
+      "sha256": "086ff45c9bc70885d579d8dfd66fa172d69f292c7549d0873deb0922bed1aa95",
+      "bytes": 626
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/pan-preserved-390.png",
+      "sha256": "6c121ae03b30fd7e4f53155bd5da68f2da9af5c69316d4275d3026615b5d798f",
+      "bytes": 14298
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/result.json",
+      "sha256": "7d62da53acc8f59e1c67305b39dc13b51c174c3a3e4e43078e3056944f069629",
+      "bytes": 649
+    },
+    {
+      "path": "/home/codespace/.codex/private-evidence/zoi-native-location/2026-10-15/run.mjs",
+      "sha256": "48fb9d098957f941a9ad370223b306eccfbea74ad0506e95d65d47db61203fb0",
+      "bytes": 5324
+    }
+  ],
+  "artifact_boundary": {
+    "new_binary_required": true,
+    "existing_apk_4a_includes_change": false,
+    "native_builds_started": 0,
+    "paid_provider_calls": 0,
+    "provider_keys_added": 0,
+    "deployments": 0,
+    "actual_os_permission_ui": "not exercised",
+    "actual_device_sensor_fix": "not exercised"
+  },
+  "remaining": "Independent source review, coherent web assets/native binary release, actual Android and iOS permission/deny/services/timeout/manual-pan acceptance against the produced artifact. Controlled adapter proof is not installed native GPS acceptance.",
+  "camera_review_correction": {
+    "finding": "Previously selected missing point arriving after GPS/manual pan could override camera in all three renderers.",
+    "fix": "A camera-intent generation fences deferred selected-coordinate effects; embedded payload carries explicit selectionFocus admission. New explicit selection/focus remains permitted.",
+    "proof": [
+      "actual React Native Web+MapLibre initial selected late-place, real pan, late feed and changed selected position preserve camera",
+      "actual iOS effects across ready/device request/late feed/manual pan/new explicit focus",
+      "embedded Android false selectionFocus refuses late focus, subsequent explicit focus succeeds"
+    ]
+  }
+}
