@@ -6,7 +6,7 @@ export function companyBrowserFence(company,{expiresAt=Infinity,now=Date.now}={}
  if(!UUID.test(company))throw Error('company_qa_scope');let step=0,record=null;const requests=[];
  return{record(id){if(record&&record!==id||!UUID.test(id))throw Error('company_qa_scope');record=id;},requests:()=>[...requests],count:()=>step,
  allow(r){try{const u=new URL(r.url),b=JSON.parse(r.postData||'{}'),fn=u.pathname.replace('/rest/v1/rpc/','');
- if(r.method==='GET')return u.origin===QA.site&&(u.pathname==='/social/'||u.pathname.startsWith('/assets/')||['/sw.js','/manifest.webmanifest','/favicon.ico'].includes(u.pathname));
+ if(r.method==='GET')return u.origin===QA.site&&(['/social','/social/'].includes(u.pathname)||u.pathname.startsWith('/assets/')||['/sw.js','/manifest.webmanifest','/favicon.ico'].includes(u.pathname));
  if(r.method==='OPTIONS')return u.origin===QA.base;
  if(r.method!=='POST'||u.origin!==QA.base)return false;
  if(['company_private_list','company_private_get','company_private_request'].includes(fn)){
