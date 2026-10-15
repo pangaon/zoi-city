@@ -1,0 +1,56 @@
+name: Dedicated CRM email draft browser QA
+on:
+  push:
+    branches: [main]
+    paths: ['ops/crm-email-browser-qa.json']
+permissions:
+  contents: read
+concurrency:
+  group: dedicated-crm-email-browser-qa
+  cancel-in-progress: false
+jobs:
+  crm-email:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main' && github.event.repository.private == false && github.event.repository.visibility == 'public' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24'
+      - name: Validate exact expiring request and reviewed code
+        id: admission
+        run: node scripts/auth-qa/crm-email-browser-ci.mjs check
+      - name: Controlled request guards and cleanup before credentials
+        run: node --test tests/unit/crm-email-browser-qa.test.mjs
+      - name: Install pinned browser
+        if: steps.admission.outputs.enabled == 'true'
+        run: |
+          npm install --global agent-browser@0.38.1
+          agent-browser install --with-deps
+      - name: Dedicated Contacts to private email drafts and canonical cleanup
+        id: browser
+        if: steps.admission.outputs.enabled == 'true'
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/auth-qa/crm-email-browser-ci.mjs browser
+      - name: Canonical draft cleanup also after interrupted browser stage
+        if: always() && steps.admission.outputs.enabled == 'true' && steps.browser.outcome != 'skipped'
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/auth-qa/crm-email-browser-ci.mjs cleanup
+      - name: Boolean-only evidence
+        if: always() && steps.admission.outputs.enabled == 'true' && steps.browser.outcome != 'skipped'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: crm-email-${{ github.run_id }}
+          path: |
+            qa-crm-email-evidence/result.json
+            qa-crm-email-evidence/failure.json
+          if-no-files-found: error
+          retention-days: 7
