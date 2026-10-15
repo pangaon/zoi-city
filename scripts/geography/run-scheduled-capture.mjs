@@ -21,7 +21,9 @@ export async function runScheduledCapture({env=process.env,fetcher=fetch,mask=se
  // Verify the real repository remains public before touching the Vault token.
  let repo;try{const response=await fetcher('https://api.github.com/repos/'+REPOSITORY,{headers:{Authorization:'Bearer '+github,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},signal:AbortSignal.timeout(15000),redirect:'error'});if(!response.ok)fail('public_repository_unconfirmed');repo=await boundedJSON(response,65536);}catch{fail('public_repository_unconfirmed');}
  if(repo?.full_name!==REPOSITORY||repo.private!==false||repo.visibility!=='public'||repo.default_branch!=='main'||repo.archived!==false||repo.disabled!==false)fail('public_repository_required');
- let response;try{response=await fetcher('https://api.supabase.com/v1/projects/'+PROJECT+'/database/query',{method:'POST',headers:{Authorization:'Bearer '+access,'Content-Type':'application/json'},body:JSON.stringify({query:VAULT_QUERY,read_only:true}),signal:AbortSignal.timeout(15000),redirect:'error'});}catch{fail('vault_read_unconfirmed');}
+ // This fixed SELECT requires the existing privileged Vault execution role.
+ // No grants, secret writes or fallback credentials are introduced.
+ let response;try{response=await fetcher('https://api.supabase.com/v1/projects/'+PROJECT+'/database/query',{method:'POST',headers:{Authorization:'Bearer '+access,'Content-Type':'application/json'},body:JSON.stringify({query:VAULT_QUERY,read_only:false}),signal:AbortSignal.timeout(15000),redirect:'error'});}catch{fail('vault_read_unconfirmed');}
  if(!response.ok){await response.body?.cancel();fail('vault_read_rejected');}
  let rows;try{rows=await boundedJSON(response,4096);}catch{fail('vault_response_invalid');}
  if(!Array.isArray(rows)||rows.length!==1||Object.keys(rows[0]||{}).length!==1||typeof rows[0]?.private_token!=='string'||!/^[a-f0-9]{64}$/.test(rows[0].private_token))fail('capture_token_invalid');
