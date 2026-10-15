@@ -1,4 +1,4 @@
-import {foodMedia,foodReservation,foodSourceHeld} from '../../food-offering.mjs';
+import {foodMedia,foodReservation,foodSourceHeld,reviewedFoodMenuLabel} from '../../food-offering.mjs';
 import {publishedDirections} from '../../directions.mjs';
 import {placeholderPhone} from '../../../../supabase/functions/zoi-enrich/_phone.js';
 import {resolveSocialLinks} from '../../social-links.mjs';
@@ -40,9 +40,10 @@ export function restaurantData(entity,profile={},media={}){
  if(reviewed?.photos.some(p=>p.url===media.hero))media={...media,heroKind:'photograph'};
  media=foodMedia(entity,media);
  const website=safeUrl(entity.website),links=[],sections=[],seen=new Set(),add=(url,label)=>{const href=safeUrl(url,website);if(href&&!seen.has(href)){seen.add(href);links.push({url:href,label:text(label)||'View menu',kind:/\.(?:png|jpe?g|webp)(?:[?#]|$)/i.test(href)?'image':'document'});}};
- if(text(profile.menu_url))add(profile.menu_url,'Full menu');
+ const sourceLabel=reviewedFoodMenuLabel(entity,profile);
+ if(text(profile.menu_url))add(profile.menu_url,sourceLabel?.label||'Full menu');
  const menuImages=Object.hasOwn(owned,'menu_image_urls')?owned.menu_image_urls:['menu','menu_url'].some(k=>Object.hasOwn(owned,k)||Object.hasOwn(owner,k))?[]:profile.menu_image_urls;
- const sourceMenu=!Object.hasOwn(owned,'menu')&&!Object.hasOwn(owned,'menu_url')?(safeUrl(profile.menu_source)||(reviewed?reviewed.website+'menu/12-islands-greek-taverna-1255-valley-road':'')):'';if(sourceMenu)add(sourceMenu,'Full menu on the official website');
+ const sourceMenu=!Object.hasOwn(owned,'menu')&&!Object.hasOwn(owned,'menu_url')?(safeUrl(profile.menu_source)||(reviewed?reviewed.website+'menu/12-islands-greek-taverna-1255-valley-road':'')):'';if(sourceMenu)add(sourceMenu,sourceLabel?.source_label||'Full menu on the official website');
  for(const [i,url]of (Array.isArray(menuImages)?menuImages:[]).slice(0,12).entries())if(imageUrl(url)&&/\.(?:png|jpe?g|webp)(?:[?#]|$)/i.test(url))add(url,'Menu · page '+(i+1));
  for(const group of Array.isArray(profile.menu)?profile.menu:[]){if(typeof group==='string'){add(group,'View menu');continue;}if(group?.url)add(group.url,group.label||group.name||group.section);const items=[];for(const it of Array.isArray(group?.items)?group.items:[]){const name=text(it.name);if(!name)continue;const itemUrl=safeUrl(text(it.url)||text(it.note),website);if(itemUrl&&/^https?:\/\//i.test(text(it.url)||text(it.note))){add(itemUrl,name);continue;}items.push({name,price:text(it.price),note:text(it.note)});}if(items.length)sections.push({title:text(group.section)||text(group.name)||'Menu',items:items.slice(0,300)});}
  const selectedPhone=Object.hasOwn(owner,'phone')?owner.phone:Object.hasOwn(owned,'phone')?owned.phone:(!placeholderPhone(entity.phone)&&text(entity.phone))||profile.phone,phone=placeholderPhone(selectedPhone)?'':text(selectedPhone),email=text(entity.email)||text(profile.email),photos=[...new Set([media.hero,...(media.gallery||[])].filter(imageUrl))].slice(0,12),address=Object.hasOwn(owner,'address')?text(owner.address):Object.hasOwn(owned,'address')?text(owned.address):text(entity.address)||sourceStreet(entity),city=text(entity.city),country=text(entity.country);

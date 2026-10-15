@@ -1,0 +1,462 @@
+{
+  "captured_at": "2026-10-15",
+  "scope": "Exact actual public readers and source writer/lease contracts; no production data. Legacy installed-source snapshots for stale projected-record compatibility.",
+  "functions": [
+    {
+      "signature": "enrich_sample_lease(uuid[])",
+      "definition": "CREATE OR REPLACE FUNCTION public.enrich_sample_lease(p_ids uuid[])\n RETURNS TABLE(slug text, website text, lease_id text, listing_id uuid, name text, entity_type text, existing_enrich jsonb, owner_managed boolean, owner_workspace_id uuid)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE lease text:=gen_random_uuid()::text;\nBEGIN\n IF p_ids IS NULL OR cardinality(p_ids) NOT BETWEEN 1 AND 3 OR array_position(p_ids,NULL) IS NOT NULL OR cardinality(p_ids)<>(SELECT count(DISTINCT x) FROM unnest(p_ids)x) THEN RAISE EXCEPTION 'invalid_enrichment_sample';END IF;\n RETURN QUERY WITH candidates AS(SELECT l.id FROM zoi.listings l WHERE l.id=ANY(p_ids) AND l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden' AND l.website~*'^https?://' AND coalesce(l.profile#>>'{_enrich,blocked}','')<>'true' AND coalesce(zoi.enrich_timestamp(l.profile#>>'{_enrich,lease,expires_at}'),'-infinity')<now() ORDER BY l.id FOR UPDATE SKIP LOCKED),leased AS(\n UPDATE zoi.listings l SET profile=coalesce(l.profile,'{}')||jsonb_build_object('_enrich',coalesce(l.profile->'_enrich','{}')||jsonb_build_object('lease',jsonb_build_object('id',lease,'task','enrichment','fingerprint',zoi.listing_quality_fingerprint(l),'source_website',l.website,'authority_version',1,'authority_fingerprint',zoi.enrich_authority_fingerprint(l),'expires_at',clock_timestamp()+interval '15 minutes')))FROM candidates c WHERE l.id=c.id RETURNING l.*)\n SELECT l.slug,l.website,lease,l.id,l.name,l.entity_type,(coalesce(l.profile->'_enrich','{}')-'lease')||jsonb_build_object('_lease_source_context',jsonb_build_object('city',l.city,'country',l.country,'address',l.address)),l.owner_workspace_id IS NOT NULL,l.owner_workspace_id FROM leased l;\nEND $function$\n",
+      "md5": "15626a3b9a0f095af32bb748627e651a",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "v"
+    },
+    {
+      "signature": "home_entity(text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_entity(p_slug text)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare entity jsonb; published jsonb;\nbegin\n entity:=public.seo_entity(p_slug);\n if entity is null or entity->>'id' is null then return entity;end if;\n if not exists(select 1 from zoi.listings where id=(entity->>'id')::uuid and publish_status='published' and moderation_status in ('clean','cleared') and coalesce(marketplace_status,'')<>'hidden') then return null;end if;\n published:=public.home_design_public((entity->>'id')::uuid);\n return entity||jsonb_build_object('published_design',published);\nend $function$\n",
+      "md5": "73f866cdced061a329d1c5b7e827c6e0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "seo_entity(text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.seo_entity(p_slug text)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n WITH me AS (\n  SELECT l.* FROM zoi.listings l WHERE l.slug=p_slug AND l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n   AND coalesce(l.marketplace_status,'')<>'hidden' LIMIT 1\n ), canon AS (\n  SELECT l2.slug FROM zoi.listings l2,me\n  WHERE l2.publish_status='published' AND l2.moderation_status IN ('clean','cleared') AND coalesce(l2.marketplace_status,'')<>'hidden' AND nullif(btrim(l2.slug),'') IS NOT NULL\n   AND l2.entity_type=me.entity_type\n   AND md5(zoi.seo_name(l2.name,l2.city))=md5(zoi.seo_name(me.name,me.city))\n   AND md5(zoi.seo_text(l2.city))=md5(zoi.seo_text(me.city)) AND zoi.seo_name(l2.name,l2.city)=zoi.seo_name(me.name,me.city)\n   AND zoi.seo_text(l2.city)=zoi.seo_text(me.city) AND zoi.seo_text(l2.region)=zoi.seo_text(me.region)\n   AND zoi.seo_text(l2.country)=zoi.seo_text(me.country) AND zoi.seo_text(l2.address)=zoi.seo_text(me.address)\n  ORDER BY (((l2.address IS NOT NULL)::int)+((l2.phone IS NOT NULL)::int)+((l2.website IS NOT NULL)::int)+((l2.latitude IS NOT NULL)::int)+((l2.description IS NOT NULL)::int)) DESC,\n   (l2.slug ~ '-[0-9a-f]{6}$')::int,coalesce(l2.updated_at,l2.created_at) DESC,l2.slug LIMIT 1\n )\n SELECT jsonb_build_object('id',me.id,'name',me.name,'entity_type',me.entity_type,'slug',me.slug,\n  'canonical_slug',(SELECT slug FROM canon),'city',me.city,'country',me.country,'address',me.address,'phone',me.phone,\n  'email',me.email,'photo_url',me.photo_url,'publish_status',me.publish_status,'moderation_status',me.moderation_status,'marketplace_status',me.marketplace_status,'website',me.website,'description',me.description,'latitude',me.latitude,'longitude',me.longitude,\n  'rating',me.rating,'rating_count',me.rating_count,'price_range',me.price_range,'meta_title',me.meta_title,'meta_description',me.meta_description,\n  'geo_precision',me.geo_precision,'social_links',me.social_links,'profile',me.profile,'category_slug',(SELECT c.slug FROM zoi.categories c WHERE c.id=me.primary_category_id),\n  'place_path',CASE WHEN me.place_id IS NOT NULL THEN zoi.place_path(me.place_id) ELSE NULL END,'updated_at',coalesce(me.updated_at,me.created_at)) || zoi.public_home_actions(me.id) || jsonb_build_object('owner_content',zoi.public_owner_content(me.id)) FROM me;\n$function$\n",
+      "md5": "e01c20df827c18865a0bfaadff2a9d49",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.enrich_apply(jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.enrich_apply(p_batch jsonb)\n RETURNS TABLE(slug text, applied boolean)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE r jsonb;l zoi.listings;machine jsonb;incoming jsonb;lease jsonb;\nBEGIN\n IF jsonb_typeof(p_batch) IS DISTINCT FROM 'array' OR jsonb_array_length(p_batch)>200 OR octet_length(p_batch::text)>2000000 THEN RAISE EXCEPTION 'invalid_enrichment_batch';END IF;\n FOR r IN SELECT value FROM jsonb_array_elements(p_batch) LOOP\n  SELECT * INTO l FROM zoi.listings WHERE listings.slug=r->>'slug' FOR UPDATE;\n  lease:=l.profile->'_enrich'->'lease';\n  IF l.id IS NULL OR l.publish_status IS DISTINCT FROM 'published' OR l.moderation_status NOT IN('clean','cleared') OR l.moderation_status IS NULL OR coalesce(l.marketplace_status,'')='hidden' OR lease->>'task' IS DISTINCT FROM 'enrichment' OR lease->>'fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l) OR lease->>'authority_version' IS DISTINCT FROM '1' OR lease->>'authority_fingerprint' IS DISTINCT FROM zoi.enrich_authority_fingerprint(l) OR nullif(r->>'lease_id','') IS NULL OR (lease->>'id') IS DISTINCT FROM (r->>'lease_id') OR (lease->>'source_website') IS DISTINCT FROM l.website OR coalesce(zoi.enrich_timestamp(lease->>'expires_at'),'-infinity')<=clock_timestamp() THEN\n   RETURN QUERY SELECT r->>'slug',false;CONTINUE;\n  END IF;\n  incoming:=coalesce(r->'profile','{}');\n  IF jsonb_typeof(incoming) IS DISTINCT FROM 'object' OR jsonb_typeof(coalesce(r->'provenance','{}')) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'invalid_enrichment_fields';END IF;\n  IF (incoming->>'crawl_status'='error' OR incoming->>'blocked'='true') THEN\n   machine:=(coalesce(l.profile->'_enrich','{}')-'lease')||jsonb_build_object('crawl_status','error','status','error','last_error',left(coalesce(incoming->>'last_error','crawl_failed'),200),'last_attempt_at',clock_timestamp()) || CASE WHEN incoming->>'blocked'='true' THEN jsonb_build_object('blocked','true','blocked_reason',left(coalesce(nullif(incoming->>'blocked_reason',''),'source_blocked'),200)) ELSE '{}'::jsonb END;\n  ELSE\n   machine:=(zoi.profile_strip(incoming)-'lease')||jsonb_build_object('provenance',coalesce(r->'provenance','{}'),'source_url',r->>'website','checked_at',to_char(now(),'YYYY-MM-DD'),'last_attempt_at',clock_timestamp(),'status',coalesce(incoming->>'crawl_status','ok'));\n  END IF;\n  UPDATE zoi.listings SET profile=coalesce(l.profile,'{}')||jsonb_build_object('_enrich',machine,'_coverage',jsonb_set(CASE WHEN (incoming->>'crawl_status'='error' OR incoming->>'blocked'='true') THEN zoi.listing_quality_state(l) ELSE jsonb_set(jsonb_set(jsonb_set(zoi.listing_quality_state(l),'{tasks,classification}','{\"status\":\"pending\"}'),'{tasks,design}','{\"status\":\"pending\"}'),'{tasks,verification}','{\"status\":\"pending\"}') END,'{tasks,enrichment}',jsonb_build_object('status',CASE WHEN (incoming->>'crawl_status'='error' OR incoming->>'blocked'='true') THEN CASE WHEN incoming->>'blocked'='true' THEN 'blocked' ELSE 'retry' END ELSE 'fetched' END,'recorded_at',clock_timestamp(),'lease_id',lease->>'id','evidence',jsonb_build_object('check','stored_source_fetch','identity_verified',false,'source_fingerprint',lease->>'fingerprint')),true)),updated_at=now() WHERE id=l.id;\n  RETURN QUERY SELECT l.slug,true;\n END LOOP;\nEND $function$\n",
+      "md5": "310678a4bd7d77d5467dbd07604349d9",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "v"
+    },
+    {
+      "signature": "zoi.enrich_queue_lease(integer,integer,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.enrich_queue_lease(p_limit integer DEFAULT 40, p_max_age_days integer DEFAULT 30, p_lease_minutes integer DEFAULT 15)\n RETURNS TABLE(slug text, website text, lease_id text, listing_id uuid, name text, entity_type text, existing_enrich jsonb, owner_managed boolean, owner_workspace_id uuid)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE lease text:=gen_random_uuid()::text;n integer:=greatest(least(coalesce(p_limit,3),3),1);fresh_quota integer;chosen uuid[]:=ARRAY[]::uuid[];pick uuid;phase integer;bucket integer;needed integer;\nBEGIN\n fresh_quota:=ceil(n*2.0/3)::integer;\n -- Fresh quota, then retry/fallback, then unused fresh capacity. Each branch\n -- stops at its needed rows, not a window ranking of the whole eligible corpus.\n FOR phase IN 1..3 LOOP\n  bucket:=CASE WHEN phase=2 THEN 1 ELSE 0 END;\n  needed:=CASE WHEN phase=1 THEN fresh_quota ELSE n-cardinality(chosen) END;\n  IF needed<=0 THEN CONTINUE;END IF;\n  FOR pick IN\n   SELECT l.id FROM zoi.listings l\n   WHERE l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden'\n   AND l.website~*'^https?://' AND coalesce(l.profile#>>'{_enrich,blocked}','')<>'true'\n   AND (CASE WHEN l.profile#>>'{_enrich,crawl_status}'='error' THEN 1 ELSE 0 END)=bucket\n   AND NOT(l.id=ANY(chosen))\n   AND (\n    zoi.enrich_timestamp(l.profile#>>'{_enrich,checked_at}') IS NULL\n    OR zoi.enrich_timestamp(l.profile#>>'{_enrich,checked_at}')<current_date-greatest(coalesce(p_max_age_days,30),1)\n    OR l.profile#>>'{_enrich,crawl_status}'='error'\n    OR (l.profile#>>'{_enrich,crawl_status}' IS NULL AND l.profile#>>'{_enrich,status}' IS NULL\n        AND zoi.enrich_timestamp(l.profile#>>'{_enrich,last_attempt_at}') IS NULL\n        AND l.profile#>>'{_coverage,tasks,enrichment,status}' IS NULL)\n   )\n   AND (l.profile#>>'{_enrich,crawl_status}' IS DISTINCT FROM 'error'\n        OR coalesce(zoi.enrich_timestamp(l.profile#>>'{_enrich,last_attempt_at}'),zoi.enrich_timestamp(l.profile#>>'{_enrich,checked_at}'),'-infinity')<=now()-interval '6 hours')\n   AND coalesce(zoi.enrich_timestamp(l.profile#>>'{_enrich,lease,expires_at}'),'-infinity')<now()\n   ORDER BY (l.verification_status IN('verified','owner_verified','source_verified'))DESC,l.profile#>>'{_enrich,checked_at}' NULLS FIRST,l.id\n   LIMIT needed FOR UPDATE OF l SKIP LOCKED\n  LOOP chosen:=array_append(chosen,pick);END LOOP;\n END LOOP;\n RETURN QUERY WITH leased AS (\n UPDATE zoi.listings l SET profile=coalesce(l.profile,'{}')||jsonb_build_object('_enrich',coalesce(l.profile->'_enrich','{}')||jsonb_build_object('lease',jsonb_build_object('id',lease,'task','enrichment','fingerprint',zoi.listing_quality_fingerprint(l),'source_website',l.website,'authority_version',1,'authority_fingerprint',zoi.enrich_authority_fingerprint(l),'expires_at',clock_timestamp()+make_interval(mins=>greatest(least(coalesce(p_lease_minutes,15),60),1)))))\n WHERE l.id=ANY(chosen) RETURNING l.*\n ) SELECT l.slug,l.website,lease,l.id,l.name,l.entity_type,(coalesce(l.profile->'_enrich','{}')-'lease')||jsonb_build_object('_lease_source_context',jsonb_build_object('city',l.city,'country',l.country,'address',l.address)),l.owner_workspace_id IS NOT NULL,l.owner_workspace_id FROM leased l;\nEND $function$\n",
+      "md5": "950a5ee4f0fad7fa4700805d0ac034ee",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": true,
+      "provolatile": "v"
+    },
+    {
+      "signature": "zoi.listing_quality_fingerprint(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality_fingerprint(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(l.name,l.entity_type,l.website,l.source_url,l.primary_category_id,l.owner_workspace_id,l.publish_status,l.moderation_status,l.marketplace_status,coalesce(l.profile,'{}')-'_enrich'-'_coverage'-'_geo')::text)\n$function$\n",
+      "md5": "cc69353ab17d09e06846eb90c1ee34cd",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "s"
+    },
+    {
+      "signature": "enrich_apply(jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.enrich_apply(p_batch jsonb)\n RETURNS TABLE(slug text, applied boolean)\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$ SELECT * FROM zoi.enrich_apply(p_batch); $function$\n",
+      "md5": "396c9e8ef6e7a19cb7e2c361a21bccbb",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=zoi, public"
+      ],
+      "prosecdef": true,
+      "provolatile": "v"
+    },
+    {
+      "signature": "zoi.enrich_authority_fingerprint(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.enrich_authority_fingerprint(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(1,zoi.listing_quality_fingerprint(l),\n  l.id,l.slug,l.owner_user_id,l.owner_workspace_id,l.claim_status,l.duplicate_status,\n  l.address,l.city,l.country,l.region,l.province_state,l.neighborhood,l.region_id,l.place_id,l.latitude,l.longitude,l.geo_precision,\n  -- Keep the complete prior machine facts and provenance current. Lease metadata\n  -- is the only changing server reservation; quality bookkeeping is outside _enrich.\n  coalesce(l.profile->'_enrich','{}'::jsonb)-ARRAY['lease','_lease_source_context'])::text)\n$function$\n",
+      "md5": "f88710fbc5694cccad696f7550429a65",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.enrich_timestamp(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.enrich_timestamp(p_text text)\n RETURNS timestamp with time zone\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$ BEGIN RETURN nullif(p_text,'')::timestamptz;EXCEPTION WHEN invalid_datetime_format OR datetime_field_overflow THEN RETURN NULL;END $function$\n",
+      "md5": "281a90ff6e44c1a64b2d3c8977f1c38c",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.listing_quality_state(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality_state(l zoi.listings)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$\nDECLARE visible boolean:=l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden';\n source text:=coalesce(nullif(l.website,''),nullif(l.source_url,''),nullif(l.profile#>>'{_enrich,source_url}',''));fingerprint text:=zoi.listing_quality_fingerprint(l);task text;v jsonb;tasks jsonb:='{}';stored jsonb:=coalesce(l.profile->'_coverage','{}');\nBEGIN\n FOREACH task IN ARRAY ARRAY['classification','enrichment','design','verification'] LOOP\n  v:=jsonb_build_object('status',CASE WHEN NOT coalesce(visible,false) THEN 'blocked_visibility' WHEN source IS NULL THEN 'source_missing' WHEN task='enrichment' AND l.profile#>>'{_enrich,blocked}'='true' THEN 'blocked_existing' ELSE 'pending' END);\n  IF coalesce(visible,false) AND source IS NOT NULL AND stored->>'fingerprint'=fingerprint AND stored#>>ARRAY['tasks',task,'status'] IN('verified','retry','blocked','fetched') AND (stored#>>ARRAY['tasks',task,'status']<>'verified' OR coalesce(zoi.enrich_timestamp(stored#>>ARRAY['tasks',task,'recorded_at']),'-infinity')>now()-interval '7 days') AND NOT(task='enrichment' AND coalesce(l.profile#>>'{_enrich,blocked}','false')='true') THEN v:=stored#>ARRAY['tasks',task];END IF;\n  tasks:=tasks||jsonb_build_object(task,v);\n END LOOP;\n RETURN jsonb_build_object('version',1,'fingerprint',fingerprint,'public_eligible',coalesce(visible,false),'source_available',source IS NOT NULL,'source_kind',CASE WHEN source IS NULL THEN 'source_missing' WHEN source~*'/(profile|members?|directory|people|team|staff)(/|\\?|$)' THEN 'member_or_directory' WHEN source~*'^https?://[^/]+/?$' THEN 'root_identity_unverified' ELSE 'source_identity_unverified' END,'owner_managed',l.owner_workspace_id IS NOT NULL,'tasks',tasks,'audit',CASE WHEN stored->>'fingerprint'=fingerprint THEN stored->'audit' ELSE NULL END);\nEND $function$\n",
+      "md5": "ea1641facea45c788f8e6ca84feaf6d4",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "prosecdef": false,
+      "provolatile": "s"
+    },
+    {
+      "signature": "zoi.profile_strip(jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.profile_strip(p jsonb)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT coalesce(\n    (SELECT jsonb_object_agg(k, v)\n       FROM jsonb_each(coalesce(p, '{}'::jsonb)) AS t(k, v)\n      WHERE k NOT IN ('rating','rating_count','review','reviews','reviewCount',\n                      'aggregateRating','score','stars','ranking','provider_stats',\n                      '_enrich','_geo','_coverage')\n        AND k NOT LIKE 'rating%'\n        AND k NOT LIKE 'review%'),\n    '{}'::jsonb);\n$function$\n",
+      "md5": "8b20fc1c36fca6647a69e155fbeb377f",
+      "owner": "postgres",
+      "acl": null,
+      "proconfig": [
+        "search_path=zoi, public"
+      ],
+      "prosecdef": false,
+      "provolatile": "i"
+    }
+  ],
+  "legacy": {
+    "native": {
+      "path": "mobile/src/profile.ts",
+      "commit": "bd5e9c41d8e10947266315fdbf262a0a4470a04d",
+      "sha256": "5aea12da4b4365dff9bf87674ba53ae9fe1de92968dc8bf629b5b8510a7a9a18",
+      "source": "// @ts-ignore Shared public address lookup; never invent a routed or reviewed destination.\nimport {publishedAddressLookup} from '../../assets/map-data/loader.mjs';\n// @ts-ignore Shared pure official-site authority and quarantine contract.\nimport {selectedOfficialWebsite,officialSourceEntity,sourceIdentityContentHeld} from '../../assets/enrichment/official-source-policy.mjs';\n// @ts-ignore Shared conservative phone placeholder guard.\nimport {placeholderPhone} from '../../supabase/functions/zoi-enrich/_phone.js';\n// @ts-ignore Shared reviewed branch contact scope.\nimport {sharedBranchContactSource, BRANCH_CONTACT_FIELDS} from '../../assets/enrichment/branch-contact-scope.mjs';\n// @ts-ignore Shared pure presentation contract.\nimport {phoneHref} from '../../assets/homes/phone.mjs';\n// @ts-ignore Shared pure source-link classifier.\nimport {socialProfile} from '../../supabase/functions/zoi-enrich/_social.js';\n// @ts-ignore Shared exact publisher identity scope.\nimport {publisherSocial} from '../../assets/enrichment/publisher-social.mjs';\n// @ts-ignore Shared identity/provenance/branch guards; owner clears stay authoritative.\nimport {scopedSourceServices} from '../../assets/enrichment/client-brief.mjs';\ntype RecordValue = Record<string, any>;\nconst object = (value: unknown): RecordValue => value && typeof value === 'object' && !Array.isArray(value) ? value as RecordValue : {};\nexport function plain(value: unknown) { return typeof value === 'string' ? value.replace(/<[^>]*>/g, '').replace(/\\s+/g, ' ').trim() : ''; }\nexport function publicURL(value: unknown) {\n  if (typeof value !== 'string') return '';\n  try { const url = new URL(value); if (!['https:', 'http:'].includes(url.protocol) || url.username || url.password || !url.hostname.includes('.') || /^(localhost|127\\.|0\\.|169\\.254\\.)/i.test(url.hostname)) return ''; return url.href; } catch { return ''; }\n}\nexport function profileAction(value: unknown, kind: 'booking' | 'volunteer' | 'inquiry' | 'calendar' | 'group' | 'festival' | 'shows') {\n  if(typeof value !== 'string')return '';\n  const pattern=kind==='shows'?/^\\/trips\\/\\?artist=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='festival'?/^\\/festival\\/\\?event=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='calendar'?/^\\/organization-calendar\\/\\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='group'?/^\\/groups\\/\\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='inquiry'?/^\\/inquiries\\/\\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='booking'?/^\\/book\\/\\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:/^\\/volunteer\\/\\?workspace=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;\n  return pattern.exec(value)?.[1].toLowerCase() || '';\n}\nexport function normalizeProfile(input: unknown) {\n  const e = object(officialSourceEntity(object(Array.isArray(input) ? input[0] : input)));\n  if (!plain(e.name)) return null;\n  const raw = object(e.profile), enrichment = sourceIdentityContentHeld(e)?{}:object(raw._enrich), owner=object(e.owner_content), ownerProfile=object(owner.profile);\n  const banned = /^(rating|rating_count|ratingvalue|reviewcount|aggregaterating|reviews?|stars|score|_enrich|_geo|_meta|provenance|source_url|checked_at|blocked|blocked_reason|last_error)$/i;\n  const profile: RecordValue = {};\n  for (const source of [enrichment, raw, ownerProfile]) for (const key of Object.keys(source)) if (!banned.test(key)) {\n    if(source===enrichment&&sharedBranchContactSource(e,enrichment.source_url)&&BRANCH_CONTACT_FIELDS.has(key))continue;\n    profile[key] = source===enrichment && ['social','social_links'].includes(key) ? Object.fromEntries(Object.entries(object(source[key])).flatMap(([name,value])=>{const match=socialProfile(value);return match&&!publisherSocial(enrichment.source_url,match.url)?[[name,match.url]]:[];})) : source[key];\n  }\n  const names: Record<string, string> = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', linkedin: 'LinkedIn', x: 'X', twitter: 'X', spotify: 'Spotify', soundcloud: 'SoundCloud', telegram: 'Telegram', whatsapp: 'WhatsApp' };\n  const social = Object.hasOwn(owner,'social_links')?object(owner.social_links):{ ...object(profile.social), ...object(profile.social_links), ...object(e.social_links) };\n  const rawPhone=plain(Object.hasOwn(owner,'phone')?owner.phone:Object.hasOwn(ownerProfile,'phone')?ownerProfile.phone:Object.hasOwn(raw,'phone')?raw.phone:(!placeholderPhone(e.phone)&&e.phone)||profile.phone);\n  const phone=placeholderPhone(rawPhone)?'':rawPhone;\n  const seen = new Set<string>();\n  const socials = Object.entries(names).flatMap(([key, label]) => { const url = publicURL(social[key]); if (!url || seen.has(url)) return []; seen.add(url); return [{ label, url }]; });\n  const photo = [e.hero_url, e.photo_url, e.photo, profile.hero_url, profile.photo_url].map(publicURL).find(value => value.startsWith('https://')) || '';\n  const fieldsFromWebsite = Object.keys(enrichment).filter(key => !banned.test(key) && !(key in raw));\n  const serviceOwner = [owner, ownerProfile, raw, e].find(layer => Object.hasOwn(layer, 'services'));\n  const serviceValue = serviceOwner ? serviceOwner.services : scopedSourceServices(e);\n  if (serviceOwner || Array.isArray(serviceValue) && serviceValue.length) profile.services = serviceValue; else delete profile.services;\n  const services = Array.isArray(serviceValue) ? serviceValue.map((v: unknown) => plain(v) || plain(object(v).name) || plain(object(v).title)).filter(Boolean).slice(0, 30) : [];\n  const booking = profileAction(e.booking_url, 'booking'), inquiry = profileAction(e.inquiry_url, 'inquiry');\n  const addressLookup=publishedAddressLookup({s:plain(e.canonical_slug||e.slug),n:plain(e.name),addr:plain(e.address),city:plain(e.city),country:plain(e.country)});\n  return { addressLookup, showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',\n    groupListing:profileAction(e.group_url,'group')===String(e.id||'').toLowerCase()?profileAction(e.group_url,'group'):'',\n    inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), description: plain(e.description || profile.about || profile.description), location: [e.city, e.country].map(plain).filter(Boolean).join(' \u00b7 '), address: plain(e.address), website: publicURL(selectedOfficialWebsite(e)), phone, phoneHref:phoneHref(phone), email: plain(e.email || profile.email), photo, socials, services, verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };\n}\n\nexport function profileImageMode(width:number,height:number): 'center'|'cover' {return Number.isFinite(width)&&Number.isFinite(height)&&width>=480&&height>=240&&width/height>=0.85&&width/height<=1.8?'cover':'center';}\nexport function profileImageEventMode(event:any){const source=event?.nativeEvent?.source,target=event?.nativeEvent?.target;return profileImageMode(source?.width??target?.naturalWidth,source?.height??target?.naturalHeight);}\n"
+    },
+    "policy": {
+      "path": "assets/enrichment/official-source-policy.mjs",
+      "commit": "bd5e9c41d8e10947266315fdbf262a0a4470a04d",
+      "sha256": "f77468e4d720145f71ef9a08a83afe8eb43582be5c408dcbef6139e844fcbdfd",
+      "source": "// Pure outward website policy. Never writes owner content or supplies replacement URLs.\nconst object=x=>x&&typeof x==='object'&&!Array.isArray(x)?x:{};\nconst own=(x,k)=>Object.hasOwn(object(x),k);\nconst normalized=Symbol('official-source-normalized');\nconst flagged=x=>x===true||x==='true';\nconst context=e=>e?.media_input&&typeof e.media_input==='object'?{...e,...e.media_input}:e;\n// _enrich is machine content, never an owner override. Keep the review receipt\n// available to owner tools, but do not project a known wrong source's content.\nconst receiptKeys=new Set(['source_url','provenance','checked_at','last_attempt_at','last_success_at','media_expires_at','blocked','blocked_reason','last_error','status','crawl_status','lease','source_kind','identity_scope','scope_review_required','organization_identity_quarantine','source_affiliation','member_source','publisher_source_evidence','email_conflict','phone_conflict']);\nexport function sourceIdentityContentHeld(entity){return object(context(entity)?.profile?._enrich).blocked_reason==='source_scope_mismatch';}\nfunction receiptOnly(value){return Object.fromEntries(Object.entries(object(value)).filter(([key])=>receiptKeys.has(key)));}\nexport function officialSiteURL(value){try{if(typeof value!=='string')return '';const u=new URL(value);return ['http:','https:'].includes(u.protocol)&&!u.username&&!u.password?u.href:'';}catch{return '';}}\n// Outbound contact only: a legacy bare hostname is not verified source identity.\nexport function outwardWebsiteURL(value){const strict=officialSiteURL(value);if(strict)return strict;if(typeof value!=='string')return '';const bare=value.trim();if(!/^(?:[a-z0-9\\u0080-\\uffff](?:[a-z0-9\\u0080-\\uffff-]*[a-z0-9\\u0080-\\uffff])?\\.)+[a-z\\u0080-\\uffff]{2,}(?:[/?#]|$)/i.test(bare)||/[\\s\\\\]/.test(bare))return '';return officialSiteURL('https://'+bare);}\nexport function officialSourceQuarantined(entity){\n entity=context(entity);\n const q=object(entity?.profile?._enrich);\n return q.blocked_reason==='source_scope_mismatch'||flagged(q.scope_review_required)||flagged(q.organization_identity_quarantine);\n}\nfunction selected(entity){\n const owner=object(entity?.owner_content),profile=object(entity?.profile);\n for(const layer of [owner,object(owner.profile),profile])if(own(layer,'website'))return{present:true,value:layer.website};\n return{present:false,value:entity?.website};\n}\nexport function selectedOutwardWebsite(entity){if(entity?.[normalized])return entity[normalized].outward??entity[normalized].website;entity=context(entity);const chosen=selected(entity);return officialSourceQuarantined(entity)&&!chosen.present?'':outwardWebsiteURL(chosen.value);}\nexport function selectedOfficialWebsite(entity){\n if(entity?.[normalized])return entity[normalized].website;\n entity=context(entity);\n const chosen=selected(entity),site=officialSiteURL(chosen.value);\n if(!site||!officialSourceQuarantined(entity))return site;\n // An imported/default website is withheld on an explicit source hold.\n // Published owner/profile fields remain authoritative, including same-domain\n // edits and clears. A stale machine receipt is not a moderation decision.\n return chosen.present?site:'';\n}\nexport function officialSourceEntity(entity){\n if(!entity||typeof entity!=='object'||Array.isArray(entity))return entity;\n if(entity[normalized])return entity;\n const original=entity;entity=context(entity);\n const qualified=selectedOfficialWebsite(entity),chosen=selected(entity),site=qualified||(!officialSourceQuarantined(entity)||chosen.present?outwardWebsiteURL(chosen.value):'');\n // Keep an accepted stored URL's exact spelling in canonical/schema payloads.\n // Outward action helpers still normalize its URL independently.\n const out={...entity,website:site?(qualified?(chosen.present?chosen.value:entity.website):site):''};\n if(sourceIdentityContentHeld(entity))out.profile={...object(entity.profile),_enrich:receiptOnly(entity.profile?._enrich)};\n // Clamp all fallback layers only when their selected outward website is empty.\n // This is a transient public projection; the supplied record remains untouched.\n if(!site&&(officialSourceQuarantined(entity)||chosen.present)){\n  const raw=object(out.profile),owner=object(entity.owner_content);\n  out.profile={...raw,website:'',...(officialSourceQuarantined(entity)?{_enrich:{...object(raw._enrich),website:''}}:{})};\n  if(own(owner,'website')||own(owner.profile,'website'))out.owner_content={...owner,website:'',...(owner.profile?{profile:{...object(owner.profile),website:''}}:{})};\n }\n // Compact search context must carry the same cleaned view. Stored inputs and\n // explicit owner/profile/base fields remain unchanged; this is not a write.\n if(original.media_input&&typeof original.media_input==='object')out.media_input={...original.media_input,profile:out.profile,website:out.website};\n Object.defineProperty(out,normalized,{value:{website:qualified,outward:site},enumerable:true});\n return out;\n}\n"
+    }
+  },
+  "listing_columns": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "entity_type",
+      "type": "text"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "slug",
+      "type": "text"
+    },
+    {
+      "name": "legal_name",
+      "type": "text"
+    },
+    {
+      "name": "display_name",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "primary_category_id",
+      "type": "bigint"
+    },
+    {
+      "name": "tags",
+      "type": "text[]"
+    },
+    {
+      "name": "language_support",
+      "type": "text[]"
+    },
+    {
+      "name": "greek_language_available",
+      "type": "boolean"
+    },
+    {
+      "name": "city",
+      "type": "text"
+    },
+    {
+      "name": "region",
+      "type": "text"
+    },
+    {
+      "name": "province_state",
+      "type": "text"
+    },
+    {
+      "name": "country",
+      "type": "text"
+    },
+    {
+      "name": "neighborhood",
+      "type": "text"
+    },
+    {
+      "name": "address",
+      "type": "text"
+    },
+    {
+      "name": "latitude",
+      "type": "double precision"
+    },
+    {
+      "name": "longitude",
+      "type": "double precision"
+    },
+    {
+      "name": "region_id",
+      "type": "bigint"
+    },
+    {
+      "name": "phone",
+      "type": "text"
+    },
+    {
+      "name": "email",
+      "type": "text"
+    },
+    {
+      "name": "website",
+      "type": "text"
+    },
+    {
+      "name": "source_id",
+      "type": "uuid"
+    },
+    {
+      "name": "source_url",
+      "type": "text"
+    },
+    {
+      "name": "source_type",
+      "type": "text"
+    },
+    {
+      "name": "source_trust_tier",
+      "type": "text"
+    },
+    {
+      "name": "source_last_checked_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "first_seen_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_seen_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_verified_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "verification_status",
+      "type": "text"
+    },
+    {
+      "name": "claim_status",
+      "type": "text"
+    },
+    {
+      "name": "owner_user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "duplicate_status",
+      "type": "text"
+    },
+    {
+      "name": "moderation_status",
+      "type": "text"
+    },
+    {
+      "name": "publish_status",
+      "type": "text"
+    },
+    {
+      "name": "freshness_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "completeness_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "trust_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "profile",
+      "type": "jsonb"
+    },
+    {
+      "name": "field_meta",
+      "type": "jsonb"
+    },
+    {
+      "name": "trust_badges",
+      "type": "text[]"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "created_by",
+      "type": "text"
+    },
+    {
+      "name": "updated_by",
+      "type": "text"
+    },
+    {
+      "name": "search_tsv",
+      "type": "tsvector"
+    },
+    {
+      "name": "meta_title",
+      "type": "text"
+    },
+    {
+      "name": "meta_description",
+      "type": "text"
+    },
+    {
+      "name": "canonical_path",
+      "type": "text"
+    },
+    {
+      "name": "schema_type",
+      "type": "text"
+    },
+    {
+      "name": "og_image",
+      "type": "text"
+    },
+    {
+      "name": "hreflang_alt",
+      "type": "jsonb"
+    },
+    {
+      "name": "sells_products",
+      "type": "boolean"
+    },
+    {
+      "name": "offers_services",
+      "type": "boolean"
+    },
+    {
+      "name": "is_professional",
+      "type": "boolean"
+    },
+    {
+      "name": "bookable",
+      "type": "boolean"
+    },
+    {
+      "name": "booking_type",
+      "type": "text"
+    },
+    {
+      "name": "service_on_demand",
+      "type": "boolean"
+    },
+    {
+      "name": "marketplace_status",
+      "type": "text"
+    },
+    {
+      "name": "price_range",
+      "type": "text"
+    },
+    {
+      "name": "hours",
+      "type": "text"
+    },
+    {
+      "name": "rating",
+      "type": "numeric(2,1)"
+    },
+    {
+      "name": "rating_count",
+      "type": "integer"
+    },
+    {
+      "name": "photo_url",
+      "type": "text"
+    },
+    {
+      "name": "amenities",
+      "type": "text[]"
+    },
+    {
+      "name": "geo_precision",
+      "type": "text"
+    },
+    {
+      "name": "embedding",
+      "type": "vector(1536)"
+    },
+    {
+      "name": "keywords",
+      "type": "text[]"
+    },
+    {
+      "name": "onboarding_path",
+      "type": "text"
+    },
+    {
+      "name": "social_links",
+      "type": "jsonb"
+    },
+    {
+      "name": "ingestion_source",
+      "type": "text"
+    },
+    {
+      "name": "owner_workspace_id",
+      "type": "uuid"
+    },
+    {
+      "name": "place_id",
+      "type": "bigint"
+    },
+    {
+      "name": "region_code",
+      "type": "text"
+    },
+    {
+      "name": "region_native",
+      "type": "text"
+    }
+  ]
+}

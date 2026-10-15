@@ -1,8 +1,9 @@
+import {validateReviewedVisibleFoodCandidate,visibleFoodSourceHeld as foodSourceHeld} from './reviewed-visible-food.mjs';
 import {validHospitalityFields,hospitalitySourceMatches} from '../../supabase/functions/zoi-enrich/_hospitality.js';
 /** Bind reviewed captured source evidence to an existing database enrichment lease.
  * Does not invent a lease or write around enrich_apply's owner/source fences.
  */
-import {buildClientBrief,sourceCopyPlaceholder,sourceCopyProfile,retainedSourceCopy} from '../../assets/enrichment/client-brief.mjs';
+import {buildClientBrief,sourceCopyPlaceholder,sourceCopyProfile,retainedSourceCopy,reviewedFoodErrorDeferred} from '../../assets/enrichment/client-brief.mjs';
 import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
 import {canonical,sha256} from '../quality/evidence.mjs';
 const hashPattern=/^[a-f0-9]{64}$/;
@@ -15,8 +16,9 @@ export function reviewedEnrichmentBatch(report,review,lease){
  if(review.source_fingerprint!==report.source_fingerprint||review.identity_confirmed!==true||review.images_confirmed!==true||!review.reviewer||!review.reviewed_at)throw Error('source_review_required');
  // Reassess retained reports too: an approval cannot revive a capture made before
  // the current replacement/parking guard existed, or sanitize it with overrides.
- const source=report.capture_kind==='source_html'?report.source:report.render;
+ const source=['source_html','reviewed_visible_food'].includes(report.capture_kind)?report.source:report.render;
  if(assessMachineSourceIdentity({website:lease.website,finalUrl:source?.url,name:lease.name,title:source?.title,description:report.profile?.description}).outcome!=='continue')throw Error('source_identity_review_required');
+ if(report.capture_kind==='reviewed_visible_food'){validateReviewedVisibleFoodCandidate(report,review,lease);return reviewedSourceHTML(report,review,lease);}
  if(report.capture_kind==='source_html')return reviewedSourceHTML(report,review,lease);
  if(report.capture_kind&&report.capture_kind!=='rendered')throw Error('source_not_approved');
  if(!report.render?.url||report.aggregator||report.status==='repair_required'||report.source?.http_status!==200||new URL(report.render.url).hostname.replace(/^www\./,'')!==new URL(report.website).hostname.replace(/^www\./,''))throw Error('source_not_approved');
@@ -30,16 +32,9 @@ export function reviewedEnrichmentBatch(report,review,lease){
  return[{slug:lease.slug,website:lease.website,lease_id:lease.lease_id,profile,provenance}];
 }
 
-const foodSourceHeld=(prior,website)=>{
- const flagged=value=>value===true||value==='true';
- if(flagged(prior.blocked)||prior.status==='blocked'||['blocked','error'].includes(prior.crawl_status)||prior.blocked_reason==='source_scope_mismatch'||['scope_review_required','organization_identity_quarantine','source_scope_mismatch','source_challenge','challenge'].some(key=>flagged(prior[key]))||prior.identity_scope||prior.member||prior.association_member||prior.source_affiliation||['association_directory','association_member','supporting_publisher_profile'].includes(prior.source_kind))return true;
- const document=value=>{try{const url=new URL(value);return url.protocol+'//'+url.hostname.replace(/^www\./,'')+url.pathname.replace(/\/$/,'')+url.search;}catch{return null;}};
- if(prior.source_url)return !document(prior.source_url)||document(prior.source_url)!==document(website);
- return Object.keys(prior).some(key=>!['lease','_lease_source_context','provenance','checked_at','last_attempt_at','status','crawl_status'].includes(key));
-};
 const foodKeys=['menu','menu_source','menu_source_format','menu_total_items','menu_truncated','menu_url'];
 function reviewedFoodOffering(report,review,lease){
- const evidence=report.food_offering,hasFields=foodKeys.some(key=>Object.hasOwn(report.profile,key)),prior=lease.existing_enrich||{};
+ const evidence=report.food_offering,hasFields=foodKeys.some(key=>Object.hasOwn(report.profile,key)),storedPrior=lease.existing_enrich||{},prior=report.capture_kind==='reviewed_visible_food'&&reviewedFoodErrorDeferred(storedPrior)&&canonical(storedPrior.source_identity?.canonical_context)===canonical(report.visible_food_review?.canonical_context)?{...storedPrior,crawl_status:'review_required'}:storedPrior;
  // A phone/photo-only report must not lift a held old menu or an unresolved
  // Food capture through the generic prior-machine merge below.
  if(evidence?.state==='unresolved')throw Error('food_offering_unresolved');
@@ -49,14 +44,14 @@ function reviewedFoodOffering(report,review,lease){
  if(foodSourceHeld(prior,lease.website))throw Error('food_source_hold_review_required');
  if(!object(evidence.canonical_context)||canonical(evidence.canonical_context)!==canonical(prior._lease_source_context)||!evidence.canonical_context.city||!evidence.canonical_context.country)throw Error('food_source_context_changed');
  const identity=evidence.primary_identity;
- if(!identity||identity.verification!=='exact_name_typed_jsonld'||identity.name!==lease.name||identity.expected_entity_type!==lease.entity_type||identity.source_url!==report.source.url||evidence.primary_source_url!==report.source.url||evidence.linked_from_sha256!==report.source.sha256)throw Error('food_source_identity_changed');
+ if(!identity||identity.verification!==(report.capture_kind==='reviewed_visible_food'?'reviewed_official_visible_branch':'exact_name_typed_jsonld')||identity.name!==lease.name||identity.expected_entity_type!==lease.entity_type||identity.source_url!==report.source.url||evidence.primary_source_url!==report.source.url||evidence.linked_from_sha256!==report.source.sha256)throw Error('food_source_identity_changed');
  let source;try{source=new URL(evidence.source_url);}catch{throw Error('food_source_evidence_invalid');}
  if(source.protocol!=='https:'||source.username||source.password||source.origin!==new URL(report.source.url).origin||!hashPattern.test(evidence.source_sha256||'')||evidence.hash_basis!=='decoded_utf8'||!Number.isFinite(Date.parse(evidence.retrieved_at)))throw Error('food_source_evidence_invalid');
  const menu=report.profile.menu;
  if(evidence.kind==='menu_handoff'){
   if(evidence.source_format!=='source_document_handoff'||report.profile.menu_url!==source.href||foodKeys.some(key=>key!=='menu_url'&&Object.hasOwn(report.profile,key))||evidence.menu_sha256!==null||evidence.retained_items!==0||evidence.original_total!==null||evidence.truncated!==null)throw Error('food_menu_handoff_invalid');
  }else{
-  if(evidence.kind!=='structured_menu'||!['schema.org','html-product-fields','html-semantic-food-fields'].includes(evidence.source_format)||report.profile.menu_source_format!==evidence.source_format||report.profile.menu_source!==source.href||!Array.isArray(menu)||!menu.length||menu.length>20||Buffer.byteLength(JSON.stringify(menu),'utf8')>120000||sha256(canonical(menu))!==evidence.menu_sha256)throw Error('food_menu_evidence_invalid');
+  if(evidence.kind!=='structured_menu'||!(report.capture_kind==='reviewed_visible_food'?['reviewed-visible-data-aid-fields']:['schema.org','html-product-fields','html-semantic-food-fields']).includes(evidence.source_format)||report.profile.menu_source_format!==evidence.source_format||report.profile.menu_source!==source.href||!Array.isArray(menu)||!menu.length||menu.length>20||Buffer.byteLength(JSON.stringify(menu),'utf8')>120000||sha256(canonical(menu))!==evidence.menu_sha256)throw Error('food_menu_evidence_invalid');
   let count=0;for(const section of menu){if(!object(section)||typeof section.section!=='string'||section.section.length>100||!Array.isArray(section.items)||!section.items.length||section.items.length>300)throw Error('food_menu_fields_invalid');for(const item of section.items){if(!object(item)||typeof item.name!=='string'||!item.name.trim()||item.name.length>160||typeof item.price!=='string'||item.price.length>100||typeof item.note!=='string'||item.note.length>600||Object.keys(item).some(key=>!['name','price','note'].includes(key)))throw Error('food_menu_fields_invalid');count++;}}
   if(count>300||evidence.retained_items!==count||!(evidence.original_total===null||Number.isInteger(evidence.original_total)&&evidence.original_total>=count)||!(evidence.truncated===null||typeof evidence.truncated==='boolean')||evidence.original_total===null&&evidence.total_state!=='unreported_by_extractor'||evidence.original_total!==null&&(evidence.total_state!=='observed'||evidence.truncated!==(evidence.original_total>count))||Object.hasOwn(report.profile,'menu_total_items')&&report.profile.menu_total_items!==evidence.original_total||Object.hasOwn(report.profile,'menu_truncated')&&report.profile.menu_truncated!==evidence.truncated)throw Error('food_menu_coverage_changed');
  }
@@ -107,7 +102,10 @@ function reviewedSourceHTML(report,review,lease){
  if(!fields.menu?.length&&!fields.menu_url&&!photos.length&&!fields.phone&&!fields.email&&!['rooms','dining','venues','amenities'].some(k=>fields[k]?.length)&&String(fields.description||'').trim().length<40)throw Error('source_html_no_useful_fields');
  const freshFields={...fields,...(photos.length?{photo_urls:photos,hero_url:urls.has(report.profile.hero_url)?report.profile.hero_url:photos[0]}:{})};
  const {lease:oldLease,_lease_source_context:ignoredContext,blocked,last_error,status,crawl_status,checked_at,last_attempt_at,source_url,provenance:oldProvenance,...previous}=existing;
- const retained=retainedSourceCopy(lease,fields,source.url);for(const key of ['description','tagline'])delete previous[key];
+ // Only an explicitly re-reviewed, same-context manual deferral may retain its
+ // old copy. It keeps old provenance and is excluded from the fresh brief below.
+ const copyLease=report.capture_kind==='reviewed_visible_food'&&reviewedFoodErrorDeferred(existing)&&canonical(existing.source_identity?.canonical_context)===canonical(report.visible_food_review?.canonical_context)?{...lease,existing_enrich:{...existing,crawl_status:'review_required'}}:lease;
+ const retained=retainedSourceCopy(copyLease,fields,source.url);for(const key of ['description','tagline'])delete previous[key];
  if(photos.length){fields.photo_urls=[...new Set([...photos,...(Array.isArray(previous.photo_urls)?previous.photo_urls:[])])];const hero=urls.has(report.profile.hero_url)?report.profile.hero_url:photos[0];fields.hero_url=hero;fields.photo_url=hero;}
  if(object(previous.social)&&object(fields.social))fields.social={...previous.social,...fields.social};
  const evidence={sha256:review.report_sha256,source_sha256:source.sha256,extractor_sha256:report.extractor_sha256,method:publisher?'reviewed_record_label_source_html':'reviewed_official_source_html',...(publisher?{publisher_identity:report.publisher_identity}:{}),reviewer:review.reviewer,reviewed_at:review.reviewed_at,source_fingerprint:report.source_fingerprint,approved_image_hashes:[...approved],prior_machine_sha256:review.prior_machine_sha256,added_photo_urls:photos,preserved_photo_urls:(previous.photo_urls||[]).filter(url=>!photos.includes(url)),updated_social_channels:Object.keys(report.profile.social||{})};
@@ -118,9 +116,9 @@ function reviewedSourceHTML(report,review,lease){
  if(food){
   const proof='reviewed-source:'+food.source_url+'#sha256='+food.source_sha256+';retrieved_at='+food.retrieved_at;
   for(const key of foodKeys)if(Object.hasOwn(fields,key))provenance[key]=proof;
-  profile.source_identity=food.primary_identity;provenance.source_identity='exact_name_typed_jsonld';
-  profile.food_source_coverage={source_url:food.source_url,source_sha256:food.source_sha256,original_total:food.original_total,retained_items:food.retained_items,truncated:food.truncated,total_state:food.total_state,reviewer:review.reviewer,reviewed_at:review.reviewed_at,home_acceptance:'not_reviewed'};provenance.food_source_coverage=proof;
-  const brief=buildClientBrief({listing:lease,profile:{...freshFields,source_identity:food.primary_identity},provenance,sourceURL:report.source.url,checkedAt:food.retrieved_at,sources:[{url:report.source.url,state:'fetched',purpose:'homepage'},{url:food.source_url,state:'fetched',purpose:'menu'}]});
+  profile.source_identity=food.primary_identity;provenance.source_identity=report.capture_kind==='reviewed_visible_food'?'reviewed_official_visible_branch#sha256='+food.primary_identity.review_sha256:'exact_name_typed_jsonld';
+  profile.food_source_coverage={source_url:food.source_url,source_sha256:food.source_sha256,original_total:food.original_total,retained_items:food.retained_items,truncated:food.truncated,total_state:food.total_state,reviewer:review.reviewer,reviewed_at:review.reviewed_at,home_acceptance:'not_reviewed',...(report.capture_kind==='reviewed_visible_food'?{identity_verification:'reviewed_official_visible_branch',identity_review_sha256:food.primary_identity.review_sha256,menu_kind:food.offering_scope.kind,menu_label:food.offering_scope.label,entire_business_offering:false}:{})};provenance.food_source_coverage=proof;
+  const brief=buildClientBrief({listing:lease,profile:{...freshFields,source_identity:food.primary_identity,...(report.capture_kind==='reviewed_visible_food'?{food_source_coverage:profile.food_source_coverage}:{})},provenance,sourceURL:report.source.url,checkedAt:food.retrieved_at,sources:[{url:report.source.url,state:'fetched',purpose:'homepage'},{url:food.source_url,state:'fetched',purpose:'menu'}]});
   if(brief){profile.client_brief=brief;provenance.client_brief='deterministic-source-brief:review-required';}
  }
  return [{slug:lease.slug,website:lease.website,lease_id:lease.lease_id,profile,provenance}];
