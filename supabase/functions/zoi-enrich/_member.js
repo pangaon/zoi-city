@@ -28,6 +28,6 @@ export function memberLeaseGuard(row, html = '', finalUrl = row.website) {
   // enrich_apply preserves existing reviewed data ONLY on its explicit error branch.
   // A review-required result is not a successful replacement of member details.
   if(result.profile?.crawl_status!=='member_identity_matched')return {...result,profile:{crawl_status:'error',last_error:result.profile?.last_error||'member_identity_review_required'}};
-  const {lease,...prior}=existing;
+  const {lease,_lease_source_context,...prior}=existing;
   return {...result,profile:{...prior,...result.profile}};
 }

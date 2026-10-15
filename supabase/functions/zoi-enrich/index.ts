@@ -136,6 +136,7 @@ import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
 import { extractStructuredMenu } from "./_menus.js";
+import { extractStructuredServices } from "./_services.js";
 import { extractHospitality, hospitalitySupplements, hospitalitySourceMatches, validHospitalityFields } from "./_hospitality.js";
 import { extractSiteImages, supplementaryPages, imageIdentity } from "./_images.js";
 import { confirmedEnrichmentReceipts, enrichmentSample } from "./_receipts.js";
@@ -387,7 +388,7 @@ function extract(doc: string, finalUrl: string) {
   if (biz) {
     if (typeof biz.description === "string") put("description", unent(biz.description).trim().slice(0, 1200), "jsonld");
     if (typeof biz.slogan === "string") put("tagline", biz.slogan.trim().slice(0, 160), "jsonld");
-    if (usablePhone(biz.telephone) && digits(biz.telephone).length >= 7) put("phone", biz.telephone.trim(), "jsonld");
+    if (typeof biz.telephone === "string" && usablePhone(biz.telephone) && digits(biz.telephone).length >= 7) put("phone", biz.telephone.trim(), "jsonld");
     if (typeof biz.email === "string" && biz.email.includes("@")) put("email", biz.email.replace("mailto:", "").trim(), "jsonld");
     if (typeof biz.priceRange === "string") put("price_range", biz.priceRange.trim().slice(0, 12), "jsonld");
 
@@ -635,6 +636,22 @@ Deno.serve(async (req) => {
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
       const sourceIdentity = aggregator ? null : sourceClientIdentity(row, got.doc!, got.finalUrl!);
       if (sourceIdentity) { profile.source_identity = sourceIdentity; provenance.source_identity = sourceIdentity.verification; }
+      if (sourceIdentity?.verification === "exact_name_typed_jsonld") {
+        // This context is projected from current canonical listing columns by the
+        // service-only lease. Imported extraction fields are never branch authority.
+        const context = row.existing_enrich?._lease_source_context;
+        const canonical = context && typeof context === "object" && !Array.isArray(context) ? context as Record<string, unknown> : {};
+        const serviceRow = { ...row,
+          city: typeof canonical.city === "string" ? canonical.city : undefined,
+          country: typeof canonical.country === "string" ? canonical.country : undefined,
+          address: typeof canonical.address === "string" ? canonical.address : undefined,
+          profile: { _enrich: row.existing_enrich || {} } };
+        const services = await extractStructuredServices(got.doc!, serviceRow, got.finalUrl!);
+        if (services) {
+          profile.services = services.services;
+          provenance.services = services.method + ":" + services.source_url + "#sha256=" + services.source_sha256;
+        }
+      }
       if (!hospitalitySourceMatches(got.finalUrl!, row.website)) {
         for (const key of ["rooms", "dining", "venues", "amenities"]) { delete profile[key]; delete provenance[key]; }
       }
@@ -707,6 +724,8 @@ Deno.serve(async (req) => {
       leases: batch.map(row => ({slug: row.slug, lease_id: row.lease_id})),
     }), {status: 503, headers: {"Content-Type": "application/json"}});
     try {
+      // Server-only lease context must never enter any persisted profile path.
+      for (const item of batch) delete (item.profile as Record<string, unknown> | undefined)?._lease_source_context;
       prepareClientBrief(batch, queue);
       for (const row of batch) {
         const brief = (row.profile as Record<string, unknown>)?.client_brief as {status?: string} | undefined;

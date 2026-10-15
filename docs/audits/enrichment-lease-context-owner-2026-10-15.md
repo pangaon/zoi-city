@@ -1,0 +1,11 @@
+# Canonical source context in private enrichment lease returns
+
+NEW CLI migration20261015013151, gated after the reviewed bounded-index queue baseline; no edits to frozen index/performance/operator candidates. No child production writes, crawl/provider calls or deployment.
+
+Services extraction validates canonical city/country/street against registered source evidence. Existing lease returned name/type but not canonical location, so missing canonical data caused safe refusals even when listing fields were available. Reading imported _enrich geography would reintroduce cross-branch identity risk.
+
+This candidate adds existing_enrich._lease_source_context={city:l.city,country:l.country,address:l.address} to the RETURN projection of bounded queue and actual public service-only sample lease. It does not modify stored profile, SQL return signature, owner overrides, source fingerprint, lease shape, moderation/source holds, capacity, fairness or workload. Canonical nulls stay null; imported contradictory geography remains separate and cannot supply a missing canonical field. Exact source body/owner/ACL/security-definer/search-path guards protect both replacements. Required preceding queue body hash:d2bf4d2e825bd08d23ab7390d9786d4b.
+
+`node tests/database/enrichment-lease-context.integration.mjs`:8 grouped real PostgreSQL checks pass, including exact guarded baseline, positive canonical London/United Kingdom vs contradictory imported Perth/Canada, sample parity, null preservation, visibility/blocked-source refusal, private authority and no context persistence. Actual production sample definition/ACL is captured in fixtures/enrichment-sample-lease-live.json without guard adaptation. Transport/worker services consumption is enrichment specialist's separate frozen candidate (client-source-services-candidate manifest); this SQL test does not establish actual hosted crawl→home completion.
+
+Parent applies only after actual index/function swap and independent review, then integrates consumer artifact and actual bounded lease/source journey acceptance. Rollback restores previous queue/sample definitions while keeping already accepted performance index/cap3. There is no data backfill or geography correction in this patch.

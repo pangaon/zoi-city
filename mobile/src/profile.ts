@@ -12,6 +12,8 @@ import {phoneHref} from '../../assets/homes/phone.mjs';
 import {socialProfile} from '../../supabase/functions/zoi-enrich/_social.js';
 // @ts-ignore Shared exact publisher identity scope.
 import {publisherSocial} from '../../assets/enrichment/publisher-social.mjs';
+// @ts-ignore Shared identity/provenance/branch guards; owner clears stay authoritative.
+import {scopedSourceServices} from '../../assets/enrichment/client-brief.mjs';
 type RecordValue = Record<string, any>;
 const object = (value: unknown): RecordValue => value && typeof value === 'object' && !Array.isArray(value) ? value as RecordValue : {};
 export function plain(value: unknown) { return typeof value === 'string' ? value.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim() : ''; }
@@ -42,7 +44,10 @@ export function normalizeProfile(input: unknown) {
   const socials = Object.entries(names).flatMap(([key, label]) => { const url = publicURL(social[key]); if (!url || seen.has(url)) return []; seen.add(url); return [{ label, url }]; });
   const photo = [e.hero_url, e.photo_url, e.photo, profile.hero_url, profile.photo_url].map(publicURL).find(value => value.startsWith('https://')) || '';
   const fieldsFromWebsite = Object.keys(enrichment).filter(key => !banned.test(key) && !(key in raw));
-  const services = Array.isArray(profile.services) ? profile.services.map((v: unknown) => plain(v) || plain(object(v).name) || plain(object(v).title)).filter(Boolean).slice(0, 30) : [];
+  const serviceOwner = [owner, ownerProfile, raw, e].find(layer => Object.hasOwn(layer, 'services'));
+  const serviceValue = serviceOwner ? serviceOwner.services : scopedSourceServices(e);
+  if (serviceOwner || Array.isArray(serviceValue) && serviceValue.length) profile.services = serviceValue; else delete profile.services;
+  const services = Array.isArray(serviceValue) ? serviceValue.map((v: unknown) => plain(v) || plain(object(v).name) || plain(object(v).title)).filter(Boolean).slice(0, 30) : [];
   const booking = profileAction(e.booking_url, 'booking'), inquiry = profileAction(e.inquiry_url, 'inquiry');
   const addressLookup=publishedAddressLookup({s:plain(e.canonical_slug||e.slug),n:plain(e.name),addr:plain(e.address),city:plain(e.city),country:plain(e.country)});
   return { addressLookup, showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
