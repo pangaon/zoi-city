@@ -1,0 +1,31 @@
+{
+  "checked_at": "2026-10-15T02:26:44.185571+00:00",
+  "schema_source": "supabase/migrations/20261015015355_event_planner_current_session.sql",
+  "schema_sha256": "d056a4e7ab94684c382689447d56703a1b3816c636dc5518d71ba20e179d4072",
+  "actual_ledger": "20261015022449",
+  "production_fixture": "tests/database/event-planner-session-production-rollback.sql",
+  "fixture_sha256": "d3f42aebe9570b58c1a5b932f851452e025851937e91a9b3fcec714f9f4a3789",
+  "actual_result": {
+    "assertions_passed": 31,
+    "rollback_completed": true,
+    "fixture_absence_checks_passed": 14,
+    "authority_helper_overrides": 0,
+    "auth_users_created": 0,
+    "real_qa_account_or_session_changed": false,
+    "provider_or_publication_acceptance": false
+  },
+  "actual_guards": {
+    "all_five_postgres_owned": true,
+    "all_five_security_definer": true,
+    "all_five_empty_search_path": true,
+    "acl_unchanged": "postgres, service_role, authenticated; no anon/public",
+    "body_md5": {
+      "capabilities": "76952c1146312c78f1c8ef6babdb9161",
+      "save": "9079bc8a1c0abe58b43c344331d4dc78",
+      "get": "20670c87b4b306481cb4bab840f39108",
+      "list": "546a5aba1cd685c050f27d66640658f4",
+      "provider_context": "11c6a26b626610800acb035018e30a78"
+    }
+  },
+  "scope": "Actual canonical production SQL in one rollback transaction, including current/expired real session references, ordinary nonmember, save/list/get/CAS/immutable receipts, atomic two-slot confirmation, provider explicit shared context only. Browser\u2192Core\u2192SQL evidence is separate controlled local acceptance; actual production signed-in browser remains open."
+}
