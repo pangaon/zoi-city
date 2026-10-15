@@ -1,0 +1,18 @@
+-- Root operator only, after the exact migration. No session/account/campaign or
+-- consent rows are created. Catalog guards and anonymous denials only; rollback.
+BEGIN;SET LOCAL lock_timeout='3s';SET LOCAL statement_timeout='15s';
+DO $proof$BEGIN
+IF NOT EXISTS(SELECT 1 FROM pg_proc WHERE oid='zoi.email_draft_request_immutable()'::regprocedure AND md5(prosrc)='e6b32f05f8a94cf704b8a1a031b75d7d'AND proowner='postgres'::regrole AND proacl::text='{postgres=X/postgres}'AND proconfig=ARRAY['search_path=""']AND prosecdef=false)THEN RAISE EXCEPTION 'email_draft_production_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc WHERE oid='zoi.email_draft_receipt(uuid,uuid,uuid)'::regprocedure AND md5(prosrc)='fa2ac0ccd952d003d2a38843ddebc08d'AND proowner='postgres'::regrole AND proacl::text='{postgres=X/postgres}'AND proconfig=ARRAY['search_path=""']AND prosecdef=true)THEN RAISE EXCEPTION 'email_draft_production_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc WHERE oid='public.email_campaign_draft_save(uuid,uuid,jsonb)'::regprocedure AND md5(prosrc)='f027538440f92d688b51e22cceb267ab'AND proowner='postgres'::regrole AND proacl::text='{postgres=X/postgres,authenticated=X/postgres}'AND proconfig=ARRAY['search_path=""']AND prosecdef=true)THEN RAISE EXCEPTION 'email_draft_production_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc WHERE oid='public.email_campaign_draft_status(uuid,uuid,boolean)'::regprocedure AND md5(prosrc)='0b32315129339f0230fbcd143b5a499d'AND proowner='postgres'::regrole AND proacl::text='{postgres=X/postgres,authenticated=X/postgres}'AND proconfig=ARRAY['search_path=""']AND prosecdef=true)THEN RAISE EXCEPTION 'email_draft_production_contract_changed';END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_class WHERE oid='zoi.email_draft_requests'::regclass AND relrowsecurity)OR EXISTS(SELECT 1 FROM pg_policy WHERE polrelid='zoi.email_draft_requests'::regclass)THEN RAISE EXCEPTION 'email_draft_ledger_policy_changed';END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_constraint WHERE conrelid='zoi.email_draft_requests'::regclass AND contype='p'AND pg_get_constraintdef(oid)='PRIMARY KEY (request_id)')THEN RAISE EXCEPTION 'email_draft_nonce_scope_changed';END IF;
+ IF NOT EXISTS(SELECT 1 FROM pg_trigger WHERE tgrelid='zoi.email_draft_requests'::regclass AND tgname='email_draft_request_immutable'AND tgenabled='O'AND tgfoid='zoi.email_draft_request_immutable()'::regprocedure)THEN RAISE EXCEPTION 'email_draft_immutable_trigger_changed';END IF;
+ IF has_table_privilege('anon','zoi.email_draft_requests','SELECT')OR has_table_privilege('authenticated','zoi.email_draft_requests','SELECT')OR has_table_privilege('service_role','zoi.email_draft_requests','SELECT')OR has_function_privilege('anon','public.email_campaign_draft_save(uuid,uuid,jsonb)','EXECUTE')OR has_function_privilege('authenticated','zoi.email_draft_receipt(uuid,uuid,uuid)','EXECUTE')THEN RAISE EXCEPTION 'email_draft_private_surface_exposed';END IF;
+ IF auth.uid()IS NOT NULL THEN RAISE EXCEPTION 'email_draft_proof_requires_no_authenticated_actor';END IF;
+ BEGIN PERFORM public.email_campaign_draft_save(null,gen_random_uuid(),'{}');RAISE EXCEPTION 'email_draft_no_session_was_allowed';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ BEGIN PERFORM public.email_campaign_draft_status(null,gen_random_uuid());RAISE EXCEPTION 'email_draft_no_session_was_allowed';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+END$proof$;
+ROLLBACK;
+SELECT jsonb_build_object('state','rollback_only_catalog_and_no_session_denials','current_auth_customer_journey',false,'campaign_or_consent_writes',false,'provider_sends',false);

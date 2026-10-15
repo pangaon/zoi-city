@@ -1,0 +1,321 @@
+{
+  "state": "frozen_v2_owner_candidate_not_live_independent_acceptance_pending",
+  "worktree": "/tmp/zoi-crm-email-draft-work",
+  "baseline": "635758f58a6dbeb6c9da2ae3449234ee6fc18c91",
+  "queue_requirements": [
+    "e1d9f11757ef5429",
+    "32faf875734d4c78"
+  ],
+  "bounded_customer_outcome": "Choose a literal CRM audience tag, open it in the existing Email composer, save a canonical draft and reopen it. Recover an uncertain save without duplicate campaigns, accidental sends or lost owner edits.",
+  "selection_basis": "Reviewed current origin/main execution_queue and existing Studio/creative/CRM suites. Earlier template/media tasks require the workspace asset lifecycle or paid provider work, which is outside this assignment. The saved-generation to Composer bridge already exists. This is the earliest inspected executable missing connected journey within the approved no-send/no-provider boundary.",
+  "actual_defects_and_result": [
+    "Contacts had no handoff from a selected tag to Email. The new action passes only the exact tag for the current actor/session/workspace. An active text search, all-tags selection, reserved all tag, empty result, denied access or missing navigation disables it. No contacts or consent records are copied.",
+    "New draft saves previously used the legacy canonical writer with p_id:null on each retry. A committed save with a lost response could create another campaign. The additive wrapper records one globally unique nonce with immutable actor/workspace/payload and the canonical result; replay never calls the writer again.",
+    "Email initially rendered an editable blank form and replaced it after the initial list read, erasing text entered during that read. Initial loading now completes before editable controls appear.",
+    "Recovery receives the exact current canonical campaign with its immutable saved snapshot. The final source avoids replacing that result with the bounded200-row list, which could omit an older recovered draft. Both browser variants create201 newer valid canonical campaigns and prove the recovered record is absent from that list while its correct text remains editable.",
+    "Confirmed drafts remain visible when an optional list refresh fails. Unknown saves block new/open/edit/schedule actions; visible receipt controls offer check, exact in-memory retry and cancellation if unsaved. Receipt controls receive focus and scroll into view; saved campaign selection works by keyboard.",
+    "Current account, session or workspace changes clear private text and DOM. Access denial clears the Email editor and Contacts rows/forms/search/tag context. No stale result is applied after an account boundary."
+  ],
+  "source_manifest": {
+    "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/source-manifest-v2.json",
+    "sha256": "186de817b71666b3778099e63ecd488e524a489316dbb35404385434a9139479",
+    "files": [
+      {
+        "path": "assets/email/campaign-draft-workflow.mjs",
+        "sha256": "21a4ef9e6f443e9ff81e277b0747ab52ebeb49a66a562cc4f043befe4fa572bf"
+      },
+      {
+        "path": "assets/suite/audience.js",
+        "sha256": "c6cb2bcee4ca150c77eea658dabd5707eb1b20a2f7b3daa05e82eec325a6e49f"
+      },
+      {
+        "path": "assets/suite/email.js",
+        "sha256": "70d30a8e49c2c8145a8312c922a6e6b94ad9b3e1e07e6693b3459e1e1261e1b2"
+      },
+      {
+        "path": "supabase/migrations/20261015131549_email_campaign_draft_receipts.sql",
+        "sha256": "5a59b178ecef2d2bf7185167b2281d727eb5489b3b1faee92237c7fbf7809c7a"
+      },
+      {
+        "path": "tests/database/crm-email-draft.integration.mjs",
+        "sha256": "93587d789637568a81979bffc17ef3411c77022748eefe64ac3a74e489aa1535"
+      },
+      {
+        "path": "tests/database/email-draft-production-rollback.sql",
+        "sha256": "be33318aee17c67b17d08e0b8e3204f3712360af797b45148d9870d18ef618ae"
+      },
+      {
+        "path": "tests/database/fixtures/email-draft-live-contracts.json",
+        "sha256": "96c677d626f69b1b6676c526645f07679aa1558c9a04540f6173fd82a9137a1d"
+      },
+      {
+        "path": "tests/unit/email-campaign-draft-workflow.test.mjs",
+        "sha256": "08f90d500db8cf7afc673529c9488e56d9f858a100d8e0c2157a6138b3324ab0"
+      },
+      {
+        "path": "tests/unit/email-persistence.test.mjs",
+        "sha256": "e86543c66621853003b93ef6cd3eabb5307f4289f43aa0f75f4dc65923285641"
+      }
+    ]
+  },
+  "freeze_history": {
+    "historical_v1_manifest": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/source-manifest.json",
+    "historical_v1_sha256": "40146f635f07490a464a29fdb0fe08e30999328d3655737cc8c0c8aa6956e7bc",
+    "historical_v1_results": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/results-v1-historical.json",
+    "reason_for_v2": "Announced a review hold to root before correcting the bounded-history recovery edge. Only assets/suite/email.js and tests/database/crm-email-draft.integration.mjs changed; v1 source manifest remains historical and must not be used as current source acceptance."
+  },
+  "backend": {
+    "migration": "supabase/migrations/20261015131549_email_campaign_draft_receipts.sql",
+    "created_using_supabase_cli": true,
+    "canonical_writer": "public.email_campaign_save(uuid,text,text,text,text,text,uuid), untouched, scalar UUID contract retained",
+    "exact_guard_dependencies": [
+      {
+        "signature": "email_campaign_save(uuid,text,text,text,text,text,uuid)",
+        "body_md5": "91627dfcb5390940fba920a932dfc2fa",
+        "owner": "postgres",
+        "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "config": [
+          "search_path=zoi, public"
+        ],
+        "security_definer": true
+      },
+      {
+        "signature": "zoi.assert_workspace_write(uuid,text[])",
+        "body_md5": "0a1b64d6adee0e63726bab3c08b0be53",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true
+      },
+      {
+        "signature": "zoi.workspace_locked_role(uuid)",
+        "body_md5": "0c25b1e04d01e5866b58d009fa1f50b9",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true
+      },
+      {
+        "signature": "zoi.suite_current_session()",
+        "body_md5": "70cb927f126f251f229c450bf9f792e8",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true
+      },
+      {
+        "signature": "zoi.suite_lock_session()",
+        "body_md5": "ab5f8703ced5f96c0ac69257281ffe00",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true
+      }
+    ],
+    "guard_volatility": "suite_current_session STABLE; other four pinned dependencies VOLATILE",
+    "new_contracts": [
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "body_md5": "e6b32f05f8a94cf704b8a1a031b75d7d",
+        "signature": "zoi.email_draft_request_immutable()",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "body_md5": "fa2ac0ccd952d003d2a38843ddebc08d",
+        "signature": "zoi.email_draft_receipt(uuid,uuid,uuid)",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "body_md5": "f027538440f92d688b51e22cceb267ab",
+        "signature": "email_campaign_draft_save(uuid,uuid,jsonb)",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "body_md5": "0b32315129339f0230fbcd143b5a499d",
+        "signature": "email_campaign_draft_status(uuid,uuid,boolean)",
+        "security_definer": true
+      }
+    ],
+    "authority": "Existing workspace\u2192member\u2192current account/session locking order, then global nonce advisory lock. Recheck current authority after nonce wait and after canonical writer row waits; expired/revoked sessions roll back both writer and receipt.",
+    "receipt": "Private RLS-enabled table without client policies or grants. Globally unique request UUID, immutable actor/workspace/exact JSONB payload, canonical ID and saved snapshot; update/delete trigger forbids mutation. Another actor or tenant cannot reuse a known nonce. Only authenticated current writers can save/check/cancel; private helpers remain uncallable.",
+    "current_owner_edits": "Receipt retains immutable original snapshot and separately returns the current canonical campaign. Retries do not overwrite subsequent owner edits. A removed campaign reports removed and is never recreated.",
+    "cancellation": "An explicit cancellation writes a nonce tombstone only if no save receipt exists. An already-saved result remains saved. A delayed request using a cancelled nonce is refused.",
+    "payload_bound": "New receipt wrapper accepts an exact six-field draft object with at most200000 UTF8 bytes. It visibly refuses oversized/unsupported input without truncation. The original canonical writer and its callers remain unchanged.",
+    "root_production_fixture": "tests/database/email-draft-production-rollback.sql; exact new function/ACL/RLS/global PK/trigger checks and no-session denials only. No authenticated account, contact, campaign or consent rows are created. BEGIN/ROLLBACK, locally exercised."
+  },
+  "client_scope_and_privacy": {
+    "recovery_storage": "sessionStorage stores only actor/session/workspace/request metadata. Campaign subject/body and original payload stay in memory, are cleared on disposal/access changes, and are not stored in the recovery marker.",
+    "after_reload": "Only check/cancel are available because original draft text is not retained locally. A durable receipt restores the exact current canonical campaign. No replacement save is issued to infer an outcome.",
+    "segment_storage": "One-use handoff contains the literal tag and actor/session/workspace scope with a five-minute expiry; it contains no recipients, email addresses or campaign text.",
+    "consent": "The tag is a dynamic campaign audience selection. Existing subscription consent, unsubscribe, bounce/complaint suppression and provider delivery logic stay unchanged. An imported CRM contact is not automatically eligible for marketing.",
+    "stale_results": "Auth subject/session/workspace checked around current requests and delayed responses. Revoke errors clear private surfaces; normal route disposal retains only the nonce metadata for later recovery.",
+    "provider_state": "Existing provider availability controls remain authoritative. Scheduling is disabled in the exercised unavailable-provider state. No queue, delivery run, send or provider submission is created by the new action."
+  },
+  "verification": {
+    "isolated_postgresql_and_mounted_browser": {
+      "command": "node tests/database/crm-email-draft.integration.mjs",
+      "passed_groups": 15,
+      "failed": 0,
+      "results": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/results.json",
+      "log": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/crm-email-draft-integration.log",
+      "browser_variants": [
+        {
+          "width": 390,
+          "color_scheme": "light"
+        },
+        {
+          "width": 1440,
+          "color_scheme": "dark"
+        }
+      ],
+      "basis": "Actual mounted existing Contacts/Email modules and actual captured canonical writer/current authority bodies, a real isolated PostgreSQL16 database, fixed localhost SQL RPC transport and synthetic Auth claims/rows. This is not production Auth JWT or deployed customer acceptance.",
+      "cases": [
+        "exact dependency guards reject drift atomically; all five complete body/ACL/owner/config/security/volatility contracts stay unchanged",
+        "legacy writer scalar and valid legacy save retained",
+        "one immutable save receipt; different payload rejected",
+        "current owner edits preserved; actor/tenant nonce reuse rejected",
+        "cancel tombstones and removed-result no-recreation",
+        "malformed/oversized inputs and anonymous/direct private-table/helper access refused",
+        "two actual concurrent saves produce one campaign",
+        "current role/account/session denial on save and recovery",
+        "actual two-backend workspace wait observes completed revocation",
+        "actual canonical campaign-row wait crosses session expiry and rolls back writer/receipt",
+        "consent/subscription/suppression/outbox hashes unchanged",
+        "root-only rollback proof runs locally without customer writes",
+        "populated and empty-workspace Contacts, literal tag, reserved all and text-query refusal",
+        "slow initial list read exposes no editable form to overwrite",
+        "lost response after committed save; in-memory exact retry and reload status recovery",
+        "201 newer valid canonical drafts put the recovered record outside the bounded list without losing its exact current text",
+        "confirmed save plus failing list read preserves canonical result",
+        "native button/keyboard open, no horizontal overflow or page errors, focused visible recovery",
+        "uncertain-before-execute cancellation; access/account/session/workspace changes clear private UI"
+      ]
+    },
+    "focused": {
+      "command": "node --test tests/unit/email-campaign-draft-workflow.test.mjs tests/unit/email-persistence.test.mjs tests/unit/email-delivery.test.mjs tests/unit/workspace-contacts.test.mjs tests/unit/workspace-navigation.test.mjs",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "log": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/crm-email-draft-focused.log",
+      "covers_final_v2_source": true
+    },
+    "full_local": {
+      "command": "npm run verify:local",
+      "passed_node_test_files": 384,
+      "standalone_suites": 2,
+      "exit_code": 0,
+      "log": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/crm-email-draft-local.log",
+      "timing": "Final full local run covers all runtime changes except the subsequently announced one-line removal of the redundant bounded-list reload. Final15 real PG/browser groups and28 focused checks cover that v2 correction. No network contract suite was invoked."
+    },
+    "final_diff_check": "git diff --check passed",
+    "unit_contract_note": "The UI now requires actor/workspace/request-backed structured receipts; its old bare-UUID acceptance test now verifies refusal. Existing malformed-response/old-ID guard assertions remain, and the real PG fixture independently verifies the untouched legacy writer still returns its scalar UUID."
+  },
+  "run_environment": {
+    "ZOI_PLAYWRIGHT_MODULE": "/workspaces/zoi-city-release/node_modules/playwright-core/index.mjs",
+    "CHROMIUM_EXECUTABLE_PATH": "/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome",
+    "ZOI_EMAIL_DRAFT_EVIDENCE": "Set a distinct independent output directory; do not overwrite owner evidence.",
+    "PG_BIN": "/usr/lib/postgresql/16/bin; isolated Unix socket and port15749; final fixture stopped its cluster."
+  },
+  "network_and_actions": {
+    "production_reads": "Three read-only function-definition/ACL/session/tenant metadata batches; no live account, contact or campaign rows.",
+    "production_mutations": false,
+    "provider_calls": false,
+    "provider_sends": false,
+    "paid_services_or_builds": false,
+    "official_guidance": "Supabase changelog and official database-function docs checked; the relevant published TLS retirement does not require a schema/SDK change here. PostgreSQL guidance for consistent lock ordering and tenant RLS applied. No dependency upgrade."
+  },
+  "root_release_and_remaining": [
+    "Independent acceptance is pending. Root alone applies the guarded migration, runs the production rollback-only proof, integrates source and releases the web deployment. Apply backend before frontend; do not fall back to the duplicate-prone legacy create path on an unknown wrapper result.",
+    "Actual deployed Auth/current workspace Contacts\u2192Email\u2192canonical draft/reopen acceptance is still required. No live release is claimed by this owner packet.",
+    "This is the bounded tag-to-draft/save recovery journey, not completion of CRM pipelines, campaign sequences, creative assets, SEO or whole-site delivery. Original execution_queue requirements remain retained.",
+    "Save draft has receipt recovery. Other legacy Duplicate/Delete/Schedule/Unschedule writes retain existing contracts and are not newly certified for uncertain-response recovery by this packet. No provider readiness, send, inbox delivery or marketing result is claimed.",
+    "The existing campaign list remains bounded at200. Receipt recovery can display its exact current older record beyond that bound. General historical pagination/search beyond the existing list remains separate work.",
+    "No competing editor, asset store, media lifecycle, provider service or native binary was added. Existing native browser continuation uses the ordinary authenticated web route; installed native acceptance was not run here.",
+    "Rollback keeps the canonical campaigns and append-only receipt/tombstone evidence. The additive backend does not replace existing writers. Do not drop proof rows to retry an unknown save; root owns any source rollback and subsequent customer verification."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/after-contracts.json",
+      "sha256": "2965809e1ca5af6854b3b131b4b784e67a6c7cd627bff6bc6e99c9f8d5edaed7"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/contacts-1440.png",
+      "sha256": "9c37c77fef165da439e2d7cd67558339ff1f4b38e43b4094495614fb5590e3a6"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/contacts-390.png",
+      "sha256": "e1369a070816902d4edbea331c03dfb22d30ffc9030642a9a2a3ec4c3f5a0fcd"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/crm-email-draft-focused.log",
+      "sha256": "ba717e3ef954ba532e4e3ac0748a57735382f6e2f6d29a12cc6af8ed0de176b8"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/crm-email-draft-integration.log",
+      "sha256": "53cc52679f6c4695dadfbfd3da5ad713f6b9c9dd592e37c1c054a2df91e2a25a"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/crm-email-draft-local.log",
+      "sha256": "3fe7a792cf725b1a81a5372ae05851ebe1ec13b4618c6375928f9fe38961f564"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/results-v1-historical.json",
+      "sha256": "7e1fda0c8e9111b1e2882f530f6f8259ad9e8c4cd9989c8cffa7676806b0b817"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/results.json",
+      "sha256": "6f102f21e0bc8d932a3cba613361e2212121e39fd3bd311008d113d3da3b6148"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/saved-1440.png",
+      "sha256": "236be9aa173002c5310c16136d5da5bdc491580ab9a74faaa531e0d763c6d273"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/saved-390.png",
+      "sha256": "530acc2612c234b92d490ce042491dc36f054303d29041c4474ba29a8f740ba3"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/source-manifest-v2.json",
+      "sha256": "186de817b71666b3778099e63ecd488e524a489316dbb35404385434a9139479"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/source-manifest.json",
+      "sha256": "40146f635f07490a464a29fdb0fe08e30999328d3655737cc8c0c8aa6956e7bc"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/uncertain-1440.png",
+      "sha256": "242bd3604048d977b56d504add551e88b8ba00fe84bb251ac6bc8b5c204549aa"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-draft-owner-2026-10-15/uncertain-390.png",
+      "sha256": "5e4d0202746fb6bc3ce730213d8e3c43f516b21059119a72f0133123b23a4d7b"
+    }
+  ]
+}

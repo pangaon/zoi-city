@@ -1,0 +1,17 @@
+BASELINE {"acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}", "owner": "postgres", "config": ["search_path=zoi, public"], "body_md5": "91627dfcb5390940fba920a932dfc2fa", "security": true, "volatility": "v"}
+PASS 1 actual writer and current authority guards pin exact baseline; drift refuses atomically
+PASS 2 untouched canonical writer keeps scalar contract and valid legacy save
+PASS 3 exact actor/workspace/nonce/payload replay creates one canonical draft and refuses changed payload
+PASS 4 replay retains immutable snapshot and current owner edits; foreign actor and tenant reuse refused
+PASS 5 globally unique nonce refuses another currently authorized actor rather than creating a duplicate
+PASS 6 explicit cancellation prevents delayed creates and removed saved drafts are never recreated
+PASS 7 invalid payloads, anonymous calls, direct ledger access and receipt mutation refused
+PASS 8 two real concurrent requests retain one immutable receipt and one campaign
+PASS 9 current role, valid account and live current session required for writes and receipt recovery
+PASS 10 real workspace lock wait rechecks a completed role revocation before any save
+PASS 11 session expiration during actual canonical campaign row wait rolls back writer and receipt
+PASS 12 contact tags and draft persistence never change consent, unsubscribe/suppression or create an outbox
+PASS 13 root-only production rollback proof executes locally with exact new contracts and zero customer writes
+PASS 14 mounted Contacts→Email 390 light: sparse source/explicit tag, lost-response retry/reload, canonical reopen/list failure/recovery beyond200, cancellation, revoked access and account/session/workspace changes
+PASS 15 mounted Contacts→Email 1440 dark: sparse source/explicit tag, lost-response retry/reload, canonical reopen/list failure/recovery beyond200, cancellation, revoked access and account/session/workspace changes
+PASS total 15

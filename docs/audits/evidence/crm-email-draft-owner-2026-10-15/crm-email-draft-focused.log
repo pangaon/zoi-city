@@ -1,0 +1,38 @@
+✔ literal segment handoff is one-use, current actor/session/workspace bound and expires (2.746581ms)
+✔ lost response retries the original nonce and exact immutable text, not intervening edits (1.006306ms)
+✔ reload retains only metadata and recovers durable receipt without a replacement save (1.584153ms)
+✔ receipt status shows current owner edits while immutable original snapshot remains exact (0.509289ms)
+✔ missing receipts remain blocked until explicit cancellation, and removed drafts are never recreated (0.571967ms)
+✔ blocked recovery storage prevents the first write and account changes prevent processing delayed responses (0.566286ms)
+(node:222296) ExperimentalWarning: stripTypeScriptTypes is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+✔ provider remains disabled without explicit delivery enablement (29.913244ms)
+✔ provider acceptance uses durable idempotency and unsubscribe headers (5.424233ms)
+✔ provider success without a persisted receipt never reports success (4.089936ms)
+✔ retryable provider failure returns recipient to durable pending state (2.945152ms)
+✔ unsubscribe GET never mutates subscription; POST requires confirmed receipt (2.283658ms)
+✔ viewers and missing tokens cannot prepare or send mail (2.589338ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: null (3.65233ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: false (0.833935ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: {"ok":false} (0.757833ms)
+✔ unconfirmed email save cannot reuse an old campaign identifier: {"ok":true} (0.937007ms)
+✔ confirmed save retains the latest local snapshot before list refresh (1.048495ms)
+✔ email mutation guard prevents overlapping requests and locks editable controls (1.060267ms)
+✔ email scheduling is blocked when the actual provider is unavailable (0.927329ms)
+✔ receipt-backed UI refuses a bare UUID without actor/workspace/request proof; the legacy writer stays scalar (0.809649ms)
+✔ contact projection only returns name and CRM id; no private channel/identity mapping (1.707624ms)
+✔ whole response fails closed for wrong workspace/type/archive/role/malformed identity (0.567709ms)
+✔ every actual tool appears once, with coherent groups and no module duplication (1.272402ms)
+✔ chosen sector recommends tools without hiding or granting others (0.312182ms)
+✔ search understands customer task language as well as module names (1.671426ms)
+✔ legacy paths and owner-design hash resolve to existing editor with design subview (0.605189ms)
+✔ unknown roles and unchecked ownership cannot be claimed as ready (0.345304ms)
+✔ provider unavailable does not remove assistant or pretend it is configured (0.210142ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 175.111554

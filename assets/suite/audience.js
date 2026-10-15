@@ -58,6 +58,7 @@
       '.zu-btn{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--line2);' +
         'background:var(--card2);color:var(--tx);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}' +
       '.zu-btn:hover{border-color:var(--acc);}' +
+      '.zu-wrap [data-z="email"],.zu-wrap [data-z="tag"],.zu-wrap [data-z="q"]{min-height:44px}.zu-wrap :focus-visible{outline:3px solid var(--acc);outline-offset:3px}@media(max-width:600px){.zu-wrap [data-z="q"],.zu-wrap [data-z="tag"]{font-size:16px}}' +
       '.zu-btn:disabled{opacity:.5;cursor:not-allowed;}' +
       '.zu-btn.pri{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-fg);}' +
       '.zu-btn.pri:hover{filter:brightness(1.08);}' +
@@ -200,17 +201,19 @@
     var toast = ctx.toast || C.toast || noop;
     var relTime = C.relTime || function () { return ''; };
     var ws = ctx.ws;
+    var campaignTools=null,campaignSession=null;
+    try{campaignTools=await import('/assets/email/campaign-draft-workflow.mjs?v=20261015-crm-draft');campaignSession=campaignTools.campaignScope(C,ws);}catch{}
     var rpc = (C.api && C.api.rpc) ? C.api.rpc.bind(C.api) : null;
 
     function currentActor(){var session=C.auth&&C.auth.load&&C.auth.load();return session&&session.user_id;}
     var actor=currentActor();
     var disposed=false, loadEpoch=0, canWrite=false, canConsent=false, closeImport=null,formDirty=false,importDirty=false;
-    function active(){return !disposed && !!actor && ctx.ws===ws && currentActor()===actor && root.contains(wrap);}
+    function active(){return !disposed && !!actor && ctx.ws===ws && currentActor()===actor && (!campaignSession||campaignTools.sameCampaignScope(C,campaignSession)) && root.contains(wrap);}
     function dispose(){if(disposed)return;disposed=true;loadEpoch++;clearTimeout(searchTimer);if(closeImport)closeImport();state.contacts=[];state.knownTags=[];state.q='';state.tag='';if(importState)importState.parsed=null;wrap.replaceChildren();global.removeEventListener('zoi:auth-change',authChanged);}
     function authChanged(){if(!active())dispose();}
     global.addEventListener('zoi:auth-change',authChanged);
     function denied(e){return [401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e));}
-    function fail(e){if(!active())return;if(denied(e)){canWrite=false;canConsent=false;state.contacts=[];state.knownTags=[];state.error='Your permissions changed. Refresh contacts to check your access.';if(closeImport)closeImport();q('form').replaceChildren();q('form').style.display='none';renderTable();permissions();}toast(e&&e.message||'Request could not be confirmed.','error');}
+    function fail(e){if(!active())return;if(denied(e)){canWrite=false;canConsent=false;state.contacts=[];state.knownTags=[];state.q='';state.tag='';q('q').value='';q('tag').value='';state.error='Your permissions changed. Refresh contacts to check your access.';if(closeImport)closeImport();q('form').replaceChildren();q('form').style.display='none';renderTable();permissions();}toast(e&&e.message||'Request could not be confirmed.','error');}
     injectStyles(document);
 
     var state = {
@@ -228,7 +231,7 @@
 
     function q(id) { return wrap.querySelector('[data-z="' + id + '"]'); }
 
-    function permissions(){if(!active())return;q('add').hidden=!canWrite;q('add').style.display=canWrite?'':'none';q('import').hidden=!canWrite;q('import').style.display=canWrite?'':'none';q('export').disabled=state.loading||!state.contacts.length;q('permission').textContent=state.error||(!canWrite?'You have read-only access to these contacts.':'');}
+    function permissions(){if(!active())return;q('add').hidden=!canWrite;q('add').style.display=canWrite?'':'none';q('import').hidden=!canWrite;q('import').style.display=canWrite?'':'none';q('export').disabled=state.loading||!state.contacts.length;q('permission').textContent=state.error||(!canWrite?'You have read-only access to these contacts.':'');if(q('email')){q('email').disabled=!canWrite||state.loading||!campaignSession||!state.tag||state.tag==='all'||!!state.q||!state.contacts.length||typeof ctx.navigate!=='function';q('email-note').textContent=state.q?'Clear the text search to draft for the whole selected tag.':state.tag&&state.tag!=='all'?'Draft for everyone with this tag. Only recipients with current email consent can receive a later send.':'Choose a specific tag to start an email draft. Nothing is sent from Contacts.';}}
     /* ---------- shell ---------- */
     function renderShell() {
       wrap.innerHTML =
@@ -241,18 +244,21 @@
           '<button class="zu-btn pri" data-z="add">+ Add contact</button>' +
         '</div>' +
         '<p class="zu-sub" data-z="permission" role="status"></p>' + '<div class="zu-toolbar">' +
-          '<div class="zu-search"><input class="zu-input" data-z="q" type="search" placeholder="Search name, email, phone…"></div>' +
-          '<select class="zu-sel" data-z="tag"><option value="">All tags</option></select>' +
+          '<div class="zu-search"><input class="zu-input" data-z="q" type="search" aria-label="Search contacts" placeholder="Search name, email, phone…"></div>' +
+          '<select class="zu-sel" data-z="tag" aria-label="Audience tag"><option value="">All tags</option></select>' +
+          '<button type="button" class="zu-btn" data-z="email" disabled>Draft email for this tag</button>' +
         '</div>' +
+        '<p class="zu-sub" data-z="email-note"></p>' +
         '<div class="zu-panel" data-z="form" style="display:none"></div>' +
         '<div class="zu-tablewrap"><div class="zu-loading" data-z="table">Loading…</div></div>';
 
       q('add').addEventListener('click', function () { openForm(null); });
       q('import').addEventListener('click', function () { openImport(); });
       q('export').addEventListener('click', function () { doExport(); });
+      q('email').addEventListener('click',function(){if(!active()||q('email').disabled)return;try{campaignTools.segmentHandoff({C:C,workspace:ws,tag:state.tag});ctx.navigate('email');}catch(error){toast(error.message,'error');}});
 
       q('q').addEventListener('input', function () {
-        state.q = this.value;
+        state.q = this.value;permissions();
         if (searchTimer) clearTimeout(searchTimer);
         searchTimer = setTimeout(function () { reload().then(renderTable); }, 220);
       });
@@ -589,7 +595,7 @@
         state.contacts=rows;
       } catch(e) {
         if(!active()||epoch!==loadEpoch)return;
-        state.contacts=[];state.knownTags=[];state.error=e&&e.message||'Could not load contacts.';canWrite=false;canConsent=false;
+        state.contacts=[];state.knownTags=[];if(denied(e)){state.q='';state.tag='';q('q').value='';q('tag').value='';}state.error=denied(e)?'Your workspace access changed. Reopen Contacts to continue.':e&&e.message||'Could not load contacts.';canWrite=false;canConsent=false;
         q('form').replaceChildren();q('form').style.display='none';if(closeImport)closeImport();toast(state.error,'error');
       }
       if(!active()||epoch!==loadEpoch)return;state.loading=false;

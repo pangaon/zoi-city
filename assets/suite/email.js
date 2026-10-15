@@ -62,7 +62,7 @@
       '.zm-panel{background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:14px;}' +
       '.zm-panel h3{margin:0 0 10px;font-size:14px;font-weight:700;color:var(--tx);}' +
       '.zm-list{display:flex;flex-direction:column;gap:8px;max-height:560px;overflow:auto;}' +
-      '.zm-item{background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;transition:border-color .15s,background .15s;}' +
+      '.zm-item{display:block;width:100%;text-align:left;color:var(--tx);font:inherit;background:var(--card2);border:1px solid var(--line);border-radius:10px;padding:11px 12px;cursor:pointer;transition:border-color .15s,background .15s;}' +
       '.zm-item:hover{border-color:var(--line2);}' +
       '.zm-item.zm-on{border-color:var(--acc);background:var(--bg2);}' +
       '.zm-item-top{display:flex;align-items:center;gap:8px;margin-bottom:3px;}' +
@@ -91,6 +91,7 @@
       '.zm-btn{font:inherit;font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid var(--line2);' +
         'background:var(--card2);color:var(--tx);cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:6px;}' +
       '.zm-btn:hover{border-color:var(--acc);}' +
+      '.zm-wrap :focus-visible{outline:3px solid var(--acc);outline-offset:3px}.zm-wrap [data-recover]{min-height:44px;margin:6px 8px 0 0}.zm-wrap [data-z="draft-status"]{line-height:1.6}.zm-wrap input,.zm-wrap textarea,.zm-wrap select{min-height:44px}@media(max-width:600px){.zm-wrap input,.zm-wrap textarea,.zm-wrap select{font-size:16px}.zm-wrap [data-recover]{width:100%;justify-content:center;margin-right:0}}' +
       '.zm-btn:disabled{opacity:.5;cursor:not-allowed;}' +
       '.zm-btn.pri{background:var(--btn-bg);border-color:var(--btn-bg);color:var(--btn-fg);}' +
       '.zm-btn.pri:hover{filter:brightness(1.08);}' +
@@ -176,29 +177,36 @@
     root.appendChild(wrap);
 
     var workspaceAtMount=ctx.ws, actorAtMount=C.auth&&C.auth.load&&C.auth.load()?.user_id, ended=false;
+    var campaignTools,emailScope,draftWorkflow,segmentTag=null,dirty=false,watcher=null,scopeTimer=null;
     function dispose(message){
       if(ended)return;ended=true;
       global.removeEventListener('zoi:auth-change',identityChanged);
-      global.removeEventListener('storage',identityChanged);
-      if(root.contains(wrap)){root.replaceChildren();if(message)root.textContent=message;}
+      global.removeEventListener('storage',identityChanged);global.removeEventListener('zoi:authchange',identityChanged);global.removeEventListener('focus',identityChanged);watcher?.disconnect();clearInterval(scopeTimer);draftWorkflow?.clearPrivate({dropMarker:!!message});state.campaigns=[];segmentTag=null;dirty=false;
+      wrap.querySelectorAll('input,textarea,select').forEach(function(node){node.value='';});wrap.replaceChildren();if(root.contains(wrap)){root.replaceChildren();if(message)root.textContent=message;}
     }
     function active(){
       if(ended)return false;
-      if(ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount||!root.contains(wrap)){dispose();return false;}
+      if(ctx.ws!==workspaceAtMount||(C.auth&&C.auth.load&&C.auth.load()?.user_id)!==actorAtMount||!root.isConnected||!root.contains(wrap)||(emailScope&&!campaignTools.sameCampaignScope(C,emailScope))){dispose('Your account or workspace changed. Reopen Email to continue.');return false;}
       return true;
     }
     function identityChanged(){active();}
     global.addEventListener('zoi:auth-change',identityChanged);
-    global.addEventListener('storage',identityChanged);
+    global.addEventListener('storage',identityChanged);global.addEventListener('zoi:authchange',identityChanged);global.addEventListener('focus',identityChanged);
     function accessDenied(e){return [401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e));}
     var originalToast=toast;toast=function(){if(active())originalToast.apply(null,arguments);};
     var rawRpc=rpc;
     if(rawRpc)rpc=async function(name,args,options){
       if(!active())throw Error('Account or workspace changed.');
-      try{var value=await rawRpc(name,args,options);if(!active())throw Error('Account or workspace changed.');return value;}
+      try{if(C.auth.ensureFresh&&!(await C.auth.ensureFresh()))throw Object.assign(Error('Please sign in again.'),{status:401});if(!active())throw Error('Account or workspace changed.');var value=await rawRpc(name,args,options);if(!active())throw Error('Account or workspace changed.');return value;}
       catch(e){if(active()&&accessDenied(e))dispose('Your workspace access changed. Reopen Email to continue.');throw e;}
     };
     function q(id) { return wrap.querySelector('[data-z="' + id + '"]'); }
+    try{campaignTools=await import('/assets/email/campaign-draft-workflow.mjs?v=20261015-crm-draft');emailScope=campaignTools.campaignScope(C,ws);if(!active())return {destroy:dispose};draftWorkflow=campaignTools.createCampaignDraftWorkflow({scope:emailScope,rpc:rpc,active:active});segmentTag=campaignTools.takeSegment({scope:emailScope});}catch(error){dispose(error.message||'Email tools could not load. Reopen Email to try again.');return {destroy:dispose};}
+    watcher=new MutationObserver(function(){if(!root.isConnected||!root.contains(wrap))dispose();});watcher.observe(document.documentElement,{childList:true,subtree:true});scopeTimer=setInterval(identityChanged,500);
+    function canLeave(){if(draftWorkflow.pending()){recoveryStatus('Check the unconfirmed save before opening another campaign.');return false;}return !dirty||confirm('Discard the unsaved email changes?');}
+    function recoveryStatus(text){var note=q('draft-status');if(note)note.textContent=text;}
+    function draftError(error){var message=String(error?.message||'');if(/invalid_payload/.test(message))return 'This draft exceeds the supported size or contains an unsupported value. Keep its text, cancel the unconfirmed request, then revise it.';if(/payload_conflict/.test(message))return 'The original save contains different text. Check its receipt before starting another campaign.';if(/scope_conflict/.test(message))return 'This save belongs to another account or workspace. Reopen Email in its original workspace to check it.';if(/request_cancelled/.test(message))return 'This unsaved request was cancelled. Check its receipt before starting again.';if(/not_editable/.test(message))return 'This campaign is no longer an editable draft. Check the saved receipt and reopen its latest version.';return 'The save could not be confirmed. Your text is kept in this tab. Use the receipt controls before starting another campaign.';}
+    function renderRecovery(){if(!active())return;var host=q('recovery'),pending=draftWorkflow.pending();if(!host)return;var hadControls=!!host.querySelector('[data-recover]'),focusKey=host.contains(document.activeElement)?document.activeElement.dataset.recover:null;host.innerHTML=pending?'<section class="zm-mergehint"><h3>Check your draft save</h3><p>The save has not been confirmed. Check its receipt before starting another campaign. Nothing was scheduled.</p><button type="button" class="zm-btn" data-recover="check">Check saved receipt</button>'+(pending.canRetry?'<button type="button" class="zm-btn" data-recover="retry">Retry exact save</button>':'')+'<button type="button" class="zm-btn" data-recover="cancel">Cancel if not saved</button></section>':'';if(pending)wrap.querySelectorAll('.zm-panel button,.zm-panel input,.zm-panel select,.zm-panel textarea').forEach(function(n){n.disabled=true;});q('new').disabled=state.busy||!!pending;if(pending&&!state.busy&&(!hadControls||focusKey)){if(!hadControls)host.scrollIntoView({block:'start'});host.querySelector(focusKey?'[data-recover="'+focusKey+'"]':'[data-recover]')?.focus({preventScroll:true});}host.querySelectorAll('[data-recover]').forEach(function(button){button.disabled=state.busy;button.onclick=function(){withBusy(button,async function(){var result=await draftWorkflow.recover(button.dataset.recover);if(!active())return;if(result.state==='missing'){recoveryStatus('No saved receipt yet. Retry the exact change, or cancel it before starting another.');return;}if(result.state==='saved'){applySaved(result.campaign);if(!active())return;renderComposer();renderList();q('subject')?.focus();recoveryStatus('The earlier save was confirmed. Its current saved draft is shown. Nothing was scheduled.');}else{dirty=false;state.selectedId=null;segmentTag=null;renderComposer();renderList();q('subject')?.focus();recoveryStatus(result.state==='removed'?'This saved campaign was later removed. No replacement was created.':'The unsaved request was cancelled. A delayed copy cannot create a campaign.');}});};});}
 
     /* ---------- shell ---------- */
     function renderShell() {
@@ -216,6 +224,7 @@
             ? 'Save your campaign, review recipients, then schedule delivery.'
             : 'Write and save drafts. Email delivery is unavailable; scheduling is disabled until the sending service is configured.') + '</div>' +
         '</div>' +
+        '<div data-z="recovery"></div><p data-z="draft-status" role="status" aria-live="polite"></p>' +
         '<div class="zm-grid">' +
           '<div class="zm-panel">' +
             '<h3>Campaigns</h3>' +
@@ -225,8 +234,8 @@
         '</div>';
 
       q('new').addEventListener('click', function () {
-        if (!active() || state.busy) return;
-        state.selectedId = null;
+        if (!active() || state.busy || !canLeave()) return;
+        dirty=false;segmentTag=null;state.selectedId = null;
         state.schedOpen = false;
         renderComposer();
         renderList();
@@ -247,7 +256,8 @@
       list.innerHTML = '';
       cs.forEach(function (c) {
         var st = statusOf(c);
-        var item = el('div', 'zm-item' + (state.selectedId === c.id ? ' zm-on' : ''));
+        var item = el('button', 'zm-item' + (state.selectedId === c.id ? ' zm-on' : ''));
+        item.type='button';
         var when = '';
         if (st === 'sent' && c.sent_at) when = 'Sent ' + fmtDateTime(c.sent_at);
         else if (st === 'scheduled' && c.scheduled_at) when = 'Scheduled ' + fmtDateTime(c.scheduled_at);
@@ -268,11 +278,11 @@
             recips +
           '</div>';
         item.addEventListener('click', function () {
-          if (!active() || state.busy) return;
-          state.selectedId = c.id;
+          if (!active() || state.busy || !canLeave()) return;
+          dirty=false;segmentTag=null;state.selectedId = c.id;
           state.schedOpen = false;
           renderComposer();
-          renderList();
+          renderList();q('subject')?.focus();
         });
         list.appendChild(item);
       });
@@ -290,38 +300,40 @@
     function renderComposer() {
       var host = q('composer');
       if (!host) return;
+      if(draftWorkflow.pending()&&!draftWorkflow.pending().canRetry){host.innerHTML='<p class="zm-empty">Your previous save needs checking. Use the receipt controls above to load its saved result. No campaign text was stored in this browser.</p>';return;}
       var c = current() || {};
       var st = current() ? statusOf(c) : 'draft';
       var isSent = ['sent','processing','accepted','partial','failed','needs_review','suppressed'].indexOf(st) !== -1;
       var isScheduled = st === 'scheduled';
-      var selTag = c.audience_tag || 'all';
+      var selTag = c.audience_tag || segmentTag || 'all';
       var tags = TAG_PRESETS.slice();
-      if (c.audience_tag && tags.indexOf(c.audience_tag) === -1) tags.unshift(c.audience_tag);
+      if (tags.indexOf(selTag) === -1) tags.unshift(selTag);
 
       host.innerHTML =
+        (segmentTag&&!current()?'<p class="zm-mergehint">From Contacts: <strong>'+esc(segmentTag)+'</strong>. This draft targets the whole tag, not a text search. Current consent and suppression still control any later delivery.</p>':'') +
         '<h3>' + (current() ? 'Edit campaign' : 'New campaign') +
           (current() ? ' <span class="zm-chip ' + st + '" style="float:right">' + st + '</span>' : '') + '</h3>' +
         (isSent ? '<div class="zm-mergehint">Delivery has started. The saved content is read-only so retries use the same message. ' +
           '<button class="zm-btn" data-z="dup">Duplicate as a new draft</button></div>' : '') +
         '<div class="zm-field">' +
-          '<label>Subject <span class="zm-charc" data-z="c_subj"></span></label>' +
-          '<input class="zm-input" data-z="subject" maxlength="150" placeholder="Your subject line" ' +
+          '<label for="zm-subject">Subject <span class="zm-charc" data-z="c_subj"></span></label>' +
+          '<input class="zm-input" id="zm-subject" aria-label="Subject" data-z="subject" maxlength="150" placeholder="Your subject line" ' +
             'value="' + esc(c.subject) + '"' + (isSent ? ' disabled' : '') + '>' +
         '</div>' +
         '<div class="zm-field">' +
-          '<label>Preheader <span class="zm-hint">(inbox preview text)</span> <span class="zm-charc" data-z="c_pre"></span></label>' +
-          '<input class="zm-input" data-z="preheader" maxlength="150" placeholder="Short summary shown after the subject" ' +
+          '<label for="zm-preheader">Preheader <span class="zm-hint">(inbox preview text)</span> <span class="zm-charc" data-z="c_pre"></span></label>' +
+          '<input class="zm-input" id="zm-preheader" aria-label="Preheader" data-z="preheader" maxlength="150" placeholder="Short summary shown after the subject" ' +
             'value="' + esc(c.preheader) + '"' + (isSent ? ' disabled' : '') + '>' +
         '</div>' +
         '<div class="zm-row">' +
           '<div class="zm-field">' +
-            '<label>From name</label>' +
-            '<input class="zm-input" data-z="from_name" maxlength="80" placeholder="e.g. Maria at BuyGreek" ' +
+            '<label for="zm-from_name">From name</label>' +
+            '<input class="zm-input" id="zm-from_name" aria-label="From name" data-z="from_name" maxlength="80" placeholder="Your business or organization" ' +
               'value="' + esc(c.from_name) + '"' + (isSent ? ' disabled' : '') + '>' +
           '</div>' +
           '<div class="zm-field">' +
-            '<label>Audience</label>' +
-            '<select class="zm-sel" data-z="audience"' + (isSent ? ' disabled' : '') + '>' +
+            '<label for="zm-audience">Audience</label>' +
+            '<select class="zm-sel" id="zm-audience" aria-label="Audience" data-z="audience"' + (isSent ? ' disabled' : '') + '>' +
               tags.map(function (t) {
                 return '<option value="' + esc(t) + '"' + (t === selTag ? ' selected' : '') + '>' + esc(t) + '</option>';
               }).join('') +
@@ -331,8 +343,8 @@
         '<div class="zm-mergehint">Personalize with the merge tag <code>{{name}}</code> — it becomes each ' +
           'contact’s name at send (falls back to “friend”). Preview below uses a sample name.</div>' +
         '<div class="zm-field">' +
-          '<label>Body <span class="zm-charc" data-z="c_body"></span></label>' +
-          '<textarea class="zm-ta" data-z="body" placeholder="Write your email… Hi {{name}}, ..."' +
+          '<label for="zm-body">Body <span class="zm-charc" data-z="c_body"></span></label>' +
+          '<textarea class="zm-ta" id="zm-body" aria-label="Body" data-z="body" placeholder="Write your email… Hi {{name}}, ..."' +
             (isSent ? ' disabled' : '') + '>' + esc(c.body) + '</textarea>' +
         '</div>' +
         '<div class="zm-field">' +
@@ -397,10 +409,10 @@
     function wireComposer() {
       ['subject', 'preheader', 'from_name', 'body'].forEach(function (id) {
         var inp = q(id);
-        if (inp) inp.addEventListener('input', function () { updatePreview(); updateCounts(); });
+        if (inp) inp.addEventListener('input', function () { dirty=true;updatePreview(); updateCounts(); });
       });
       var aud = q('audience');
-      if (aud) aud.addEventListener('change', updatePreview);
+      if (aud) aud.addEventListener('change', function(){dirty=true;updatePreview();});
 
       var saveBtn = q('save');
       if (saveBtn) saveBtn.addEventListener('click', function () { doSave(); });
@@ -456,12 +468,13 @@
       var prev = btn ? btn.textContent : '';
       if (btn) btn.textContent = 'Working…';
       try { await fn(); }
-      catch (e) { toast((e && e.message) ? e.message : 'Something went wrong.', 'error'); }
+      catch (e) { var message=draftWorkflow.pending()?draftError(e):((e&&e.message)||'The change could not be confirmed.');if(active())recoveryStatus(message);toast(message,'error'); }
       finally {
         state.busy = false;
         wrap.removeAttribute('aria-busy');
         controls.forEach(function (saved) { saved.control.disabled = saved.disabled; });
         if (btn) btn.textContent = prev;
+        if(active())renderRecovery();
       }
     }
 
@@ -470,28 +483,16 @@
       return result;
     }
 
+    function applySaved(campaign){state.selectedId=campaign.id;state.campaigns=state.campaigns.filter(function(c){return c.id!==campaign.id;});state.campaigns.unshift(campaign);dirty=false;segmentTag=null;}
+
     /* ---------- save (returns id for chaining) ---------- */
     async function saveCore() {
       var d = collect();
       if (!validate(d)) return null;
       if (!rpc) { toast('Not connected.', 'error'); return null; }
-      var res = await rpc('email_campaign_save', {
-        p_workspace: ws,
-        p_subject: d.subject,
-        p_body: d.body,
-        p_preheader: d.preheader,
-        p_from_name: d.from_name,
-        p_audience_tag: d.audience,
-        p_id: state.selectedId || null
-      }, { auth: 'require' });
-      requireReceipt(res, 'Save');
-      var id = typeof res === 'string' && /^[0-9a-f-]{36}$/i.test(res) ? res : res && res.id;
-      if (id == null) throw new Error('Save returned no campaign identifier. Nothing was scheduled.');
-      state.selectedId = id;
-      // Keep the saved snapshot locally even if refreshing the list fails.
-      var saved = Object.assign({}, d, { id: id, status: 'draft', audience_tag: d.audience });
-      state.campaigns = state.campaigns.filter(function (campaign) { return campaign.id !== id; });
-      state.campaigns.unshift(saved);
+      var result=await draftWorkflow.save({subject:d.subject,body:d.body,preheader:d.preheader,from_name:d.from_name,audience:d.audience,id:state.selectedId||null});
+      if(!active())throw Error('Account or workspace changed.');
+      var id=result.campaign.id;applySaved(result.campaign);
       await reload();
       return id;
     }
@@ -574,7 +575,7 @@
           });
         } catch (summaryError) { /* Ledger is additive; drafts remain usable before deployment. */ }
       } catch (e) {
-        state.campaigns=[];if(!active())return;
+        if(!active())return;
         toast((e && e.message) ? e.message : 'Could not load campaigns.', 'error');
       }
       state.loading = false;
@@ -582,10 +583,10 @@
 
     /* ---------- boot ---------- */
     renderShell();
-    renderComposer();
+    q('composer').innerHTML='<p class="zm-loading">Loading your saved campaigns…</p>';
     await reload();
-    if(active()){renderList();renderComposer();}
-    return {destroy:dispose,unmount:dispose};
+    if(active()){renderList();renderComposer();renderRecovery();}
+    return {destroy:dispose,unmount:dispose,hasUnsavedChanges:function(){return active()&&(dirty||!!draftWorkflow.pending());}};
   }
 
   /* ---------- register ---------- */
