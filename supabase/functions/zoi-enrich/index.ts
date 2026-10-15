@@ -136,7 +136,7 @@ import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
 import { extractStructuredMenu } from "./_menus.js";
-import { extractStructuredServices } from "./_services.js";
+import { extractStructuredServices, structuredSourceContextMatches } from "./_services.js";
 import { extractHospitality, hospitalitySupplements, hospitalitySourceMatches, validHospitalityFields } from "./_hospitality.js";
 import { extractSiteImages, supplementaryPages, imageIdentity } from "./_images.js";
 import { confirmedEnrichmentReceipts, enrichmentSample } from "./_receipts.js";
@@ -636,16 +636,20 @@ Deno.serve(async (req) => {
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
       const sourceIdentity = aggregator ? null : sourceClientIdentity(row, got.doc!, got.finalUrl!);
       if (sourceIdentity) { profile.source_identity = sourceIdentity; provenance.source_identity = sourceIdentity.verification; }
+      // This context is projected from current canonical listing columns by the
+      // service-only lease. Imported extraction fields are never branch authority.
+      const context = row.existing_enrich?._lease_source_context;
+      const canonical = context && typeof context === "object" && !Array.isArray(context) ? context as Record<string, unknown> : {};
+      const serviceRow = { ...row,
+        city: typeof canonical.city === "string" ? canonical.city : undefined,
+        country: typeof canonical.country === "string" ? canonical.country : undefined,
+        address: typeof canonical.address === "string" ? canonical.address : undefined,
+        profile: { _enrich: row.existing_enrich || {} } };
+      if ((profile.menu || row.existing_enrich?.menu) && !structuredSourceContextMatches(got.doc!, serviceRow, got.finalUrl!)) {
+        batch.push({slug:row.slug,website:got.finalUrl,lease_id:row.lease_id,profile:{...identityStatus,blocked:"true",blocked_reason:"source_scope_mismatch",crawl_status:"error",last_error:"menu_source_context_unverified"},provenance:{},source_evidence:sourceEvidence});
+        continue;
+      }
       if (sourceIdentity?.verification === "exact_name_typed_jsonld") {
-        // This context is projected from current canonical listing columns by the
-        // service-only lease. Imported extraction fields are never branch authority.
-        const context = row.existing_enrich?._lease_source_context;
-        const canonical = context && typeof context === "object" && !Array.isArray(context) ? context as Record<string, unknown> : {};
-        const serviceRow = { ...row,
-          city: typeof canonical.city === "string" ? canonical.city : undefined,
-          country: typeof canonical.country === "string" ? canonical.country : undefined,
-          address: typeof canonical.address === "string" ? canonical.address : undefined,
-          profile: { _enrich: row.existing_enrich || {} } };
         const services = await extractStructuredServices(got.doc!, serviceRow, got.finalUrl!);
         if (services) {
           profile.services = services.services;
@@ -676,6 +680,12 @@ Deno.serve(async (req) => {
           if (!extra.doc || !extra.finalUrl || new URL(extra.finalUrl).origin !== new URL(got.finalUrl!).origin) { sourceEvidence.push({url:page.url,purpose:page.purpose,state:"unavailable"}); bump("supplement-unavailable"); continue; }
           sourceEvidence.push({url:extra.finalUrl,purpose:page.purpose,state:"fetched"});
           const next = extract(extra.doc, extra.finalUrl);
+          if (next.profile.menu && (inspectSourceDocument(extra.doc).source_state === "source_challenge" || !structuredSourceContextMatches(got.doc!, serviceRow, got.finalUrl!) || !structuredSourceContextMatches(extra.doc, serviceRow, extra.finalUrl, {linkedSupplement:true}))) {
+            for (const key of Object.keys(profile)) delete profile[key];
+            Object.assign(profile,{blocked:"true",blocked_reason:"source_scope_mismatch",crawl_status:"error",last_error:"menu_source_context_unverified"});
+            for (const key of Object.keys(provenance)) delete provenance[key];
+            break;
+          }
           const pageHash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(extra.doc)))).map(b => b.toString(16).padStart(2, "0")).join("");
           for (const key of ["rooms", "dining", "venues", "amenities"]) {
             if (hospitalitySourceMatches(got.finalUrl!, row.website) && hospitalitySourceMatches(extra.finalUrl, row.website) && validHospitalityFields(next.profile, row.website) && !profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = "source-hospitality:" + extra.finalUrl + "#sha256=" + pageHash; }
