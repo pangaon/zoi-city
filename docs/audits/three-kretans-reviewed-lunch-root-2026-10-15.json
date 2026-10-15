@@ -1,0 +1,69 @@
+{
+  "checked_at": "2026-10-15T15:31:44.912854+00:00",
+  "owner": "/root",
+  "candidate_canonical_sha256": "93e93b1ebad8c53de7d1c11809d0bec30b8e459140badf2a5d8f551adcadf524",
+  "payload_review_json_sha256": "62bcd57363e3f813e50948f0dfa13330e2c55eedd042655762115ff8492e5d33",
+  "sql": [
+    {
+      "path": "ops/proposals/three-kretans-reviewed-lunch-20261015-apply.sql",
+      "sha256": "42340575ebf4cd19011988b22dd4fced76e935ee526d081e4c049137bc169463"
+    },
+    {
+      "path": "ops/proposals/three-kretans-reviewed-lunch-20261015-dryrun.sql",
+      "sha256": "07ae6c1dd1fef0b94aba0dff099d75f3ad05582ed0dd387ef6a54a9bab13ec5e"
+    }
+  ],
+  "actual_dryrun": {
+    "all_transaction_assertions_passed": true,
+    "original_row_restored": true,
+    "no_lease_retained": true,
+    "production_facts_committed": false
+  },
+  "earlier_refusals": [
+    {
+      "kind": "Unparenthesized ACL CASE parser",
+      "point": "Before DO execution, no lease",
+      "resolution": "Parenthesized and reproduced original/fixed grammar in isolated PG16."
+    },
+    {
+      "kind": "Overgeneralized empty search_path guard",
+      "point": "Before lease, actual metadata refused",
+      "resolution": "Pin unchanged public wrapper search_path zoi,public and empty private/sample per actual definitions; explicit rollback after error."
+    }
+  ],
+  "review_fixes_before_execution": [
+    "Absent lease.source_fingerprint field replaced with exact stored id/task/quality/source/authority/expiry.",
+    "Full canonical/unowned/context/hash fence and public reader receipt source remain unchanged."
+  ],
+  "isolated_complete_proposal": {
+    "isolated_PostgreSQL16": true,
+    "actual_unowned_scalar_snapshot": true,
+    "exact_current_eleven_contracts_and_reader_migration": true,
+    "quality_and_authority_equal_actual": true,
+    "adaptation": "Unrelated vector column omitted; ONLY full-row MD5 guard value recomputed for local scalar row. Actual quality/authority unchanged. Delegated action/design/owner providers remain fixture stubs.",
+    "complete_dryrun_original_row_restored": true,
+    "complete_dryrun_no_lease_retained": true,
+    "complete_committed_apply_canonical17_public_current": true,
+    "owner_raw_coordinates_unchanged": true,
+    "production_mutations": 0
+  },
+  "not_complete": [
+    "Guarded committed apply after protected source merge.",
+    "Actual public rendered lunch17/customer interactions.",
+    "Whole Three Kretans home/menu/owner/provider/native acceptance."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/three-kretans-reviewed-lunch-root-2026-10-15/isolated-complete-proposal-proof.json",
+      "sha256": "d63753382e5327e454b30d2f0482145977d9b092b929afb25607b0d685671246"
+    },
+    {
+      "path": "docs/audits/evidence/three-kretans-reviewed-lunch-root-2026-10-15/isolated-syntax-proof.json",
+      "sha256": "9b0a01ee0391b29d29ac56c8f140addf4163a4dca1fe9868075d85a73e488fa0"
+    },
+    {
+      "path": "docs/audits/evidence/three-kretans-reviewed-lunch-root-2026-10-15/isolated-complete-proposal.log",
+      "sha256": "701dbc0c21e9412698f167ad491435083586e052919a3acc22c3f369b15c5bfb"
+    }
+  ]
+}
