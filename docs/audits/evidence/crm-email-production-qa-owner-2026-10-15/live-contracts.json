@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-10-15",
+  "scope": "Read-only actual function metadata, dedicated QA workspace aggregate only; no customer data or private campaign content.",
+  "functions": [
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "fc828e37c624ddf30fe50898c856a39b",
+      "signature": "audience_delete(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_delete(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  perform zoi.assert_audience_asset_write(p_workspace);\n  DELETE FROM zoi.audience_contacts WHERE id=p_id AND workspace_id=p_workspace;\n  RETURN FOUND;\nEND;$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "86cac89711d3a418c68024a5ff08a415",
+      "signature": "audience_list(uuid,text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_list(p_workspace uuid, p_q text DEFAULT NULL::text, p_tag text DEFAULT NULL::text)\n RETURNS SETOF zoi.audience_contacts\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN QUERY SELECT * FROM zoi.audience_contacts c\n  WHERE c.workspace_id=p_workspace\n    AND (p_q IS NULL OR c.name ILIKE '%'||p_q||'%' OR c.email ILIKE '%'||p_q||'%' OR c.phone ILIKE '%'||p_q||'%')\n    AND (p_tag IS NULL OR p_tag = ANY(c.tags))\n  ORDER BY c.created_at DESC LIMIT 500;\nEND;$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "53dd8f38db7232814e6ec21af75fd0a6",
+      "signature": "audience_upsert(uuid,text,text,text,text,text[],text,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_upsert(p_workspace uuid, p_name text, p_email text DEFAULT NULL::text, p_phone text DEFAULT NULL::text, p_nameday text DEFAULT NULL::text, p_tags text[] DEFAULT '{}'::text[], p_notes text DEFAULT NULL::text, p_id uuid DEFAULT NULL::uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE v uuid;\nBEGIN\n  perform zoi.assert_audience_asset_write(p_workspace);\n  IF p_name IS NULL OR length(trim(p_name))=0 THEN RAISE EXCEPTION 'name_required'; END IF;\n  IF p_id IS NOT NULL THEN\n    UPDATE zoi.audience_contacts SET name=trim(p_name), email=NULLIF(lower(trim(p_email)),''), phone=NULLIF(trim(p_phone),''),\n      nameday=NULLIF(trim(p_nameday),''), tags=COALESCE(p_tags,'{}'), notes=p_notes, updated_at=now()\n    WHERE id=p_id AND workspace_id=p_workspace RETURNING id INTO v;\n  ELSE\n    INSERT INTO zoi.audience_contacts(workspace_id,name,email,phone,nameday,tags,notes)\n    VALUES(p_workspace, trim(p_name), NULLIF(lower(trim(p_email)),''), NULLIF(trim(p_phone),''), NULLIF(trim(p_nameday),''), COALESCE(p_tags,'{}'), p_notes)\n    ON CONFLICT (workspace_id, lower(email)) WHERE email IS NOT NULL\n    DO UPDATE SET name=EXCLUDED.name, phone=COALESCE(EXCLUDED.phone,zoi.audience_contacts.phone),\n      nameday=COALESCE(EXCLUDED.nameday,zoi.audience_contacts.nameday), updated_at=now()\n    RETURNING id INTO v;\n  END IF;\n  RETURN v;\nEND;$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "0e24fdf14800503294ad78abfbe4f355",
+      "signature": "email_campaign_delete(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.email_campaign_delete(p_workspace uuid, p_id uuid)\n RETURNS boolean\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_workspace_write(p_workspace);\n  DELETE FROM zoi.email_campaigns WHERE id=p_id AND workspace_id=p_workspace AND status='draft';\n  RETURN FOUND;\nEND;$function$\n",
+      "security_definer": true
+    }
+  ],
+  "dedicated_qa_contacts": {
+    "total": 0,
+    "eligible_nonreserved_tag_exists": false
+  },
+  "contact_unique_indexes": [
+    "CREATE UNIQUE INDEX audience_contacts_pkey ON zoi.audience_contacts USING btree (id)",
+    "CREATE UNIQUE INDEX uq_aud_ws_email ON zoi.audience_contacts USING btree (workspace_id, lower(email)) WHERE (email IS NOT NULL)"
+  ]
+}

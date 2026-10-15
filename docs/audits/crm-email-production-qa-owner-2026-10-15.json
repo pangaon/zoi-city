@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "recorded_at": "2026-10-15T14:36:11.261094+00:00",
+  "owner": "/root/owner_next",
+  "worktree": "/tmp/zoi-crm-email-production-qa",
+  "baseline": "6394681d4e09105eae75b8533d854596cfba07a1",
+  "state": "QA source is frozen and controlled acceptance passed. Independent review and trusted-main production admission remain with the lead.",
+  "manifest": {
+    "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/source-manifest.json",
+    "sha256": "445b35e3678bf97c28b1e43d2fc7c73beedca5d0b5dff381863febf323c72aac"
+  },
+  "new_qa_source_paths": [
+    "scripts/auth-qa/crm-email-browser-ci.mjs",
+    "scripts/auth-qa/crm-email-browser.mjs",
+    "scripts/auth-qa/crm-email-browser-policy.mjs",
+    ".github/workflows/crm-email-browser-qa.yml",
+    "tests/unit/crm-email-browser-qa.test.mjs",
+    "ops/crm-email-browser-qa.json"
+  ],
+  "unchanged_dependencies": [
+    "scripts/auth-qa/session.mjs",
+    "scripts/quality/ci.mjs",
+    "assets/suite/audience.js",
+    "assets/suite/email.js",
+    "assets/email/campaign-draft-workflow.mjs",
+    "assets/suite/contacts-workspace.mjs",
+    "assets/zoi-core.js"
+  ],
+  "product_runtime_changes": 0,
+  "production_sessions_obtained_by_author": 0,
+  "production_mutations_by_author": 0,
+  "read_only_production_evidence": "Actual definitions, ACL and configuration of four canonical functions, plus contact count and eligible-tag existence for the dedicated QA workspace only. Captured before the lead provisioned one isolated synthetic fixture. No customer workspace, contact details, private campaign content or credentials were read.",
+  "production_fixture": "The lead provisioned one synthetic contact in the dedicated QA workspace as privileged test-data setup. This is not authenticated product-operation proof. The lead owns exact fixture cleanup; this harness contains no contact or consent mutations.",
+  "actual_delete_contract": {
+    "signature": "public.email_campaign_delete(uuid,uuid)",
+    "body_md5": "0e24fdf14800503294ad78abfbe4f355",
+    "owner": "postgres",
+    "security_definer": true,
+    "config": [
+      "search_path=zoi, public"
+    ],
+    "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+    "behavior": "Checks current workspace write authority, deletes only the exact workspace/id when status is draft, and returns the FOUND boolean. The existing function is unchanged."
+  },
+  "admission": [
+    "The committed request is disabled; all stages perform zero network or credential actions while disabled.",
+    "Only a public trusted-repository main push, with one parent, the first attempt and a diff containing only the request file can admit execution. Event and commit identities must match.",
+    "Requests expire within 30 minutes. Exact code hashes and bounded deployed web-byte hashes are checked before opening a session. The lead supplies the fixture-tag digest; literal tags and contacts stay in memory.",
+    "Existing withQaSession and serviceCredential are reused unchanged. No issuer, founder access renewal, Auth grant, credential retrieval implementation or product authorization bypass was added.",
+    "The browser fence permits only the dedicated workspace and two original nonces with exact synthetic payloads. Contact mutations, schedules, sends, duplicates, browser deletion, provider endpoints and unrelated queries are denied.",
+    "Cleanup has one hour of expiry grace, resolves only original receipts, and cannot open a browser or create drafts."
+  ],
+  "journey": [
+    "Read Contacts and use its existing specific-tag handoff to the existing Email composer.",
+    "Save the first exact synthetic draft through the canonical receipt wrapper, reload the page, and reopen the actual saved row with matching fields.",
+    "Save the second draft, consume the actual successful server response, then deliberately reject it before the app receives it. Exactly two save POSTs are allowed.",
+    "Verify the real workflow marker contains only actor, SID, workspace and nonce. Carry only that metadata across reload in coordinator memory; do not restore the original payload.",
+    "Use the actual Check saved receipt control to recover the current canonical draft, then reload and reopen it again.",
+    "In finally, check or cancel both original nonces. Before canonical deletion, verify the immutable snapshot, exact current synthetic fields, draft status, actor, workspace and tag digest. Confirm removed receipt state and canonical list absence.",
+    "Attempt cleanup of the second draft even if the first cleanup fails. Preserve immutable receipts and cancellation tombstones. Evidence is written only after cleanup and local session logout are confirmed."
+  ],
+  "verification": [
+    {
+      "kind": "focusedrequest/lifecycle/sourceguards",
+      "passed": 36,
+      "detail": "17 new CRM groups and 19 existing Company/Auth QA groups cover admission, expiry, request fences, scope, lifecycle, cleanup and evidence privacy.",
+      "evidence": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/zoi-crm-prod-qa-combined-final.log"
+    },
+    {
+      "kind": "enabledouterrequest regression",
+      "passed": 17,
+      "detail": "All 17 new groups pass from a temporary CWD containing an enabled outer request. The disabled-stage test uses its own exact CLI children and isolated temporary CWDs; no committed request was changed.",
+      "evidence": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/zoi-crm-prod-qa-enabled-outer-final.log"
+    },
+    {
+      "kind": "actualsocialshellandnewCDPdriver controlledbrowser",
+      "passed": 1,
+      "detail": "Complete actual social-shell/CDP orchestration with two drafts, reload/reopen, deliberate response loss, metadata-only recovery and cleanup. An exclusive localhost proxy/TLS fixture serves every allowed host; there is no external network. The invalid test JWT and in-memory canonical-shaped RPC store are not production Auth or PostgreSQL evidence. The 390px page has no horizontal overflow.",
+      "evidence": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/controlled-mounted/result.json"
+    },
+    {
+      "kind": "static",
+      "result": "All three new modules parse; git diff --check passes; all 16 frozen source hashes match."
+    }
+  ],
+  "diagnostic_history": "The controlled fixture initially attached a second Playwright observer and attempted live emulation resizing; CDP Runtime commands stalled. The final fixture uses one CDP client and a fixed 390px viewport. No product defect was established or patched. This harness does not certify desktop or live resizing; the earlier CRM packet has separate isolated PostgreSQL and mounted-browser evidence at 390px and 1440px.",
+  "remaining": [
+    "Independent read-only acceptance is pending.",
+    "The lead must integrate the disabled QA source, then enable an exact request after deployed byte hashes match and the fixture is confirmed.",
+    "Only the trusted CI run can establish real Auth, current-session authority and production save/recovery/delete acceptance. The owner controlled run does not establish these.",
+    "The lead owns production admission, session and database rollout, and exact synthetic-contact cleanup.",
+    "An interrupted cleanup or unconfirmed logout leaves acceptance open. Resolve the original two receipts; never create a replacement to clean unknown old data.",
+    "Sending, scheduling, provider and native capability acceptance are outside this harness. The installed native navigation defect at 2\u00d7 system text remains open."
+  ],
+  "official_docs_checked": [
+    "https://supabase.com/changelog.md",
+    "https://supabase.com/docs/reference/javascript/auth-admin-generatelink",
+    "https://supabase.com/docs/reference/javascript/auth-signout"
+  ],
+  "evidence_files": [
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/README.md",
+      "sha256": "9bf2358c9cba1a34910132469c0041881c1c93bc9b7315ee37e8f90f1886a5df"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/controlled-mounted/result.json",
+      "sha256": "6ed5c01ddc196e6e9866e4a15a1e9a2eb70dafd4ae6f5400aca7ba69271e2cff"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/controlled-mounted.mjs",
+      "sha256": "94c8c75a1d903ff01421cbc5c2436c9d27e4f1f896b66920f88a5321602c5774"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/live-contracts.json",
+      "sha256": "03454543cb28eb3ff538cb050811be726fa1f639e38433764da38ff9a417a81a"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/source-manifest.json",
+      "sha256": "445b35e3678bf97c28b1e43d2fc7c73beedca5d0b5dff381863febf323c72aac"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/zoi-crm-prod-mounted-owner-final.log",
+      "sha256": "701a2a9e48af86c67f92ce9571a09989d41eb7cfe1418b5b56bd37edd6e41ccf"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/zoi-crm-prod-qa-combined-final.log",
+      "sha256": "c946c98bb80e13b14fc74d25efa87c69654a96fbb33fd8b74142badcdd814e02"
+    },
+    {
+      "path": "docs/audits/evidence/crm-email-production-qa-owner-2026-10-15/zoi-crm-prod-qa-enabled-outer-final.log",
+      "sha256": "32950dfe6f075c84ff3d1c7895cd753b748c9e9c3264fec6426ee91130086f49"
+    }
+  ]
+}
