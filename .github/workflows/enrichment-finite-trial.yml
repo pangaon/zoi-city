@@ -1,0 +1,29 @@
+name: Finite enrichment trial
+on:
+  push:
+    branches: [main]
+    paths: ['ops/enrichment-finite-trial-request.json']
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: enrichment-finite-trial
+  cancel-in-progress: false
+jobs:
+  trial:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main' && github.event_name == 'push' && github.event.repository.private == false && github.event.repository.visibility == 'public' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Run one explicitly bounded trial window
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+        run: node scripts/geography/run-finite-enrichment-trial.mjs
