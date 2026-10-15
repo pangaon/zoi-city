@@ -1,0 +1,86 @@
+--- a/assets/suite/composer.js
++++ b/assets/suite/composer.js
+@@ -527,6 +527,30 @@
+     left.appendChild(bannerBox);
+ 
+     var businessCreativeSlot=el('div');left.appendChild(businessCreativeSlot);
++    var imageLayoutButton=el('button','zc-btn','Image layout · PNG');imageLayoutButton.type='button';imageLayoutButton.style.minHeight='44px';left.appendChild(imageLayoutButton);
++    imageLayoutButton.onclick=async function(){
++      try{
++        await linkedContextReady;await businessCreativeReady;
++        if(!scopeActive())return;if(!businessCreative||!state.businessCreative)throw Error('Choose published business details first, then open Image layout.');
++        if(state.businessCreativeNeedsReview)throw Error('Refresh and review the published business details before editing an image.');
++        if(businessCreative.workflow.pending())throw Error('Check or cancel the unconfirmed draft save before editing another image.');
++        var source=state.businessCreative,postId=state.editId,version=state.businessCreativeUpdatedAt,composition=state.originMeta?.creative_composition,module=await import('/assets/studio/image-composition-ui.mjs');if(!scopeActive())return;
++        var dialog=openModal('Image layout');
++        module.mountImageComposition(dialog.body,{C:C,workspace:workspaceAtMount,source:source,caption:ta.value,recipe:composition?.recipe||null,originalAsset:composition?.original?.asset_id||null,
++          isCurrent:function(){return scopeActive()&&state.businessCreative===source&&state.editId===postId&&state.businessCreativeUpdatedAt===version;},onClose:dialog.close,
++          onAdd:async function(image){
++            if(!scopeActive()||state.businessCreative!==source||state.businessCreativeNeedsReview||state.editId!==postId||state.businessCreativeUpdatedAt!==version)throw Error('This draft or business selection changed. Reopen Image layout.');
++            if(!currentCampaign())throw Error('Close Image layout and add a campaign name before saving this image.');
++            var meta=buildMeta();delete meta.business_creative;delete meta.client_listing_id;delete meta.creative_composition;
++            try{
++              var receipt=await businessCreative.workflow.saveRender(source,{body:ta.value,meta:meta,id:postId,expectedUpdatedAt:postId?version:null},module.compositionRender(image),{...(image.original.reference?.kind==='local_file'?{original:image.original.blob}:{}),output:image.output.blob});
++              if(!scopeActive())return;if(receipt.state!=='saved')throw Error('The request was cancelled or its post was removed. Review the saved draft before trying again.');
++              state.businessCreativeUpdatedAt=receipt.post.updated_at;applyIncomingPost(receipt.post,true);dialog.close();toast('Image added to the saved private campaign draft. Nothing was sent.');
++            }catch(error){clearOnDenied(error);throw error;}finally{businessCreative?.refreshRecovery();}
++          }
++        });
++      }catch(error){clearOnDenied(error);if(scopeActive())toast(error.message||'Image layout could not load. Your draft is retained.');}
++    };
+ 
+     /* ----- LEFT: Greek caption starters ----- */
+     var tplBox = el('div', 'zc-tpl-box');
+@@ -1982,8 +2006,13 @@
+       if(state.businessCreative){
+         if(!businessCreative)throw Error('Business draft recovery could not load. Retry loading this tool before saving.');
+         if(!currentCampaign())throw Error('Add a campaign name before saving this business creative.');
+-        var creativeMeta=Object.assign({},params.p_meta);delete creativeMeta.business_creative;delete creativeMeta.client_listing_id;
+-        try{var creativeReceipt=await businessCreative.workflow.save(state.businessCreative,{body:params.p_body,media:params.p_media,meta:creativeMeta,id:state.editId,expectedUpdatedAt:state.editId?state.businessCreativeUpdatedAt:null});
++        var creativeMeta=Object.assign({},params.p_meta);delete creativeMeta.business_creative;delete creativeMeta.client_listing_id;delete creativeMeta.creative_composition;
++        try{var creativeDraft={body:params.p_body,media:params.p_media,meta:creativeMeta,id:state.editId,expectedUpdatedAt:state.editId?state.businessCreativeUpdatedAt:null},composition=state.originMeta?.creative_composition,creativeReceipt;
++          if(composition&&state.media.length){
++            if(state.media.length!==1||state.media[0]!==composition.output?.url)throw Error('Use Image layout to replace a composed image, or remove it to save a copy-only draft.');
++            var descriptor=function(part){return{asset_id:part.asset_id,mime_type:part.mime_type,sha256:part.sha256,size_bytes:part.size_bytes,width:part.width,height:part.height};};
++            creativeReceipt=await businessCreative.workflow.saveRender(state.businessCreative,creativeDraft,{schema:1,recipe:composition.recipe,original:descriptor(composition.original),output:descriptor(composition.output),alt:state.alts[state.media[0]]||''});
++          }else creativeReceipt=await businessCreative.workflow.save(state.businessCreative,creativeDraft);
+           if(creativeReceipt.state!=='saved'||creativeReceipt.post?.status!=='draft')throw Error('The saved post changed or was removed. Open Calendar to review it.');
+           res=creativeReceipt.post;state.businessCreativeUpdatedAt=res.updated_at;state.originMeta=JSON.parse(JSON.stringify(res.meta||{}));
+         }finally{businessCreative.refreshRecovery();}
+--- a/assets/studio/business-creative.mjs
++++ b/assets/studio/business-creative.mjs
+@@ -39,26 +39,27 @@
+  return clone(value);
+ }
+ export function createBusinessCreativeWorkflow({C,workspace,current=()=>true,storage=globalThis.sessionStorage,uuid=()=>crypto.randomUUID()}={}){
+- const scope=creativeScope(C),actor=scope.split(':')[0],key='zoi.business-creative:'+scope+':'+workspace;
++ const scope=creativeScope(C),actor=scope.split(':')[0],key='zoi.business-creative:'+scope+':'+workspace;let renderFiles=null;
+  if(!scope||!UUID.test(workspace||''))throw Error('Sign in to this workspace again.');
+  const active=()=>current()&&creativeScope(C)===scope;
+  const guard=()=>{if(!active())throw Error('Your account, session or workspace changed.');};
+  function pending(){guard();try{const raw=storage.getItem(key);if(!raw)return null;const r=JSON.parse(raw);if(r.scope!==scope||r.p_workspace!==workspace||!UUID.test(r.p_listing||'')||!UUID.test(r.p_request||'')||!r.p_payload)throw Error();return clone(r);}catch{throw Error('Draft recovery is unavailable. Restore browser storage before saving.');}}
+  function retain(value){const raw=JSON.stringify(value);try{storage.setItem(key,raw);if(storage.getItem(key)!==raw)throw Error();}catch{throw Error('Draft recovery could not be preserved. No save was sent.');}}
+  async function transport(fn,args){guard();const fresh=await C.auth.ensureFresh();guard();if(!fresh)throw Error('Sign in to this workspace again.');try{const r=await C.api.rpc(fn,args,{auth:'require',beforeDispatch:active});guard();return r;}catch(error){throw Object.assign(Error(businessCreativeError(error)),{status:error.status,code:error.code});}}
+- function finish(value,r){const receipt=creativeReceipt(value,{actor,workspace,listing:r.p_listing,request:r.p_request});if(['saved','removed','cancelled'].includes(receipt.state))storage.removeItem(key);return receipt;}
+- async function retry(){const r=pending();if(!r)throw Error('There is no unconfirmed draft.');const{scope:unused,...args}=r;void unused;return finish(await transport('business_creative_draft_save',args),r);}
++ function finish(value,r){const receipt=creativeReceipt(value,{actor,workspace,listing:r.p_listing,request:r.p_request});if(['saved','removed','cancelled'].includes(receipt.state)){storage.removeItem(key);renderFiles=null;}return receipt;}
++ async function retry(){const r=pending();if(!r)throw Error('There is no unconfirmed draft.');const{scope:unused,...args}=r;void unused;if(r.p_payload.render){const {studioMediaTransport}=await import('./image-composition-ui.mjs');guard();return finish(await studioMediaTransport({C,args,files:renderFiles||{},active}),r);}return finish(await transport('business_creative_draft_save',args),r);}
+  async function save(source,draft){guard();if(pending())throw Error('Check the earlier draft save before starting another.');if(!UUID.test(source?.listing||''))throw Error('Choose the published business again.');const r={scope,p_workspace:workspace,p_listing:source.listing,p_request:uuid(),p_payload:{source:clone(source.entity),body:draft.body,media:clone(draft.media),meta:clone(draft.meta),rights_confirmed:true,id:draft.id||null,expected_updated_at:draft.expectedUpdatedAt||null}};retain(r);return retry();}
+- async function recover(cancel=false){const r=pending();if(!r)throw Error('There is no unconfirmed draft.');return finish(await transport('business_creative_draft_recover',{p_workspace:workspace,p_listing:r.p_listing,p_request:r.p_request,p_cancel_if_missing:cancel}),r);}
+- function clearPrivate(){try{storage.removeItem(key);}catch{} }
++ async function saveRender(source,draft,render,files={}){guard();if(pending())throw Error('Check the earlier draft save before starting another.');if(!UUID.test(source?.listing||''))throw Error('Choose the published business again.');const r={scope,p_workspace:workspace,p_listing:source.listing,p_request:uuid(),p_payload:{source:clone(source.entity),body:draft.body,meta:clone(draft.meta),rights_confirmed:true,id:draft.id||null,expected_updated_at:draft.expectedUpdatedAt||null,render:clone(render)}};retain(r);renderFiles=files;return retry();}
++ async function recover(cancel=false){const r=pending();if(!r)throw Error('There is no unconfirmed draft.');if(r.p_payload.render){const {studioMediaTransport}=await import('./image-composition-ui.mjs');guard();return finish(await studioMediaTransport({C,action:cancel?'cancel':'recover',args:{p_workspace:workspace,p_listing:r.p_listing,p_request:r.p_request},active}),r);}return finish(await transport('business_creative_draft_recover',{p_workspace:workspace,p_listing:r.p_listing,p_request:r.p_request,p_cancel_if_missing:cancel}),r);}
++ function clearPrivate(){renderFiles=null;try{storage.removeItem(key);}catch{} }
+  async function open(post){if(!UUID.test(post||''))throw Error('The campaign post is unavailable.');const r=await transport('business_creative_draft_get',{p_workspace:workspace,p_post:post});if(r?.ok!==true||r.workspace!==workspace||!UUID.test(r.listing||'')||r.post?.id!==post||r.post.workspace_id!==workspace||r.post.status!=='draft'||r.post.scheduled_at!==null||!Array.isArray(r.post.channels)||r.post.channels.length||r.source?.schema!==1||r.source.id!==r.listing||typeof r.source_current!=='boolean')throw Error('The current business campaign draft could not be confirmed.');return clone(r);}
+- return{save,retry,recover,open,pending,clearPrivate,active};
++ return{save,saveRender,retry,recover,open,pending,clearPrivate,releaseFiles:()=>{renderFiles=null;},active};
+ }
+ export function mountBusinessCreative(root,{C,workspace,current=()=>true,apply,onRecovered,onSourceChange=()=>{},onScopeLost=()=>{},storage=globalThis.sessionStorage}={}){
+  const doc=root.ownerDocument,scope=creativeScope(C),events=new AbortController(),radioGroup='zbc-image-'+crypto.randomUUID();let dead=false,epoch=0,actionEpoch=0,businesses=[],selected=null,busy=false,restoreControls=null,observer;
+  const workflow=createBusinessCreativeWorkflow({C,workspace,current:()=>live(),storage});
+  function scrub(){for(const n of root.querySelectorAll('*')){if('value'in n)n.value='';n.textContent='';}root.replaceChildren();selected=null;businesses=[];}
+- function destroy(){if(dead)return;dead=true;epoch++;actionEpoch++;events.abort();observer?.disconnect();scrub();}
++ function destroy(){if(dead)return;dead=true;workflow.releaseFiles();epoch++;actionEpoch++;events.abort();observer?.disconnect();scrub();}
+  function live(){if(dead)return false;const changed=creativeScope(C)!==scope;if(changed||!root.isConnected||!current()){if(changed)workflow.clearPrivate();destroy();onScopeLost();return false;}return true;}
+  const el=(tag,text)=>{const n=doc.createElement(tag);if(text)n.textContent=text;return n;},button=(text,fn)=>{const b=el('button',text);b.type='button';b.onclick=()=>{if(live())fn();};return b;};
+  root.classList.add('z-business-creative');const title=el('h3','Start from your business'),note=el('p','Choose published business details and an existing image, then edit your caption in Composer. Save it with a campaign. Nothing is sent.'),status=el('p'),body=el('div'),recovery=el('div');status.setAttribute('role','status');root.append(title,note,body,recovery,status);
