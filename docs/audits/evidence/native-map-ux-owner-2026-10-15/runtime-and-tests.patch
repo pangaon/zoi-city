@@ -1,0 +1,867 @@
+diff --git a/assets/map-data/directions.mjs b/assets/map-data/directions.mjs
+index e6de938a..7b66b3ea 100644
+--- a/assets/map-data/directions.mjs
++++ b/assets/map-data/directions.mjs
+@@ -25,7 +25,7 @@ export function navigationURL(destination, { origin = '', mode = 'driving', navi
+   url.searchParams.set('api', '1'); url.searchParams.set('destination', destination.value);
+   url.searchParams.set('travelmode', mode);
+   if (start) url.searchParams.set('origin', start);
+-  if (navigate) url.searchParams.set('dir_action', 'navigate');
++  if (navigate && start) url.searchParams.set('dir_action', 'navigate');
+   if (url.href.length > 2048) throw Error('The directions link is too long. Shorten the starting address.');
+   return url.href;
+ }
+diff --git a/assets/map-data/embedded.mjs b/assets/map-data/embedded.mjs
+index 3f348553..95a24aec 100644
+--- a/assets/map-data/embedded.mjs
++++ b/assets/map-data/embedded.mjs
+@@ -19,7 +19,7 @@ export function embeddedLocationCommand(value,{center=false,motion=false}={}){
+  const fix=value&&validatedDeviceFix({coords:value,timestamp:value.timestamp},{requestedAt:value.timestamp});
+  return 'window.ZoiEmbeddedMap&&window.ZoiEmbeddedMap.location('+JSON.stringify({fix:fix||null,center:!!center,motion:!!motion}).replace(/</g,'\\u003c')+');true;';
+ }
+-export function embeddedMapDocument(){return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><link rel="stylesheet" href="https://www.zoi.city/assets/vendor/maplibre-gl.css"><style>html,body,#map{margin:0;width:100%;height:100%;background:#eef4f8}.maplibregl-ctrl-attrib{font-size:10px}</style></head><body><div id="map" role="region" aria-label="Zoi interactive places map"></div><script src="https://www.zoi.city/assets/vendor/maplibre-gl.js"></script><script src="https://www.zoi.city/assets/zoi-basemap.js"></script><script type="module">try{const {mountEmbeddedMap}=await import('https://www.zoi.city/assets/map-data/embedded.mjs?v=20261015-foreground-location');mountEmbeddedMap();}catch{window.ReactNativeWebView?.postMessage(JSON.stringify({type:'map.error'}));}</script></body></html>`;}
++export function embeddedMapDocument(){return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><link rel="stylesheet" href="https://www.zoi.city/assets/vendor/maplibre-gl.css"><style>html,body,#map{margin:0;width:100%;height:100%;background:#eef4f8}.maplibregl-ctrl-attrib{font-size:10px}.maplibregl-ctrl-group button{width:44px;height:44px;min-width:44px;min-height:44px}.maplibregl-ctrl-group button:focus-visible{outline:3px solid #075dcc;outline-offset:2px}</style></head><body><div id="map" role="region" aria-label="Zoi interactive places map"></div><script src="https://www.zoi.city/assets/vendor/maplibre-gl.js"></script><script src="https://www.zoi.city/assets/zoi-basemap.js"></script><script type="module">try{const {mountEmbeddedMap}=await import('https://www.zoi.city/assets/map-data/embedded.mjs?v=20261015-map-ux');mountEmbeddedMap();}catch{window.ReactNativeWebView?.postMessage(JSON.stringify({type:'map.error'}));}</script></body></html>`;}
+ export function mountEmbeddedMap(doc=globalThis.document,host=globalThis){
+  const post=v=>host.ReactNativeWebView?.postMessage(JSON.stringify(v));let map,loaded=false,latest=null,selection='',locationValue=null,deviceMarker=null;
+  const timer=setTimeout(()=>{if(!loaded)post({type:'map.error'});},12000);
+@@ -48,7 +48,7 @@ export function mountEmbeddedMap(doc=globalThis.document,host=globalThis){
+   map.getSource('zoi-places').setData({type:'FeatureCollection',features:latest.points.map(p=>({type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]},properties:{slug:p.s}}))});
+   map.setPaintProperty('zoi-pins','circle-color',['case',['==',['get','slug'],latest.selected],'#10294d','#075dcc']);
+   const point=latest.points.find(p=>p.s===latest.selected);
+-  if(point&&latest.selectionFocus!==false&&(latest.selected!==selection||latest.focus))map.easeTo(focusOptions(point,{width:doc.getElementById('map').clientWidth,height:340,reducedMotion:!latest.motion}));
++  if(point&&latest.selectionFocus!==false&&(latest.selected!==selection||latest.focus))map.easeTo(focusOptions(point,{width:doc.getElementById('map').clientWidth,height:doc.getElementById('map').clientHeight||340,reducedMotion:!latest.motion}));
+   else if(latest.fit){const bounds=matchBounds(latest.points);if(bounds)map.fitBounds(bounds,{padding:45,maxZoom:13,duration:latest.motion?350:0});}
+   selection=latest.selected;
+  }
+@@ -60,5 +60,5 @@ export function mountEmbeddedMap(doc=globalThis.document,host=globalThis){
+   deviceMarker=new host.maplibregl.Marker({element:node}).setLngLat([fix.longitude,fix.latitude]).addTo(map);
+   if(value.center){const r=deviceLocationRegion(fix);map.easeTo({center:[fix.longitude,fix.latitude],zoom:Math.max(1,Math.min(14,Math.log2(360/r.longitudeDelta))),duration:value.motion?300:0});}
+  }
+- host.ZoiEmbeddedMap={update,location};return {update,location,destroy(){clearTimeout(timer);loaded=false;deviceMarker?.remove();map?.remove();delete host.ZoiEmbeddedMap;}};
++ const resize=()=>map?.resize();host.ZoiEmbeddedMap={update,location,resize};return {update,location,resize,destroy(){clearTimeout(timer);loaded=false;deviceMarker?.remove();map?.remove();delete host.ZoiEmbeddedMap;}};
+ }
+diff --git a/mobile/App.tsx b/mobile/App.tsx
+index ba8adf13..7004ffbc 100644
+--- a/mobile/App.tsx
++++ b/mobile/App.tsx
+@@ -146,6 +146,9 @@ function ZoiApp() {
+   const [profileSlug, setProfileSlug] = useState<string | null>(null);
+   useEffect(()=>{setProfileAuth(null);},[profileSlug]);
+   const [tab, setTab] = useState<Tab>('home');
++  const [mapExpanded, setMapExpanded] = useState(false);
++  const expandedMapVisible = mapExpanded && tab === 'discover' && !profileSlug && discovery.mode === 'map';
++  useEffect(() => { setMapExpanded(false); }, [tab, profileSlug, session?.user.id, discovery.mode]);
+   const [volunteerWorkspace, setVolunteerWorkspace] = useState('');
+   const [enquiry, setEnquiry] = useState({listing:'',thread:''});
+   const [creatorCampaign,setCreatorCampaign]=useState('');
+@@ -206,7 +209,7 @@ function ZoiApp() {
+     if (!/^https:\/\/(www\.zoi\.city|buygreek\.shop)(\/|$)/.test(url)) { setLinkError('This link is not available. Please try the Zoi website.'); return; }
+     try { await Linking.openURL(url); } catch { if (mounted.current) setLinkError('We could not open your browser. Please try again.'); }
+   };
+-  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}><AppHeader onHome={()=>{setProfileSlug(null);setTab('home');}} onAccount={()=>{setProfileSlug(null);setTab('grow');}}/>{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}><Reveal trigger={profileSlug||tab}>{profileSlug&&profileAuth===profileSlug ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}><Text style={s.eyebrow}>YOUR GREEK CONNECTION</Text><Text style={s.pageTitle}>{session?'Ready to continue':'Sign in to continue'}</Text><Text style={s.body}>Return to this profile after signing in. City interest is only recorded when you choose your city and confirm it.</Text>{!session?<AccountPanel/>:<Button label="Continue to this profile" onPress={()=>setProfileAuth(null)}/>}<Button label="Back to this profile" onPress={()=>setProfileAuth(null)} subtle/></ScrollView> : profileSlug ? <BusinessProfile shows={artist=>{setTripArtist(artist);setProfileSlug(null);setTab('trips');}} festival={event=>{setFestival({event,offer:''});setProfileSlug(null);setTab('festival');}} group={listing=>{setGroupListing(listing);setProfileSlug(null);setTab('groups');}} calendar={listing=>{setCalendarListing(listing);setProfileSlug(null);setTab('calendar');}} enquiry={listing => { setEnquiry({listing,thread:''});setProfileSlug(null);setTab('inquiries'); }} volunteer={workspace => { setVolunteerWorkspace(workspace); setProfileSlug(null); setTab('volunteer'); }} slug={profileSlug} back={() => setProfileSlug(null)} signIn={() => setProfileAuth(profileSlug)} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover key={session?.user.id||'guest'} open={open} signIn={()=>setTab('grow')} state={discovery} setState={setDiscovery} /> : tab === 'community' ? <CommunityScreen open={open} signIn={()=>setTab('grow')} initialPost={communityLink.post} initialProfile={communityLink.profile}/> : tab === 'event-plan' ? <EventPlannerScreen back={()=>setTab('grow')} signIn={()=>setTab('grow')}/> : tab === 'trips' ? <TripsScreen initialArtistId={tripArtist} back={()=>setTab('discover')} signIn={()=>setTab('grow')} open={open}/> : tab === 'festival' ? <FestivalScreen event={festival.event} offer={festival.offer} back={()=>setTab('community')} signIn={()=>setTab('grow')} inquiry={thread=>{setEnquiry({listing:'',thread});setTab('inquiries');}} /> : tab === 'groups' ? <GroupMemberScreen listing={groupListing} back={()=>setTab('community')} calendar={()=>{setCalendarListing(groupListing);setTab('calendar');}} signIn={()=>setTab('grow')} /> : tab === 'calendar' ? <OrganizationCalendarPublic key={calendarListing} listing={calendarListing} back={()=>setTab('community')} volunteer={workspace=>{setVolunteerWorkspace(workspace);setTab('volunteer');}} /> : tab === 'shop' ? <ShopScreen key={shop.product+':'+shop.variant} initialProduct={shop.product} initialVariant={shop.variant} back={()=>setTab('home')} /> : tab === 'creator-work' ? <CreatorCustomerScreen campaign={creatorCampaign} back={() => setTab('grow')} signIn={() => setTab('grow')} /> : tab === 'inquiries' ? <InquiriesScreen listing={enquiry.listing} thread={enquiry.thread} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'volunteer' ? <VolunteerScreen workspace={volunteerWorkspace} choose={setVolunteerWorkspace} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'tickets' ? <TicketsScreen eventId={eventId} chooseEvent={setEventId} signIn={() => setTab('grow')} /> : <Grow open={open} />}</Reveal></View><PrimaryNavigation activeId={tab} onNavigate={next=>{setLinkError('');setProfileSlug(null);setTab(next);}}/></View></SafeAreaView>;
++  return <SafeAreaView style={s.safe}><StatusBar style="dark" /><View style={s.shell}>{!expandedMapVisible ? <AppHeader onHome={()=>{setProfileSlug(null);setTab('home');}} onAccount={()=>{setProfileSlug(null);setTab('grow');}}/> : null}{linkError ? <View style={s.error} accessibilityRole="alert"><Text style={s.body}>{linkError}</Text><Button label="Dismiss" onPress={() => setLinkError('')} subtle /></View> : null}<View style={s.screen}><Reveal trigger={profileSlug||tab}>{profileSlug&&profileAuth===profileSlug ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}><Text style={s.eyebrow}>YOUR GREEK CONNECTION</Text><Text style={s.pageTitle}>{session?'Ready to continue':'Sign in to continue'}</Text><Text style={s.body}>Return to this profile after signing in. City interest is only recorded when you choose your city and confirm it.</Text>{!session?<AccountPanel/>:<Button label="Continue to this profile" onPress={()=>setProfileAuth(null)}/>}<Button label="Back to this profile" onPress={()=>setProfileAuth(null)} subtle/></ScrollView> : profileSlug ? <BusinessProfile shows={artist=>{setTripArtist(artist);setProfileSlug(null);setTab('trips');}} festival={event=>{setFestival({event,offer:''});setProfileSlug(null);setTab('festival');}} group={listing=>{setGroupListing(listing);setProfileSlug(null);setTab('groups');}} calendar={listing=>{setCalendarListing(listing);setProfileSlug(null);setTab('calendar');}} enquiry={listing => { setEnquiry({listing,thread:''});setProfileSlug(null);setTab('inquiries'); }} volunteer={workspace => { setVolunteerWorkspace(workspace); setProfileSlug(null); setTab('volunteer'); }} slug={profileSlug} back={() => setProfileSlug(null)} signIn={() => setProfileAuth(profileSlug)} /> : tab === 'home' ? <Home navigate={setTab} open={open} /> : tab === 'discover' ? <Discover key={session?.user.id||'guest'} expanded={expandedMapVisible} onExpandedChange={setMapExpanded} open={open} signIn={()=>setTab('grow')} state={discovery} setState={setDiscovery} /> : tab === 'community' ? <CommunityScreen open={open} signIn={()=>setTab('grow')} initialPost={communityLink.post} initialProfile={communityLink.profile}/> : tab === 'event-plan' ? <EventPlannerScreen back={()=>setTab('grow')} signIn={()=>setTab('grow')}/> : tab === 'trips' ? <TripsScreen initialArtistId={tripArtist} back={()=>setTab('discover')} signIn={()=>setTab('grow')} open={open}/> : tab === 'festival' ? <FestivalScreen event={festival.event} offer={festival.offer} back={()=>setTab('community')} signIn={()=>setTab('grow')} inquiry={thread=>{setEnquiry({listing:'',thread});setTab('inquiries');}} /> : tab === 'groups' ? <GroupMemberScreen listing={groupListing} back={()=>setTab('community')} calendar={()=>{setCalendarListing(groupListing);setTab('calendar');}} signIn={()=>setTab('grow')} /> : tab === 'calendar' ? <OrganizationCalendarPublic key={calendarListing} listing={calendarListing} back={()=>setTab('community')} volunteer={workspace=>{setVolunteerWorkspace(workspace);setTab('volunteer');}} /> : tab === 'shop' ? <ShopScreen key={shop.product+':'+shop.variant} initialProduct={shop.product} initialVariant={shop.variant} back={()=>setTab('home')} /> : tab === 'creator-work' ? <CreatorCustomerScreen campaign={creatorCampaign} back={() => setTab('grow')} signIn={() => setTab('grow')} /> : tab === 'inquiries' ? <InquiriesScreen listing={enquiry.listing} thread={enquiry.thread} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'volunteer' ? <VolunteerScreen workspace={volunteerWorkspace} choose={setVolunteerWorkspace} back={() => setTab('community')} signIn={() => setTab('grow')} /> : tab === 'tickets' ? <TicketsScreen eventId={eventId} chooseEvent={setEventId} signIn={() => setTab('grow')} /> : <Grow open={open} />}</Reveal></View>{!expandedMapVisible ? <PrimaryNavigation activeId={tab} onNavigate={next=>{setLinkError('');setProfileSlug(null);setTab(next);}}/> : null}</View></SafeAreaView>;
+ }
+ const s = StyleSheet.create({
+   safe: { flex: 1, backgroundColor: C.cream, paddingTop: Platform.OS === 'android' ? NativeStatusBar.currentHeight || 0 : 0 }, shell: { flex: 1, width: '100%', maxWidth: 780, alignSelf: 'center' }, screen: { flex: 1 },
+diff --git a/mobile/src/Discovery.tsx b/mobile/src/Discovery.tsx
+index aa359e4c..b9911437 100644
+--- a/mobile/src/Discovery.tsx
++++ b/mobile/src/Discovery.tsx
+@@ -3,6 +3,7 @@ import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
+ import { useEffect, useMemo, useRef, useState } from "react";
+ import {
+   ActivityIndicator,
++  BackHandler,
+   AppState,
+   Image,
+   Linking,
+@@ -46,22 +47,25 @@ function Action({
+   onPress,
+   selected = false,
+   disabled = false,
++  text,
+ }: {
+   label: string;
+   onPress: () => void;
+   selected?: boolean;
+   disabled?: boolean;
++  text?: string;
+ }) {
+   return (
+     <Pressable
+       accessibilityRole="button"
++      accessibilityLabel={label}
+       accessibilityState={{ selected, disabled }}
+       disabled={disabled}
+       onPress={onPress}
+       style={[s.action, selected && s.active, disabled && { opacity: 0.5 }]}
+     >
+       <Text style={[s.link, selected && { color: LIGHT.onButton }]}>
+-        {label}
++        {text || label}
+       </Text>
+     </Pressable>
+   );
+@@ -110,11 +114,15 @@ export function Discover({
+   signIn,
+   state,
+   setState,
++  expanded = false,
++  onExpandedChange,
+ }: {
+   open: (path: string) => void;
+   signIn: () => void;
+   state: DiscoveryState;
+   setState: (state: DiscoveryState) => void;
++  expanded?: boolean;
++  onExpandedChange?: (expanded: boolean) => void;
+ }) {
+   const { client, session, booting } = useAuth(),
+     actor = session?.user.id || "",
+@@ -156,6 +164,33 @@ export function Discover({
+     [selectError, setSelectError] = useState(""),
+     [selectionRetry, setSelectionRetry] = useState(0),
+     [actionError, setActionError] = useState("");
++  const [mapFilters, setMapFilters] = useState(false),
++    [placeDetails, setPlaceDetails] = useState(false),
++    [availableHeight, setAvailableHeight] = useState(600),
++    [availableWidth, setAvailableWidth] = useState(390);
++  const expandControl = useRef<any>(null);
++  const mapMode = state.mode === "map";
++  const closeExpanded = () => {
++    onExpandedChange?.(false);
++    setTimeout(() => expandControl.current?.focus?.(), 0);
++  };
++  useEffect(() => { setPlaceDetails(false); }, [actor, state.selected]);
++  useEffect(() => {
++    if (!expanded) return;
++    const back = BackHandler.addEventListener("hardwareBackPress", () => {
++      closeExpanded();
++      return true;
++    });
++    const escape = (event: any) => {
++      if (event.key === "Escape") { event.preventDefault(); closeExpanded(); }
++    };
++    const doc = typeof document !== "undefined" ? document : null;
++    doc?.addEventListener("keydown", escape);
++    return () => { back.remove(); doc?.removeEventListener("keydown", escape); };
++  }, [expanded, onExpandedChange]);
++  const landscapeMap = mapMode && availableWidth >= 650 && availableHeight < 500;
++  const mapHeight = Math.round(Math.max(180, Math.min(expanded ? 720 : 360,
++    availableHeight * (expanded ? 0.52 : state.selected ? 0.35 : 0.48))));
+   const [travelMode, setTravelMode] = useState("driving"),
+     [routeOrigin, setRouteOrigin] = useState("");
+   useEffect(() => {
+@@ -452,6 +487,37 @@ export function Discover({
+     catch (error) { directions = null; directionsError = error instanceof Error ? error.message : "Check the starting address."; }
+   }
+   const directionURL = directions?.url || "";
++  const routeOptions = baseDirections && baseDirections.basis !== "name" ? (
++                <View style={s.routePanel}>
++                  <Text style={s.heading}>Plan directions</Text>
++                  <Text style={s.small}>Choose how to travel</Text>
++                  <View style={s.row} accessibilityLabel="Travel mode">
++                    {TRAVEL_MODES.map((item: {value: string; label: string}) => (
++                      <Action key={item.value} label={item.label} selected={travelMode === item.value}
++                        onPress={() => setTravelMode(item.value)} />
++                    ))}
++                  </View>
++                  <Text style={s.small}>Starting address (optional)</Text>
++                  <TextInput value={routeOrigin} onChangeText={setRouteOrigin} maxLength={700}
++                    accessibilityLabel="Starting address for directions"
++                    placeholder="Current location in Google Maps" placeholderTextColor={LIGHT.dim}
++                    textContentType="fullStreetAddress" style={s.input} />
++                  <Text style={s.small}>Google Maps calculates the route and available navigation. Leave the start blank to use your location there.</Text>
++                  {directionsError ? <Text accessibilityRole="alert" style={s.error}>{directionsError}</Text> : null}
++                </View>
++              ) : null;
++  const shareAction = <Action
++                  label="Share this place"
++                  onPress={() =>
++                    void action(() =>
++                      Share.share({
++                        message: discoveryShare(
++                          selected.canonical_slug || selected.slug,
++                        ),
++                      }),
++                    )
++                  }
++                />;
+   if (editor && actor)
+     return (
+       <CommunitySettings
+@@ -468,18 +534,38 @@ export function Discover({
+       />
+     );
+   return (
++    <View style={s.discoveryFrame} onLayout={event => {
++      const {height, width} = event.nativeEvent.layout;
++      if (Number.isFinite(width) && width > 0) setAvailableWidth(width);
++      if (Number.isFinite(height) && height > 0) setAvailableHeight(height);
++    }}>
++      {mapMode ? <View style={s.mapToolbar}>
++        {availableHeight >= 320 ? <Text style={s.heading}>Map</Text> : null}
++        <View style={s.row}>
++          <Action label="List" onPress={() => { onExpandedChange?.(false); setState({ ...state, mode: "list" }); }} />
++          <Action text="Filters" label={mapFilters ? "Close filters" : "Search & filters"} selected={mapFilters}
++            onPress={() => setMapFilters(value => !value)} />
++          <Pressable ref={expandControl} accessibilityRole="button"
++            accessibilityLabel={expanded ? "Close expanded map" : "Expand map"}
++            accessibilityState={{ expanded }}
++            style={s.action} onPress={() => expanded ? closeExpanded() : onExpandedChange?.(true)}>
++            <Text style={s.link}>{expanded ? "Close" : "Expand"}</Text>
++          </Pressable>
++        </View>
++      </View> : null}
+     <ScrollView
+       keyboardShouldPersistTaps="handled"
+-      contentContainerStyle={s.content}
++      contentContainerStyle={[s.content, mapMode && s.mapContent]}
+     >
+-      <GlassHero>
++      {!mapMode || mapFilters ? <>
++      {!mapMode ? <GlassHero>
+         <Text style={s.eyebrow}>YOUR GREEK WORLD</Text>
+         <Text style={s.title}>Close to home.{"\n"}Open to everywhere.</Text>
+         <Text style={s.body}>
+           Find your people, places and next plans. Keep your home, explore
+           somewhere new.
+         </Text>
+-      </GlassHero>
++      </GlassHero> : null}
+       <View style={s.panel}>
+         <View style={s.row}>
+           <Text style={s.heading}>Exploring {area.label}</Text>
+@@ -540,7 +626,7 @@ export function Discover({
+           ) : null}
+           <Action
+             label={actor ? "Home preferences" : "Sign in to set home"}
+-            onPress={() => (actor ? setEditor(true) : signIn())}
++            onPress={() => { onExpandedChange?.(false); actor ? setEditor(true) : signIn(); }}
+           />
+         </View>
+         {home?.topics.length ? (
+@@ -688,23 +774,26 @@ export function Discover({
+           />
+         </View>
+       </View>
++      </> : null}
++      <View style={[mapMode && {gap:12}, landscapeMap && s.mapColumns]}>
+       {state.mode === "map" ? (
+-        <View style={{ gap: 12 }}>
++        <View style={[{ gap: 12 }, landscapeMap && s.mapColumn]}>
+           <DiscoveryMap
++            height={mapHeight}
+             points={mapPoints}
+-            selected={state.selected}
++            selected={selectedPoint?.s || state.selected}
+             scopeKey={key}
+             focus={focus}
+             motion={preferences.motion}
+             onSelect={select}
+           />
+-          <Text style={s.small}>
++          {!state.selected || mapFilters ? <Text style={s.small}>
+             {mapBusy
+               ? "Reading map positions…"
+               : pins.filter((p:any)=>p.position_diagnosis?.reviewed).length +
+                 " reviewed map positions; " + pins.filter((p:any)=>!p.position_diagnosis?.reviewed).length +
+                 " stored positions awaiting independent verification. Approximate and unmapped places remain in the list."}
+-          </Text>
++          </Text> : null}
+           {mapError ? (
+             <>
+               <Text accessibilityRole="alert" style={s.error}>
+@@ -719,7 +808,7 @@ export function Discover({
+               />
+             </>
+           ) : null}
+-          {pins.length ? (
++          {mapFilters && pins.length ? (
+             <ScrollView
+               horizontal
+               showsHorizontalScrollIndicator={false}
+@@ -738,13 +827,16 @@ export function Discover({
+         </View>
+       ) : null}
+       {state.selected ? (
+-        <View style={[s.panel, { borderColor: LIGHT.accent }]}>
++        <View style={[s.panel, mapMode && {padding:12,gap:8}, landscapeMap && s.mapColumn, { borderColor: LIGHT.accent }]}>
+           <View style={s.row}>
+-            <Text style={s.heading}>Your selected place</Text>
+-            <Action
++            <Text style={[s.heading, mapMode && {flex:1}]}>{mapMode && selected && selectedMatchesIntent ? selected.name : "Your selected place"}</Text>
++            {mapMode ? <Pressable accessibilityRole="button" accessibilityLabel="Close selected place"
++              style={[s.action,{paddingHorizontal:12}]} onPress={() => setState({...state, selected:""})}>
++              <Text style={s.link}>×</Text>
++            </Pressable> : <Action
+               label="Close selected place"
+               onPress={() => setState({ ...state, selected: "" })}
+-            />
++            />}
+           </View>
+           {selectBusy ? <ActivityIndicator /> : null}
+           {selectError ? (
+@@ -760,8 +852,8 @@ export function Discover({
+           ) : null}
+           {selected && selectedMatchesIntent ? (
+             <>
+-              <Photo row={selected} detail />
+-              <Text style={s.heading}>{selected.name}</Text>
++              {!mapMode || placeDetails ? <Photo row={selected} detail /> : null}
++              {!mapMode ? <Text style={s.heading}>{selected.name}</Text> : null}
+               <Text style={s.body}>
+                 {[selected.address, selected.city, selected.country]
+                   .filter(Boolean)
+@@ -770,25 +862,7 @@ export function Discover({
+               <Text style={s.small}>
+                 {pointStatus(selectedPoint)}
+               </Text>
+-              {baseDirections && baseDirections.basis !== "name" ? (
+-                <View style={s.routePanel}>
+-                  <Text style={s.heading}>Plan directions</Text>
+-                  <Text style={s.small}>Choose how to travel</Text>
+-                  <View style={s.row} accessibilityLabel="Travel mode">
+-                    {TRAVEL_MODES.map((item: {value: string; label: string}) => (
+-                      <Action key={item.value} label={item.label} selected={travelMode === item.value}
+-                        onPress={() => setTravelMode(item.value)} />
+-                    ))}
+-                  </View>
+-                  <Text style={s.small}>Starting address (optional)</Text>
+-                  <TextInput value={routeOrigin} onChangeText={setRouteOrigin} maxLength={700}
+-                    accessibilityLabel="Starting address for directions"
+-                    placeholder="Current location in Google Maps" placeholderTextColor={LIGHT.dim}
+-                    textContentType="fullStreetAddress" style={s.input} />
+-                  <Text style={s.small}>Google Maps calculates the route and available navigation. Leave the start blank to use your location there.</Text>
+-                  {directionsError ? <Text accessibilityRole="alert" style={s.error}>{directionsError}</Text> : null}
+-                </View>
+-              ) : null}
++              {!mapMode ? routeOptions : null}
+               <View style={s.row}>
+                 <Action
+                   label="Open this place"
+@@ -808,18 +882,7 @@ export function Discover({
+                     }
+                   />
+                 ) : null}
+-                <Action
+-                  label="Share this place"
+-                  onPress={() =>
+-                    void action(() =>
+-                      Share.share({
+-                        message: discoveryShare(
+-                          selected.canonical_slug || selected.slug,
+-                        ),
+-                      }),
+-                    )
+-                  }
+-                />
++                {!mapMode ? shareAction : null}
+                 {state.mode === "map" &&
+                 exactPins(
+                   [
+@@ -832,6 +895,11 @@ export function Discover({
+                   />
+                 ) : null}
+               </View>
++              {mapMode ? <Action label={placeDetails ? "Close place details" : "Place details & travel options"}
++                selected={placeDetails} onPress={() => setPlaceDetails(value => !value)} /> : null}
++              {!mapMode || placeDetails ? <>
++              {mapMode ? routeOptions : null}
++                {mapMode ? shareAction : null}
+               {coLocated.length ? (
+                 <View style={{ gap: 8 }}>
+                   <Text style={s.small}>
+@@ -853,6 +921,7 @@ export function Discover({
+                     : "Directions open your map provider. Confirm the destination before travelling."}
+                 </Text>
+               ) : null}
++              </> : null}
+             </>
+           ) : null}
+           {actionError ? (
+@@ -862,6 +931,12 @@ export function Discover({
+           ) : null}
+         </View>
+       ) : null}
++      </View>
++      {mapMode && !mapFilters && error ? <View style={s.panel}>
++        <Text accessibilityRole="alert" style={s.error}>{error}</Text>
++        <Action label="Retry places" onPress={() => setRetry(value => value + 1)} />
++      </View> : null}
++      {!mapMode || mapFilters ? <>
+       <View style={s.row}>
+         <Text style={s.heading}>Places to explore</Text>
+         <Text style={s.small}>
+@@ -924,10 +999,17 @@ export function Discover({
+           onPress={() => void load(true)}
+         />
+       ) : null}
++      </> : null}
+     </ScrollView>
++    </View>
+   );
+ }
+ const s = StyleSheet.create({
++  discoveryFrame: { flex: 1 },
++  mapColumns: {flexDirection:"row",alignItems:"flex-start",gap:12},
++  mapColumn: {flex:1,minWidth:0},
++  mapContent: { padding: 12, gap: 12, paddingBottom: 20 },
++  mapToolbar: { flexDirection:"row", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap: 8, padding: 12, paddingBottom: 0 },
+   content: { padding: 20, gap: 20, paddingBottom: 36 },
+   title: {
+     fontSize: 35,
+@@ -961,6 +1043,7 @@ const s = StyleSheet.create({
+     borderRadius: 24,
+   },
+   action: {
++    minWidth: 44,
+     minHeight: 44,
+     paddingHorizontal: 15,
+     paddingVertical: 12,
+diff --git a/mobile/src/DiscoveryMap.android.tsx b/mobile/src/DiscoveryMap.android.tsx
+index 02df230e..8c4af596 100644
+--- a/mobile/src/DiscoveryMap.android.tsx
++++ b/mobile/src/DiscoveryMap.android.tsx
+@@ -8,8 +8,9 @@ import {embeddedMapDocument,embeddedMapPayload,embeddedMapCommand,embeddedMapMes
+ import {useMapLocation} from './useMapLocation';
+ import {MapLocationControl} from './MapLocationControl';
+ import {embeddedLocationCommand} from '../../assets/map-data/embedded.mjs';
+-const documentHTML=embeddedMapDocument(),base="https://www.zoi.city";
++const documentHTML=embeddedMapDocument(),base="https://www.zoi.city",documentSource={html:documentHTML,baseUrl:base+"/"};
+ export function DiscoveryMap(props:DiscoveryMapProps){
++ const [locationOptions,setLocationOptions]=useState(false);
+  const web=useRef<WebView>(null),current=useRef(props),previous=useRef({scope:"",selected:"",focus:0}),alive=useRef(true);
+  current.current=props;
+  const cameraIntent=useRef(0),selectionIntent=useRef({selected:'',focus:0,epoch:0});
+@@ -31,16 +32,19 @@ export function DiscoveryMap(props:DiscoveryMapProps){
+  },[ready,props.points,props.selected,props.scopeKey,props.focus,props.motion]);
+  useEffect(()=>{if(ready||error)return;const timer=setTimeout(()=>{if(alive.current)setError("The interactive map could not load. Your places are still in the list.");},18000);return()=>clearTimeout(timer);},[ready,error,attempt]);
+  const open=async(url:string)=>{try{const value=new URL(url);if(value.protocol!=="https:"||value.username||value.password)throw Error("invalid_link");await Linking.openURL(value.href);}catch{if(alive.current)setError("This link could not open. Please try again.");}};
+- return <View style={s.frame} onLayout={e=>{viewport.current.width=e.nativeEvent.layout.width;}}>
+-  <WebView key={attempt} ref={web} source={{html:documentHTML,baseUrl:base+"/"}} style={StyleSheet.absoluteFill} originWhitelist={["*"]} javaScriptEnabled domStorageEnabled incognito sharedCookiesEnabled={false} thirdPartyCookiesEnabled={false} geolocationEnabled={false} setSupportMultipleWindows
++ return <View style={{gap:8}}><View style={[s.frame,{height:props.height ?? 340}]} onLayout={e=>{viewport.current.width=e.nativeEvent.layout.width;web.current?.injectJavaScript("window.ZoiEmbeddedMap?.resize();true;");}}>
++  <WebView key={attempt} ref={web} source={documentSource} style={StyleSheet.absoluteFill} originWhitelist={["*"]} javaScriptEnabled domStorageEnabled incognito sharedCookiesEnabled={false} thirdPartyCookiesEnabled={false} geolocationEnabled={false} setSupportMultipleWindows
+    onShouldStartLoadWithRequest={request=>{if(["about:blank",base,base+"/"].includes(request.url))return true;void open(request.url);return false;}}
+    onOpenWindow={event=>{void open(event.nativeEvent.targetUrl);}}
+    onMessage={event=>{if(!alive.current)return;if(!["about:blank",base,base+"/"].includes(event.nativeEvent.url))return;const message=embeddedMapMessage(event.nativeEvent.data,current.current.points);if(message?.type==="map.ready"){setError("");setReady(true);}else if(message?.type==="map.error")setError("The interactive map could not load. Your places are still in the list.");else if(message?.type==="map.interaction"){cameraIntent.current++;location.manualMove();previous.current.scope=current.current.scopeKey;}else if(message?.type==="map.select"){cameraIntent.current++;location.manualMove();previous.current.scope=current.current.scopeKey;current.current.onSelect(message.slug);}else if(message?.type==="map.view"&&typeof message.longitudeDelta==="number")viewport.current={...viewport.current,...message,longitudeDelta:message.longitudeDelta*viewport.current.width/512};}}
+    onError={()=>setError("The interactive map could not load. Your places are still in the list.")}
+    onContentProcessDidTerminate={()=>{setReady(false);setError("The map closed. Try loading it again.");}}/>
+-  <Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" disabled={opening} style={s.tools} onPress={async()=>{setOpening(true);await open(fullMapToolsLink(props.points.find(p=>p.s===props.selected)||{s:props.selected},viewport.current));if(alive.current)setOpening(false);}}><Text style={s.link}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable>
+-  {ready&&!error?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;previous.current.scope=current.current.scopeKey;location.request();}} onClear={location.clear}/>:null}
+-  {!ready||error?<View style={s.note}>{!error?<ActivityIndicator color={LIGHT.accent}/>:null}<Text style={s.text}>{error||"Opening the map…"}</Text>{error?<Pressable accessibilityRole="button" onPress={()=>{setReady(false);setError("");previous.current={scope:"",selected:"",focus:0};setAttempt(v=>v+1);}}><Text style={s.link}>Retry interactive map</Text></Pressable>:null}</View>:null}
++
++
++  {!ready||error?<View style={s.note}>{!error?<ActivityIndicator color={LIGHT.accent}/>:null}<Text style={s.text}>{error||"Opening the map…"}</Text>{error?<Pressable accessibilityRole="button" style={s.retry} onPress={()=>{setReady(false);setError("");previous.current={scope:"",selected:"",focus:0};setAttempt(v=>v+1);}}><Text style={s.link}>Retry interactive map</Text></Pressable>:null}</View>:null}
++ </View>
++ <View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}><Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" disabled={opening} style={s.tools} onPress={async()=>{setOpening(true);await open(fullMapToolsLink(props.points.find(p=>p.s===props.selected)||{s:props.selected},viewport.current));if(alive.current)setOpening(false);}}><Text style={s.link}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{expanded:locationOptions}} style={s.tools} onPress={()=>setLocationOptions(v=>!v)}><Text style={s.link}>{locationOptions?"Close location options":"Location options"}</Text></Pressable></View>
++ {locationOptions&&ready&&!error?<MapLocationControl inline state={location.state} onRequest={()=>{cameraIntent.current++;previous.current.scope=current.current.scopeKey;location.request();}} onClear={location.clear}/>:null}
+  </View>;
+ }
+-const s=StyleSheet.create({frame:{height:340,borderRadius:24,overflow:"hidden",backgroundColor:LIGHT.surfaceRaised,borderWidth:1,borderColor:LIGHT.line},tools:{position:"absolute",top:12,left:12,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line},link:{color:LIGHT.accent,fontWeight:"700",fontSize:12},note:{position:"absolute",left:12,right:12,bottom:12,padding:12,borderRadius:12,backgroundColor:LIGHT.surface,gap:8},text:{color:LIGHT.muted,fontSize:12}});
++const s=StyleSheet.create({frame:{height:340,borderRadius:24,overflow:"hidden",backgroundColor:LIGHT.surfaceRaised,borderWidth:1,borderColor:LIGHT.line},retry:{minHeight:44,minWidth:44,justifyContent:"center"},tools:{minHeight:44,minWidth:44,justifyContent:"center",flexShrink:1,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line},link:{color:LIGHT.accent,fontWeight:"700",fontSize:12},note:{position:"absolute",left:12,right:12,bottom:12,padding:12,borderRadius:12,backgroundColor:LIGHT.surface,gap:8},text:{color:LIGHT.muted,fontSize:12}});
+diff --git a/mobile/src/DiscoveryMap.native.tsx b/mobile/src/DiscoveryMap.native.tsx
+index be629218..384748df 100644
+--- a/mobile/src/DiscoveryMap.native.tsx
++++ b/mobile/src/DiscoveryMap.native.tsx
+@@ -9,12 +9,14 @@ import {MapLocationControl} from './MapLocationControl';
+ import {deviceLocationRegion,deviceLocationLabel} from '../../assets/map-data/foreground-location.mjs';
+ export function DiscoveryMap({
+   points,
++  height = 340,
+   selected,
+   scopeKey,
+   focus,
+   motion,
+   onSelect,
+ }: DiscoveryMapProps) {
++  const [locationOptions,setLocationOptions]=useState(false);
+   const mounted = useRef(true);
+   useEffect(()=>{mounted.current=true;return()=>{mounted.current=false;};},[]);
+   const map = useRef<MapView | null>(null),
+@@ -66,11 +68,12 @@ export function DiscoveryMap({
+   // Render only real positions in the current viewport. No scattered centroid pins.
+   const [, setViewport] = useState(0),
+     [width, setWidth] = useState(350);
+-  const clusters = nativePinClusters(pins, region.current, width, 340),
++  const clusters = nativePinClusters(pins, region.current, width, height),
+     shown = clusters.slice(0, 500);
+   return (
++    <View style={{gap:8}}>
+     <View
+-      style={s.frame}
++      style={[s.frame, {height}]}
+       onLayout={(e) => setWidth(e.nativeEvent.layout.width)}
+     >
+       <MapView
+@@ -145,9 +148,9 @@ export function DiscoveryMap({
+       <View style={s.actions}>
+         <Pressable accessibilityRole="button" accessibilityLabel="Zoom out" onPress={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;map.current?.animateToRegion({...region.current,latitudeDelta:Math.min(170,region.current.latitudeDelta*2),longitudeDelta:Math.min(350,region.current.longitudeDelta*2)},motion?250:0);}} style={s.action}><Text style={s.actionText}>−</Text></Pressable>
+         <Pressable accessibilityRole="button" accessibilityLabel="Zoom in" onPress={()=>{cameraIntent.current++;location.manualMove();prior.current=scopeKey;map.current?.animateToRegion({...region.current,latitudeDelta:Math.max(0.0005,region.current.latitudeDelta/2),longitudeDelta:Math.max(0.0005,region.current.longitudeDelta/2)},motion?250:0);}} style={s.action}><Text style={s.actionText}>＋</Text></Pressable>
+-        <Pressable accessibilityRole="button" accessibilityLabel="Open full map tools in browser" disabled={opening} onPress={async()=>{setOpening(true);setToolError("");try{await Linking.openURL(fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},{...region.current,width}));}catch{if(mounted.current)setToolError("The browser could not open. Try full map tools again.");}finally{if(mounted.current)setOpening(false);}}} style={[s.action,{flex:1}]}><Text style={[s.actionText,{fontSize:12}]}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable>
++
+       </View>
+-      {ready?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}
++
+       {toolError?<View style={s.note}><Text accessibilityRole="alert" style={s.text}>{toolError}</Text></View>:null}
+       {!ready ? (
+         <View pointerEvents="none" style={s.note}>
+@@ -162,12 +165,14 @@ export function DiscoveryMap({
+         </View>
+       ) : null}
+     </View>
++    <View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}><Pressable accessibilityRole="button" accessibilityLabel="Open full map tools in browser" disabled={opening} onPress={async()=>{setOpening(true);setToolError("");try{await Linking.openURL(fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},{...region.current,width}));}catch{if(mounted.current)setToolError("The browser could not open. Try full map tools again.");}finally{if(mounted.current)setOpening(false);}}} style={[s.action,{flexShrink:1}]}><Text style={[s.actionText,{fontSize:12}]}>{opening?"Opening…":"Full map tools ↗"}</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{expanded:locationOptions}} style={s.action} onPress={()=>setLocationOptions(v=>!v)}><Text style={[s.actionText,{fontSize:12}]}>{locationOptions?"Close location options":"Location options"}</Text></Pressable></View>
++    {locationOptions&&ready?<MapLocationControl inline state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}</View>
+   );
+ }
+ const s = StyleSheet.create({
+   deviceDot:{width:18,height:18,borderRadius:9,backgroundColor:"#1676df",borderWidth:3,borderColor:"#fff"},
+   actions:{position:"absolute",top:10,left:10,right:10,flexDirection:"row",gap:6},
+-  action:{minWidth:40,minHeight:40,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,alignItems:"center",justifyContent:"center",paddingHorizontal:10},
++  action:{minWidth:44,minHeight:44,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,alignItems:"center",justifyContent:"center",paddingHorizontal:10},
+   actionText:{color:LIGHT.ink,fontWeight:"700",fontSize:20},
+   frame: {
+     height: 340,
+diff --git a/mobile/src/DiscoveryMap.types.ts b/mobile/src/DiscoveryMap.types.ts
+index ec01f925..f1484059 100644
+--- a/mobile/src/DiscoveryMap.types.ts
++++ b/mobile/src/DiscoveryMap.types.ts
+@@ -1,4 +1,5 @@
+ export type DiscoveryMapProps = {
++  height?: number;
+   points: any[];
+   selected: string;
+   scopeKey: string;
+diff --git a/mobile/src/DiscoveryMap.web.tsx b/mobile/src/DiscoveryMap.web.tsx
+index 7495bb8f..602017bc 100644
+--- a/mobile/src/DiscoveryMap.web.tsx
++++ b/mobile/src/DiscoveryMap.web.tsx
+@@ -56,12 +56,14 @@ function loadSDK() {
+ }
+ export function DiscoveryMap({
+   points,
++  height = 340,
+   selected,
+   scopeKey,
+   focus,
+   motion,
+   onSelect,
+ }: DiscoveryMapProps) {
++  const [locationOptions,setLocationOptions]=useState(false);
+   const node = useRef<HTMLDivElement | null>(null),
+     map = useRef<any>(null),
+     live = useRef({ points, selected, onSelect, scopeKey }),
+@@ -248,15 +250,17 @@ export function DiscoveryMap({
+         focusOptions(p, {
+           currentZoom: sameSelection ? map.current.getZoom() : null,
+           width: node.current?.clientWidth,
+-          height: 340,
++          height: node.current?.clientHeight || height,
+           reducedMotion: !motion,
+         }),
+       );
+   }, [ready, selected, selectedPoint?.lat, selectedPoint?.lng, focus, motion]);
+   return (
++    <View style={{gap:8}}>
+     <View
++      onLayout={() => map.current?.resize()}
+       style={{
+-        height: 340,
++        height,
+         borderRadius: 24,
+         overflow: "hidden",
+         borderWidth: 1,
+@@ -264,14 +268,16 @@ export function DiscoveryMap({
+         backgroundColor: LIGHT.surfaceRaised,
+       }}
+     >
++      {createElement("style", null, ".zoi-native-map .maplibregl-ctrl-group button{width:44px;height:44px;min-width:44px;min-height:44px}.zoi-native-map button:focus-visible{outline:3px solid #075dcc;outline-offset:2px}")}
+       {createElement("div", {
+         ref: node,
++        className: "zoi-native-map",
+         role: "region",
+         "aria-label": "Zoi street-level places map",
+         style: { height: "100%", width: "100%" },
+       })}
+-      <Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" onPress={()=>{const center=map.current?.getCenter();const href=fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},center?{latitude:center.lat,longitude:center.lng,longitudeDelta:360/(2**map.current.getZoom())*(node.current?.clientWidth||350)/512,width:node.current?.clientWidth||350}:{});window.location.assign(href);}} style={{position:"absolute",top:12,left:12,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>Full map tools ↗</Text></Pressable>
+-      {ready&&!error?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}
++
++
+       {!ready || error ? (
+         <View
+           style={{
+@@ -291,6 +297,7 @@ export function DiscoveryMap({
+           {error ? (
+             <Pressable
+               accessibilityRole="button"
++              style={{minWidth:44,minHeight:44,justifyContent:"center"}}
+               onPress={() => setAttempt((v) => v + 1)}
+             >
+               <Text style={{ color: LIGHT.accent }}>Retry interactive map</Text>
+@@ -299,5 +306,7 @@ export function DiscoveryMap({
+         </View>
+       ) : null}
+     </View>
++    <View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}><Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" onPress={()=>{const center=map.current?.getCenter();const href=fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},center?{latitude:center.lat,longitude:center.lng,longitudeDelta:360/(2**map.current.getZoom())*(node.current?.clientWidth||350)/512,width:node.current?.clientWidth||350}:{});window.location.assign(href);}} style={{minHeight:44,minWidth:44,justifyContent:"center",flexShrink:1,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>Full map tools ↗</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{expanded:locationOptions}} style={{minHeight:44,minWidth:44,justifyContent:"center",padding:10,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}} onPress={()=>setLocationOptions(v=>!v)}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>{locationOptions?"Close location options":"Location options"}</Text></Pressable></View>
++    {locationOptions&&ready&&!error?<MapLocationControl inline state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}</View>
+   );
+ }
+diff --git a/mobile/src/MapLocationControl.tsx b/mobile/src/MapLocationControl.tsx
+index 4b1e035c..048d588d 100644
+--- a/mobile/src/MapLocationControl.tsx
++++ b/mobile/src/MapLocationControl.tsx
+@@ -1,8 +1,8 @@
+ import {Linking,Pressable,StyleSheet,Text,View} from 'react-native';import {useState} from 'react';import {LIGHT} from './brand';
+ import {deviceLocationLabel} from '../../assets/map-data/foreground-location.mjs';
+ const messages:Record<string,string>={permission:'Waiting for location permission…',locating:'Finding your device location…',denied:'Location access is off. You can still browse any city.',services_off:'Device location is switched off. You can still browse any city.',timeout:'Location took too long. Try again or browse a city.',unavailable:'Device location is unavailable. Try again or browse a city.',expired:'Your location snapshot expired. Tap to find it again.'};
+-export function MapLocationControl({state,onRequest,onClear,disabled=false}:{state:any,onRequest:()=>void,onClear:()=>void,disabled?:boolean}){
++export function MapLocationControl({state,onRequest,onClear,disabled=false,inline=false}:{state:any,onRequest:()=>void,onClear:()=>void,disabled?:boolean;inline?:boolean}){
+  const [settingsError,setSettingsError]=useState(''),busy=['permission','locating'].includes(state.phase);
+- return <View style={s.control}><View style={s.row}><Pressable accessibilityRole="button" accessibilityLabel="Use my location once" disabled={disabled||busy} onPress={()=>{setSettingsError('');onRequest();}} style={[s.button,(disabled||busy)&&s.disabled]}><Text style={s.action}>{busy?'Locating…':state.fix?'Refresh my location':'Use my location'}</Text></Pressable>{busy||state.fix?<Pressable accessibilityRole="button" onPress={onClear} style={s.button}><Text style={s.action}>{busy?'Cancel':'Hide location'}</Text></Pressable>:null}</View><Text accessibilityLiveRegion="polite" style={s.note}>{state.fix?deviceLocationLabel(state.fix)+' · one-time snapshot':messages[state.phase]||'Optional · used on this map only'}</Text>{state.phase==='services_off'||state.phase==='denied'&&state.canAskAgain===false?<Pressable accessibilityRole="button" style={s.button} onPress={async()=>{try{await Linking.openSettings();}catch{setSettingsError('Open your device or browser settings to allow location.');}}}><Text style={s.action}>Open app settings</Text></Pressable>:null}{settingsError?<Text accessibilityRole="alert" style={s.note}>{settingsError}</Text>:null}</View>;
++ return <View style={[s.control,inline&&{position:"relative",left:0,right:0,bottom:0}]}><View style={s.row}><Pressable accessibilityRole="button" accessibilityLabel="Use my location once" disabled={disabled||busy} onPress={()=>{setSettingsError('');onRequest();}} style={[s.button,(disabled||busy)&&s.disabled]}><Text style={s.action}>{busy?'Locating…':state.fix?'Refresh my location':'Use my location'}</Text></Pressable>{busy||state.fix?<Pressable accessibilityRole="button" onPress={onClear} style={s.button}><Text style={s.action}>{busy?'Cancel':'Hide location'}</Text></Pressable>:null}</View><Text accessibilityLiveRegion="polite" style={s.note}>{state.fix?deviceLocationLabel(state.fix)+' · one-time snapshot':messages[state.phase]||'Optional · used on this map only'}</Text>{state.phase==='services_off'||state.phase==='denied'&&state.canAskAgain===false?<Pressable accessibilityRole="button" style={s.button} onPress={async()=>{try{await Linking.openSettings();}catch{setSettingsError('Open your device or browser settings to allow location.');}}}><Text style={s.action}>Open app settings</Text></Pressable>:null}{settingsError?<Text accessibilityRole="alert" style={s.note}>{settingsError}</Text>:null}</View>;
+ }
+ const s=StyleSheet.create({control:{position:'absolute',left:10,right:10,bottom:10,padding:9,borderRadius:12,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line,gap:4},row:{flexDirection:'row',flexWrap:'wrap',gap:8},button:{minHeight:44,minWidth:44,justifyContent:'center',paddingHorizontal:8,paddingVertical:8,flexShrink:1},action:{fontSize:12,fontWeight:'700',color:LIGHT.accent,flexShrink:1},note:{fontSize:11,color:LIGHT.muted},disabled:{opacity:0.5}});
+diff --git a/mobile/src/useMapLocation.ts b/mobile/src/useMapLocation.ts
+index 5b8ee0b2..bdd2463c 100644
+--- a/mobile/src/useMapLocation.ts
++++ b/mobile/src/useMapLocation.ts
+@@ -1,5 +1,5 @@
+ import {useEffect,useRef,useState} from 'react';
+-import {AppState} from 'react-native';import * as Location from 'expo-location';
++import {AppState,Platform} from 'react-native';import * as Location from 'expo-location';
+ import {createForegroundLocation} from '../../assets/map-data/foreground-location.mjs';
+ export function useMapLocation(scope:string,onFix:(fix:any,options:{center:boolean})=>void){
+  const [state,setState]=useState<any>({phase:'idle',fix:null,canAskAgain:true}),callback=useRef(onFix),controller=useRef<any>(null);callback.current=onFix;
+@@ -7,10 +7,11 @@ export function useMapLocation(scope:string,onFix:(fix:any,options:{center:boole
+   let focused=true;
+   const control=createForegroundLocation({getPermission:()=>Location.getForegroundPermissionsAsync(),requestPermission:()=>Location.requestForegroundPermissionsAsync(),servicesEnabled:()=>Location.hasServicesEnabledAsync(),watch:(success:any,error:any)=>{if(AppState.currentState!=='active'||!focused)throw Error('foreground_required');return Location.watchPositionAsync({accuracy:Location.Accuracy.Balanced,distanceInterval:0,timeInterval:1000,mayShowUserSettingsDialog:false},success,error);},onState:setState,onFix:(fix:any,options:any)=>callback.current(fix,options)});controller.current=control;
+   const background=AppState.addEventListener('change',status=>{if(status==='background'||status==='inactive'&&control.getState().phase!=='permission')control.cancel();});
+-  const focus=AppState.addEventListener('focus',()=>{focused=true;});
+-  const blur=AppState.addEventListener('blur',()=>{focused=false;if(control.getState().phase!=='permission')control.cancel();});
++  // React Native AppState focus/blur events exist on Android only.
++  const focus=Platform.OS==='android'?AppState.addEventListener('focus',()=>{focused=true;}):null;
++  const blur=Platform.OS==='android'?AppState.addEventListener('blur',()=>{focused=false;if(control.getState().phase!=='permission')control.cancel();}):null;
+   const visibility=()=>{if(typeof document!=='undefined'&&document.hidden)control.cancel();};if(typeof document!=='undefined')document.addEventListener('visibilitychange',visibility);
+-  return()=>{background.remove();blur.remove();focus.remove();if(typeof document!=='undefined')document.removeEventListener('visibilitychange',visibility);control.dispose();controller.current=null;};
++  return()=>{background.remove();blur?.remove();focus?.remove();if(typeof document!=='undefined')document.removeEventListener('visibilitychange',visibility);control.dispose();controller.current=null;};
+  },[]);
+  useEffect(()=>{controller.current?.manualMove();controller.current?.cancel();},[scope]);
+  return{state,request:()=>controller.current?.request(),clear:()=>controller.current?.cancel(),manualMove:()=>controller.current?.manualMove()};
+diff --git a/mobile/tests/foreground-map-location.test.mjs b/mobile/tests/foreground-map-location.test.mjs
+index 9b629990..0c5858fa 100644
+--- a/mobile/tests/foreground-map-location.test.mjs
++++ b/mobile/tests/foreground-map-location.test.mjs
+@@ -2,8 +2,8 @@ import test from 'node:test';import assert from 'node:assert/strict';import vm f
+ import {createForegroundLocation,validatedDeviceFix} from '../../assets/map-data/foreground-location.mjs';
+ const source=path=>readFileSync(new URL(path,import.meta.url),'utf8');
+ function compiled(path,mocks){const module={exports:{}};const js=ts.transpileModule(source(path),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;vm.runInNewContext(js,{module,exports:module.exports,require:name=>{if(!(name in mocks))throw Error('Unexpected module '+name);return mocks[name]},setTimeout,clearTimeout,console,document:undefined});return module.exports;}
+-function hookFixture(){const effects=[],events={},fixes=[];let state,receiver,removed=0,prompts=0;const React={useState:initial=>[initial,next=>state=next],useRef:value=>({current:value}),useEffect:fn=>effects.push(fn)},AppState={currentState:'active',addEventListener:(name,fn)=>{events[name]=fn;return{remove:()=>delete events[name]}}},Location={Accuracy:{Balanced:3},hasServicesEnabledAsync:async()=>true,getForegroundPermissionsAsync:async()=>({status:'undetermined',canAskAgain:true}),requestForegroundPermissionsAsync:async()=>{prompts++;return{status:'granted'}},watchPositionAsync:async(options,success)=>{assert.equal(options.mayShowUserSettingsDialog,false);receiver=success;return{remove:()=>removed++}}};
+- const{useMapLocation}=compiled('../src/useMapLocation.ts',{'react':React,'react-native':{AppState},'expo-location':Location,'../../assets/map-data/foreground-location.mjs':{createForegroundLocation}});const hook=useMapLocation('manual-city',(f,intent)=>fixes.push({f,intent}));const cleanups=effects.map(fn=>fn());return{hook,events,fixes,state:()=>state,prompts:()=>prompts,removed:()=>removed,deliver:()=>receiver({timestamp:Date.now(),coords:{latitude:0,longitude:0,accuracy:35}}),cleanup:()=>cleanups.forEach(fn=>fn?.())};}
++function hookFixture(platform='android'){const effects=[],events={},fixes=[];let state,receiver,removed=0,prompts=0;const React={useState:initial=>[initial,next=>state=next],useRef:value=>({current:value}),useEffect:fn=>effects.push(fn)},AppState={currentState:'active',addEventListener:(name,fn)=>{if(platform!=='android'&&['focus','blur'].includes(name))throw Error('unsupported_AppState_event');events[name]=fn;return{remove:()=>delete events[name]}}},Location={Accuracy:{Balanced:3},hasServicesEnabledAsync:async()=>true,getForegroundPermissionsAsync:async()=>({status:'undetermined',canAskAgain:true}),requestForegroundPermissionsAsync:async()=>{prompts++;return{status:'granted'}},watchPositionAsync:async(options,success)=>{assert.equal(options.mayShowUserSettingsDialog,false);receiver=success;return{remove:()=>removed++}}};
++ const{useMapLocation}=compiled('../src/useMapLocation.ts',{'react':React,'react-native':{AppState,Platform:{OS:platform}},'expo-location':Location,'../../assets/map-data/foreground-location.mjs':{createForegroundLocation}});const hook=useMapLocation('manual-city',(f,intent)=>fixes.push({f,intent}));const cleanups=effects.map(fn=>fn());return{hook,events,fixes,state:()=>state,prompts:()=>prompts,removed:()=>removed,deliver:()=>receiver({timestamp:Date.now(),coords:{latitude:0,longitude:0,accuracy:35}}),cleanup:()=>cleanups.forEach(fn=>fn?.())};}
+ test('actual native hook has no startup permission; gesture gets one fix; background clears without preference writes',async()=>{const h=hookFixture();assert.equal(h.prompts(),0);await h.hook.request();assert.equal(h.prompts(),1);h.deliver();assert.equal(h.state().phase,'ready');assert.equal(h.removed(),1);assert.equal(h.fixes[0].f.latitude,0);h.events.change('background');assert.equal(h.state().fix,null);h.cleanup();assert.equal(Object.keys(h.events).length,0);});
+ test('actual native hook cancels active watch on blur and unmount, ignores late device updates',async()=>{for(const action of['blur','unmount']){const h=hookFixture();await h.hook.request();if(action==='blur')h.events.blur();else h.cleanup();assert.equal(h.removed(),1);h.deliver();assert.equal(h.fixes.length,0);if(action==='blur')h.cleanup();}});
+ test('actual map control exposes explicit optional request, cancel/hide and settings only by press',()=>{const nodes=[],calls=[];const jsx=(type,props)=>{const node={type,...props};nodes.push(node);return node;};const {MapLocationControl}=compiled('../src/MapLocationControl.tsx',{'react':{useState:()=>['',()=>{}]},'react/jsx-runtime':{jsx,jsxs:jsx},'react-native':{Linking:{openSettings:async()=>calls.push('settings')},Pressable:'button',View:'view',Text:'text',StyleSheet:{create:v=>v}},'./brand':{LIGHT:{}},'../../assets/map-data/foreground-location.mjs':{deviceLocationLabel:()=>''}});MapLocationControl({state:{phase:'idle'},onRequest:()=>calls.push('request'),onClear:()=>calls.push('clear')});assert.equal(calls.length,0);nodes.find(n=>n.accessibilityLabel==='Use my location once').onPress();assert.deepEqual(calls,['request']);nodes.length=0;MapLocationControl({state:{phase:'denied',canAskAgain:false},onRequest(){},onClear(){}});assert.ok(nodes.some(n=>n.children==='Open app settings'));assert.equal(calls.length,1);nodes.find(n=>n.type==='button'&&!n.accessibilityLabel).onPress();assert.equal(calls.at(-1),'settings');});
+@@ -13,7 +13,7 @@ test('actual Android bridge accepts only its map origin and invalidates pending
+  const React={useState:value=>[value,()=>{}],useEffect(){},useRef:value=>{const ref={current:refIndex++===0?{injectJavaScript:v=>script=v}:value};refs.push(ref);return ref}};
+  const embedded={embeddedMapDocument:()=>'<html></html>',embeddedMapPayload:()=>({}),embeddedMapCommand:()=>'',embeddedMapMessage:value=>JSON.parse(value),embeddedLocationCommand:(fix,options)=>JSON.stringify({fix,options})};
+  const{DiscoveryMap}=compiled('../src/DiscoveryMap.android.tsx',{'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'react-native':{ActivityIndicator:'spinner',Linking:{},Pressable:'button',StyleSheet:{create:v=>v,absoluteFill:{}},Text:'text',View:'view'},'react-native-webview':{WebView:'webview'},'./brand':{LIGHT:{}},'./discovery':{fullMapToolsLink:()=>''},'../../assets/map-data/embedded.mjs':embedded,'./useMapLocation':{useMapLocation:(_scope,fix)=>{onFix=fix;return{state:{fix:null},manualMove:()=>intentChanges++,request(){},clear(){}}}},'./MapLocationControl':{MapLocationControl:'location-control'}});
+- DiscoveryMap({points:[],scopeKey:'manual-city',selected:'',focus:0,motion:false,onSelect:value=>selected=value});const web=nodes.find(n=>n.type==='webview');assert.equal(web.geolocationEnabled,false);web.onMessage({nativeEvent:{url:'https://unexpected.invalid/',data:JSON.stringify({type:'map.interaction'})}});assert.equal(intentChanges,0);web.onMessage({nativeEvent:{url:'https://www.zoi.city/',data:JSON.stringify({type:'map.interaction'})}});assert.equal(intentChanges,1);web.onMessage({nativeEvent:{url:'https://www.zoi.city/',data:JSON.stringify({type:'map.select',slug:'actual'})}});assert.equal(intentChanges,2);assert.equal(selected,'actual');onFix({latitude:0,longitude:0,accuracy:35,timestamp:Date.now()},{center:false});assert.equal(JSON.parse(script).options.center,false);
++ DiscoveryMap({points:[],scopeKey:'manual-city',selected:'',focus:0,motion:false,onSelect:value=>selected=value});const web=nodes.find(n=>n.type==='webview');assert.equal(web.geolocationEnabled,false);web.onMessage({nativeEvent:{url:'https://unexpected.invalid/',data:JSON.stringify({type:'map.interaction'})}});assert.equal(intentChanges,0);web.onMessage({nativeEvent:{url:'https://www.zoi.city/',data:JSON.stringify({type:'map.interaction'})}});assert.equal(intentChanges,1);web.onMessage({nativeEvent:{url:'https://www.zoi.city/',data:JSON.stringify({type:'map.select',slug:'actual'})}});assert.equal(intentChanges,2);assert.equal(selected,'actual');onFix({latitude:0,longitude:0,accuracy:35,timestamp:Date.now()},{center:false});assert.equal(JSON.parse(script).options.center,false);const sourceObject=web.source;nodes.find(n=>n.onLayout).onLayout({nativeEvent:{layout:{width:390,height:640}}});assert.equal(script,'window.ZoiEmbeddedMap?.resize();true;');nodes.length=0;DiscoveryMap({points:[],scopeKey:'manual-city',selected:'',focus:0,motion:false,height:640,onSelect(){}});assert.equal(nodes.find(n=>n.type==='webview').source,sourceObject,'same source object prevents frame expansion from reloading WebView');
+ });
+ test('actual iOS/native map renders explicit snapshot and accuracy without SDK auto-location or implicit camera movement',()=>{
+  const nodes=[],moves=[];let onFix,intents=0;const jsx=(type,props)=>{const node={type,...props};nodes.push(node);return node;};const fix={latitude:0,longitude:0,accuracy:35,timestamp:Date.now()};
+@@ -27,6 +27,10 @@ test('actual iOS effect refuses late selected coordinates after device/pan inten
+  const{DiscoveryMap}=compiled('../src/DiscoveryMap.native.tsx',{'react':React,'react/jsx-runtime':{jsx,jsxs:jsx},'react-native':{StyleSheet:{create:v=>v,absoluteFill:{}},View:'view',Text:'text',Pressable:'button',Linking:{}},'react-native-maps':{__esModule:true,default:'map',Marker:'marker',Circle:'circle'},'./brand':{LIGHT:{}},'./discovery':{exactPins:p=>p,nativePinClusters:()=>[],fullMapToolsLink:()=>''},'./useMapLocation':{useMapLocation:(_scope,callback)=>{onFix=callback;return{state:{fix:null},manualMove(){},request(){onFix({latitude:43.7,longitude:-79.4,accuracy:35},{center:true})},clear(){}}}},'./MapLocationControl':{MapLocationControl:'control'},'../../assets/map-data/foreground-location.mjs':{deviceLocationRegion:f=>f,deviceLocationLabel:()=>''}});
+  const map={animateToRegion:r=>moves.push(r),fitToCoordinates:()=>moves.push('fit')},base={points:[],scopeKey:'manual-city',selected:'late-place',focus:0,motion:false,onSelect(){}};
+  function render(props){cursor=0;nodes=[];pending=[];DiscoveryMap(props);nodes.find(n=>n.type==='map').ref.current=map;for(const effect of pending)effect();}
+- render(base);nodes.find(n=>n.type==='map').onMapReady();render(base);nodes.find(n=>n.type==='control').onRequest();assert.equal(moves.length,1);assert.equal(moves[0].longitude,-79.4);
++ render(base);nodes.find(n=>n.type==='map').onMapReady();render(base);assert.equal(nodes.some(n=>n.type==='control'),false);nodes.find(n=>n.accessibilityState&&'expanded'in n.accessibilityState).onPress();render(base);nodes.find(n=>n.type==='control').onRequest();assert.equal(moves.length,1);assert.equal(moves[0].longitude,-79.4);
+  const point={s:'late-place',lat:36.8,lng:-76};render({...base,points:[point]});assert.equal(moves.length,1);nodes.find(n=>n.type==='map').onPanDrag();render({...base,points:[{...point,lat:36.7}]});assert.equal(moves.length,1);render({...base,points:[point],focus:1});assert.equal(moves.length,2);assert.equal(moves[1].longitude,-76);
+ });
++
++test('actual web/iOS hook never subscribes unsupported Android focus/blur and cleans change subscription',()=>{for(const platform of['web','ios']){const h=hookFixture(platform);assert.deepEqual(Object.keys(h.events),['change']);assert.equal(h.prompts(),0);h.events.change('background');h.cleanup();assert.equal(Object.keys(h.events).length,0);}});
++
++test('account replacement disposes the previous device controller before new actor requests anything',async()=>{const old=hookFixture();await old.hook.request();old.cleanup();const current=hookFixture();old.deliver();assert.equal(old.removed(),1);assert.equal(old.fixes.length,0);assert.equal(current.prompts(),0);current.cleanup();});
+diff --git a/mobile/tests/native-map-ux.test.mjs b/mobile/tests/native-map-ux.test.mjs
+new file mode 100644
+index 00000000..83ebd02d
+--- /dev/null
++++ b/mobile/tests/native-map-ux.test.mjs
+@@ -0,0 +1,13 @@
++import test from 'node:test';import assert from 'node:assert/strict';
++import{navigationURL,navigationDestination,TRAVEL_MODES}from'../../assets/map-data/directions.mjs';
++import{mountEmbeddedMap,embeddedMapPayload}from'../../assets/map-data/embedded.mjs';
++for(const reviewed of[false,true])for(const{value:mode}of TRAVEL_MODES)test(`directions ${reviewed?'reviewed':'published address'} ${mode} preview without start; explicit start preserves navigation`,()=>{
++ const destination=navigationDestination({s:'source-place',n:'Source place',lat:42.426359,lng:-83.374051,addr:'33309 Seven Mile Road',city:'Livonia',country:'United States'},{reviewed});assert(destination);
++ for(const origin of['','   ','\t\n']){const u=new URL(navigationURL(destination,{mode,origin}));assert.equal(u.searchParams.get('destination'),destination.value);assert.equal(u.searchParams.get('travelmode'),mode);assert.equal(u.searchParams.has('origin'),false);assert.equal(u.searchParams.has('dir_action'),false);}
++ const u=new URL(navigationURL(destination,{mode,origin:'  10 Starting Avenue  '}));assert.equal(u.searchParams.get('origin'),'10 Starting Avenue');assert.equal(u.searchParams.get('dir_action'),'navigate');assert.equal(u.searchParams.get('destination'),destination.value);
++ assert.equal(new URL(navigationURL(destination,{mode,origin:'10 Starting Avenue',navigate:false})).searchParams.has('dir_action'),false);
++});
++test('map frame resize preserves the same controller, camera, point source and location privacy',()=>{
++ const events={},actions=[],host={maplibregl:{Map:class{constructor(){actions.push('construct')}on(n,layer,handler){events[n+(typeof layer==='string'?':'+layer:'')]=handler||layer}addControl(){}addSource(){}addLayer(){}getSource(){return{setData:()=>actions.push('data')}}setPaintProperty(){}easeTo(){actions.push('camera')}resize(){actions.push('resize')}remove(){actions.push('remove')}},NavigationControl:class{}},ZoiBasemap:{style:()=>({})}},doc={getElementById:()=>({clientWidth:390,clientHeight:400})};
++ const c=mountEmbeddedMap(doc,host);events.load();c.update(embeddedMapPayload([{s:'real',n:'Real',lat:42.426359,lng:-83.374051,precision:'street'}],'real'));const before=[...actions];c.resize();host.ZoiEmbeddedMap.resize();assert.deepEqual(actions,[...before,'resize','resize']);assert.equal(actions.filter(a=>a==='construct').length,1);c.destroy();assert.equal(actions.at(-1),'remove');assert.equal(host.ZoiEmbeddedMap,undefined);
++});
+diff --git a/mobile/tests/native-map-ux-browser/build.cjs b/mobile/tests/native-map-ux-browser/build.cjs
+new file mode 100644
+index 00000000..3d748424
+--- /dev/null
++++ b/mobile/tests/native-map-ux-browser/build.cjs
+@@ -0,0 +1,20 @@
++// Controlled RN-web packaging. Actual Discovery, backends, models and location controller.
++// Auth/preferences, public transport and OS location are explicit controlled boundaries.
++const fs=require('node:fs'),path=require('node:path'),{createRequire}=require('node:module');
++const mobile=path.resolve(__dirname,'../..'),resolve=createRequire(path.join(mobile,'package.json'));
++const babel=resolve('@babel/core'),jsx=resolve.resolve('@babel/plugin-transform-react-jsx'),common=resolve.resolve('@babel/plugin-transform-modules-commonjs'),typescript=resolve.resolve('@babel/preset-typescript');
++const modules=[],ids=new Map();
++const virtual={
++ rn:`import{createContext,forwardRef,useContext}from'react';import*as W from'react-native-web';export*from'react-native-web';export const ScaleContext=createContext(1);export const Text=forwardRef((p,r)=>{const n=useContext(ScaleContext),s=W.StyleSheet.flatten(p.style)||{};return <W.Text {...p} ref={r} style={[p.style,{fontSize:(s.fontSize||14)*n,...(s.lineHeight?{lineHeight:s.lineHeight*n}:{})}]}/>});export const TextInput=forwardRef((p,r)=>{const n=useContext(ScaleContext),s=W.StyleSheet.flatten(p.style)||{};return <W.TextInput {...p} ref={r} style={[p.style,{fontSize:(s.fontSize||14)*n,...(s.lineHeight?{lineHeight:s.lineHeight*n}:{})}]}/>});export function useWindowDimensions(){return{...W.useWindowDimensions(),fontScale:useContext(ScaleContext)}}export const Linking={openURL:async u=>{window.nativeLinks.push(u)},openSettings:async()=>window.nativeLinks.push('settings')};export const BackHandler={addEventListener:(n,f)=>{window.nativeBack=f;return{remove:()=>{if(window.nativeBack===f)window.nativeBack=null}}}};`,
++ boundary:`import{createContext,useContext}from'react';import{View}from'react-native';export const ActorContext=createContext(null);const client={session:null,token:async()=>'controlled-session',request:async()=>({ok:true,profile:{id:'11111111-1111-4111-8111-111111111111'},preferences:{locality_enabled:false,topics:[],version:1}})};export function useAuth(){const actor=useContext(ActorContext);client.session=actor?{user:{id:actor}}:null;return{client,session:client.session,booting:false}}export function CommunitySettings(){return <View/>}export function GlassHero({children}){return <View>{children}</View>}export function usePresentationPreferences(){return{motion:false,glass:false}}`,
++ location:`export const Accuracy={Balanced:3};export async function getForegroundPermissionsAsync(){window.nativeGPS++;return{status:'denied',canAskAgain:true}}export async function requestForegroundPermissionsAsync(){window.nativeGPS++;return{status:'denied',canAskAgain:true}}export async function hasServicesEnabledAsync(){return true}export async function watchPositionAsync(){window.nativeGPS++;throw Error('fixture_never_locates')}`,
++ read:`export async function discoveryRead(name,args,signal){return window.nativeRead(name,args,signal)}`
++};
++function resolveFile(from,name){try{return createRequire(from).resolve(name)}catch(error){if(name.startsWith('.'))for(const ext of['.tsx','.ts','.jsx','.js']){const f=path.resolve(path.dirname(from),name+ext);if(fs.existsSync(f))return f}throw error}}
++function add(file){if(ids.has(file))return ids.get(file);const id=modules.length;ids.set(file,id);modules.push(null);let code;
++ if(file.startsWith('virtual:'))code=virtual[file.slice(8)];else if(file.endsWith('.png'))code='module.exports='+JSON.stringify('data:image/png;base64,'+fs.readFileSync(file).toString('base64'));else if(file.endsWith('.json'))code='module.exports='+fs.readFileSync(file,'utf8');else code=fs.readFileSync(file,'utf8');
++ if(!file.endsWith('.json')&&!file.endsWith('.png'))code=babel.transformSync(code,{filename:file.startsWith('virtual:')?file+'.jsx':file,babelrc:false,configFile:false,presets:/\.tsx?$/.test(file)?[[typescript,{allExtensions:true,isTSX:file.endsWith('.tsx')}]]:[],plugins:[[jsx,{runtime:'automatic'}],common]}).code;
++ const from=file.startsWith('virtual:')?path.join(mobile,'package.json'):file;
++ code=code.replace(/\brequire\(\s*(['"])([^'"]+)\1\s*\)/g,(_,q,name)=>{let dep;if(name==='react-native')dep='virtual:rn';else if(name==='expo-location')dep='virtual:location';else{dep=resolveFile(from,name);if(['Auth.tsx','Presentation.tsx','CommunityProfile.tsx'].some(n=>dep===path.join(mobile,'src',n)))dep='virtual:boundary';if(dep===path.join(mobile,'src','DiscoveryMap.tsx'))dep=path.join(mobile,'src','DiscoveryMap.web.tsx');if(dep===path.join(mobile,'src','discoveryRead.ts'))dep='virtual:read';}return '__require('+add(dep)+')'});
++ modules[id]='function(module,exports,__require){\n'+code+'\n}';return id;}
++const entry=add(path.join(__dirname,'fixture.tsx')),out=process.env.BUNDLE_PATH;if(!out)throw Error('Set unique persistent BUNDLE_PATH');fs.mkdirSync(path.dirname(out),{recursive:true});fs.writeFileSync(out,'(()=>{var process={env:{NODE_ENV:"development"}};const modules=['+modules.join(',\n')+'];const cache={};function __require(id){if(cache[id])return cache[id].exports;const module=cache[id]={exports:{}};modules[id](module,module.exports,__require);return module.exports;}__require('+entry+');})();');console.log('Bundled '+modules.length+' actual/native+controlled-boundary modules');
+diff --git a/mobile/tests/native-map-ux-browser/fixture.tsx b/mobile/tests/native-map-ux-browser/fixture.tsx
+new file mode 100644
+index 00000000..2a917406
+--- /dev/null
++++ b/mobile/tests/native-map-ux-browser/fixture.tsx
+@@ -0,0 +1,31 @@
++// @ts-nocheck -- controlled browser boundary exports supplied by build.cjs.
++import {useEffect,useState} from 'react';import{createRoot}from'react-dom/client';import{View,Text,ScaleContext}from'react-native';
++import{Discover}from'../../src/Discovery';import{AppHeader,PrimaryNavigation}from'../../src/AppChrome';import{initialDiscovery}from'../../src/discovery';
++import{ActorContext}from'../../src/Auth';import source from'../food-menu-browser/public-home-entity.json';
++// Existing retained anonymous151 source. Point literal matches retained public
++// geography_reviewed_point SHA313675c9... (2026-10-15); controlled transport only.
++const point={"latitude":42.426359,"longitude":-83.374051,"precision":"street","listing_id":"373f6d89-03b6-4c58-b293-93a805885f5b","request_id":"bec77e09-460d-47e7-9f77-8752f7d6ae59"};
++const w=window as any;w.nativeLinks=[];w.nativeGPS=0;w.nativeRequests=[];w.nativeMode='current';w.nativeFail='';w.nativePending=[];
++// Retained current point receipt is replayed as an explicit controlled transport;
++// this never claims a fresh production source review or coordinate correction.
++w.nativeRead=async(name:string,args:any)=>{w.nativeRequests.push({name,args});const mode=w.nativeMode;
++ if(w.nativeFail===name)throw Error('controlled_read_unavailable');
++ if(name==='explore_cities'||name==='explore_geo')return [];
++ if(name==='explore_search')return [];
++ if(name==='home_entity'){
++  if(mode==='delay')return new Promise(resolve=>w.nativePending.push({resolve,slug:args.p_slug}));
++  const e=structuredClone(source);e.slug=args.p_slug;e.canonical_slug=args.p_slug;e.photo_url=null;
++  if(mode==='greek')e.name='Ελληνικό Αρτοποιείο και Παραδοσιακά Προϊόντα της Κοινότητας';
++  if(mode==='unmapped'){e.latitude=null;e.longitude=null;e.geo_precision=null;}
++  if(mode==='approx'){e.geo_precision='city';e.latitude=42.4;e.longitude=-83.4;}
++  if(mode==='sparse'){e.latitude=null;e.longitude=null;e.geo_precision=null;e.address=null;e.city=null;e.country=null;e.name='Sparse place';}
++  return e;
++ }
++ if(name==='geography_reviewed_point')return mode==='current'||mode==='greek'?point:null;
++ throw Error('unexpected_controlled_reader:'+name);
++};
++function Fixture(){const[state,setState]=useState({...initialDiscovery(),mode:'map' as const,source:'global' as const,selected:source.slug}),[scale,setScale]=useState(1),[expanded,setExpanded]=useState(false),[actor,setActor]=useState<string|null>(null),[route,setRoute]=useState('discover');
++ w.nativeFixture=(o:any)=>{if(o.scale!==undefined)setScale(o.scale);if(o.mode){w.nativeMode=o.mode;setState({...initialDiscovery(),mode:'map',source:'global',selected:source.slug+'-'+o.mode});}if(o.intent)setState(s=>({...s,selected:o.intent}));if(o.fail!==undefined)w.nativeFail=o.fail;if(o.actor!==undefined){setActor(o.actor);setExpanded(false);}if(o.route){setRoute(o.route);setExpanded(false);}if(o.list){setExpanded(false);setState({...initialDiscovery(),mode:'list',source:'global'});}};
++ useEffect(()=>{w.nativeState=state;w.nativeExpanded=expanded;},[state,expanded]);
++ return <ActorContext.Provider value={actor}><ScaleContext.Provider value={scale}><View style={{height:'100vh',width:'100%',maxWidth:780,alignSelf:'center',backgroundColor:'#F7FAFC'}}>{!expanded?<AppHeader onHome={()=>{setExpanded(false);setRoute('home')}} onAccount={()=>{setExpanded(false);setRoute('grow')}}/>:null}{route==='discover'?<Discover key={actor||'guest'} state={state} setState={setState} open={p=>w.nativeLinks.push(p)} signIn={()=>w.nativeLinks.push('sign-in')} expanded={expanded} onExpandedChange={setExpanded}/>:<View><Text>{route}</Text></View>}{!expanded?<PrimaryNavigation activeId={route} onNavigate={v=>{setExpanded(false);setRoute(v)}}/>:null}</View></ScaleContext.Provider></ActorContext.Provider>;
++}createRoot(document.getElementById('root')!).render(<Fixture/>);
+diff --git a/mobile/tests/native-map-ux-browser/verify.mjs b/mobile/tests/native-map-ux-browser/verify.mjs
+new file mode 100644
+index 00000000..69acea17
+--- /dev/null
++++ b/mobile/tests/native-map-ux-browser/verify.mjs
+@@ -0,0 +1,37 @@
++import {embeddedMapDocument} from '../../../assets/map-data/embedded.mjs';import http from'node:http';import fs from'node:fs/promises';import path from'node:path';import assert from'node:assert/strict';import{fileURLToPath}from'node:url';
++const{chromium}=await import(process.env.ZOI_PLAYWRIGHT_MODULE||'/workspaces/zoi-city-release/node_modules/playwright-core/index.mjs');
++const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../..'),repo=root,out=process.env.OUTPUT_DIR,bundle=process.env.BUNDLE_PATH;if(!out||!bundle)throw Error('Set unique persistent OUTPUT_DIR and BUNDLE_PATH');await fs.mkdir(out,{recursive:true});
++const sdk=`window.nativeMaps=[];window.nativeResizes=0;const RealMap=maplibregl.Map;window.maplibregl={...maplibregl,Map:class extends RealMap{constructor(o){super(o);nativeMaps.push(this)}resize(...a){nativeResizes++;return super.resize(...a)}}};window.ZoiBasemap={style:()=>({version:8,sources:{},layers:[{id:'controlled-background',type:'background',paint:{'background-color':'#eaf2f8'}}]})};`;
++const server=http.createServer(async(req,res)=>{try{const name=new URL(req.url,'http://localhost').pathname;if(name==='/embedded'){res.setHeader('Content-Type','text/html');return res.end(embeddedMapDocument().replaceAll('https://www.zoi.city',origin).replace('<body>','<body><script>window.nativeMessages=[];window.ReactNativeWebView={postMessage:m=>nativeMessages.push(JSON.parse(m))};</script>'));}if(name==='/assets/zoi-basemap.js'){res.setHeader('Content-Type','text/javascript');return res.end(sdk);}if(name==='/bundle.js'){res.setHeader('Content-Type','text/javascript');return res.end(await fs.readFile(bundle));}if(name.startsWith('/assets/')){const file=path.resolve(repo,'.'+name);if(!file.startsWith(repo+'/assets/'))throw Error('path');res.setHeader('Content-Type',name.endsWith('.css')?'text/css':'text/javascript');return res.end(await fs.readFile(file));}res.setHeader('Content-Type','text/html');res.end('<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body,#root{height:100%;margin:0}*{box-sizing:border-box}</style><link rel="stylesheet" href="/assets/vendor/maplibre-gl.css"><div id="root"></div><script src="/assets/vendor/maplibre-gl.js"></script><script>'+sdk+'</script><script src="/bundle.js"></script>');}catch(e){res.writeHead(404);res.end('fixture_resource_missing');}});await new Promise(r=>server.listen(0,'127.0.0.1',r));const origin='http://127.0.0.1:'+server.address().port;
++const browser=await chromium.launch({executablePath:process.env.CHROMIUM_EXECUTABLE_PATH||'/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome',args:['--no-sandbox','--enable-unsafe-swiftshader','--disable-dev-shm-usage']}),results=[];let current;
++async function setup(width,height,scale=1,mode='current'){const page=await browser.newPage({viewport:{width,height}});current=page;const errors=[];page.on('pageerror',e=>{errors.push(e.message);console.error('fixture_pageerror',e.message)});await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin);await page.waitForFunction(()=>window.nativeFixture&&nativeMaps.length===1&&nativeMaps[0].isStyleLoaded());if(scale!==1||mode!=='current')await page.evaluate(({scale,mode})=>nativeFixture({scale,mode}),{scale,mode});await page.getByRole('button',{name:'Open this place',exact:true}).waitFor();return{page,errors};}
++async function target44(locator){const b=await locator.boundingBox();assert(b&&b.width>=43.9&&b.height>=43.9,JSON.stringify(b));return b;}
++async function settled(page){await page.waitForFunction(()=>nativeMaps.length===1&&nativeMaps[0].isStyleLoaded());await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));}
++try{
++ for(const[width,height]of[[390,900],[390,390],[844,390],[1440,900]])for(const scale of[1,2]){
++  const{page,errors}=await setup(width,height,scale);await settled(page);
++  const region=page.getByRole('region',{name:'Zoi street-level places map'}),initial=await region.boundingBox();assert(initial.y>=0&&initial.y<height/2,JSON.stringify(initial));assert(initial.height>=178);
++  if(width===390&&height===900&&scale===1){const action=await page.getByRole('button',{name:'Open directions in Google Maps',exact:true}).boundingBox(),nav=await page.getByRole('tablist',{name:'Main navigation'}).boundingBox();assert(action.y+action.height<=nav.y,'current selected directions must be in first phone viewport');}
++  assert.equal(await page.getByText('Close to home.',{exact:false}).count(),0);assert.equal(await page.getByRole('textbox',{name:'Search Greek places'}).count(),0);assert.equal(await page.getByRole('button',{name:'Drive',exact:true}).count(),0);
++  for(const name of['Expand map','Location options','Focus this pin','Open this place','Open directions in Google Maps'])await target44(page.getByRole('button',{name,exact:true}));
++  await target44(page.getByRole('button',{name:'Zoom in',exact:true}));await target44(page.getByRole('button',{name:'Zoom out',exact:true}));await page.screenshot({path:path.join(out,`initial-selected-${width}-font${scale}.png`)});
++  await page.getByRole('button',{name:'Open directions in Google Maps',exact:true}).click();let url=new URL(await page.evaluate(()=>nativeLinks.at(-1)));assert.equal(url.searchParams.get('destination'),'42.426359,-83.374051');assert.equal(url.searchParams.has('dir_action'),false);
++  await page.getByRole('button',{name:'Location options',exact:true}).click();await target44(page.getByRole('button',{name:'Use my location once',exact:true}));assert.equal(await page.evaluate(()=>nativeGPS),0);const zoom=await page.getByRole('button',{name:'Zoom in',exact:true}).boundingBox(),loc=await page.getByRole('button',{name:'Use my location once',exact:true}).boundingBox();assert(zoom.y+zoom.height<=loc.y||loc.y+loc.height<=zoom.y);
++  await page.evaluate(()=>{nativeMaps[0].jumpTo({center:[23.4,41.9],zoom:8});window.nativeSavedMap=nativeMaps[0];window.nativeCamera={center:nativeMaps[0].getCenter().toArray(),zoom:nativeMaps[0].getZoom()};});
++  await page.getByRole('button',{name:'Expand map',exact:true}).click();await page.getByRole('button',{name:'Close expanded map',exact:true}).waitFor();await settled(page);
++  assert.equal(await page.getByRole('tablist',{name:'Main navigation'}).count(),0);assert.equal(await page.evaluate(()=>nativeMaps.length===1&&nativeMaps[0]===nativeSavedMap&&JSON.stringify(nativeCamera.center)===JSON.stringify(nativeMaps[0].getCenter().toArray())&&nativeMaps[0].getZoom()===nativeCamera.zoom&&nativeGPS===0),true);
++  await page.screenshot({path:path.join(out,`expanded-${width}-font${scale}.png`)});assert.equal(await page.getByRole('button',{name:'Close location options',exact:true}).count(),1);await page.getByRole('button',{name:'Close location options',exact:true}).click();
++  await page.getByRole('button',{name:'Close expanded map',exact:true}).focus();await page.keyboard.press('Escape');await page.getByRole('button',{name:'Expand map',exact:true}).waitFor();assert.equal(await page.evaluate(()=>nativeExpanded),false);assert.equal(await page.evaluate(()=>document.activeElement?.getAttribute('aria-label')),'Expand map');
++  await page.getByRole('button',{name:'Expand map',exact:true}).click();await page.evaluate(()=>{if(!nativeBack?.())throw Error('Back not handled')});await page.getByRole('button',{name:'Expand map',exact:true}).waitFor();await page.getByRole('tablist',{name:'Main navigation'}).waitFor();
++  await page.getByRole('button',{name:'Place details & travel options',exact:true}).click();await page.getByRole('button',{name:'Walk',exact:true}).click();await page.getByRole('textbox',{name:'Starting address for directions'}).fill('10 Starting Avenue');await page.getByRole('button',{name:'Open directions in Google Maps',exact:true}).click();url=new URL(await page.evaluate(()=>nativeLinks.at(-1)));assert.equal(url.searchParams.get('travelmode'),'walking');assert.equal(url.searchParams.get('origin'),'10 Starting Avenue');assert.equal(url.searchParams.get('dir_action'),'navigate');
++  await page.getByRole('button',{name:'Close place details',exact:true}).click();await page.getByRole('button',{name:'Search & filters',exact:true}).click();await page.getByRole('textbox',{name:'Search Greek places'}).fill('Greek bakery');await page.getByRole('button',{name:'Search',exact:true}).click();assert.equal(await page.evaluate(()=>nativeState.query),'Greek bakery');await page.getByRole('button',{name:'Close filters',exact:true}).click();assert.equal(await page.evaluate(()=>nativeGPS),0);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(errors,[]);
++  await page.getByRole('region',{name:'Zoi street-level places map'}).evaluate(e=>e.scrollIntoView({block:'start'}));await page.screenshot({path:path.join(out,`map-${width}-font${scale}.png`)});results.push({width,height,scale,mapFirst:true,sameMountedBackend:true,cameraPreserved:true,controls44:true,locationDisclosureNoGPS:true,EscapeBackChromeRestore:true,explicitDirectionsOrigin:true,filtersPreserved:true,passed:true});await page.close();
++ }
++
++ {const{page,errors}=await setup(390,700,1);await page.evaluate(()=>nativeFixture({fail:'home_entity',intent:'unavailable-current'}));await page.getByRole('button',{name:'Retry selected place',exact:true}).waitFor();assert.equal(await page.getByRole('button',{name:'Open this place',exact:true}).count(),0);await page.evaluate(()=>nativeFixture({fail:''}));await page.getByRole('button',{name:'Retry selected place',exact:true}).click();await page.getByRole('button',{name:'Open this place',exact:true}).waitFor();
++ await page.evaluate(()=>nativeFixture({mode:'delay'}));await page.waitForFunction(()=>nativePending.length===1);await page.evaluate(()=>{nativeMode='current';nativeFixture({intent:'fresh-place'});});await page.getByRole('button',{name:'Open this place',exact:true}).waitFor();await page.evaluate(()=>{for(const p of nativePending.splice(0))p.resolve({id:'373f6d89-03b6-4c58-b293-93a805885f5b',name:'Stale delayed place',slug:p.slug,publish_status:'published'})});await page.evaluate(()=>new Promise(r=>setTimeout(r,30)));assert.equal(await page.getByText('Stale delayed place',{exact:true}).count(),0);assert.equal(await page.evaluate(()=>nativeState.selected),'fresh-place');assert.deepEqual(errors,[]);results.push({mode:'selected-read-error-retry-stale-intent',passed:true});await page.close();}
++ {const{page,errors}=await setup(390,700,1);await page.getByRole('button',{name:'Location options',exact:true}).click();assert.equal(await page.evaluate(()=>nativeGPS),0);await page.getByRole('button',{name:'Use my location once',exact:true}).click();await page.getByText('Location access is off. You can still browse any city.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>nativeGPS),2);await page.getByRole('button',{name:'Expand map',exact:true}).click();await page.getByRole('button',{name:'Close expanded map',exact:true}).waitFor();assert.equal(await page.evaluate(()=>nativeGPS),2);await page.getByRole('button',{name:'Close expanded map',exact:true}).click();assert.equal(await page.getByText('Location access is off. You can still browse any city.',{exact:true}).count(),1);assert.deepEqual(errors,[]);results.push({mode:'explicit-permission-denial-expand-retains-state',passed:true});await page.close();}
++ {const{page,errors}=await setup(390,700,1);await page.getByRole('button',{name:'Expand map',exact:true}).click();await page.evaluate(()=>nativeFixture({actor:'11111111-1111-4111-8111-111111111111'}));await page.getByRole('button',{name:'Expand map',exact:true}).waitFor();await page.getByRole('tablist',{name:'Main navigation'}).waitFor();assert.equal(await page.evaluate(()=>nativeExpanded),false);assert.equal(await page.evaluate(()=>nativeGPS),0);await page.getByRole('button',{name:'List',exact:true}).click();await page.getByText(/Close to home/).waitFor();await page.getByRole('button',{name:'Map',exact:true}).click();await page.getByRole('button',{name:'Expand map',exact:true}).waitFor();assert.deepEqual(errors,[]);results.push({mode:'account-switch-and-list-map-entry',passed:true});await page.close();}
++ for(const[width,height]of[[390,700],[844,390],[1440,900]]){const page=await browser.newPage({viewport:{width,height}});current=page;const errors=[];page.on('pageerror',e=>errors.push(e.message));await page.route('**/*',r=>r.request().url().startsWith(origin)?r.continue():r.abort());await page.goto(origin+'/embedded');await page.waitForFunction(()=>window.ZoiEmbeddedMap&&nativeMessages.some(m=>m.type==='map.ready'));await target44(page.getByRole('button',{name:'Zoom in',exact:true}));await target44(page.getByRole('button',{name:'Zoom out',exact:true}));await page.evaluate(()=>{ZoiEmbeddedMap.update({points:[{s:'retained-Hellenic',n:'Hellenic',lat:42.426359,lng:-83.374051}],selected:'retained-Hellenic',motion:false});nativeMaps[0].jumpTo({center:[23.4,41.9],zoom:8});window.embeddedBefore={center:nativeMaps[0].getCenter().toArray(),zoom:nativeMaps[0].getZoom()};});await page.setViewportSize({width:width===390?844:390,height:height===390?700:390});await page.evaluate(()=>ZoiEmbeddedMap.resize());assert.equal(await page.evaluate(()=>nativeMaps.length===1&&JSON.stringify(embeddedBefore.center)===JSON.stringify(nativeMaps[0].getCenter().toArray())&&embeddedBefore.zoom===nativeMaps[0].getZoom()),true);assert.deepEqual(errors,[]);await page.screenshot({path:path.join(out,`embedded-resized-${width}.png`)});results.push({mode:'actual-embedded-MapLibre',width,height,controls44:true,resizeSameMapCamera:true,passed:true});await page.close();}
++ for(const mode of['unmapped','approx','sparse','greek']){const{page,errors}=await setup(390,700,2,mode);assert.equal(await page.getByRole('button',{name:'Focus this pin',exact:true}).count(),0+(mode==='greek'?1:0));if(mode==='sparse')assert.equal(await page.getByRole('button',{name:'Open directions in Google Maps',exact:true}).count(),0);else{await page.getByRole('button',{name:'Open directions in Google Maps',exact:true}).click();const url=new URL(await page.evaluate(()=>nativeLinks.at(-1)));if(mode!=='greek')assert.equal(url.searchParams.get('destination')==='42.426359,-83.374051',false);}assert.equal(await page.evaluate(()=>nativeGPS),0);assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false);assert.deepEqual(errors,[]);await page.screenshot({path:path.join(out,mode+'-390-font2.png')});results.push({mode,safeDestination:true,passed:true});await page.close();}
++}catch(error){if(current&&!current.isClosed()){await current.screenshot({path:path.join(out,'failure.png')});await fs.writeFile(path.join(out,'failure.html'),await current.content());await fs.writeFile(path.join(out,'failure.json'),JSON.stringify({message:error.message,stack:error.stack,completed:results.length,device:await current.evaluate(()=>({width:innerWidth,height:innerHeight,mode:window.nativeMode,requests:window.nativeRequests,errors:window.nativeMaps?.map(m=>({loaded:m.isStyleLoaded()}))}))},null,2));}throw error;}finally{await browser.close();await new Promise(r=>server.close(r));await fs.writeFile(path.join(out,'report.json'),JSON.stringify({controlled:true,realMapLibre:true,realTiles:false,production:false,results},null,2)+'\n');}console.log('Passed '+results.length+' controlled native-map journeys');
+diff --git a/mobile/tests/native-map-ux-browser/README.md b/mobile/tests/native-map-ux-browser/README.md
+new file mode 100644
+index 00000000..5dbb59cc
+--- /dev/null
++++ b/mobile/tests/native-map-ux-browser/README.md
+@@ -0,0 +1,51 @@
++# Native map layout and directions acceptance
++
++This fixture mounts the actual Discovery screen, native shared models, AppChrome,
++location controller and web MapLibre backend. It uses local actual MapLibre code
++and a deliberately empty basemap style (no production tiles). The existing retained
++anonymous Hellenic 151-item home and exact retained reviewed-point literal are
++replayed through a controlled public-read boundary. Auth identity, home settings,
++OS permissions, Back dispatch and transport are controlled. This is not installed
++Android/iOS, production Auth, source revalidation or external route acceptance.
++
++The direct embedded-document cases use the actual generated HTML and actual
++embedded module, replacing only its static asset origin and basemap style locally.
++They check actual44px SDK controls and same-instance camera preservation on resize.
++No external network, upload, account, provider, SQL, build or device operation runs.
++
++Use an existing installed dependency tree; no install is required:
++
++```sh
++ln -s /workspaces/zoi-native-location-work/mobile/node_modules mobile/node_modules
++BUNDLE_PATH=/home/codespace/.cache/zoi/YOUR-UNIQUE/discovery.js node mobile/tests/native-map-ux-browser/build.cjs
++BUNDLE_PATH=/home/codespace/.cache/zoi/YOUR-UNIQUE/discovery.js OUTPUT_DIR=/home/codespace/.cache/zoi/YOUR-UNIQUE/browser node mobile/tests/native-map-ux-browser/verify.mjs
++mobile/node_modules/.bin/tsc --noEmit -p mobile
++cd mobile
++node --test tests/*.test.mjs
++```
++
++Run Node tests from `mobile`: one retained test uses a cwd-relative fixture.
++A sparse checkout must materialize these existing read-only files:
++
++- docs/audits/native-backend-dependencies-2026-09-30.json
++- docs/audits/evidence/native-discovery-media-producer-2026-10-03/home_entity.json
++- docs/audits/evidence/native-discovery-media-producer-2026-10-03/explore_search.json
++- docs/audits/evidence/source-health-owner-independent-fresh14-2026-10-03/cafe-boulis-astoria.json
++
++The18 mounted journeys cover390×900,390×390,844×390 and1440×900 at
++font1/2; map-first selected context,44px controls, intentional filters/details,
++no GPS on disclosure/expansion, same backend/camera, persistent Close, Escape/
++controlled hardware Back, focus/chrome restoration, all four travel modes through
++focused tests, explicit origin versus originless preview intent, read retry,
++stale selection refusal, permission denial, account disposal, List→Map, sparse/
++unmapped/approximate/long Greek content and embedded resizing. On a short phone
++or long font2 content the selected text/actions scroll in full; they are not all
++claimed to fit simultaneously into390px height. Source photo is in intentional
++place details. Map backend only remounts on existing explicit retry or screen/
++account change, never expansion. Platform-correct AppState subscriptions use
++real RN-web AppState in this fixture; only Android subscribes focus/blur.
++
++Screenshots show the controlled basemap; an empty background is not a claim of
++live tile rendering. Google Maps receives a destination/travel-mode request;
++this does not prove provider route calculation, ETA or live navigation. New
++native artifact and actual installed/device acceptance remain root-owned.

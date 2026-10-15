@@ -1,0 +1,138 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T20:18:20.121911+00:00",
+  "decision": "ACCEPT hardenedV2 offline/static contract and isolatedSQL behavior for root exact5s production rollback rehearsal; no actual requeue/capture/repair acceptance",
+  "reviewed_sql": {
+    "root_path": "/home/codespace/.cache/zoi/wix-factual-root-20261015/requeue-exact-legacy-job-draft.sql",
+    "sha256": "8d6fc7b79222e925d687b64b4198c63dc48e69d83a17caa27bf002be726a5c11",
+    "bytes": 3823
+  },
+  "historical_v1": {
+    "sha256": "ef0eaa563f0727f1e521a4bebf70de9b1722ecd5d775635941d30ab07a4d52b0",
+    "review": "Static findings only; not accepted/executed as production SQL. Root preservedV1 and applied all3hardening recommendations plus explicitnonnullsource."
+  },
+  "boundaries": {
+    "job": "20fccee5-acb6-4b2e-8861-14cbb1da1153",
+    "listing": "02e262c3-087f-40ae-aa3c-7c5d93371fef",
+    "policy_original_window": [
+      "2026-10-15T04:42:40.780975Z",
+      "2026-10-16T04:42:40.780975Z"
+    ],
+    "allowed_job_changes": [
+      "status",
+      "reason",
+      "updated_at"
+    ],
+    "unchanged": [
+      "listing fullrow and quality input",
+      "all source/capture bytes references and prior timestamps",
+      "completed_lease_id/capture_result_hash",
+      "attempts/activelease/applied state",
+      "source generation and authority fingerprint",
+      "finite policy row and all ticket/cron configuration"
+    ]
+  },
+  "static_review": [
+    "Root public writer exactMD5afacc98... plus newWix helper existence gate; strictly one job lockedFORUPDATE, fullSHA256CAS/currentlisting fullCAS/quality/source-current/public/unowned/unreviewed requirements. All expected nullable values now failclosed with IS DISTINCT FROM.",
+    "Job\u2192listingFORSHARE matches actual ordinary worker lease and finish. Deferred listing enqueue explicitly avoids changing/locking existing jobs while holding listing rows. Finite policy row is now lockedFORSHARE before predicates, preventing a concurrent disable/date change through commit.1slocktimeout/5sstatementtimeout remain.",
+    "UPDATE changes only approved3fields; strict after-state and JSON subtraction equality refuse an unexpected trigger rewrite. Listing postcheck uses a valid composite scalar subquery and null-safe full fingerprint.",
+    "Source JSON/oldcompletedlease/history deliberately remain whilequeued. Old exact completion can only replay currentstatus; a new joblease is required to finish fresh bytes. This script cannot mint a lease, duplicate a job, advance timestamps of old captures, change source or extend policy.",
+    "Existing finite-ticket consumer must independently admit a current ticket, acquire and lease atmost4jobs, run fresh ordinary source research, archive content-addressed decoded bytes and GET-verify hash/size before canonicalfinish. Capture does0coordinatewrites; subsequent specialistreview/currentCAS/manual writer remains separate."
+  ],
+  "isolated": {
+    "engine": "PostgreSQL16, private exclusive Unix socket,listen_addresses empty;cluster stopped/removed in finally",
+    "groups": 14,
+    "passed": true,
+    "proof": {
+      "at": "2026-10-15T20:16:52.132147+00:00",
+      "original_sha256": "8d6fc7b79222e925d687b64b4198c63dc48e69d83a17caa27bf002be726a5c11",
+      "engine": "isolated PostgreSQL16 private socket",
+      "production_operations": 0,
+      "groups": 14,
+      "results": [
+        "original full DO, composite subquery fingerprint, receipt SELECT and COMMIT syntax pass; only3job fields change",
+        "old completed-lease exact finish replay returns queued without changing preserved history",
+        "exact ordinary lease picks requeued row, fresh lease, attempts2, old completed lease preserved",
+        "old lease cannot submit changed result over fresh leased job",
+        "exact ordinary finish replaces capture only under new current lease; listing untouched",
+        "exact rollback rehearsal restores original entire job/listing",
+        "full-row CAS refuses changed job before update",
+        "current-input refusal",
+        "V2 NULL current-authority predicate refuses and leaves original row",
+        "disabled original finite policy refuses without job mutation",
+        "V2 exact after-state refuses trigger status rewrite and rolls entire update back",
+        "already archived/changed job refuses",
+        "ownership/full listing change refuses",
+        "concurrent policy writer blocks FOR SHARE;1s lock timeout rolls recovery back"
+      ],
+      "controlled_substitutions": {
+        "only_expected_writer_job_listing_quality_hashes": "recomputed for local stubs/synthetic rows; original SQL retained and independently hashed",
+        "listing_functions": "minimal local current/quality/fingerprint/public eligibility/Wix existence stubs; not installed authority proof",
+        "queue_lease_finish": "exact Git function bodies from20261014165259 with hashes below"
+      },
+      "actual_function_source_sha256": {
+        "geography_repair_lease": "093216c1eedfe7caefd08faa0d9f13fcce60b5b75a9d9bc5b6a7bcf91cbc698a",
+        "geography_repair_finish": "75388a8ed9ee186695e8128369181b9ee825a8337aa925c7e5fbcb3e8a797fd4"
+      }
+    },
+    "limits": "Actual minimal job table contract plus additive generation fields; synthetic listing/source and minimal authority/helper stubs. Expected writer/job/listing/quality hashes substituted only for local rows/stubfunction. Same root SQL shape/guards and exact original ordinarylease/finish function bodies execute. This is not an actual installed catalog/hash/factual-source proof."
+  },
+  "hardening_findings_resolved": [
+    "Fingerprint and current predicate unknown values must refuse.",
+    "Allowed-field whitelist alone did not assert exact intended queued state/reason/time; add explicit after-state check.",
+    "Original policy predicate used an unlocked EXISTS; lock exactsingleton rowFORSHARE to keep authorization stable until commit."
+  ],
+  "historical_test_error": "Initial local fixture function extraction accidentally included a following migration guard; fixture setup refused absent oldfinish before recoverySQL was executed. Changed extractor to exact function dollar-quote boundary;14local groups then passed. Original error log retained.",
+  "remaining": [
+    "Root must verify actual release writer/helper, current exact job/listing hashes and original live finite policy, execute rollback-only rehearsal then independently decide actual requeue. No live SQL or network performed by reviewer.",
+    "Requeued is not captured/archived. Existing worker order, admission interval, remaining hardexpiry/archivebudget/network can defer or refuse it. No capture guarantee or extension implied.",
+    "No source bytes were copied/redated into canonical capture; retained website/parcel factual review remains historical until fresh ordinary archive/context proves current.",
+    "No actual coordinate correction or public/native destination acceptance from this operation."
+  ],
+  "operations": {
+    "production_SQL": 0,
+    "network": 0,
+    "DDL_deploy": 0,
+    "Auth": 0,
+    "provider_capture": 0,
+    "source_mutations": 0
+  },
+  "evidence": {
+    "evidence/wix-legacy-requeue-independent-2026-10-15/contracts-readonly-manifest.json": {
+      "sha256": "44c9d38819868ec9af08497009d6461c4395e2ef322294de17f1d23e11b6b387",
+      "bytes": 895
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/initial-fixture-extraction-error.log": {
+      "sha256": "f1767aa4d6f11405b13116b3d8817d9c7cbfd8dff5085a7ca48512d882745f0f",
+      "bytes": 1043
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/isolated-adapted-v2.sql": {
+      "sha256": "52d1343011f0f4a610421665fe32e7bf32460456231b0d0ef52c619583e75e61",
+      "bytes": 3823
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/isolated-result.json": {
+      "sha256": "0f3811f90de2e47fb0f9a6d0b59d1e7f1dd4af0f91a6ee7ba3135127066821ac",
+      "bytes": 1944
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/isolated-v2.log": {
+      "sha256": "0f3811f90de2e47fb0f9a6d0b59d1e7f1dd4af0f91a6ee7ba3135127066821ac",
+      "bytes": 1944
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/isolated-verify.py": {
+      "sha256": "4d793aea065afb26b64dd101572ee115c4be28063b0dcdf0f99937cabed1e0fe",
+      "bytes": 11951
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/root-hardened-v2.sql": {
+      "sha256": "8d6fc7b79222e925d687b64b4198c63dc48e69d83a17caa27bf002be726a5c11",
+      "bytes": 3823
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/root-original-v1.sql": {
+      "sha256": "ef0eaa563f0727f1e521a4bebf70de9b1722ecd5d775635941d30ab07a4d52b0",
+      "bytes": 3230
+    },
+    "evidence/wix-legacy-requeue-independent-2026-10-15/v1-to-v2.diff": {
+      "sha256": "4106b173a98e2e017e4c9ccfe5c092da507757cd2efbda70cf91e230d3034c47",
+      "bytes": 5833
+    }
+  }
+}

@@ -1,0 +1,17 @@
+BEGIN;
+SET LOCAL statement_timeout='5s';SET LOCAL lock_timeout='1s';
+DO $recovery$
+DECLARE job zoi.geography_repair_jobs;listing zoi.listings;after_job zoi.geography_repair_jobs;
+BEGIN
+ IF to_regprocedure('zoi.geography_reviewed_wix_proof(jsonb,jsonb,zoi.listings,zoi.geography_repair_jobs)')IS NULL OR md5(pg_get_functiondef('public.geography_review_apply(uuid,uuid,text,text,jsonb)'::regprocedure))<>'afacc98be456cde6e87e1951dab1e235' THEN RAISE EXCEPTION 'reviewed_wix_release_not_installed';END IF;
+ SELECT * INTO STRICT job FROM zoi.geography_repair_jobs WHERE id='20fccee5-acb6-4b2e-8861-14cbb1da1153'FOR UPDATE;
+ IF encode(extensions.digest(convert_to(to_jsonb(job)::text,'UTF8'),'sha256'),'hex')<>'af81ce93951005a651e9eb535fc9e7a352513a52c13ed29ecd4706b5454b6122'OR job.listing_id<>'02e262c3-087f-40ae-aa3c-7c5d93371fef'OR job.strategy<>'official_sources_v1'OR job.status<>'unresolved'OR job.attempts<>1 OR job.lease_id IS NOT NULL OR job.applied_at IS NOT NULL OR job.source?'private_archive'OR job.source?'archive_format'THEN RAISE EXCEPTION 'legacy_job_changed_or_not_recoverable';END IF;
+ SELECT * INTO STRICT listing FROM zoi.listings WHERE id=job.listing_id FOR SHARE;
+ IF zoi.geography_fingerprint(listing)<>'8562ff76b3092fcb058756352d0d9d1e'OR zoi.listing_quality_fingerprint(listing)<>'385b7c2537b493cb78e8738e30d18765'OR NOT zoi.geography_source_job_current(job,listing)OR listing.owner_user_id IS NOT NULL OR listing.owner_workspace_id IS NOT NULL OR public.geography_reviewed_point(listing.id)IS NOT NULL OR NOT EXISTS(SELECT 1 FROM zoi.v_public_listings p WHERE p.id=listing.id)THEN RAISE EXCEPTION 'listing_authority_changed_or_already_reviewed';END IF;
+ IF NOT EXISTS(SELECT 1 FROM zoi.geography_capture_ticket_policy WHERE singleton AND enabled AND starts_at<=clock_timestamp()AND expires_at>clock_timestamp()AND starts_at='2026-10-15T04:42:40.780975Z'::timestamptz AND expires_at='2026-10-16T04:42:40.780975Z'::timestamptz)THEN RAISE EXCEPTION 'original_finite_capture_policy_inactive_or_changed';END IF;
+ UPDATE zoi.geography_repair_jobs SET status='queued',reason='reviewed_wix_canonical_archive_recovery_requested',updated_at=transaction_timestamp()WHERE id=job.id RETURNING * INTO STRICT after_job;
+ IF(to_jsonb(after_job)-ARRAY['status','reason','updated_at'])IS DISTINCT FROM(to_jsonb(job)-ARRAY['status','reason','updated_at'])THEN RAISE EXCEPTION 'recovery_changed_unapproved_job_fields';END IF;
+ IF zoi.geography_fingerprint((SELECT l FROM zoi.listings l WHERE l.id=listing.id))<>'8562ff76b3092fcb058756352d0d9d1e'THEN RAISE EXCEPTION 'recovery_changed_listing';END IF;
+END$recovery$;
+SELECT jsonb_build_object('job',j.id,'listing',j.listing_id,'status',j.status,'attempts',j.attempts,'completed_lease_preserved',j.completed_lease_id,'previous_capture_hash_preserved',j.capture_result_hash,'source_sha256',encode(extensions.digest(convert_to(j.source::text,'UTF8'),'sha256'),'hex'),'listing_snapshot',zoi.geography_fingerprint(l),'next','Ordinary existing finite-ticket worker only; no sourcecopy/redate/lease/policyextension bythisoperation')AS recovery_receipt FROM zoi.geography_repair_jobs j JOIN zoi.listings l ON l.id=j.listing_id WHERE j.id='20fccee5-acb6-4b2e-8861-14cbb1da1153';
+COMMIT;

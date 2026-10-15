@@ -1,0 +1,351 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T20:10:50.376419+00:00",
+  "state": "SOURCE FROZEN for independent review; new native artifact/installed acceptance pending root",
+  "basis": "cc806c05cb5ffce75535277d89693fb65580d80f",
+  "tree": "/workspaces/zoi-native-map-ux-work",
+  "source_manifest": {
+    "path": "docs/audits/evidence/native-map-ux-owner-2026-10-15/source-manifest.json",
+    "sha256": "9c09cc802a94c2e3b95478dc0d4ba65ac7b19b5a8eb235948491f64f3f5ce6a9",
+    "bytes": 6825
+  },
+  "owned_source_paths": 16,
+  "runtime_paths": [
+    "mobile/src/Discovery.tsx",
+    "mobile/src/DiscoveryMap.types.ts",
+    "mobile/src/DiscoveryMap.android.tsx",
+    "mobile/src/DiscoveryMap.native.tsx",
+    "mobile/src/DiscoveryMap.web.tsx",
+    "mobile/App.tsx",
+    "assets/map-data/embedded.mjs",
+    "assets/map-data/directions.mjs",
+    "mobile/src/MapLocationControl.tsx",
+    "mobile/src/useMapLocation.ts"
+  ],
+  "readonly_paths": 27,
+  "changes": [
+    "All Map entries open directly to actual map and current selected identity/address/position status/actions. Generic hero/photo/full filter inventory no longer precedes map. List content/actions remain, original route-options ordering preserved.",
+    "Search/filter and place-details disclosures retain existing canonical scope/query/area, travel modes/origin, sharing and same-position choices. Normal390 phone selected directions are asserted inside first viewport; large text/short390 and landscape use full labels plus usable scrolling. Short frames omit only redundant Map title, not control labels.",
+    "Expand hides existing app chrome and changes measured frame height only. Persistent44px Close, Escape and controlled Android Back restore normal chrome/focus. Actual local MapLibre instance/camera/selection survive; Android uses same source object and injects resize only. Existing explicit retry/account/screen changes still remount intentionally.",
+    "All3backends have44px/DIP control targets. Optional location options sit in normal flow, avoiding overlay against zoom/selected actions. Disclosure and expansion request0GPS; explicit permission denial is exercised. Existing actor/foreground controller/cancel authority preserved.",
+    "Shared Google Maps URLs omit forced navigation when cleaned origin is empty; explicit origin/navigate=false, all4modes and address/reviewed destinations remain. This is an intent request, no calculated-route or guidance claim.",
+    "Platform-correct AppState fixes observed RN-web unknown-focus crash: only Android subscribes focus/blur; all platforms retain change and document-visibility cancellation with disposal."
+  ],
+  "source_authority": {
+    "basis": "cc806c05cb5ffce75535277d89693fb65580d80f",
+    "App_only_local_expand_state_layout_props_chrome_restore": true,
+    "App_original_route_Auth_writer_body_restores_byte_exact": true,
+    "Discovery_original_canonical_reads_current_actor_revision_scope_point_authority_byte_exact": true,
+    "Discovery_reader_span_sha256": "15fcbe4c4284a55d1e41893de78106f2b7978dce56f801aa909ca0fc48e137fd",
+    "directions_original_restores_byte_exact_after_one_condition_reverse": true,
+    "embedded_payload_message_location_command_contracts_byte_exact": true,
+    "docs_primary": {
+      "AppState": "https://reactnative.dev/docs/appstate",
+      "finding": "focus and blur are Android events; other platforms keep change and document visibility cancellation"
+    },
+    "no_ADB_EAS_SQL_Auth_provider_actions": true
+  },
+  "verification": {
+    "mobile_all": {
+      "tests": 500,
+      "pass": 500,
+      "cwd": "mobile",
+      "command": "node --test tests/*.test.mjs"
+    },
+    "typescript": "PASS strict noEmit -p mobile",
+    "mounted": {
+      "cases": 18,
+      "pass": 18,
+      "matrix": "390x900,390x390,844x390,1440x900 atfont1/2;3state/recovery;3embedded;4sparse/Greek",
+      "actual_components": "Discovery/AppChrome/shared model/location controller/webbackend/embedded document; real local MapLibre",
+      "controlled_boundaries": "Auth/settings identity, public-read transport using retained151source/currentpoint, OSpermission/nativeBack, empty local basemap style; no live tiles."
+    },
+    "focused_foreground": 9,
+    "existing_web_directions": "PASS",
+    "syntax_diff": "PASS"
+  },
+  "historical_failures": [
+    "Initial browser setup asset-root helper path was wrong, then corrected without runtime relaxation.",
+    "Actual RN-web AppState unsupported focus subscription discovered; temporarily controlled native-events adapter was removed after authorized production platform fix; final browser uses actual RN-web AppState.",
+    "Author verifier used navigation role instead of actual tablist, expected180px canvas rather than178px inner canvas of180px bordered frame, and expected a directions action for a sparse no-address/no-city record. Corrected helper contracts; no fabricated destination or hidden product failure.",
+    "First fullmobile command in sparse tree used root cwd and omitted4existing retained fixtures:487/490 then3environment failures. Materialized only those4exact Git fixtures, ran from canonical mobile cwd:499pass; added actor-disposal regression, final500pass."
+  ],
+  "limitations": [
+    "New native map UX is not in installed fifth db8b70f0 artifact; no EAS/device acceptance claimed. Root owns coherent artifact and actual installed tests.",
+    "No actual device/browser OS permission success, live tiles, provider route calculation/ETA, iOS install, public API reliability or global coordinate accuracy inferred.",
+    "Long font2 selected text/actions on390px short screens require scrolling; persistent Close remains visible and full action targets reachable.",
+    "Root installed externalGoogleMaps intent previously landed ordinary map after location denial; source intent improvement is not a provider capability claim.",
+    "No Auth issuer, profile/geo facts, canonical writer, permissions expansion, schema, Storage, provider delivery or paid operation changed."
+  ],
+  "official_primary_reference": {
+    "title": "React Native AppState events",
+    "url": "https://reactnative.dev/docs/appstate",
+    "supports": "focus and blur are Android-specific; change supports foreground/background state"
+  },
+  "operations": {
+    "ADB": 0,
+    "EAS": 0,
+    "SQL": 0,
+    "Auth_mutations": 0,
+    "provider_calls": 0,
+    "external_docs_browse": 1
+  },
+  "evidence": {
+    "evidence/native-map-ux-owner-2026-10-15/browser-final-short.log": {
+      "sha256": "e6265ff231ddcca027047b37259a6437de5ed52b4e04b77650c236612cd14b6f",
+      "bytes": 41
+    },
+    "evidence/native-map-ux-owner-2026-10-15/build-final-short.log": {
+      "sha256": "b213d50a38275c42700ce90bc53df8faa744bd1d0b01c786e1a4c1fec3961c25",
+      "bytes": 451
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/approx-390-font2.png": {
+      "sha256": "9e52ad52238ab50ccc4ccbf62626b1d488bdbf6c2ef05d3a71de9a7da2971d68",
+      "bytes": 55149
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/embedded-resized-1440.png": {
+      "sha256": "f743ccef9003f0572362f5facdbd7e4eb121e443518e3dd9ade0c12484c9b1b5",
+      "bytes": 3652
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/embedded-resized-390.png": {
+      "sha256": "a5332a8a4e3b8fa805afc54ffc81658a37d8881f5ea7ca0e86553d8bdb2be43e",
+      "bytes": 4243
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/embedded-resized-844.png": {
+      "sha256": "38075278a30eecbd2574a526329dde0281fe3e9827ffe8a00db22614811fdc32",
+      "bytes": 4716
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/expanded-1440-font1.png": {
+      "sha256": "3b6df84b014196fcf78576d2ae0671bdaa37328267c1c6dcd57b87455f3146ee",
+      "bytes": 45410
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/expanded-1440-font2.png": {
+      "sha256": "04c8eaf7b5c4062d94a5d698cbc995480ab257818bc3291def16bd238c4ce821",
+      "bytes": 58424
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/expanded-390-font1.png": {
+      "sha256": "609e2c935d668cce70702406c6843d34fb4c0f71dbca0fb81ff4f0113ea4627e",
+      "bytes": 23427
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/expanded-390-font2.png": {
+      "sha256": "7a3cf1b01058a51fa319affbb385b884dfbddadaf52bce465af74b51a0686beb",
+      "bytes": 27708
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/expanded-844-font1.png": {
+      "sha256": "b31a05df9e5b49a61ad0bb7bd8bd81ebdf6457a6a17ffcb44e2f9d6b29fc146f",
+      "bytes": 42391
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/expanded-844-font2.png": {
+      "sha256": "bb09771c4342e31e43a778ff2f05ec8275a54f6be3504fd0e483f7a2e1df39fe",
+      "bytes": 50075
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/greek-390-font2.png": {
+      "sha256": "667a0e9c76441cc4d90df028355dcfab2cf6c43a5639bf8dbd722dedd1ce2650",
+      "bytes": 57067
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/initial-selected-1440-font1.png": {
+      "sha256": "3491044b7b91827854c023cd1ef677b680d014fa999e39a8c169a0a5c378ce5c",
+      "bytes": 54774
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/initial-selected-1440-font2.png": {
+      "sha256": "737ac257440a093b0fa542d32d057bc9f1cbd3fb0196684ce540eb4aa146d037",
+      "bytes": 90535
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/initial-selected-390-font1.png": {
+      "sha256": "908013f798175597350437a9618a5e202a143daa3dc1a8f7e30d61b7a7305113",
+      "bytes": 19641
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/initial-selected-390-font2.png": {
+      "sha256": "07db5ce25147cf66ebc6938d8965954128bdb0169968d7a7c7d31287601d6338",
+      "bytes": 24822
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/initial-selected-844-font1.png": {
+      "sha256": "d53d2e3258109ca950c96adc6941e3a6a0b6be86a906cad993a80ad57d7f6c1e",
+      "bytes": 37637
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/initial-selected-844-font2.png": {
+      "sha256": "c77f366efbb7174453034e7f9def878186eaff5f851b076cf95927b54f48d5d3",
+      "bytes": 41280
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/map-1440-font1.png": {
+      "sha256": "362399eb5eaf666f063e0ed6bbdd78008c18fa609417c1b9ab3d1c46d0dcdfce",
+      "bytes": 37469
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/map-1440-font2.png": {
+      "sha256": "53238036a0fc15edfdef22f591f93f71632ee9e0d909d69250c59d9f8e3fed82",
+      "bytes": 67369
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/map-390-font1.png": {
+      "sha256": "cce02c12ec41b074f8f1afafa4bf29c82ea110531bf30c56a92a9b6b46bd88ec",
+      "bytes": 19335
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/map-390-font2.png": {
+      "sha256": "53dde8fb32c50fadf55d43e3909e9ff7d6d4d867bd72ba564de1ea0c48906adc",
+      "bytes": 24656
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/map-844-font1.png": {
+      "sha256": "6ac7f06a5b0b8c3ee65fc272cbfbe3e03ddf2c90c92f36d25f7b8ebcaa924d98",
+      "bytes": 21027
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/map-844-font2.png": {
+      "sha256": "d2a0c47e01e62a63b091dfc75e2a646794ed3090d4892e9d35196d585d0003b6",
+      "bytes": 30776
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/report.json": {
+      "sha256": "6ad77dcf5007b2edd164e0ed81ea5df9baa90e7fcc6982d6482caa142acdb35c",
+      "bytes": 4145
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/sparse-390-font2.png": {
+      "sha256": "128e698f9fd2859813a61255c1431933e128d7a0ad2dc116b4753c40d56f2ebd",
+      "bytes": 37501
+    },
+    "evidence/native-map-ux-owner-2026-10-15/controlled-browser/unmapped-390-font2.png": {
+      "sha256": "9e52ad52238ab50ccc4ccbf62626b1d488bdbf6c2ef05d3a71de9a7da2971d68",
+      "bytes": 55149
+    },
+    "evidence/native-map-ux-owner-2026-10-15/foreground-final.log": {
+      "sha256": "16276cf737861c7d38b3a9788ddadfb67d22cf0d1aace34a7ff99c914a5c33ac",
+      "bytes": 1183
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-fifth/failure.json": {
+      "sha256": "d8bae3bb7f5e8677cfd326b8f6ac9b2dc08d1605632db0caa275e056f6648284",
+      "bytes": 341
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-fifth/report.json": {
+      "sha256": "d1c18753bdf818cd6b5e3bd3bda6248e9cb9603bb27d9d1ede76932908916f08",
+      "bytes": 829
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-first/failure.json": {
+      "sha256": "49a12f43818c34faa9af10f34eae0c753371b0b80480342ce2a1214a43694603",
+      "bytes": 357
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-first/report.json": {
+      "sha256": "89cc56fa66c17020469657a97a34fc08c4691fe1b26498ac5fadf475ef17e14b",
+      "bytes": 111
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-fourth/failure.json": {
+      "sha256": "9eb3dd08f10a18f10f1213048f2c5d65f19d7f7971005090367fdb84bdd6054e",
+      "bytes": 464
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-fourth/report.json": {
+      "sha256": "89cc56fa66c17020469657a97a34fc08c4691fe1b26498ac5fadf475ef17e14b",
+      "bytes": 111
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-second/failure.json": {
+      "sha256": "49a12f43818c34faa9af10f34eae0c753371b0b80480342ce2a1214a43694603",
+      "bytes": 357
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-second/report.json": {
+      "sha256": "89cc56fa66c17020469657a97a34fc08c4691fe1b26498ac5fadf475ef17e14b",
+      "bytes": 111
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-sixth/failure.json": {
+      "sha256": "fbe72866283b2060cb3c3beb9ec4cfb05eee12807f39a261a889baabf8c856ef",
+      "bytes": 494
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-sixth/report.json": {
+      "sha256": "4ce7a2cdd11494c2e47748fdac01ed679ae9bd8ea21b927123d7fc329401333c",
+      "bytes": 2443
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-third/failure.json": {
+      "sha256": "e493af57b13ad81581eda49f51e30425e66ba1228343015a8b9c397c137a29ba",
+      "bytes": 357
+    },
+    "evidence/native-map-ux-owner-2026-10-15/historical-author-diagnostics/browser-third/report.json": {
+      "sha256": "89cc56fa66c17020469657a97a34fc08c4691fe1b26498ac5fadf475ef17e14b",
+      "bytes": 111
+    },
+    "evidence/native-map-ux-owner-2026-10-15/mobile-final-500.log": {
+      "sha256": "1b3524348b74afa2f0ee548c5090c6461f0dabad93a8ad123847902c086b0f51",
+      "bytes": 72346
+    },
+    "evidence/native-map-ux-owner-2026-10-15/mobile-first-sparse-root-cwd.log": {
+      "sha256": "a45234fab3ebb142f81a1a91ba89d59ef99a142f7120cc47c34137a16712a522",
+      "bytes": 74722
+    },
+    "evidence/native-map-ux-owner-2026-10-15/runtime-and-tests.patch": {
+      "sha256": "653e2e721ff9311c210521ba6262aa4d2a26f0872ef49e0a84b959f26d487770",
+      "bytes": 97825
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-boundaries.json": {
+      "sha256": "10b40ee4c28dfbd5904537daedb32fcddc29fb7420abfef720e856f43256fbe4",
+      "bytes": 796
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/assets/map-data/directions.mjs": {
+      "sha256": "fcada1f31f058782f852bcd0cadf4da13c2e2b7bcee23b48c3d81977d0e08910",
+      "bytes": 4534
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/assets/map-data/embedded.mjs": {
+      "sha256": "b34a5f987d0bb69bb188493b37cb0338e2bdfec3825f25303d8935414d3ec778",
+      "bytes": 7822
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/App.tsx": {
+      "sha256": "d346c2016929a8762ed01ca485f0f01f4ea537c056b4f395dfbdc392f3ef0abd",
+      "bytes": 30919
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/Discovery.tsx": {
+      "sha256": "2c3208afdde5ca3a673774ab0e23c4ae5a5e5c7bc743efb45e057022ad636782",
+      "bytes": 37261
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/DiscoveryMap.android.tsx": {
+      "sha256": "c3fe516bc9eb8cdc7f52a96e49223451a1ac15d7f05b6b9c5a46d2156652a404",
+      "bytes": 6774
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/DiscoveryMap.native.tsx": {
+      "sha256": "ee8869dda14a3401951b95c019756ce30433c040eed817da092ea4a2a4aeca8d",
+      "bytes": 9766
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/DiscoveryMap.types.ts": {
+      "sha256": "d78ba3f6b3962c6d0fd353c8788e6d36ce6accde37b68cbaa5fed5fdde445e49",
+      "bytes": 185
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/DiscoveryMap.web.tsx": {
+      "sha256": "0a45a2d5b3dc1ea1646e536768d5b8d060654d78d789f2078c328f89e5c3e4ab",
+      "bytes": 12880
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/MapLocationControl.tsx": {
+      "sha256": "ebc8b2c18ef3270881fda3b54c8416b83f9ef145c9a38d264a987f94bb58ebe9",
+      "bytes": 2667
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/src/useMapLocation.ts": {
+      "sha256": "9a27bb931e8ad0d54369108db59fc010ab2cea634190107eed4a12805e5da53e",
+      "bytes": 2241
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/tests/foreground-map-location.test.mjs": {
+      "sha256": "6d10bb5027ca4d38dd9c613f9087d4ebc24c06326ce302bd120d89e6f178bb9e",
+      "bytes": 12443
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/tests/native-map-ux-browser/README.md": {
+      "sha256": "43ce4137b919a905a2e206ee3adcd946d97f96a95dfd3b7ae7344dd6e0db3488",
+      "bytes": 3203
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/tests/native-map-ux-browser/build.cjs": {
+      "sha256": "2d88797dba49a3b28e9575cf75bdd469326f54b904cfc296f16960f3baf98534",
+      "bytes": 5216
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/tests/native-map-ux-browser/fixture.tsx": {
+      "sha256": "9c49fe293d1582aa8bd271e0c342257559f1e2667a8befb8198db15ff13d9e74",
+      "bytes": 3878
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/tests/native-map-ux-browser/verify.mjs": {
+      "sha256": "d5b21edb5ce05d9e388885317e955833eacdc034ae1824e0c182d9230f51d8a9",
+      "bytes": 15442
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-bytes/mobile/tests/native-map-ux.test.mjs": {
+      "sha256": "b65495a58772bdf39664afc63505d7ed691ae173b318db3a33771115df62b308",
+      "bytes": 2450
+    },
+    "evidence/native-map-ux-owner-2026-10-15/source-manifest.json": {
+      "sha256": "9c09cc802a94c2e3b95478dc0d4ba65ac7b19b5a8eb235948491f64f3f5ce6a9",
+      "bytes": 6825
+    },
+    "evidence/native-map-ux-owner-2026-10-15/typescript-final-short.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "evidence/native-map-ux-owner-2026-10-15/web-directions-final.log": {
+      "sha256": "c8843e13db1f4433e84221c799ca93604ec79b1782c0aabd264a019c1b280d84",
+      "bytes": 531
+    }
+  }
+}

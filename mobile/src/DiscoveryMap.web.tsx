@@ -56,12 +56,14 @@ function loadSDK() {
 }
 export function DiscoveryMap({
   points,
+  height = 340,
   selected,
   scopeKey,
   focus,
   motion,
   onSelect,
 }: DiscoveryMapProps) {
+  const [locationOptions,setLocationOptions]=useState(false);
   const node = useRef<HTMLDivElement | null>(null),
     map = useRef<any>(null),
     live = useRef({ points, selected, onSelect, scopeKey }),
@@ -248,15 +250,17 @@ export function DiscoveryMap({
         focusOptions(p, {
           currentZoom: sameSelection ? map.current.getZoom() : null,
           width: node.current?.clientWidth,
-          height: 340,
+          height: node.current?.clientHeight || height,
           reducedMotion: !motion,
         }),
       );
   }, [ready, selected, selectedPoint?.lat, selectedPoint?.lng, focus, motion]);
   return (
+    <View style={{gap:8}}>
     <View
+      onLayout={() => map.current?.resize()}
       style={{
-        height: 340,
+        height,
         borderRadius: 24,
         overflow: "hidden",
         borderWidth: 1,
@@ -264,14 +268,16 @@ export function DiscoveryMap({
         backgroundColor: LIGHT.surfaceRaised,
       }}
     >
+      {createElement("style", null, ".zoi-native-map .maplibregl-ctrl-group button{width:44px;height:44px;min-width:44px;min-height:44px}.zoi-native-map button:focus-visible{outline:3px solid #075dcc;outline-offset:2px}")}
       {createElement("div", {
         ref: node,
+        className: "zoi-native-map",
         role: "region",
         "aria-label": "Zoi street-level places map",
         style: { height: "100%", width: "100%" },
       })}
-      <Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" onPress={()=>{const center=map.current?.getCenter();const href=fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},center?{latitude:center.lat,longitude:center.lng,longitudeDelta:360/(2**map.current.getZoom())*(node.current?.clientWidth||350)/512,width:node.current?.clientWidth||350}:{});window.location.assign(href);}} style={{position:"absolute",top:12,left:12,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>Full map tools ↗</Text></Pressable>
-      {ready&&!error?<MapLocationControl state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}
+
+
       {!ready || error ? (
         <View
           style={{
@@ -291,6 +297,7 @@ export function DiscoveryMap({
           {error ? (
             <Pressable
               accessibilityRole="button"
+              style={{minWidth:44,minHeight:44,justifyContent:"center"}}
               onPress={() => setAttempt((v) => v + 1)}
             >
               <Text style={{ color: LIGHT.accent }}>Retry interactive map</Text>
@@ -299,5 +306,7 @@ export function DiscoveryMap({
         </View>
       ) : null}
     </View>
+    <View style={{flexDirection:"row",flexWrap:"wrap",gap:8}}><Pressable accessibilityRole="link" accessibilityLabel="Open full map tools in browser" onPress={()=>{const center=map.current?.getCenter();const href=fullMapToolsLink(points.find(p=>p.s===selected)||{s:selected},center?{latitude:center.lat,longitude:center.lng,longitudeDelta:360/(2**map.current.getZoom())*(node.current?.clientWidth||350)/512,width:node.current?.clientWidth||350}:{});window.location.assign(href);}} style={{minHeight:44,minWidth:44,justifyContent:"center",flexShrink:1,borderRadius:10,padding:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>Full map tools ↗</Text></Pressable><Pressable accessibilityRole="button" accessibilityState={{expanded:locationOptions}} style={{minHeight:44,minWidth:44,justifyContent:"center",padding:10,borderRadius:10,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:LIGHT.line}} onPress={()=>setLocationOptions(v=>!v)}><Text style={{color:LIGHT.accent,fontWeight:"700",fontSize:12}}>{locationOptions?"Close location options":"Location options"}</Text></Pressable></View>
+    {locationOptions&&ready&&!error?<MapLocationControl inline state={location.state} onRequest={()=>{cameraIntent.current++;prior.current=scopeKey;location.request();}} onClear={location.clear}/>:null}</View>
   );
 }

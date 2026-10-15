@@ -3,6 +3,7 @@ import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  BackHandler,
   AppState,
   Image,
   Linking,
@@ -46,22 +47,25 @@ function Action({
   onPress,
   selected = false,
   disabled = false,
+  text,
 }: {
   label: string;
   onPress: () => void;
   selected?: boolean;
   disabled?: boolean;
+  text?: string;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
       onPress={onPress}
       style={[s.action, selected && s.active, disabled && { opacity: 0.5 }]}
     >
       <Text style={[s.link, selected && { color: LIGHT.onButton }]}>
-        {label}
+        {text || label}
       </Text>
     </Pressable>
   );
@@ -110,11 +114,15 @@ export function Discover({
   signIn,
   state,
   setState,
+  expanded = false,
+  onExpandedChange,
 }: {
   open: (path: string) => void;
   signIn: () => void;
   state: DiscoveryState;
   setState: (state: DiscoveryState) => void;
+  expanded?: boolean;
+  onExpandedChange?: (expanded: boolean) => void;
 }) {
   const { client, session, booting } = useAuth(),
     actor = session?.user.id || "",
@@ -156,6 +164,33 @@ export function Discover({
     [selectError, setSelectError] = useState(""),
     [selectionRetry, setSelectionRetry] = useState(0),
     [actionError, setActionError] = useState("");
+  const [mapFilters, setMapFilters] = useState(false),
+    [placeDetails, setPlaceDetails] = useState(false),
+    [availableHeight, setAvailableHeight] = useState(600),
+    [availableWidth, setAvailableWidth] = useState(390);
+  const expandControl = useRef<any>(null);
+  const mapMode = state.mode === "map";
+  const closeExpanded = () => {
+    onExpandedChange?.(false);
+    setTimeout(() => expandControl.current?.focus?.(), 0);
+  };
+  useEffect(() => { setPlaceDetails(false); }, [actor, state.selected]);
+  useEffect(() => {
+    if (!expanded) return;
+    const back = BackHandler.addEventListener("hardwareBackPress", () => {
+      closeExpanded();
+      return true;
+    });
+    const escape = (event: any) => {
+      if (event.key === "Escape") { event.preventDefault(); closeExpanded(); }
+    };
+    const doc = typeof document !== "undefined" ? document : null;
+    doc?.addEventListener("keydown", escape);
+    return () => { back.remove(); doc?.removeEventListener("keydown", escape); };
+  }, [expanded, onExpandedChange]);
+  const landscapeMap = mapMode && availableWidth >= 650 && availableHeight < 500;
+  const mapHeight = Math.round(Math.max(180, Math.min(expanded ? 720 : 360,
+    availableHeight * (expanded ? 0.52 : state.selected ? 0.35 : 0.48))));
   const [travelMode, setTravelMode] = useState("driving"),
     [routeOrigin, setRouteOrigin] = useState("");
   useEffect(() => {
@@ -452,6 +487,37 @@ export function Discover({
     catch (error) { directions = null; directionsError = error instanceof Error ? error.message : "Check the starting address."; }
   }
   const directionURL = directions?.url || "";
+  const routeOptions = baseDirections && baseDirections.basis !== "name" ? (
+                <View style={s.routePanel}>
+                  <Text style={s.heading}>Plan directions</Text>
+                  <Text style={s.small}>Choose how to travel</Text>
+                  <View style={s.row} accessibilityLabel="Travel mode">
+                    {TRAVEL_MODES.map((item: {value: string; label: string}) => (
+                      <Action key={item.value} label={item.label} selected={travelMode === item.value}
+                        onPress={() => setTravelMode(item.value)} />
+                    ))}
+                  </View>
+                  <Text style={s.small}>Starting address (optional)</Text>
+                  <TextInput value={routeOrigin} onChangeText={setRouteOrigin} maxLength={700}
+                    accessibilityLabel="Starting address for directions"
+                    placeholder="Current location in Google Maps" placeholderTextColor={LIGHT.dim}
+                    textContentType="fullStreetAddress" style={s.input} />
+                  <Text style={s.small}>Google Maps calculates the route and available navigation. Leave the start blank to use your location there.</Text>
+                  {directionsError ? <Text accessibilityRole="alert" style={s.error}>{directionsError}</Text> : null}
+                </View>
+              ) : null;
+  const shareAction = <Action
+                  label="Share this place"
+                  onPress={() =>
+                    void action(() =>
+                      Share.share({
+                        message: discoveryShare(
+                          selected.canonical_slug || selected.slug,
+                        ),
+                      }),
+                    )
+                  }
+                />;
   if (editor && actor)
     return (
       <CommunitySettings
@@ -468,18 +534,38 @@ export function Discover({
       />
     );
   return (
+    <View style={s.discoveryFrame} onLayout={event => {
+      const {height, width} = event.nativeEvent.layout;
+      if (Number.isFinite(width) && width > 0) setAvailableWidth(width);
+      if (Number.isFinite(height) && height > 0) setAvailableHeight(height);
+    }}>
+      {mapMode ? <View style={s.mapToolbar}>
+        {availableHeight >= 320 ? <Text style={s.heading}>Map</Text> : null}
+        <View style={s.row}>
+          <Action label="List" onPress={() => { onExpandedChange?.(false); setState({ ...state, mode: "list" }); }} />
+          <Action text="Filters" label={mapFilters ? "Close filters" : "Search & filters"} selected={mapFilters}
+            onPress={() => setMapFilters(value => !value)} />
+          <Pressable ref={expandControl} accessibilityRole="button"
+            accessibilityLabel={expanded ? "Close expanded map" : "Expand map"}
+            accessibilityState={{ expanded }}
+            style={s.action} onPress={() => expanded ? closeExpanded() : onExpandedChange?.(true)}>
+            <Text style={s.link}>{expanded ? "Close" : "Expand"}</Text>
+          </Pressable>
+        </View>
+      </View> : null}
     <ScrollView
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={s.content}
+      contentContainerStyle={[s.content, mapMode && s.mapContent]}
     >
-      <GlassHero>
+      {!mapMode || mapFilters ? <>
+      {!mapMode ? <GlassHero>
         <Text style={s.eyebrow}>YOUR GREEK WORLD</Text>
         <Text style={s.title}>Close to home.{"\n"}Open to everywhere.</Text>
         <Text style={s.body}>
           Find your people, places and next plans. Keep your home, explore
           somewhere new.
         </Text>
-      </GlassHero>
+      </GlassHero> : null}
       <View style={s.panel}>
         <View style={s.row}>
           <Text style={s.heading}>Exploring {area.label}</Text>
@@ -540,7 +626,7 @@ export function Discover({
           ) : null}
           <Action
             label={actor ? "Home preferences" : "Sign in to set home"}
-            onPress={() => (actor ? setEditor(true) : signIn())}
+            onPress={() => { onExpandedChange?.(false); actor ? setEditor(true) : signIn(); }}
           />
         </View>
         {home?.topics.length ? (
@@ -688,23 +774,26 @@ export function Discover({
           />
         </View>
       </View>
+      </> : null}
+      <View style={[mapMode && {gap:12}, landscapeMap && s.mapColumns]}>
       {state.mode === "map" ? (
-        <View style={{ gap: 12 }}>
+        <View style={[{ gap: 12 }, landscapeMap && s.mapColumn]}>
           <DiscoveryMap
+            height={mapHeight}
             points={mapPoints}
-            selected={state.selected}
+            selected={selectedPoint?.s || state.selected}
             scopeKey={key}
             focus={focus}
             motion={preferences.motion}
             onSelect={select}
           />
-          <Text style={s.small}>
+          {!state.selected || mapFilters ? <Text style={s.small}>
             {mapBusy
               ? "Reading map positions…"
               : pins.filter((p:any)=>p.position_diagnosis?.reviewed).length +
                 " reviewed map positions; " + pins.filter((p:any)=>!p.position_diagnosis?.reviewed).length +
                 " stored positions awaiting independent verification. Approximate and unmapped places remain in the list."}
-          </Text>
+          </Text> : null}
           {mapError ? (
             <>
               <Text accessibilityRole="alert" style={s.error}>
@@ -719,7 +808,7 @@ export function Discover({
               />
             </>
           ) : null}
-          {pins.length ? (
+          {mapFilters && pins.length ? (
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -738,13 +827,16 @@ export function Discover({
         </View>
       ) : null}
       {state.selected ? (
-        <View style={[s.panel, { borderColor: LIGHT.accent }]}>
+        <View style={[s.panel, mapMode && {padding:12,gap:8}, landscapeMap && s.mapColumn, { borderColor: LIGHT.accent }]}>
           <View style={s.row}>
-            <Text style={s.heading}>Your selected place</Text>
-            <Action
+            <Text style={[s.heading, mapMode && {flex:1}]}>{mapMode && selected && selectedMatchesIntent ? selected.name : "Your selected place"}</Text>
+            {mapMode ? <Pressable accessibilityRole="button" accessibilityLabel="Close selected place"
+              style={[s.action,{paddingHorizontal:12}]} onPress={() => setState({...state, selected:""})}>
+              <Text style={s.link}>×</Text>
+            </Pressable> : <Action
               label="Close selected place"
               onPress={() => setState({ ...state, selected: "" })}
-            />
+            />}
           </View>
           {selectBusy ? <ActivityIndicator /> : null}
           {selectError ? (
@@ -760,8 +852,8 @@ export function Discover({
           ) : null}
           {selected && selectedMatchesIntent ? (
             <>
-              <Photo row={selected} detail />
-              <Text style={s.heading}>{selected.name}</Text>
+              {!mapMode || placeDetails ? <Photo row={selected} detail /> : null}
+              {!mapMode ? <Text style={s.heading}>{selected.name}</Text> : null}
               <Text style={s.body}>
                 {[selected.address, selected.city, selected.country]
                   .filter(Boolean)
@@ -770,25 +862,7 @@ export function Discover({
               <Text style={s.small}>
                 {pointStatus(selectedPoint)}
               </Text>
-              {baseDirections && baseDirections.basis !== "name" ? (
-                <View style={s.routePanel}>
-                  <Text style={s.heading}>Plan directions</Text>
-                  <Text style={s.small}>Choose how to travel</Text>
-                  <View style={s.row} accessibilityLabel="Travel mode">
-                    {TRAVEL_MODES.map((item: {value: string; label: string}) => (
-                      <Action key={item.value} label={item.label} selected={travelMode === item.value}
-                        onPress={() => setTravelMode(item.value)} />
-                    ))}
-                  </View>
-                  <Text style={s.small}>Starting address (optional)</Text>
-                  <TextInput value={routeOrigin} onChangeText={setRouteOrigin} maxLength={700}
-                    accessibilityLabel="Starting address for directions"
-                    placeholder="Current location in Google Maps" placeholderTextColor={LIGHT.dim}
-                    textContentType="fullStreetAddress" style={s.input} />
-                  <Text style={s.small}>Google Maps calculates the route and available navigation. Leave the start blank to use your location there.</Text>
-                  {directionsError ? <Text accessibilityRole="alert" style={s.error}>{directionsError}</Text> : null}
-                </View>
-              ) : null}
+              {!mapMode ? routeOptions : null}
               <View style={s.row}>
                 <Action
                   label="Open this place"
@@ -808,18 +882,7 @@ export function Discover({
                     }
                   />
                 ) : null}
-                <Action
-                  label="Share this place"
-                  onPress={() =>
-                    void action(() =>
-                      Share.share({
-                        message: discoveryShare(
-                          selected.canonical_slug || selected.slug,
-                        ),
-                      }),
-                    )
-                  }
-                />
+                {!mapMode ? shareAction : null}
                 {state.mode === "map" &&
                 exactPins(
                   [
@@ -832,6 +895,11 @@ export function Discover({
                   />
                 ) : null}
               </View>
+              {mapMode ? <Action label={placeDetails ? "Close place details" : "Place details & travel options"}
+                selected={placeDetails} onPress={() => setPlaceDetails(value => !value)} /> : null}
+              {!mapMode || placeDetails ? <>
+              {mapMode ? routeOptions : null}
+                {mapMode ? shareAction : null}
               {coLocated.length ? (
                 <View style={{ gap: 8 }}>
                   <Text style={s.small}>
@@ -853,6 +921,7 @@ export function Discover({
                     : "Directions open your map provider. Confirm the destination before travelling."}
                 </Text>
               ) : null}
+              </> : null}
             </>
           ) : null}
           {actionError ? (
@@ -862,6 +931,12 @@ export function Discover({
           ) : null}
         </View>
       ) : null}
+      </View>
+      {mapMode && !mapFilters && error ? <View style={s.panel}>
+        <Text accessibilityRole="alert" style={s.error}>{error}</Text>
+        <Action label="Retry places" onPress={() => setRetry(value => value + 1)} />
+      </View> : null}
+      {!mapMode || mapFilters ? <>
       <View style={s.row}>
         <Text style={s.heading}>Places to explore</Text>
         <Text style={s.small}>
@@ -924,10 +999,17 @@ export function Discover({
           onPress={() => void load(true)}
         />
       ) : null}
+      </> : null}
     </ScrollView>
+    </View>
   );
 }
 const s = StyleSheet.create({
+  discoveryFrame: { flex: 1 },
+  mapColumns: {flexDirection:"row",alignItems:"flex-start",gap:12},
+  mapColumn: {flex:1,minWidth:0},
+  mapContent: { padding: 12, gap: 12, paddingBottom: 20 },
+  mapToolbar: { flexDirection:"row", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap: 8, padding: 12, paddingBottom: 0 },
   content: { padding: 20, gap: 20, paddingBottom: 36 },
   title: {
     fontSize: 35,
@@ -961,6 +1043,7 @@ const s = StyleSheet.create({
     borderRadius: 24,
   },
   action: {
+    minWidth: 44,
     minHeight: 44,
     paddingHorizontal: 15,
     paddingVertical: 12,

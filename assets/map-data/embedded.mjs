@@ -19,7 +19,7 @@ export function embeddedLocationCommand(value,{center=false,motion=false}={}){
  const fix=value&&validatedDeviceFix({coords:value,timestamp:value.timestamp},{requestedAt:value.timestamp});
  return 'window.ZoiEmbeddedMap&&window.ZoiEmbeddedMap.location('+JSON.stringify({fix:fix||null,center:!!center,motion:!!motion}).replace(/</g,'\\u003c')+');true;';
 }
-export function embeddedMapDocument(){return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><link rel="stylesheet" href="https://www.zoi.city/assets/vendor/maplibre-gl.css"><style>html,body,#map{margin:0;width:100%;height:100%;background:#eef4f8}.maplibregl-ctrl-attrib{font-size:10px}</style></head><body><div id="map" role="region" aria-label="Zoi interactive places map"></div><script src="https://www.zoi.city/assets/vendor/maplibre-gl.js"></script><script src="https://www.zoi.city/assets/zoi-basemap.js"></script><script type="module">try{const {mountEmbeddedMap}=await import('https://www.zoi.city/assets/map-data/embedded.mjs?v=20261015-foreground-location');mountEmbeddedMap();}catch{window.ReactNativeWebView?.postMessage(JSON.stringify({type:'map.error'}));}</script></body></html>`;}
+export function embeddedMapDocument(){return `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"><link rel="stylesheet" href="https://www.zoi.city/assets/vendor/maplibre-gl.css"><style>html,body,#map{margin:0;width:100%;height:100%;background:#eef4f8}.maplibregl-ctrl-attrib{font-size:10px}.maplibregl-ctrl-group button{width:44px;height:44px;min-width:44px;min-height:44px}.maplibregl-ctrl-group button:focus-visible{outline:3px solid #075dcc;outline-offset:2px}</style></head><body><div id="map" role="region" aria-label="Zoi interactive places map"></div><script src="https://www.zoi.city/assets/vendor/maplibre-gl.js"></script><script src="https://www.zoi.city/assets/zoi-basemap.js"></script><script type="module">try{const {mountEmbeddedMap}=await import('https://www.zoi.city/assets/map-data/embedded.mjs?v=20261015-map-ux');mountEmbeddedMap();}catch{window.ReactNativeWebView?.postMessage(JSON.stringify({type:'map.error'}));}</script></body></html>`;}
 export function mountEmbeddedMap(doc=globalThis.document,host=globalThis){
  const post=v=>host.ReactNativeWebView?.postMessage(JSON.stringify(v));let map,loaded=false,latest=null,selection='',locationValue=null,deviceMarker=null;
  const timer=setTimeout(()=>{if(!loaded)post({type:'map.error'});},12000);
@@ -48,7 +48,7 @@ export function mountEmbeddedMap(doc=globalThis.document,host=globalThis){
   map.getSource('zoi-places').setData({type:'FeatureCollection',features:latest.points.map(p=>({type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]},properties:{slug:p.s}}))});
   map.setPaintProperty('zoi-pins','circle-color',['case',['==',['get','slug'],latest.selected],'#10294d','#075dcc']);
   const point=latest.points.find(p=>p.s===latest.selected);
-  if(point&&latest.selectionFocus!==false&&(latest.selected!==selection||latest.focus))map.easeTo(focusOptions(point,{width:doc.getElementById('map').clientWidth,height:340,reducedMotion:!latest.motion}));
+  if(point&&latest.selectionFocus!==false&&(latest.selected!==selection||latest.focus))map.easeTo(focusOptions(point,{width:doc.getElementById('map').clientWidth,height:doc.getElementById('map').clientHeight||340,reducedMotion:!latest.motion}));
   else if(latest.fit){const bounds=matchBounds(latest.points);if(bounds)map.fitBounds(bounds,{padding:45,maxZoom:13,duration:latest.motion?350:0});}
   selection=latest.selected;
  }
@@ -60,5 +60,5 @@ export function mountEmbeddedMap(doc=globalThis.document,host=globalThis){
   deviceMarker=new host.maplibregl.Marker({element:node}).setLngLat([fix.longitude,fix.latitude]).addTo(map);
   if(value.center){const r=deviceLocationRegion(fix);map.easeTo({center:[fix.longitude,fix.latitude],zoom:Math.max(1,Math.min(14,Math.log2(360/r.longitudeDelta))),duration:value.motion?300:0});}
  }
- host.ZoiEmbeddedMap={update,location};return {update,location,destroy(){clearTimeout(timer);loaded=false;deviceMarker?.remove();map?.remove();delete host.ZoiEmbeddedMap;}};
+ const resize=()=>map?.resize();host.ZoiEmbeddedMap={update,location,resize};return {update,location,resize,destroy(){clearTimeout(timer);loaded=false;deviceMarker?.remove();map?.remove();delete host.ZoiEmbeddedMap;}};
 }
