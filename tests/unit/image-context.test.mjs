@@ -87,9 +87,11 @@ test('stored plus-delimited and weblogo artwork cannot replace genuine machine p
 test('restaurant and hospitality projections share stored-logo filtering for populated and sparse homes',async()=>{
  const {restaurantHomeContent}=await import('../../api/_restaurant-home.js');const {hospitalityHomeContent}=await import('../../api/_hospitality-home.js');
  const logo='https://cdn.example.org/Poppis_weblogos-03.png',photo='https://restaurant.org/dining.jpg';
- const base={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',slug:'example',name:'Example',website:'https://restaurant.org/',profile:{_enrich:{hero_url:logo,photo_urls:[logo,photo]}}};
+ const base={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',slug:'example',name:'Example',website:'https://restaurant.org/',profile:{_enrich:{source_url:'https://restaurant.org/',hero_url:logo,photo_urls:[logo,photo]}}};
  for(const [project,kind] of [[restaurantHomeContent,{entity_type:'business',category_slug:'greek-restaurants'}],[hospitalityHomeContent,{entity_type:'travel_place',category_slug:'hotels'}]]){
   const populated=project({...base,...kind});assert.equal(populated.hero,photo);assert.deepEqual(populated.photos,[photo]);
   const sparse=project({...base,...kind,profile:{_enrich:{hero_url:logo,photo_urls:[logo]}}});assert(!sparse.hero);assert.deepEqual(sparse.photos,[]);
  }
 });
+
+test('food machine gallery refuses missing mismatched or403-held source bindings while authored photos remain',async()=>{const {restaurantHomeContent}=await import('../../api/_restaurant-home.js');const photo='https://restaurant.org/dining.jpg',e={id:'d22b0d42-cdc8-4054-afb9-be2820c35b5a',name:'Example',slug:'example',entity_type:'business',category_slug:'greek-restaurants',website:'https://restaurant.org/'};for(const q of[{photo_urls:[photo]},{source_url:'https://other.example/',photo_urls:[photo]},{source_url:e.website,photo_urls:[photo],blocked:'true',blocked_reason:'http403'}]){assert.deepEqual(restaurantHomeContent({...e,profile:{_enrich:q}}).photos,[]);assert.deepEqual(restaurantHomeContent({...e,profile:{photos:[photo],_enrich:q}}).photos,[photo]);}});
