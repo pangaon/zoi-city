@@ -1,0 +1,133 @@
+{
+  "schema": "zoi.quality.criterion-bridge-owner.v2",
+  "date": "2026-10-15",
+  "state": "FROZEN_STAGE_ONLY_SOURCE_FOR_INDEPENDENT_REVIEW_PRODUCTION_RECORDING_BLOCKED",
+  "author": "qa_next",
+  "worktree": "/workspaces/zoi-quality-criterion-bridge-v2",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "source_manifest": {
+    "path": "docs/audits/evidence/quality-criterion-bridge-owner-v2-2026-10-15/source-manifest.json",
+    "sha256": "60cfc3aeea7165c2b14bfeed4d0d2d8a765f3fecc839a0132a8356aee846fdb2"
+  },
+  "original_packet": "Original6/12sourcepins and original independent counterexamples retained unchanged; original source was HOLD, never accepted for production.",
+  "owned_scope": "Same exact6approvedsource/test/fixture paths. No schema/canonicalwriter/lease/RPC/finitepolicy/workflow edits.",
+  "repairs": [
+    {
+      "finding": "Existing source scope/quarantine fields could be discarded and accepted by explicit decision.",
+      "change": "Retain exact bounded relevant source-hold snapshot, including scope_review_required/blocked_reason/source_scope_mismatch/organization_identity_quarantine/source_identity and current scope/error fields. Existing holds forbid passes; a human decision cannot clear them.",
+      "proof": "Nine controlled hold shapes plus four actual canonical source-hold rows, including postlease/current-context races."
+    },
+    {
+      "finding": "Archive pathname was re-opened after its claimed digest; PATH-controlled replacement could mix archive SHA with different entrybytes.",
+      "change": "Read a bounded regular file through O_NOFOLLOW/O_NONBLOCK once into a private Buffer. SHA, ZIP directory parsing, decompression/CRC/type/path/size checks all consume the same private bytes. No external unzip process or original pathname reopen for inspection. Archive/entry source symlinks and specialfiles refused.",
+      "proof": "Original wrapper-replacement counterexample now refuses missing declared entry in original archive; sourcearchive remains original digest. ZIP symlink/traversal/directory/size/FIFO cases refuse."
+    },
+    {
+      "finding": "Two concurrent UUIDs could scan an empty request directory then both write while one outcome became unknown.",
+      "change": "Atomic mkdir on private stable-directory lock spans pending scan/currentness/admission/request/write/postcheck; owner token/inode verified before release. Unknownoutcome preserves immutable pending. Crash lock has no timeout/mtime/newUUID/automatic stale-unlink escape.",
+      "proof": "Concurrent adapters and actual childprocesses reject second UUID; real local canonical race leaves1signoff then originalUUIDresume stays1. Killedprocess leaves lock; exactresume refuses until explicit operator reconciliation."
+    },
+    {
+      "finding": "An original lease source snapshot can become stale before current checklist is read; preserving its fields is insufficient.",
+      "change": "Every explicit decision additionally requires exact fingerprint-bound current_source_context from atomic canonical row/checklist snapshot. Missing context stagespending. Adapter requires executable readCurrentContext pre/post, checking current sourcehold/fingerprints/revision/latestreceipt.",
+      "proof": "Actual repeatable-read readonly exact-row+checklist callback catches hold introduced after lease/before proposal, postproposal/prewrite and precheck\u2192writer races."
+    }
+  ],
+  "production_recording_blocker": {
+    "guard": "recordCriterion defaults to production_recording_requires_atomic_server_contract before any RPC, even when explicit stage/artifacts/current reader are provided. Only isolated-legacy-contract-test mode exercises the existing writer in synthetic local fixtures; this is a test boundary and not a production authorization mechanism.",
+    "why": "Canonical writer validates current fingerprint/visibility but has no source-hold gate. Actual isolated proof shows it accepts a freshly fingerprinted held source. Separately committed pre/post reads cannot make signoff+sourcehold check atomic or undo a write if hold changes after commit.",
+    "proof": "Pre\u2192writer hold changes cause fingerprint refusal/0writes; postwrite hold causes adapter unknown/notcurrent while1historicalsignoff remains; directlegacywriter withfresh heldFP accepts. Defaultproductionbridge makes0RPCs in that state.",
+    "required_followup": "Separate root-approved/reviewed server contract that checks current exact sourcecontext/holds and records canonical signoff atomically, plus actual current source reader, authenticated actor admission and immutable Actions artifact publication/access gate. No such capability is fabricated or activated here."
+  },
+  "stage_only_collector": "--stage-criteria preserves actual source fields from originallease, reads currentchecklist, writes deterministic pending/blocked proposal then stops BEFOREtask_finish. Lacking newatomiccurrentreader yields no explicit eligible automaticpass. Persisted stage marker cannot be bypassed by droppingflag onresume. Request/schedule disabled/expired unchanged.",
+  "validation": {
+    "focused_command": "node --test tests/unit/quality-criterion-bridge.test.mjs tests/unit/quality-collector.test.mjs tests/unit/quality-ci.test.mjs",
+    "focused_pass": 45,
+    "pg_command": "ZOI_CRITERION_EVIDENCE=/absolute/unique/result.json node tests/database/quality-criterion-bridge.integration.mjs",
+    "pg_groups": 29,
+    "pg_checks": [
+      "all eight captured canonical bodies exact after local installation",
+      "service only checklist and criterion writer reject ordinary roles",
+      "specialist recorded under original lease before actual finish, reviewer remains separate",
+      "finishing first consumes lease and canonical specialist writer refuses",
+      "lost response after real commit exact UUID resumes without a second signoff or lease",
+      "stale owner explicit clear refuses before record and preserves new content",
+      "stale source identity refuses before record and preserves new content",
+      "stale machine source content refuses before record and preserves new content",
+      "stale ownership context refuses before record and preserves new content",
+      "stale address context refuses before record and preserves new content",
+      "stale visibility refuses before record and preserves new content",
+      "criterion revision refuses old proposal without accepting old requirement digest",
+      "same actor reviewer and unchanged archive cannot claim independent review",
+      "expired lease and wrong original lease fail canonical writer",
+      "blocked evidence remains blocked and never permits reviewer pass",
+      "historical canonical replay after owner change exists but adapter refuses currentness",
+      "reviewer lost response resumes original request and independently current receipt",
+      "a later specialist supersedes an earlier reviewer proposal",
+      "actual canonical hold blocks explicit pass: scope_review_required",
+      "actual canonical hold blocks explicit pass: blocked_reason",
+      "actual canonical hold blocks explicit pass: organization_identity_quarantine",
+      "actual canonical hold blocks explicit pass: source_identity",
+      "atomic same-directory concurrent UUIDs allow only original lost-response canonical commit",
+      "fresh atomic context catches hold introduced after original lease before proposal",
+      "fresh atomic precheck refuses postproposal hold before invoking writer",
+      "canonical fingerprint refuses hold committed between atomic precheck and writer",
+      "postwrite hold invalidates current claim but does not undo separately committed legacy signoff",
+      "existing canonical writer accepts current fingerprint despite hold, so production bridge stays disabled",
+      "all canonical bodies unchanged after bridge exercise; no alternate writer or criteria created"
+    ],
+    "pg_basis": "Exact8captured canonicalfunction bodies MD5 equal before/after; minimal synthetic listing/schema shape; actualhold/race effects are isolated fixture facts, not customer signoffs. TemporaryPG15943 stopped/removed byfinally.",
+    "syntax_diff": "Node syntax checks and git diff --check PASS"
+  },
+  "actual_operations": {
+    "new_production_reads": 0,
+    "production_writes": 0,
+    "Auth": 0,
+    "provider_paid": 0,
+    "EAS": 0,
+    "ADB": "Returned exclusively root before V2 work; separate partialsixthartifactaudit retained."
+  },
+  "artifact_bounds": {
+    "format": "ZIP32 single-disk unencrypted stored/deflate only; unsupportedZIP64/method/type refuses, never claims verified.",
+    "archive_bytes_total_max": 134217728,
+    "entry_bytes_max": 16777216,
+    "archive_entries_max": 2000,
+    "source_hold_context_bytes_max": 65536,
+    "report_bytes_max": 1048576
+  },
+  "remaining": [
+    "Independent V2 reacceptance required.",
+    "Production recording blocked until separate atomic server contract; no unattended quality automation complete.",
+    "Immutable remote Actions artifact publication/access and actual human specialist/reviewer authority remain future root packet.",
+    "Crash lock is intentionally failclosed; operator reconciliation must preserve originalUUID/payload and any successreceipt, never age-unlink or replace nonce.",
+    "Stable request directory must be preserved; no operator-created replacementdirectory recovery.",
+    "No actual customer owner/provider journey or perclient completion inferred from synthetic tests."
+  ],
+  "evidence_dir": "docs/audits/evidence/quality-criterion-bridge-owner-v2-2026-10-15",
+  "evidence": {
+    "focused.log": {
+      "sha256": "d5b812358831a38b45cc7481ff01274d05fc9f74c55354c36ea4ef05c2b5250c",
+      "bytes": 4656
+    },
+    "pg.log": {
+      "sha256": "9b102a1508ca7a001aa0a507c59e1670f68546022c2e8b956a166e047f8932b6",
+      "bytes": 2364
+    },
+    "pg-result.json": {
+      "sha256": "66fdda14496995b9434ca612cf5d5fdad3c1ce5b1dd11ccbf488cb1630d49145",
+      "bytes": 2810
+    },
+    "original-hold-archive-counterexamples.json": {
+      "sha256": "52a0293d39fa582e90a6192d13fb3020d7c7efcb0cbd11404471173270c45eec",
+      "bytes": 1340
+    },
+    "original-directory-race-counterexample.json": {
+      "sha256": "803b2e5f2e997c911990a3c8f0c4d5f060036c7ee32ddd08585c52d98cbea0d9",
+      "bytes": 988
+    },
+    "original-actual-pg-counterexamples.json": {
+      "sha256": "df0fe11da3dff4874b95064e9c50d64734890673c62829059dd81bdbc02d3460",
+      "bytes": 602
+    }
+  }
+}

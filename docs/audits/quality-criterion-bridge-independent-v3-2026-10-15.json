@@ -1,0 +1,118 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:26:56.987590+00:00",
+  "status": "INDEPENDENTLY_ACCEPTED_STAGE_ONLY_SOURCE_PRODUCTION_RECORDING_UNAVAILABLE",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "source_manifest_sha256": "bc2c044d71cd0167ed24cf64cd39cb7eef56c86646cdc3dd797c597938fe45a9",
+  "source_pins": {
+    "scripts/quality/criterion-report.mjs": "99fb1af28272519f2b9634173c844e53e14dc1174c8e921222c122dde051532c",
+    "scripts/quality/criterion-record.mjs": "fff662772099e1d67eabcc9334e45292f8030e08e41e2767afa2e98230c361f4",
+    "scripts/quality-collector.mjs": "935de9458be3cd565b23a2ff7637c564a651cc64bbb20411eaff7636a8c52f3e",
+    "tests/unit/quality-criterion-bridge.test.mjs": "66895e9f7d1cb1c38bb1a35559c51684e706ef332abd7694e6278da29753af0a",
+    "tests/database/quality-criterion-bridge.integration.mjs": "0f6921c9e7b28b5e776c8290e32de9eb38f4fa1fb376679a14106e5377e27d0d",
+    "tests/database/fixtures/quality-criterion-bridge-actual-contracts.json": "cc99060771aa076c42176a3daf81e4b21ad46d37b88a0e8072aa4946ee9d81c6"
+  },
+  "readonly_pins": {
+    "scripts/quality/evidence.mjs": "29217d7a2aa3304f5572b1e64fd4f87db41da0388496111e369ccbb946c55ee9",
+    "scripts/quality/browser.mjs": "dd4594e803119ea4ec33bdfe970313c3b1cddba5f2aaed8ab9b5f7881039e3ff",
+    "scripts/quality/source-fetch.mjs": "70ad6c8134fe78e081d26f802ba23da27c2bd5a66d5dc8098f17ab468037253e",
+    "scripts/quality/ci.mjs": "15a5820e6676555ea35dd53bda8397f00bcc583a7139f1a87b2dc6f28b593149",
+    ".github/workflows/listing-quality.yml": "339bae97aa1bbdf03c95f5f628bc0e4c342d0bd7851e8a5f3a70f397a234ad5f",
+    "ops/quality-audit-request.json": "01ad867d6e8034f09a0c3d457f9f026af82a1fba9415bcabedb5930d77323dcb",
+    "supabase/migrations/20260930074014_listing_quality_criterion_signoffs.sql": "d9a09f6c5b14f2f4c2854ac405068e6584caaf5fca4841f28696db6ade25473b",
+    "supabase/migrations/20260930053625_listing_quality_coverage.sql": "1c06840d862b30ed9a80e4285d0410e9a675a3b328eed61afa425807a6f820b4",
+    "supabase/migrations/20260930162000_quality_lease_keyset_batches.sql": "9a17e4e525e752c78915244cfd2b38d79426787c2803b8434e9f5224394d2eaf",
+    "supabase/migrations/20260930042432_enrichment_resilient_leases.sql": "150145dddc6bfb48c81530469e264caf479d13c578422b5474bf464a25734905",
+    "tests/unit/quality-collector.test.mjs": "7512db1c29e7cc4645d18dc2da5da8b1b15510da77fe89d6e4c8e263bfea0c5d",
+    "tests/unit/quality-ci.test.mjs": "9e3d17bd24c6c6cab4c58967f6487558fcae82d9718c75fb72c1f1fb86bff520"
+  },
+  "review_tree": "/workspaces/zoi-quality-criterion-bridge-v3-independent",
+  "delta_from_v2": [
+    "scripts/quality/criterion-record.mjs",
+    "tests/unit/quality-criterion-bridge.test.mjs"
+  ],
+  "validation": {
+    "focused_passed": 46,
+    "real_pg_groups": 29,
+    "isolated_pg_port": 15947,
+    "cluster": "Stopped/removed by finally; no production connection.",
+    "all8canonical_function_bodies": "Exact before/after as realPG assertions.",
+    "source_pins_after": "6owned12readonly exact",
+    "io_cases": [
+      "Original V2 unbounded readFile entry injection point no longer reachable;0bytes consumed through that path.",
+      "Independent real archive pathname replacement after open retains original file descriptor and claimedSHA.",
+      "Five actual filesystem replacements independently rerun: oversized/symlink/FIFO before entry open consume0; growth after fstat reads at most originalsize+1 and refuses; replacement after open uses originaldescriptor.",
+      "ZIP parser type/traversal/directory/decompression limits rerun.",
+      "Cross-process and killed-owner lock tests retain fail-closed original UUID/payload behavior."
+    ]
+  },
+  "findings_resolution": {
+    "C1": "Relevant holds persist and passed decisions refuse; atomic context catches postlease holds.",
+    "C2": "One immutable bounded descriptor snapshot underlies archive hash/directory/extraction.",
+    "C3": "Atomic private stable-directory lock prevents concurrent distinct UUID admission; unknown/crash behavior preserved.",
+    "C4": "Retained entries now use bounded regular O_NOFOLLOW/O_NONBLOCK descriptor snapshot with16MiB limit and one overflow byte."
+  },
+  "historical_audits": [
+    {
+      "path": "/workspaces/zoi-quality-criterion-bridge-independent/docs/audits/quality-criterion-bridge-independent-v1-held-2026-10-15.json",
+      "sha256": "c38fe0b54f18f18f0785ba6437e7147fa11c3b1c06bdde3a95437e0ac155c37c",
+      "status": "Original3blockers preserved."
+    },
+    {
+      "path": "/workspaces/zoi-quality-criterion-bridge-v2-independent/docs/audits/quality-criterion-bridge-independent-v2-held-2026-10-15.json",
+      "sha256": "effbe627dcfbc46e147fc4350ee2c65cce2e8a8bf2d9369bce749744a417e8aa",
+      "status": "Original sidecar bounds failure preserved."
+    }
+  ],
+  "production_boundary": {
+    "default": "recordCriterion refuses before any RPC unless explicitly isolated-legacy-contract-test. That mode is only a synthetic test boundary, never human authentication or production authorization.",
+    "server_gap": "Unchanged canonical writer lacks atomic sourcehold+signoff gate. Actual29PG groups show legacy current heldFP can write, and postcommit hold leaves historical evidence. Production bridge must remain blocked until separately reviewed server contract.",
+    "stage_collector": "Only stages pending/blocked plans and stops before task_finish; persisted marker cannot be bypassed by removing flag.",
+    "no_activation": "NoCI/finite policy renewal/lease/criterion/finish production writes."
+  },
+  "remaining_required": [
+    "Separately approved atomic server sourcehold/context+canonical signoff contract and actualcurrent reader.",
+    "Authenticated specialist plus distinct independent reviewer admission.",
+    "Actual immutable Actions artifact publication/access and remote digest verification.",
+    "Real source/render/action and owner/provider evidence for every current applicable criterion.",
+    "Reviewed orchestration from staged plan to task finish; no unattended quality completion claim."
+  ],
+  "format_limits": "Bounded nonempty regular evidence files, ZIP32 single disk stored/deflate only; unsupported formats fail closed. Crash locks intentionally require explicit operator reconciliation without age-unlink.",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/byte-snapshot-probe.mjs",
+      "sha256": "a2e8beb9c1595fd704b526a479b28c6b10f3a5604301ae2682f7e29e4a100047",
+      "bytes": 2778
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/byte-snapshot-result.json",
+      "sha256": "537cf87376b02508c1aecbf9653d406773612820378166a6c7a0404904fcbb0c",
+      "bytes": 506
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/focused.log",
+      "sha256": "dd35d43f2e083fa7ed9120ae15902908199cd3a99293f72b53d408861a053186",
+      "bytes": 4768
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/owner-audit.json",
+      "sha256": "84cafb6d302dc5b38019afb5c89767b2e1c9d9ef2daec068b4002959dcef3755",
+      "bytes": 3616
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/owner-source-manifest.json",
+      "sha256": "bc2c044d71cd0167ed24cf64cd39cb7eef56c86646cdc3dd797c597938fe45a9",
+      "bytes": 2558
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/pg-result.json",
+      "sha256": "66fdda14496995b9434ca612cf5d5fdad3c1ce5b1dd11ccbf488cb1630d49145",
+      "bytes": 2810
+    },
+    {
+      "path": "docs/audits/evidence/quality-criterion-bridge-independent-v3-2026-10-15/pg.log",
+      "sha256": "9b102a1508ca7a001aa0a507c59e1670f68546022c2e8b956a166e047f8932b6",
+      "bytes": 2364
+    }
+  ]
+}

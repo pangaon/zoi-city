@@ -1,0 +1,140 @@
+{
+  "at": "2026-10-15T21:30:36.615110+00:00",
+  "status": "FROZEN_SOURCE_AND_ISOLATED_PG_PASS__PRODUCTION_RUNTIME_GATE_PENDING",
+  "scope": "Projection-only follow-up; source author qa_next, independent review/root actual rollback runtime required. No activation.",
+  "baseline": "9a3b056bbbae6b9e7d8cdc78dfb0cf054ef0998a",
+  "manifest": {
+    "path": "docs/audits/evidence/maintenance-projection-owner-2026-10-15/source-manifest.json",
+    "sha256": "bf58b6695fa0e9c9a72eef62803d95588b0132cdda10bb49745f7e0a9bbed1d7",
+    "bytes": 3127
+  },
+  "owned_files": [
+    {
+      "path": "supabase/migrations/20261015211948_bounded_listing_maintenance_projection.sql",
+      "sha256": "1b608bc32daf40f0a6f6bb0577bcdca357465a2cff4102c555bb4391d9abe56d",
+      "bytes": 8755
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance-projection.integration.mjs",
+      "sha256": "3d31040fc12eab023b21512246f3ecdaf84dcd9dd5787ef20dc4bf3bb7fd91e2",
+      "bytes": 21839
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-projection-live.json",
+      "sha256": "fea4cc96d417143e26cae68b775fab6afa33ac8ed062b5b99ce53b103e6553c5",
+      "bytes": 80931
+    }
+  ],
+  "actual_readonly_evidence": {
+    "transactions": 2,
+    "statement_timeout": "5s",
+    "lock_timeout": "1s",
+    "rollback": true,
+    "metadata_main_md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+    "helper_md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+    "explain_only": true,
+    "analyze": false,
+    "selected_width": 2140,
+    "observed_listings_access": "primary-key nested-loop seeks, no full-listings sequential scan",
+    "estimated_unnest_rows": 10,
+    "actual_maximum_from_existing_helper": 1000,
+    "note": "Generic cardinality estimate is not a measured row count; no scoring query executed in production."
+  },
+  "root_reported_incident_not_independently_reexecuted": {
+    "installed_source_ledger": "20261015211036",
+    "natural_run": 110568,
+    "at": "21:17 UTC",
+    "duration_seconds": 8.029,
+    "outcome": "statement_timeout inside scoring UPDATE; cursor rolled back to null",
+    "job_paused_at": "21:18:56 UTC",
+    "old_full_scan_run_also_failed": "21:07 UTC"
+  },
+  "implementation": {
+    "migration_created_with": "Supabase CLI2.115.0 migration new bounded_listing_maintenance_projection",
+    "fields": 16,
+    "whole_profile_materialized": false,
+    "event_only_profile_keys": [
+      "end_datetime",
+      "recurring"
+    ],
+    "same_scoring_formulas": true,
+    "same_due_update_joins": true,
+    "same_row_locks_skip_locked": true,
+    "same_helper_cursor_acl_audit": true,
+    "same_trigger_definitions": true,
+    "job_activation": false,
+    "paused_job_required": true,
+    "candidate_main_md5": "bfd199c1cd693df7e07ea7ee64bf503f",
+    "mechanical_reverse_equals_actual_main": true
+  },
+  "isolated": {
+    "at": "2026-10-15T21:29:57.796Z",
+    "groups": 17,
+    "passed": [
+      "original immutable fixture and exact installed bounded main reproduced with nine actual trigger definitions",
+      "active job, dependency, state ACL, scoring type and cursor drift refuse atomically",
+      "installer refuses a concurrent canonical maintenance transaction",
+      "projection installation preserves helper, other functions, trigger definitions, private state, cursor and paused job byte for byte",
+      "mechanical reversal proves every scoring formula, due/update join and audit byte unchanged; selected projection has sixteen values and only two event keys",
+      "840-row cross-product preserves original completeness/trust/freshness/archive results, SEO output, epochs, audit and cursor under actual triggers",
+      "owned profiles, explicit clears, coordinates and every non-score fact survive; fixture triggers stay enabled",
+      "already-current scores cause no listing update or timestamp churn",
+      "thousand-row limit and unchanged cursor wrap preserve bounded work",
+      "audit refusal rolls scores, trigger effects and cursor back atomically",
+      "same row-lock skip and round-robin revisit semantics",
+      "concurrent canonical owner replacement and clears survive skip/revisit",
+      "main advisory exclusion and cursor atomicity unchanged",
+      "service invoker and private state ACL unchanged",
+      "local complete UPDATE plan retains 1000-row PK seeks while selected estimate narrows and omits whole profile/vector",
+      "measured local materialized tuples omit wide unrelated payload; production trigger and runtime costs remain unmeasured",
+      "job remains paused and all unrelated operational state is unchanged"
+    ],
+    "migration_sha256": "1b608bc32daf40f0a6f6bb0577bcdca357465a2cff4102c555bb4391d9abe56d",
+    "candidate_function_md5": "bfd199c1cd693df7e07ea7ee64bf503f",
+    "selected_plan_width": {
+      "old": 1921,
+      "new": 321
+    },
+    "materialized_tuple_bytes": {
+      "old": {
+        "rows": 1000,
+        "average_bytes": 743.968
+      },
+      "new": {
+        "rows": 1000,
+        "average_bytes": 127.997
+      }
+    },
+    "local_execution_ms": {
+      "old": 608.53,
+      "new": 610.182
+    },
+    "limitations": [
+      "Isolated PostgreSQL fixture has 77 listing columns, unused vector represented as text, nine actual BEFORE/SEO/read-epoch triggers and seventeen dependencies. Deferred source enqueue and owner-transfer triggers are not loaded.",
+      "Local timing is not a production runtime remedy claim; root owns actual rollback runtime gate. No job activation or production mutation."
+    ]
+  },
+  "trigger_review": {
+    "measured_runtime": false,
+    "remaining_work": [
+      "skip_noop trigger compares full to_jsonb old/new",
+      "auto_seo_fill runs for each actual updated row",
+      "read-authority epoch trigger examines old/new geography authority input",
+      "SEO projection UPDATE OF publish_status runs when that column occurs in SET even if unchanged",
+      "source-enqueue/owner-transfer triggers are not present in the isolated fixture and remain production runtime considerations"
+    ],
+    "policy": "No trigger, writer, owner, SEO, source-policy, cursor, ACL or job change proposed."
+  },
+  "commands": [
+    "node tests/database/bounded-listing-maintenance-projection.integration.mjs",
+    "git diff --check"
+  ],
+  "test_correction": "First isolated attempt tested ALTER COLUMN drift, but PostgreSQL refused that DDL before the guard because an actual trigger depends on the column. Replaced probe with a transactional column rename so the migration input-shape guard itself is exercised; original error log retained. No runtime implementation changed.",
+  "limits": [
+    "840 varied matrix rows cover independent verification/trust/event-date/entity residues; correlated sparse input residues are not every possible full-column Cartesian product.",
+    "Local old/new UPDATE608.530/610.182ms shows no timing improvement evidence; production root cause/remedy not established.",
+    "Original nine-trigger/seventeen-dependency77-column fixture preserved, unused vector is text. Deferred enqueue/owner-transfer trigger costs remain untested locally.",
+    "No actual maintenance run, production DDL/data/job/timeout/policy change, provider call or activation.",
+    "Root must independently review source and execute its separate bounded rollback runtime gate before production acceptance."
+  ]
+}

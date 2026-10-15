@@ -1,0 +1,122 @@
+{
+  "tables": [
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=r/postgres}",
+      "rls": true,
+      "name": "quality_criteria",
+      "triggers": null,
+      "constraints": [
+        "CHECK ((evidence_kind = ANY (ARRAY['source'::text, 'render'::text, 'journey'::text])))",
+        "PRIMARY KEY (key, revision)",
+        "CHECK ((revision > 0))",
+        "CHECK ((task = ANY (ARRAY['classification'::text, 'design'::text, 'verification'::text])))"
+      ]
+    },
+    {
+      "acl": "{postgres=arwdDxtm/postgres,service_role=r/postgres}",
+      "rls": true,
+      "name": "quality_signoffs",
+      "triggers": null,
+      "constraints": [
+        "FOREIGN KEY (criterion, revision) REFERENCES zoi.quality_criteria(key, revision)",
+        "FOREIGN KEY (listing_id) REFERENCES zoi.listings(id) ON DELETE CASCADE",
+        "PRIMARY KEY (id)",
+        "CHECK ((release_commit ~ '^[a-f0-9]{40}$'::text))",
+        "UNIQUE (request_id)",
+        "FOREIGN KEY (specialist_id) REFERENCES zoi.quality_signoffs(id)",
+        "CHECK ((stage = ANY (ARRAY['specialist'::text, 'reviewer'::text])))",
+        "CHECK ((status = ANY (ARRAY['passed'::text, 'blocked'::text])))"
+      ]
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "args": "p_listing uuid",
+      "name": "listing_quality_checklist",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "definition": "CREATE OR REPLACE FUNCTION public.listing_quality_checklist(p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;fp text;criteria jsonb;\nBEGIN SELECT * INTO l FROM zoi.listings WHERE id=p_listing;IF NOT FOUND THEN RAISE EXCEPTION 'listing_not_found';END IF;fp:=zoi.quality_criterion_fingerprint(l);\n SELECT coalesce(jsonb_agg(jsonb_build_object('key',c.key,'revision',c.revision,'family',c.family,'title',c.title,'task',c.task,'evidence_kind',c.evidence_kind,'requirement',c.requirement,'status',CASE WHEN NOT coalesce((zoi.listing_quality_state(l)->>'public_eligible')::boolean,false) THEN 'blocked_visibility' WHEN s.id IS NULL THEN 'pending' WHEN s.source_fingerprint<>fp OR s.recorded_at<now()-interval '7 days' THEN 'pending_recheck' WHEN s.status='blocked' THEN 'blocked' WHEN s.stage='specialist' THEN 'awaiting_independent_review' ELSE 'signed_off' END,'latest_evidence',CASE WHEN s.id IS NULL THEN NULL ELSE jsonb_build_object('id',s.id,'stage',s.stage,'actor',s.actor,'release_commit',s.release_commit,'recorded_at',s.recorded_at,'evidence',s.evidence) END) ORDER BY c.key),'[]') INTO criteria\n FROM (SELECT DISTINCT ON(key) * FROM zoi.quality_criteria ORDER BY key,revision DESC)c LEFT JOIN LATERAL(SELECT x.* FROM zoi.quality_signoffs x WHERE x.listing_id=l.id AND x.criterion=c.key AND x.revision=c.revision ORDER BY x.recorded_at DESC,x.id DESC LIMIT 1)s ON true WHERE c.family IN('*',zoi.quality_family(l),'category:'||l.primary_category_id);\n RETURN jsonb_build_object('listing_id',l.id,'category_id',l.primary_category_id,'family',zoi.quality_family(l),'source_fingerprint',fp,'criteria',criteria,'complete',NOT EXISTS(SELECT 1 FROM jsonb_array_elements(criteria)c WHERE c->>'status'<>'signed_off'));\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "args": "p_request uuid, p_listing uuid, p_criterion text, p_revision integer, p_stage text, p_actor text, p_specialist uuid, p_lease text, p_fingerprint text, p_commit text, p_status text, p_evidence jsonb",
+      "name": "listing_quality_criterion_record",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "definition": "CREATE OR REPLACE FUNCTION public.listing_quality_criterion_record(p_request uuid, p_listing uuid, p_criterion text, p_revision integer, p_stage text, p_actor text, p_specialist uuid, p_lease text, p_fingerprint text, p_commit text, p_status text, p_evidence jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;c zoi.quality_criteria;s zoi.quality_signoffs;old zoi.quality_signoffs;body jsonb;result zoi.quality_signoffs;lease jsonb;\nBEGIN\n body:=jsonb_build_array(p_listing,p_criterion,p_revision,p_stage,p_actor,p_specialist,p_lease,p_fingerprint,p_commit,p_status,p_evidence);\n PERFORM pg_advisory_xact_lock(hashtextextended(p_request::text,72110));SELECT * INTO old FROM zoi.quality_signoffs WHERE request_id=p_request;\n IF FOUND THEN IF old.request IS DISTINCT FROM body THEN RAISE EXCEPTION 'request_conflict';END IF;RETURN jsonb_build_object('ok',true,'id',old.id,'already',true);END IF;\n IF p_request IS NULL OR p_stage IS NULL OR p_stage NOT IN('specialist','reviewer') OR p_status IS NULL OR p_status NOT IN('passed','blocked') OR p_actor IS NULL OR p_actor !~ '^[a-zA-Z0-9_./:@-]{3,120}$' OR p_commit IS NULL OR p_commit !~ '^[a-f0-9]{40}$' OR jsonb_typeof(p_evidence) IS DISTINCT FROM 'object' OR octet_length(p_evidence::text)>16000 THEN RAISE EXCEPTION 'invalid_criterion_evidence';END IF;\n SELECT * INTO l FROM zoi.listings WHERE id=p_listing FOR SHARE;IF NOT FOUND OR p_fingerprint IS DISTINCT FROM zoi.quality_criterion_fingerprint(l) THEN RAISE EXCEPTION 'source_changed';END IF;\n SELECT * INTO c FROM zoi.quality_criteria WHERE key=p_criterion ORDER BY revision DESC LIMIT 1;\n IF c.key IS NULL OR p_revision IS DISTINCT FROM c.revision OR c.family NOT IN('*',zoi.quality_family(l),'category:'||l.primary_category_id) THEN RAISE EXCEPTION 'criterion_changed';END IF;\n IF p_evidence->>'kind' IS DISTINCT FROM c.evidence_kind OR jsonb_typeof(p_evidence->'refs') IS DISTINCT FROM 'array' OR jsonb_array_length(p_evidence->'refs') NOT BETWEEN 1 AND 12 OR EXISTS(SELECT 1 FROM jsonb_array_elements(p_evidence->'refs')r WHERE coalesce(r->>'uri','') !~ '^https://' OR coalesce(r->>'sha256','') !~ '^[a-f0-9]{64}$') OR jsonb_typeof(p_evidence->'blockers') IS DISTINCT FROM 'array' OR length(coalesce(p_evidence->>'observations','')) NOT BETWEEN 20 AND 6000 THEN RAISE EXCEPTION 'evidence_artifacts_required';END IF;\n IF p_status='passed' AND (jsonb_array_length(p_evidence->'blockers')<>0 OR p_evidence->>'performed' IS DISTINCT FROM 'true' OR NOT coalesce((zoi.listing_quality_state(l)->>'public_eligible')::boolean,false)) THEN RAISE EXCEPTION 'blockers_prevent_signoff';END IF;\n IF p_stage='specialist' THEN\n lease:=l.profile#>'{_enrich,lease}';\n IF p_lease IS NULL OR lease->>'id' IS DISTINCT FROM p_lease OR lease->>'task' IS DISTINCT FROM c.task OR lease->>'fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l) OR coalesce(zoi.enrich_timestamp(lease->>'expires_at'),'-infinity')<=now() OR p_specialist IS NOT NULL THEN RAISE EXCEPTION 'existing_quality_lease_required';END IF;\n ELSE\n SELECT * INTO s FROM zoi.quality_signoffs WHERE id=p_specialist;\n IF s.id IS NULL OR s.stage<>'specialist' OR s.status<>'passed' OR s.listing_id<>p_listing OR s.criterion<>c.key OR s.revision<>c.revision OR s.source_fingerprint<>p_fingerprint OR s.release_commit<>p_commit OR s.actor=p_actor OR s.recorded_at<now()-interval '7 days' THEN RAISE EXCEPTION 'independent_review_required';END IF;\n IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(p_evidence->'refs') r WHERE NOT EXISTS(SELECT 1 FROM jsonb_array_elements(s.evidence->'refs') oldref WHERE oldref->>'sha256'=r->>'sha256')) THEN RAISE EXCEPTION 'independent_review_artifact_required';END IF;\n IF EXISTS(SELECT 1 FROM zoi.quality_signoffs x WHERE x.listing_id=p_listing AND x.criterion=c.key AND x.recorded_at>s.recorded_at AND x.stage='specialist') THEN RAISE EXCEPTION 'specialist_superseded';END IF;\n END IF;\n INSERT INTO zoi.quality_signoffs(request_id,listing_id,criterion,revision,stage,actor,specialist_id,source_fingerprint,release_commit,status,lease_id,evidence,request)VALUES(p_request,p_listing,c.key,c.revision,p_stage,p_actor,p_specialist,p_fingerprint,p_commit,p_status,p_lease,p_evidence,body)RETURNING * INTO result;\n RETURN jsonb_build_object('ok',true,'id',result.id,'already',false);\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "args": "p_listing uuid, p_lease text, p_status text, p_evidence jsonb",
+      "name": "listing_quality_task_finish",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "definition": "CREATE OR REPLACE FUNCTION public.listing_quality_task_finish(p_listing uuid, p_lease text, p_status text, p_evidence jsonb DEFAULT '{}'::jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;lease jsonb;task text;s jsonb;receipt jsonb;attempts integer;\nBEGIN\n IF p_status IS NULL OR p_status NOT IN('verified','retry','blocked') OR jsonb_typeof(p_evidence) IS DISTINCT FROM 'object' OR octet_length(p_evidence::text)>4000 THEN RAISE EXCEPTION 'invalid_quality_receipt';END IF;\n SELECT * INTO l FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND THEN RAISE EXCEPTION 'quality_listing_missing';END IF;\n s:=zoi.listing_quality_state(l);\n -- Exact repeated receipt is idempotent, but changed status/evidence cannot be replayed.\n FOR task IN SELECT unnest(ARRAY['classification','design','verification']) LOOP\n  receipt:=s#>ARRAY['tasks',task];\n  IF receipt->>'lease_id'=p_lease THEN\n   IF receipt->>'requested_status'=p_status AND receipt->'evidence'=p_evidence THEN RETURN jsonb_build_object('ok',true,'already',true,'listing_id',p_listing,'task',task,'status',receipt->>'status');END IF;\n   RAISE EXCEPTION 'quality_receipt_conflict';\n  END IF;\n END LOOP;\n lease:=l.profile#>'{_enrich,lease}';task:=lease->>'task';\n IF p_lease IS NULL OR lease->>'id' IS DISTINCT FROM p_lease OR task NOT IN('classification','design','verification') OR task IS NULL OR lease->>'fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l) OR coalesce(zoi.enrich_timestamp(lease->>'expires_at'),'-infinity')<=now() OR NOT coalesce((s->>'public_eligible')::boolean,false) THEN RAISE EXCEPTION 'quality_lease_stale';END IF;\n IF p_status='verified' THEN\n  IF p_evidence->>'source_fingerprint' IS DISTINCT FROM lease->>'fingerprint' OR p_evidence->>'passed' IS DISTINCT FROM 'true' OR length(coalesce(p_evidence->>'evidence_ref',''))NOT BETWEEN 1 AND 300 THEN RAISE EXCEPTION 'quality_evidence_required';END IF;\n  IF task='classification' AND (p_evidence->>'subject_name' IS DISTINCT FROM l.name OR p_evidence->>'identity_match' IS DISTINCT FROM 'true' OR p_evidence->>'source_role' IS NULL OR p_evidence->>'source_role' NOT IN('individual','practice','organization','chapter','venue','event','place','product'))THEN RAISE EXCEPTION 'quality_identity_evidence_required';END IF;\n  IF task='design' AND (p_evidence->>'template_known' IS DISTINCT FROM 'true' OR p_evidence->>'source_sections_valid' IS DISTINCT FROM 'true')THEN RAISE EXCEPTION 'quality_design_evidence_required';END IF;\n  IF task='verification' AND (p_evidence->>'http_status' IS DISTINCT FROM '200' OR p_evidence->>'controls_checked' IS DISTINCT FROM 'true' OR coalesce(p_evidence->>'route','')!~'^/[^/]')THEN RAISE EXCEPTION 'quality_route_evidence_required';END IF;\n END IF;\n attempts:=least(coalesce((s#>>ARRAY['tasks',task,'attempts'])::integer,0)+1,100);\n receipt:=jsonb_build_object('status',CASE WHEN p_status='retry'AND attempts>=5 THEN 'blocked' ELSE p_status END,'requested_status',p_status,'lease_id',p_lease,'recorded_at',clock_timestamp(),'attempts',attempts,'evidence',p_evidence,'next_attempt_at',CASE WHEN p_status='retry'THEN clock_timestamp()+make_interval(secs=>least(3600*power(2,least(attempts-1,5)),86400)::integer)ELSE NULL END);\n s:=jsonb_set(s,ARRAY['tasks',task],receipt,true);\n UPDATE zoi.listings SET profile=coalesce(l.profile,'{}')||jsonb_build_object('_coverage',s,'_enrich',coalesce(l.profile->'_enrich','{}')-'lease')WHERE id=l.id;\n RETURN jsonb_build_object('ok',true,'already',false,'listing_id',p_listing,'task',task,'status',receipt->>'status');\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "args": "p_task text, p_limit integer",
+      "name": "listing_quality_task_lease",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "definition": "CREATE OR REPLACE FUNCTION public.listing_quality_task_lease(p_task text, p_limit integer DEFAULT 40)\n RETURNS TABLE(listing_id uuid, slug text, name text, entity_type text, website text, lease_id text, source_fingerprint text, owner_managed boolean, existing_enrich jsonb)\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;s jsonb;lease text;fingerprint text;claimed integer:=0;after_id uuid;batch uuid[];\nBEGIN\n IF p_task IS NULL OR p_task NOT IN('classification','design','verification') OR p_limit IS NULL OR p_limit NOT BETWEEN 1 AND 200 THEN RAISE EXCEPTION 'invalid_quality_task';END IF;\n LOOP\n  IF after_id IS NULL THEN\n   SELECT array_agg(q.id ORDER BY q.id) INTO batch FROM(SELECT x.id FROM zoi.listings x ORDER BY x.id LIMIT 128)q;\n  ELSE\n   SELECT array_agg(q.id ORDER BY q.id) INTO batch FROM(SELECT x.id FROM zoi.listings x WHERE x.id>after_id ORDER BY x.id LIMIT 128)q;\n  END IF;\n  EXIT WHEN coalesce(cardinality(batch),0)=0;\n  after_id:=batch[cardinality(batch)];\n  FOR l IN SELECT x.* FROM zoi.listings x WHERE x.id=ANY(batch) ORDER BY x.id LOOP\n  IF l.publish_status IS DISTINCT FROM 'published' OR l.moderation_status IS NULL OR l.moderation_status NOT IN('clean','cleared') OR coalesce(l.marketplace_status,'')='hidden'\n   OR coalesce(nullif(l.website,''),nullif(l.source_url,''),nullif(l.profile#>>'{_enrich,source_url}',''),'')!~*'^https?://'\n   OR coalesce(zoi.enrich_timestamp(l.profile#>>'{_enrich,lease,expires_at}'),'-infinity')>=now() THEN CONTINUE;END IF;\n  s:=zoi.listing_quality_state(l);fingerprint:=s->>'fingerprint';\n  IF s#>>ARRAY['tasks',p_task,'status'] IN('verified','blocked') THEN CONTINUE;END IF;\n  IF l.profile#>>'{_coverage,fingerprint}' IS NOT DISTINCT FROM fingerprint AND coalesce(zoi.enrich_timestamp(l.profile#>>ARRAY['_coverage','tasks',p_task,'next_attempt_at']),'-infinity')>now() THEN CONTINUE;END IF;\n  IF p_task='design' AND s#>>'{tasks,classification,status}' IS DISTINCT FROM 'verified' THEN CONTINUE;END IF;\n  -- Lock only an eligible candidate, then revalidate its fresh row after the lock.\n  -- The read cursor may be stale if another worker or owner changed this record.\n  SELECT x.* INTO l FROM zoi.listings x WHERE x.id=l.id FOR UPDATE SKIP LOCKED;\n  IF NOT FOUND THEN CONTINUE;END IF;\n  IF l.publish_status IS DISTINCT FROM 'published' OR l.moderation_status IS NULL OR l.moderation_status NOT IN('clean','cleared') OR coalesce(l.marketplace_status,'')='hidden'\n   OR coalesce(nullif(l.website,''),nullif(l.source_url,''),nullif(l.profile#>>'{_enrich,source_url}',''),'')!~*'^https?://'\n   OR coalesce(zoi.enrich_timestamp(l.profile#>>'{_enrich,lease,expires_at}'),'-infinity')>=now() THEN CONTINUE;END IF;\n  s:=zoi.listing_quality_state(l);fingerprint:=s->>'fingerprint';\n  IF s#>>ARRAY['tasks',p_task,'status'] IN('verified','blocked') THEN CONTINUE;END IF;\n  IF l.profile#>>'{_coverage,fingerprint}' IS NOT DISTINCT FROM fingerprint AND coalesce(zoi.enrich_timestamp(l.profile#>>ARRAY['_coverage','tasks',p_task,'next_attempt_at']),'-infinity')>now() THEN CONTINUE;END IF;\n  IF p_task='design' AND s#>>'{tasks,classification,status}' IS DISTINCT FROM 'verified' THEN CONTINUE;END IF;\n  lease:=gen_random_uuid()::text;\n  UPDATE zoi.listings SET profile=coalesce(l.profile,'{}')||jsonb_build_object('_enrich',coalesce(l.profile->'_enrich','{}')||jsonb_build_object('lease',jsonb_build_object('id',lease,'task',p_task,'fingerprint',fingerprint,'source_website',l.website,'expires_at',clock_timestamp()+interval '15 minutes'))) WHERE id=l.id;\n  RETURN QUERY SELECT l.id,l.slug,l.name,l.entity_type,coalesce(nullif(l.website,''),nullif(l.source_url,''),l.profile#>>'{_enrich,source_url}'),lease,fingerprint,l.owner_workspace_id IS NOT NULL,coalesce(l.profile->'_enrich','{}')-'lease';\n  claimed:=claimed+1;IF claimed>=p_limit THEN RETURN;END IF;\n  END LOOP;\n END LOOP;\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "args": "l zoi.listings",
+      "name": "listing_quality_fingerprint",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality_fingerprint(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(l.name,l.entity_type,l.website,l.source_url,l.primary_category_id,l.owner_workspace_id,l.publish_status,l.moderation_status,l.marketplace_status,coalesce(l.profile,'{}')-'_enrich'-'_coverage'-'_geo')::text)\n$function$\n",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "args": "l zoi.listings",
+      "name": "listing_quality_state",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality_state(l zoi.listings)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE\n SET search_path TO ''\nAS $function$\nDECLARE visible boolean:=l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden';\n source text:=coalesce(nullif(l.website,''),nullif(l.source_url,''),nullif(l.profile#>>'{_enrich,source_url}',''));fingerprint text:=zoi.listing_quality_fingerprint(l);task text;v jsonb;tasks jsonb:='{}';stored jsonb:=coalesce(l.profile->'_coverage','{}');\nBEGIN\n FOREACH task IN ARRAY ARRAY['classification','enrichment','design','verification'] LOOP\n  v:=jsonb_build_object('status',CASE WHEN NOT coalesce(visible,false) THEN 'blocked_visibility' WHEN source IS NULL THEN 'source_missing' WHEN task='enrichment' AND l.profile#>>'{_enrich,blocked}'='true' THEN 'blocked_existing' ELSE 'pending' END);\n  IF coalesce(visible,false) AND source IS NOT NULL AND stored->>'fingerprint'=fingerprint AND stored#>>ARRAY['tasks',task,'status'] IN('verified','retry','blocked','fetched') AND (stored#>>ARRAY['tasks',task,'status']<>'verified' OR coalesce(zoi.enrich_timestamp(stored#>>ARRAY['tasks',task,'recorded_at']),'-infinity')>now()-interval '7 days') AND NOT(task='enrichment' AND coalesce(l.profile#>>'{_enrich,blocked}','false')='true') THEN v:=stored#>ARRAY['tasks',task];END IF;\n  tasks:=tasks||jsonb_build_object(task,v);\n END LOOP;\n RETURN jsonb_build_object('version',1,'fingerprint',fingerprint,'public_eligible',coalesce(visible,false),'source_available',source IS NOT NULL,'source_kind',CASE WHEN source IS NULL THEN 'source_missing' WHEN source~*'/(profile|members?|directory|people|team|staff)(/|\\?|$)' THEN 'member_or_directory' WHEN source~*'^https?://[^/]+/?$' THEN 'root_identity_unverified' ELSE 'source_identity_unverified' END,'owner_managed',l.owner_workspace_id IS NOT NULL,'tasks',tasks,'audit',CASE WHEN stored->>'fingerprint'=fingerprint THEN stored->'audit' ELSE NULL END);\nEND $function$\n",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "l zoi.listings",
+      "name": "quality_criterion_fingerprint",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.quality_criterion_fingerprint(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(zoi.listing_quality_fingerprint(l),to_jsonb(l)-'profile'-'updated_at'-'created_at',coalesce(l.profile->'_enrich','{}')-'lease',coalesce(l.profile->'owner_content','{}'))::text)\n$function$\n",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "l zoi.listings",
+      "name": "quality_family",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.quality_family(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN l.entity_type='artist' THEN 'music' WHEN l.entity_type='creator' THEN 'creator' WHEN l.entity_type='professional' THEN 'professional' ELSE coalesce((SELECT CASE\n WHEN c.slug IN('restaurants','tavernas','cafes','meze-ouzo-bars','food-trucks') THEN 'restaurant'\n WHEN c.slug IN('faith-church','ministries','monasteries','orthodox-churches','cathedrals','chapels') THEN 'church'\n WHEN c.slug IN('banquet-halls','church-halls') THEN 'venue'\n WHEN c.slug IN('events-entertainment','theatre-comedy','dances','galas','concerts','festivals','bouzoukia') THEN 'entertainment'\n WHEN c.slug IN('bakeries','desserts-sweets') THEN 'bakery'\n END FROM zoi.categories c WHERE c.id=l.primary_category_id),'general') END\n$function$\n",
+      "security_definer": false
+    }
+  ]
+}

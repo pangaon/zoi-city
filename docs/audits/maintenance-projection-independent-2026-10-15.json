@@ -1,0 +1,144 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:32:58.795443+00:00",
+  "status": "INDEPENDENTLY_ACCEPTED_PROJECTION_SOURCE_AND_ISOLATED_PARITY__PRODUCTION_RUNTIME_PENDING",
+  "baseline": "9a3b056bbbae6b9e7d8cdc78dfb0cf054ef0998a",
+  "review_tree": "/workspaces/zoi-maintenance-projection-independent",
+  "author_tree": "/workspaces/zoi-maintenance-projection-work",
+  "manifest_sha256": "bf58b6695fa0e9c9a72eef62803d95588b0132cdda10bb49745f7e0a9bbed1d7",
+  "source_pins": [
+    {
+      "path": "supabase/migrations/20261015211948_bounded_listing_maintenance_projection.sql",
+      "sha256": "1b608bc32daf40f0a6f6bb0577bcdca357465a2cff4102c555bb4391d9abe56d",
+      "bytes": 8755
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance-projection.integration.mjs",
+      "sha256": "3d31040fc12eab023b21512246f3ecdaf84dcd9dd5787ef20dc4bf3bb7fd91e2",
+      "bytes": 21839
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-projection-live.json",
+      "sha256": "fea4cc96d417143e26cae68b775fab6afa33ac8ed062b5b99ce53b103e6553c5",
+      "bytes": 80931
+    }
+  ],
+  "readonly_pins": [
+    {
+      "path": "supabase/migrations/20261015204248_bounded_listing_score_candidates.sql",
+      "sha256": "8f0774798f48c041d16eecece95d7079b3de722efae02a3df726836fe1f4beeb",
+      "bytes": 9806
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance.integration.mjs",
+      "sha256": "4d85b9cd8dd41eda4f48191d0ce01e449bcdfe59cfe64d6381d88c60c5dce57f",
+      "bytes": 22586
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-live.json",
+      "sha256": "c4a20825d066f11cb6e78aa1afd309248f8ff79e908b7aca32e956b0a2c04103",
+      "bytes": 56740
+    }
+  ],
+  "owner_evidence_pins_verified": 8,
+  "review": {
+    "scope": "Only selected tuple projection and two event-only profile text aliases change. No scoring arithmetic, helper/cursor, due/update joins, audit or authority changes.",
+    "independent_reversal": "New main extracted directly from exact migration, narrow selection slice restored from actual retained installed main and event aliases reversed; complete resulting definition is byte-exact45d1da61f3c02e2bdc4e601f1c6cf769. Candidate mainbfd199c1cd693df7e07ea7ee64bf503f.",
+    "fencing": "Postgres-only atomic install, same advisory gate then state/row locks; exact existing function body/ACL/owner/config guards, PG16/17 finite table ACL/shape/PK/cursor guards; exact paused job31 required. No activation operation exists.",
+    "semantics": "All17realPG groups pass including840varied baseline/result parity, owner explicit clears/all non-score facts, current noops,1000limit/wrap, rollback, real row/owner concurrency, service invoker/private-state authority and all unchanged dependencies/triggers/job.",
+    "projection": "Sixteen selected values, only two event-specific profile text keys, no materialized whole profile/vector. PK seeks retained, no full listings sequential scan in tested full UPDATE."
+  },
+  "independent_validation": {
+    "groups": 17,
+    "passed": [
+      "original immutable fixture and exact installed bounded main reproduced with nine actual trigger definitions",
+      "active job, dependency, state ACL, scoring type and cursor drift refuse atomically",
+      "installer refuses a concurrent canonical maintenance transaction",
+      "projection installation preserves helper, other functions, trigger definitions, private state, cursor and paused job byte for byte",
+      "mechanical reversal proves every scoring formula, due/update join and audit byte unchanged; selected projection has sixteen values and only two event keys",
+      "840-row cross-product preserves original completeness/trust/freshness/archive results, SEO output, epochs, audit and cursor under actual triggers",
+      "owned profiles, explicit clears, coordinates and every non-score fact survive; fixture triggers stay enabled",
+      "already-current scores cause no listing update or timestamp churn",
+      "thousand-row limit and unchanged cursor wrap preserve bounded work",
+      "audit refusal rolls scores, trigger effects and cursor back atomically",
+      "same row-lock skip and round-robin revisit semantics",
+      "concurrent canonical owner replacement and clears survive skip/revisit",
+      "main advisory exclusion and cursor atomicity unchanged",
+      "service invoker and private state ACL unchanged",
+      "local complete UPDATE plan retains 1000-row PK seeks while selected estimate narrows and omits whole profile/vector",
+      "measured local materialized tuples omit wide unrelated payload; production trigger and runtime costs remain unmeasured",
+      "job remains paused and all unrelated operational state is unchanged"
+    ],
+    "command": "ZOI_MAINTENANCE_EVIDENCE_DIR=/home/codespace/.cache/zoi/maintenance-projection-independent-20261015 node tests/database/bounded-listing-maintenance-projection.integration.mjs",
+    "private_pg_port": 15946,
+    "cluster_cleanup": "Stopped/removed by finally",
+    "selected_plan_width": {
+      "old": 1921,
+      "new": 321
+    },
+    "materialized_tuple_bytes": {
+      "old": {
+        "rows": 1000,
+        "average_bytes": 743.968
+      },
+      "new": {
+        "rows": 1000,
+        "average_bytes": 127.997
+      }
+    },
+    "local_execution_ms": {
+      "old": 611.107,
+      "new": 615.566
+    }
+  },
+  "runtime_finding": "Local old611.107/new615.566ms gives no runtime improvement evidence. Reduced projection width is established; remedy for actual installed8s1000-row timeout is not.",
+  "production_state_context": "Root reports actual installed1000batch timed out8s and job31 is PAUSED. Reviewer performed no production query/mutation, no DDL or activation.",
+  "root_remaining_gate": [
+    "Single root-owned5s statement/1s lock rollback-only runtime rehearsal before protected release.",
+    "If gate fails, preserve refusal/paused state and separately review a smaller candidate batch retaining eventual cursor sweep; do not claim projection fixes runtime or simply increase timeout.",
+    "Actual production PG17/catalogue guards and exact installed main/helper/ACL verification remain root-owned."
+  ],
+  "limitations": [
+    "Local77-column PG16 fixture represents unused vector as text; nine retained BEFORE/SEO/read-epoch triggers and17dependencies. Deferred enqueue/owner-transfer trigger runtime is not reproduced.",
+    "840rows vary verification/trust/event/source/owner/sparse residues; not every possible Cartesian combination. Exact formula reversal is separate evidence.",
+    "Existing helper/cursor/advisory semantics unchanged from separately accepted initial bounded-selection packet; this review does not redo actual runtime acceptance.",
+    "No production SQL, provider, source capture, release or job action by independent reviewer."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/new-local-explain.json",
+      "sha256": "4bfd73fcd967aa4377a267657181218e1cebca1e415bee9f950f679b7702ed21",
+      "bytes": 31066
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/old-local-explain.json",
+      "sha256": "a7c86f474243b0ca1ef5d1e7c99f107a9b049bc61ce6d37544cb5f11c60c4fdd",
+      "bytes": 40304
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/owner-audit.json",
+      "sha256": "137fa0033c7aa75008cff958e52607d7b6b26f9f7ae6c96ad48575a1b643a38d",
+      "bytes": 7339
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/owner-source-manifest.json",
+      "sha256": "bf58b6695fa0e9c9a72eef62803d95588b0132cdda10bb49745f7e0a9bbed1d7",
+      "bytes": 3127
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/pg-result.json",
+      "sha256": "294cbe1f34cad1156067cb2c40b2c3e421a83f5e2d5ac6cff0cee1fffceb8640",
+      "bytes": 2589
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/pg.log",
+      "sha256": "6e72445c2d7c764d196b51490c52bf1684fff79db931759ca61f308a69c02e12",
+      "bytes": 3980
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-projection-independent-2026-10-15/source-reversal.json",
+      "sha256": "f6024d7ae5cab695c13dcf524e71cdb4c7cf8809910c4e3ff93700af9857a09b",
+      "bytes": 297
+    }
+  ]
+}
