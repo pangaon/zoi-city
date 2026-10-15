@@ -1,0 +1,574 @@
+{
+  "schema": "zoi.read-only-enrichment-and-latency-audit.v1",
+  "date": "2026-10-15",
+  "status": "investigation_only_no_runtime_or_schedule_changes",
+  "base": "cc806c05cb5ffce75535277d89693fb65580d80f",
+  "scope": {
+    "production_reads_only": true,
+    "no_source_provider_http_calls": true,
+    "no_leases_or_canonical_writes": true,
+    "no_vault_or_credential_values_read": true,
+    "current_count_bound": 50001,
+    "current_cohort": "published; moderation clean/cleared; marketplace not hidden; public excludes confirmed_duplicate",
+    "not_geography_census": "Different time and inventory cohort; do not replace earlier frozen37903 geography census."
+  },
+  "actual": {
+    "metadata_at": "2026-10-15T20:01:27.547244+00:00",
+    "cron": [
+      {
+        "jobid": 1,
+        "active": false,
+        "jobname": "zoi-maintenance-hourly",
+        "schedule": "0 * * * *"
+      },
+      {
+        "jobid": 7,
+        "active": true,
+        "jobname": "zoi-worker-hourly",
+        "schedule": "15 * * * *"
+      },
+      {
+        "jobid": 8,
+        "active": true,
+        "jobname": "social_publish_worker",
+        "schedule": "* * * * *"
+      },
+      {
+        "jobid": 9,
+        "active": true,
+        "jobname": "zoi-feed-publish",
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "jobid": 10,
+        "active": false,
+        "jobname": "zoi-enrich-fullblast",
+        "schedule": "*/5 * * * *"
+      },
+      {
+        "jobid": 13,
+        "active": true,
+        "jobname": "zoi-founder-metrics-daily",
+        "schedule": "50 23 * * *"
+      },
+      {
+        "jobid": 30,
+        "active": true,
+        "jobname": "zoi-enrich-hourly",
+        "schedule": "45 * * * *"
+      },
+      {
+        "jobid": 31,
+        "active": true,
+        "jobname": "zoi-maintenance-bounded",
+        "schedule": "7,17,27,37,47,57 * * * *"
+      },
+      {
+        "jobid": 32,
+        "active": true,
+        "jobname": "zoi-duplicate-maintenance-daily",
+        "schedule": "20 6 * * *"
+      },
+      {
+        "jobid": 33,
+        "active": true,
+        "jobname": "geography-source-capture-ticket-v1",
+        "schedule": "* * * * *"
+      },
+      {
+        "jobid": 35,
+        "active": true,
+        "jobname": "zoi-studio-media-cleanup",
+        "schedule": "3,18,33,48 * * * *"
+      }
+    ],
+    "recent_window": {
+      "rows": 493,
+      "newest": "2026-10-15T20:01:01.382021+00:00",
+      "oldest": "2026-10-15T14:02:00.721686+00:00",
+      "http500": 0,
+      "timeouts": 1
+    },
+    "cron_window": {
+      "rows": 1000,
+      "newest": "2026-10-15T20:01:00.613083+00:00",
+      "oldest": "2026-10-15T12:51:00.370341+00:00"
+    },
+    "worker_summary": {
+      "runs": 6,
+      "queued": 18,
+      "applied_receipts": 18,
+      "usable_extraction_stats": 10,
+      "brief_drafts": 8,
+      "min_runtime_ms": 3484,
+      "max_runtime_ms": 26935,
+      "total_runtime_ms": 70791,
+      "reconciliation_required": 0,
+      "stats": {
+        "ok": 10,
+        "field:email": 7,
+        "field:phone": 5,
+        "field:embeds": 1,
+        "field:listen": 5,
+        "field:social": 10,
+        "field:tagline": 7,
+        "field:hero_url": 10,
+        "field:logo_url": 10,
+        "field:photo_url": 10,
+        "field:site_lang": 9,
+        "field:photo_urls": 10,
+        "field:video_urls": 1,
+        "field:description": 5,
+        "supplement:contact": 6,
+        "field:email_conflict": 10,
+        "field:source_identity": 2,
+        "javascript-render-required": 1,
+        "brief:draft_requires_review": 8,
+        "not-html": 1,
+        "robots-disallow": 1,
+        "supplement:gallery": 2,
+        "error:Error: operation_deadline_exceeded": 2,
+        "http500": 1,
+        "field:menu_url": 2,
+        "supplement:menu": 2,
+        "field:booking_url": 2,
+        "error:TypeError: error sending request for url": 1,
+        "field:geo": 1,
+        "field:give_url": 1,
+        "field:order_url": 1,
+        "field:address_parts": 1,
+        "member-review-required": 1
+      }
+    },
+    "worker_runs": [
+      {
+        "at": "2026-10-15T19:45:00.947574+00:00",
+        "id": 15759,
+        "ms": 4413,
+        "ok": true,
+        "http": 200,
+        "stats": {
+          "ok": 2,
+          "field:email": 1,
+          "field:phone": 2,
+          "field:embeds": 1,
+          "field:listen": 2,
+          "field:social": 2,
+          "field:tagline": 2,
+          "field:hero_url": 2,
+          "field:logo_url": 2,
+          "field:photo_url": 2,
+          "field:site_lang": 2,
+          "field:photo_urls": 2,
+          "field:video_urls": 1,
+          "field:description": 1,
+          "supplement:contact": 1,
+          "field:email_conflict": 2,
+          "field:source_identity": 1,
+          "javascript-render-required": 1,
+          "brief:draft_requires_review": 2
+        },
+        "queued": 3,
+        "applied": 3,
+        "dns_guard": "enforced",
+        "timed_out": false,
+        "unprocessed": 0,
+        "reconciliation_required": null
+      },
+      {
+        "at": "2026-10-15T18:45:01.099542+00:00",
+        "id": 15674,
+        "ms": 11045,
+        "ok": true,
+        "http": 200,
+        "stats": {
+          "ok": 1,
+          "not-html": 1,
+          "field:email": 1,
+          "field:phone": 1,
+          "field:social": 1,
+          "field:hero_url": 1,
+          "field:logo_url": 1,
+          "field:photo_url": 1,
+          "robots-disallow": 1,
+          "field:photo_urls": 1,
+          "field:email_conflict": 1
+        },
+        "queued": 3,
+        "applied": 3,
+        "dns_guard": "enforced",
+        "timed_out": false,
+        "unprocessed": 0,
+        "reconciliation_required": null
+      },
+      {
+        "at": "2026-10-15T17:45:01.299752+00:00",
+        "id": 15588,
+        "ms": 26935,
+        "ok": true,
+        "http": 200,
+        "stats": {
+          "ok": 2,
+          "field:email": 2,
+          "field:social": 2,
+          "field:hero_url": 2,
+          "field:logo_url": 2,
+          "field:photo_url": 2,
+          "field:site_lang": 2,
+          "field:photo_urls": 2,
+          "supplement:contact": 2,
+          "supplement:gallery": 1,
+          "field:email_conflict": 2,
+          "brief:draft_requires_review": 2,
+          "error:Error: operation_deadline_exceeded": 1
+        },
+        "queued": 3,
+        "applied": 3,
+        "dns_guard": "enforced",
+        "timed_out": false,
+        "unprocessed": 0,
+        "reconciliation_required": null
+      },
+      {
+        "at": "2026-10-15T16:45:00.710874+00:00",
+        "id": 15504,
+        "ms": 3484,
+        "ok": true,
+        "http": 200,
+        "stats": {
+          "ok": 2,
+          "http500": 1,
+          "field:email": 1,
+          "field:listen": 2,
+          "field:social": 2,
+          "field:tagline": 2,
+          "field:hero_url": 2,
+          "field:logo_url": 2,
+          "field:photo_url": 2,
+          "field:site_lang": 2,
+          "field:photo_urls": 2,
+          "field:description": 2,
+          "supplement:contact": 2,
+          "field:email_conflict": 2,
+          "field:source_identity": 1,
+          "brief:draft_requires_review": 1
+        },
+        "queued": 3,
+        "applied": 3,
+        "dns_guard": "enforced",
+        "timed_out": false,
+        "unprocessed": 0,
+        "reconciliation_required": null
+      },
+      {
+        "at": "2026-10-15T15:45:00.62519+00:00",
+        "id": 15436,
+        "ms": 18515,
+        "ok": true,
+        "http": 200,
+        "stats": {
+          "ok": 1,
+          "field:email": 1,
+          "field:phone": 1,
+          "field:social": 1,
+          "field:tagline": 1,
+          "field:hero_url": 1,
+          "field:logo_url": 1,
+          "field:menu_url": 1,
+          "field:photo_url": 1,
+          "field:site_lang": 1,
+          "supplement:menu": 1,
+          "field:photo_urls": 1,
+          "field:booking_url": 1,
+          "field:description": 1,
+          "field:email_conflict": 1,
+          "brief:draft_requires_review": 1,
+          "error:Error: operation_deadline_exceeded": 1,
+          "error:TypeError: error sending request for url": 1
+        },
+        "queued": 3,
+        "applied": 3,
+        "dns_guard": "enforced",
+        "timed_out": false,
+        "unprocessed": 0,
+        "reconciliation_required": null
+      },
+      {
+        "at": "2026-10-15T14:45:00.796016+00:00",
+        "id": 15353,
+        "ms": 6399,
+        "ok": true,
+        "http": 200,
+        "stats": {
+          "ok": 2,
+          "field:geo": 1,
+          "field:email": 1,
+          "field:phone": 1,
+          "field:listen": 1,
+          "field:social": 2,
+          "field:tagline": 2,
+          "field:give_url": 1,
+          "field:hero_url": 2,
+          "field:logo_url": 2,
+          "field:menu_url": 1,
+          "field:order_url": 1,
+          "field:photo_url": 2,
+          "field:site_lang": 2,
+          "supplement:menu": 1,
+          "field:photo_urls": 2,
+          "field:booking_url": 1,
+          "field:description": 1,
+          "supplement:contact": 1,
+          "supplement:gallery": 1,
+          "field:address_parts": 1,
+          "field:email_conflict": 2,
+          "member-review-required": 1,
+          "brief:draft_requires_review": 2
+        },
+        "queued": 3,
+        "applied": 3,
+        "dns_guard": "enforced",
+        "timed_out": false,
+        "unprocessed": 0,
+        "reconciliation_required": null
+      }
+    ],
+    "catalogue": {
+      "at": "2026-10-15T20:02:54.556929+00:00",
+      "bound": 50001,
+      "counts": {
+        "owned": 1,
+        "blocked": 3870,
+        "crawl_ok": 30,
+        "has_menu": 4,
+        "truncated": false,
+        "website_http": 16741,
+        "active_leases": 0,
+        "approved_brief": 0,
+        "public_current": 38258,
+        "has_description": 7376,
+        "due_actual_queue": 11806,
+        "due_error_bucket": 352,
+        "due_fresh_bucket": 11454,
+        "checked_last30days": 2217,
+        "due_public_current": 11796,
+        "has_source_identity": 4,
+        "public_website_http": 16731,
+        "eligible_including_duplicates": 38269
+      },
+      "brief_status": [
+        {
+          "status": null,
+          "records": 16695
+        },
+        {
+          "status": "draft_requires_review",
+          "records": 36
+        }
+      ],
+      "crawl_status": [
+        {
+          "status": null,
+          "records": 15944
+        },
+        {
+          "status": "error",
+          "records": 510
+        },
+        {
+          "status": "checked_no_data",
+          "records": 170
+        },
+        {
+          "status": "member_details_pending_source_review",
+          "records": 75
+        },
+        {
+          "status": "ok",
+          "records": 30
+        },
+        {
+          "status": "member_identity_reviewed",
+          "records": 1
+        },
+        {
+          "status": "member_identity_matched",
+          "records": 1
+        }
+      ],
+      "blocked_reasons": [
+        {
+          "reason": "http403",
+          "records": 2626
+        },
+        {
+          "reason": "dns-no-records",
+          "records": 533
+        },
+        {
+          "reason": "robots",
+          "records": 418
+        },
+        {
+          "reason": "http404",
+          "records": 172
+        },
+        {
+          "reason": "source_scope_mismatch",
+          "records": 101
+        },
+        {
+          "reason": "http401",
+          "records": 13
+        },
+        {
+          "reason": "http410",
+          "records": 3
+        },
+        {
+          "reason": "http456",
+          "records": 1
+        },
+        {
+          "reason": "http451",
+          "records": 1
+        },
+        {
+          "reason": "blocked-address:127.0.0.2",
+          "records": 1
+        },
+        {
+          "reason": "blocked-address:127.0.0.1",
+          "records": 1
+        }
+      ],
+      "quality_signoffs": null,
+      "quality_bound_reached": false
+    },
+    "search_statement_cumulative": [
+      {
+        "rows": 105,
+        "calls": 105,
+        "max_exec_time": 2859.619204,
+        "mean_exec_time": 589.934487028571,
+        "temp_blks_read": 0,
+        "shared_blks_hit": 163934,
+        "total_exec_time": 61943.121138,
+        "shared_blks_read": 3452,
+        "temp_blks_written": 0
+      }
+    ]
+  },
+  "findings": [
+    {
+      "finding": "Hourly schedule multiplied by canonical3-row cap permits at most72 leased attempts/day; fresh quota normally2/run when retry capacity is available.",
+      "evidence": "Actual canonical zoi.enrich_queue_lease caps p_limit at3 and job30 is45 * * * *; disabled job10 remains unchanged.",
+      "consequence": "At least11796/72=163.84 days for currently due public rows even with no errors, repeats, freshness or owner review."
+    },
+    {
+      "finding": "HTTP200/applied receipts include refusals and errors.",
+      "evidence": "18 applied receipts;10 usable-extraction stats;8 other outcomes;8 draft briefs awaiting review.",
+      "consequence": "Neither applied nor checked_at proves correct source, rendered home, customer journey or independent acceptance."
+    },
+    {
+      "finding": "Existing quality_signoffs table is empty.",
+      "consequence": "No catalogue-wide source/render/journey acceptance may be inferred from that canonical ledger; external retained acceptance artifacts remain separate."
+    },
+    {
+      "finding": "Athens failures were actual server57014, not frontend-only failures.",
+      "evidence": "Two actual anonymous PostgREST calls took~3.46s and timed out; root exact comparison later returned200/24 in2902ms. Warm exact PostgREST SQL took64.763ms; cumulative tracked statement mean589.934ms/max2859.619ms.",
+      "consequence": "Intermittent server execution/cache/resource/pool/pre-request causes remain unresolved; later200s do not establish a root-cause fix."
+    },
+    {
+      "finding": "Cron job-history filtering by jobid before LIMIT lacks a matching index.",
+      "evidence": "Actual cron.job_run_details has only runid primary key; bounded latest1000 by runid then job filter succeeds.",
+      "consequence": "Root job35 history read timeout is not proof scheduler failed."
+    }
+  ],
+  "latency_limits": {
+    "stats_reset_unknown": true,
+    "canceled_statement_accounting_unknown": true,
+    "current_wait_snapshot_not_incident_waits": true,
+    "no_correlated_incident_resource_capture": true,
+    "no_timeout_or_plan_or_index_change": "No change proposed as a proven latency fix."
+  },
+  "throughput_proposal": {
+    "state": "awaiting exact authority contract and root ownership approval; no implementation",
+    "retain_rows_per_run": 3,
+    "proposed_schedule": "*/5 * * * *",
+    "maximum_leased_attempts_per_utc_day": 864,
+    "maximum_fresh_attempts_if_retry_capacity_used": 576,
+    "due_backlog_lower_bound_days": 13.652777777777779,
+    "not_completion_eta": true,
+    "provider_cost": "Existing worker is deterministic source HTML/JSONLD/menu/brief extraction with no AI-provider call path; hosted Edge/DB/source networking still consumes platform resources. Paid-AI balance/remaining provider availability is not inferred or checked.",
+    "admission": "No existing enrich_run ledger found. Proposal reuses existing private operational delivery_state key only if actual ACL/accessor/trigger audit permits; shared normal/sample canonical admission serializes daily leased-attempt reservations and an independent minimum15-minute active flight. Unknown completion retains reservation/flight; no refunds. Zero candidates consume no attempts; stale release cannot clear successor.",
+    "writer": "Canonical enrich_apply and all source/owner/context/lease guards must remain byte-identical.",
+    "schedule": "Guard job30 id/name/active/schedule and static command hash/known Vault-name reference shape. Alter existing job in place, keep disabled job10 disabled and preserve original command for rollback. No credential command retrieval.",
+    "tests_required": [
+      "real concurrent normal/sample/direct canonical lease admission",
+      "UTC rollover retains prior active flight",
+      "863 used permits only1 more attempt",
+      "zero candidates reserve nothing",
+      "unknown/lost/timeout completion retains conservative gate",
+      "stale release cannot release successor",
+      "shared864 cap across both lanes",
+      "old writer/source/owner/context/lease and fresh/retry behavior unchanged",
+      "actual handler no paid-provider calls and no plan/capture after refused admission"
+    ],
+    "reviewer": "owner_next assigned by root"
+  },
+  "private_evidence_manifest": {
+    "recent-diagnostics-query.sql": {
+      "sha256": "a7e10b110ae52d99967e16a132210cff1c17b19c5fe5c830248085b109259633",
+      "bytes": 2089
+    },
+    "catalogue-metadata-query.sql": {
+      "sha256": "e6fdcf2b2594b536b24eb43f26b0465daad49664f6d53a2c53761b2b5b134396",
+      "bytes": 1510
+    },
+    "recent-diagnostics-actual.json": {
+      "sha256": "73f1bd0ab0bd4637170384ca3c6073b14ce60db1db443155ac7df64dc03fa177",
+      "bytes": 10089
+    },
+    "parsed-metadata.json": {
+      "sha256": "1fead3022124520c5a24d98ce95242fb47db5dd1dbee5aaa4b4f7fb125a823f7",
+      "bytes": 118098
+    },
+    "catalogue-metadata-actual.json": {
+      "sha256": "6c912525b06a600ad256cc38ab6266dad91af9edce4ab6228a421e7ba8f2bfeb",
+      "bytes": 655
+    },
+    "catalogue-counts-actual.json": {
+      "sha256": "e8811646d4947bf01b9c9d7a0ef1df0c6e3f8b0643d4ddbf4b17dfbd535636eb",
+      "bytes": 2490
+    },
+    "metadata-query.sql": {
+      "sha256": "c94781a1866d2277ef776f275aa7c06a432aa9d435b92ec1594b342819004829",
+      "bytes": 2007
+    },
+    "actual-metadata.json": {
+      "sha256": "dafe57d07eacbd88ca51b73feb9e6e038e68510b861a441797a6d3d8b92b7886",
+      "bytes": 96155
+    },
+    "catalogue-metadata-actual-corrected.json": {
+      "sha256": "860e4581229a8c872d24b0534b82e779c707622d60ebeb5816fa2ebc0c83892a",
+      "bytes": 7202
+    },
+    "catalogue-counts-query.sql": {
+      "sha256": "0c0f5c1fbc50bc54cb167708fe504852cd2fb035fbed6cbedd1103f0d62beb93",
+      "bytes": 3512
+    }
+  },
+  "runtime_source_pin": {
+    "path": "supabase/functions/zoi-enrich/index.ts",
+    "sha256": "af9ad208f445c69a173061d620b14c3e00a5838b9d157a690e363451f2ff6a8e"
+  },
+  "remaining": [
+    "exact redacted cron static shape/hash",
+    "actual delivery_state ACL/accessor/trigger contract and sample lease body",
+    "root-approved exact files for implementation",
+    "independent real concurrency and handler gate",
+    "guarded protected release and production outcome verification",
+    "source blocked review and source-to-render-to-journey acceptance remain separate open work"
+  ]
+}

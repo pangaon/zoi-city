@@ -1,0 +1,8 @@
+import fs from'node:fs/promises';import{createHash}from'node:crypto';
+const source=await fs.readFile('/workspaces/zoi-public-six-homes-qa/explore/index.html','utf8'),base=source.match(/const BASE='([^']+)'/)[1],key=source.match(/const PUB='([^']+)'/)[1],dir='/home/codespace/.cache/zoi/public-six-homes-20261015',receipts=[];
+for(const[label,query,type,limit]of[['ordinary-explore',null,null,24],['corfu','Corfu',null,6],['ekky','EKKY',null,3],['parish',null,'church',3],['artist',null,'artist',3]]){
+ const start=Date.now(),args={p_q:query,p_type:type,p_city:null,p_country:null,p_limit:limit,p_offset:0};
+ try{const response=await fetch(base+'/rest/v1/rpc/explore_search',{method:'POST',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(8000)});const text=await response.text();if(Buffer.byteLength(text)>524288)throw Error('response_cap');const body=JSON.parse(text);await fs.writeFile(dir+'/'+label+'.json',text);const meta={label,args,status:response.status,ms:Date.now()-start,sha256:createHash('sha256').update(text).digest('hex'),bytes:Buffer.byteLength(text),rows:Array.isArray(body)?body.length:null,error:!response.ok?{code:body.code,message:body.message}:undefined};receipts.push(meta);console.log(JSON.stringify({...meta,rows:Array.isArray(body)?body.map(r=>({id:r.id,name:r.name,slug:r.slug,path:r.path,entity_type:r.entity_type,category_slug:r.category_slug,city:r.city,country:r.country})):meta.rows}));}
+ catch(e){receipts.push({label,args,error:e.message,ms:Date.now()-start});console.log(JSON.stringify(receipts.at(-1)))}
+}
+await fs.writeFile(dir+'/discovery-receipts.json',JSON.stringify(receipts,null,2)+'\n');

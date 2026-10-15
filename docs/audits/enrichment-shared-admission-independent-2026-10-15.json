@@ -1,0 +1,527 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "reviewer": "/root/owner_next",
+  "state": "independent source, actual-handler and isolated PostgreSQL acceptance; production activation remains root gate",
+  "basis": "32f35249fea9aa6b0f37f4274dfb4b690ad4eb62",
+  "source_tree": "/workspaces/zoi-enrichment-cadence-work",
+  "review_tree": "/workspaces/zoi-enrichment-admission-independent",
+  "owner_manifest_sha256": "f61af06725a71223f7482d3917ff0d7af045519b2d8aca8acf4514621ad6dfae",
+  "owner_audit_sha256": "853f7f99dddea4d332e6e827c749719a6dfa66207d3b58a116d95f92e2be4c3a",
+  "source_pins": [
+    {
+      "path": "supabase/functions/zoi-enrich/index.ts",
+      "sha256": "801969e81a805a3dc4d79d51696f879c3aea8c36f8c36e5858d60151a1e566a8",
+      "bytes": 45943
+    },
+    {
+      "path": "supabase/migrations/20261015200620_enrichment_shared_bounded_admission.sql",
+      "sha256": "8f4baa3062b3905c8a0df5c14bbf8080388285af30bf8e69d959b8a5c4a86b0d",
+      "bytes": 22158
+    },
+    {
+      "path": "supabase/migrations/20261015200621_enrichment_five_minute_existing_job.sql",
+      "sha256": "6c23678ac6c866bfd96ba0e1a81dea9d7110bfcc388bef652e4b71f870b5d6b1",
+      "bytes": 4170
+    },
+    {
+      "path": "tests/database/enrichment-shared-admission.integration.mjs",
+      "sha256": "f518da58a1ab4759195e883b08eecda6732e80156e7892e81df29fd93729a9dd",
+      "bytes": 24759
+    },
+    {
+      "path": "tests/database/fixtures/enrichment-shared-admission-live.json",
+      "sha256": "713ce53a300169d03b9c41c2fe188db17c22885321c5402dfe1a8cdfe6be7170",
+      "bytes": 33543
+    },
+    {
+      "path": "tests/unit/enrichment-shared-admission.test.mjs",
+      "sha256": "0c317ed5df0bb718a759309321ea2e052fa07819714bcc619229144c2d52a6e5",
+      "bytes": 6850
+    },
+    {
+      "path": "tests/unit/client-services-extractor.test.mjs",
+      "sha256": "dd5314f521bc96f8c8e5f0c79a3d1e68cb8f157411f5bd3302fb40a72db46d65",
+      "bytes": 11825
+    },
+    {
+      "path": "tests/unit/enrichment-member-worker.test.mjs",
+      "sha256": "76becd0a678f1c294b928740ea4f1a3e445351fc250f3ec28504ba44db93f81f",
+      "bytes": 11437
+    },
+    {
+      "path": "tests/unit/enrichment-source-replacement-identity.test.mjs",
+      "sha256": "de9b7c28450550dc65bdf3b56484601be4c004107a3ed43523f3f18cfa7d7a98",
+      "bytes": 15949
+    },
+    {
+      "path": "tests/unit/food-source-branch-independent.test.mjs",
+      "sha256": "3b462a96d08bd07d24ea16e47317c0495ac4276aba4cd8a8288b3ca80de5b4bb",
+      "bytes": 10853
+    },
+    {
+      "path": "tests/unit/food-source-pipeline.test.mjs",
+      "sha256": "e6b74933399674aee40766b3f18b4965a18ac01dae95245348652f232d780d13",
+      "bytes": 9681
+    },
+    {
+      "path": "tests/unit/menu-source-price-variants.test.mjs",
+      "sha256": "0b61f638d17e5fb752206becdad69bc74d9d172e4f879c42389be9a10d87ea45",
+      "bytes": 9825
+    },
+    {
+      "path": "tests/unit/reviewed-visible-food.test.mjs",
+      "sha256": "a327f6b2b4855f93b86b59f223a4ebbb5b37b9119997348992f10efcfc3b6833",
+      "bytes": 25635
+    },
+    {
+      "path": "tests/unit/source-copy-placeholders.test.mjs",
+      "sha256": "1acb3726278191fd86fb9e856495343401a4dd8acb946a28803182aa404ca9ae",
+      "bytes": 16551
+    },
+    {
+      "path": "docs/audits/enrichment-shared-bounded-cadence-owner-2026-10-15.json",
+      "sha256": "853f7f99dddea4d332e6e827c749719a6dfa66207d3b58a116d95f92e2be4c3a",
+      "bytes": 15960
+    }
+  ],
+  "owner_evidence_pins_verified": [
+    {
+      "path": "/home/codespace/.cache/zoi/enrichment-admission-20261015/focused-second.log",
+      "sha256": "f7f565e88fd646d79e2f37cd8d664092fdc546c72df87a32166b0c24f7bf2029"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/enrichment-admission-20261015/pg-final.log",
+      "sha256": "2b419378e4fe571d4ce1687e0fd429e76e1cbaf65c401aeb77e0b6798bd174d9"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/enrichment-admission-20261015/pg-final-result.json",
+      "sha256": "789be10c0db4de3ca8e419fb0271a1d3d54c682f43e7e45862b5f9d3e7ef6281"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/enrichment-admission-20261015/deno-final.log",
+      "sha256": "7d1f38f30f4893c2556aea91494f819ae185a2146a151e7b049d614cb4da98a8"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/enrichment-admission-20261015/harness-preservation-proof.json",
+      "sha256": "6b830b9b89310ce10733330987f483e01d313a3df2dd57ac3eda0680582a6d93"
+    }
+  ],
+  "unchanged19_runtime_dependency_pins_verified": [
+    {
+      "path": "supabase/functions/zoi-enrich/_phone.js",
+      "sha256": "0c4f359572a280f33b104989a3ef9c5fec0bdbc4f501a3ee8c42ce9f1c693c3b"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_decode.js",
+      "sha256": "101c91d0945982bced6b80782f85485e5b3652929116731db86dd52635eb654e"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_document-quality.js",
+      "sha256": "28d4bec4ac6fed885299744149518dfb6c61eb776ab6796b9c43aab43190aa06"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_ssrf.ts",
+      "sha256": "8c2bac4f75c5a03e80ed65a317680588b242a81f48f86e6ffaafc88d8af0ea76"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_social.js",
+      "sha256": "d164d906ee8a5242d26e9c419fd6dfae9239a346712655508d8bc72f5ce81be8"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_media.js",
+      "sha256": "46d77834fce1f9842916e9f952b003118d687514c5106e55ac8ce560e45b0f8b"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_member.js",
+      "sha256": "df70789266936b88c4a715447905e340e8ca50e52206ffe9921b94c0b068aa83"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_scope.js",
+      "sha256": "5e1db816a7608230300de10312497b2625c99193cccea7dca563465705dc4c06"
+    },
+    {
+      "path": "assets/enrichment/member-source.mjs",
+      "sha256": "5eadd023639ff732baa32273df3d44db374a64b378624264b5479ab2c0fb3c2d"
+    },
+    {
+      "path": "assets/enrichment/association-cards.mjs",
+      "sha256": "70e9ba6789062261a62c6c88c86920eb6831b308c087fc27f52912d0327dfce6"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_brief.js",
+      "sha256": "b60ffdfb50a64286cc319dba1df31fb6c9839e8f6420226865acd20896b4609c"
+    },
+    {
+      "path": "assets/enrichment/client-brief.mjs",
+      "sha256": "fca9f96640d64e18d0095ff6ac222219f5e71198be758433f7e97ce7e3dcd3a6"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_source-identity.js",
+      "sha256": "2c806660ab26e98bd452b2baa23d4de228edd1f1edad52100d0410513f3cc6bb"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_menus.js",
+      "sha256": "ee8e49146fcaae49dffb1498b14dd5fe006f4e4e1320f05740facf29c677e86f"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_services.js",
+      "sha256": "63c8966dddd9f05ab04b9682a471e9abe05d9515d504ab9dc75c392950e41e6b"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_hospitality.js",
+      "sha256": "6534840528877f48e587dc6831a1d8d2156597d38bb4a536042dbc492f3611f4"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_images.js",
+      "sha256": "47ee5ea0207af69f29b97561b7062a7222c6a6a287ce762d720ddf5e144fb0bd"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_image-context.js",
+      "sha256": "9675e10aaf2a5722fa6568f45509dbad01adb2c0a3b76b47fd9f5667e9b44824"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_receipts.js",
+      "sha256": "af5749384a8f0b06dd35510599a38a269e7d0190be4e2a561f5070398fee8b0c"
+    }
+  ],
+  "findings": [],
+  "accepted_contract": {
+    "canonical_authority": "Existing normal and sample lease functions share one reserved private delivery_state key; no new table/queue/store. Existing canonical writer remains byte-identical.",
+    "accounting": "Maximum3 actual leased rows per run and864 shared new admissions per UTC day. Counts committed leased attempts, never successful extractions, approved briefs or finished homes; no refunds. Migration-day total is POST-ACTIVATION admissions only, excluding unknown earlier legacy attempts.",
+    "single_flight": "Operational row lock before listing locks; post-lock clock and validation. Minimum15-minute run flight, up to60 for longer requested listing leases. Active prior-day run/bootstrap survives rollover. Matching known completion releases only its flight; stale/idempotent release cannot reset successor or budget. Unknown/aborted responses retain charged flight until expiry.",
+    "bootstrap": "Default60-minute bootstrap blocks normal/sample/direct admission. Even exact-ID service release refuses. Root-only optional withdrawal is separately reviewed exact-CAS operation after actual quiescence/drain/new-worker/no-active-lease proof. No generic early-release RPC exists.",
+    "database_safety": "Explicit atomic migrations, postgres ownership, empty search paths, private helper ACLs, service-only release, finite PG16/17 table ACL compatibility and exact actual function/table/column guards. Source writer untouched.",
+    "dashboard": "Only a four-key predicate on existing feed aggregation; independent exact body reversal plus complete before/after JSON equality. Private operational row is excluded without changing ordinary founder data.",
+    "schedule": "Separate activation requires paused original job30 with exact hourly identity/560-byte command hash, untouched disabled job10, no competing active enrichment job, six exact installed function/ACL/config/owner contracts and valid state. Same IDs/commands preserved, only job30 cadence/active change."
+  },
+  "independent_source_boundaries": {
+    "base": "32f35249fea9aa6b0f37f4274dfb4b690ad4eb62",
+    "worker_index_only_approved_clamp_and_release_after_receipt_changes": true,
+    "unchanged_extraction_authorization_source_loop_apply_error_paths": true,
+    "existing8_harnesses": [
+      {
+        "path": "tests/unit/client-services-extractor.test.mjs",
+        "original_sha256": "8aa57ec933985a2119427cab66eb4184950078a1a33f2d1d68f7aeca5b1346a2",
+        "new_sha256": "dd5314f521bc96f8c8e5f0c79a3d1e68cb8f157411f5bd3302fb40a72db46d65",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'fixture-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          },
+          {
+            "old": "'member-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          },
+          {
+            "old": "'member-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 2,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/enrichment-member-worker.test.mjs",
+        "original_sha256": "0d5e67e65db211d802376ac1ef8dbaed7bcaf3098d470caeadd5408b8b6d6320",
+        "new_sha256": "76becd0a678f1c294b928740ea4f1a3e445351fc250f3ec28504ba44db93f81f",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          },
+          {
+            "old": "'lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/enrichment-source-replacement-identity.test.mjs",
+        "original_sha256": "1a3671a3bb4b5ba9dec01b3b8b9b44c8f3680a054162a514edd8582d5baeea84",
+        "new_sha256": "de9b7c28450550dc65bdf3b56484601be4c004107a3ed43523f3f18cfa7d7a98",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'controlled-test-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/food-source-branch-independent.test.mjs",
+        "original_sha256": "25d7f5ba5480a2b789eddd2283d203205415332dda4c71c1314eae6dd7339f52",
+        "new_sha256": "3b462a96d08bd07d24ea16e47317c0495ac4276aba4cd8a8288b3ca80de5b4bb",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'controlled-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/food-source-pipeline.test.mjs",
+        "original_sha256": "98f83df7d158ec254601ee22e08d36a6df92872c586c991a6130432927a35ca1",
+        "new_sha256": "e6b74933399674aee40766b3f18b4965a18ac01dae95245348652f232d780d13",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'controlled-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/menu-source-price-variants.test.mjs",
+        "original_sha256": "a91c97bf0d57ae07d7b00eacdc879e97125eec268931a0ac9c618a855e603a00",
+        "new_sha256": "0b61f638d17e5fb752206becdad69bc74d9d172e4f879c42389be9a10d87ea45",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'controlled-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/reviewed-visible-food.test.mjs",
+        "original_sha256": "35e99092b6c58fb4458fc2063d7c09e93786554fb519d863101717649fa97f79",
+        "new_sha256": "a327f6b2b4855f93b86b59f223a4ebbb5b37b9119997348992f10efcfc3b6833",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'controlled-test-only'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      },
+      {
+        "path": "tests/unit/source-copy-placeholders.test.mjs",
+        "original_sha256": "c030311e78d2dd7f981abc9214cf282d3eab9baf405afa61baa30bd633575d23",
+        "new_sha256": "1acb3726278191fd86fb9e856495343401a4dd8acb946a28803182aa404ca9ae",
+        "only_changed_original_string_tokens": [
+          {
+            "old": "'controlled-lease'",
+            "new": "'20000000-0000-4000-8000-000000000001'"
+          }
+        ],
+        "added_exact_asserting_release_branches": 1,
+        "all_original_nonstring_code_and_assertions_byte_exact": true
+      }
+    ],
+    "fixture_function_definitions_exact_matching_retained_actual_metadata": [
+      "zoi.enrich_queue_lease(integer,integer,integer)",
+      "enrich_sample_lease(uuid[])",
+      "zoi_delivery_dashboard(timestamp with time zone)",
+      "zoi_delivery_progress(uuid,text,jsonb)",
+      "zoi.enrich_apply(jsonb)"
+    ],
+    "remaining_fixture_helpers": "Canonical baseline functions from retained fixture; actual root preflight remains required; no new SQL/metadata reads.",
+    "canonical_normal_lease_body_reverse_exact_after_only_admission_declare_gate_reserve_empty_return": true,
+    "dashboard_entire_body_reverse_exact_after_only_4key_feed_predicate": true
+  },
+  "verification": {
+    "focused_actual_handler_and_existing_regressions": {
+      "tests": 124,
+      "pass": 124,
+      "command": "node --test tests/unit/client-services-extractor.test.mjs tests/unit/enrichment-member-worker.test.mjs tests/unit/enrichment-source-replacement-identity.test.mjs tests/unit/food-source-branch-independent.test.mjs tests/unit/food-source-pipeline.test.mjs tests/unit/menu-source-price-variants.test.mjs tests/unit/reviewed-visible-food.test.mjs tests/unit/source-copy-placeholders.test.mjs tests/unit/enrichment-shared-admission.test.mjs tests/unit/enrichment-deadline.test.mjs tests/unit/enrichment-receipts.test.mjs tests/unit/enrichment-profile-extraction.test.mjs"
+    },
+    "isolated_PostgreSQL": {
+      "author_suite_rerun_groups": 29,
+      "independent_additional_groups": 3,
+      "unique_groups_total": 32,
+      "pass": 32,
+      "extra_cases": [
+        "Prior-day bootstrap blocks normal/sample and exact-ID service release without day/count mutation.",
+        "Pacific/Kiritimati next-calendar-day session timezone cannot advance the shared UTC counter day.",
+        "288 real canonical lease→unchanged actual writer→release cycles charge exactly864 synthetic rows, then normal/sample stop; next UTC-day real lease resets to3; writer still byte-identical."
+      ],
+      "real_concurrency": "Two real PostgreSQL backends: normal lease versus sample admission serialization, and state row wait/recheck. Expiry, stale release, partial862/863/864, zero candidates, rollback, context/owner/source hold refusal, private ACL and installed contract drift cases pass.",
+      "installed_contracts": [
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "enrich_admission_release(text)",
+          "volatility": "v",
+          "definition_md5": "9251d564b9ae3fe6cf11b8e021d007f6",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres,service_role=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "enrich_sample_lease(uuid[])",
+          "volatility": "v",
+          "definition_md5": "e3b4e4c686b2e1194cf26febd6bee4a5",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_admission_available()",
+          "volatility": "v",
+          "definition_md5": "4d487be1714e98354c928c8c04b66db8",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_admission_reserve(text,integer,integer)",
+          "volatility": "v",
+          "definition_md5": "229eab4a427b83a7202c7a57f67a7820",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_apply(jsonb)",
+          "volatility": "v",
+          "definition_md5": "310678a4bd7d77d5467dbd07604349d9",
+          "security_definer": true
+        },
+        {
+          "acl": "{postgres=X/postgres}",
+          "owner": "postgres",
+          "config": [
+            "search_path=\"\""
+          ],
+          "signature": "zoi.enrich_queue_lease(integer,integer,integer)",
+          "volatility": "v",
+          "definition_md5": "01b9acf2167e117b40e92d736ff03374",
+          "security_definer": true
+        }
+      ],
+      "cleanup": "Both isolated Unix-socket PG16 clusters stopped and removed in finally; no production connection."
+    },
+    "cached_Deno": "PASS exact candidate index.ts with --cached-only --node-modules-dir=none",
+    "syntax_diff": "PASS scoped git diff --check"
+  },
+  "previous_findings_resolved": [
+    "Reserved key would add a null-name dashboard feed: fixed exact four-key predicate and full JSON regression.",
+    "Migration startup/legacy overlap: explicit root quiescence/drain protocol plus unreleasable60-minute bootstrap.",
+    "First-day total cannot include earlier unrecorded legacy attempts: explicitly scoped as post-activation admissions; no fabricated historical count.",
+    "Cadence expected active job despite quiescence: now requires paused original job and activates in place only after exact installed contracts.",
+    "Atomicity/owner/timeouts and finite PG16/17 ACL branching made explicit."
+  ],
+  "limits": [
+    "Exact production cadence positive apply is NOT proved locally: disabled legacy job10 command was deliberately not retrieved because it may contain old embedded credentials. Positive isolated test substitutes ONLY its expected hash with a harmless522-byte fixture; exact source mismatch refusal is exercised. Root must run actual rollback-only schedule/catalog proof against unchanged real metadata.",
+    "Isolated dashboard uses fixed founder/job/geography dependency stubs equally before/after; exact actual dashboard body is otherwise retained. Unused vector column uses text; no vector behavior claimed.",
+    "PG16 executes locally; actual PG17 MAINTAIN ACL is pinned from retained metadata and finite guarded branch, requiring actual root rehearsal.",
+    "No rendered client home/customer transaction verified by this throughput test. Existing source blocks, manual review, missing website, duplicates, quality signoffs and source→stored→rendered→owner/customer evidence remain open.",
+    "The864/day ceiling implies at least14days for the retained11806-row due queue at ideal utilization, before source failures/manual acceptance. It is not a completion promise."
+  ],
+  "root_activation_gates": [
+    "Independent source/PG/handler acceptance plus protected PR merge. Preserve current metadata/command hashes and all source pins.",
+    "Guard exact active original cron30 id/name/hourly schedule/command hash and disabled10, then pause30 in place. Do not unschedule/recreate or change command/credentials.",
+    "Drain all known old worker invocations beyond110-second source invocation bound plus RPC reconciliation. Exclude concurrent old manual/direct service callers. Capture fresh actual no-active canonical enrichment leases; do not reset any valid work.",
+    "Perform actual rollback-only migration rehearsal: remove ONLY known outer BEGIN/COMMIT controls when composing root rollback transaction; retain every function/guard byte. Verify actual old writer/accessors/state/listings unchanged after rollback. Do not accidentally execute embeddedCOMMIT inside rollback proof.",
+    "Apply admission migration, which installs default60minute bootstrap. Deploy new worker from coherent20module graph; verify actual ACTIVE version/index delta and19unchangeddependencies; old worker must not be rolled back over new source fixes.",
+    "Prefer waiting bootstrap expiry. Optional early bootstrap withdrawal is a distinct root-reviewed operation requiring exact current bootstrap JSON/CAS and independent quiescence/no-active-lease/new-Edge proof, preserving day/count and all other state. Public release always refuses bootstrap.",
+    "Apply separate cadence activation migration only after actual installed-body/ACL/command/job guards and protected worker acceptance. If any root outcome unknown, leave cron paused; do not auto-resume or retry writes.",
+    "Observe bounded recent invocation results at meaningful cadence and distinguish leased/applied/refused/source-ok/draft/review/render/customer-journey counts. Validate startup-day label and next UTC-day quota; never call864 finished profiles."
+  ],
+  "reviewer_setup_history": "First focused run lacked current-baseline mobile/profile and one retained public-fixtures file in fresh sparse checkout. Added only exact tracked files; final124 pass. Initial environment log retained. No runtime/test assertion relaxation.",
+  "operations": {
+    "production_SQL_reads": 0,
+    "production_SQL_writes": 0,
+    "cron_activation": 0,
+    "new_source_capture_or_external_network": 0,
+    "provider_calls": 0,
+    "runtime_source_edits": 0,
+    "independent_private_test_additions": 1
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/deno.log",
+      "sha256": "7d1f38f30f4893c2556aea91494f819ae185a2146a151e7b049d614cb4da98a8",
+      "bytes": 45
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/extra-cases.txt",
+      "sha256": "d0fba38006aa5996b5225cb07f6ac7226d43bda6f08f325d0b334a91c48dc2cd",
+      "bytes": 3479
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/focused-final.log",
+      "sha256": "abfa59bcd3d486fe373a06974bfb4ed8695ac99865684efc067c04fd05b3e63a",
+      "bytes": 15989
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/focused.log",
+      "sha256": "72dbcc7a277d52c7cb67a3d604f4361075101c60df3bcb2cda5fbf199948d551",
+      "bytes": 16283
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/frozen-manifest.json",
+      "sha256": "f61af06725a71223f7482d3917ff0d7af045519b2d8aca8acf4514621ad6dfae",
+      "bytes": 4017
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/independent-extra.integration.mjs",
+      "sha256": "8827c3ae6a8d83b6d8bb806224576b0c73ec27037fe5e11f0f7deda52a6c64f8",
+      "bytes": 28239
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/independent-source-boundaries.json",
+      "sha256": "36c175fe42247673b687e0244d592dfd45ee186d8434b1b07798cbaef04fdb40",
+      "bytes": 5614
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/owner-audit.json",
+      "sha256": "853f7f99dddea4d332e6e827c749719a6dfa66207d3b58a116d95f92e2be4c3a",
+      "bytes": 15960
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/owner-harness-preservation-proof.json",
+      "sha256": "6b830b9b89310ce10733330987f483e01d313a3df2dd57ac3eda0680582a6d93",
+      "bytes": 2843
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/pg-extra-result.json",
+      "sha256": "b78c2df1304ea22723cafea1246157b938d34926028d203e45e8ee18bab0855a",
+      "bytes": 2516
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/pg-extra.log",
+      "sha256": "1bb47e3b98f167afaac894ebb6f9c4165cbe3e3a2ce9470e0b2989f9251ec550",
+      "bytes": 5311
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/pg-result.json",
+      "sha256": "789be10c0db4de3ca8e419fb0271a1d3d54c682f43e7e45862b5f9d3e7ef6281",
+      "bytes": 2516
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/pg.log",
+      "sha256": "2b419378e4fe571d4ce1687e0fd429e76e1cbaf65c401aeb77e0b6798bd174d9",
+      "bytes": 4915
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-shared-admission-independent-2026-10-15/source-pincheck.json",
+      "sha256": "4c81b435c9aacf77170862e945b283be8fc0b5639bbaf06d77372d25fb51c967",
+      "bytes": 94
+    }
+  ]
+}

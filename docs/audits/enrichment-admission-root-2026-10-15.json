@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T20:50:15.918756+00:00",
+  "state": "Independent accepted source and actual production rollback rehearsals passed; protected merge and actual activation pending",
+  "baseline": "f22ae48f48cd53f61648dc85821b56338d6e3bb9",
+  "owner": "docs/audits/enrichment-shared-bounded-cadence-owner-2026-10-15.json",
+  "independent": "docs/audits/enrichment-shared-admission-independent-2026-10-15.json",
+  "review": {
+    "migration_guards": "Exact current5functionMD5/ACL,PG17privateRLSstate shape, no state preexistence; all passed on actual production rollback rehearsal",
+    "shared_guard": "Single private operational state, row lock beforelisting locks, UTC864newleased attempts/norefund, normal+sample serialized, no-work no charge, unknownflight retained, exactIDrelease after knownwriter receipt only",
+    "canonical_writer": "310678a4bd7d77d5467dbd07604349d9 unchanged",
+    "dashboard": "Fixed4publicfeedpredicate, no privateadmissionfeed",
+    "cadence": "Separate exact6function/ACL/jobID/commandhash gate, original30paused before activation; disabled10 staysdisabled; actualcombinedrollback passed",
+    "bootstrap": "Default60min barrier, service release refuses; no rootearlywithdrawal presently planned",
+    "first_day": "POST-ACTIVATION admissions only, historical today not reconstructed"
+  },
+  "root_verification": {
+    "local_release": "406 node:test files+2standalone suites passed",
+    "Deno": "cached-only checked actualindex0",
+    "inline": "370blocks/184filespass",
+    "HTML": "128filespass",
+    "actual_rollback": "Admission then separate combinedcadence rehearsal both5s/1s passed; all reverted; oldfunctions/state/job30hourly restored"
+  },
+  "activation_remaining": [
+    "Protectedmerge",
+    "Guard/pauseexistingcron30 and drainknownoldworker invocations",
+    "Fresh actual no-active canonical enrichment leases",
+    "Apply exactadmission and deploy20moduleworker;servedindexonlydelta/19siblings exact",
+    "Apply exactcadenceafterinstalledEdgeproof; defaultbootstrap expiry",
+    "Actualscheduledbatch/results/publicfacts/ownerpreservation"
+  ],
+  "limits": [
+    "864 is maximum leased attempts/day, not finished profiles",
+    "Source/visual/owner/provider/journey acceptance remains separate",
+    "No finitegeography/quality request renewal"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/enrichment-admission-root-2026-10-15/admission-root-inline-20261015.log",
+      "sha256": "a088cb778a78bb7537caa04e382a19344d5c04d83bcef41e12a3478f1108bdaa",
+      "bytes": 149
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-admission-root-2026-10-15/admission-professional-root-release-20261015.log",
+      "sha256": "ef1916921af061703f4ae116feb40ce36800124889b588f390a48309b017710a",
+      "bytes": 276778
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-admission-root-2026-10-15/root-actual-rollback.json",
+      "sha256": "900fde3d5b301c50a973cbffdc607cf185ce63d5fc1382c50d0bb23aab4ed41a",
+      "bytes": 4165
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-admission-root-2026-10-15/admission-root-deno-20261015.log",
+      "sha256": "7d1f38f30f4893c2556aea91494f819ae185a2146a151e7b049d614cb4da98a8",
+      "bytes": 45
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-admission-root-2026-10-15/admission-root-html-20261015.log",
+      "sha256": "52c8363967515afaf26be7fea62d1f628114a4037191701219a5ba94f0815f17",
+      "bytes": 103
+    },
+    {
+      "path": "docs/audits/evidence/enrichment-admission-root-2026-10-15/frozen-manifest.json",
+      "sha256": "f61af06725a71223f7482d3917ff0d7af045519b2d8aca8acf4514621ad6dfae",
+      "bytes": 4017
+    }
+  ]
+}

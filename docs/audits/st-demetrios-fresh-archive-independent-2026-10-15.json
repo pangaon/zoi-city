@@ -1,0 +1,502 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "accepted_at_UTC": "2026-10-15T20:48:08.894790+00:00",
+  "reviewer": "/root/owner_next",
+  "state": "independently accepted exact fresh canonical archive facts and exact prepared payload; root database rehearsal/CAS/apply/public journey pending",
+  "listing_id": "02e262c3-087f-40ae-aa3c-7c5d93371fef",
+  "request_id": "312b9fc0-7f01-4b09-abc7-04deb9656907",
+  "findings": [],
+  "capture_binding": {
+    "id": "20fccee5-acb6-4b2e-8861-14cbb1da1153",
+    "status": "unresolved",
+    "lease_id": null,
+    "strategy": "official_sources_v1",
+    "listing_id": "02e262c3-087f-40ae-aa3c-7c5d93371fef",
+    "captured_at": "2026-10-15T20:34:06.272275+00:00",
+    "input_fingerprint": "0ac50118b002a27b577dbdfdce00bc06",
+    "completed_lease_id": "31b366db-886c-4ebb-b549-b49d23b14ba0",
+    "source_json_sha256": "8e7991ac869d7ac0fd00c7f24f0142e9a974d2e417dfd6f5cbb65ef50748ea7d",
+    "capture_result_hash": "38d75bdacdb551bf2a11bad1d2f5bcfc"
+  },
+  "private_archive": "geography-source-evidence",
+  "archive_format": "decoded_utf8_sha256",
+  "raw_private_files": [
+    {
+      "path": "/home/codespace/.cache/zoi/st-demetrios-fresh-independent-20261015/c3085c5ff71bb04e68fdb84e26e62cfc2d9cc4aa773d2334e9387c5e83437524.source.html",
+      "sha256": "c3085c5ff71bb04e68fdb84e26e62cfc2d9cc4aa773d2334e9387c5e83437524",
+      "bytes": 974610,
+      "mode": "0600",
+      "source_url": "https://www.stdemetriosunion.org/"
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/st-demetrios-fresh-independent-20261015/6d8270fa50559adcfa0af2ab1637d76d0cb4ff98de1cbd5bdd003f6ea6993667.source.html",
+      "sha256": "6d8270fa50559adcfa0af2ab1637d76d0cb4ff98de1cbd5bdd003f6ea6993667",
+      "bytes": 835682,
+      "mode": "0600",
+      "source_url": "https://www.stdemetriosunion.org/contact"
+    }
+  ],
+  "retrieval": {
+    "method": "Exactly2 fixed authenticated private Storage GETs enqueued by net.http_get. Vault service_role_key value stayed inside SQL headers and was never returned, logged or written locally. Range0..1048575 and Accept-Encoding identity;20-second request bounds. Read only exact response IDs, accepted body only if status200/206, exact expected UTF8 byte length and SHA, then local base64 decode and full raw-byte rehash. Both responses206 with entire expected files, no timeout.",
+    "request_ids": [
+      15841,
+      15842
+    ],
+    "SQL_operations": "5 bounded operations: exact object/procedure metadata,2 GET enqueue in one query, one response read per object, post-read identity/source recheck. No SQL errors; no rollback recovery needed. net queues are operational read requests, not listing/job/authority mutations.",
+    "http_receipts": {
+      "home": {
+        "id": 15841,
+        "status_code": 206,
+        "timed_out": false,
+        "bytes": 974610,
+        "sha256": "c3085c5ff71bb04e68fdb84e26e62cfc2d9cc4aa773d2334e9387c5e83437524"
+      },
+      "contact": {
+        "id": 15842,
+        "status_code": 206,
+        "timed_out": false,
+        "bytes": 835682,
+        "sha256": "6d8270fa50559adcfa0af2ab1637d76d0cb4ff98de1cbd5bdd003f6ea6993667"
+      }
+    },
+    "private_object_before": {
+      "at": "2026-10-15T20:41:06.155572+00:00",
+      "net_get": "url text, params jsonb DEFAULT '{}'::jsonb, headers jsonb DEFAULT '{}'::jsonb, timeout_milliseconds integer DEFAULT 5000",
+      "objects": [
+        {
+          "id": "83fe800e-767a-4b8b-9d7c-cd03a8b8be4b",
+          "name": "6d8270fa50559adcfa0af2ab1637d76d0cb4ff98de1cbd5bdd003f6ea6993667.html",
+          "size": "835682",
+          "private": true,
+          "version": "a76f092a-0f93-4430-b079-58e1505169bb",
+          "mimetype": "text/html; charset=utf-8",
+          "bucket_id": "geography-source-evidence",
+          "updated_at": "2026-10-15T20:34:05.598864+00:00"
+        },
+        {
+          "id": "f93f39f4-3390-43d6-9a33-7def85e82660",
+          "name": "c3085c5ff71bb04e68fdb84e26e62cfc2d9cc4aa773d2334e9387c5e83437524.html",
+          "size": "974610",
+          "private": true,
+          "version": "ebd53fe6-b429-43cb-932a-79599036e834",
+          "mimetype": "text/html; charset=utf-8",
+          "bucket_id": "geography-source-evidence",
+          "updated_at": "2026-10-15T20:34:04.916298+00:00"
+        }
+      ],
+      "http_response_columns": [
+        [
+          "id",
+          "bigint"
+        ],
+        [
+          "status_code",
+          "integer"
+        ],
+        [
+          "content_type",
+          "text"
+        ],
+        [
+          "headers",
+          "jsonb"
+        ],
+        [
+          "content",
+          "text"
+        ],
+        [
+          "timed_out",
+          "boolean"
+        ],
+        [
+          "error_msg",
+          "text"
+        ],
+        [
+          "created",
+          "timestamp with time zone"
+        ]
+      ]
+    },
+    "private_object_after": {
+      "at": "2026-10-15T20:44:26.809779+00:00",
+      "objects": [
+        {
+          "id": "83fe800e-767a-4b8b-9d7c-cd03a8b8be4b",
+          "name": "6d8270fa50559adcfa0af2ab1637d76d0cb4ff98de1cbd5bdd003f6ea6993667.html",
+          "size": "835682",
+          "private": true,
+          "version": "a76f092a-0f93-4430-b079-58e1505169bb",
+          "updated_at": "2026-10-15T20:34:05.598864+00:00"
+        },
+        {
+          "id": "f93f39f4-3390-43d6-9a33-7def85e82660",
+          "name": "c3085c5ff71bb04e68fdb84e26e62cfc2d9cc4aa773d2334e9387c5e83437524.html",
+          "size": "974610",
+          "private": true,
+          "version": "ebd53fe6-b429-43cb-932a-79599036e834",
+          "updated_at": "2026-10-15T20:34:04.916298+00:00"
+        }
+      ],
+      "same_job_source": true
+    },
+    "invariants": "Same2 private object IDs,versions,size and updated_at before/after IO; same fresh completed job/source hash still current at20:44:26.809779Z. Root context archive[] was not treated as absence; precise lookup found both current SHA keys.",
+    "actual_Edge_inspection": "Actual source-consumer26, verify_jwt:false, inspected fixed token-only verify_archive action:64hex SHA and private bucket, capped2MiB actual Storage body hash before capture acquire/lease/RPC. Ticket auth refuses archive action. No Edge action invoked; no ticket or long-lived token retrieved."
+  },
+  "factual_equivalence": {
+    "previous_independent_audit": "/workspaces/zoi-reviewed-wix-v4-independent/docs/audits/st-demetrios-retained-factual-independent-2026-10-15.json",
+    "previous_audit_sha256": "14a85c3e5fe4b47d4efeb540ae52dccc6cbdff416577490f4e8ef0f2517f5d80",
+    "documents": [
+      {
+        "url": "https://www.stdemetriosunion.org/",
+        "sha256": "c3085c5ff71bb04e68fdb84e26e62cfc2d9cc4aa773d2334e9387c5e83437524",
+        "bytes": 974610,
+        "JSON_scan": {
+          "nodes": 9470,
+          "maximum_depth": 13,
+          "duplicate_keys": 0
+        },
+        "card": {
+          "tag": "div",
+          "id": "comp-lebnryg7",
+          "start_byte": 269821,
+          "end_byte": 271469,
+          "bytes": 1648,
+          "sha256": "8f0db3cba19765615dd0832ba6a0a349e8becdd8f11deace0339d0803c7e7804"
+        },
+        "fields_values_identical_to_old": true,
+        "raw_identity_prefix_identical_to_old": true,
+        "point_roles_identical_to_old": true,
+        "source_capture_support_report_equivalent": true
+      },
+      {
+        "url": "https://www.stdemetriosunion.org/contact",
+        "sha256": "6d8270fa50559adcfa0af2ab1637d76d0cb4ff98de1cbd5bdd003f6ea6993667",
+        "bytes": 835682,
+        "JSON_scan": {
+          "nodes": 9469,
+          "maximum_depth": 13,
+          "duplicate_keys": 0
+        },
+        "card": {
+          "tag": "div",
+          "id": "comp-lebnryg7",
+          "start_byte": 255217,
+          "end_byte": 256865,
+          "bytes": 1648,
+          "sha256": "8f0db3cba19765615dd0832ba6a0a349e8becdd8f11deace0339d0803c7e7804"
+        },
+        "fields_values_identical_to_old": true,
+        "raw_identity_prefix_identical_to_old": true,
+        "point_roles_identical_to_old": true,
+        "source_capture_support_report_equivalent": true
+      }
+    ],
+    "fresh_full_scan": "Accepted namespace-aware parser independently scans both complete archived pages,9470/9469 JSONnodes,depth13,0duplicates. Every script/body/context/prefix/13field/point-role raw-range hash recomputed and entire serialized support object equals current canonical capture report.",
+    "rendered": "Offline Chromium retained archive HTML with JS disabled and all external resource requests blocked; both natural comp-lebnryg7 cards visibly contain full parish name and721 Rahway Avenue, Union, New Jersey07083. Source imagery/map provider not loaded.",
+    "natural_cards": "Both1648-byte raw divs rehash to8f0db3cba19765615dd0832ba6a0a349e8becdd8f11deace0339d0803c7e7804; fresh home269821..271469, contact255217..256865. No composed slice.",
+    "aliases": "Saint/St., Avenue/Ave/AVE, Union/UNION TWP, NJ/New Jersey and United States/US/USA are coherently supported by the exact visible card, typed fields, canonical domain and existing retained NJ/USPS evidence. ZIP07083-6689 is source-published extension of shared base07083; USPS proves only locality/state/baseZIP for another address, not church721 or extension6689.",
+    "unchanged_roles": "Typed40.6948987,-74.2952375 appears identically on both pages. Contact independently publishes Google destination40.6948328,-74.2952553 with same placeID, exactanchorrawSHA and URL. @40.6948328,-74.297444 is camera framing. No average/entrance/roof choice.",
+    "parcel_and_distance": {
+      "retained_primary_parcel_sha256": "cb0d39f219389c6a8db9a9ba864cddbcb99dc862b8c1d2014d788326ebddc281",
+      "same_retained_parcel_raw_bytes_verified_in_prepared_proof": true,
+      "point_computations_reused_only_after_exact_point_equivalence": {
+        "typed_business_location": {
+          "longitude": -74.2952375,
+          "latitude": 40.6948987,
+          "parcel": {
+            "inside": true,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": -1
+              }
+            ]
+          },
+          "municipality": {
+            "inside": true,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": -1
+              }
+            ]
+          }
+        },
+        "published_google_destination": {
+          "longitude": -74.2952553,
+          "latitude": 40.6948328,
+          "parcel": {
+            "inside": true,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": -1
+              }
+            ]
+          },
+          "municipality": {
+            "inside": true,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": -1
+              }
+            ]
+          }
+        },
+        "cached_prior_pin": {
+          "longitude": -74.2697,
+          "latitude": 40.6989,
+          "parcel": {
+            "inside": false,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": 0
+              }
+            ]
+          },
+          "municipality": {
+            "inside": true,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": -1
+              }
+            ]
+          }
+        },
+        "google_viewport_only": {
+          "longitude": -74.297444,
+          "latitude": 40.6948328,
+          "parcel": {
+            "inside": false,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": 0
+              }
+            ]
+          },
+          "municipality": {
+            "inside": true,
+            "rings": [
+              {
+                "boundary": false,
+                "winding": -1
+              }
+            ]
+          }
+        }
+      },
+      "distance_metres": {
+        "typed_to_google_destination": 7.479840603315252,
+        "cached_prior_to_typed": 2198.425511151186
+      },
+      "parcel_publication_UTC": "2023-10-03T00:00:00+00:00",
+      "meaning": "Independent address+municipality-selected NJparcel contains both distinct publishedpoints; cached oldpin is outside about2.2km away. Same-property corroboration, not point equivalence or survey precision."
+    }
+  },
+  "exact_payload_acceptance": {
+    "check": {
+      "request_id": "312b9fc0-7f01-4b09-abc7-04deb9656907",
+      "payload_shape_exact": true,
+      "report_rebuilt_byte_exact_from_independently_retrieved_archive": true,
+      "independent_parser_matches_all_capture_support_fields": true,
+      "all_cards_raw_ranges_unique_and_exact": true,
+      "parcel_evidence_full_bytes_exact": true,
+      "locality_bounds_derive_exactly_from_retained_polygon": true,
+      "request_rebuilt_deep_exact": true,
+      "report_sha256": "32c7e34a4a77791167f0b2dc39e839ceae5831b719f9fc38b01df6a553a3a5e6",
+      "proof_sha256": "aa64be56580fc7a909ba94a63f337936edcd150e94c0bf8cbbb899f8dcd6a189",
+      "files": [
+        {
+          "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/prepared-fresh-2034/snapshot.json",
+          "sha256": "3770b900a80b1594b1a39d14386f1ec970816f560141d47d7ea210ac74e781a5",
+          "bytes": 917
+        },
+        {
+          "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/prepared-fresh-2034/proof.json",
+          "sha256": "6987a3d72d9a3208b3986d88ed10b58235a0a779a1cf3b5b13f21a167fd21f77",
+          "bytes": 24910
+        },
+        {
+          "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/prepared-fresh-2034/report.txt",
+          "sha256": "32c7e34a4a77791167f0b2dc39e839ceae5831b719f9fc38b01df6a553a3a5e6",
+          "bytes": 23604
+        },
+        {
+          "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/prepared-fresh-2034/review-PENDING-INDEPENDENT.json",
+          "sha256": "3fa393a7ce1c1ceb49964022fdd0976c4e6964949b077ffd9ff21a1347556ab1",
+          "bytes": 1827
+        },
+        {
+          "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/prepared-fresh-2034/request-PENDING-INDEPENDENT.json",
+          "sha256": "e1be243a39a065b892a00b39a2585a3c2f295a3a8a5a272c173d36fa87002cdb",
+          "bytes": 30014
+        },
+        {
+          "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/prepared-fresh-2034/source-input-summary.json",
+          "sha256": "a87fdd7ac5a73fbba9b14d5a73d4ac4095ec7f9c1d0244d386456725648a03da",
+          "bytes": 4557
+        }
+      ]
+    },
+    "review_flags": "All flags in exact prepared review now factually supported. selected_point_exact means exact literal typed-source point, not geophysical/entrance accuracy. same_property_not_point_equivalence and precision source_published retained.",
+    "source_kind": "Only difference between preparatory snapshot and root current-context snapshot is explicit source_kind:official_website, a classification of this exact canonical registered, unheld official domain and capture; it is not asserted to have been stored in listing/profile. Current server source/hold/owner gates remain required.",
+    "review_time": "Prepared review timestamp precedes this final acceptance; names and flags were explicitly pending until this independent audit. This audit accepted_at is the final signoff time.",
+    "report_sha256": "32c7e34a4a77791167f0b2dc39e839ceae5831b719f9fc38b01df6a553a3a5e6",
+    "proof_sha256": "aa64be56580fc7a909ba94a63f337936edcd150e94c0bf8cbbb899f8dcd6a189",
+    "request_rebuilt": "Existing accepted builder rerun against our exact raw archive + independently checked identity cards + retained exact parcel/locality, produces byte-identical report and deep-identical request. No payload or request was submitted."
+  },
+  "authority_limits": {
+    "root_context_captured_at": "2026-10-15T20:39:21.133848+00:00",
+    "expected_full_row_CAS": "8562ff76b3092fcb058756352d0d9d1e",
+    "current_listing_source_fingerprint": "385b7c2537b493cb78e8738e30d18765",
+    "job_source_postread_current_at": "2026-10-15T20:44:26.809779+00:00",
+    "remaining": [
+      "Root actual5-second rollback-only server validation of exact payload and current installed writer/catalog.",
+      "Fresh full-rowCAS/current listing ownership/holds/status and exact completed capture/source binding at manual apply; no audit substitutes for server locks/rechecks.",
+      "Root canonical manual apply only after known rehearsal outcome; unknown SQL outcome requires ROLLBACK/reconciliation.",
+      "Public reader and actual map selected context/destination/customer journey after apply; no correction/live navigation claimed by this audit.",
+      "Retained NJ2023 parcel/USPS2022 locality evidence remains corroborative and dated; no current survey/entrance claim."
+    ]
+  },
+  "operations": {
+    "source_origin_refetches": 0,
+    "source_captures_or_admissions": 0,
+    "Storage_GETs": 2,
+    "Edge_function_reads": 1,
+    "Edge_invocations": 0,
+    "production_listing_job_policy_writer_mutations": 0,
+    "SQL_errors": 0,
+    "credentials_returned_logged_or_saved": 0,
+    "paid_provider_actions": 0
+  },
+  "reviewer_helper_correction": "Initial deepStrictEqual compared intentional null-prototype parser object with persisted JSON plain object. Corrected comparison to exact serialized JSON values; every field/range equality retained. Not a factual/source mismatch.",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/actual-edge-_ticket-auth.ts",
+      "sha256": "4f7030f8f942775064cf347d4701e5e8bc8644ab4fd2dee0e95bd21159720176",
+      "bytes": 1556
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/actual-edge-index.ts",
+      "sha256": "198f76f424c95f0699183743b31f4107d7f04190626b001d91339df1d002ff2b",
+      "bytes": 15971
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/actual-edge-metadata.json",
+      "sha256": "4efc665d631922ebcd746ba71daeabbec00ee7f4657cd7bf9da44796b70ba5a5",
+      "bytes": 927
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/archive-get.sql",
+      "sha256": "dc3b8c20125862bfef1f487af969881d4829f334e4b03074d9564064f44678d2",
+      "bytes": 1478
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/archive-http-receipts.json",
+      "sha256": "81c2111fd1a9146758756aa91f59b860510263d4d0030405037872cd56558a6e",
+      "bytes": 299
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/archive-request-ids.json",
+      "sha256": "043d605755e34d22e3ae9fea842d38f6ea5ce5f87be4966987c99c5b4ec1df5a",
+      "bytes": 849
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/check-request.mjs",
+      "sha256": "8ac921d8d150bbe6518015568197dfb55e17be7bf970a61d88fcf003f9cca8b0",
+      "bytes": 5169
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/full-fresh-inspection.json",
+      "sha256": "66530d19c56732dc9be3abbc8f4d314f909b95a5f0bcc3f30b6939594deca9fb",
+      "bytes": 18750
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/identity-contact.png",
+      "sha256": "8bbec67366226a98e31277ec7516f9e2553c1207f92c1d08aa70babb9b78fd6b",
+      "bytes": 34737
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/identity-home.png",
+      "sha256": "8bbec67366226a98e31277ec7516f9e2553c1207f92c1d08aa70babb9b78fd6b",
+      "bytes": 34737
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/inspect-fresh.mjs",
+      "sha256": "879d34ebfec0d5e823dc7502dd3ad7147e71ae09307049534526bb13c2560e3d",
+      "bytes": 4658
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/prepared-request/proof.json",
+      "sha256": "6987a3d72d9a3208b3986d88ed10b58235a0a779a1cf3b5b13f21a167fd21f77",
+      "bytes": 24910
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/prepared-request/report.txt",
+      "sha256": "32c7e34a4a77791167f0b2dc39e839ceae5831b719f9fc38b01df6a553a3a5e6",
+      "bytes": 23604
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/prepared-request/request-PENDING-INDEPENDENT.json",
+      "sha256": "e1be243a39a065b892a00b39a2585a3c2f295a3a8a5a272c173d36fa87002cdb",
+      "bytes": 30014
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/prepared-request/review-PENDING-INDEPENDENT.json",
+      "sha256": "3fa393a7ce1c1ceb49964022fdd0976c4e6964949b077ffd9ff21a1347556ab1",
+      "bytes": 1827
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/prepared-request/snapshot.json",
+      "sha256": "3770b900a80b1594b1a39d14386f1ec970816f560141d47d7ea210ac74e781a5",
+      "bytes": 917
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/prepared-request/source-input-summary.json",
+      "sha256": "a87fdd7ac5a73fbba9b14d5a73d4ac4095ec7f9c1d0244d386456725648a03da",
+      "bytes": 4557
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/request-independent-check.json",
+      "sha256": "38965bedac8bcf2d3378af0b3d891484f71e0dedba7b6b54e1e038726d916a54",
+      "bytes": 2045
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/root-fresh-canonical-context.json",
+      "sha256": "78190d49512f3f04379a68f408f1153f9e8e435441c529b26af2853196bc3b68",
+      "bytes": 18463
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/source-equivalence.json",
+      "sha256": "f64f857f29588a07ef1f665dfa218abd231de41a327a957404f1255ac4b16c81",
+      "bytes": 1364
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/storage-metadata-actual.json",
+      "sha256": "b5d748ac3bf77289d51aca3b073dddf7f897fa553a439d9b1b2537db175d6934",
+      "bytes": 1977
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/storage-postread-actual.json",
+      "sha256": "06760ce36a341410c1896a05a4a535f476da51f9e115f0c1e4258a613d318a36",
+      "bytes": 1340
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/visible-cards.json",
+      "sha256": "a4bed59fd41f4cce419c0caf5c37ba3f82d50147a54e5ba0bf9dc954e0e23009",
+      "bytes": 18144
+    },
+    {
+      "path": "docs/audits/evidence/st-demetrios-fresh-archive-independent-2026-10-15/visible-cards.py",
+      "sha256": "9865b804087c9f207c51c254c7fe238b5f15640bc12a0b5737039f78227b1d3c",
+      "bytes": 2610
+    }
+  ]
+}
