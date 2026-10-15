@@ -1,0 +1,978 @@
+{
+  "captured_at": "2026-10-15T16:54:23.724215+00:00",
+  "listing_columns": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "entity_type",
+      "type": "text"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "slug",
+      "type": "text"
+    },
+    {
+      "name": "legal_name",
+      "type": "text"
+    },
+    {
+      "name": "display_name",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "primary_category_id",
+      "type": "bigint"
+    },
+    {
+      "name": "tags",
+      "type": "text[]"
+    },
+    {
+      "name": "language_support",
+      "type": "text[]"
+    },
+    {
+      "name": "greek_language_available",
+      "type": "boolean"
+    },
+    {
+      "name": "city",
+      "type": "text"
+    },
+    {
+      "name": "region",
+      "type": "text"
+    },
+    {
+      "name": "province_state",
+      "type": "text"
+    },
+    {
+      "name": "country",
+      "type": "text"
+    },
+    {
+      "name": "neighborhood",
+      "type": "text"
+    },
+    {
+      "name": "address",
+      "type": "text"
+    },
+    {
+      "name": "latitude",
+      "type": "double precision"
+    },
+    {
+      "name": "longitude",
+      "type": "double precision"
+    },
+    {
+      "name": "region_id",
+      "type": "bigint"
+    },
+    {
+      "name": "phone",
+      "type": "text"
+    },
+    {
+      "name": "email",
+      "type": "text"
+    },
+    {
+      "name": "website",
+      "type": "text"
+    },
+    {
+      "name": "source_id",
+      "type": "uuid"
+    },
+    {
+      "name": "source_url",
+      "type": "text"
+    },
+    {
+      "name": "source_type",
+      "type": "text"
+    },
+    {
+      "name": "source_trust_tier",
+      "type": "text"
+    },
+    {
+      "name": "source_last_checked_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "first_seen_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_seen_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_verified_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "verification_status",
+      "type": "text"
+    },
+    {
+      "name": "claim_status",
+      "type": "text"
+    },
+    {
+      "name": "owner_user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "duplicate_status",
+      "type": "text"
+    },
+    {
+      "name": "moderation_status",
+      "type": "text"
+    },
+    {
+      "name": "publish_status",
+      "type": "text"
+    },
+    {
+      "name": "freshness_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "completeness_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "trust_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "profile",
+      "type": "jsonb"
+    },
+    {
+      "name": "field_meta",
+      "type": "jsonb"
+    },
+    {
+      "name": "trust_badges",
+      "type": "text[]"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "created_by",
+      "type": "text"
+    },
+    {
+      "name": "updated_by",
+      "type": "text"
+    },
+    {
+      "name": "search_tsv",
+      "type": "tsvector"
+    },
+    {
+      "name": "meta_title",
+      "type": "text"
+    },
+    {
+      "name": "meta_description",
+      "type": "text"
+    },
+    {
+      "name": "canonical_path",
+      "type": "text"
+    },
+    {
+      "name": "schema_type",
+      "type": "text"
+    },
+    {
+      "name": "og_image",
+      "type": "text"
+    },
+    {
+      "name": "hreflang_alt",
+      "type": "jsonb"
+    },
+    {
+      "name": "sells_products",
+      "type": "boolean"
+    },
+    {
+      "name": "offers_services",
+      "type": "boolean"
+    },
+    {
+      "name": "is_professional",
+      "type": "boolean"
+    },
+    {
+      "name": "bookable",
+      "type": "boolean"
+    },
+    {
+      "name": "booking_type",
+      "type": "text"
+    },
+    {
+      "name": "service_on_demand",
+      "type": "boolean"
+    },
+    {
+      "name": "marketplace_status",
+      "type": "text"
+    },
+    {
+      "name": "price_range",
+      "type": "text"
+    },
+    {
+      "name": "hours",
+      "type": "text"
+    },
+    {
+      "name": "rating",
+      "type": "numeric(2,1)"
+    },
+    {
+      "name": "rating_count",
+      "type": "integer"
+    },
+    {
+      "name": "photo_url",
+      "type": "text"
+    },
+    {
+      "name": "amenities",
+      "type": "text[]"
+    },
+    {
+      "name": "geo_precision",
+      "type": "text"
+    },
+    {
+      "name": "embedding",
+      "type": "vector(1536)"
+    },
+    {
+      "name": "keywords",
+      "type": "text[]"
+    },
+    {
+      "name": "onboarding_path",
+      "type": "text"
+    },
+    {
+      "name": "social_links",
+      "type": "jsonb"
+    },
+    {
+      "name": "ingestion_source",
+      "type": "text"
+    },
+    {
+      "name": "owner_workspace_id",
+      "type": "uuid"
+    },
+    {
+      "name": "place_id",
+      "type": "bigint"
+    },
+    {
+      "name": "region_code",
+      "type": "text"
+    },
+    {
+      "name": "region_native",
+      "type": "text"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "3f9e0896e6308211fd0366917f2ae68c",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "public.geography_repair_record_application(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_repair_record_application(p_job uuid, p_request uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE j zoi.geography_repair_jobs;l zoi.listings;r zoi.geography_reviews;BEGIN\n SELECT * INTO j FROM zoi.geography_repair_jobs WHERE id=p_job FOR UPDATE;\n SELECT * INTO l FROM zoi.listings WHERE id=j.listing_id FOR SHARE;\n SELECT * INTO r FROM zoi.geography_reviews WHERE request_id=p_request AND listing_id=j.listing_id FOR SHARE;\n IF j.id IS NULL OR r.request_id IS NULL OR r.reverted_at IS NOT NULL OR r.after_fingerprint IS DISTINCT FROM zoi.geography_fingerprint(l)\n OR l.owner_user_id IS NOT NULL OR l.owner_workspace_id IS NOT NULL OR l.publish_status IS DISTINCT FROM 'published'\n OR (l.moderation_status IS DISTINCT FROM 'clean' AND l.moderation_status IS DISTINCT FROM 'cleared') OR l.marketplace_status='hidden'\n OR r.receipt->>'precision' IS DISTINCT FROM 'street' OR l.profile#>>'{_geo,request_id}' IS DISTINCT FROM p_request::text\n THEN RAISE EXCEPTION 'current_guarded_geography_receipt_required';END IF;\n UPDATE zoi.geography_repair_jobs SET status='applied',application_result=r.receipt||jsonb_build_object('coordinate_changed',(j.original->'latitude' IS DISTINCT FROM to_jsonb(l.latitude) OR j.original->'longitude' IS DISTINCT FROM to_jsonb(l.longitude))),applied_at=now(),updated_at=now(),reason='independently_reviewed_guarded_address_position_applied' WHERE id=j.id;\n RETURN r.receipt;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "856ab1b56548ee6d68677dade4bc4fbd",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "public.geography_review_apply(uuid,uuid,text,text,jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_review_apply(p_request uuid, p_listing uuid, p_expected text, p_report_text text, p_review jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE\n l zoi.listings; prior zoi.geography_reviews; report jsonb; c jsonb;b jsonb;\n named_parts text[]; payload jsonb; receipt jsonb; before_geo jsonb; report_hash text;\n lat double precision;lng double precision; south double precision;north double precision;\n west double precision;east double precision;review_time timestamptz;source_host text;website_host text;source_path text;website_path text;\nBEGIN\n IF p_request IS NULL OR p_listing IS NULL OR p_expected IS NULL\n OR p_report_text IS NULL OR octet_length(p_report_text)>32768\n OR jsonb_typeof(p_review) IS DISTINCT FROM 'object' OR octet_length(p_review::text)>16384\n THEN RAISE EXCEPTION 'invalid_geography_review';END IF;\n report:=p_report_text::jsonb;\n report_hash:=encode(extensions.digest(convert_to(p_report_text,'UTF8'),'sha256'),'hex');\n payload:=jsonb_build_object('listing',p_listing,'expected',p_expected,'report',report,'report_hash',report_hash,'review',p_review);\n PERFORM pg_advisory_xact_lock(hashtextextended('geography-review:'||p_request::text,0));\n SELECT * INTO l FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND OR l.owner_user_id IS NOT NULL OR l.owner_workspace_id IS NOT NULL\n OR l.publish_status IS DISTINCT FROM 'published' OR coalesce(l.moderation_status,'') NOT IN('clean','cleared')\n OR coalesce(l.marketplace_status,'')='hidden' THEN RAISE EXCEPTION 'geography_listing_unavailable';END IF;\n IF l.profile IS NOT NULL AND jsonb_typeof(l.profile) IS DISTINCT FROM 'object' THEN RAISE EXCEPTION 'geography_profile_shape_invalid';END IF;\n SELECT * INTO prior FROM zoi.geography_reviews WHERE request_id=p_request;\n IF FOUND THEN\n  IF prior.payload IS DISTINCT FROM payload THEN RAISE EXCEPTION 'geography_request_conflict';END IF;\n  IF prior.reverted_at IS NOT NULL THEN RAISE EXCEPTION 'geography_review_reverted';END IF;\n  IF zoi.geography_fingerprint(l) IS DISTINCT FROM prior.after_fingerprint THEN RAISE EXCEPTION 'geography_snapshot_changed';END IF;\n  RETURN prior.receipt;\n END IF;\n IF zoi.geography_fingerprint(l) IS DISTINCT FROM p_expected\n OR p_review->>'database_snapshot' IS DISTINCT FROM p_expected\n OR report->>'listing_id' IS DISTINCT FROM p_listing::text\n OR report->>'source_fingerprint' IS DISTINCT FROM zoi.listing_quality_fingerprint(l)\n THEN RAISE EXCEPTION 'geography_snapshot_changed';END IF;\n IF report->>'status' IS DISTINCT FROM 'review_required'\n OR report->>'reason' IS DISTINCT FROM 'coordinate_plausibility_review_required'\n OR p_review->>'report_sha256' IS DISTINCT FROM report_hash\n OR p_review->'exact_address_confirmed' IS DISTINCT FROM 'true'::jsonb\n OR p_review->'not_area_centroid' IS DISTINCT FROM 'true'::jsonb\n OR length(btrim(coalesce(p_review->>'reviewer',''))) NOT BETWEEN 1 AND 160\n OR length(btrim(coalesce(p_review->>'specialist',''))) NOT BETWEEN 1 AND 160\n OR lower(btrim(p_review->>'reviewer'))=lower(btrim(p_review->>'specialist'))\n THEN RAISE EXCEPTION 'independent_geography_review_required';END IF;\n review_time:=(p_review->>'reviewed_at')::timestamptz;\n IF review_time IS NULL OR review_time<clock_timestamp()-interval '7 days'\n OR review_time>clock_timestamp()+interval '5 minutes' THEN RAISE EXCEPTION 'geography_review_expired';END IF;\n source_host:=lower(substring(report->>'source_url' FROM '^https://([^/:?#@]+)(?:/|$)'));\n website_host:=lower(substring(l.website FROM '^https://([^/:?#@]+)(?:/|$)'));\n IF source_host IS NULL OR website_host IS NULL\n OR regexp_replace(source_host,'^www\\.','')<>regexp_replace(website_host,'^www\\.','')\n OR coalesce(report->>'source_sha256','')!~'^[0-9a-f]{64}$'\n THEN RAISE EXCEPTION 'geography_source_mismatch';END IF;\n c:=report->'candidate';b:=p_review->'locality_extent';\n source_path:=regexp_replace(regexp_replace(report->>'source_url','^https://[^/]+',''),'[?#].*$','');\n website_path:=rtrim(regexp_replace(regexp_replace(l.website,'^https://[^/]+',''),'[?#].*$',''),'/');\n -- Conservative property scoping: raw URL prefixes are not safe when a\n -- browser/server could normalize dot segments or encoded separators first.\n -- Reject ambiguous forms instead of guessing their decoded destination.\n IF strpos(report->>'source_url',chr(92))>0 OR strpos(l.website,chr(92))>0\n OR source_path ~* '(^|/)[.]{1,2}(/|$)|//|%(2e|2f|5c|25)'\n OR website_path ~* '(^|/)[.]{1,2}(/|$)|//|%(2e|2f|5c|25)'\n THEN RAISE EXCEPTION 'geography_source_path_noncanonical';END IF;\n IF report->'schema' IS DISTINCT FROM '1'::jsonb\n OR report->>'kind' IS DISTINCT FROM 'official_coordinate_dry_run'\n OR report->'http_status' IS DISTINCT FROM '200'::jsonb\n OR coalesce(report->>'snapshot_sha256','')!~'^[0-9a-f]{64}$'\n OR coalesce(c->>'evidence_kind','') NOT IN('jsonld','official_destination','reviewed_named_place_shortlink')\n OR lower(btrim(c->>'name')) IS DISTINCT FROM lower(btrim(l.name))\n OR p_review->'official_source_confirmed' IS DISTINCT FROM 'true'::jsonb\n OR p_review->'candidate_address' IS DISTINCT FROM c->'address'\n OR jsonb_typeof(c->'address') IS DISTINCT FROM 'object'\n OR length(btrim(coalesce(c#>>'{address,street}','')))=0\n OR length(btrim(coalesce(c#>>'{address,city}','')))=0\n OR length(btrim(coalesce(c#>>'{address,country}','')))=0\n OR p_review->>'stored_address' IS DISTINCT FROM l.address\n OR p_review->>'stored_city' IS DISTINCT FROM l.city\n OR p_review->>'stored_country' IS DISTINCT FROM l.country\n OR (c->>'evidence_kind'<>'reviewed_named_place_shortlink' AND website_path<>'' AND source_path<>website_path AND left(source_path,length(website_path)+1)<>website_path||'/')\n THEN RAISE EXCEPTION 'geography_identity_review_required';END IF;\n IF c->>'evidence_kind'='reviewed_named_place_shortlink' THEN\n  IF p_review->'publisher_contact_scope' IS DISTINCT FROM 'true'::jsonb\n  OR p_review->'named_place_confirmed' IS DISTINCT FROM 'true'::jsonb\n  OR p_review->>'destination_purpose' IS DISTINCT FROM 'place_location'\n  OR p_review->>'source_sha256' IS DISTINCT FROM report->>'source_sha256'\n  OR coalesce(report->>'identity_review_sha256','')!~'^[0-9a-f]{64}$'\n  OR p_review->>'identity_review_sha256' IS DISTINCT FROM report->>'identity_review_sha256'\n  OR coalesce(c->>'capture_sha256','')!~'^[0-9a-f]{64}$'\n  OR coalesce(c->>'contact_card_sha256','')!~'^[0-9a-f]{64}$'\n  OR p_review->>'capture_sha256' IS DISTINCT FROM c->>'capture_sha256'\n  OR p_review->>'contact_card_sha256' IS DISTINCT FROM c->>'contact_card_sha256'\n  OR p_review->>'destination_url' IS DISTINCT FROM c->>'evidence_url'\n  OR p_review->>'shortlink_url' IS DISTINCT FROM c->>'shortlink_url'\n  OR p_review->>'place_id' IS DISTINCT FROM c->>'place_id'\n  OR coalesce(c->>'shortlink_url','')!~'^https://maps[.]app[.]goo[.]gl/[A-Za-z0-9]+$'\n  OR c->'destination_locality' IS DISTINCT FROM b\n  THEN RAISE EXCEPTION 'geography_named_place_review_required';END IF;\n  named_parts:=regexp_match(c->>'evidence_url','^https://www[.]google[.]com/maps/place/([^/]+)/@[^/]+/data=!4m9!3m8!1s(0x[0-9a-f]+:0x[0-9a-f]+)!5m2!4m1!1i2!8m2!3d(-?[0-9]+(?:[.][0-9]+)?)!4d(-?[0-9]+(?:[.][0-9]+)?)!16s[^!?#]+(?:[?][^#]+)?$','i');\n  IF named_parts IS NULL OR lower(zoi.geography_url_component(named_parts[1])) IS DISTINCT FROM lower(l.name)\n  OR named_parts[2] IS DISTINCT FROM c->>'place_id'\n  OR (named_parts[3])::double precision IS DISTINCT FROM (c->>'latitude')::double precision\n  OR (named_parts[4])::double precision IS DISTINCT FROM (c->>'longitude')::double precision\n  OR EXISTS(SELECT 1 FROM regexp_split_to_table(split_part(c->>'evidence_url','?',2),'&') AS item WHERE item<>'' AND split_part(item,'=',1) NOT IN('entry','g_ep','skid'))\n  THEN RAISE EXCEPTION 'geography_named_destination_mismatch';END IF;\n END IF;\n IF c->>'evidence_kind'='official_destination' AND (\n p_review->>'destination_purpose' IS DISTINCT FROM 'place_location'\n OR p_review->>'destination_url' IS DISTINCT FROM c->>'evidence_url'\n OR coalesce(c->>'evidence_url','')!~'^https://(www\\.)?google\\.com/maps/dir/')\n THEN RAISE EXCEPTION 'geography_destination_review_required';END IF;\n IF c->>'precision' IS DISTINCT FROM 'source_published'\n OR jsonb_typeof(c->'latitude') IS DISTINCT FROM 'number' OR jsonb_typeof(c->'longitude') IS DISTINCT FROM 'number'\n OR jsonb_typeof(b->'south') IS DISTINCT FROM 'number' OR jsonb_typeof(b->'north') IS DISTINCT FROM 'number'\n OR jsonb_typeof(b->'west') IS DISTINCT FROM 'number' OR jsonb_typeof(b->'east') IS DISTINCT FROM 'number'\n OR coalesce(b->>'source_url','')!~'^https://[^/:?#@]+/' THEN RAISE EXCEPTION 'geography_locality_evidence_required';END IF;\n lat:=(c->>'latitude')::double precision;lng:=(c->>'longitude')::double precision;\n south:=(b->>'south')::double precision;north:=(b->>'north')::double precision;\n west:=(b->>'west')::double precision;east:=(b->>'east')::double precision;\n IF south< -90 OR north>90 OR west< -180 OR east>180 OR south>=north OR west>=east\n OR north-south>5 OR east-west>5 OR lat<south OR lat>north OR lng<west OR lng>east OR(lat=0 AND lng=0)\n THEN RAISE EXCEPTION 'geography_outside_reviewed_locality';END IF;\n IF NOT zoi.geography_read_source_allowed(l) THEN RAISE EXCEPTION 'geography_source_authority_held';END IF;\n INSERT INTO zoi.geography_read_authority_epochs(listing_id) VALUES(l.id) ON CONFLICT(listing_id) DO NOTHING;\n before_geo:=jsonb_build_object('latitude',l.latitude,'longitude',l.longitude,'geo_precision',l.geo_precision,\n 'profile_was_null',l.profile IS NULL,'had_geo',coalesce(l.profile,'{}'::jsonb)?'_geo','geo',l.profile->'_geo');\n UPDATE zoi.listings SET latitude=lat,longitude=lng,geo_precision='street',\n profile=coalesce(l.profile,'{}'::jsonb)||jsonb_build_object('_geo',jsonb_build_object(\n 'precision','street','method','reviewed_official_source','source_url',report->>'source_url',\n 'source_sha256',report->>'source_sha256','report_sha256',report_hash,'reviewer',p_review->>'reviewer',\n 'reviewed_at',review_time,'request_id',p_request)),updated_at=clock_timestamp()\n WHERE id=p_listing RETURNING * INTO l;\n receipt:=jsonb_build_object('ok',true,'request_id',p_request,'listing_id',p_listing,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision,'report_sha256',report_hash,\n 'after_snapshot',zoi.geography_fingerprint(l));\n IF NOT zoi.geography_read_source_allowed(l) THEN RAISE EXCEPTION 'geography_source_authority_held';END IF;\n INSERT INTO zoi.geography_reviews(request_id,listing_id,payload,receipt,before_geo,after_fingerprint,read_authority_fingerprint)\n VALUES(p_request,p_listing,payload,receipt,before_geo,zoi.geography_fingerprint(l),zoi.geography_read_authority_fingerprint(l));\n RETURN receipt;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "e6f2ba4421641428065b817ad47bd3e8",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "public.geography_review_revert(uuid,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_review_revert(p_request uuid, p_expected text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE r zoi.geography_reviews;l zoi.listings;\nBEGIN\n IF p_request IS NULL OR p_expected IS NULL THEN RAISE EXCEPTION 'invalid_geography_review';END IF;\n PERFORM pg_advisory_xact_lock(hashtextextended('geography-review:'||p_request::text,0));\n SELECT * INTO r FROM zoi.geography_reviews WHERE request_id=p_request;\n IF NOT FOUND THEN RAISE EXCEPTION 'geography_review_missing';END IF;\n SELECT * INTO l FROM zoi.listings WHERE id=r.listing_id FOR UPDATE;\n IF NOT FOUND OR l.owner_user_id IS NOT NULL OR l.owner_workspace_id IS NOT NULL\n THEN RAISE EXCEPTION 'geography_listing_unavailable';END IF;\n IF r.reverted_at IS NOT NULL THEN RETURN jsonb_build_object('ok',true,'reverted',true,'request_id',p_request);END IF;\n IF p_expected IS DISTINCT FROM r.after_fingerprint OR zoi.geography_fingerprint(l) IS DISTINCT FROM r.after_fingerprint\n THEN RAISE EXCEPTION 'geography_snapshot_changed';END IF;\n UPDATE zoi.listings SET latitude=(r.before_geo->>'latitude')::double precision,\n longitude=(r.before_geo->>'longitude')::double precision,geo_precision=r.before_geo->>'geo_precision',\n profile=CASE WHEN r.before_geo->'profile_was_null'='true'::jsonb THEN NULL WHEN r.before_geo->'had_geo'='true'::jsonb THEN jsonb_set(coalesce(l.profile,'{}'::jsonb),'{_geo}',r.before_geo->'geo') ELSE coalesce(l.profile,'{}'::jsonb)-'_geo' END,\n updated_at=clock_timestamp() WHERE id=r.listing_id;\n UPDATE zoi.geography_reviews SET reverted_at=clock_timestamp() WHERE request_id=p_request;\n RETURN jsonb_build_object('ok',true,'reverted',true,'request_id',p_request);\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "public.geography_reviewed_point(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.geography_reviewed_point(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT jsonb_build_object('listing_id',l.id,'request_id',r.request_id,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision)\n FROM zoi.listings l JOIN zoi.geography_reviews r ON r.listing_id=l.id AND r.request_id=CASE WHEN l.profile#>>'{_geo,request_id}'~'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' THEN (l.profile#>>'{_geo,request_id}')::uuid ELSE NULL END\n WHERE l.id=p_listing AND l.publish_status='published' AND l.moderation_status IN ('clean','cleared')\n AND l.marketplace_status IS DISTINCT FROM 'hidden'\n AND l.duplicate_status <> 'confirmed_duplicate'\n AND l.owner_user_id IS NULL AND l.owner_workspace_id IS NULL\n AND r.reverted_at IS NULL AND zoi.geography_read_source_allowed(l) AND CASE WHEN r.read_authority_fingerprint IS NULL THEN r.after_fingerprint=zoi.geography_fingerprint(l) ELSE r.read_authority_fingerprint=zoi.geography_read_authority_fingerprint(l) END\n AND l.profile->'_geo'->>'request_id'=r.request_id::text\n AND r.receipt->>'listing_id'=l.id::text AND r.receipt->>'request_id'=r.request_id::text\n AND r.receipt->'latitude'=to_jsonb(l.latitude) AND r.receipt->'longitude'=to_jsonb(l.longitude)\n AND r.receipt->>'precision'=l.geo_precision AND l.geo_precision='street'\n ORDER BY r.created_at DESC LIMIT 1\n$function$\n",
+      "volatility": "s",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "b77ed3d5d9004f1957503c2f848fe4c8",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_fingerprint(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_fingerprint(p_listing zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(to_jsonb(p_listing)::text)\n$function$\n",
+      "volatility": "s",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "baca38034b9b0974465026eff8aec89d",
+      "name": "geography_read_authority_changed",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER geography_read_authority_changed AFTER UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.geography_read_authority_changed()",
+      "signature": "zoi.geography_read_authority_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF zoi.geography_read_authority_input(OLD) IS DISTINCT FROM zoi.geography_read_authority_input(NEW) THEN\n   UPDATE zoi.geography_read_authority_epochs SET epoch=epoch+1 WHERE listing_id=NEW.id;\n END IF;\n RETURN NULL;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "2757c108471ef5a863f4700e615e34d8",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_read_authority_fingerprint(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_fingerprint(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT encode(extensions.digest(convert_to(jsonb_build_object('authority',zoi.geography_read_authority_input(l),'epoch',e.epoch)::text,'UTF8'),'sha256'),'hex')\n FROM zoi.geography_read_authority_epochs e WHERE e.listing_id=l.id\n$function$\n",
+      "volatility": "s",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "3a452d0b2b9902436360a47d3a575e4e",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_read_authority_input(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_input(l zoi.listings)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT jsonb_build_object(\n 'schema',1,'listing_id',l.id,'entity_type',l.entity_type,'name',l.name,\n 'legal_name',l.legal_name,'display_name',l.display_name,\n 'address',l.address,'city',l.city,'country',l.country,'region',l.region,\n 'province_state',l.province_state,'neighborhood',l.neighborhood,'region_id',l.region_id,\n 'place_id',l.place_id,'region_code',l.region_code,'region_native',l.region_native,\n 'website',l.website,'source_id',l.source_id,'source_url',l.source_url,\n 'source_type',l.source_type,'source_trust_tier',l.source_trust_tier,\n 'claim_status',l.claim_status,'verification_status',l.verification_status,\n 'field_authority',(SELECT coalesce(jsonb_object_agg(k,v),'{}'::jsonb) FROM jsonb_each(CASE WHEN jsonb_typeof(l.field_meta)='object' THEN l.field_meta ELSE '{}'::jsonb END) AS f(k,v) WHERE k IN('name','legal_name','display_name','address','city','country','region','province_state','latitude','longitude','geo_precision','website','source_url','source_id','source_type','place_id')),\n 'owner_user',l.owner_user_id,'owner_workspace',l.owner_workspace_id,\n 'publish_status',l.publish_status,'moderation_status',l.moderation_status,\n 'marketplace_status',l.marketplace_status,'duplicate_status',l.duplicate_status,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision,\n 'geo_provenance',l.profile->'_geo',\n 'published_overrides',(SELECT coalesce(jsonb_object_agg(k,v),'{}'::jsonb) FROM jsonb_each(CASE WHEN jsonb_typeof(l.profile)='object' THEN l.profile ELSE '{}'::jsonb END) AS f(k,v) WHERE k IN('name','legal_name','display_name','address','city','country','region','province_state','neighborhood','website','latitude','longitude','geo_precision','location','locations','branches')),\n 'source_authority',jsonb_build_object(\n   'source_url',l.profile#>'{_enrich,source_url}','source_kind',l.profile#>'{_enrich,source_kind}',\n   'identity_scope',l.profile#>'{_enrich,identity_scope}',\n   'source_identity',l.profile#>'{_enrich,source_identity}',\n   'source_scope_mismatch',coalesce(l.profile#>>'{_enrich,source_scope_mismatch}'='true',false),\n   'scope_mismatch_reason',coalesce(l.profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch',false),\n   'scope_review_required',coalesce(l.profile#>>'{_enrich,scope_review_required}'='true',false),\n   'organization_identity_quarantine',coalesce(l.profile#>>'{_enrich,organization_identity_quarantine}'='true',false),\n   'blocked',coalesce(l.profile#>>'{_enrich,blocked}'='true',false),\n   'source_challenge',coalesce(l.profile#>>'{_enrich,source_challenge}'='true',false)\n ))\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "e2b3362b5f0ee526063b9d5d4665256b",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_repair_input(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_repair_input(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_object('name',l.name,'entity_type',l.entity_type,'address',l.address,'city',l.city,'country',l.country,'website',l.website,'source_url',l.source_url,'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision,'geo',l.profile->'_geo','owner_user',l.owner_user_id,'owner_workspace',l.owner_workspace_id,'published',l.publish_status,'moderation',l.moderation_status,'marketplace',l.marketplace_status,'duplicate',l.duplicate_status)::text)\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "2d8c2ea0fb88550e057c51004100add1",
+      "name": "geography_source_listing_update",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN ((((((((((((((((((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type)) OR (old.address IS DISTINCT FROM new.address)) OR (old.city IS DISTINCT FROM new.city)) OR (old.country IS DISTINCT FROM new.country)) OR (old.website IS DISTINCT FROM new.website)) OR (old.source_url IS DISTINCT FROM new.source_url)) OR (old.latitude IS DISTINCT FROM new.latitude)) OR (old.longitude IS DISTINCT FROM new.longitude)) OR (old.geo_precision IS DISTINCT FROM new.geo_precision)) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id)) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id)) OR (old.publish_status IS DISTINCT FROM new.publish_status)) OR (old.moderation_status IS DISTINCT FROM new.moderation_status)) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status)) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status)) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+      "signature": "zoi.geography_source_listing_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_listing_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;generation bigint;previous zoi.geography_repair_jobs;became_unowned_public boolean:=false;current_hash text;authority_hash text;BEGIN\n -- Deferred events must use the final row, not an intermediate NEW snapshot.\n SELECT * INTO l FROM zoi.listings WHERE id=NEW.id;\n IF l.id IS NULL OR NOT zoi.geography_source_eligible(l) OR public.geography_reviewed_point(l.id) IS NOT NULL THEN RETURN NULL;END IF;\n IF TG_OP='UPDATE' THEN became_unowned_public:=OLD.owner_user_id IS NOT NULL OR OLD.owner_workspace_id IS NOT NULL OR OLD.publish_status IS DISTINCT FROM 'published' OR (OLD.moderation_status IS DISTINCT FROM 'clean' AND OLD.moderation_status IS DISTINCT FROM 'cleared') OR OLD.marketplace_status='hidden';END IF;\n current_hash:=zoi.geography_repair_input(l);authority_hash:=zoi.geography_source_authority_input(l);generation:=zoi.geography_source_generation(l.id);\n SELECT * INTO previous FROM zoi.geography_repair_jobs WHERE listing_id=l.id AND strategy='official_sources_v1'AND source_generation=generation ORDER BY created_at DESC,id DESC LIMIT 1;\n IF NOT coalesce(became_unowned_public,false) AND previous.id IS NOT NULL AND previous.input_fingerprint=current_hash AND(previous.source_authority_fingerprint=authority_hash OR(previous.source_authority_fingerprint=''AND(TG_OP='INSERT'OR zoi.geography_source_authority_input(OLD)=authority_hash)))THEN\n  -- Same final input/generation: terminal history does not cause endless retries.\n  -- Still add a missing supporting lane idempotently when appropriate.\n  PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);RETURN NULL;\n END IF;\n generation:=generation+1;\n PERFORM zoi.geography_source_enqueue_one(l,'official_sources_v1',generation);\n PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);\n RETURN NULL;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "e16849417c9c87d6a2ad8a4482dbb051",
+      "name": "listing_claim_owner_epoch",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listing_claim_owner_epoch AFTER UPDATE OF owner_workspace_id, owner_user_id ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.claim_owner_changed()",
+      "signature": "zoi.claim_owner_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.claim_owner_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF NEW.owner_workspace_id IS DISTINCT FROM OLD.owner_workspace_id OR NEW.owner_user_id IS DISTINCT FROM OLD.owner_user_id THEN\n  INSERT INTO zoi.listing_claim_authority(listing_id)VALUES(NEW.id) ON CONFLICT(listing_id) DO UPDATE SET revision=gen_random_uuid();\n END IF;\n RETURN NEW;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f0ebb7ba92e72b6bd34b43acc2676789",
+      "name": "listing_quality_receipts_guard",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listing_quality_receipts_guard BEFORE INSERT OR UPDATE OF profile ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.guard_listing_quality_receipts()",
+      "signature": "zoi.guard_listing_quality_receipts()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.guard_listing_quality_receipts()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE prior_receipt jsonb;\nBEGIN\n IF TG_OP='UPDATE' THEN prior_receipt:=OLD.profile->'_coverage';END IF;\n IF (current_user IN('anon','authenticated') OR current_setting('request.jwt.claim.role',true) IN('anon','authenticated') OR coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb->>'role' IN('anon','authenticated')) AND NEW.profile->'_coverage' IS DISTINCT FROM prior_receipt THEN RAISE EXCEPTION 'quality_receipts_service_only';END IF;\n RETURN NEW;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "86de5ced4bc9ae28b48240ee6b149323",
+      "name": "listings_aa_slug",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_aa_slug BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.ensure_listing_slug()",
+      "signature": "zoi.ensure_listing_slug()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.ensure_listing_slug()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare base text; cand text; n int := 0;\nbegin\n  if new.slug is not null and length(new.slug) > 0 then\n    return new;\n  end if;\n  begin\n    if new.canonical_path is not null and length(new.canonical_path) > 0 then\n      base := substring(new.canonical_path from '^/[^/]+/(.+)$');\n    end if;\n    if base is null or length(base) = 0 then\n      base := zoi.seo_slug(coalesce(new.name,'') || '-' || coalesce(new.city,''));\n    end if;\n    if base is null or length(base) = 0 then\n      return new;                              -- cannot derive; keep today's behavior\n    end if;\n    cand := base;\n    while exists (select 1 from zoi.listings x where x.slug = cand and x.id <> new.id) loop\n      n := n + 1;\n      cand := base || '-' || n;\n      if n > 50 then\n        cand := base || '-' || substr(replace(new.id::text,'-',''),1,8);\n        exit;\n      end if;\n    end loop;\n    new.slug := cand;\n  exception when others then\n    null;                                      -- never break the write\n  end;\n  return new;\nend\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "48db3959fc1281e9f09af3ff8164dae6",
+      "name": "listings_publish_gate",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_publish_gate BEFORE INSERT ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.tg_apply_publish_gate()",
+      "signature": "zoi.tg_apply_publish_gate()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.tg_apply_publish_gate()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_gate jsonb;\nbegin\n if new.publish_status is null or new.publish_status in ('draft','published') then\n  v_gate:=zoi.publish_gate(new.name,new.entity_type,new.primary_category_id,new.city,new.country,new.phone,new.address,new.website);\n  if new.publish_status is distinct from 'draft' then\n   if (v_gate->>'ok')::boolean then new.publish_status:='published';\n   else new.publish_status:='pending_review';end if;\n  end if;\n  new.profile:=coalesce(new.profile,'{}'::jsonb)||jsonb_build_object('gate',jsonb_build_object(\n   'ok',v_gate->'ok','fails',v_gate->'fails','warnings',v_gate->'warnings',\n   'checked_at',to_char(now() at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')));\n  new.completeness_score:=round(((v_gate->>'quality_score')::numeric/100.0),3);\n end if;\n return new;\nend;\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "059ca37c376f88162bc84423c543b024",
+      "name": "listings_skip_noop",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_skip_noop BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.skip_noop_listing_update()",
+      "signature": "zoi.skip_noop_listing_update()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.skip_noop_listing_update()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  IF (to_jsonb(NEW) - 'updated_at') = (to_jsonb(OLD) - 'updated_at') THEN\n    RETURN NULL;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a6d10dbbedb1f4a9aff4a3010b3a03d0",
+      "name": "maintain_seo_identity_keys",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER maintain_seo_identity_keys AFTER INSERT OR UPDATE OF id, name, city, region, country, address ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_identity_keys()",
+      "signature": "zoi.maintain_seo_identity_keys()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_identity_keys()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n INSERT INTO zoi.seo_identity_keys VALUES\n (NEW.id,zoi.seo_name(NEW.name,NEW.city),zoi.seo_text(NEW.city),zoi.seo_text(NEW.region),zoi.seo_text(NEW.country),zoi.seo_text(NEW.address))\n ON CONFLICT (listing_id) DO UPDATE SET name_key=EXCLUDED.name_key,city_key=EXCLUDED.city_key,\n region_key=EXCLUDED.region_key,country_key=EXCLUDED.country_key,address_key=EXCLUDED.address_key;\n RETURN NEW;\nEND;\n$function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "md5": "f3f56fbc83395559e0b883f610182017",
+      "name": "trg_listings_auto_seo",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER trg_listings_auto_seo BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.auto_seo_fill()",
+      "signature": "zoi.auto_seo_fill()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.auto_seo_fill()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE\n  v_cat_slug text;\n  v_cat_label text;\n  v_slug text;\n  v_title text;\n  v_desc text;\nBEGIN\n  IF NEW.primary_category_id IS NOT NULL THEN\n    SELECT c.slug, c.label_en INTO v_cat_slug, v_cat_label\n    FROM zoi.categories c WHERE c.id = NEW.primary_category_id;\n  END IF;\n\n  v_slug := coalesce(NEW.slug, zoi.seo_slug(NEW.name || '-' || coalesce(NEW.city,'')));\n\n  IF NEW.schema_type IS NULL OR length(NEW.schema_type)=0 THEN\n    NEW.schema_type := zoi.schema_type(NEW.entity_type, coalesce(v_cat_slug,''));\n  END IF;\n\n  IF NEW.canonical_path IS NULL OR length(NEW.canonical_path)=0 THEN\n    NEW.canonical_path := '/' || NEW.entity_type || '/' || v_slug;\n  END IF;\n\n  IF NEW.meta_title IS NULL OR length(NEW.meta_title)=0 THEN\n    v_title := NEW.name\n      || coalesce(' \u2014 ' || zoi.seo_pluralize(v_cat_label), '')\n      || coalesce(' in ' || NEW.city, '')\n      || ' | Zoi';\n    IF length(v_title) > 66 THEN\n      v_title := NEW.name || coalesce(' in ' || NEW.city, '') || ' | Zoi';\n    END IF;\n    IF length(v_title) > 66 THEN\n      v_title := left(NEW.name, 60) || ' | Zoi';\n    END IF;\n    NEW.meta_title := v_title;\n  END IF;\n\n  IF NEW.meta_description IS NULL OR length(NEW.meta_description)=0 THEN\n    IF NEW.description IS NOT NULL AND length(NEW.description) >= 30\n       AND NEW.description !~* '^https?://' THEN\n      v_desc := left(NEW.description, 158);\n    ELSE\n      v_desc := NEW.name\n        || coalesce(' in ' || NEW.city, '')\n        || coalesce(', ' || NEW.country, '')\n        || '. Listed on Zoi, the Greek community directory.';\n    END IF;\n    NEW.meta_description := v_desc;\n  END IF;\n\n  RETURN NEW;\nEND$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "1f8b6687e304c5f6502235344d4f0b7a",
+      "name": "trg_listings_updated",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER trg_listings_updated BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.set_updated_at()",
+      "signature": "zoi.set_updated_at()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin new.updated_at = now(); return new; end; $function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f17b227663468c63feaafdda7caf903f",
+      "name": "zz_maintain_seo_projection",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER zz_maintain_seo_projection AFTER INSERT OR UPDATE OF id, name, city, region, country, address, slug, entity_type, updated_at, created_at, phone, website, latitude, description, publish_status, moderation_status, marketplace_status, duplicate_status ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_projection()",
+      "signature": "zoi.maintain_seo_projection()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_projection()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$ BEGIN UPDATE zoi.seo_identity_keys k SET slug=NEW.slug,entity_type=NEW.entity_type,updated_at=coalesce(NEW.updated_at,NEW.created_at),\n completeness=(((NEW.address IS NOT NULL)::int)+((NEW.phone IS NOT NULL)::int)+((NEW.website IS NOT NULL)::int)+((NEW.latitude IS NOT NULL)::int)+((NEW.description IS NOT NULL)::int)),\n ugly=(NEW.slug ~ '-[0-9a-f]{6}$')::int,\n is_indexable=coalesce(NEW.publish_status='published' AND NEW.moderation_status IN ('clean','cleared') AND coalesce(NEW.marketplace_status,'')<>'hidden' AND NEW.duplicate_status IS DISTINCT FROM 'confirmed_duplicate'\n AND nullif(btrim(NEW.slug),'') IS NOT NULL AND nullif(btrim(NEW.name),'') IS NOT NULL\n AND (NEW.city IS NOT NULL OR NEW.address IS NOT NULL OR NEW.website IS NOT NULL),false)\nWHERE k.listing_id=NEW.id;\n RETURN NEW; END $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "c81c146a5aebfa684c5223eb4d18f3a7",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_publisher_held(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_publisher_held(l zoi.listings)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT coalesce(l.profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch',false)\n OR coalesce(l.profile#>>'{_enrich,scope_review_required}'='true',false)\n OR coalesce(l.profile#>>'{_enrich,organization_identity_quarantine}'='true',false)\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "18f04ea6d4ae44e2a6b7f6d9258e8e9c",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_publisher_host(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_publisher_host(p_url text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN length(p_url)<=2000 AND p_url~*'^https?://[a-z0-9.-]+([/?#]|$)' THEN regexp_replace(lower(substring(p_url from '(?i)^https?://([^/?#]+)')),'^www\\.','') ELSE NULL END\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a87a595c8e9db085fb12e066aa66f1fd",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_repair_strategy_input(zoi.listings,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_repair_strategy_input(l zoi.listings, p_strategy text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN p_strategy='publisher_profiles_v1' THEN md5(jsonb_build_object('base',zoi.geography_repair_input(l),'blocked_reason',l.profile#>'{_enrich,blocked_reason}','scope_review_required',l.profile#>'{_enrich,scope_review_required}','organization_identity_quarantine',l.profile#>'{_enrich,organization_identity_quarantine}')::text) ELSE zoi.geography_repair_input(l) END\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "4a83d0513384898300eb5e924f12f59a",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_source_authority_input(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_authority_input(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_object('source_scope_mismatch',coalesce(l.profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch',false),'scope_review_required',coalesce(l.profile#>>'{_enrich,scope_review_required}'='true',false),'organization_identity_quarantine',coalesce(l.profile#>>'{_enrich,organization_identity_quarantine}'='true',false))::text)\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "de128d988072e26b8c5b2c0bd6d5d65f",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_source_eligible(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_eligible(l zoi.listings)\n RETURNS boolean\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT l.owner_user_id IS NULL AND l.owner_workspace_id IS NULL AND l.marketplace_status IS DISTINCT FROM 'hidden' AND EXISTS(SELECT 1 FROM zoi.v_public_listings e WHERE e.id=l.id)\n$function$\n",
+      "volatility": "s",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "1c1408dd9992138e1dd7a6490c17f88b",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_source_enqueue_one(zoi.listings,text,bigint)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_enqueue_one(l zoi.listings, p_strategy text, p_generation bigint)\n RETURNS integer\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE input_hash text;affected integer;authority_hash text;state text;why text;BEGIN\n IF p_strategy NOT IN('official_sources_v1','publisher_profiles_v1')OR p_generation<0 THEN RAISE EXCEPTION 'invalid_continuous_source_strategy';END IF;\n IF NOT zoi.geography_source_eligible(l) THEN RETURN 0;END IF;\n -- The deferred listing hook runs after the guarded writer's receipt insert.\n -- A fresh accepted street point is resolved, not another crawl opportunity.\n IF public.geography_reviewed_point(l.id) IS NOT NULL THEN RETURN 0;END IF;\n IF p_strategy='publisher_profiles_v1'AND(nullif(btrim(l.website),'')IS NOT NULL OR zoi.geography_publisher_host(l.source_url)IS NULL) THEN RETURN 0;END IF;\n input_hash:=zoi.geography_repair_strategy_input(l,p_strategy);authority_hash:=zoi.geography_source_authority_input(l);\n -- Do not lock or rewrite existing jobs while a listing write holds its row.\n -- This avoids reversing the worker's job->listing lock order.\n IF EXISTS(SELECT 1 FROM zoi.geography_repair_jobs j WHERE j.listing_id=l.id AND j.strategy=p_strategy AND j.input_fingerprint=input_hash AND j.source_generation=p_generation) THEN RETURN 0;END IF;\n state:=CASE WHEN zoi.geography_publisher_held(l) THEN 'source_blocked' WHEN p_strategy='publisher_profiles_v1' THEN 'queued' WHEN nullif(btrim(l.address),'')IS NULL THEN 'needs_address' WHEN l.website IS NULL OR l.website!~'^https://' THEN 'needs_source' ELSE 'queued' END;\n why:=CASE WHEN zoi.geography_publisher_held(l) THEN 'source_hold_preserved' WHEN p_strategy='publisher_profiles_v1' THEN 'individual_supporting_publisher_source_requires_research' WHEN state='needs_address' THEN 'public_address_requires_research' WHEN state='needs_source' THEN 'official_source_requires_identification' ELSE 'registered_source_requires_identity_address_coordinate_research' END;\n INSERT INTO zoi.geography_repair_jobs(listing_id,strategy,input_fingerprint,database_snapshot,idempotency_key,status,original,reason,source_generation,source_authority_fingerprint)\n VALUES(l.id,p_strategy,input_hash,zoi.geography_fingerprint(l),md5(l.id::text||'|'||p_strategy||'|'||input_hash||'|generation:'||p_generation::text),state,\n jsonb_build_object('name',l.name,'slug',l.slug,'entity_type',l.entity_type,'address',l.address,'city',l.city,'country',l.country,'website',l.website,'source_url',l.source_url,'source_kind',CASE WHEN p_strategy='publisher_profiles_v1' THEN 'supporting_publisher_profile' ELSE 'official_website' END,'source_host',zoi.geography_publisher_host(l.source_url),'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision,'metadata',l.profile->'_geo','profile',jsonb_build_object('_enrich',jsonb_build_object('blocked_reason',l.profile#>'{_enrich,blocked_reason}','scope_review_required',l.profile#>'{_enrich,scope_review_required}','organization_identity_quarantine',l.profile#>'{_enrich,organization_identity_quarantine}'))),why,p_generation,authority_hash)\n ON CONFLICT(listing_id,strategy,input_fingerprint,source_generation) DO NOTHING;\n GET DIAGNOSTICS affected=ROW_COUNT;RETURN affected;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "d9bde7523cd57ea383fa2f77ec609e89",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_source_generation(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_generation(p_listing uuid)\n RETURNS bigint\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT coalesce((SELECT source_generation FROM zoi.geography_repair_jobs WHERE listing_id=p_listing ORDER BY source_generation DESC,id LIMIT 1),0)\n$function$\n",
+      "volatility": "s",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "905be3e3473f808c3c50a4a6f5e7279c",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "signature": "zoi.publish_gate(text,text,bigint,text,text,text,text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.publish_gate(p_name text, p_entity_type text, p_category bigint, p_city text, p_country text, p_phone text, p_address text, p_website text)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\nDECLARE\n  v_name  text := coalesce(btrim(p_name),'');\n  v_alpha text;\n  v_et    text := lower(coalesce(btrim(p_entity_type),''));\n  v_fails text[] := array[]::text[];\n  v_warn  text[] := array[]::text[];\n  v_lq    jsonb;\n  v_physical boolean;\n  v_any_channel boolean;\nBEGIN\n  v_alpha := regexp_replace(v_name,'[^[:alpha:]]','','g');\n  -- Entity types that exist at a physical place. Creators, vendors (online shops),\n  -- artists and travel listings are legitimately location-less.\n  v_physical := v_et IN ('business','church','school','venue','sports','professional');\n  v_any_channel := coalesce(btrim(p_website),'') <> ''\n                OR coalesce(btrim(p_phone),'')   <> ''\n                OR coalesce(btrim(p_address),'') <> '';\n\n  -- 1. NAME INTEGRITY\n  IF v_name = '' THEN v_fails := array_append(v_fails,'name_empty'); END IF;\n  IF length(v_alpha) < 2 THEN v_fails := array_append(v_fails,'name_no_real_letters'); END IF;\n  IF length(v_name) > 120 THEN v_fails := array_append(v_fails,'name_too_long'); END IF;\n\n  -- 2. SCRAPE ARTEFACTS\n  -- Listicle: \"Top 10 Best ...\" \u2014 number must be followed by a word, so \"Best 92.6\" (radio) is safe.\n  IF v_name ~* '(^|[^[:alpha:]])(top|best)[[:space:]]+[0-9]{1,3}[[:space:]]+[[:alpha:]]' THEN\n    v_fails := array_append(v_fails,'listicle_title');\n  END IF;\n  IF v_name ~* '(yelp|tripadvisor|wikipedia|google maps|facebook\\.com|instagram\\.com|linkedin\\.com)' THEN\n    v_fails := array_append(v_fails,'platform_title');\n  END IF;\n  IF v_name ~* 'near me$|^the [0-9]+ (best|top) |updated [0-9]{4}|^[0-9]+ (best|top) ' THEN\n    v_fails := array_append(v_fails,'seo_title');\n  END IF;\n  -- Pipe alone is NOT junk (real names like \"Astra Report | WNTN 1550 AM\" exist).\n  -- Only flag a trailing \" - <platform>\" or \" | <platform>\" suffix.\n  IF v_name ~* '[[:space:]][-|][[:space:]]*(yelp|tripadvisor|facebook|instagram|menu|home|official site)[[:space:]]*$' THEN\n    v_fails := array_append(v_fails,'page_title_artefact');\n  END IF;\n  IF lower(v_name) ~ '^(home|about|about us|contact|contact us|menu|untitled|test|n/?a|null|none|unknown|tbd|click here|read more|business directory)$' THEN\n    v_fails := array_append(v_fails,'nav_or_placeholder_name');\n  END IF;\n\n  -- 3. CLASSIFICATION\n  IF p_category IS NULL THEN v_fails := array_append(v_fails,'missing_category'); END IF;\n\n  -- 4. LOCATION \u2014 only required for physical entity types, and only when there is\n  -- also no contact channel to identify the entity by.\n  IF v_physical\n     AND coalesce(btrim(p_city),'') = ''\n     AND coalesce(btrim(p_country),'') = ''\n     AND NOT v_any_channel THEN\n    v_fails := array_append(v_fails,'no_location_and_no_contact');\n  END IF;\n\n  -- 5. Existing scorer's hard-junk judgement\n  v_lq := zoi.listing_quality(p_name,p_phone,p_address,p_website,p_category,p_entity_type);\n  IF (v_lq->>'ok')::boolean IS FALSE THEN\n    v_fails := array_append(v_fails,'listing_quality_fail');\n  END IF;\n\n  -- 6. WARNINGS \u2014 never block; these feed the enrichment queue.\n  IF NOT v_any_channel THEN v_warn := array_append(v_warn,'no_contact_channel'); END IF;\n  IF coalesce(btrim(p_city),'')='' THEN v_warn := array_append(v_warn,'no_city'); END IF;\n  IF coalesce(btrim(p_country),'')='' THEN v_warn := array_append(v_warn,'no_country'); END IF;\n\n  RETURN jsonb_build_object(\n    'ok', (array_length(v_fails,1) IS NULL),\n    'fails', to_jsonb(v_fails),\n    'warnings', to_jsonb(v_warn),\n    'quality_score', (v_lq->>'score')::int\n  );\nEND;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "6681315c7a01314ba7851d65c6fd2dce",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_name(text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_name(p_name text, p_city text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE PARALLEL SAFE\nAS $function$\nDECLARE n text:=zoi.seo_text(p_name); c text:=zoi.seo_text(p_city);\nBEGIN\n IF c<>'' AND pg_catalog.length(n)>pg_catalog.length(c)+1 AND pg_catalog.right(n,pg_catalog.length(c)+1)=' '||c THEN\n  RETURN pg_catalog.left(n,pg_catalog.length(n)-pg_catalog.length(c)-1);\n END IF;\n RETURN n;\nEND;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "45ca783e5e2b06098a7c025a69347b9f",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_text(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_text(p_value text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE PARALLEL SAFE\nAS $function$\n SELECT pg_catalog.btrim(pg_catalog.regexp_replace(pg_catalog.lower(coalesce(p_value,'')), '[^[:alnum:]]+', ' ', 'g'));\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "33ecf575f3c07144a0f90177791f03f3",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_url_component(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_url_component(p_text text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE STRICT\n SET search_path TO ''\nAS $function$\nDECLARE b bytea:=''::bytea; i integer:=1; ch text;\nBEGIN\n WHILE i<=length(p_text) LOOP\n  ch:=substr(p_text,i,1);\n  IF ch='%' THEN\n   IF substr(p_text,i+1,2)!~'^[0-9A-Fa-f]{2}$' THEN RAISE EXCEPTION 'invalid_destination_encoding';END IF;\n   b:=b||decode(substr(p_text,i+1,2),'hex');i:=i+3;\n  ELSE b:=b||convert_to(CASE WHEN ch='+' THEN ' ' ELSE ch END,'UTF8');i:=i+1;END IF;\n END LOOP;\n RETURN convert_from(b,'UTF8');\nEND $function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "6d842320cba4f04697493b746ecea663",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "signature": "zoi.listing_quality(text,text,text,text,bigint,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality(p_name text, p_phone text, p_address text, p_website text, p_category bigint, p_entity_type text)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\ndeclare\n  v_score int := 60;\n  v_reasons text[] := array[]::text[];\n  v_name text := coalesce(btrim(p_name), '');\n  v_phone text := coalesce(btrim(p_phone), '');\n  v_addr text := coalesce(btrim(p_address), '');\n  v_web text := coalesce(btrim(p_website), '');\n  v_et text := lower(coalesce(btrim(p_entity_type), ''));\n  v_tokens int; v_alpha text;\n  v_has_contact boolean; v_any_channel boolean;\n  v_is_person boolean; v_needs_physical boolean;\n  v_biz_token boolean; v_looks_personal boolean; v_allcaps_surname boolean;\n  v_identifiable boolean; v_hard_junk boolean := false;\n  v_threshold int := 55;\nbegin\n  v_alpha := regexp_replace(v_name, '[^[:alpha:]]', '', 'g');\n  v_tokens := array_length(regexp_split_to_array(v_name, '\\s+'), 1);\n  if v_name = '' then v_tokens := 0; end if;\n\n  v_is_person := v_et in ('professional','creator','artist');\n  v_needs_physical := v_et in ('business','church','school','venue','organization','sports');\n\n  v_biz_token := v_name ~* '(restaurant|taverna|taverne|tavern|ouzeri|mezze?|meze|cuisine|cafe|caf[e\u00e9]|kafe|kafenio|coffee|bakery|patisserie|pastry|pastries|grill|kitchen|kouzina|koyzina|estiatorio|psistaria|deli|market|bazaar|grocery|foods?|seafood|diner|pita|gardens|honey|farm|mastiha|apothecary|magazine|bar|bistro|pizz|gyro|souvlaki|club|hotel|inn|resort|room|studio|salon|spa|clinic|center|centre|institute|academy|school|college|church|kirche|orthodox|cathedral|parish|monastery|temple|shrine|theotokos|annunciation|dormition|nativity|ascension|assumption|transfiguration|filoptochos|brotherhood|pancyprian|associat|society|federation|foundation|council|union|chamber|company|co\\.|corp|inc\\.?|ltd|llc|gmbh|group|network|television|world|services|solutions|consult|agency|law|legal|medical|dental|pharmac|insurance|realty|real estate|travel|tours|imports|exports|trading|wines|winery|brewery|distillery|productions|media|radio|fm|tv|ert|gallery|museum|theatre|theater|festival|function|expo|games|fc|f\\.c\\.|football|soccer|hellenic|greek|grecian|hellas|athenian|mitilini|parthenon|delfini|myth|casa|saint|st\\.|holy|cosmos|concept|grove|olive|blue)';\n\n  -- ALLCAPS \"SURNAME FIRSTNAME\" Greek scrape junk (the named hard pattern)\n  v_allcaps_surname := (not v_biz_token) and v_tokens between 2 and 3\n    and v_name = upper(v_name) and v_name ~ '^[[:upper:]]{2,}([[:space:]\\-]+[[:upper:]]{2,}){1,2}$';\n  -- Titlecase personal-name shape: SOFT signal only (too many brand collisions)\n  v_looks_personal := (not v_biz_token) and v_tokens between 2 and 3\n    and v_name ~ '^[[:upper:]][[:lower:]]+([[:space:]\\-]+[[:upper:]][[:lower:]]+){1,2}$';\n\n  v_has_contact := (v_phone <> '' or v_addr <> '');\n  v_any_channel := (v_phone <> '' or v_addr <> '' or v_web <> '');\n\n  v_identifiable := v_any_channel or v_biz_token or (coalesce(v_tokens,0) >= 2) or v_is_person;\n\n  -- HARD JUNK NAME CHECKS\n  if v_name = '' then\n    v_score := 0; v_hard_junk := true; v_reasons := array_append(v_reasons, 'name_empty'::text);\n  elsif v_name ~ '^[0-9[:space:][:punct:]]+$' then\n    v_score := 0; v_hard_junk := true; v_reasons := array_append(v_reasons, 'name_digits_or_symbols_only'::text);\n  elsif length(v_alpha) < 2 then\n    v_score := 0; v_hard_junk := true; v_reasons := array_append(v_reasons, 'name_no_real_letters'::text);\n  elsif v_tokens = 1 and length(v_name) <= 3 and not v_any_channel then\n    -- single very short token AND no way to find it = junk; with contact it's identifiable\n    v_score := v_score - 40; v_hard_junk := true;\n    v_reasons := array_append(v_reasons, 'name_single_short_token_no_contact'::text);\n  end if;\n\n  -- BUSINESS as bare ALLCAPS personal name with NO contact = junk (named pattern)\n  if v_et = 'business' and v_allcaps_surname and not v_any_channel then\n    v_score := v_score - 50; v_hard_junk := true;\n    v_reasons := array_append(v_reasons, 'business_allcaps_personal_name_no_contact'::text);\n  end if;\n\n  -- SOFT SIGNALS\n  if v_phone <> '' then v_score := v_score + 10; v_reasons := array_append(v_reasons, 'has_phone'::text); end if;\n  if v_addr  <> '' then v_score := v_score + 10; v_reasons := array_append(v_reasons, 'has_address'::text); end if;\n  if v_web   <> '' then v_score := v_score + 8;  v_reasons := array_append(v_reasons, 'has_website'::text); end if;\n  if v_biz_token  then v_score := v_score + 5;  v_reasons := array_append(v_reasons, 'has_business_keyword'::text); end if;\n\n  -- Titlecase personal-name business with no contact: soft warning only\n  if v_et = 'business' and v_looks_personal and not v_any_channel then\n    v_reasons := array_append(v_reasons, 'business_name_may_be_personal'::text);\n  end if;\n\n  if p_category is not null then\n    v_score := v_score + 8; v_reasons := array_append(v_reasons, 'has_category'::text);\n  else\n    v_score := v_score - 6; v_reasons := array_append(v_reasons, 'missing_category'::text);\n  end if;\n\n  if not v_has_contact then\n    if v_is_person then\n      v_reasons := array_append(v_reasons, 'person_no_physical_contact_ok'::text);\n    elsif v_web <> '' then\n      v_score := v_score - 4; v_reasons := array_append(v_reasons, 'no_phone_or_address_website_only'::text);\n    else\n      v_score := v_score - 8; v_reasons := array_append(v_reasons, 'thin_contact_needs_enrichment'::text);\n    end if;\n  end if;\n\n  -- FLOOR: identifiable, non-junk listings stay published despite incompleteness\n  if not v_hard_junk and v_identifiable and v_score < v_threshold then\n    v_score := v_threshold;\n  end if;\n\n  if v_score < 0 then v_score := 0; end if;\n  if v_score > 100 then v_score := 100; end if;\n\n  return jsonb_build_object(\n    'score', v_score, 'ok', (v_score >= v_threshold),\n    'threshold', v_threshold, 'reasons', to_jsonb(v_reasons));\nend;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "979e6dbac201900f10e2a1cdb7a4d226",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.schema_type(text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.schema_type(p_entity text, p_cat text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  select case\n    when p_entity='event' then 'Event'\n    when p_entity='church' then 'Church'\n    when p_entity='school' then 'EducationalOrganization'\n    when p_entity='organization' then 'Organization'\n    when p_entity='venue' then 'EventVenue'\n    when p_entity in ('creator','artist') then 'Person'\n    when p_entity='travel_place' then 'TouristAttraction'\n    when p_entity='product' then 'Product'\n    when p_entity='vendor' then 'Store'\n    when p_entity='professional' then case p_cat\n         when 'lawyers' then 'Attorney' when 'dentists' then 'Dentist'\n         when 'doctors' then 'Physician' when 'accountants' then 'AccountingService'\n         when 'realtors' then 'RealEstateAgent' when 'insurance' then 'InsuranceAgency'\n         else 'ProfessionalService' end\n    when p_entity='business' then case p_cat\n         when 'restaurants' then 'Restaurant' when 'tavernas' then 'Restaurant'\n         when 'bakeries' then 'Bakery' when 'cafes' then 'CafeOrCoffeeShop'\n         when 'groceries' then 'GroceryStore' when 'specialty-food' then 'GroceryStore'\n         else 'LocalBusiness' end\n    else 'LocalBusiness' end;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "3a441e4585bf57f2b1da52a9c816029b",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_pluralize(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_pluralize(p text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case\n    when p ~ '(ch|sh|s|x|z)$' then p||'es'\n    when p ~ '[^aeiou]y$'     then regexp_replace(p,'y$','ies')\n    else p||'s'\n  end\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "9b36fe6c6fabbe222376430aacf73323",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_slug(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_slug(p text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case when p is null then null else\n    trim(both '-' from regexp_replace(lower(p), '[^a-z0-9]+', '-', 'g'))\n  end\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "ecae4cf96a5794c0eb44154b145ef6eb",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_read_source_allowed(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_source_allowed(l zoi.listings)\n RETURNS boolean\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT NOT(coalesce(l.profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch',false)\n OR coalesce(l.profile#>>'{_enrich,source_scope_mismatch}'='true',false)\n OR coalesce(l.profile#>>'{_enrich,source_kind}'='association_member',false)\n OR coalesce(l.profile#>>'{_enrich,identity_scope}'='organization' AND l.entity_type IN('artist','creator','professional'),false)\n OR coalesce(l.profile#>>'{_enrich,scope_review_required}'='true',false)\n OR coalesce(l.profile#>>'{_enrich,organization_identity_quarantine}'='true',false)\n OR coalesce(l.profile#>>'{_enrich,blocked}'='true',false)\n OR coalesce(l.profile#>>'{_enrich,source_challenge}'='true',false))\n AND NOT EXISTS(SELECT 1 FROM jsonb_each(CASE WHEN jsonb_typeof(l.profile)='object' THEN l.profile ELSE '{}'::jsonb END) AS f(k,v)\n WHERE k IN('name','address','city','country','website','latitude','longitude','geo_precision')\n AND v IS DISTINCT FROM to_jsonb(l)->k)\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    }
+  ],
+  "listing_triggers": [
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "baca38034b9b0974465026eff8aec89d",
+      "name": "geography_read_authority_changed",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER geography_read_authority_changed AFTER UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.geography_read_authority_changed()",
+      "signature": "zoi.geography_read_authority_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF zoi.geography_read_authority_input(OLD) IS DISTINCT FROM zoi.geography_read_authority_input(NEW) THEN\n   UPDATE zoi.geography_read_authority_epochs SET epoch=epoch+1 WHERE listing_id=NEW.id;\n END IF;\n RETURN NULL;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "2d8c2ea0fb88550e057c51004100add1",
+      "name": "geography_source_listing_insert",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE CONSTRAINT TRIGGER geography_source_listing_insert AFTER INSERT ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+      "signature": "zoi.geography_source_listing_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_listing_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;generation bigint;previous zoi.geography_repair_jobs;became_unowned_public boolean:=false;current_hash text;authority_hash text;BEGIN\n -- Deferred events must use the final row, not an intermediate NEW snapshot.\n SELECT * INTO l FROM zoi.listings WHERE id=NEW.id;\n IF l.id IS NULL OR NOT zoi.geography_source_eligible(l) OR public.geography_reviewed_point(l.id) IS NOT NULL THEN RETURN NULL;END IF;\n IF TG_OP='UPDATE' THEN became_unowned_public:=OLD.owner_user_id IS NOT NULL OR OLD.owner_workspace_id IS NOT NULL OR OLD.publish_status IS DISTINCT FROM 'published' OR (OLD.moderation_status IS DISTINCT FROM 'clean' AND OLD.moderation_status IS DISTINCT FROM 'cleared') OR OLD.marketplace_status='hidden';END IF;\n current_hash:=zoi.geography_repair_input(l);authority_hash:=zoi.geography_source_authority_input(l);generation:=zoi.geography_source_generation(l.id);\n SELECT * INTO previous FROM zoi.geography_repair_jobs WHERE listing_id=l.id AND strategy='official_sources_v1'AND source_generation=generation ORDER BY created_at DESC,id DESC LIMIT 1;\n IF NOT coalesce(became_unowned_public,false) AND previous.id IS NOT NULL AND previous.input_fingerprint=current_hash AND(previous.source_authority_fingerprint=authority_hash OR(previous.source_authority_fingerprint=''AND(TG_OP='INSERT'OR zoi.geography_source_authority_input(OLD)=authority_hash)))THEN\n  -- Same final input/generation: terminal history does not cause endless retries.\n  -- Still add a missing supporting lane idempotently when appropriate.\n  PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);RETURN NULL;\n END IF;\n generation:=generation+1;\n PERFORM zoi.geography_source_enqueue_one(l,'official_sources_v1',generation);\n PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);\n RETURN NULL;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "2d8c2ea0fb88550e057c51004100add1",
+      "name": "geography_source_listing_update",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN ((((((((((((((((((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type)) OR (old.address IS DISTINCT FROM new.address)) OR (old.city IS DISTINCT FROM new.city)) OR (old.country IS DISTINCT FROM new.country)) OR (old.website IS DISTINCT FROM new.website)) OR (old.source_url IS DISTINCT FROM new.source_url)) OR (old.latitude IS DISTINCT FROM new.latitude)) OR (old.longitude IS DISTINCT FROM new.longitude)) OR (old.geo_precision IS DISTINCT FROM new.geo_precision)) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id)) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id)) OR (old.publish_status IS DISTINCT FROM new.publish_status)) OR (old.moderation_status IS DISTINCT FROM new.moderation_status)) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status)) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status)) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+      "signature": "zoi.geography_source_listing_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_listing_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;generation bigint;previous zoi.geography_repair_jobs;became_unowned_public boolean:=false;current_hash text;authority_hash text;BEGIN\n -- Deferred events must use the final row, not an intermediate NEW snapshot.\n SELECT * INTO l FROM zoi.listings WHERE id=NEW.id;\n IF l.id IS NULL OR NOT zoi.geography_source_eligible(l) OR public.geography_reviewed_point(l.id) IS NOT NULL THEN RETURN NULL;END IF;\n IF TG_OP='UPDATE' THEN became_unowned_public:=OLD.owner_user_id IS NOT NULL OR OLD.owner_workspace_id IS NOT NULL OR OLD.publish_status IS DISTINCT FROM 'published' OR (OLD.moderation_status IS DISTINCT FROM 'clean' AND OLD.moderation_status IS DISTINCT FROM 'cleared') OR OLD.marketplace_status='hidden';END IF;\n current_hash:=zoi.geography_repair_input(l);authority_hash:=zoi.geography_source_authority_input(l);generation:=zoi.geography_source_generation(l.id);\n SELECT * INTO previous FROM zoi.geography_repair_jobs WHERE listing_id=l.id AND strategy='official_sources_v1'AND source_generation=generation ORDER BY created_at DESC,id DESC LIMIT 1;\n IF NOT coalesce(became_unowned_public,false) AND previous.id IS NOT NULL AND previous.input_fingerprint=current_hash AND(previous.source_authority_fingerprint=authority_hash OR(previous.source_authority_fingerprint=''AND(TG_OP='INSERT'OR zoi.geography_source_authority_input(OLD)=authority_hash)))THEN\n  -- Same final input/generation: terminal history does not cause endless retries.\n  -- Still add a missing supporting lane idempotently when appropriate.\n  PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);RETURN NULL;\n END IF;\n generation:=generation+1;\n PERFORM zoi.geography_source_enqueue_one(l,'official_sources_v1',generation);\n PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);\n RETURN NULL;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "e16849417c9c87d6a2ad8a4482dbb051",
+      "name": "listing_claim_owner_epoch",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listing_claim_owner_epoch AFTER UPDATE OF owner_workspace_id, owner_user_id ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.claim_owner_changed()",
+      "signature": "zoi.claim_owner_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.claim_owner_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF NEW.owner_workspace_id IS DISTINCT FROM OLD.owner_workspace_id OR NEW.owner_user_id IS DISTINCT FROM OLD.owner_user_id THEN\n  INSERT INTO zoi.listing_claim_authority(listing_id)VALUES(NEW.id) ON CONFLICT(listing_id) DO UPDATE SET revision=gen_random_uuid();\n END IF;\n RETURN NEW;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f0ebb7ba92e72b6bd34b43acc2676789",
+      "name": "listing_quality_receipts_guard",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listing_quality_receipts_guard BEFORE INSERT OR UPDATE OF profile ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.guard_listing_quality_receipts()",
+      "signature": "zoi.guard_listing_quality_receipts()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.guard_listing_quality_receipts()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE prior_receipt jsonb;\nBEGIN\n IF TG_OP='UPDATE' THEN prior_receipt:=OLD.profile->'_coverage';END IF;\n IF (current_user IN('anon','authenticated') OR current_setting('request.jwt.claim.role',true) IN('anon','authenticated') OR coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb->>'role' IN('anon','authenticated')) AND NEW.profile->'_coverage' IS DISTINCT FROM prior_receipt THEN RAISE EXCEPTION 'quality_receipts_service_only';END IF;\n RETURN NEW;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "86de5ced4bc9ae28b48240ee6b149323",
+      "name": "listings_aa_slug",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_aa_slug BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.ensure_listing_slug()",
+      "signature": "zoi.ensure_listing_slug()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.ensure_listing_slug()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare base text; cand text; n int := 0;\nbegin\n  if new.slug is not null and length(new.slug) > 0 then\n    return new;\n  end if;\n  begin\n    if new.canonical_path is not null and length(new.canonical_path) > 0 then\n      base := substring(new.canonical_path from '^/[^/]+/(.+)$');\n    end if;\n    if base is null or length(base) = 0 then\n      base := zoi.seo_slug(coalesce(new.name,'') || '-' || coalesce(new.city,''));\n    end if;\n    if base is null or length(base) = 0 then\n      return new;                              -- cannot derive; keep today's behavior\n    end if;\n    cand := base;\n    while exists (select 1 from zoi.listings x where x.slug = cand and x.id <> new.id) loop\n      n := n + 1;\n      cand := base || '-' || n;\n      if n > 50 then\n        cand := base || '-' || substr(replace(new.id::text,'-',''),1,8);\n        exit;\n      end if;\n    end loop;\n    new.slug := cand;\n  exception when others then\n    null;                                      -- never break the write\n  end;\n  return new;\nend\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "48db3959fc1281e9f09af3ff8164dae6",
+      "name": "listings_publish_gate",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_publish_gate BEFORE INSERT ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.tg_apply_publish_gate()",
+      "signature": "zoi.tg_apply_publish_gate()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.tg_apply_publish_gate()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_gate jsonb;\nbegin\n if new.publish_status is null or new.publish_status in ('draft','published') then\n  v_gate:=zoi.publish_gate(new.name,new.entity_type,new.primary_category_id,new.city,new.country,new.phone,new.address,new.website);\n  if new.publish_status is distinct from 'draft' then\n   if (v_gate->>'ok')::boolean then new.publish_status:='published';\n   else new.publish_status:='pending_review';end if;\n  end if;\n  new.profile:=coalesce(new.profile,'{}'::jsonb)||jsonb_build_object('gate',jsonb_build_object(\n   'ok',v_gate->'ok','fails',v_gate->'fails','warnings',v_gate->'warnings',\n   'checked_at',to_char(now() at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')));\n  new.completeness_score:=round(((v_gate->>'quality_score')::numeric/100.0),3);\n end if;\n return new;\nend;\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "059ca37c376f88162bc84423c543b024",
+      "name": "listings_skip_noop",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_skip_noop BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.skip_noop_listing_update()",
+      "signature": "zoi.skip_noop_listing_update()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.skip_noop_listing_update()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  IF (to_jsonb(NEW) - 'updated_at') = (to_jsonb(OLD) - 'updated_at') THEN\n    RETURN NULL;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a6d10dbbedb1f4a9aff4a3010b3a03d0",
+      "name": "maintain_seo_identity_keys",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER maintain_seo_identity_keys AFTER INSERT OR UPDATE OF id, name, city, region, country, address ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_identity_keys()",
+      "signature": "zoi.maintain_seo_identity_keys()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_identity_keys()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n INSERT INTO zoi.seo_identity_keys VALUES\n (NEW.id,zoi.seo_name(NEW.name,NEW.city),zoi.seo_text(NEW.city),zoi.seo_text(NEW.region),zoi.seo_text(NEW.country),zoi.seo_text(NEW.address))\n ON CONFLICT (listing_id) DO UPDATE SET name_key=EXCLUDED.name_key,city_key=EXCLUDED.city_key,\n region_key=EXCLUDED.region_key,country_key=EXCLUDED.country_key,address_key=EXCLUDED.address_key;\n RETURN NEW;\nEND;\n$function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "md5": "f3f56fbc83395559e0b883f610182017",
+      "name": "trg_listings_auto_seo",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER trg_listings_auto_seo BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.auto_seo_fill()",
+      "signature": "zoi.auto_seo_fill()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.auto_seo_fill()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE\n  v_cat_slug text;\n  v_cat_label text;\n  v_slug text;\n  v_title text;\n  v_desc text;\nBEGIN\n  IF NEW.primary_category_id IS NOT NULL THEN\n    SELECT c.slug, c.label_en INTO v_cat_slug, v_cat_label\n    FROM zoi.categories c WHERE c.id = NEW.primary_category_id;\n  END IF;\n\n  v_slug := coalesce(NEW.slug, zoi.seo_slug(NEW.name || '-' || coalesce(NEW.city,'')));\n\n  IF NEW.schema_type IS NULL OR length(NEW.schema_type)=0 THEN\n    NEW.schema_type := zoi.schema_type(NEW.entity_type, coalesce(v_cat_slug,''));\n  END IF;\n\n  IF NEW.canonical_path IS NULL OR length(NEW.canonical_path)=0 THEN\n    NEW.canonical_path := '/' || NEW.entity_type || '/' || v_slug;\n  END IF;\n\n  IF NEW.meta_title IS NULL OR length(NEW.meta_title)=0 THEN\n    v_title := NEW.name\n      || coalesce(' \u2014 ' || zoi.seo_pluralize(v_cat_label), '')\n      || coalesce(' in ' || NEW.city, '')\n      || ' | Zoi';\n    IF length(v_title) > 66 THEN\n      v_title := NEW.name || coalesce(' in ' || NEW.city, '') || ' | Zoi';\n    END IF;\n    IF length(v_title) > 66 THEN\n      v_title := left(NEW.name, 60) || ' | Zoi';\n    END IF;\n    NEW.meta_title := v_title;\n  END IF;\n\n  IF NEW.meta_description IS NULL OR length(NEW.meta_description)=0 THEN\n    IF NEW.description IS NOT NULL AND length(NEW.description) >= 30\n       AND NEW.description !~* '^https?://' THEN\n      v_desc := left(NEW.description, 158);\n    ELSE\n      v_desc := NEW.name\n        || coalesce(' in ' || NEW.city, '')\n        || coalesce(', ' || NEW.country, '')\n        || '. Listed on Zoi, the Greek community directory.';\n    END IF;\n    NEW.meta_description := v_desc;\n  END IF;\n\n  RETURN NEW;\nEND$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "1f8b6687e304c5f6502235344d4f0b7a",
+      "name": "trg_listings_updated",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER trg_listings_updated BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.set_updated_at()",
+      "signature": "zoi.set_updated_at()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin new.updated_at = now(); return new; end; $function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f17b227663468c63feaafdda7caf903f",
+      "name": "zz_maintain_seo_projection",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER zz_maintain_seo_projection AFTER INSERT OR UPDATE OF id, name, city, region, country, address, slug, entity_type, updated_at, created_at, phone, website, latitude, description, publish_status, moderation_status, marketplace_status, duplicate_status ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_projection()",
+      "signature": "zoi.maintain_seo_projection()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_projection()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$ BEGIN UPDATE zoi.seo_identity_keys k SET slug=NEW.slug,entity_type=NEW.entity_type,updated_at=coalesce(NEW.updated_at,NEW.created_at),\n completeness=(((NEW.address IS NOT NULL)::int)+((NEW.phone IS NOT NULL)::int)+((NEW.website IS NOT NULL)::int)+((NEW.latitude IS NOT NULL)::int)+((NEW.description IS NOT NULL)::int)),\n ugly=(NEW.slug ~ '-[0-9a-f]{6}$')::int,\n is_indexable=coalesce(NEW.publish_status='published' AND NEW.moderation_status IN ('clean','cleared') AND coalesce(NEW.marketplace_status,'')<>'hidden' AND NEW.duplicate_status IS DISTINCT FROM 'confirmed_duplicate'\n AND nullif(btrim(NEW.slug),'') IS NOT NULL AND nullif(btrim(NEW.name),'') IS NOT NULL\n AND (NEW.city IS NOT NULL OR NEW.address IS NOT NULL OR NEW.website IS NOT NULL),false)\nWHERE k.listing_id=NEW.id;\n RETURN NEW; END $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    }
+  ],
+  "public_listing_view": " SELECT l.id,\n    l.entity_type,\n    l.name,\n    l.slug,\n    l.description,\n    c.slug AS category_slug,\n    c.label_en AS category,\n    l.city,\n    l.region,\n    l.province_state,\n    l.country,\n    l.latitude,\n    l.longitude,\n    l.website,\n    l.trust_badges,\n    l.verification_status,\n    l.updated_at\n   FROM zoi.listings l\n     LEFT JOIN zoi.categories c ON c.id = l.primary_category_id\n  WHERE l.publish_status = 'published'::text AND (l.moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND l.duplicate_status <> 'confirmed_duplicate'::text;",
+  "after_v4_SEO_receipt": "/home/codespace/.cache/zoi/geography-place-writer-after-v4-seo-20261015.json",
+  "source": "Root bounded current metadata plus exact original actual SEO helpers; no actual customer/listing rows. Source scope helper is exact accepted read-authority migration prerequisite.",
+  "trigger_serialization_equivalence": {
+    "name": "geography_source_listing_update",
+    "actual": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN ((((((((((((((((((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type)) OR (old.address IS DISTINCT FROM new.address)) OR (old.city IS DISTINCT FROM new.city)) OR (old.country IS DISTINCT FROM new.country)) OR (old.website IS DISTINCT FROM new.website)) OR (old.source_url IS DISTINCT FROM new.source_url)) OR (old.latitude IS DISTINCT FROM new.latitude)) OR (old.longitude IS DISTINCT FROM new.longitude)) OR (old.geo_precision IS DISTINCT FROM new.geo_precision)) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id)) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id)) OR (old.publish_status IS DISTINCT FROM new.publish_status)) OR (old.moderation_status IS DISTINCT FROM new.moderation_status)) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status)) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status)) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+    "pg16_roundtrip": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type) OR (old.address IS DISTINCT FROM new.address) OR (old.city IS DISTINCT FROM new.city) OR (old.country IS DISTINCT FROM new.country) OR (old.website IS DISTINCT FROM new.website) OR (old.source_url IS DISTINCT FROM new.source_url) OR (old.latitude IS DISTINCT FROM new.latitude) OR (old.longitude IS DISTINCT FROM new.longitude) OR (old.geo_precision IS DISTINCT FROM new.geo_precision) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id) OR (old.publish_status IS DISTINCT FROM new.publish_status) OR (old.moderation_status IS DISTINCT FROM new.moderation_status) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+    "actual_sha256": "61c0a27b84477066294aa320b56a8c8040fd80d1b335c80aac59656b0b74f502",
+    "pg16_roundtrip_sha256": "7ce54044238b78a5a9cf7a32cf0cf76b760e587809fbeb024807a71f551af9d1",
+    "same_ordered_20_pure_predicates": [
+      "old.name IS DISTINCT FROM new.name",
+      "old.entity_type IS DISTINCT FROM new.entity_type",
+      "old.address IS DISTINCT FROM new.address",
+      "old.city IS DISTINCT FROM new.city",
+      "old.country IS DISTINCT FROM new.country",
+      "old.website IS DISTINCT FROM new.website",
+      "old.source_url IS DISTINCT FROM new.source_url",
+      "old.latitude IS DISTINCT FROM new.latitude",
+      "old.longitude IS DISTINCT FROM new.longitude",
+      "old.geo_precision IS DISTINCT FROM new.geo_precision",
+      "old.owner_user_id IS DISTINCT FROM new.owner_user_id",
+      "old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id",
+      "old.publish_status IS DISTINCT FROM new.publish_status",
+      "old.moderation_status IS DISTINCT FROM new.moderation_status",
+      "old.marketplace_status IS DISTINCT FROM new.marketplace_status",
+      "old.duplicate_status IS DISTINCT FROM new.duplicate_status",
+      "old.profile -> '_geo'::text IS DISTINCT FROM new.profile -> '_geo'::text",
+      "old.profile #> '{_enrich,blocked_reason}'::text[] IS DISTINCT FROM new.profile #> '{_enrich,blocked_reason}'::text[]",
+      "old.profile #> '{_enrich,scope_review_required}'::text[] IS DISTINCT FROM new.profile #> '{_enrich,scope_review_required}'::text[]",
+      "old.profile #> '{_enrich,organization_identity_quarantine}'::text[] IS DISTINCT FROM new.profile #> '{_enrich,organization_identity_quarantine}'::text[]"
+    ],
+    "deferrability_prefix_equal": true,
+    "function_suffix_equal": true,
+    "no_other_boolean_operator_or_expression": true,
+    "runtime_guard": "Exactly these2whole strings for this named trigger only; all other trigger/function metadata exact."
+  }
+}

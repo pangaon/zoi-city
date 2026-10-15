@@ -1,0 +1,292 @@
+{
+  "schema": 1,
+  "author": "qa_next source author; root owns independent acceptance and release",
+  "status": "FROZEN_SOURCE_CANDIDATE_WITH_ACTUAL_API_RELIABILITY_GAP",
+  "frozen_at_utc": "2026-10-15T18:05:46.469536+00:00",
+  "worktree": "/tmp/zoi-map-public-journey-fixes",
+  "baseline": "7d5d5e88e5e13e151bdec327679f43846eed9673",
+  "source_manifest": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/source-manifest.json",
+  "source_manifest_sha256": "678c4d95b611647ce632397cc6f0f5ad0bf1ebdf2c6ef8dc43d5d74c2f94d8ed",
+  "owned_files": [
+    {
+      "path": "explore/map/index.html",
+      "sha256": "f37d66b26b9ac25d9ebeb34cf2aa3f6a5781bb9ec85178c26fb515dfd3b60542"
+    },
+    {
+      "path": "assets/map-data/interactions.css",
+      "sha256": "8f27ea2df3a46c23ff507a660451501d63858cc7ce7c4f981f7cf354cf6dabee"
+    },
+    {
+      "path": "tests/browser/map-public-journey-fixes/verify.mjs",
+      "sha256": "3e157c0a56a18a439ff2af0edeb51df7f78c1a47dcfc14aec0aa25607dccd244"
+    },
+    {
+      "path": "tests/browser/map-public-journey-fixes/README.md",
+      "sha256": "d09bd6a696b591662d40c08d56fc4d117a224729dd1821dccedb292556f1001f"
+    }
+  ],
+  "read_only_basis": [
+    {
+      "path": "assets/map-data/loader.mjs",
+      "sha256": "4e9ea561f296e2ee2604b4b26e828933b9d9b9d91597d790e49265400a175033"
+    },
+    {
+      "path": "assets/map-data/preview.mjs",
+      "sha256": "ca378307a8f135d2208ba222ba5cce62816079d3b18cb16ff0ca8827205bf6a1"
+    },
+    {
+      "path": "assets/map-data/directions.mjs",
+      "sha256": "0509bf9c485aa33aa71be7816c22a7a21de9df8d878e5da75ef9a750933027e8"
+    },
+    {
+      "path": "assets/map-data/interactions.mjs",
+      "sha256": "67e610ad6ef304ff913181e16024275f9719d22029f3f788f2e11dcae38cd4b0"
+    },
+    {
+      "path": "assets/map-data/discovery.css",
+      "sha256": "0f14ce7cb8c2918244e242152504be7c13e127835cf6f76f3c7561b8bf7af42c"
+    },
+    {
+      "path": "assets/map-data/preview.css",
+      "sha256": "0aa9aedbb5c17b96d2cbae7888a1c06fd8f4957bbbe04a5b2af26085f7ea48dc"
+    },
+    {
+      "path": "assets/discovery/autocomplete.mjs",
+      "sha256": "9115c24d4c3280c9b0cb7f217e4b49ea29ddb6567786a6927e705349bdb91e5b"
+    },
+    {
+      "path": "assets/personalization/locality.mjs",
+      "sha256": "9c4adf12890f28939dc65e4db5946ce6d7f00a4a8d7f2cfff1019bf78bb7fc86"
+    },
+    {
+      "path": "assets/vendor/maplibre-gl.js",
+      "sha256": "45a9b07a9189ce56054c620a947ccf41e291e58c95e9b61533b740aaa65ee5cb"
+    },
+    {
+      "path": "api/entity.js",
+      "sha256": "c44bfa8faac349ab3de128cf36fa0e9a900ebe14a697dbaf19ac24c06b668502"
+    }
+  ],
+  "problem_evidence": {
+    "prior_independent_audit": "/workspaces/zoi-city-release/docs/audits/map-public-20-interactions-independent-2026-10-15.json",
+    "sha256": "b747be392e9117d1229e68dd9366a7b37fbd8c9c20d4a6784d7e611aa89bfd46",
+    "immutable": true,
+    "actual_public_html_sha256": "9e0418d67f1dcf5884a0c04705d1dea53bac2d4efbde5dd525b79bd0d9a4bb7f"
+  },
+  "runtime_changes": [
+    "Relocate the actual MapLibre NavigationControl and ScaleControl DOM nodes into one row in existing filter pane outside collapsible drawers. Existing control instances/listeners, map instance, ARIA, actual zoom/compass and attribution remain. Native interactive targets44\u00d744; light/dark/gold icons remain legible.",
+    "Phone pane/rail/sheet reservations derive from stage height as well as viewport. Full list and wrapped-header landscape retain scrollable controls and useful selected content. Short selected header/footer compact without deleting their content or removing body actions.",
+    "Every Saved row, including mapped feed rows, enters existing selectionVersion-fenced canonical selected-place resolver. Fresh home_entity plus current geography_reviewed_point establish a selected reviewed marker/numeric destination. Null/invalid/revoked proof retains safe address-only behavior. No persistent verified metadata or point inference.",
+    "If home_entity resolves a legacy saved slug to a different canonical slug, bind that relation to current same-origin public HEAD /p/<original> final route, bounded8seconds, then reread exact canonical slug/same ID. Re-key only existing local saved-slug array after this authority check. Late Saved-view reads remain version fenced; deduplicate only exact canonical slugs across feed/recovered extras, preferring current feed row.",
+    "Athens/Greece,Toronto/Canada,Melbourne/Australia shortcuts replace text/global-name search with exact temporary city/country scope, clearing old query/place/region/bbox/radius and retaining category selection. Known city center is explicitly only camera orientation when no established result bounds are available; never creates a listing point.",
+    "City-button pointerdown preserves the pending activation while the search input is focused, so autocomplete document outside-click reflow cannot move the button before click. Explicit click then closes suggestions and moves focus to activated shortcut. Keyboard activation remains available. City intent can update while tiles load once map exists."
+  ],
+  "checks": {
+    "syntax_html": "PASS inline JS3 blocks +HTML1 file; git diff --check PASS",
+    "focused": "21 existing directions/preview/current-receipt/focus/search-scope/interactions tests PASS",
+    "required_local": "PASS398 node:test files +2 standalone suites on final source",
+    "actual_API_candidate": {
+      "frontend": "Only two approved frontend files overlaid on public www; all RPC, canonical redirects, map library, other assets and tiles are real public reads. No Auth/GPS/Storage/source response fabricated.",
+      "complete_final_journeys": [
+        "390x900 light (plus orientation)",
+        "1440x900 light",
+        "844x390 gold landscape"
+      ],
+      "390x700_dark": "Final source passed three sheet modes44px/native hits/compass,fullscreen,keyboard,theme,directions and fresh Saved proof, then actual Athens public read500. One bounded separate recovery exercised all three cities at same390x700/final source successfully. This is not labelled a clean uninterrupted four-case suite.",
+      "actual_cities": "Each successful city response returns24 bounded rows, all city+country exact; no Cleveland/Detroit Athens-name substitution. Category t=business retained. Category chips may be absent until position-feed completion; URL intent and rendered chips when present checked.",
+      "legacy_alias": "390x900 actual reviewed old vendor\u2192current business ID, local alias+canonical collapse to one slug/row/count, then fresh current numeric point on selection.",
+      "map_and_control_instances": "Same map and actual native group through all sheet/zoom/compass/fullscreen cases; no remount."
+    },
+    "negative": "Unchanged public baseline fails first Zoom target:29\u00d729px, selected preview intercepts pointer center. baseline result.source lists local candidate reference pins, NOT the source executed by negative browser; actual negative production entry binding is the immutable prior review.",
+    "visual": "Source author inspected final phone selected and Full list captures; real source food photo, directions/menu/site/call actions and native control row visible. Final landscape capture and all actual hit tests retained."
+  },
+  "actual_service_failure": {
+    "endpoint": "https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/explore_search",
+    "context": "Final390x700 Athens/Greece switch after successful control/Saved checks",
+    "http_status": 500,
+    "sqlstate": "NOT_CAPTURED for original failure; no code inferred",
+    "original_request_body_and_timing": "Original runner did not retain its exact failed request body/timing. Current source UI request shape and exact recovery requests retained separately; not backfilled as direct original evidence.",
+    "UI": "Athens/Greece scope and city camera retained, additional-area failure and Retry area results shown, no JavaScript page error.",
+    "one_bounded_recovery": {
+      "at": "2026-10-15T18:03:34.151Z",
+      "passed": true,
+      "results": [
+        {
+          "city": "Athens",
+          "country": "Greece",
+          "status": 200,
+          "elapsed_ms": 254,
+          "sqlstate": null
+        },
+        {
+          "city": "Toronto",
+          "country": "Canada",
+          "status": 200,
+          "elapsed_ms": 669,
+          "sqlstate": null
+        },
+        {
+          "city": "Melbourne",
+          "country": "Australia",
+          "status": 200,
+          "elapsed_ms": 489,
+          "sqlstate": null
+        }
+      ]
+    },
+    "remaining": "Root must investigate service reliability separately; successful recovery does not erase500. No restart, repeated retry loop or weakened200 assertion."
+  },
+  "historical_failures": [
+    "Initial alias recovery duplicated existing canonical extra; then later position-feed arrival duplicated that exact slug. Both are fixed by exact-slug union dedup; strict duplicate-row assertion retained.",
+    "Alias count assertion initially raced asynchronous canonical rekey; final verifier waits exact actual local slug array/count before asserting. No source authority or save behavior fabricated.",
+    "Initial category test expected chips before complete position feed. Final test sets deliberate business category in URL, verifies intent retained and rendered chips when available; no claim of early loaded controls.",
+    "Typing then city tapping lost click during autocomplete document pointerdown reflow; pointer observer showed down on Athens/click on parent, later corrected click to Athens. Private diagnostic helper retained; these observed stdout traces are not a native event-stream claim.",
+    "Short wrapped-header landscape initially let sheet intercept tools, then left selected body too small. Final stage reservations/compact header-footer corrected; full actual landscape journey passes."
+  ],
+  "release_gate": "Independent root source review, protected merge, exact deployed HTML/CSS byte readback and fresh actual public user journeys remain required. No source-only result is labelled deployed.",
+  "limits": [
+    "No coordinates changed/reviewed, no new accepted proof kind, policy/SQL/source-reader/writer changes. Global address/coordinate accuracy remains open.",
+    "Cluster/dateline/GPS success/cancellation, external navigator routes/ETA, provider app launch, native implementation/installed artifacts and broad map redesign remain outside this packet. Prior twenty-feature audit retains those gaps.",
+    "Saved canonical alias migration stores only slugs on this browser, not account sync or private metadata.",
+    "Existing base-first Hellenic preview description policy and other profile enrichment gaps are not changed."
+  ],
+  "commands": [
+    "OUTPUT_DIR=<unique> node tests/browser/map-public-journey-fixes/verify.mjs",
+    "ZOI_MAP_CASES=844x390 OUTPUT_DIR=<unique> node tests/browser/map-public-journey-fixes/verify.mjs",
+    "ZOI_MAP_BASELINE=1 ZOI_MAP_CASES=390x900 OUTPUT_DIR=<unique> node tests/browser/map-public-journey-fixes/verify.mjs",
+    "npm run verify:local"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/landscape-final/result.json",
+      "sha256": "7b0ce12297226dae16961690c426fa94dcc9ad96e238b5cb3d60d8e3d879f4b2",
+      "bytes": 4328
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/landscape-final/map-844x390.png",
+      "sha256": "0e6e30339c5649be22a3532b8f8b8cf467d27d86dcd069e7c1e9d9ed637eb96c",
+      "bytes": 180876
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/final-other/result.json",
+      "sha256": "f3840bba5dd842a4b0f4c57db82a19b7c5f9e2d355e51358e7266a6b165f6a28",
+      "bytes": 11732
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/final-other/map-390x900.png",
+      "sha256": "adb6d19c4bcffd39af4ae1daafa18807930691a3a3c72ebdbe9a899aa304a743",
+      "bytes": 272754
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/final-other/map-1440x900.png",
+      "sha256": "90af307c1421ee5d5220373e2c1dc7c36d0d69ae4eb85cfb8ead4e0e1a1e0ce1",
+      "bytes": 881385
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/final-other/failure.png",
+      "sha256": "fd71325113f6742c30d5fd6dfb22dcdf5ebcc6d11255b408f6dc6fc4ff6c29d5",
+      "bytes": 240443
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/baseline/result.json",
+      "sha256": "95055f97947f3f9a21791e3a034f28ee914e267c7061c9a8f9bc4f7fcb50b263",
+      "bytes": 2119
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/baseline/failure.png",
+      "sha256": "8eea85504b30232d540730d61c54c6d3160060193de0312ecc0b0b1e71eceb10",
+      "bytes": 304607
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/recovery-390x700.json",
+      "sha256": "94fd76ec4d82835c8e3590717aeeee04325ce1dc8bb5522e61db88d16ad99a8f",
+      "bytes": 2028
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/recovery-390x700.png",
+      "sha256": "4e9781a50138c28543f40e4fc900eb43e62151fed9128429fda1960389425b92",
+      "bytes": 210886
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/recovery-390x700.mjs",
+      "sha256": "81899ef566db02cd0bd1b1c61ef3df3ec3982c13d1fd7cc6e547cef744b180ba",
+      "bytes": 3044
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/selected-final-390.png",
+      "sha256": "45e1d8bf0d69594f334336ffac65f3808f8f66bef64f99b32b3c59618895393d",
+      "bytes": 257509
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/full-list-final-390.png",
+      "sha256": "fc68cea650e2673739afc06b2c533facdc9da3e72c21bc00ac1586a15f3d0b7d",
+      "bytes": 374045
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/capture.mjs",
+      "sha256": "4891ba1685c25b8793d1089b6b2016ab41e5ace260df166ba6d4b13953d6293e",
+      "bytes": 1537
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/first/result.json",
+      "sha256": "eb2988336dc83661b82de539cc34b976d681abd260e5da43c8b85211b56953a9",
+      "bytes": 3820
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/first/failure.png",
+      "sha256": "ce2142e0760417bb63d8cefb014991ce7fea5c108a7b1f62b3d0a609fb01f1d8",
+      "bytes": 254508
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/second/result.json",
+      "sha256": "aba9aeb9f25968461f47c0e8e600269295e5a9b06bfef25c90955ccd0136027b",
+      "bytes": 4057
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/full/result.json",
+      "sha256": "541da69f42dfd4d20ff6be5dacc953801602cac8ec03c116614e49b3e070fc84",
+      "bytes": 19220
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/full/failure.png",
+      "sha256": "7f9caf96170da0af571a190d4f68ffe9d10ed0a7f59e227e95a7f1371b3cec82",
+      "bytes": 124287
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/landscape-corrected/result.json",
+      "sha256": "f39bdcf0cad5a74650b2b5b1ad413f663b576525335ec2d12027c05c6526381a",
+      "bytes": 7569
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/landscape-corrected/failure.png",
+      "sha256": "82f9e59888d1962e297f4436611df7ecabc963dd97a663c9ddcfa7a4c075efe7",
+      "bytes": 144317
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/fifth/result.json",
+      "sha256": "ce0581c30be9bf55e40d795b9c9a530613b77a4ea49dea19017cc229cdc1c17a",
+      "bytes": 3518
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/city-debug.mjs",
+      "sha256": "2364f5e39451418262ab560cd8995d087a51ff3863712cb99a28c98a2505650c",
+      "bytes": 1795
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/verify-local-final.log",
+      "sha256": "943480e822218ed70e7d2ae92f238c1760669c18941160dcf505734d61499df3",
+      "bytes": 250032
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/focused21.log",
+      "sha256": "1ca972d507837c665e0e61b8ccfc867dcc7c9699d1175712e43c029ed9a400a3",
+      "bytes": 2356
+    },
+    {
+      "path": "docs/audits/evidence/map-public-journey-fixes-owner-2026-10-15/recovery.log",
+      "sha256": "8ba6a2ea05d44a7fdd60dcccc649851e4c8876821f8f66910d49c14971ef0c8f",
+      "bytes": 1418
+    }
+  ],
+  "mutations": "Only two approved runtime files, two new browser source/README paths and owner audit/evidence. No production SQL/data/DDL/Auth/provider/EAS/ADB actions."
+}
