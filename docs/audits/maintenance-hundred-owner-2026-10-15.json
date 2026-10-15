@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-15T21:42:05.093075+00:00",
+  "outcome": "AUTHOR SOURCE FROZEN; 21 isolated PostgreSQL groups pass; independent root review and actual rollback runtime gate pending. Maintenance remains paused.",
+  "base_commit": "0d96dac3f623e31c6a206c29e7d74dbaa1a27228",
+  "worktree": "/workspaces/zoi-maintenance-hundred-work",
+  "purpose": "Bound existing canonical maintenance admission to 100 IDs before scoring; retain accepted narrow selected-column projection.",
+  "runtime_changes": [
+    "Exact existing helper three LIMIT1000\u2192LIMIT100 substitutions plus bound comment; cursor advances to actual selected last ID, not sliced 1000th ID.",
+    "Main is byte-exact previously independently accepted projected definition bfd199c1cd693df7e07ea7ee64bf503f; original due LIMIT1000 remains as safe upper bound.",
+    "Existing scoring formulas, update/audit, SEO, triggers, invoker/security/owner/ACL/search_path and operational state unchanged; no cron changes."
+  ],
+  "contracts": {
+    "old_main_md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+    "old_helper_md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+    "new_main_md5": "bfd199c1cd693df7e07ea7ee64bf503f",
+    "new_helper_md5": "b4474aa6d8381a1e31239b90c6d5c3c8",
+    "requires_paused_job": 31,
+    "schedule_unchanged": "7,17,27,37,47,57 * * * *",
+    "command_md5_unchanged": "7876d3105fcf6a7917047851f0ba6af9"
+  },
+  "command": "ZOI_MAINTENANCE_EVIDENCE_DIR=<NEW unique persistent directory> node tests/database/bounded-listing-maintenance-hundred.integration.mjs",
+  "environment": {
+    "postgres_bin": "/usr/lib/postgresql/16/bin",
+    "private_port": 15948,
+    "socket": "unique per-run directory under evidence directory",
+    "cleanup": "Finally stops/removes only its own cluster; final run stopped successfully."
+  },
+  "verification": {
+    "at": "2026-10-15T21:38:32.753Z",
+    "groups": 21,
+    "passed": [
+      "original immutable fixture and exact installed bounded main reproduced with nine actual trigger definitions",
+      "active job, dependency, state ACL, scoring type and cursor drift refuse atomically",
+      "installer refuses a concurrent canonical maintenance transaction",
+      "100-ID helper changes only3seek limits and bound comment; main/other functions/triggers/state/cursor/pausedjob preserved",
+      "existing helper owner/private ACL/security/config and all nonbody metadata remain exact",
+      "mechanical reversal proves every scoring formula, due/update join and audit byte unchanged; selected hundred has sixteen values and only two event keys",
+      "840-row cross-product preserves original completeness/trust/freshness/archive results, SEO output, epochs, audit and cursor under actual triggers",
+      "owned profiles, explicit clears, coordinates and every non-score fact survive; fixture triggers stay enabled",
+      "already-current scores cause no listing update or timestamp churn",
+      "100-ID cap advances to selected100th ID and full301-row sweep/wrap is complete",
+      "deleted cursor ID and newly inserted lower ID progress on next complete sweep",
+      "audit refusal rolls scores, trigger effects and cursor back atomically",
+      "same row-lock skip and round-robin revisit semantics",
+      "concurrent canonical owner replacement and clears survive skip/revisit",
+      "main advisory exclusion and cursor atomicity unchanged",
+      "service invoker and private state ACL unchanged",
+      "actual direct helper/main two-backend exclusion preserves100-ID admission and eventual sweep",
+      "local complete UPDATE scores100rows with PK seeks; old1000 comparison is local only",
+      "measured local materialized tuples omit wide unrelated payload; production trigger and runtime costs remain unmeasured",
+      "job remains paused and all unrelated operational state is unchanged",
+      "actual full local main/helper calls are measured only inside rollback and preserve all rows/state/audit"
+    ],
+    "migration_sha256": "976970070bbf3904acbc1f61bd6a1a2c7daa8eca9849ea19fa5e91561a375435",
+    "candidate_function_md5": "bfd199c1cd693df7e07ea7ee64bf503f",
+    "helper_md5": "b4474aa6d8381a1e31239b90c6d5c3c8",
+    "selected_plan_width": {
+      "old": 1921,
+      "new": 321
+    },
+    "materialized_tuple_bytes": {
+      "old": {
+        "rows": 1000,
+        "average_bytes": 743.968
+      },
+      "new": {
+        "rows": 100,
+        "average_bytes": 127.97
+      }
+    },
+    "local_execution_ms": {
+      "old": 631.475,
+      "new": 64.79
+    },
+    "local_full_function_ms": {
+      "old": 631.325,
+      "new": 66.911
+    },
+    "limitations": [
+      "Isolated PostgreSQL fixture has 77 listing columns, unused vector represented as text, nine actual BEFORE/SEO/read-epoch triggers and seventeen dependencies. Deferred source enqueue and owner-transfer triggers are not loaded.",
+      "Local timing is not a production runtime remedy claim; root owns actual rollback runtime gate. No job activation or production mutation."
+    ]
+  },
+  "source_proof": {
+    "source_helper_equals_fixture": true,
+    "source_main_equals_previously_accepted_projection_fixture": true,
+    "helper_reverse_exact_actual_original_definition": true,
+    "helper_limit_substitutions": 3,
+    "helper_comment_substitutions": 1,
+    "actual_old_helper_md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+    "new_helper_md5": "b4474aa6d8381a1e31239b90c6d5c3c8",
+    "projected_main_md5": "bfd199c1cd693df7e07ea7ee64bf503f",
+    "no_array_slice": true,
+    "cursor_uses_actual_selected_last_id": true
+  },
+  "limits": [
+    "Local full function 631.325\u219266.911ms and UPDATE631.475\u219264.79ms are fixture measurements only; production performance remains unverified.",
+    "77-column fixture models unused vector as text; nine actual BEFORE/SEO/read-epoch triggers and seventeen dependency functions included; deferred source-enqueue/owner-transfer costs excluded.",
+    "100 IDs at unchanged six invocations/hour increases invocation count per full sweep; locked rows can require later wrap. No claim all rows score on each call.",
+    "Root owns one actual5s/1s rollback gate and separately controlled deployment/activation. No reviewer/author production SQL, job activation, provider or ADB calls.",
+    "Original projection-only source acceptance/history remains immutable. Its actual1000-row5s gate failed inside seo_name and rolled back; this packet does not conceal that failure."
+  ],
+  "test_harness_corrections": [
+    "Initial test-only tuple measurement used out-of-scope limit variable, fixed literal100; runtime migration unchanged.",
+    "Expanded full-fixture rollback integrity snapshot exceeded32MiB IPC; replaced test-only transfer with server-side per-row digest aggregate, runtime migration unchanged."
+  ],
+  "rollback": "Before commit transaction failure leaves definitions/state unchanged. After committed install, root can restore exact retained old helper/main definitions with matching current-definition guards while job31 stays paused; no cursor reset or factual rewrite required.",
+  "manifest": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/source-manifest.json",
+  "owned_sources": [
+    {
+      "path": "supabase/migrations/20261015213442_bounded_listing_maintenance_hundred.sql",
+      "sha256": "976970070bbf3904acbc1f61bd6a1a2c7daa8eca9849ea19fa5e91561a375435",
+      "bytes": 10754
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance-hundred.integration.mjs",
+      "sha256": "5a240d7f3db59cbb18f6e038772d4c66521c1029195a203509e73819f96f0c18",
+      "bytes": 24769
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-hundred-live.json",
+      "sha256": "c5208abc210be96e5488765aa56c0e36dad3f4eacbc487aac484d77fe80a2b52",
+      "bytes": 85098
+    }
+  ],
+  "readonly_basis": [
+    {
+      "path": "supabase/migrations/20261015204248_bounded_listing_score_candidates.sql",
+      "sha256": "8f0774798f48c041d16eecece95d7079b3de722efae02a3df726836fe1f4beeb",
+      "bytes": 9806
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance.integration.mjs",
+      "sha256": "4d85b9cd8dd41eda4f48191d0ce01e449bcdfe59cfe64d6381d88c60c5dce57f",
+      "bytes": 22586
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-live.json",
+      "sha256": "c4a20825d066f11cb6e78aa1afd309248f8ff79e908b7aca32e956b0a2c04103",
+      "bytes": 56740
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/exact-definition-reversal.json",
+      "sha256": "5ae787ef97777c3b7f85977875fd811b34b2fa4312566f9d9651c82d81a10ffa",
+      "bytes": 495
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/new-function-explain.json",
+      "sha256": "da26ddb51719da68683a662a9d7c07220ed84b6c5481d1c9ceabf3b0c90977c6",
+      "bytes": 1075
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/new-local-explain.json",
+      "sha256": "6ce7b3d0d4a18a94bfb69799fdb88dac1bd80bd81fda0cfc61d0131ca28ee387",
+      "bytes": 31012
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/old-function-explain.json",
+      "sha256": "21b29ac4334fb33f99e5fdd4c5efc243a8ed7b1b5493a0f876875c949bb72e58",
+      "bytes": 1081
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/old-local-explain.json",
+      "sha256": "e24765e7cc078e1198cd2f47c52a0a4c7aab7608a70d49aab3c16c5137f84d4b",
+      "bytes": 40298
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/owner-pg.log",
+      "sha256": "e85e35781f79368b43c17d0eabd7c349cc0a40abc95ee67efc7f32bec4155f29",
+      "bytes": 4766
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/pg-result.json",
+      "sha256": "8bc861782c86f87f8daa55413a4615adc0785ff353c7612fe7d3acf0e303a6ee",
+      "bytes": 3068
+    },
+    {
+      "path": "docs/audits/evidence/maintenance-hundred-owner-2026-10-15/source-manifest.json",
+      "sha256": "60544ac2c428e7a3878197f0cab2aed1936b4d1efdd23258c8e23544c4e9b88f",
+      "bytes": 1618
+    }
+  ],
+  "integration_note": "Integrate ONLY owned three files plus this audit/evidence. Supersedes UNAPPLIED projection-only proposal; guards require actual old main45d/helper e1f. Do not apply projection-only migration first."
+}
