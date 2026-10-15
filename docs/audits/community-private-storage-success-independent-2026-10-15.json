@@ -1,0 +1,176 @@
+{
+  "observed_at": "2026-10-15T13:31:59.390982+00:00",
+  "reviewer": "qa_next",
+  "verdict": "Actual Community private Storage gate and guarded phaseB runtime independently accepted within tested synthetic scope. Native/ordinary-member device/public-post journeys remain separate.",
+  "run": {
+    "id": 38742346691,
+    "url": "https://github.com/pangaon/zoi-city/actions/runs/38742346691",
+    "head_sha": "bd5e9c41d8e10947266315fdbf262a0a4470a04d",
+    "attempt": 1,
+    "event": "push",
+    "conclusion": "success",
+    "created_at": "2026-10-15T13:23:56Z",
+    "finished_at": "2026-10-15T13:25:10Z",
+    "all_job_steps_including_cleanup_success": true
+  },
+  "artifact": {
+    "id": 11974949933,
+    "name": "community-private-bytes-38742346691",
+    "archive_digest": "sha256:5d9aaba2c76a519c4b503df816c148d706fe2a59737152ae27fa5af54700f822",
+    "size": 444,
+    "independently_downloaded": true,
+    "result_sha256": "0378d7d6a7696c2204e854c763b1733ba83a8261c59bf732e02911895bff0653",
+    "root_cached_copy_exact": true,
+    "result": {
+      "positive_upload": true,
+      "same_request_same_asset": true,
+      "private_sha_parser_exact": true,
+      "private_authenticated_read_refused": true,
+      "unattached_public_read_refused": true,
+      "ready_reverify_without_original_file": true,
+      "wrong_same_mime_size_bytes_refused": true,
+      "wrong_asset_pending_unverified": true,
+      "no_public_posts": true,
+      "no_provider_calls": true,
+      "current_grant_logged_out_session_refused": true,
+      "canonical_assets_discarded": true,
+      "private_objects_removed": true,
+      "local_sessions_logged_out": true,
+      "asset_ids": [
+        "b5a664b6-4628-4a37-bf82-c45bc9d44877",
+        "1c902d4b-9ca0-4b60-971c-0136ab502c95"
+      ]
+    }
+  },
+  "source_admission": {
+    "request_id": "33c8db04-2906-437f-b72b-cc9d96d85c41",
+    "purpose": "dedicated-community-private-byte-qa-v1",
+    "parent_sha": "e1bac7053f7249dc18ad36de2027823e917fd9bd",
+    "single_parent_request_only": true,
+    "all16_source_pins_exact": true,
+    "issued_at": "2026-10-15T13:23:49.194Z",
+    "expires_at": "2026-10-15T13:53:49.194Z",
+    "current_active_Edge": {
+      "edge_version": 16,
+      "edge_bundle": "53c342bbc08a1bdc313cea720c3660305777ddae2a3747a223f04a77a8fc77af",
+      "files": [
+        {
+          "path": "supabase/functions/community-media/index.ts",
+          "sha256": "3bd5d05c354f4f1f6b11be29c97c144170a6394ee6efce5721df97d7c983a28a",
+          "exact_successful_source": true
+        },
+        {
+          "path": "assets/community/media-rules.mjs",
+          "sha256": "126f0378a0b8a393494bea42ade498b9e28e6e3aeffd56e77975bb601f898469",
+          "exact_successful_source": true
+        },
+        {
+          "path": "assets/documents/bounded-body.mjs",
+          "sha256": "ecb212d46b99b242de2a1e49bb000607b6646e66a723f6d1458b4bfe659df1ed",
+          "exact_successful_source": true
+        }
+      ],
+      "phaseB_sha256": "a8e703c9b66fd473a7f6c9fb65bed0de0fad826d1af769df33f5977969362464",
+      "phaseB_bodies": [
+        {
+          "name": "public.community_media_finish",
+          "md5": "e16fdc98289749c4f1774230f4c9bd3d"
+        },
+        {
+          "name": "public.community_publish",
+          "md5": "1710e8f39cee2de85b5f8297dbd1e439"
+        },
+        {
+          "name": "zoi.community_member_payload",
+          "md5": "1e523a5b614fd749ca56e24c6857aee7"
+        },
+        {
+          "name": "zoi.community_media_avatar",
+          "md5": "db29d79482ffae96ae8aa86569048117"
+        },
+        {
+          "name": "public.community_profile_save",
+          "md5": "baae4b30ad716153292d0f6b8857cce8"
+        }
+      ]
+    }
+  },
+  "actual_canonical_readback": {
+    "dedicated_profile_matches_both": true,
+    "positive": {
+      "id": "b5a664b6-4628-4a37-bf82-c45bc9d44877",
+      "request_nonce": "379351bf-f066-4a34-91ba-cf86256a3c40",
+      "state": "discarded",
+      "storage_deleted": true,
+      "private_storage_object_absent": true,
+      "exact_matching_byte_proof": true
+    },
+    "wrong_preexisting_bytes": {
+      "id": "1c902d4b-9ca0-4b60-971c-0136ab502c95",
+      "request_nonce": "6973e629-c594-4814-9430-0eaf8f345dbd",
+      "state": "discarded",
+      "storage_deleted": true,
+      "private_storage_object_absent": true,
+      "byte_proof_exists": false
+    },
+    "both_exact_reservation": "image/png,73bytes,expected positive SHAeb52dccdcd43a07c59b48944e7dfba6061dc8cdbf9b1d201f10da76cb2a858a3; exact request-derived nonce namespace. Wrong private bytes were tested against that same reservation, never attested."
+  },
+  "phaseB": {
+    "actual_ledger_version": "20261015132637",
+    "name": "require_community_media_byte_proof",
+    "SQL_sha256": "a8e703c9b66fd473a7f6c9fb65bed0de0fad826d1af769df33f5977969362464",
+    "exact_source_SHA": true,
+    "all5_actual_runtime_body_MD5s_match_source": [
+      {
+        "name": "public.community_media_finish",
+        "md5": "e16fdc98289749c4f1774230f4c9bd3d"
+      },
+      {
+        "name": "public.community_publish",
+        "md5": "1710e8f39cee2de85b5f8297dbd1e439"
+      },
+      {
+        "name": "zoi.community_member_payload",
+        "md5": "1e523a5b614fd749ca56e24c6857aee7"
+      },
+      {
+        "name": "zoi.community_media_avatar",
+        "md5": "db29d79482ffae96ae8aa86569048117"
+      },
+      {
+        "name": "public.community_profile_save",
+        "md5": "baae4b30ad716153292d0f6b8857cce8"
+      }
+    ],
+    "all_owners_postgres_and_expected_private_or_authenticated_ACLs": true
+  },
+  "production_rollback": {
+    "fixture_id": "c15f0000-0000-4000-8000-202610150001",
+    "actual_asset_absent": true,
+    "actual_grant_absent": true,
+    "actual_proof_absent": true,
+    "nine_assertion_execution": "Root-reported; reviewer did not rerun live fixture. Reviewer independently checked all three absences and actual phaseB definitions."
+  },
+  "meaning": "Real gate proves private original-byte SHA/parser checks, identical request replay, asset-only ready reverify without original local file, sameMIME/sameSize wrong-byte refusal, current-session grant refusal after local logout, unattached read/privacy denial and exact canonical cleanup. Proof metadata remains immutable audit history after discarded synthetic objects.",
+  "limits": [
+    "Reviewer created no session/upload/discard/deletion and did not sign any public content.",
+    "Physical private-object GET/removal behavior is exercised by exact successful CI harness; independent liveSQL read confirms storage.objects absence and canonical metadata rather than initiating another credentialed Storage request.",
+    "The fixture is1x1PNG; full native picker, large media,video,ordinary-device profile and public publish/delete interactions are not accepted by this gate.",
+    "No external provider integration, complete home or catalogue-wide coverage is claimed."
+  ],
+  "reviewer_production_mutations": 0,
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/community-blob-success-independent-2026-10-15/request.json",
+      "sha256": "76fff5d3e34c286ac676979e59c6f3e371eadd933eb0c9380736548a53ad5fbb"
+    },
+    {
+      "path": "docs/audits/evidence/community-blob-success-independent-2026-10-15/result.json",
+      "sha256": "0378d7d6a7696c2204e854c763b1733ba83a8261c59bf732e02911895bff0653"
+    },
+    {
+      "path": "docs/audits/evidence/community-blob-success-independent-2026-10-15/source-proof.json",
+      "sha256": "94ed70c485a3ab9ce8894c25a145568b50ca0f3b1ddca8053065bd1ea3288327"
+    }
+  ]
+}

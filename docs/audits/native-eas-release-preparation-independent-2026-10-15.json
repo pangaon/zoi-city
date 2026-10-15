@@ -1,0 +1,105 @@
+{
+  "observed_at": "2026-10-15T13:31:59.390982+00:00",
+  "reviewer": "qa_next",
+  "state": "Current main native sources and existing EAS configuration/credit independently verified; root-owned coherent Android preview build is in progress, installed acceptance pending.",
+  "main": "bd5e9c41d8e10947266315fdbf262a0a4470a04d",
+  "merged_native44_PR63": "b28068437351552fe25ade3e4f265cca460c9874",
+  "frozen_native_source_files_all19match": true,
+  "map_Company_Community_foreground_commits_ancestors": true,
+  "changes_since_8c8_native_packet": [
+    "mobile/src/MapLocationControl.tsx"
+  ],
+  "touch_target_sha256": "c5a6d9b1d29e3e843ecea645d9623f7b626064c368a6ab26ea79b94137826fea",
+  "EAS": {
+    "supported_existing_CLI": "24.8.0",
+    "commands": [
+      "whoami",
+      "project:info (mobile cwd)",
+      "config --platform android --profile preview --json",
+      "account:usage pollcity --json --non-interactive",
+      "build:list --platform android --build-profile preview --limit2 --json",
+      "build:view 7b13d5e3-ceab-4767-971c-b418a9114341 --json"
+    ],
+    "account": "pollcity",
+    "project": "@pollcity/zoi",
+    "project_id": "59352b1c-50c5-4717-a22d-53188fa500c7",
+    "profile": "preview",
+    "resolved_build_profile": {
+      "credentialsSource": "remote",
+      "distribution": "internal"
+    },
+    "SDK": "57.0.0",
+    "android_package": "com.usgreekscan.zoi",
+    "resolved_android_permissions": [
+      "android.permission.ACCESS_COARSE_LOCATION",
+      "android.permission.ACCESS_FINE_LOCATION"
+    ],
+    "usage": {
+      "account": "pollcity",
+      "plan": "Production",
+      "cycle": {
+        "start": "2026-09-27T16:34:45.000Z",
+        "end": "2026-10-27T16:34:45.000Z",
+        "daysElapsed": 18,
+        "daysRemaining": 13,
+        "totalDays": 30
+      },
+      "build_credit_used_cents": 5500,
+      "build_credit_limit_cents": 22500,
+      "remaining_credit_cents": 17000,
+      "build_overage_cost_cents": 0,
+      "observation": "Read before root submitted this build; remaining credit is a timestamped usage observation, not a count of free builds."
+    }
+  },
+  "root_submitted_build_independently_read": {
+    "id": "7b13d5e3-ceab-4767-971c-b418a9114341",
+    "status": "IN_PROGRESS",
+    "platform": "ANDROID",
+    "distribution": "INTERNAL",
+    "buildProfile": "preview",
+    "gitCommitHash": "bd5e9c41d8e10947266315fdbf262a0a4470a04d",
+    "createdAt": "2026-10-15T13:27:49.196Z"
+  },
+  "old_build": "Latest completed preview before root submission wasbb424385-9a3a-4243-9b89-7e97eecfd85c, source86bb929538c71aa9ede307f7fc8afa2f2fd896b6; it does not accept current later features.",
+  "environment": {
+    "existing_adb": "/home/codespace/.cache/zoi/android-sdk/platform-tools/adb",
+    "existing_AVD_home": "/home/codespace/.cache/zoi/android-avd",
+    "existing_AVD": "zoi_api35_4a74405",
+    "attached_devices_at_read": 0,
+    "new_emulator_or_dependency_install": false,
+    "dependency_link": "QA symlink target had been removed; relinked only that symlink to existing complete zoi-native-location-work/mobile/node_modules after exact package-lock match f7f2fc1d\u2026",
+    "prior_frozen_readiness_audit_sha256_unchanged": "d3dd0e8e798486bacf1ea940d3c053bde84867de53e5f75f85778a8e734d53b4"
+  },
+  "lowest_friction_installed_plan": [
+    {
+      "order": 1,
+      "root_only": "Fetch completed exact7b13APK, record source/buildID/archive SHA/package. Boot the existing API35AVD once and install exact APK. Record launch screenshot and crash buffer before any setting changes; no new emulator/image needed."
+    },
+    {
+      "order": 2,
+      "guest_smoke": "Cold launch without location prompt; Discover\u2192Map, actual basemap/cluster/touch/zoom/pan. Open zoi://explore/map?place=stalactites-restaurant-melbourne to exercise current public reviewed point before whole feed arrival. Compare current receipt/pair and labelled stored/held/sparse fallbacks; open four external Maps travel modes and full-map browser handoff."
+    },
+    {
+      "order": 3,
+      "permission_and_layout": "Tap location once; test deny/permanent-deny/settings, approximate permission and services-off/timeout. Check44px controls and2xsystemfont; record/restore original font/location/network settings. Try one explicit controlled emulator geo fix; if sensor stays unavailable, record truthful timeout and leave physical-sensor success open rather than repeat loops."
+    },
+    {
+      "order": 4,
+      "offline_and_scope": "One offline map/selected-place failure, restore network and explicit retries. Verify manual camera survives late coordinates; location clears on background/scope/account change. Preserve source-vs-rendered-vs-exercised evidence separately."
+    },
+    {
+      "order": 5,
+      "private_journeys": "Using only root-approved dedicated ordinary-member native authentication, save/edit/reopen private text/photo draft/history and reverify saved asset after local source removal. Exercise unknown response check/cancel/identical retry, account switch with held reply, and private preview. No founder-link renewal. Canonical dedicated cleanup and no public posts/provider calls."
+    },
+    {
+      "order": 6,
+      "company_and_remaining": "Current owner/admin Company web handoff keeps selected company/workspace IDs and requires separate browser sign-in; test role/account/workspace refusal and return/reload. Private video draft preview remains metadata-only; native video-preview parity, iOS/physical devices/store acceptance stay open."
+    }
+  ],
+  "evidence_reuse": "Existing475 native tests,3account-scope checks,34shared checks and7post-touch tests/layout screenshots retain their original scope. No new runtime delta justifies repeating every source test here. Actual installed behavior is not inferred from those checks.",
+  "reviewer_build_starts": 0,
+  "reviewer_spend": 0,
+  "reviewer_installs": 0,
+  "reviewer_Auth_Storage_provider_mutations": 0,
+  "source_archive_artifacts_preserved": true
+}
