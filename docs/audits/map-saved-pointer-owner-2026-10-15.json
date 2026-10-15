@@ -1,0 +1,444 @@
+{
+  "schema": "zoi.shared-map-saved-pointer.owner.v1",
+  "at": "2026-10-15T19:36:46.678837+00:00",
+  "owner": "/root/qa_next",
+  "tree": "/workspaces/zoi-map-saved-pointer-work",
+  "sparse_checkout": "44MB source checkout, docs excluded; only newly owned audit/evidence materialized. Original workspaces and other specialists untouched.",
+  "status": "frozen_source_and_controlled_journeys_pass_not_live",
+  "main_base": "cc806c05cb5ffce75535277d89693fb65580d80f",
+  "source_manifest": {
+    "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/source-manifest.json",
+    "bytes": 1604,
+    "sha256": "522764b16568d879afba05104687882b9791bfab75a37ea4e14ad05052e12535"
+  },
+  "source": [
+    {
+      "path": "explore/map/index.html",
+      "bytes": 99276,
+      "sha256": "dc10d925e21aed03fd90e366dd8cba8142986a0251fcda2012173f5e46027a69"
+    },
+    {
+      "path": "tests/browser/map-saved-pointer/verify.mjs",
+      "bytes": 19561,
+      "sha256": "e305c4f53e5befbde9c6b88577b958f75bf3c9510b8e6a14b7deb52a68164a4d"
+    },
+    {
+      "path": "tests/browser/map-saved-pointer/README.md",
+      "bytes": 1423,
+      "sha256": "71963f40697676d6e48f0d679950bc353e035efea4c8c20fab34b361a956e05f"
+    }
+  ],
+  "runtime_scope": "explore/map/index.html only. Exact frozen camera d6de6aad preserved, plus exactly two approved pointer hunks. New hover class on the existing text-only Popup; scoped self/descendant pointer-events:none. No listener, selected-preview action, data, reader, precision, writer or authority change.",
+  "cause_and_negative_evidence": {
+    "first_diagnostic": "Initial diagnostic failed because a row detached during scrollIntoView. Retained, not treated as tooltip causality proof.",
+    "stable_diagnostic": "Waited for complete retained feed and stable Saved row before hover. The stable visible row repeatedly failed real hit testing because m-tipwh and m-tipgo in the MapLibre popup intercepted pointer events; exact8s Playwright interception log and screenshot retained. MapLibre popup parent is pointer-events:none while its content enables descendants. No forced pointer dispatch or source mutation used.",
+    "fix": "Only the shared hover Popup gets class m-place-tooltip. Scoped self/descendants remain noninteractive, overriding external content defaults. Other popup types and all selected-preview actions retain existing behavior."
+  },
+  "verification": {
+    "matrix": [
+      {
+        "width": 390,
+        "height": 900,
+        "passed": true,
+        "groups": 14,
+        "pointer": [
+          {
+            "hoverTextVisible": true,
+            "tooltipChildrenNoninteractive": true,
+            "mouseleaveDismiss": true,
+            "pointerHit": {
+              "target": "m-meta",
+              "rowReceives": true,
+              "tooltipIntercepts": false
+            },
+            "pointerSelectionNoKeyboardFallback": true
+          }
+        ],
+        "selected_reads": [
+          {
+            "savedFreshCanonicalAndPoint": true,
+            "numericDestination": true,
+            "walkingModePreservedBeforeSave": true
+          }
+        ],
+        "keyboard": [
+          {
+            "keyboardRowEnterSeparate": true,
+            "focusTooltipVisibleAndBlurDismiss": true,
+            "selectedPreviewDirectionsFocusable": true
+          }
+        ],
+        "cities": [
+          {
+            "city": "Athens",
+            "country": "Greece",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              23.7275,
+              37.9838
+            ]
+          },
+          {
+            "city": "Toronto",
+            "country": "Canada",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              -79.3832,
+              43.6532
+            ]
+          },
+          {
+            "city": "Melbourne",
+            "country": "Australia",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              144.9631,
+              -37.8136
+            ]
+          }
+        ],
+        "errors": []
+      },
+      {
+        "width": 844,
+        "height": 390,
+        "passed": true,
+        "groups": 12,
+        "pointer": [
+          {
+            "hoverTextVisible": true,
+            "tooltipChildrenNoninteractive": true,
+            "mouseleaveDismiss": true,
+            "pointerHit": {
+              "target": "m-meta",
+              "rowReceives": true,
+              "tooltipIntercepts": false
+            },
+            "pointerSelectionNoKeyboardFallback": true
+          }
+        ],
+        "selected_reads": [
+          {
+            "savedFreshCanonicalAndPoint": true,
+            "numericDestination": true,
+            "walkingModePreservedBeforeSave": true
+          }
+        ],
+        "keyboard": [
+          {
+            "keyboardRowEnterSeparate": true,
+            "focusTooltipVisibleAndBlurDismiss": true,
+            "selectedPreviewDirectionsFocusable": true
+          }
+        ],
+        "cities": [
+          {
+            "city": "Athens",
+            "country": "Greece",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              23.7275,
+              37.9838
+            ]
+          },
+          {
+            "city": "Toronto",
+            "country": "Canada",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              -79.3832,
+              43.6532
+            ]
+          },
+          {
+            "city": "Melbourne",
+            "country": "Australia",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              144.9631,
+              -37.8136
+            ]
+          }
+        ],
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "height": 900,
+        "passed": true,
+        "groups": 12,
+        "pointer": [
+          {
+            "hoverTextVisible": true,
+            "tooltipChildrenNoninteractive": true,
+            "mouseleaveDismiss": true,
+            "pointerHit": {
+              "target": "m-meta",
+              "rowReceives": true,
+              "tooltipIntercepts": false
+            },
+            "pointerSelectionNoKeyboardFallback": true
+          }
+        ],
+        "selected_reads": [
+          {
+            "savedFreshCanonicalAndPoint": true,
+            "numericDestination": true,
+            "walkingModePreservedBeforeSave": true
+          }
+        ],
+        "keyboard": [
+          {
+            "keyboardRowEnterSeparate": true,
+            "focusTooltipVisibleAndBlurDismiss": true,
+            "selectedPreviewDirectionsFocusable": true
+          }
+        ],
+        "cities": [
+          {
+            "city": "Athens",
+            "country": "Greece",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              23.7275,
+              37.9838
+            ]
+          },
+          {
+            "city": "Toronto",
+            "country": "Canada",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              -79.3832,
+              43.6532
+            ]
+          },
+          {
+            "city": "Melbourne",
+            "country": "Australia",
+            "scopeBound": true,
+            "oldTextRadiusBoundsCleared": true,
+            "categoriesRetained": true,
+            "controlledRead": true,
+            "returnedRows": 24,
+            "returnedCityCountryExact": true,
+            "settledAtRequestedCity": true,
+            "listingCoordinatesNotInferred": true,
+            "camera": [
+              144.9631,
+              -37.8136
+            ]
+          }
+        ],
+        "errors": []
+      }
+    ],
+    "actual_pointer": "390\u00d7900,844\u00d7390,1440\u00d7900 all use real locator hover/click with no force and no keyboard fallback for the pointer criterion. Hover text remains visible, every tooltip descendant computes pointer-events:none, row center targets m-meta inside the row and does not target the tooltip. Click opens the selected preview and dispatches canonical home_entity and geography_reviewed_point with the current captured identity.",
+    "keyboard_and_accessibility": "Separate row focus shows the tooltip, blur removes it, Enter opens preview, and the selected numeric directions link is focusable. Mouseleave dismisses the tooltip. No anchors/buttons/inputs/tabindex exist inside the hover-only popup. All existing 44px controls, three sheets, map/control identity, fullscreen/theme/keyboard, Saved alias dedup and phone orientation checks remain.",
+    "camera": "All three cities settle at the exact requested named viewport center after asynchronous retained responses at every width. No listing point is inferred from a city center.",
+    "source_checks": {
+      "inline": "3 inline blocks parsed in one HTML file",
+      "html": "one HTML lint passes",
+      "focused": "106 existing map tests pass, zero skips",
+      "diff": "git diff --check passes",
+      "new_verifier": "Executed final browser verifier successfully at three widths; separate new node--check passed before a variable-only helper correction."
+    },
+    "harness_failure": "First positive attempt failed before any journey group because a local hit variable shadowed the hit-test helper. The verifier variable was renamed; failed log/result retained. No runtime change or assertion relaxation was made in response."
+  },
+  "controlled_transport_boundary": {
+    "scope": "HTML-only candidate overlay with explicit retained-public transport. This is controlled component acceptance, not actual current production API/geography acceptance. Full payloads remain private; report includes hashes.",
+    "cities": "Exactly captured19:12UTC public24-row Athens/Toronto/Melbourne payloads, delayed250ms, no altered coordinate or precision fields.",
+    "historical_feed": "Historical exact15,294-row public feed SHAa3bab18944ab7e470b3c8ae65a023fd886be6751c98a12d6cacfebc67217fab9, filemtime2026-10-15T04:30:44.561374Z. Paged verbatim; not current global catalogue completeness or accuracy.",
+    "selected": "Current canonical Hellenic entity/point captured once19:16UTC: entitySHA3c0bfe8f20867309306f528b11de09b086b735c801d530c4909b33455dc7350f and pointSHA313675c9bbfcf375899e1352374644b272277f0171211ff6e4fede1d57b4b4e9. UI dispatch is fresh, response bytes replayed from that capture. No current authority is fabricated or silently promoted.",
+    "other_network": "Other assets, cartography, images and canonical redirects are actual public reads. Unsupported search scopes explicitly use empty controlled arrays. No API retries, accounts, SQL, provider navigator, paid service, EAS or ADB actions."
+  },
+  "commands": {
+    "browser": "OUTPUT_DIR=<distinct> node tests/browser/map-saved-pointer/verify.mjs",
+    "bounded": "ZOI_MAP_CASES=844x390 bounds the matrix; ZOI_MAP_RETAINED_PUBLIC_DIR and ZOI_MAP_RETAINED_FEED point to existing private captures. No missing payload is synthesized.",
+    "focused": "node --test tests/unit/map-search-scope-acceptance.test.mjs tests/unit/map-provenance-independent.test.mjs tests/unit/map-adaptive-read.test.mjs tests/unit/map-reviewed-selection.test.mjs tests/unit/map-marker-position.test.mjs tests/unit/map-directions.test.mjs tests/unit/map-precision.test.mjs tests/unit/map-preview.test.mjs tests/unit/map-address-autocomplete.test.mjs tests/unit/map-interactions.test.mjs tests/unit/map-data.test.mjs tests/unit/map-address-search.test.mjs tests/unit/map-focus-return.test.mjs"
+  },
+  "remaining": [
+    "Root independent review, protected coherent camera+tooltip release, served-byte verification and actual production pointer/camera journeys.",
+    "Actual public explore_search57014 reliability remains open; these controlled results do not close it or replace earlier failures.",
+    "Initial async row-detachment observation remains recorded; this fix targets the confirmed stable hover interception, not every possible list-loading race.",
+    "No global-coordinate accuracy, provider routing, source repair or native acceptance claim; zero coordinate changes."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/source-manifest.json",
+      "bytes": 1604,
+      "sha256": "522764b16568d879afba05104687882b9791bfab75a37ea4e14ad05052e12535"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/camera-basis.html",
+      "bytes": 99187,
+      "sha256": "d6de6aade00af719344a8bea89e1df727465c4aacdb4129a9b5937399134df97"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/source-bytes/explore/map/index.html",
+      "bytes": 99276,
+      "sha256": "dc10d925e21aed03fd90e366dd8cba8142986a0251fcda2012173f5e46027a69"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/source-bytes/tests/browser/map-saved-pointer/verify.mjs",
+      "bytes": 19561,
+      "sha256": "e305c4f53e5befbde9c6b88577b958f75bf3c9510b8e6a14b7deb52a68164a4d"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/source-bytes/tests/browser/map-saved-pointer/README.md",
+      "bytes": 1423,
+      "sha256": "71963f40697676d6e48f0d679950bc353e035efea4c8c20fab34b361a956e05f"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/before/failure.png",
+      "bytes": 156760,
+      "sha256": "c54a4908fd62f26e203a433ad563397057553837f71a2028ab7967fcf3c943bd"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/before/result.json",
+      "bytes": 19218,
+      "sha256": "2c62f0c12e651584f5d00fe01ead68e3d9d49fa2732942288fb9b0e4fb65bebc"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/before.log",
+      "bytes": 477,
+      "sha256": "b0e2eb19725512fa28ac9e28fcf4398181049c9415f527f3d63261e69df5810e"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate/failure.png",
+      "bytes": 313889,
+      "sha256": "3233859579b6442a4bde449a883de935c579a0f56665bf7af2ac53d4742db289"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate/result.json",
+      "bytes": 18444,
+      "sha256": "ca65c7c4143060d11b655114a7e62a79613019e76170250cca5d897f3683df69"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate-final/map-1440x900.png",
+      "bytes": 1050604,
+      "sha256": "8f0244fbc9162f3fe2c381be28e94bb0cecea48e424374e34192301d7092b213"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate-final/map-390x900.png",
+      "bytes": 267751,
+      "sha256": "ce03457d5f7cb6b9f766795bd3b66069a9c32e2aaf377b1fb0f23f863bcedbe9"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate-final/map-844x390.png",
+      "bytes": 186182,
+      "sha256": "4bcf35517fcae4ab1a9cbc5e8853f003586de5504b7a8b29a018aa6fc97dec4d"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate-final/result.json",
+      "bytes": 75646,
+      "sha256": "3219d3c0046a4b33bb523b1bf57fb2d33f69afcf92ae75eec9367554dd38a5fd"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate-final.log",
+      "bytes": 60,
+      "sha256": "61dd882f20010ccb45c75b820f3b56e7db249d6b8a2662de641ad60b7329093a"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/candidate.log",
+      "bytes": 1385,
+      "sha256": "3147dbb568b4da9398996498794cf439ced8e73762f7cb34b92b4004c2fcb2bf"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/diagnose-before.mjs",
+      "bytes": 19136,
+      "sha256": "ecc3596d348263dd4ca5bc4701dfaef8d90286602eae7c9639d70c5b269b729c"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/diagnose-stable-before.mjs",
+      "bytes": 19601,
+      "sha256": "41f1b1fe59308e26dbb601120644d82afeaf1c813815b24fa1b8e24c9dd3ec1d"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/focused.log",
+      "bytes": 10281,
+      "sha256": "ae6b017e4019ef76d2b5643b082c08ca4405dc5306627ea04990e1e5c87f4aaf"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/stable-before/failure.png",
+      "bytes": 168939,
+      "sha256": "e6e73238805630685ce20faae3ec0bc760f783e7c2b5733cc775b985c7cb044b"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/stable-before/result.json",
+      "bytes": 26364,
+      "sha256": "45b6cbbe02ae6795efd896924a5b8effc1e12cc4d03762489d39e9f0bac04527"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/proof/stable-before.log",
+      "bytes": 12141,
+      "sha256": "42618c0f092edd5620b90fc1935eb4e8cd4c04bca71a9f3d3ed0958085270be9"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/checks.json",
+      "bytes": 342,
+      "sha256": "4f5f4e2bb8cbc88b92db152bba35a911ef439fb36aa1dc9943f6d2b7af76742d"
+    },
+    {
+      "path": "docs/audits/evidence/map-saved-pointer-owner-2026-10-15/runtime-followup.patch",
+      "bytes": 3881,
+      "sha256": "cd778d5a86061c23bf3cacc8ef536f4dfd8a26a20983a53401454ddd26f124d6"
+    }
+  ]
+}

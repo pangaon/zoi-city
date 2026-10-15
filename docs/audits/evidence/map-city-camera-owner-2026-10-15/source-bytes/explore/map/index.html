@@ -1,0 +1,1611 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=5">
+<link rel="stylesheet" href="/assets/personalization/locality.css">
+<title>The Greek world, mapped — Zoi</title>
+<meta name="description" content="Every Greek business, parish, school, association and place on one map. Pan the globe, zoom to a street, filter by what you're looking for.">
+<link rel="canonical" href="https://www.zoi.city/explore/map">
+<meta name="theme-color" content="#080a0e">
+
+<!-- Tiles come from a third party; warming the connection early is worth ~150ms on first paint. -->
+<link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
+<link rel="dns-prefetch" href="https://tiles.openfreemap.org">
+<link rel="preconnect" href="https://csebihpaychdkanjjsmz.supabase.co" crossorigin>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script>(function(){try{document.documentElement.setAttribute('data-theme',localStorage.getItem('zoi_theme')||'light');}catch(e){}})()</script>
+<link rel="stylesheet" href="/assets/vendor/maplibre-gl.css">
+<link rel="stylesheet" href="/assets/zoi-theme.css?v=20260930">
+
+<style>
+#q::-webkit-search-cancel-button{display:none}.m-controls .discovery-suggestions{margin-top:8px;border:1px solid var(--line2);border-radius:16px;background:var(--bg2);box-shadow:0 16px 36px #0003;overflow:hidden}.discovery-suggestions[hidden]{display:none}.m-controls .suggestion-status{padding:10px 12px;font-size:12px;color:var(--mut);line-height:1.4}.suggestion-status button{padding:8px 12px;border:1px solid var(--line2);border-radius:9px;background:var(--bg);color:var(--tx);margin-left:6px}.m-controls .discovery-suggestions [role=listbox]{max-height:min(34dvh,280px);overflow:auto;overscroll-behavior:contain}.m-controls .discovery-suggestions [role=option]{padding:11px 12px;min-height:48px;display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);cursor:pointer}.m-controls .discovery-suggestions strong{font-size:14px;overflow-wrap:anywhere}.m-controls .discovery-suggestions span{font-size:12px;color:var(--mut)}.m-controls .discovery-suggestions [role=option]:hover,.m-controls .discovery-suggestions [aria-selected=true]{background:var(--bg3);box-shadow:inset 3px 0 var(--acc)}
+  html,body{height:100%}
+  body{overflow:hidden}
+  .zoi-header{position:relative;z-index:40}
+
+  /* ---- stage ---- */
+  .m-stage{position:fixed;inset:var(--hdr,64px) 0 0 0;display:flex;overflow:hidden;background:var(--bg);
+    /* Panel width is declared once here; the tool rail is positioned from it, so
+       the two can no longer end up stacked on each other. */
+    --pw:min(384px,calc(100vw - 28px))}
+  #map{position:absolute;inset:0}
+  #map:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .maplibregl-canvas{outline:none}
+
+  /* The globe's backdrop. Keeping it token-driven means the void around the
+     planet matches the page instead of MapLibre's default grey. */
+  .maplibregl-map{background:var(--bg)!important;font-family:"Hanken Grotesk",system-ui,sans-serif}
+
+  .m-pin.m-selected{outline:3px solid var(--acc);outline-offset:3px;box-shadow:0 0 0 9px color-mix(in srgb,var(--acc) 22%,transparent)}
+
+  /* ---- floating panes ---- */
+  .m-pane{
+    position:absolute;z-index:12;background:color-mix(in srgb,var(--card) 86%,transparent);
+    backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);
+    border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)
+  }
+
+  /* search + filters, top left */
+  .m-controls{top:14px;left:14px;width:min(370px,calc(100vw - 28px));padding:12px;display:grid;gap:10px}
+  .m-searchrow{display:flex;align-items:center;gap:9px;background:var(--bg2);border:1px solid var(--line);
+    border-radius:12px;padding:9px 11px}
+  .m-searchrow:focus-within{border-color:color-mix(in srgb,var(--acc) 55%,var(--line))}
+  .m-searchrow svg{flex:0 0 16px;opacity:.6}
+  .m-searchrow input{flex:1;min-width:0;background:none;border:0;color:var(--tx);font:inherit;font-size:14.5px;outline:none}
+  .m-searchrow input::placeholder{color:var(--dim)}
+  .m-clearq{border:0;background:none;color:var(--dim);cursor:pointer;padding:2px 4px;border-radius:6px;font-size:16px;line-height:1}
+  .m-clearq:hover{color:var(--tx)}
+
+  .m-chips{display:flex;flex-wrap:wrap;gap:6px;max-height:min(244px,34vh);overflow-y:auto;scrollbar-width:thin;overscroll-behavior:contain}
+  .m-chip{
+    display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;
+    border:1px solid var(--line);background:var(--bg2);color:var(--mut);
+    font:600 12.5px/1.35 "Hanken Grotesk",system-ui,sans-serif;text-transform:none;letter-spacing:0;
+    cursor:pointer;white-space:nowrap;
+    transition:border-color .16s var(--ease),color .16s var(--ease),background .16s var(--ease)
+  }
+  .m-chip:hover{color:var(--tx);border-color:var(--line2)}
+  .m-chip .m-dot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:0 0 8px;box-shadow:none}
+  .m-chip .m-n{font-variant-numeric:tabular-nums;font-size:11.5px;opacity:.75;font-weight:500}
+  .m-chip[aria-pressed="true"]{color:var(--tx);background:color-mix(in srgb,var(--card2) 70%,transparent);
+    border-color:color-mix(in srgb,currentColor 45%,var(--line))}
+  .m-chip[data-off="1"]{color:var(--mut);background:var(--bg2);border-style:dashed}
+  .m-chiprow{display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .m-chiprow .m-lbl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);font-weight:700}
+  .m-linkish{border:0;background:none;color:var(--acc);font:inherit;font-size:12px;font-weight:600;cursor:pointer;padding:2px}
+  .m-linkish:hover{text-decoration:underline}
+
+  /* results / detail, right */
+  .m-panel{top:14px;right:14px;bottom:14px;width:var(--pw);display:flex;flex-direction:column;overflow:hidden}
+  .m-panel header{padding:13px 15px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+  .m-panel header h2{margin:0;font-family:"Fraunces",serif;font-size:16px;font-weight:600;letter-spacing:-.01em;flex:1}
+  .m-panel header .m-sub{display:block;font-family:"Hanken Grotesk",sans-serif;font-size:12px;font-weight:500;color:var(--mut);letter-spacing:0}
+  .m-panel .m-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
+  .m-xbtn{border:1px solid var(--line);background:var(--bg2);color:var(--mut);width:28px;height:28px;
+    border-radius:8px;cursor:pointer;font-size:15px;line-height:1;flex:0 0 auto}
+  .m-xbtn:hover{color:var(--tx);border-color:var(--line2)}
+  .m-sheetbtn{display:none;place-items:center}
+  .m-sheetbtn svg{width:16px;height:16px;transition:transform .2s var(--ease)}
+
+  .m-row{display:flex;gap:11px;padding:11px 15px;border-bottom:1px solid var(--line);cursor:pointer;
+    text-decoration:none;color:inherit;transition:background .14s var(--ease)}
+  .m-row:hover,.m-row:focus-visible{background:color-mix(in srgb,var(--card2) 60%,transparent);outline:none}
+  .m-row .m-mark{flex:0 0 34px;height:34px;border-radius:9px;display:grid;place-items:center;
+    font-family:"Fraunces",serif;font-size:14px;font-weight:700;color:var(--bg)}
+  [data-theme="light"] .m-row .m-mark{color:#fff}
+  .m-row .m-meta{min-width:0;flex:1}
+  /* These are spans. Without display:block the name and the category rendered
+     on one run-together line and text-overflow never engaged, so long Greek
+     names spilled straight out of the panel. */
+  .m-row .m-meta{display:block}
+  .m-row .m-nm{display:block;font-weight:600;font-size:14px;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-row .m-wh{display:block;font-size:12px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-row .m-ad{display:block;font-size:12px;color:var(--mut);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .m-row .m-km{display:block;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;margin-top:2px}
+  /* Unverified coordinates are muted rather than dressed up as a precision
+     tier, so the eye reads them as missing information, not as a measurement. */
+  .m-unk{color:var(--mut);font-style:italic}
+
+  .m-rowwrap{display:flex;align-items:stretch;border-bottom:1px solid var(--line)}
+  .m-rowwrap .m-row{flex:1;border-bottom:none;min-width:0}
+  .m-dir{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+    padding:0 13px;text-decoration:none;color:var(--acc);font-size:10.5px;font-weight:600;
+    border-left:1px solid var(--line);transition:background .14s var(--ease)}
+  .m-dir:hover,.m-dir:focus-visible{background:color-mix(in srgb,var(--acc) 12%,transparent);outline:none}
+  .m-dir:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+  .m-dir svg{width:17px;height:17px;fill:currentColor}
+  @media (max-width:520px){.m-dir span{display:none}.m-dir{padding:0 15px}}
+  .m-empty{padding:34px 20px;text-align:center;color:var(--mut);font-size:13.5px;line-height:1.6}
+  .m-panel #pfoot{max-height:130px}
+  .m-panel footer{flex:0 0 auto;max-height:160px;overflow-y:auto;padding:9px 15px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dim);line-height:1.5}
+
+  /* map controls, bottom right */
+  .m-tools{bottom:14px;right:calc(var(--pw) + 26px);padding:6px;display:flex;flex-direction:column;gap:4px;z-index:13}
+  .m-tool{
+    width:38px;height:38px;border:0;border-radius:10px;background:none;color:var(--mut);cursor:pointer;
+    display:grid;place-items:center;transition:background .14s var(--ease),color .14s var(--ease)
+  }
+  .m-tool:hover{background:var(--bg2);color:var(--tx)}
+  .m-tool[aria-pressed="true"]{background:color-mix(in srgb,var(--acc) 18%,transparent);color:var(--acc)}
+  .m-tool svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .m-tool .m-txt{font-size:12px;font-weight:700;letter-spacing:.02em}
+  .m-toolsep{height:1px;background:var(--line);margin:2px 4px}
+
+  /* zoom cluster + pin markers */
+  .m-cl{cursor:pointer;will-change:transform}
+  .m-cl svg{display:block;overflow:visible}
+  .m-cl .m-cnt{font:600 11.5px/1 "Hanken Grotesk",sans-serif;fill:var(--tx);
+    paint-order:stroke;stroke:var(--bg);stroke-width:3px;font-variant-numeric:tabular-nums}
+  .m-cl:hover .m-ring{filter:brightness(1.25)}
+
+  .m-pin{cursor:pointer;width:16px;height:16px;border-radius:50%;box-sizing:border-box;
+    border:2px solid color-mix(in srgb,var(--bg) 80%,transparent);
+    box-shadow:0 2px 7px rgba(0,0,0,.45);transition:transform .13s var(--ease)}
+  .m-pin:hover,.m-pin.m-on{transform:scale(1.45);z-index:5}
+  .m-pin.m-on{box-shadow:0 0 0 3px color-mix(in srgb,var(--tx) 55%,transparent)}
+  .m-spider-line{stroke:var(--line2);stroke-width:1;fill:none}
+
+  /* tooltip */
+  .maplibregl-popup{z-index:14}
+  .maplibregl-popup-content{
+    background:color-mix(in srgb,var(--card) 94%,transparent);color:var(--tx);
+    border:1px solid var(--line);border-radius:12px;padding:9px 12px;
+    box-shadow:var(--shadow);font-size:13px;max-width:240px
+  }
+  .maplibregl-popup-tip{border-top-color:color-mix(in srgb,var(--card) 94%,transparent)!important;
+    border-bottom-color:color-mix(in srgb,var(--card) 94%,transparent)!important}
+  .m-tipnm{font-weight:650;line-height:1.3}
+  .m-tipwh{color:var(--mut);font-size:11.5px;margin-top:2px}
+  .m-tipgo{color:var(--acc);font-size:11px;font-weight:600;margin-top:5px;display:block}
+
+  /* attribution + status */
+  .m-attrib{position:absolute;left:14px;bottom:12px;z-index:11;font-size:10.5px;color:var(--dim);
+    background:color-mix(in srgb,var(--bg) 72%,transparent);backdrop-filter:blur(8px);
+    padding:4px 9px;border-radius:8px;border:1px solid var(--line);max-width:min(560px,calc(100vw - 120px))}
+  .m-attrib a{color:var(--mut);text-decoration:none}
+  .m-attrib a:hover{color:var(--tx);text-decoration:underline}
+
+  .m-status{position:absolute;left:50%;top:16px;transform:translateX(-50%);z-index:20;
+    padding:7px 15px;border-radius:999px;font-size:12.5px;font-weight:600;
+    background:color-mix(in srgb,var(--card) 92%,transparent);border:1px solid var(--line);
+    color:var(--mut);box-shadow:var(--shadow);pointer-events:none;
+    opacity:0;transition:opacity .22s var(--ease)}
+  .m-status.m-show{opacity:1}
+  .m-status .m-spin{display:inline-block;width:11px;height:11px;margin-right:7px;vertical-align:-1px;
+    border:2px solid var(--line2);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  .m-nowebgl{position:absolute;inset:0;z-index:30;display:grid;place-items:center;padding:24px;background:var(--bg)}
+
+  .m-nowebgl .m-in{max-width:420px;text-align:center}
+
+  /* mobile: the panel becomes a sheet */
+  @media (max-width:860px){
+    /* The panel becomes a bottom sheet. Its height and the tool rail's offset
+       come from one variable so the rail can never end up sitting on top of the
+       sheet — which is exactly what happened when they were set independently. */
+    .m-stage{--sheet:40vh}
+    .m-controls{top:10px;left:10px;right:10px;width:auto;padding:10px;gap:8px}
+    /* One scrolling line rather than a wrapped block: on a phone the wrapped
+       version ate 240px of chrome and left barely 120px of actual map. */
+    .m-chips{flex-wrap:nowrap;max-height:none;overflow-x:auto;overflow-y:hidden;
+      padding-bottom:2px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+    .m-chips::-webkit-scrollbar{display:none}
+    .m-chiprow{margin-bottom:-2px}
+    .m-panel{top:auto;left:10px;right:10px;bottom:10px;width:auto;max-height:var(--sheet)}
+    .m-panel.m-hidden{display:none}
+    .m-tools{top:auto;bottom:calc(var(--sheet) + 20px);right:10px;
+      flex-direction:row;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 20px)}
+    .m-toolsep{width:1px;height:26px;margin:6px 2px}
+    .m-attrib{left:10px;bottom:calc(var(--sheet) + 74px);max-width:calc(100vw - 20px)}
+    /* Collapsing the sheet gives the map back; every other element is offset
+       from --sheet, so they all move with it. */
+    .m-sheetbtn{display:grid}
+    .m-stage.m-shut{--sheet:46px}
+    .m-stage.m-shut .m-panel .m-body,
+    .m-stage.m-shut .m-panel footer{display:none}
+    .m-stage.m-shut .m-sheetbtn svg{transform:rotate(180deg)}
+  }
+  /* Short viewports need a smaller sheet or there is no map left to look at. */
+  @media (max-width:860px) and (max-height:730px){
+    .m-stage{--sheet:32vh}
+  }
+  @media (prefers-reduced-motion:reduce){.m-pin,.m-tool,.m-chip,.m-row{transition:none}.m-status .m-spin{animation:none}}
+</style>
+<link rel="manifest" href="/manifest.webmanifest">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Zoi">
+<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-32.png?v=blue-olive"><link rel="icon" type="image/png" sizes="16x16" href="/assets/brand/favicon-16.png?v=blue-olive"><link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png?v=blue-olive"><link rel="preload" as="image" href="/assets/brand/zoi-logo.png"></head>
+<body>
+
+<header class="zoi-header" id="hdr"><div class="wrap zoi-bar">
+  <a class="zoi-brand" href="/" aria-label="Zoi home" data-zoi-identity="08db50bee5caf18a878cb8468ced301d74c92bffd7b308678fb95e4f75514ff1"><img src="/assets/brand/zoi-logo.png" alt="Zoi" width="35" height="48" style="display:block;width:auto;height:48px;object-fit:contain"><b>Zoi</b></a>
+  <nav class="zoi-nav" aria-label="Zoi"><a href="/explore" aria-current="page">Discover</a><a href="/community">Community</a><a href="/tickets">Events</a><a href="/shop/">Marketplace</a><a href="/business">For Business</a></nav>
+  <form class="zoi-search" role="search" action="/explore" method="get"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><input type="search" name="q" placeholder="Search the Greek world&hellip;" aria-label="Search the Zoi directory" autocomplete="off"><button type="submit">Search</button></form>
+  <div class="zoi-actions"><button class="theme-btn" id="themeBtn" title="Theme &mdash; dark / light / gold" aria-label="Switch theme"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg></button><a class="btn btn-primary" id="zoiCta" href="/social">Start free</a></div>
+</div></header>
+
+<main class="m-stage" id="stage">
+  <div id="map" tabindex="0" role="application" aria-label="Map of the Greek world"></div>
+
+  <section class="m-pane m-controls" aria-label="Map filters">
+    <div class="m-intro"><div><span>Discover, on the map</span><h1>Your Greek world.</h1></div><button type="button" class="m-near-label" id="nearLabel">Near me ↗</button></div>
+    <form class="m-searchrow" id="mapsearch" role="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" type="search" placeholder="Search name, address or city…" autocomplete="off" aria-label="Filter places on the map">
+      <button type="button" class="m-clearq" id="clearq" hidden aria-label="Clear search">&times;</button><button type="submit" class="m-find" aria-label="Show matching places on the map">Go</button>
+    </form>
+    <div id="map-navigation" class="m-native-navigation" role="group" aria-label="Map zoom and orientation"></div>
+    <div id="map-locality"></div>
+    <div class="m-starts" aria-label="Start with a city"><span>Start in</span><button type="button" data-start-city="Athens">Athens</button><button type="button" data-start-city="Toronto">Toronto</button><button type="button" data-start-city="Melbourne">Melbourne</button></div><p class="m-location-help" id="locationHelp" role="status" hidden></p><details class="m-filter-drawer"><summary>Filter the map <span aria-hidden="true">＋</span></summary>
+    <div class="m-chiprow">
+      <span class="m-lbl" id="chipcount">Categories</span>
+      <button class="m-linkish" id="allon">All</button>
+    </div>
+    <div class="m-chips" id="chips" role="group" aria-label="Filter by category"></div></details><div id="map-interactions"></div>
+  </section>
+
+  <aside class="m-pane m-panel" id="panel" aria-label="Places">
+    <header>
+      <h2 id="ptitle">Loading…<span class="m-sub" id="psub">reading the directory</span></h2>
+      <button class="m-sheetbtn m-xbtn" id="psheet" aria-label="Collapse the list" aria-expanded="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>
+      </button>
+      <button class="m-saved-toggle" id="tSaved" type="button" aria-label="Show places saved on this device">Saved</button>
+      <button class="m-xbtn" id="pclose" hidden aria-label="Back to all results">&times;</button>
+    </header>
+    <div class="m-body" id="pbody"></div>
+    <footer id="pfoot"></footer>
+  </aside>
+
+  <div class="m-pane m-tools" role="group" aria-label="Map view">
+    <button class="m-tool" id="tGlobe" aria-pressed="true" title="Globe view">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.6 2.6 2.6 15.4 0 18M12 3c-2.6 2.6-2.6 15.4 0 18"/></svg>
+    </button>
+    <button class="m-tool" id="tTerrain" aria-pressed="false" title="Terrain and 3D buildings">
+      <svg viewBox="0 0 24 24"><path d="M2 19h20L14.5 6 10 13l-2.5-3z"/></svg>
+    </button>
+    <button class="m-tool" id="tGreek" aria-pressed="false" title="Greek place names">
+      <span class="m-txt">Ελ</span>
+    </button>
+    <div class="m-toolsep"></div>
+    <button class="m-tool" id="tNear" title="Find places near me">
+      <svg viewBox="0 0 24 24"><path d="M12 21s7-6.3 7-11a7 7 0 1 0-14 0c0 4.7 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg>
+    </button>
+    <button class="m-tool" id="tShare" title="Copy a link to this view">
+      <svg viewBox="0 0 24 24"><path d="M9 13a5 5 0 0 0 7 0l3-3a5 5 0 0 0-7-7l-1 1"/><path d="M15 11a5 5 0 0 0-7 0l-3 3a5 5 0 0 0 7 7l1-1"/></svg>
+    </button>
+    <button class="m-tool" id="tReset" title="Back to the whole world">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/></svg>
+    </button>
+  </div>
+
+  <div class="m-attrib" id="attrib"></div>
+  <div class="m-status" id="status" role="status" aria-live="polite"></div>
+
+  <div class="m-nowebgl" id="nowebgl" hidden>
+    <div class="m-in">
+      <h2 style="font-family:Fraunces,serif;margin:0 0 8px">Your browser can't run the map</h2>
+      <p class="muted" style="font-size:14px;line-height:1.6">
+        This map needs WebGL. Everything is still browsable as a list — the
+        panel on the right works, and <a href="/explore">Explore</a> has the
+        full directory.
+      </p>
+    </div>
+  </div>
+</main>
+
+<link rel="stylesheet" href="/assets/map-data/interactions.css?v=20261014-map-interactions"><link rel="stylesheet" href="/assets/map-data/preview.css?v=20261014-map-interactions"><link rel="stylesheet" href="/assets/map-data/discovery.css?v=20261014-map-interactions">
+<script src="/assets/zoi-core.js"></script>
+<script src="/assets/zoi-theme.js?v=20260930"></script>
+<script src="/assets/zoi-emblem.js"></script>
+<script src="/assets/zoi-basemap.js"></script>
+<script src="/assets/vendor/maplibre-gl.js"></script>
+<script>
+/* =====================================================================
+ * The Zoi world map.
+ *
+ * MapLibre GL, our own basemap style (assets/zoi-basemap.js), and the
+ * directory's coordinates as a clustered GeoJSON source.
+ *
+ * Two things about the data shape drive most of the design here:
+ *
+ *  1. A large share of listings are positioned at their CITY, not their street
+ *     door, because that is the precision the source data carries. So many
+ *     points share an identical coordinate. Clustering alone cannot separate
+ *     them — no zoom level ever will — so coincident points are spiderfied into
+ *     a ring, and the panel always lists what is under the pin.
+ *
+ *  2. Precision is stated, never implied. A pin placed at a city centroid says
+ *     so when you open it.
+ * ===================================================================== */
+(function () {
+  'use strict';
+  var C = window.ZoiCore, MB = window.maplibregl, BM = window.ZoiBasemap;
+  var mapAutocomplete=null,pendingAutocompleteSlug=null,mapLocality=null,mapHome=null,mapLocalityModel=null,mapIntentURL=location.href;
+  function activeMapLocality(){return mapLocalityModel?mapLocalityModel.resolveLocality(mapIntentURL,mapHome):{source:'explicit',city:new URL(mapIntentURL).searchParams.get('city')||'',country:new URL(mapIntentURL).searchParams.get('country')||''};}
+  function mapSearchIntent(){var u=new URL(mapIntentURL);u.hash='';u.searchParams.delete('place');if(query)u.searchParams.set('q',query);else{u.searchParams.delete('q');if(!['city','country','region'].some(function(k){return u.searchParams.has(k);}))u.searchParams.set('scope','global');}mapIntentURL=u.href;if(mapLocality)mapLocality.refresh();}
+
+  /* ---------- categories, in the emblem wheel's order ---------- */
+  var TYPES = [
+    { k: 'business',     label: 'Businesses' },
+    { k: 'vendor',       label: 'Vendors' },
+    { k: 'event',        label: 'Events' },
+    { k: 'artist',       label: 'Artists' },
+    { k: 'creator',      label: 'Creators' },
+    { k: 'venue',        label: 'Venues' },
+    { k: 'church',       label: 'Parishes' },
+    { k: 'school',       label: 'Schools' },
+    { k: 'professional', label: 'Professionals' },
+    { k: 'travel_place', label: 'Places' },
+    { k: 'sports',       label: 'Sports' },
+    { k: 'organization', label: 'Associations' }
+  ];
+  var IDX = {}; TYPES.forEach(function (t, i) { IDX[t.k] = i; });
+
+  /* Colours come from the same wheel the emblems use, so a pin and the card it
+     opens are never a different colour. Recomputed whenever the theme flips. */
+  var COLOURS = [];
+  function readColours() {
+    var W = ['--gold', '--red', '--acc', '--green'];
+    var cs = getComputedStyle(document.documentElement);
+    var anchors = W.map(function (k) { return (cs.getPropertyValue(k) || '').trim() || '#d9b26a'; });
+    COLOURS = TYPES.map(function (t, slot) {
+      var seg = Math.floor(slot / 3) % 4, step = slot % 3;
+      var a = anchors[seg], b = anchors[(seg + 1) % 4];
+      if (step === 0) return a;
+      return BM.mix(a, b, step === 1 ? 0.33 : 0.67);
+    });
+  }
+  readColours();
+
+  /* ---------- tiny helpers ---------- */
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m];
+    });
+  }
+  function typeSlug(t) { return t === 'travel_place' ? 'travel-place' : t; }
+  function href(p) { return '/' + typeSlug(p.t) + '/' + encodeURIComponent(p.s); }
+
+  /* Diacritics are routinely omitted when typing, in both scripts: nobody
+   * reaches for the tonos to find Μύκονος, and "melani" should find "Meláni".
+   * Folding the index and the query the same way is what makes an accented
+   * directory searchable by the people who use it. Final sigma folds to sigma
+   * for the same reason. */
+  function fold(s) {
+    return String(s == null ? '' : s)
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\u03c2/g, '\u03c3');
+  }
+  function nice(s) {
+    return String(s || '').replace(/-/g, ' ').replace(/\b\w/g, function (c) { return c.toUpperCase(); });
+  }
+  function fmtN(n) { return n.toLocaleString(); }
+  function km(d) { return d < 1 ? Math.round(d * 1000) + ' m' : (d < 20 ? d.toFixed(1) : Math.round(d)) + ' km'; }
+
+  /* Geocoder precision vocabulary.
+   * Production carries ten distinct raw values, including the spelling pairs
+   * approx/approximate and neighborhood/neighbourhood. Anything unrecognised —
+   * and the 'none' bucket, which is the single largest — resolves to UNKNOWN
+   * rather than to "approximate", because "approximate" is itself a claim about
+   * accuracy. The 'none' bucket demonstrably contains pins on the wrong
+   * continent, so describing it as approximate overstates what we know. */
+  var PRECISION = {
+    rooftop:       { rank: 3, exact: true,  label: 'Exact location' },
+    address:       { rank: 3, exact: true,  label: 'Exact location' },
+    street:        { rank: 3, exact: true,  label: 'Street-level location' },
+    neighborhood:  { rank: 2, label: 'Neighbourhood-level location' },
+    neighbourhood: { rank: 2, label: 'Neighbourhood-level location' },
+    suburb:        { rank: 2, label: 'Neighbourhood-level location' },
+    locality:      { rank: 1, label: 'Approximate city location' },
+    town:          { rank: 1, label: 'Approximate city location' },
+    city:          { rank: 1, label: 'Approximate city location' },
+    region:        { rank: 0, label: 'Approximate regional location' },
+    country:       { rank: 0, label: 'Approximate regional location' },
+    approx:        { rank: 0, label: 'Approximate location' },
+    approximate:   { rank: 0, label: 'Approximate location' }
+  };
+  var UNKNOWN_PRECISION = { rank: -1, unknown: true, label: 'Location not verified' };
+  function precisionOf(p) {
+    return PRECISION[String((p && p.precision) || '').toLowerCase()] || UNKNOWN_PRECISION;
+  }
+  function mapPositionEligible(p){return (mapPositionsComplete||p&&p.reviewedSelected===true)&&mapTools.hasStreetPosition(p);}
+  function precisionLabel(p) { return p&&p.unmapped?'Map position not selected':!mapPositionsComplete&&!p?.reviewedSelected?'Map position awaiting complete checks':mapTools.positionStatus(p); }
+
+  /* Numeric routing requires the fresh receipt-backed entity to match this
+   * point. Other records offer a clearly labelled published-address search;
+   * neither an imported street tag nor a city centre establishes a premises. */
+  function directionsUrl(p) {
+    if(!p)return null;
+    if(p.reviewedPosition&&mapTools.hasStreetPosition(p))return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(p.lat+','+p.lng);
+    return mapTools.publishedAddressLookup(p)?.href||null;
+  }
+  function directionsBasis(p) {
+    if(!p)return '';
+    if(p.reviewedPosition&&mapTools.hasStreetPosition(p))return 'pin';
+    return mapTools.publishedAddressLookup(p)?'published-address':'';
+  }
+  function haversine(a, b, c, d) {
+    var R = 6371, r = Math.PI / 180;
+    var dLa = (c - a) * r, dLo = (d - b) * r;
+    var h = Math.sin(dLa / 2) * Math.sin(dLa / 2) +
+      Math.cos(a * r) * Math.cos(c * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2);
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(h)));
+  }
+
+  var statusT;
+  function status(msg, spin, ms) {
+    var el = $('status');
+    if (!msg) { clearTimeout(statusT); el.classList.remove('m-show'); el.textContent=''; return; }
+    el.innerHTML = (spin ? '<span class="m-spin"></span>' : '') + esc(msg);
+    el.classList.add('m-show');
+    clearTimeout(statusT);
+    if (ms) statusT = setTimeout(function () { el.classList.remove('m-show'); }, ms);
+  }
+
+  /* ---------- state ---------- */
+  var ALL = [];                       // every place with a coordinate
+  var on = {};                        // active category filters
+  TYPES.forEach(function (t) { on[t.k] = true; });
+  var query = '';
+  var savedOnly=false,savedExtras=[],savedViewVersion=0;
+  var here = null;                    // {lat,lng} once geolocated
+  var selected = null, reviewedSelectedMarker=null;
+  var selectionVersion = 0, pendingPlace = null;
+  var mapTools = null, previewModule=null, previewController=null, mapInteractions=null;
+  var truncated = false;              // true when the page cap, not the data, ended the walk
+  var directoryPending=false,directoryError='',directoryLoaded=0,mapPositionsComplete=false;
+  var failedPages = 0;                // pages the directory did not return
+  var map = null, ready = false;
+  var clusterMarkers = {}, pinMarkers = {}, spider = [];
+
+  /* ---------- URL state ----------
+   * #zoom/lat/lng/bearing/pitch, filters in the query string. Every view is a
+   * link somebody can send.
+   */
+  function readUrl() {
+    var out = { view: null };
+    var h = (location.hash || '').replace(/^#\/?/, '');
+    var m = h.split('/').map(Number);
+    if (m.length >= 3 && m.every(function (n) { return isFinite(n); })) {
+      out.view = { zoom: m[0], center: [m[2], m[1]], bearing: m[3] || 0, pitch: m[4] || 0 };
+    }
+    var p = new URLSearchParams(location.search);
+    query=p.get('q')||'';$('q').value=query;if(mapInteractions)mapInteractions.restore(p);
+    out.place = p.get('place') || null;
+    var t = p.get('t');
+    TYPES.forEach(function(x){on[x.k]=true;});
+    if (t) {
+      TYPES.forEach(function (x) { on[x.k] = false; });
+      t.split(',').forEach(function (k) { if (k in on) on[k] = true; });
+      if (!TYPES.some(function (x) { return on[x.k]; })) TYPES.forEach(function (x) { on[x.k] = true; });
+    }
+    return out;
+  }
+  var urlT;
+  function writeUrl() {
+    clearTimeout(urlT);
+    urlT = setTimeout(function () {
+      if (!map) return;
+      var c = map.getCenter();
+      var hash = '#' + [map.getZoom().toFixed(2), c.lat.toFixed(5), c.lng.toFixed(5),
+        Math.round(map.getBearing()), Math.round(map.getPitch())].join('/');
+      var p = new URLSearchParams();
+      var intent=new URL(mapIntentURL).searchParams;['city','country','region','scope'].forEach(function(k){if(intent.has(k))p.set(k,intent.get(k));});
+      if (query) p.set('q', query);
+      // A shared link should reopen the place that was open, not just the view.
+      if (selected && selected.s) p.set('place', selected.s);
+      else if(pendingPlace)p.set('place',pendingPlace);
+      var offCount = TYPES.filter(function (t) { return !on[t.k]; }).length;
+      if (offCount) p.set('t', TYPES.filter(function (t) { return on[t.k]; }).map(function (t) { return t.k; }).join(','));
+      if(mapInteractions)mapInteractions.writeParams(p);
+      var qs = p.toString();
+      history.replaceState(Object.assign({},history.state||{},{zoiMapIntent:mapIntentURL}), '', location.pathname + (qs ? '?' + qs : '') + hash);
+    }, 260);
+  }
+
+  function restoreMapHistory(){
+    pendingAutocompleteSlug=null;mapAutocomplete?.close();clearTimeout(urlT);mapIntentURL=mapLocalityModel?mapLocalityModel.mapHistoryIntent(location.href,history.state):location.href;
+    var restored=readUrl();if(mapLocality)mapLocality.refresh();if(!map)return;
+    selectionVersion++;selected=null;pendingPlace=null;hideTip();clearSpider();buildChips();showAll();refresh();
+    if(restored.view)map.jumpTo(restored.view);else if(activeMapLocality().city||activeMapLocality().country||query)showMatches();else map.jumpTo({center:[23.7275,37.9838],zoom:1.35,pitch:0,bearing:0});
+    if(restored.place){var place=ALL.find(function(p){return p.s===restored.place;});if(place)choose(place);else openUnmappedPlace(restored.place);}
+  }
+  window.addEventListener('popstate',restoreMapHistory);
+
+  /* ---------- data ---------- */
+  function matches(p) {
+    if(savedOnly&&(!previewModule||!previewModule.readSavedPlaces().includes(p.s)))return false;
+    if(mapInteractions&&!mapInteractions.accepts(p))return false;
+    var locality=activeMapLocality();
+    if(locality.city&&fold(p.city||'')!==fold(locality.city))return false;
+    if(locality.country&&fold(p.country||'')!==fold(locality.country))return false;
+    if (!on[p.t]) return false;
+    if (!query) return true;
+    return p.hay.indexOf(fold(query)) !== -1;
+  }
+  function toGeoJSON(list) {
+    return {
+      type: 'FeatureCollection',
+      features: list.filter(mapPositionEligible).map(function (p, i) {
+        return {
+          type: 'Feature', id: i,
+          geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+          properties: { i: p.i, ti: IDX[p.t] == null ? 0 : IDX[p.t] }
+        };
+      })
+    };
+  }
+
+  async function loadData() {
+    // Consume the complete existing feed before approving any coordinate cohort.
+    var result = await mapTools.loadMapPages(mapTools.createAdaptiveMapRead(function (offset, limit) {
+      return C.api.rpc('explore_geo', { p_limit: limit, p_offset: offset }, { auth: 'anon' });
+    }), { retries: 0, concurrency: 2, onProgress: function (progress) { directoryLoaded=progress.loaded;if(listState.mode==='all')renderBrowseFooter(); } });
+    mapPositionsComplete=result.complete;
+    failedPages = result.failedOffsets.length;
+    truncated = result.truncated;
+    var pages = [result.rows];
+    var seen = Object.create(null), out = [];
+    pages.forEach(function (page) {
+      (page || []).forEach(function (r) {
+        if (!mapTools.isMappableRow(r)) return;
+        if (seen[r.slug]) return;
+        seen[r.slug] = 1;
+        var p = Object.assign(mapTools.mapPositionFields(r), {
+          i: out.length, s: r.slug, n: r.name, t: r.entity_type || 'business',
+          city: r.city, country: r.country, cat: r.category_slug,
+          addr: r.address || null
+        });
+        p.hay = fold((p.n || '') + ' ' + (p.city || '') + ' ' + (p.country || '') + ' ' +
+                 nice(p.cat) + ' ' + (p.t || '') + ' ' + (p.addr || ''));
+        out.push(p);
+      });
+    });
+    ALL = mapTools.validatePositionCohorts(out);
+    updateSavedLabel();
+
+    /* Exact-duplicate coordinates are the defining feature of this dataset, so
+       they are indexed up front rather than discovered on every click. */
+    var at = Object.create(null);
+    ALL.forEach(function (p) {
+      var k = p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
+      (at[k] || (at[k] = [])).push(p);
+    });
+    ALL.forEach(function (p) {
+      p.co = mapPositionEligible(p)?at[p.lat.toFixed(5) + ',' + p.lng.toFixed(5)].filter(mapPositionEligible):[p];
+      /* Precision is read, never inferred. Counting coincident pins to guess at
+         accuracy produced the old "Approximate location" label on records whose
+         precision was simply never recorded. */
+      var pr = precisionOf(p);
+      p.exact = mapPositionEligible(p);
+      p.unknown = pr.unknown === true || p.position_conflict;
+    });
+    return out;
+  }
+
+  /* ---------- chips ---------- */
+  function buildChips() {
+    var counts = {};
+    ALL.forEach(function (p) { counts[p.t] = (counts[p.t] || 0) + 1; });
+    var box = $('chips');
+    box.innerHTML = '';
+    TYPES.forEach(function (t, i) {
+      if (!counts[t.k]) return;
+      var b = document.createElement('button');
+      b.className = 'm-chip';
+      b.type = 'button';
+      b.style.color = COLOURS[i];
+      b.setAttribute('aria-pressed', on[t.k] ? 'true' : 'false');
+      b.dataset.k = t.k;
+      if (!on[t.k]) b.dataset.off = '1';
+      b.innerHTML = '<span class="m-dot"></span>' + esc(t.label) +
+        ' <span class="m-n">' + fmtN(counts[t.k]) + '</span>';
+      b.addEventListener('click', function (e) {
+        pendingAutocompleteSlug=null;mapAutocomplete?.close();
+        // Alt-click isolates one category — much faster than turning 11 off.
+        if (e.altKey || e.metaKey) {
+          var only = TYPES.every(function (x) { return x.k === t.k ? on[x.k] : !on[x.k]; });
+          TYPES.forEach(function (x) { on[x.k] = only ? true : x.k === t.k; });
+        } else on[t.k] = !on[t.k];
+        if (!TYPES.some(function (x) { return on[x.k]; })) TYPES.forEach(function (x) { on[x.k] = true; });
+        syncChips(); refresh(); writeUrl();
+      });
+      box.appendChild(b);
+    });
+    syncChips();
+  }
+  function syncChips() {
+    Array.prototype.forEach.call($('chips').children, function (b) {
+      var v = on[b.dataset.k];
+      b.setAttribute('aria-pressed', v ? 'true' : 'false');
+      if (v) delete b.dataset.off; else b.dataset.off = '1';
+    });
+    var n = TYPES.filter(function (t) { return on[t.k]; }).length;
+    $('chipcount').textContent = n === TYPES.length ? 'Categories' : n + ' of ' + TYPES.length + ' shown';
+  }
+
+  /* ---------- clusters as composition rings ----------
+   * A cluster is drawn as a ring whose arcs are its actual category mix. It
+   * costs one small SVG per on-screen cluster (tens, not thousands) and it
+   * turns a count into a shape you can read at a glance: gold-heavy is
+   * commerce, blue-heavy is parishes and schools.
+   */
+  function ringSVG(counts, total) {
+    var r = total <= 1 ? 9 : Math.min(26, 11 + Math.sqrt(total) * 0.95);
+    var sw = Math.max(3.5, r * 0.30);
+    var rr = r - sw / 2;
+    var circ = 2 * Math.PI * rr;
+    var parts = [], acc = 0;
+    for (var i = 0; i < counts.length; i++) {
+      if (!counts[i]) continue;
+      var frac = counts[i] / total;
+      var len = frac * circ;
+      parts.push('<circle class="m-ring" cx="0" cy="0" r="' + rr.toFixed(2) + '" fill="none" stroke="' +
+        COLOURS[i] + '" stroke-width="' + sw.toFixed(2) + '" stroke-linecap="butt" ' +
+        'stroke-dasharray="' + len.toFixed(2) + ' ' + (circ - len).toFixed(2) + '" ' +
+        'stroke-dashoffset="' + (-acc * circ).toFixed(2) + '" transform="rotate(-90)"/>');
+      acc += frac;
+    }
+    var d = (r + sw) * 2;
+    return '<svg width="' + d + '" height="' + d + '" viewBox="' +
+      (-d / 2) + ' ' + (-d / 2) + ' ' + d + ' ' + d + '">' +
+      '<circle cx="0" cy="0" r="' + (rr + sw / 2 + 1).toFixed(2) + '" fill="var(--bg)" opacity=".55"/>' +
+      parts.join('') +
+      '<text class="m-cnt" x="0" y="0" text-anchor="middle" dominant-baseline="central">' +
+      (total > 999 ? (total / 1000).toFixed(1).replace('.0', '') + 'k' : total) + '</text></svg>';
+  }
+
+  /**
+   * Draw the markers for whatever the source currently has on screen.
+   *
+   * The unclustered half of this is not the obvious loop, because of how the
+   * data is shaped: hundreds of listings share one exact coordinate (their city
+   * centroid). Once clustering disengages above clusterMaxZoom they would all
+   * land on the same pixel — 197 parishes and tavernas stacked into what looks
+   * like a single dot, with only the top one clickable. So coincident points are
+   * bucketed by coordinate and fanned out, and a bucket too large to fan becomes
+   * a counted stack you can open.
+   */
+  function renderClusters() {
+    if (!ready || !map.getSource('places')) return;
+    var src = map.getSource('places');
+    var feats = map.querySourceFeatures('places');
+    var keep = {};
+    var buckets = Object.create(null);
+
+    feats.forEach(function (f) {
+      var pr = f.properties;
+      if (!pr.cluster) {
+        var p = ALL[pr.i];
+        if (!p) return;
+        var key = p.lat.toFixed(5) + ',' + p.lng.toFixed(5);
+        var b = buckets[key] || (buckets[key] = { lngLat: [p.lng, p.lat], items: [], seen: {} });
+        // querySourceFeatures can hand back the same feature from two tiles
+        if (b.seen[p.i]) return;
+        b.seen[p.i] = 1;
+        b.items.push(p);
+        return;
+      }
+      var cid = 'c' + pr.cluster_id;
+      keep[cid] = 1;
+      if (clusterMarkers[cid]) return;
+      var counts = [];
+      for (var i = 0; i < TYPES.length; i++) counts.push(pr['t' + i] || 0);
+      var el2 = document.createElement('div');
+      el2.className = 'm-cl';
+      el2.innerHTML = ringSVG(counts, pr.point_count);
+      el2.setAttribute('role', 'button');
+      el2.setAttribute('tabindex', '0');
+      el2.setAttribute('aria-label', pr.point_count + ' places — open');
+      var lngLat = f.geometry.coordinates.slice();
+      function listLeaves() {
+        // Zooming will not separate these; they share a coordinate.
+        src.getClusterLeaves(pr.cluster_id, 500, 0).then(function (leaves) {
+          var group = (leaves || []).map(function (l) { return ALL[l.properties.i]; }).filter(Boolean);
+          if (group.length) showList(group, group.length + ' here', groupWhere(group), lngLat);
+        }, function () {});
+      }
+      function openCluster() {
+        var cur = map.getZoom();
+        src.getClusterExpansionZoom(pr.cluster_id).then(function (z) {
+          if (!isFinite(z) || z <= cur + 0.05 || cur > 15.5) { listLeaves(); return; }
+          animateMap({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
+        }, listLeaves);
+      }
+      el2.addEventListener('click', openCluster);
+      el2.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openCluster(); }
+      });
+      clusterMarkers[cid] = new MB.Marker({ element: el2 }).setLngLat(lngLat).addTo(map);
+    });
+
+    /* Two different city centroids can land a few pixels apart — Omonia and
+       Athens-centre did exactly that, drawing a "158" ring on top of a "7" ring
+       so neither could be read or clicked. Exact-coordinate buckets are merged
+       when they are closer than MERGE_PX on screen. Largest-first and
+       deterministic, so the grouping does not flicker while panning. */
+    buckets = mergeNearby(buckets);
+
+    /* ---- the unclustered buckets ---- */
+    Object.keys(buckets).forEach(function (key) {
+      var b = buckets[key];
+      var n = b.items.length;
+
+      if (n === 1) {
+        var p = b.items[0];
+        var id = 'p' + p.i;
+        keep[id] = 1;
+        if (!pinMarkers[id]) pinMarkers[id] = makePin(p, b.lngLat, null);
+        return;
+      }
+
+      if (!b.merged && n <= FAN_MAX) {
+        // Fan them around their shared point. The marker keeps the true
+        // coordinate and only carries a pixel offset, so the fan tracks
+        // correctly through pan, zoom, rotate and pitch.
+        b.items.forEach(function (p, j) {
+          var id = 'f' + key + ':' + n + ':' + p.i;
+          keep[id] = 1;
+          if (pinMarkers[id]) return;
+          var a = (j / n) * Math.PI * 2 - Math.PI / 2;
+          var rad = n <= 6 ? 21 : 21 + (j % 2) * 15;
+          pinMarkers[id] = makePin(p, b.lngLat, [Math.cos(a) * rad, Math.sin(a) * rad]);
+        });
+        return;
+      }
+
+      // Too many to fan legibly. One counted stack, click to open the list.
+      var sid = 's' + key + ':' + n;
+      keep[sid] = 1;
+      if (pinMarkers[sid]) return;
+      var counts = TYPES.map(function () { return 0; });
+      b.items.forEach(function (p) { counts[IDX[p.t] || 0]++; });
+      var el = document.createElement('div');
+      el.className = 'm-cl';
+      el.innerHTML = ringSVG(counts, n);
+      el.setAttribute('role', 'button');
+      el.setAttribute('tabindex', '0');
+      // mergeNearby folds stacks that are merely close on screen, so only an
+      // unmerged bucket genuinely shares one coordinate.
+      el.setAttribute('aria-label', b.merged
+        ? n + ' places in this area \u2014 open the list'
+        : n + ' places at this location \u2014 open the list');
+      var items = b.items.slice(), ll = b.lngLat;
+      function open() { showList(items, n + (b.merged ? ' places in this area' : ' places at this location'), groupWhere(items), b.merged ? null : ll); }
+      el.addEventListener('click', function (e) { e.stopPropagation(); open(); });
+      el.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+      pinMarkers[sid] = new MB.Marker({ element: el }).setLngLat(ll).addTo(map);
+    });
+
+    Object.keys(clusterMarkers).forEach(function (k) {
+      if (!keep[k]) { clusterMarkers[k].remove(); delete clusterMarkers[k]; }
+    });
+    Object.keys(pinMarkers).forEach(function (k) {
+      if (!keep[k]) { pinMarkers[k].remove(); delete pinMarkers[k]; }
+    });
+  }
+
+  /** Above this many listings on one spot, a fan stops being readable. */
+  var FAN_MAX = 12;
+  /** Two marker stacks closer than this on screen are drawn as one. */
+  var MERGE_PX = 46;
+
+  function mergeNearby(buckets) {
+    var keys = Object.keys(buckets);
+    if (keys.length < 2) return buckets;
+    // biggest first, then by key, so the result never depends on iteration order
+    keys.sort(function (a, b) {
+      var d = buckets[b].items.length - buckets[a].items.length;
+      return d || (a < b ? -1 : 1);
+    });
+    var pts = {};
+    keys.forEach(function (k) { pts[k] = map.project(buckets[k].lngLat); });
+    var out = {}, taken = [];
+    keys.forEach(function (k) {
+      var p = pts[k];
+      for (var i = 0; i < taken.length; i++) {
+        var t = taken[i], q = pts[t];
+        if (Math.abs(p.x - q.x) < MERGE_PX && Math.abs(p.y - q.y) < MERGE_PX) {
+          // fold into the bigger stack; it keeps its own anchor coordinate
+          var host = out[t];
+          for (var j = 0; j < buckets[k].items.length; j++) host.items.push(buckets[k].items[j]);
+          host.merged = true;
+          return;
+        }
+      }
+      taken.push(k);
+      out[k] = { lngLat: buckets[k].lngLat, items: buckets[k].items.slice() };
+    });
+    return out;
+  }
+
+  function makePin(p, lngLat, offset) {
+    // An individual listing always keeps its own geographic anchor. Nearby
+    // screen-space groups must never move it to another listing's position.
+    lngLat = [p.lng, p.lat];
+    var el = document.createElement('div');
+    el.className = 'm-pin' + (selected && selected.s === p.s ? ' m-selected' : '');
+        el.dataset.slug = p.s;
+    el.style.background = COLOURS[IDX[p.t] || 0];
+    el.title = p.n || '';
+    el.setAttribute('role', 'button');
+    el.setAttribute('tabindex', '0');
+    el.setAttribute('aria-label', p.n || 'place');
+    el.addEventListener('click', function (ev) { ev.stopPropagation(); choose(p, true); });
+    el.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); choose(p, true); }
+    });
+    el.addEventListener('mouseenter', function () { tip(p, lngLat); });
+    el.addEventListener('mouseleave', hideTip);
+    el.addEventListener('focus', function () { tip(p, lngLat); });
+    el.addEventListener('blur', hideTip);
+    var opts = { element: el };
+    if (offset) opts.offset = offset;
+    return new MB.Marker(opts).setLngLat(lngLat).addTo(map);
+  }
+
+  function groupWhere(group) {
+    var c = {}, best = '', n = 0;
+    group.forEach(function (p) { var k = p.city || ''; c[k] = (c[k] || 0) + 1; if (c[k] > n) { n = c[k]; best = k; } });
+    var country = (group[0] && group[0].country) || '';
+    return [best, country].filter(Boolean).join(', ') || (group.length + ' places');
+  }
+
+  /* ---------- spiderfy ----------
+   * When several listings share one coordinate, offset their markers around a
+   * ring so each is individually hoverable and clickable. The markers stay
+   * anchored to the true coordinate; only the pixel offset changes, so they
+   * track correctly through pan, zoom, rotate and tilt.
+   */
+  function clearSpider() {
+    spider.forEach(function (m) { m.remove(); });
+    spider = [];
+  }
+  function spiderfy(group, lngLat) {
+    clearSpider();
+    if (group.length < 2) return;
+    // Geographic clusters span several addresses. Only genuinely coincident
+    // places may fan out; all other places keep their own source coordinates.
+    var anchor = group[0];
+    if (!group.every(function(p){return p.lat === anchor.lat && p.lng === anchor.lng;})) return;
+    var n = Math.min(group.length, 28);
+    var rings = n <= 8 ? 1 : n <= 18 ? 2 : 3;
+    var idx = 0;
+    for (var ring = 0; ring < rings; ring++) {
+      var cap = Math.ceil(n / rings);
+      var count = Math.min(cap, n - idx);
+      var rad = 26 + ring * 24;
+      for (var j = 0; j < count; j++, idx++) {
+        var p = group[idx];
+        var a = (j / count) * Math.PI * 2 - Math.PI / 2 + (ring * 0.4);
+        var el = document.createElement('div');
+        el.className = 'm-pin' + (selected && selected.s === p.s ? ' m-selected' : '');
+        el.dataset.slug = p.s;
+        el.style.background = COLOURS[IDX[p.t] || 0];
+        el.title = p.n || '';
+        el.setAttribute('role', 'button');
+        el.setAttribute('tabindex', '0');
+        el.setAttribute('aria-label', p.n || 'place');
+        (function (pp) {
+          el.addEventListener('click', function (e) { e.stopPropagation(); choose(pp, true); });
+          el.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(pp, true); }
+          });
+          el.addEventListener('mouseenter', function () { tip(pp, [pp.lng, pp.lat]); });
+          el.addEventListener('mouseleave', hideTip);
+          el.addEventListener('focus', function () { tip(pp,[pp.lng,pp.lat]); });
+          el.addEventListener('blur',hideTip);
+        })(p);
+        spider.push(new MB.Marker({ element: el, offset: [Math.cos(a) * rad, Math.sin(a) * rad] })
+          .setLngLat([p.lng,p.lat]).addTo(map));
+      }
+    }
+  }
+
+  /* ---------- popup ---------- */
+  var pop = new MB.Popup({ closeButton: false, closeOnClick: false, offset: 14, maxWidth: '250px' });
+  function tip(p, lngLat) {
+    document.querySelectorAll('.m-row[data-slug]').forEach(function(row){row.classList.toggle('m-row-hovered',row.dataset.slug===p.s);});
+    document.querySelectorAll('.m-pin[data-slug]').forEach(function(pin){pin.classList.toggle('m-hover',pin.dataset.slug===p.s);});
+    if(!mapPositionEligible(p))return;
+    pop.setLngLat(lngLat).setHTML(
+      '<div class="m-tipnm">' + esc(p.n) + '</div>' +
+      '<div class="m-tipwh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</div>' +
+      (p.addr ? '<div class="m-tipwh">' + esc(p.addr) + '</div>' : '') +
+      '<div class="m-tipwh' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) + '</div>' +
+      '<span class="m-tipgo">Select to preview this place →</span>'
+    ).addTo(map);
+  }
+  function hideTip() { pop.remove();document.querySelectorAll('.m-row-hovered,.m-hover').forEach(function(node){node.classList.remove('m-row-hovered','m-hover');}); }
+
+  /* ---------- the panel ---------- */
+  function rowHTML(p) {
+    var i = IDX[p.t] || 0;
+    var initial = (p.n || '?').trim().charAt(0).toUpperCase();
+    var d = here && mapPositionEligible(p) ? haversine(here.lat, here.lng, p.lat, p.lng) : null;
+    /* A distance is only as good as both ends of it. A coarse fix or an
+       unverified pin makes an exact-looking figure a false claim. */
+    var fuzzy = d != null && ((here && here.coarse) || !p.exact);
+    var dist = d == null ? '' : ' · ' + (fuzzy ? '~' : '') + km(d) + ' straight-line estimate';
+    var dir = directionsUrl(p);
+    var basis = directionsBasis(p);
+    var lookup=basis==='published-address',actionLabel=lookup?'Find address':'Directions';
+    var note = lookup?'Searches the published address; exact map position is not verified'
+      : basis === 'pin'?'Directions use the reviewed map point':'';
+    return '<div class="m-rowwrap">' +
+      '<a class="m-row" href="' + href(p) + '" data-slug="'+esc(p.s)+'" data-i="' + p.i + '">' +
+      '<span class="m-mark" style="background:' + COLOURS[i] + '">' + esc(initial) + '</span>' +
+      '<span class="m-meta"><span class="m-nm">' + esc(p.n) + '</span>' +
+      '<span class="m-wh">' + esc(nice(p.cat)) + (p.city ? ' · ' + esc(p.city) : '') + '</span>' +
+      (p.addr ? '<span class="m-ad">' + esc(p.addr) + '</span>' : '') +
+      '<span class="m-km' + (p.unknown ? ' m-unk' : '') + '">' + esc(precisionLabel(p)) + esc(dist) + '</span>' +
+      '</span></a>' +
+      (dir ? '<a class="m-dir" href="' + esc(dir) + '" target="_blank" rel="noopener noreferrer"' +
+        ' title="' + esc(note) + '" aria-label="'+actionLabel+' for ' + esc(p.n) + '. ' + esc(note) + '">' +
+        '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4.5 20l7.5-4 7.5 4z"/></svg>' +
+        '<span>'+actionLabel+'</span></a>' : '') +
+      '</div>';
+  }
+
+  var listState = { items: [], shown: 0, mode: 'all' };
+  function paint(reset) {
+    var body = $('pbody');
+    if (reset) { if(previewController){previewController.destroy();previewController=null;} body.innerHTML = ''; listState.shown = 0; if(selected&&listState.mode==='group'&&previewModule){selected.reviewedPosition=selected.reviewedSelected===true;var card=document.createElement('section');body.appendChild(card);previewController=previewModule.mountPlacePreview(card,{place:selected,home:href(selected),directions:directionsUrl(selected),precision:precisionLabel(selected),resolveDirections:function(entity,place,details){place.reviewedPosition=mapTools.hasReviewedPosition(place,entity);place.addr=details.address;return directionsUrl(place);},loadDetails:function(slug){return selected&&(selected.unmapped||selected.reviewedSelected)&&!selected.areaResult?Promise.resolve(selected.entity):mapTools.retryMapRead(function(){return C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}).then(async function(value){var entity=Array.isArray(value)?value[0]:value;if(!entity)return value;entity=Object.assign({},entity,{reviewed_destination:null});try{entity.reviewed_destination=await C.api.rpc('geography_reviewed_point',{p_listing:entity.id},{auth:'anon'});}catch(_){}return entity;});});},onSaved:function(){updateSavedLabel();if(savedOnly)refresh();},shareURL:function(){return 'https://www.zoi.city/explore/map/'+location.search+location.hash;}});} }
+    var slice = listState.items.slice(listState.shown, listState.shown + 60);
+    var advance=slice.length;
+    if(selected&&listState.mode==='group')slice=slice.filter(function(p){return p.s!==selected.s;});
+    if (!slice.length && !listState.shown && !selected) {
+      body.innerHTML = '<div class="m-empty">Nothing here yet.<br>' +
+        (query ? 'Try a different search, or ' : '') + 'zoom out to see more.</div>';
+      return;
+    }
+    var frag = document.createElement('div');
+    frag.innerHTML = slice.map(rowHTML).join('');
+    while (frag.firstChild) body.appendChild(frag.firstChild);
+    listState.shown += advance;
+  }
+  $('pbody').addEventListener('scroll', function () {
+    var b = $('pbody');
+    if (b.scrollTop + b.clientHeight > b.scrollHeight - 240 && listState.shown < listState.items.length) paint(false);
+  });
+  $('pbody').addEventListener('mouseover', function (e) {
+    var a = e.target.closest && e.target.closest('.m-row');
+    if (!a) return;
+    var p = listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];
+    if (p) tip(p, [p.lng, p.lat]);
+  });
+  $('pbody').addEventListener('mouseout', hideTip);
+  $('pbody').addEventListener('focusin',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(a){var p=listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];if(p)tip(p,[p.lng,p.lat]);}});
+  $('pbody').addEventListener('focusout',hideTip);
+  $('pbody').addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('.m-row');if(!a||e.ctrlKey||e.metaKey||e.shiftKey||e.altKey)return;var p=listState.items.find(function(item){return item.s===a.dataset.slug;})||ALL[+a.dataset.i];if(p){e.preventDefault();if(savedOnly||p.unmapped||p.areaResult){openUnmappedPlace(p.s);return;}choose(p,false);var first=$('pbody').querySelector('.m-preview-actions a');if(first)first.focus();}});
+  function updateSavedLabel(){if(previewModule)$('tSaved').textContent='Saved ('+previewModule.readSavedPlaces().length+')';}
+  $('tSaved').addEventListener('click',async function(){
+    if(!previewModule)return;var version=++savedViewVersion;savedOnly=!savedOnly;$('tSaved').setAttribute('aria-pressed',String(savedOnly));setSheet(false);showAll();refresh();updateSavedLabel();if(!savedOnly)return;
+    var missing=previewModule.readSavedPlaces().filter(function(slug){return !ALL.concat(savedExtras).some(function(p){return p.s===slug;});}),next=0,failed=0;
+    if(missing.length)status('Checking saved profiles…',true);
+    await Promise.all(Array.from({length:Math.min(4,missing.length)},async function(){while(next<missing.length&&version===savedViewVersion){var slug=missing[next++];try{var entity=await readCanonicalMapEntity(slug),p=mapTools.unmappedPlace(entity,entity&&(entity.canonical_slug||entity.slug));if(p&&version===savedViewVersion){if(p.s!==slug){var saved=previewModule.readSavedPlaces();if(saved.includes(slug))localStorage.setItem('zoi.map.saved-places.v1',JSON.stringify(Array.from(new Set(saved.map(function(s){return s===slug?p.s:s;})))));}p.hay=fold([p.n,p.addr,p.city,p.country,p.t].filter(Boolean).join(' '));if(!ALL.concat(savedExtras).some(function(existing){return existing.s===p.s;}))savedExtras.push(p);}}catch(_){failed++;}}}));
+    if(version!==savedViewVersion||!savedOnly)return;showAll();refresh();updateSavedLabel();status(failed?'Some saved profiles could not be checked. Toggle Saved off and on to retry.':'Saved view shows currently available published profiles in your filters.',false,6000);
+  });
+
+  function showList(items, title, sub, lngLat) {
+    if(selected&&!items.some(function(p){return p.s===selected.s;}))selected=null;
+    listState = { items: items, shown: 0, mode: 'group' };
+    $('ptitle').innerHTML = esc(title) + '<span class="m-sub">' + esc(sub) + '</span>';
+    $('pclose').hidden = false;
+    $('panel').classList.remove('m-hidden');
+    paint(true);
+    /* Any stack of pins sharing a coordinate deserves an explanation, including
+       a stack of two — that is the common case for a duplicated record, and the
+       old "more than two" threshold hid it precisely when it mattered. */
+    var note = '';
+    if (items.length > 1) {
+      var unknown = items.filter(function (x) { return x.unknown; }).length;
+      var centroid = items.filter(function (x) { return !x.exact && !x.unknown; }).length;
+      if (unknown === items.length) note = ' · these coordinates are unverified';
+      else if (centroid + unknown === items.length) note = ' · approximate or unverified positions — confirm each address';
+      else if (unknown) note = ' · ' + fmtN(unknown) + ' unverified';
+    }
+    $('pfoot').innerHTML = fmtN(items.length) + ' place' + (items.length === 1 ? '' : 's') + note;
+    if (lngLat) spiderfy(items, lngLat);
+  }
+
+  var areaSearch=null,areaTimer;
+  function areaState(){return areaSearch?areaSearch.state():{active:false,rows:[]};}
+  function syncAreaSearch(){
+    if(!areaSearch)areaSearch=mapTools.createMapAreaSearch(function(args){return C.api.rpc('explore_search',args,{auth:'anon'});},{allowGlobal:true,changed:function(){if(listState.mode==='all')showAll();}});
+    var locality=activeMapLocality(),before=areaSearch.state().key;
+    areaSearch.setScope({q:query,city:locality.city,country:locality.country,actor:C.auth&&C.auth.load()?.user_id||''});
+    if(before!==areaSearch.state().key){clearTimeout(areaTimer);areaTimer=setTimeout(function(){if(listState.mode==='all')areaSearch.more();},250);}
+  }
+  $('pfoot').addEventListener('click',function(event){if(event.target.closest('[data-area-more]')&&areaSearch)areaSearch.more();});
+  ['zoi:auth-change','zoi:authchange','storage'].forEach(function(name){window.addEventListener(name,function(){pendingAutocompleteSlug=null;mapAutocomplete?.close();clearTimeout(areaTimer);areaSearch?.clear();if(map&&listState.mode==='all')showAll();});});
+  function showAll() {
+    selectionVersion++;pendingPlace=null;
+    $('stage').classList.remove('m-selected-view');
+    clearSpider();
+    selected = null;clearReviewedSelectedMarker();
+    document.querySelectorAll('.m-pin.m-selected').forEach(function(pin){pin.classList.remove('m-selected');});
+    syncAreaSearch();
+    // A saved profile can be recovered before the complete position feed. When
+    // that feed later includes its exact canonical slug, retain its fresh row
+    // once; this never merges different listing identities or same-name places.
+    var vis=[],seenSlugs=new Set();
+    ALL.concat(savedExtras).forEach(function(p){if(matches(p)&&!seenSlugs.has(p.s)){seenSlugs.add(p.s);vis.push(p);}});
+    areaState().rows.forEach(function(row){var p=mapTools.areaResultPlace(row);if(p)p.hay=fold([p.n,p.addr,p.city,p.country,p.t].filter(Boolean).join(' '));if(p&&!seenSlugs.has(p.s)&&matches(p)){vis.push(p);seenSlugs.add(p.s);}});
+    // nearest-first once we know where the user is, otherwise centre-out
+    var c = map ? map.getCenter() : { lat: 37.98, lng: 23.72 };
+    var o = here || c;
+    if(mapInteractions)vis=mapInteractions.sort(vis,c);
+    else vis.sort(function (a, b) {
+      var ap=mapPositionEligible(a),bp=mapPositionEligible(b);
+      if(ap&&bp)return haversine(o.lat,o.lng,a.lat,a.lng)-haversine(o.lat,o.lng,b.lat,b.lng);
+      if(ap!==bp)return ap?-1:1;
+      return String(a.city||'').localeCompare(String(b.city||''))||String(a.n||'').localeCompare(String(b.n||''));
+    });
+    listState = { items: vis, shown: 0, mode: 'all' };
+    $('ptitle').innerHTML = (savedOnly ? 'Saved on this device' : here ? 'Street locations near you · more places below' : (query ? 'Search results' : 'Explore places')) +
+      '<span class="m-sub">' + fmtN(vis.length) + (vis.length===1?' place loaded':' places loaded') + '</span>';
+    $('pclose').hidden = true;
+    paint(true);
+    renderBrowseFooter();
+  }
+
+  var totalListings = null;
+  function renderBrowseFooter() {
+    if (listState.mode !== 'all') return;
+    var area=areaState(),items=listState.items,located=items.filter(mapPositionEligible).length;
+    var context=area.active?'In these loaded results':'In the loaded list',coverage=mapTools.positionCoverage(items.filter(mapPositionEligible));
+    $('pfoot').innerHTML='<p>'+context+': '+fmtN(coverage.reviewed)+' reviewed map positions; '+fmtN(coverage.unverified)+' stored positions awaiting independent verification; '+fmtN(items.length-located)+' awaiting a map position.</p>'+
+      (directoryPending?'<p role="status">Map positions are loading. These place results are ready to use.</p>':directoryError||!mapPositionsComplete?'<p role="status">Map position coverage is incomplete. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button></p>':'')+
+      (area.active&&located===0?'<p>No street-level positions in these loaded results. Browse the list for details.</p>':'')+
+      (area.active?''+(area.error?'<p role="status">'+esc(area.error)+'</p>':'')+(area.busy?'<p role="status">Loading additional places…</p>':!area.done?'<button type="button" data-area-more>'+ (area.error?'Retry area results':'Load more area results')+'</button>':''):'')+
+      '<details><summary>Global map coverage</summary><p>Area results include places without street-level positions; these remain in the list without a pin.</p><p>'+coverageNote()+'</p></details>';
+    $('pfoot').scrollTop=0;
+  }
+  function coverageNote() {
+    if(directoryPending)return 'Street locations are loading in the background ('+fmtN(directoryLoaded)+' records read). You can use these place results now. Pins wait for position checks.';
+    if(directoryError)return '<strong>Street locations could not load.</strong> Place search and published addresses are still available. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button>';
+    var parts = [],located=ALL.filter(mapPositionEligible).length,coverage=mapTools.positionCoverage(ALL.filter(mapPositionEligible));
+    parts.push('The global map feed has '+fmtN(ALL.length)+' loaded records, including '+fmtN(coverage.reviewed)+' reviewed map positions and '+fmtN(coverage.unverified)+' stored positions awaiting independent verification.');
+    if (totalListings) parts.push('The full directory contains '+fmtN(totalListings)+' listings worldwide.');
+    parts.push('Search an area to load additional directory results here, including places without coordinates, or browse <a href="/explore">Explore</a>.');
+    if(!mapPositionsComplete)parts.push('Coordinate coverage is incomplete; pins are withheld until a complete check. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button>');
+    if (truncated) parts.push('The map feed reached its display limit; these counts are not the full directory.');
+    if (failedPages) {
+      parts.push('<strong>Part of the map feed did not load</strong> — some places are missing.');
+    }
+    return parts.join(' ');
+  }
+
+  function animateMap(options) { if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)map.jumpTo(options);else map.easeTo(options); }
+
+  // Fit searches and individual places into the same unobstructed map area.
+  // A fixed bottom padding leaves phone pins beneath the sheet/tool attribution.
+  function mapViewportInsets() {
+    var stage=$('map').getBoundingClientRect(), controls=document.querySelector('.m-controls').getBoundingClientRect(), panel=$('panel').getBoundingClientRect();
+    var mobile=window.matchMedia('(max-width:860px)').matches;
+    var rail=document.querySelector('.m-tools').getBoundingClientRect(), attribution=$('attrib').getBoundingClientRect();
+    var bottomEdge=Math.min(panel.top,rail.top,attribution.top);
+    return {width:stage.width,height:stage.height,left:mobile?16:controls.width+28,right:mobile?16:panel.width+28,top:mobile?controls.bottom-stage.top+16:28,bottom:mobile?stage.bottom-bottomEdge+24:28};
+  }
+
+  function clearReviewedSelectedMarker(){if(reviewedSelectedMarker){reviewedSelectedMarker.remove();reviewedSelectedMarker=null;}}
+  function showReviewedSelectedMarker(p){clearReviewedSelectedMarker();if(!p.reviewedSelected||!mapPositionEligible(p)||!map)return;var marker=document.createElement('button');marker.type='button';marker.className='m-pin m-selected m-reviewed-anchor';marker.style.background=COLOURS[IDX[p.t]||0];marker.title=p.n;marker.setAttribute('aria-label',p.n+' · reviewed street position');marker.addEventListener('click',function(){choose(p,true);});reviewedSelectedMarker=new MB.Marker({element:marker}).setLngLat([p.lng,p.lat]).addTo(map);}
+
+  function choose(p, keepSpider) {
+    var sameSelection = selected && selected.s === p.s;
+    selectionVersion++;pendingPlace=null;
+    setSheet(false);$('stage').classList.add('m-selected-view');
+    selected = p;showReviewedSelectedMarker(p);
+    document.querySelectorAll('.m-pin').forEach(function(pin){pin.classList.toggle('m-selected',pin.dataset.slug===p.s);});
+    if (!keepSpider) clearSpider();
+    hideTip();
+    var group = p.co && p.co.length > 1 ? p.co.filter(matches) : [p];
+    if (group.length > 1) {
+      showList(group, group.length + ' here', groupWhere(group), [p.lng, p.lat]);
+    } else {
+      showList([p], 'Selected place', [nice(p.cat), p.city, p.country].filter(Boolean).join(' · '), null);
+    }
+    if(!mapPositionEligible(p)){selectedPositionStatus();status('This place is available in the list. Its street position has not been established; check the published address.',false,6000);writeUrl();return;}
+    var focus=mapTools.focusOptions(p,Object.assign(mapViewportInsets(),{currentZoom:sameSelection ? map.getZoom() : null,reducedMotion:window.matchMedia('(prefers-reduced-motion: reduce)').matches}));
+    if(focus.duration===0)map.jumpTo(focus);else map.easeTo(focus);
+    status(precisionLabel(p) + (p.unknown ? ' — confirm the address before travelling' : ''),false,5000);
+    writeUrl();
+  }
+
+  async function readCanonicalMapEntity(slug){
+    var value=await C.api.rpc('home_entity',{p_slug:slug},{auth:'anon'}),entity=Array.isArray(value)?value[0]:value;
+    if(!entity)return null;
+    if(entity.slug!==slug&&entity.canonical_slug!==slug){
+      // A legacy saved slug may now resolve to a reviewed canonical record.
+      // Bind that change to the current public redirect, never a name match or
+      // saved metadata, and reread the canonical ID before requesting its point.
+      var canonical=entity.canonical_slug||entity.slug,id=entity.id;
+      if(typeof canonical!=='string'||!canonical||canonical.length>240||!id)throw Error('place_not_available');
+      var abort=new AbortController(),timer=setTimeout(function(){abort.abort();},8000),response;
+      try{response=await fetch('/p/'+encodeURIComponent(slug),{method:'HEAD',credentials:'omit',cache:'no-store',signal:abort.signal});}finally{clearTimeout(timer);}
+      var route=new URL(response.url,location.href);
+      if(!response.ok||route.origin!==location.origin||decodeURIComponent(route.pathname.split('/').filter(Boolean).pop()||'')!==canonical)throw Error('place_not_available');
+      value=await C.api.rpc('home_entity',{p_slug:canonical},{auth:'anon'});entity=Array.isArray(value)?value[0]:value;
+      if(!entity||entity.id!==id||entity.slug!==canonical||entity.canonical_slug&&entity.canonical_slug!==canonical)throw Error('place_not_available');
+    }
+    return entity;
+  }
+  async function openUnmappedPlace(slug) {
+    var version=++selectionVersion;pendingPlace=slug;selected=null;clearReviewedSelectedMarker();
+    // Establish group mode before resize can emit moveend and rebuild all results.
+    showList([], 'Opening this place', 'Checking its published profile', null);
+    setSheet(false);$('stage').classList.add('m-selected-view');
+    writeUrl();
+    $('pbody').innerHTML='<div class="m-empty" role="status">Loading this place’s details…</div>';
+    try{
+      var entity=await mapTools.retryMapRead(async function(){var entity=await readCanonicalMapEntity(slug);if(!entity)return null;entity=Object.assign({},entity,{reviewed_destination:null});try{entity.reviewed_destination=await C.api.rpc('geography_reviewed_point',{p_listing:entity.id},{auth:'anon'});}catch(_){}return entity;});
+      if(version!==selectionVersion)return;
+      var place=mapTools.unmappedPlace(entity,entity&&(entity.canonical_slug||entity.slug));
+      if(!place)throw Error('place_not_available');
+      var reviewed=mapTools.reviewedSelectedPlace(place,entity);if(reviewed){choose(reviewed);selectedPositionStatus();return;}
+      selected=place;pendingPlace=null;
+      showList([place], 'Selected place', [nice(place.cat),place.city,place.country].filter(Boolean).join(' · '), null);
+      selectedPositionStatus();
+      writeUrl();
+    }catch(error){
+      if(version!==selectionVersion)return;
+      $('ptitle').textContent='This place could not be opened';
+      $('pbody').innerHTML='<div class="m-empty">'+(error.message==='place_not_available'?'The requested profile is not currently available.':'The profile service is temporarily unavailable.')+'</div>';
+      var retry=document.createElement('button');retry.type='button';retry.className='m-linkish';retry.textContent='Try this place again';retry.addEventListener('click',function(){openUnmappedPlace(slug);});$('pbody').appendChild(retry);
+      $('pfoot').textContent='We have kept the requested place in this link. Close this panel to browse other places.';
+    }
+  }
+
+  // Completion never takes the guest away from an active profile or manual view.
+  function selectedPositionStatus(){
+    if(!selected||listState.mode!=='group')return;
+    if(selected.reviewedSelected&&mapPositionEligible(selected)){$('pfoot').textContent='This selected street position has a current review receipt. Other map positions '+(directoryPending?'are still loading.':mapPositionsComplete?'have completed their catalogue check.':'remain incomplete.');return;}
+    var hit=ALL.find(function(p){return p.s===selected.s;});
+    if(hit&&mapPositionEligible(hit)&&!mapPositionEligible(selected))$('pfoot').innerHTML='Its map position is now available. <button type="button" class="m-linkish" data-loaded-position>View its map position</button>';
+    else if(hit&&mapPositionEligible(hit)&&mapPositionEligible(selected))$('pfoot').textContent='Map positions checked. Your selected profile and map view have been kept.';
+    else if(directoryPending)$('pfoot').textContent='This profile is available. Map positions are still loading; the map view has not moved.';
+    else if(directoryError||!mapPositionsComplete)$('pfoot').innerHTML='This profile is available. Map positions are incomplete. <button type="button" class="m-linkish" data-feed-retry>Retry map positions</button>';
+    else $('pfoot').textContent='This profile is available. Its street position has not been established; the map view has not moved.';
+  }
+  async function startMapPositions(){
+    if(directoryPending)return;
+    directoryPending=true;directoryError='';directoryLoaded=0;mapPositionsComplete=false;refresh();
+    if(listState.mode==='all')renderBrowseFooter();else selectedPositionStatus();
+    try{await loadData();directoryPending=false;buildChips();refresh();if(listState.mode==='all')showAll();else selectedPositionStatus();}
+    catch(error){directoryPending=false;directoryError='unavailable';if(listState.mode==='all')renderBrowseFooter();else selectedPositionStatus();}
+  }
+  function closeSelection() { showAll(); writeUrl(); $('q').focus(); }
+  $('pclose').addEventListener('click', closeSelection);
+
+  $('pfoot').addEventListener('click', function (e) {
+    if(e.target?.closest('[data-feed-retry]'))startMapPositions();
+    if(e.target?.closest('[data-loaded-position]')&&selected){var hit=ALL.find(function(p){return p.s===selected.s;});if(hit&&mapPositionEligible(hit))choose(hit);}
+    if (e.target && e.target.id === 'reloadmap') location.reload();
+  });
+
+  // Collapse the bottom sheet on small screens. Everything else is positioned
+  // from --sheet, so the tool rail and attribution follow it up and down.
+  function setSheet(shut){$('stage').classList.remove('m-full-list');$('stage').classList.toggle('m-shut',shut);$('psheet').setAttribute('aria-expanded',String(!shut));$('psheet').setAttribute('aria-label',shut?'Show places':'Collapse places');if(map)map.resize();}
+  $('psheet').addEventListener('click',function(){setSheet(!$('stage').classList.contains('m-shut'));});
+
+  /* ---------- filtering ---------- */
+  var refreshT;
+  function refresh() {
+    mapAutocomplete?.refresh();
+    clearTimeout(refreshT);
+    refreshT = setTimeout(function () {
+      if (!ready||!map.getSource('places')) return;
+      clearSpider();
+      currentData = toGeoJSON(ALL.filter(matches));
+      map.getSource('places').setData(currentData);
+      clearMarkers();
+      if (listState.mode === 'all') showAll();
+    }, 90);
+  }
+
+  $('q').addEventListener('input', function () {
+    pendingAutocompleteSlug=null;query = this.value.trim();mapSearchIntent();
+    if(map)showAll();
+    $('clearq').hidden = !query;
+    refresh(); writeUrl();
+  });
+  $('clearq').addEventListener('click', function () {
+    pendingAutocompleteSlug=null;mapAutocomplete?.close();query = ''; $('q').value = '';mapSearchIntent(); this.hidden = true; if(map)showAll(); refresh(); writeUrl(); $('q').focus();
+  });
+  $('allon').addEventListener('click', function () {
+    pendingAutocompleteSlug=null;mapAutocomplete?.close();TYPES.forEach(function (t) { on[t.k] = true; });
+    syncChips(); refresh(); writeUrl();
+  });
+
+  function showMatches(options){
+    var cityView=options&&options.cityViewport;
+    if(!map){status('The map is starting. Try your search in a moment.',false,3500);return;}
+    query=$('q').value.trim();$('clearq').hidden=!query;showAll();refresh();setSheet(false);
+    // An explicit city shortcut is a viewport intent. The async list refresh
+    // may still contain the previous city's rows; never fit those stale bounds.
+    // This camera center does not supply or approve any listing coordinates.
+    if(cityView){map.stop();map.jumpTo({center:cityView.center,zoom:11,pitch:0,bearing:0});status('Exploring '+cityView.label+' — city view only.'+(!ready?' Map tiles are loading.':' Choose a place to check its published address.'),false,6000);writeUrl();return;}
+    if(!ready){status('Place search is available while map tiles load.',false,3500);writeUrl();return;}
+    var found=listState.items,bounds=mapTools.matchBounds(found.filter(mapPositionEligible));
+    if(bounds){var inset=mapViewportInsets();if(matchMedia('(max-width:860px)').matches&&inset.height-inset.top-inset.bottom<120){setSheet(true);inset=mapViewportInsets();}var padding=mapTools.focusOptions({lng:bounds[0][0],lat:bounds[0][1]},inset).padding;if(bounds[0][0]===bounds[1][0]&&bounds[0][1]===bounds[1][1])animateMap({center:bounds[0],zoom:11,pitch:0,bearing:0,padding:padding,retainPadding:false,duration:900,essential:false});else map.fitBounds(bounds,{padding:padding,maxZoom:11,duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:900,essential:false});status(fmtN(found.length)+' matching places. Select a card to check its location.',false,4500);}else {
+      map.stop();map.jumpTo({center:[0,0],zoom:0.6,pitch:0,bearing:0});
+      status('World view — no street-level positions in these loaded results. Browse the place list for details.',false,6000);
+    }writeUrl();
+  }
+  $('mapsearch').addEventListener('submit',function(e){e.preventDefault();if(query!==$('q').value.trim()){query=$('q').value.trim();mapSearchIntent();}showMatches();});
+  var cityStarts={Athens:{country:'Greece',center:[23.7275,37.9838]},Toronto:{country:'Canada',center:[-79.3832,43.6532]},Melbourne:{country:'Australia',center:[144.9631,-37.8136]}};
+  document.querySelectorAll('[data-start-city]').forEach(function(b){b.addEventListener('pointerdown',function(e){if(e.button===0&&document.activeElement===$('q')){e.preventDefault();e.stopPropagation();}});b.addEventListener('click',function(){if(!map){status('The map is still loading.',false,2500);return;}var city=b.dataset.startCity,target=cityStarts[city];if(!target)return;pendingAutocompleteSlug=null;mapAutocomplete?.close();$('q').blur();b.focus({preventScroll:true});var cityIntent=new URL(mapIntentURL);['q','place','region','scope','bbox','radius'].forEach(function(k){cityIntent.searchParams.delete(k);});cityIntent.hash='';cityIntent.searchParams.set('city',city);cityIntent.searchParams.set('country',target.country);mapIntentURL=cityIntent.href;query='';$('q').value='';$('clearq').hidden=true;if(mapInteractions)mapInteractions.restore(cityIntent.searchParams);mapSearchIntent();showMatches({cityViewport:{center:target.center,label:city+', '+target.country}});});});
+  $('nearLabel').addEventListener('click',function(){$('tNear').click();});
+
+  /* ---------- style / theme ---------- */
+  var pref = { greek: false, terrain: false };
+  function styleOpts() {
+    return {
+      theme: (document.documentElement.getAttribute('data-theme') || 'dark'),
+      greek: pref.greek,
+      terrain: pref.terrain
+    };
+  }
+  function reskin() {
+    if (!map) return;
+    readColours();
+    clearMarkers();
+    map.setStyle(BM.style(styleOpts()), { diff: false });
+    map.once('styledata', function () {
+      addDataLayers(currentData);
+      if (pref.terrain) map.setTerrain({ source: 'dem', exaggeration: 1.1 });
+      buildChips();
+    });
+  }
+
+  /* ---------- data layers ----------
+   * Points live in a clustered GeoJSON source. clusterProperties accumulates a
+   * per-category count so a cluster knows its own composition without us having
+   * to re-scan the leaves on every frame.
+   */
+  function clusterProps() {
+    var cp = {};
+    TYPES.forEach(function (t, i) {
+      cp['t' + i] = ['+', ['case', ['==', ['get', 'ti'], i], 1, 0]];
+    });
+    return cp;
+  }
+  var currentData = null;
+  function addDataLayers(data) {
+    if (map.getSource('places')) return;
+    currentData = data || toGeoJSON(ALL.filter(matches));
+    map.addSource('places', {
+      type: 'geojson',
+      data: currentData,
+      cluster: true,
+      clusterRadius: 54,
+      clusterMaxZoom: 14,
+      clusterProperties: clusterProps()
+    });
+    // An invisible circle layer is what makes querySourceFeatures() return
+    // rendered features; the visible marks are DOM markers drawn from it.
+    map.addLayer({
+      id: 'places-probe', type: 'circle', source: 'places',
+      paint: { 'circle-radius': 1, 'circle-opacity': 0 }
+    });
+    renderClusters();
+  }
+
+  function clearMarkers() {
+    Object.keys(clusterMarkers).forEach(function (k) { clusterMarkers[k].remove(); });
+    Object.keys(pinMarkers).forEach(function (k) { pinMarkers[k].remove(); });
+    clusterMarkers = {}; pinMarkers = {};
+    clearSpider();
+    hideTip();
+  }
+
+  function openSourceFeature(f) {
+    if (!f || !f.properties) return;
+    var pr = f.properties;
+    if (pr.cluster) {
+      var source = map.getSource('places');
+      var lngLat = f.geometry.coordinates.slice();
+      source.getClusterExpansionZoom(pr.cluster_id).then(function (z) {
+        var cur = map.getZoom();
+        if (!isFinite(z) || z <= cur + 0.05 || cur > 15.5) {
+          source.getClusterLeaves(pr.cluster_id, 500, 0).then(function (leaves) {
+            var group = (leaves || []).map(function (l) { return ALL[l.properties.i]; }).filter(Boolean);
+            if (group.length) showList(group, group.length + ' here', groupWhere(group), lngLat);
+          }, function () {});
+          return;
+        }
+        animateMap({ center: lngLat, zoom: Math.min(z + 0.3, 16.5), duration: 620 });
+      }, function () {});
+      return;
+    }
+    var p = ALL[pr.i];
+    if (p) choose(p, true);
+  }
+
+  /* ---------- build the map ---------- */
+  function boot(initial) {
+    var start = initial.view || { center: [23.7275, 37.9838], zoom: 1.35, bearing: 0, pitch: 0 };
+    map = new MB.Map({
+      container: 'map',
+      style: BM.style(styleOpts()),
+      center: start.center,
+      zoom: start.zoom,
+      bearing: start.bearing || 0,
+      pitch: start.pitch || 0,
+      maxZoom: 18.5,
+      minZoom: 0.6,
+      attributionControl: false,
+      hash: false,
+      cooperativeGestures: false,
+      dragRotate: true,
+      pitchWithRotate: true
+    });
+    window.zoiMap = map;
+
+    map.addControl(new MB.NavigationControl({ visualizePitch: true, showZoom: true, showCompass: true }), 'bottom-left');
+    map.addControl(new MB.ScaleControl({ maxWidth: 92, unit: 'metric' }), 'bottom-left');
+    // Keep the actual controls and their listeners; the bottom sheet otherwise
+    // covers MapLibre's default corner. This row is outside both filter drawers.
+    var nativeCorner=map.getContainer().querySelector('.maplibregl-ctrl-bottom-left');
+    while(nativeCorner&&nativeCorner.firstElementChild)$('map-navigation').appendChild(nativeCorner.firstElementChild);
+
+    $('attrib').innerHTML = BM.ATTRIBUTION;
+
+    map.on('load', function () {
+      ready = true;
+      addDataLayers(null);
+      if(listState.mode==='all')showAll();
+      status('', false);
+    });
+    map.on('render', function () {
+      // querySourceFeatures only returns anything meaningful once the source
+      // has settled; calling it mid-load churns markers for nothing.
+      if (map.getSource('places')&&map.isSourceLoaded('places')) renderClusters();
+    });
+    map.on('idle', function () { renderClusters(); });
+    map.on('click', 'places-probe', function (e) {
+      openSourceFeature(e.features && e.features[0]);
+    });
+    map.on('mouseenter', 'places-probe', function () { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', 'places-probe', function () { map.getCanvas().style.cursor = ''; });
+    map.on('moveend', function () { writeUrl(); if (listState.mode === 'all') showAll(); });
+    map.on('click', function () { hideTip(); });
+    map.on('error', function (e) {
+      // A missing tile is normal at the edges of coverage and must not shout.
+      if (e && e.error && /tile|404/i.test(String(e.error.message || ''))) return;
+      console.warn('[map]', e && e.error);
+    });
+  }
+
+  /* ---------- tools ---------- */
+  $('tGlobe').addEventListener('click', function () {
+    var globe = this.getAttribute('aria-pressed') !== 'true';
+    this.setAttribute('aria-pressed', globe ? 'true' : 'false');
+    map.setProjection(globe
+      ? { type: ['interpolate', ['linear'], ['zoom'], 3, 'vertical-perspective', 6, 'mercator'] }
+      : { type: 'mercator' });
+    if (globe && map.getZoom() > 4) animateMap({ zoom: 2.2, pitch: 0, duration: 900 });
+  });
+
+  $('tTerrain').addEventListener('click', function () {
+    pref.terrain = this.getAttribute('aria-pressed') !== 'true';
+    this.setAttribute('aria-pressed', pref.terrain ? 'true' : 'false');
+    if (pref.terrain) {
+      if (!map.getSource('dem')) {
+        map.addSource('dem', {
+          type: 'raster-dem', tiles: [BM.DEM], encoding: 'terrarium',
+          tileSize: 256, maxzoom: 13
+        });
+      }
+      map.setTerrain({ source: 'dem', exaggeration: 1.1 });
+      animateMap({ pitch: Math.max(map.getPitch(), 52), duration: 900 });
+      status('Terrain on — drag with right button to tilt', false, 3600);
+    } else {
+      map.setTerrain(null);
+      animateMap({ pitch: 0, duration: 700 });
+    }
+  });
+
+  $('tGreek').addEventListener('click', function () {
+    pref.greek = this.getAttribute('aria-pressed') !== 'true';
+    this.setAttribute('aria-pressed', pref.greek ? 'true' : 'false');
+    // Only the label layers change, so patch them in place — a full setStyle
+    // would throw away tiles we already have.
+    var NF = pref.greek
+      ? ['coalesce', ['get', 'name:el'], ['get', 'name:latin'], ['get', 'name']]
+      : ['coalesce', ['get', 'name'], ['get', 'name:latin'], ['get', 'name:el']];
+    map.getStyle().layers.forEach(function (l) {
+      if (l.type === 'symbol' && l.layout && l.layout['text-field']) {
+        try { map.setLayoutProperty(l.id, 'text-field', NF); } catch (e) {}
+      }
+    });
+    status(pref.greek ? 'Greek place names' : 'Local place names', false, 2200);
+  });
+
+  /* Browser geolocation accuracy spans three orders of magnitude: a GPS fix is
+   * metres, a wifi fix is hundreds, an IP fix can be tens of kilometres. Zooming
+   * to street level on an IP fix and captioning the list "Nearest to you" states
+   * something we do not know. Zoom follows the radius, and the radius is drawn. */
+  function zoomForAccuracy(m) {
+    if (!m || m <= 0) return 11;
+    if (m <= 100) return 15;
+    if (m <= 500) return 13.5;
+    if (m <= 2000) return 12;
+    if (m <= 10000) return 10;
+    if (m <= 50000) return 8;
+    return 6;
+  }
+  /* Beyond this the fix locates a city, not a person, so distances built from it
+     are not worth presenting as "nearest". */
+  var COARSE_FIX_M = 25000;
+
+  $('tNear').addEventListener('click', function () {
+    if(!ready){status('The map is still loading. Try location in a moment.',false,3500);return;}
+    $('locationHelp').hidden=true;
+    if (!navigator.geolocation) { status('Your browser will not share a location', false, 3000); return; }
+    if (!window.isSecureContext) {
+      status('Location needs a secure connection (https)', false, 4000);
+      return;
+    }
+    status('Finding you…', true);
+    navigator.geolocation.getCurrentPosition(function (pos) {
+      query='';$('q').value='';mapSearchIntent();refresh();
+      if(!pos||!pos.coords||!Number.isFinite(pos.coords.latitude)||!Number.isFinite(pos.coords.longitude)||Math.abs(pos.coords.latitude)>90||Math.abs(pos.coords.longitude)>180||!Number.isFinite(pos.coords.accuracy)||pos.coords.accuracy<0){status('Your device returned an invalid location. Try again or search your city.',false,5000);$('locationHelp').hidden=false;return;}
+      var accuracy = Math.round(pos.coords.accuracy || 0);
+      here = { lat: pos.coords.latitude, lng: pos.coords.longitude, accuracy: accuracy, coarse: accuracy > COARSE_FIX_M };
+      status(accuracy
+        ? (here.coarse ? 'Approximate area found (±' + km(accuracy / 1000) + ')'
+                       : 'Location found (±' + fmtN(accuracy) + ' m)')
+        : 'Location found', false, 3600);
+      animateMap({ center: [here.lng, here.lat], zoom: zoomForAccuracy(accuracy), duration: 1400 });
+      drawHere();
+      showAll();
+    }, function (err) {
+      // One message for every failure taught the user nothing. Permission denied
+      // is recoverable by them; a timeout is worth retrying; neither is "unknown".
+      var code = err && err.code;
+      var msg = code === 1 ? 'Location permission denied — you can allow it in your browser settings'
+        : code === 2 ? 'Your location is unavailable right now'
+        : code === 3 ? 'Finding you took too long — try again'
+        : 'Could not get your location';
+      status(msg, false, 4800);$('locationHelp').hidden=false;$('locationHelp').textContent='Location was not shared. Type your city above and choose Go, or choose a city shortcut.';$('q').focus();
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 });
+  });
+
+  /* The accuracy radius is drawn to scale in metres, so a coarse fix visibly
+     covers the neighbourhood it actually represents instead of a tidy dot. */
+  function drawHere() {
+    if (!here) return;
+    var pt = { type: 'Point', coordinates: [here.lng, here.lat] };
+    if (!map.getSource('me')) {
+      map.addSource('me', { type: 'geojson', data: pt });
+      map.addLayer({
+        id: 'me-acc', type: 'circle', source: 'me',
+        paint: {
+          'circle-color': COLOURS[IDX.church], 'circle-opacity': 0.12,
+          'circle-stroke-width': 1, 'circle-stroke-color': COLOURS[IDX.church],
+          'circle-stroke-opacity': 0.35,
+          'circle-radius': accuracyRadiusExpr()
+        }
+      });
+      map.addLayer({
+        id: 'me-dot', type: 'circle', source: 'me',
+        paint: {
+          'circle-radius': 5, 'circle-color': COLOURS[IDX.church],
+          'circle-stroke-width': 2, 'circle-stroke-color': '#fff'
+        }
+      });
+    } else {
+      map.getSource('me').setData(pt);
+      try { map.setPaintProperty('me-acc', 'circle-radius', accuracyRadiusExpr()); } catch (e) {}
+    }
+  }
+  /* metres -> pixels at this latitude, recomputed per zoom by the interpolation */
+  function accuracyRadiusExpr() {
+    var m = (here && here.accuracy) || 0;
+    if (!m) return 16;
+    var metresPerPx = function (z) {
+      return 78271.51696 * Math.cos(here.lat * Math.PI / 180) / Math.pow(2, z);
+    };
+    var stops = [];
+    for (var z = 1; z <= 20; z += 1) stops.push(z, Math.min(m / metresPerPx(z), 1400));
+    return ['interpolate', ['linear'], ['zoom']].concat(stops);
+  }
+
+  $('tShare').addEventListener('click', function () {
+    var url = location.href;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(
+        function () { status('Link to this view copied', false, 2400); },
+        function () { status(url, false, 5000); }
+      );
+    } else status(url, false, 5000);
+  });
+
+  $('tReset').addEventListener('click', function () {
+    clearSpider();
+    animateMap({ center: [23.7275, 37.9838], zoom: 1.35, pitch: 0, bearing: 0, duration: 1500 });
+    showAll();
+  });
+
+  /* keyboard: / focuses search, Escape backs out */
+  document.addEventListener('keydown', function (e) {
+    var editing=e.target&&e.target.closest&&e.target.closest('input,textarea,select,[contenteditable=true]');
+    if (e.key === '/' && !editing && document.activeElement !== $('q')) { e.preventDefault(); $('q').focus(); }
+    if (e.key === 'Escape' && !editing && e.target!==$('q')) { hideTip(); clearSpider(); if (listState.mode !== 'all') { closeSelection(); } }
+  });
+
+  /* theme changes must repaint the basemap, not just the chrome */
+  new MutationObserver(function (muts) {
+    for (var i = 0; i < muts.length; i++) {
+      if (muts[i].attributeName === 'data-theme') { reskin(); return; }
+    }
+  }).observe(document.documentElement, { attributes: true });
+
+  /* ---------- go ---------- */
+  (async function () {
+    document.querySelectorAll('.m-tool[title]').forEach(function(button){button.setAttribute('aria-label',button.title);});
+    var initial = readUrl();
+    Promise.all([import('/assets/discovery/autocomplete.mjs?v=20261014-map-interactions'),import('/assets/map-data/address-search.mjs?v=20261014-map-interactions')]).then(function(modules){var module=modules[0],addressModule=modules[1];
+      mapAutocomplete=module.attachAutocomplete($('q'),{search:async function(term,filters,signal){var q=fold(term.trim()),local=ALL.filter(function(p){return q.length>=2&&(!filters.city||fold(p.city||'')===fold(filters.city))&&(!filters.country||fold(p.country||'')===fold(filters.country))&&(!filters.types||filters.types.includes(p.t))&&fold([p.n,p.addr,p.city].filter(Boolean).join(' ')).includes(q);}).slice(0,32).map(function(p){return{slug:p.s,name:p.n,address:p.addr||'',city:p.city,country:p.country,type:p.t,href:module.suggestionHref({slug:p.s,entity_type:p.t})};}).filter(function(p){return p.href;});var responses=await Promise.allSettled([module.searchSuggestions(term,filters,signal),addressModule.searchMapAddresses(term,filters,signal)]);if(signal.aborted)throw Error('search_aborted');var failed=responses.find(function(r){return r.status==='rejected';}),seen=new Set(local.map(function(p){return p.slug;})),rows=local;responses.slice().reverse().forEach(function(r){if(r.status==='fulfilled')r.value.rows.forEach(function(p){if(!seen.has(p.slug)){seen.add(p.slug);rows.push(p);}});});if(!rows.length&&failed)throw failed.reason;return{rows:rows.slice(0,32),outside:false};},mountAfter:$('mapsearch'),id:'map-suggestions',suggestionLabel:'Select a place on the map',filters:function(){var area=activeMapLocality(),types=TYPES.filter(function(t){return on[t.k];});return{city:area.city,country:area.country,type:types.length===1?types[0].k:null,types:types.map(function(t){return t.k;}),strict:true};},onSubmit:showMatches,onChoose:function(row){
+        $('q').blur();if(!map){pendingAutocompleteSlug=row.slug;status('Opening '+row.name+' when the map is ready…',true);return;}
+        var hit=ALL.find(function(p){return p.s===row.slug;});if(hit)choose(hit);else openUnmappedPlace(row.slug);
+      }});
+    }).catch(function(){/* Search and the results list remain available. */});
+
+    await import('/assets/personalization/locality.mjs?v=20261001-uuid-scope').then(function(model){mapLocalityModel=model;mapIntentURL=model.mapHistoryIntent(location.href,history.state);mapLocality=model.mountLocalityControl({core:C,container:$('map-locality'),getURL:function(){return mapIntentURL;},onChange:function(value){var wasHome=activeMapLocality().source==='home',before=JSON.stringify(mapHome);mapHome=value.home;if(before!==JSON.stringify(mapHome)&&map){if(wasHome&&!mapHome)map.jumpTo({center:[23.7275,37.9838],zoom:1.35,pitch:0,bearing:0});showAll();refresh();if(activeMapLocality().source==='home')showMatches();}},onNavigate:function(href){pendingAutocompleteSlug=null;mapAutocomplete?.close();clearTimeout(urlT);history.replaceState(Object.assign({},history.state||{},{zoiMapIntent:mapIntentURL}),'');history.pushState({zoiMapIntent:new URL(href,location.href).href},'',href);mapIntentURL=location.href;readUrl();if(mapLocality)mapLocality.refresh();if(map){showAll();refresh();showMatches();}}});}).catch(function(){});
+    if(matchMedia('(max-width:860px)').matches&&!initial.place&&!query)setSheet(true);
+
+    // header height drives the stage inset; measure rather than assume
+    var h = document.getElementById('hdr');
+    if (h && h.firstElementChild) {
+      document.documentElement.style.setProperty('--hdr', h.offsetHeight + 'px');
+      new ResizeObserver(function () {
+        document.documentElement.style.setProperty('--hdr', h.offsetHeight + 'px');
+        if (map) map.resize();
+      }).observe(h);
+    }
+
+    if (!MB || typeof MB.Map !== 'function') { $('nowebgl').hidden = false; return; }
+
+    try{var modules=await Promise.all([import('/assets/map-data/loader.mjs?v=20261015-map-provenance'),import('/assets/map-data/preview.mjs?v=20261014-map-interactions'),import('/assets/map-data/interactions.mjs?v=20261014-map-interactions')]);mapTools=modules[0];previewModule=modules[1];mapInteractions=modules[2].mountMapInteractions($('map-interactions'),{getMap:function(){return map;},getOrigin:function(){return here;},getSelected:function(){return selected;},params:new URLSearchParams(location.search),changed:function(){showAll();refresh();writeUrl();},fit:showMatches,focus:choose,locate:function(){$('tNear').click();},sheet:function(mode){setSheet(mode==='compact');$('stage').classList.toggle('m-full-list',mode==='full');if(map)map.resize();}});}
+    catch(error){$('ptitle').textContent='Map tools could not start';$('pbody').innerHTML='<div class="m-empty">Browse <a href="/explore">Explore</a>, or reload this page.</div>';return;}
+
+    C.api.rpc('home_stats', {}, { auth: 'anon' }).then(function (s) {
+      var r = Array.isArray(s) ? s[0] : s;
+      totalListings = r && (r.listings || r.total_listings || r.n_listings) || null;
+      if (listState.mode === 'all') renderBrowseFooter();
+    }).catch(function () {});
+
+    try {
+      boot(initial);
+      showAll();
+      var want=pendingAutocompleteSlug||initial.place;pendingAutocompleteSlug=null;
+      if(want)openUnmappedPlace(want);
+      startMapPositions();
+    }
+    catch (err) {
+      console.error(err);
+      $('nowebgl').hidden = false;
+      showAll();
+    }
+  })();
+})();
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
+</body>
+</html>

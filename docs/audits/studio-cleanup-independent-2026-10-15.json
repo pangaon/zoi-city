@@ -1,0 +1,101 @@
+{
+  "schema": "zoi.studio-cleanup-independent.v1",
+  "at": "2026-10-15T19:41:44.390734+00:00",
+  "reviewer": "/root/owner_next",
+  "status": "accepted_source_and_isolated_backend_not_live",
+  "worktree": "/workspaces/zoi-studio-cleanup-independent",
+  "baseline": "cc806c05cb5ffce75535277d89693fb65580d80f",
+  "source_pins": [
+    {
+      "path": "supabase/functions/studio-media/index.ts",
+      "sha256": "876319da1e71e9cf3150ee696b3b022abe3875aca16f89356d64069256a20a11",
+      "bytes": 12727
+    },
+    {
+      "path": "tests/unit/studio-media-cleanup-auth.test.mjs",
+      "sha256": "90b859ff4c955ed725a914f9af7047d9184325ce795b05f7dd67230258baa819",
+      "bytes": 8038
+    },
+    {
+      "path": "supabase/migrations/20261015192005_studio_media_bounded_cleanup_schedule.sql",
+      "sha256": "9453df1b2b98c145366ec912af35214daa803ff73b9d09eb00b43c8d6cd8f4a0"
+    },
+    {
+      "path": "tests/database/studio-media-cleanup-schedule.integration.mjs",
+      "sha256": "e9981a484931a9ac50c160263f8c8bccece0c9b99a8fc72b10315b8dd8c09006"
+    }
+  ],
+  "owner_auth_audit_sha256": "f8c3411410896be459ab51c4759fa464e1139b915db09226b3c54606f2faae13",
+  "verification": {
+    "focused": 39,
+    "scheduler_existing_real_PG_groups": 10,
+    "scheduler_independent_extended_groups": 12,
+    "cached_Deno": "passed",
+    "source_boundary": "Exact unchanged ordinary-user request/getUser/prepare/upload/proof/save/recover/cancel/SID bytes outside new maintenanceCandidates helper and cleanup action. Exact3fileEdge graph verified.",
+    "real_PG_Edge_checks": 49,
+    "real_PG_Edge_recorded_groups": 30
+  },
+  "findings": [],
+  "review": {
+    "caller_auth": "Supplied bounded credential only POSTs fixed same-project service-only canonical candidatesRPC. ExactHTTP200 with complete <=20UUIDarray and <=8192B response required before configured-service plan/delete/finish. Anon/user/refused/malformed/unknown cannot reach privileged cleanup; no unverified JWT role/string equality grant, fallback or raw secret-bearing error.",
+    "scheduler": "Canonical candidate cap20, zero candidates returns before Vault/network; private SECURITY DEFINER emptysearchpath with app/service execute revoked; existing Vault name read onlyserver; fixedHTTPS cleanup action/emptyJSON/90s; exact pendingqueue and transaction advisory lockdedupe;4/hour cadence. Scheduler never mutates events/objects/posts/assets.",
+    "failure": "Meaningful additional test revokes canonical EXECUTE fromservice for each3helper and verifies preinstallation drift refusal. Controlled unavailable net.http_post raises and leaves queue/events/receipts unchanged. Existing malformedcandidate/Vault/duplicatequeue/concurrenttrylock tests pass.",
+    "legacy": "Existing49PG/Edge checks across30recorded groups verify actual byteproof/currentAuthSID/Storagepolicy/currentteammate/replay/cancel/delete races and old user maintenance refusal. No existing canonical writer changed."
+  },
+  "nonblocking_hardening_note": "New scheduler owner defaults to trusted migration actor; production root applies aspostgres, but fixture creates as itslocalcodespaceactor. Root was advised explicit ALTER OWNER postgres plus assertion if exact owner pin desired. Private app/service ACL behavior passes; actual creator owner/config/ACL must be checked in root production rollback rehearsal.",
+  "commands": [
+    "node --test tests/unit/studio-media-cleanup-auth.test.mjs tests/unit/studio-raster-workflow.test.mjs",
+    "PGPORT=15975 node tests/database/studio-media-cleanup-schedule.integration.mjs",
+    "PGPORT=15977 node tests/database/studio-media-cleanup-schedule-independent.integration.mjs",
+    "PGPORT=15976 ZOI_STUDIO_RASTER_EVIDENCE=<distinct> node tests/database/studio-raster.integration.mjs"
+  ],
+  "limits": [
+    "net/Vault/cron fixtures are explicit local SQL implementations; no real cron tick/provider HTTP/secrets fetched.",
+    "No live SQL mutation/deployment/key retrieval/rotation/actual cleanup performed by reviewer.",
+    "Root owns protected integration, exact installed helper catalog/ACL/rootmigration rehearsal, deployment and existingcredential no-work maintenance acceptance.",
+    "Do not call scheduled actual delete or published-owner export journey complete from these offline tests."
+  ],
+  "production_actions": [],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/deno.log",
+      "sha256": "fb04fb5fd69432ed8d76ab0ec93f3379a115e52e5b2c3266cbaba8deb8933cc1"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/focused.log",
+      "sha256": "22c11372b22985c8dae86d21a124bf81218d755c4250d1981cb371662c04646b"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/owner-auth-audit.json",
+      "sha256": "f8c3411410896be459ab51c4759fa464e1139b915db09226b3c54606f2faae13"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/raster-results.json",
+      "sha256": "e4b6437dfa10db9bcea0e000153cb93154ee9e72c8cfb2d418f4655c17f4d169"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/raster.log",
+      "sha256": "52436860a96d2fd1e01b253a62679913a123ff402f5b48d69e5dab28e31e2c97"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/scheduler-extra.log",
+      "sha256": "a8f53309f079998bbba318a7d44b321a9f42663732a4f09a9f02bd6440565466"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/scheduler.log",
+      "sha256": "44801719d5dd0dd68b40c0d26d742452f304ee2d765b9cab88b2327f02fe82c6"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/source-boundary-independent.json",
+      "sha256": "7e3352f05a16c8b6bdd545875aea8a8a238165f1ad9334362115bdb4119d09e0"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/source-pins.json",
+      "sha256": "c342ecb84c9de9838326fa86f72b49a008741a4169b93efeb0ad82e0b0bea9ab"
+    },
+    {
+      "path": "docs/audits/evidence/studio-cleanup-independent-2026-10-15/studio-media-cleanup-schedule-independent.integration.mjs",
+      "sha256": "16f3cfc32c696a5277b58b50eaa7820745385a60276bd6d58f1bc3489c13a2af"
+    }
+  ]
+}

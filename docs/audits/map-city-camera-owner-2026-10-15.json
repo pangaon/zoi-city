@@ -1,0 +1,136 @@
+{
+  "schema": "zoi.map-city-camera-source-freeze.v1",
+  "at": "2026-10-15T19:07:21.375798+00:00",
+  "owner": "/root/qa_next",
+  "tree": "/workspaces/zoi-map-city-camera-fix",
+  "base": "7ab89cd9e8c355b8bef05f890439359710010381",
+  "status": "source_frozen_live_city_camera_acceptance_HELD_by_real_SQL57014",
+  "manifest": {
+    "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/source-manifest.json",
+    "bytes": 1687,
+    "sha256": "f8ab80950ecc161ba00d4fec3229dec5dbb57a66593205d1fb76054559847c23"
+  },
+  "source": [
+    {
+      "path": "explore/map/index.html",
+      "bytes": 99187,
+      "sha256": "d6de6aade00af719344a8bea89e1df727465c4aacdb4129a9b5937399134df97"
+    },
+    {
+      "path": "tests/browser/map-city-camera/verify.mjs",
+      "bytes": 13036,
+      "sha256": "67ec956d89143d9a8c5eb08115ef30bc10e144e4198d8babf9281175a8482db6"
+    },
+    {
+      "path": "tests/browser/map-city-camera/README.md",
+      "bytes": 1229,
+      "sha256": "c901188789d8606ec1e7797fc3767326336656a7de6f4c7a5d90c3826190426d"
+    }
+  ],
+  "change": "Explicit cityViewport stops current camera and immediately jumps to namedcity center/zoom11 before previous listState bounds can be consulted. Same behavior with tilesready/loading. Only viewport intent; no listing coordinate/source authority/point mutation. Ordinary search/Fit results branch remains and defaultsworldwhen no verifiedbounds.",
+  "cause": "Actual prior production phone final screenshot Melbourne label overAthens map; recorded centers laggedcityintent. showMatches previously fit listState immediately after asyncrefresh, allowing previouscity rows to determinecamera.",
+  "verification": {
+    "focused": "106existing meaningful map tests pass,0skips,13unit files;focused.log retained.",
+    "syntax": "3inlineblocks parse,1HTMLlint,diffcheck pass.",
+    "browser_actual_negative": "One390\u00d7900 actual production unchangedHTML f37d66b2 run withoutoverlay.7control/Saved/alias groups pass then actualAthensRPC500SQLSTATE57014 at3458ms prevents newcamera destination gate. No camera-negative pass/fail proven by that run; earlier production camera mismatch remains evidence.",
+    "browser_candidate": "OneHTMLonlycandidate run requested390\u00d7900+844\u00d7390.7control/Saved/alias groups pass on390 before exactsameAthensRPC500SQLSTATE57014 at3462ms; landscape not reached. CandidateHTML d6de6aad served byoverlay, everyAPI/point/asset/redirect/tile/image actualproduction. This is NOT a completed matrix or camera acceptance.",
+    "failure_public_request": {
+      "endpoint": "https://csebihpaychdkanjjsmz.supabase.co/rest/v1/rpc/explore_search",
+      "args": {
+        "p_q": null,
+        "p_city": "Athens",
+        "p_country": "Greece",
+        "p_type": null,
+        "p_limit": 24,
+        "p_offset": 0
+      },
+      "status": 500,
+      "body_shape": "object",
+      "sqlstate": "57014",
+      "message": "canceling statement due to statement timeout",
+      "baseline_total_ms": 3458.372,
+      "candidate_total_ms": 3461.96
+    },
+    "retry": "No rerun/retry/assertion relaxation or timeoutincrease. Root informed and investigating definition/plans/index/load; UI Retry area results preserved.",
+    "desired_regression": "New verifier requires exactrealcity+country200response/24matchingrows,clearedq/bbox/radius/categorypreservation then idle camera at exactAthens/Toronto/Melbourne center in phone+landscape. Full prior controls/Saved/alias assertions retained. It is intentionally failing until actualbackendhealthy; no mocked API pass."
+  },
+  "commands": {
+    "negative": "ZOI_MAP_CITY_BASELINE=1 ZOI_MAP_CASES=390x900 OUTPUT_DIR=<distinct>/baseline node tests/browser/map-city-camera/verify.mjs",
+    "candidate": "OUTPUT_DIR=<distinct>/candidate node tests/browser/map-city-camera/verify.mjs",
+    "focused": "node --test tests/unit/map-search-scope-acceptance.test.mjs tests/unit/map-provenance-independent.test.mjs tests/unit/map-adaptive-read.test.mjs tests/unit/map-reviewed-selection.test.mjs tests/unit/map-marker-position.test.mjs tests/unit/map-directions.test.mjs tests/unit/map-precision.test.mjs tests/unit/map-preview.test.mjs tests/unit/map-address-autocomplete.test.mjs tests/unit/map-interactions.test.mjs tests/unit/map-data.test.mjs tests/unit/map-address-search.test.mjs tests/unit/map-focus-return.test.mjs"
+  },
+  "scope": "OnlyHTMLruntime+NEWbrowser/README/audit/evidence. Existing CSS/coordinate/source/RPCwriter/DB/native untouched. NoSQL/deploy/Auth/provider/paid/EAS/ADB actions.",
+  "remaining": [
+    "Root investigate/repair actualpublicRPC57014 before authorized freshbounded realAPI matrix.",
+    "Fresh negativecamera proof and positiveall3settledcity phone/landscape remain open, not inferredfromsource checks.",
+    "Root independent source review/protectedrelease/actualdeployedcamera acceptance.",
+    "Globalcoordinates/20featurecoverage/providerdirections remain separate;0coordinatecorrections."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/source-bytes/explore/map/index.html",
+      "bytes": 99187,
+      "sha256": "d6de6aade00af719344a8bea89e1df727465c4aacdb4129a9b5937399134df97"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/source-bytes/tests/browser/map-city-camera/verify.mjs",
+      "bytes": 13036,
+      "sha256": "67ec956d89143d9a8c5eb08115ef30bc10e144e4198d8babf9281175a8482db6"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/source-bytes/tests/browser/map-city-camera/README.md",
+      "bytes": 1229,
+      "sha256": "c901188789d8606ec1e7797fc3767326336656a7de6f4c7a5d90c3826190426d"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/baseline/failure.png",
+      "bytes": 264616,
+      "sha256": "9afdfa532952e6d05c61b610b2603b598b0f7a8c4d1a4de7096510a1fa09985d"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/baseline/result.json",
+      "bytes": 4272,
+      "sha256": "b1d7ddc44f85562e4f31176940ef8ee82b70e0bb3fc9d91c50cac4ea925097c0"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/baseline.log",
+      "bytes": 543,
+      "sha256": "2e46e7a50efe596954c69837b9feb906a7584b3c5e98d4d9f9abcc6719b6965e"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/candidate/failure.png",
+      "bytes": 264616,
+      "sha256": "9afdfa532952e6d05c61b610b2603b598b0f7a8c4d1a4de7096510a1fa09985d"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/candidate/result.json",
+      "bytes": 4334,
+      "sha256": "cb35ac605aa734e11ae7122edcb0e679532622e0e129698ef5537b52d8077a8f"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/candidate.log",
+      "bytes": 543,
+      "sha256": "2e46e7a50efe596954c69837b9feb906a7584b3c5e98d4d9f9abcc6719b6965e"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/proof/focused.log",
+      "bytes": 10282,
+      "sha256": "1bc624d99eefe03d65cf21a719dbaff9a87ba0b68f1b71989e82fad70d7bc105"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/inline.log",
+      "bytes": 83,
+      "sha256": "7cce4e4956a4eff1b5ab2f8412019fa89725344978961eb3adc4af8898de8bb1"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/html.log",
+      "bytes": 41,
+      "sha256": "4cfd50d4adbd48b450ac0e164a6ba2f72896ae29c69be196591ac6eb6aa4e2ff"
+    },
+    {
+      "path": "docs/audits/evidence/map-city-camera-owner-2026-10-15/diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

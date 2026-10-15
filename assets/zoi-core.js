@@ -279,31 +279,93 @@
   };
 
   /* ---- Modal Focus Trap (Accessibility Helper) ---- */
+  // Ephemeral bindings only: each existing dialog owns its disposer. The linked
+  // active binding lets a nested dialog close without releasing its parent.
   var _activeFocusTrap = null;
-  function trapFocus(container) {
-    if (!container) return;
-    releaseFocus();
-    var focusables = container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])');
-    if (!focusables.length) return;
-    var first = focusables[0], last = focusables[focusables.length - 1];
-    first.focus();
-    function handleTab(e) {
-      if (e.key !== 'Tab') return;
-      if (e.shiftKey) {
-        if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-      } else {
-        if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+  function trapFocus(container, options) {
+    if (!container) return function () {};
+    var opts = options || {}, doc = container.ownerDocument || document;
+    if (!opts.modal) releaseFocus(); // Preserve the original single-trap API.
+    var entry = { container: container, previous: _activeFocusTrap, release: null,
+      lockScroll: !!opts.lockScroll, savedOverflow: null }, dead = false;
+    var opener = opts.restoreFocus || doc.activeElement, timer, observer;
+    var viewport = opts.viewport, visual = global.visualViewport;
+    var oldHeight = viewport && viewport.style.getPropertyValue('--suite-modal-height');
+    var oldTop = viewport && viewport.style.getPropertyValue('--suite-modal-top');
+    var addedTabindex = !container.hasAttribute('tabindex');
+    _activeFocusTrap = entry;
+    if (entry.lockScroll) {
+      var other = entry.previous;while (other && !other.lockScroll) other = other.previous;
+      if (!other) entry.savedOverflow = doc.body.style.overflow;
+      doc.body.style.overflow = 'hidden';
+    }
+    function visible(node) {
+      return node && node.isConnected && !node.matches(':disabled') && node.tabIndex >= 0 &&
+        !node.closest('[hidden],[inert],[aria-hidden="true"]') && node.getClientRects().length &&
+        global.getComputedStyle(node).visibility !== 'hidden';
+    }
+    function focusables() {
+      return Array.prototype.slice.call(container.querySelectorAll('a[href],button,input,select,textarea,summary,[contenteditable="true"],[tabindex]')).filter(visible);
+    }
+    function focus(node) { if (node && node.isConnected) { try { node.focus({preventScroll:true});node.scrollIntoView({block:'nearest',inline:'nearest'}); } catch (_) { node.focus(); } } }
+    function focusFirst(reverse) {
+      var nodes = focusables(), target = nodes[reverse ? nodes.length - 1 : 0];
+      if (!target) { if (addedTabindex) container.tabIndex = -1;target = container; }
+      focus(target);
+    }
+    function onKey(event) {
+      if (dead || _activeFocusTrap !== entry || event.defaultPrevented) return;
+      if (event.key === 'Escape' && typeof opts.onEscape === 'function') {
+        event.preventDefault();event.stopPropagation();opts.onEscape();return;
+      }
+      if (event.key !== 'Tab') return;
+      var nodes = focusables(), at = doc.activeElement;
+      if (!nodes.length || !container.contains(at) || at === container ||
+          event.shiftKey && at === nodes[0] || !event.shiftKey && at === nodes[nodes.length - 1]) {
+        event.preventDefault();focusFirst(!!event.shiftKey);
       }
     }
-    container.addEventListener('keydown', handleTab);
-    _activeFocusTrap = { container: container, handler: handleTab };
-  }
-  function releaseFocus() {
-    if (_activeFocusTrap && _activeFocusTrap.container && _activeFocusTrap.handler) {
-      _activeFocusTrap.container.removeEventListener('keydown', _activeFocusTrap.handler);
-      _activeFocusTrap = null;
+    function onFocus(event) { if (!dead && _activeFocusTrap === entry && !container.contains(event.target)) focusFirst(false); }
+    function fitViewport() {
+      if (!viewport || dead) return;
+      viewport.style.setProperty('--suite-modal-height', (visual ? visual.height : global.innerHeight) + 'px');
+      viewport.style.setProperty('--suite-modal-top', (visual ? visual.offsetTop : 0) + 'px');
+      if (_activeFocusTrap === entry && container.contains(doc.activeElement)) doc.activeElement.scrollIntoView({block:'nearest',inline:'nearest'});
     }
+    function release(settings) {
+      if (dead) return;dead = true;clearTimeout(timer);observer && observer.disconnect();
+      doc.removeEventListener('keydown', onKey);doc.removeEventListener('focusin', onFocus);
+      if (visual) { visual.removeEventListener('resize', fitViewport);visual.removeEventListener('scroll', fitViewport); }
+      global.removeEventListener('resize', fitViewport);
+      var top = _activeFocusTrap === entry, next = _activeFocusTrap;
+      if (top) _activeFocusTrap = entry.previous;
+      else { while (next && next.previous !== entry) next = next.previous;if (next) next.previous = entry.previous; }
+      if (entry.savedOverflow !== null) {
+        var owner = _activeFocusTrap;while (owner && !owner.lockScroll) owner = owner.previous;
+        if (owner) owner.savedOverflow = entry.savedOverflow;
+        else if (doc.body.style.overflow === 'hidden') doc.body.style.overflow = entry.savedOverflow;
+      }
+      if (viewport) {
+        if (oldHeight) viewport.style.setProperty('--suite-modal-height',oldHeight);else viewport.style.removeProperty('--suite-modal-height');
+        if (oldTop) viewport.style.setProperty('--suite-modal-top',oldTop);else viewport.style.removeProperty('--suite-modal-top');
+      }
+      if (addedTabindex && container.getAttribute('tabindex') === '-1') container.removeAttribute('tabindex');
+      if (top && opts.modal && (!settings || settings.restore !== false)) {
+        var target = opener && opener.isConnected && (!_activeFocusTrap || _activeFocusTrap.container.contains(opener)) ? opener : null;
+        if (target) focus(target);
+        else if (_activeFocusTrap) { var remaining = _activeFocusTrap.container.querySelector('button:not([disabled]),input:not([disabled]),[tabindex]');focus(remaining || _activeFocusTrap.container); }
+      }
+    }
+    entry.release = release;
+    doc.addEventListener('keydown', onKey);doc.addEventListener('focusin', onFocus);
+    if (viewport) { if (visual) {visual.addEventListener('resize',fitViewport);visual.addEventListener('scroll',fitViewport);}global.addEventListener('resize',fitViewport);fitViewport(); }
+    observer = new MutationObserver(function () { if (!container.isConnected) release(); });
+    observer.observe(doc.documentElement,{childList:true,subtree:true});
+    function initial() { if (dead || _activeFocusTrap !== entry || !container.isConnected) return;var target = typeof opts.initialFocus === 'function' ? opts.initialFocus() : opts.initialFocus;if (visible(target)) focus(target);else focusFirst(false); }
+    if (opts.modal) timer = global.setTimeout(initial,0);else initial();
+    return release;
   }
+  function releaseFocus() { while (_activeFocusTrap) _activeFocusTrap.release({restore:false}); }
 
   /* ---- Rate Limiting Helper (Abuse Guard) ---- */
   var _rateLimitStore = {};
