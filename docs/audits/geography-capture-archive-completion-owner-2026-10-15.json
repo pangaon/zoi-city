@@ -1,0 +1,289 @@
+{
+  "schema": "zoi.specialist-owner-freeze.v1",
+  "owner": "/root/enrichment_next",
+  "date": "2026-10-15",
+  "worktree": "/tmp/zoi-geography-archive-completion",
+  "branch": "fix-geography-archive-completion-20261015",
+  "base_commit": "7d5d5e88e5e13e151bdec327679f43846eed9673",
+  "status": "source_frozen_after_root_admission_review_pending_independent_and_root_release_gate",
+  "problem": "Legacy process-repair-jobs sent capture results directly to canonical finish while raw HTML existed only locally. Official Edge uploaded raw but did not read it back before completion. A completed capture could therefore lack, or not yet prove, its canonical private archive.",
+  "files": [
+    {
+      "path": "scripts/geography/process-repair-jobs.mjs",
+      "sha256": "6b0561e6d4630aa379536fa2af2943ba9ffdef08f05d65e0ec39ebe02564fbe1",
+      "bytes": 2598
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "sha256": "dd6163b6b9bcd2ce2147633b73387d36e96716d8557edd378e655b20c16b868f",
+      "bytes": 15970
+    },
+    {
+      "path": "tests/unit/geography-capture-archive-completion.test.mjs",
+      "sha256": "31f4de885b1769bf7aa654efb1f48268b7ac430cea21fa139328537afda17548",
+      "bytes": 14901
+    },
+    {
+      "path": "tests/unit/geography-source-consumer.test.mjs",
+      "sha256": "243d5e2681c80a1743733dcd26fd3b776466159c6dc2be094e6fb66df0c1ca4a",
+      "bytes": 19901
+    }
+  ],
+  "changes": {
+    "cli": "RPC mode now refuses immediately with finite_ticket_edge_capture_required, before directory creation, service IO or lease even when service credentials are configured. Canonical capture must use existing finite-ticket Edge admission. No new ticket-minting/admission mechanism, service-key bypass or privileged direct-completion callback remains in CLI.",
+    "offline": "Local capture uses existing DNS-pinned/SSRF/robots/size/deadline controls, fresh empty directory and finishJob=null. Output and retained summary explicitly say non_authoritative=true/database_results_persisted=false. Historical finish-research-results.sql filename contains only a RAISE EXCEPTION, never geography_repair_finish. No local raw archive or historic cached SQL can become approved canonical completion through this CLI.",
+    "edge": "Official callback snapshots original returned leased job IDs and leases before runner receives mutable jobs. It snapshots exact completion payload before asynchronous work, hashes canonical JSON, then archives each exact captured raw hash, independently reads bounded bytes back and verifies exact SHA+size. Only then does it invoke unchanged canonical geography_repair_finish with the original job and lease.",
+    "completion_once": "One matching original promise per job/payload; identical repetitions return original promise without redispatch. Altered payload or wrong job/lease refuses. Conflicts detected before archive work or canonical finish dispatch invalidate pending completion. An unknown original completion remains a rejected original promise and is not retried. A conflict after an already-dispatched operation cannot undo canonical history; it refuses a second dispatch and requires reconciliation.",
+    "acknowledgement": "Missing/unknown finish status, unexpected coordinate_writes, rejected current lease or ambiguous dispatch never produce a success claim. Input_changed is a recognized zero-factual-write completion acknowledgement and grants no point/source authority. Canonical idempotency/current row authority remains in unchanged SQL; later non-finish statuses require reconciliation.",
+    "existing_test_fixture": "Mock retains uploaded bodies by content hash/path and returns matching bytes. It supplies canonical-style finish status/zero-write acknowledgement and consistent returned leased job identity. All original assertions remain, adding upload\u2192readback\u2192finish order. Deliberate wrong/corrupt readback tests preserved; no blanket successful archive responses."
+  },
+  "bounds": {
+    "cli_rpc_admission": "REFUSED before IO. No service credentials can opt into it.",
+    "edge_existing_job_cap": 4,
+    "offline_capture_only_job_cap": 30,
+    "offline_source_request_cap": 50,
+    "offline_source_batch_bytes": 15000000,
+    "offline_source_deadline_ms": 105000,
+    "edge_archive_document_bytes": 2097152,
+    "edge_archive_batch_bytes": 15000000,
+    "existing_source_document_bytes": 1500000,
+    "existing_source_concurrency": 3,
+    "existing_per_host_spacing_ms": 1200,
+    "edge_existing_invocation_deadline_ms": 110000,
+    "edge_existing_reserve_ms": 5000,
+    "edge_existing_service_transport_max_ms": 12000,
+    "edge_existing_archive_budget_upper_bytes": 536870912,
+    "admission_boundary": "Existing Edge ticket authentication consumes geography_source_ticket_consume before capture, preserving policy expiry/generation/minimum interval/daily bound. Existing explicit legacy service-token/release-verification route is unchanged; this packet creates no CLI equivalent and no policy extension. Capture acquire/release is concurrency control only, never represented as finite admission."
+  },
+  "unchanged_contracts": [
+    "No SQL/migration/schema changes",
+    "Existing geography_repair_finish lease/currentinput/owner/sourcehash replay/captured_at semantics unchanged",
+    "No queue statuses or canonical listing/source metadata patched",
+    "No source generation/input workaround",
+    "Publisher strategy/upload/readback/cooldown untouched",
+    "Edge authorization/ticket-before-lease flow, existing privatebucket/singleflight/budget/4job/globaldeadline and release retained",
+    "Default source identity, owner/holds, coordinate parser/writer/reader/revert/epoch unchanged",
+    "No new helper, generated module, public RPC or store"
+  ],
+  "unchanged_edge_sibling_files": [
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_client-brief.js",
+      "sha256": "65d67d4c4143c0b63229925bb5bd0dff9ccb8f77661f48c034ba8168bfc71ebb",
+      "bytes": 18747
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_coordinates.js",
+      "sha256": "59719d47fdc579b72a33a240155d67441d58e057e6141ae5ca20ea1cb211c5ee",
+      "bytes": 20752
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_document-quality.js",
+      "sha256": "ed21fc9df59039292cd5cb14d00c4514c041b04d06018046ed6b0d778e6b6b9f",
+      "bytes": 2516
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_filesystem.js",
+      "sha256": "ad52c1b5860c3976a229c9226deebb73f14708be380623a5dec59d45181bb139",
+      "bytes": 2072
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_hash.js",
+      "sha256": "f18ff36b4cb3ec1cf743162d414fdd625c653ac01c79ec55620453418bc7e7e9",
+      "bytes": 382
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_member-source.js",
+      "sha256": "ef854f902a1461371df2cba711d310191d0b50de2c52dd955fd89011db611633",
+      "bytes": 10501
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_native-request.js",
+      "sha256": "1c0432960c0b396a3321871f0415552d06e3860e11a0cec876e2a5a3dc998210",
+      "bytes": 6651
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_place-evidence.js",
+      "sha256": "6ab4030aa0af68d1146f8b886d1f037a9f00a2bc0d3745b70469a6c503c1543d",
+      "bytes": 6900
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher-policy.js",
+      "sha256": "7e8554ca2d39714d77c5187331196511e0af54a8216a1852ac683a194d289b90",
+      "bytes": 5705
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher-runner.js",
+      "sha256": "d189eec6afeeb8f5f71f8d9b0412356bca77c233ca529b24ed6755820e907a44",
+      "bytes": 4993
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_publisher.js",
+      "sha256": "9ff1be3f56d1c27735d2968ebba137a659096aa191f6427c72ba57d5c756e838",
+      "bytes": 6191
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_runner.js",
+      "sha256": "c39029c3abe9a36969d32df97d9c9d597f2c006351f0ceec2ab8fa97ba23eb81",
+      "bytes": 5360
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_session.js",
+      "sha256": "04fc302981f5c5c8f0e40241fee4d89c2530928d737e834764e05128afafbe51",
+      "bytes": 2435
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_ticket-auth.ts",
+      "sha256": "e6e0956bba27ea6b6a39415fb2bc4e36b33118f807746d3d40ed6f56c8b41042",
+      "bytes": 1555
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_transport.js",
+      "sha256": "8deee284a5382f80bd4bedc0ef0bcb66ff37d187aa6aec0e20681f1762e888f2",
+      "bytes": 6028
+    }
+  ],
+  "packaging": "Existing exact16-module dependency walker passes; index.ts is only changed Edge module. No generator run or generated file delta.",
+  "evidence": {
+    "focused": {
+      "command": "node --test tests/unit/geography-capture-archive-completion.test.mjs tests/unit/geography-source-consumer.test.mjs tests/unit/geography-publisher-source-consumer.test.mjs tests/unit/geography-source-consumer-release.test.mjs tests/unit/geography-repair-job-runner.test.mjs tests/unit/geography-research-session.test.mjs tests/unit/geography-source-ticket-auth.test.mjs tests/unit/geography-scheduled-capture.test.mjs",
+      "tests": 85,
+      "passed": 85,
+      "failed": 0,
+      "skipped": 0,
+      "log": {
+        "path": "/home/codespace/.cache/zoi/geography-archive-completion-20261015/focused-admission-final.log",
+        "sha256": "00e83bd2b71721662d9633da194c594514eb26159e4edf4388ef9909feb5647a",
+        "bytes": 9049
+      },
+      "cases": [
+        "edge archives exact UTF8, independently reads bytes, then finishes once with original current lease",
+        "edge upload_http refuses authority without retry or a second canonical completion",
+        "edge upload_unknown refuses authority without retry or a second canonical completion",
+        "edge readback_http refuses authority without retry or a second canonical completion",
+        "edge readback_unknown refuses authority without retry or a second canonical completion",
+        "edge hash refuses authority without retry or a second canonical completion",
+        "edge size refuses authority without retry or a second canonical completion",
+        "edge oversized refuses authority without retry or a second canonical completion",
+        "edge oversized_header refuses authority without retry or a second canonical completion",
+        "edge finish_unknown refuses authority without retry or a second canonical completion",
+        "edge finish_bad_ack refuses authority without retry or a second canonical completion",
+        "edge finish_bad_status refuses authority without retry or a second canonical completion",
+        "edge finish_factual_write refuses authority without retry or a second canonical completion",
+        "edge stale_lease refuses authority without retry or a second canonical completion",
+        "edge private bucket/budget admission fail before job lease and source research",
+        "edge verifies every document before finish; late-page corruption leaves no canonical completion",
+        "official callback binds the originally returned job and lease before archive writes, even if runner mutates its input",
+        "matching repeated callbacks share one original promise and one canonical completion",
+        "changed-payload repeat refuses; an unknown same-payload attempt never redispatches upload or completion",
+        "official completion snapshots the exact payload before an asynchronous runner mutation",
+        "a conflicting callback discovered during archive readback prevents pending canonical finish",
+        "CLI refuses a nonempty evidence directory before any lease or retained raw resume",
+        "actual offline CLI emits only non-authoritative raw capture and executable SQL refuses canonical completion",
+        "CLI RPC mode refuses even configured service credentials before service IO, directory creation or a lease",
+        "explicit publisher strategy exercises robots, exact card, private upload/readback before source-only finish",
+        "archive corruption never finishes a publisher job",
+        "actual archived challenge finishes before existing host cooldown; changed input never cools down",
+        "fixed action refuses caller URLs, arbitrary strategy and more than four leases before source requests",
+        "leased job researches actual same-host contact source and remains independently unaccepted",
+        "different current source positions require review and closed sources stay blocked",
+        "global research is bounded to three in-flight requests and deduplicates one host source",
+        "robot disallow and request budget stop actual page requests",
+        "trusted public main requests same durable admission as Cron; queued is never reported as captured",
+        "untrusted branch, repository, event or replay never fetches or masks credentials",
+        "real repository must remain public on main before admission",
+        "missing or malformed credentials refuse before network",
+        "disabled, interval, daily and archive limits are truthful no-ops without retry",
+        "admission is exactly one well-formed row with bounded enums/counters; ambiguity cannot log success",
+        "network uncertainty or rejection is never retried and private errors never leak",
+        "oversized or malformed Management responses reject without body logging",
+        "workflow is trusted public-main bounded Linux fallback, serialized without artifacts or pull request triggers",
+        "release pins exact source manifest, script/helper and first-attempt expiring project request",
+        "PR, pull_request_target, wrong repository and replay cannot make any network call",
+        "private bucket, budget, existing schedule and singleton prerequisites fail before secret configuration",
+        "secure config and hosted archive proof precede Vault-referencing cron; no secret or error bodies logged",
+        "new 32-byte token is created with parameterized Vault input and never printed",
+        "canary-only request cannot install cron; a failed/missing archive proof cannot activate it",
+        "ambiguous request or rejected configuration never retries or reaches deployment; diagnostics remain fixed labels",
+        "expiry after acknowledged configuration blocks deployment and subsequent canary/scheduling",
+        "bundler diagnostic emits only a single exact whitelisted specifier, never secret paths or raw bodies",
+        "hosted diagnostic accepts only fixed handler/stage/SQLSTATE labels and never echoes a private body",
+        "publisher strategy is an exact reviewed enum, canary-only, and malformed actions fail before IO",
+        "publisher fixed metadata guards precede Vault/config/deploy and fail closed without privilege changes",
+        "publisher canary invokes only fixed strategy, proves bounded capture plus zero factual writes, and never schedules",
+        "publisher canary rejects wrong strategy, coordinate/website writes and missing or excessive capture evidence without cron",
+        "legacy absent strategy retains empty-body official canary and scopes its fresh archive query",
+        "exact new manifest refuses omitted publisher runtime or evidence dependency",
+        "token-bearing Management and hosted requests refuse redirects without following or retrying",
+        "internal source consumer rejects unauthorized triggers before any RPC or crawl",
+        "public evidence bucket is refused before taking leases",
+        "empty bounded lease never claims full completion or evaluates catalogue summary",
+        "exhausted archive budget blocks before any lease",
+        "malformed or insufficient budget cannot consume a lease even with can_archive true",
+        "busy single-flight capture guard cannot reach archive budget or queue lease",
+        "generated extractor preserves reviewed source parser and source guards",
+        "private source bytes upload before terminal finish and failed archive leaves the lease unfinished",
+        "archive readback is bounded readonly proof and bypasses capture budget without taking a lease",
+        "invalid archive action, malformed or oversized body cannot reach any service IO",
+        "wrong or oversized private archive bytes never produce a verification proof",
+        "processing releases only its exact acquired UUID after worker completion",
+        "generated runner waits for sibling finish callbacks before releasing failure to the handler",
+        "generated source transport obeys an already-expired global work deadline without issuing a request",
+        "API upload dependency walker includes all sixteen source consumer runtime modules",
+        "safe hosted failure returns exact stage/http/SQLSTATE only and official consumer explicitly retains strategy",
+        "runner filesystem failures expose only fixed operation stages and never finish an unarchived capture",
+        "failed exact filesystem preflight consumes no job lease and issues no registered source request",
+        "exact filesystem capability probe writes tiny private source/result bytes with hashes before job lease",
+        "hosted native adapter avoids unsupported Node mode handling while retaining private scoped paths and byte caps",
+        "generated publisher policy and its full pure dependency chain reproduce source exactly",
+        "legacy token stays compatible; missing/invalid/ambiguous headers deny",
+        "one fixed official or publisher batch consumes exact strategy once",
+        "ticket cannot authorize archive reads, caller URLs, arbitrary strategies or extra fields",
+        "receipt must bind exact caps/strategy/future expiry and true admission",
+        "unknown consume is never retried or reclassified as admitted",
+        "actual handler consumes admission before capture, preserves singleton and refuses ticket archive/both-header/replay"
+      ]
+    },
+    "cached_deno": {
+      "command": "/home/codespace/.npm/_npx/7a40be787520bede/node_modules/deno/deno check --cached-only --node-modules-dir=none supabase/functions/geography-repair-source-consumer/index.ts scripts/geography/process-repair-jobs.mjs",
+      "passed": true,
+      "log": {
+        "path": "/home/codespace/.cache/zoi/geography-archive-completion-20261015/deno-admission-final.log",
+        "sha256": "a52f473c3ddb6a2375addeeac0edd2cfaf115eaebd1b3db71f1d7e629da41710",
+        "bytes": 115
+      },
+      "note": "Explicit node-modules-dir=none resolves already cached Node type declarations in a clean worktree; no install/network dependency fetch."
+    },
+    "syntax": "node --check for changed CLI/new test, and git diff --check pass.",
+    "source_boundary": "Actual direct CLI entry is exercised offline and with rpc plus configured service credentials; rpc refuses before IO. Actual Edge handler exercises exact filesystem/raw upload/readback/finish controlled transports, current lease rejection, callback snapshot/mutation/conflict/idempotency and unknown results. PostgreSQL/Storage responses are controlled test transports, not production source/provider or real database transactions.",
+    "known_legacy_factual_case": {
+      "path": "/home/codespace/.cache/zoi/st-demetrios-place-factual-20261015/factual-preparation-manifest.json",
+      "sha256": "83fd976e62f50fe2eb2a73c3bfd24f58baa3743fd1fdc319f647962b7e3cb18d",
+      "bytes": 2821
+    },
+    "rendered": "No renderer/UI change; not exercised.",
+    "journeys": "No live source recapture, actual private Storage readback, owner journey, native/map/directions or client repair performed."
+  },
+  "production": {
+    "runtime_deployed": false,
+    "sql_applied": false,
+    "source_recaptures": 0,
+    "job_transitions": 0,
+    "leases_taken": 0,
+    "listing_or_source_fact_writes": 0,
+    "network_or_paid_provider_calls": 0,
+    "automatic_retries_added": 0
+  },
+  "remaining": [
+    "Independent review of exact2runtime/2testdelta",
+    "Root coherent Edge release and actual served16module hashes/readback acceptance",
+    "Old completed unarchived jobs remain unchanged and need separately authorized exact currentjob recovery through existing bounded queue/capture",
+    "StDemetrios natural same-container card exceeds8KB; archive fix alone cannot approve its point",
+    "Separately reviewed DISTINCT typed Wix source strategy/identity/alias/country/locality/conflict contract before actual repairs; no source kind masquerade",
+    "No catalogue repair count or category-complete claim from capture plumbing tests"
+  ],
+  "root_review_resolution": {
+    "finding": "Single-flight capture acquire does not enforce finite capture ticket policy.",
+    "resolution": "Removed provisional direct service CLI completion path entirely; CLI rpc now refuses. Existing admitted Edge consumer remains canonical path.",
+    "superseded_evidence": "Earlier100-test provisional candidate logs/audit were not frozen and describe removed CLI RPC capability. Only final85-test log/source hashes in this manifest are accepted owner packet."
+  }
+}

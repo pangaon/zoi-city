@@ -1,0 +1,61 @@
+{
+  "basis": "Candidate two-file frontend overlay on actual public production API/assets/cartography. No API/Auth/Storage/image/point responses are intercepted or fabricated. No provider navigator is opened.",
+  "baseline": false,
+  "source": [
+    {
+      "file": "explore/map/index.html",
+      "sha256": "12601622d50efa99134f0abdfe0ca743aa3bc3d81cf2aa11579e1fff4f93ed15"
+    },
+    {
+      "file": "assets/map-data/interactions.css",
+      "sha256": "3c3cb7553ccb4f5cb7a2e6488f9f67fbcf3be1e87020e9fe5d41b817491871c9"
+    }
+  ],
+  "cases": [
+    {
+      "width": 390,
+      "height": 900,
+      "theme": "light",
+      "checks": [
+        {
+          "sheet": "Expanded",
+          "zoomInOut": true,
+          "compass": true,
+          "targets44": true,
+          "retainedMapAndControl": true
+        },
+        {
+          "sheet": "Compact",
+          "zoomInOut": true,
+          "compass": true,
+          "targets44": true,
+          "retainedMapAndControl": true
+        },
+        {
+          "sheet": "Full list",
+          "zoomInOut": true,
+          "compass": true,
+          "targets44": true,
+          "retainedMapAndControl": true
+        },
+        {
+          "fullscreenEnterZoomExit": true,
+          "recenterSelected": true
+        },
+        {
+          "keyboardSearch": true,
+          "theme": true,
+          "attributionPreserved": true,
+          "noOverflow": true
+        }
+      ]
+    }
+  ],
+  "passed": false,
+  "error": "locator.click: Error: strict mode violation: locator('.m-row[data-slug=\"hellenic-bakery-grocery-livonia\"]') resolved to 2 elements:\n    1) <a class=\"m-row\" data-i=\"3566\" data-slug=\"hellenic-bakery-grocery-livonia\" href=\"/business/hellenic-bakery-grocery-livonia\">…</a> aka getByRole('link', { name: 'H Hellenic Bakery & Grocery Bakeries · Livonia 33308 Seven Mile Road, Livonia, MI 48152 Reviewed map position', exact: true })\n    2) <a class=\"m-row\" data-i=\"undefined\" data-slug=\"hellenic-bakery-grocery-livonia\" href=\"/business/hellenic-bakery-grocery-livonia\">…</a> aka getByRole('link', { name: 'H Hellenic Bakery & Grocery Bakeries · Livonia 33308 Seven Mile Road, Livonia, MI 48152 Map position not selected', exact: true })\n\nCall log:\n\u001b[2m  - waiting for locator('.m-row[data-slug=\"hellenic-bakery-grocery-livonia\"]')\u001b[22m\n\u001b[2m    - locator resolved to <a class=\"m-row\" data-i=\"undefined\" data-slug=\"hellenic-bakery-grocery-livonia\" href=\"/business/hellenic-bakery-grocery-livonia\">…</a>\u001b[22m\n\u001b[2m  - attempting click action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and stable\u001b[22m\n\u001b[2m  - element was detached from the DOM, retrying\u001b[22m\n",
+  "failureState": {
+    "url": "https://www.zoi.city/explore/map/?city=Livonia&country=United+States#14.00/42.42636/-83.37405/0/0",
+    "stage": "m-stage",
+    "body": "Zoi\nMenu\nDISCOVER, ON THE MAP\nYour Greek world.\nNear me ↗\nGo\n300 m\nExploring Livonia, United States\nEverywhere\nPersonalize in Community\nStart in\nAthens\nToronto\nMelbourne\nFilter the map\n＋\nSearch this visible area\nDistance & map tools\nNearby radius\nAny distance\n1 km\n5 km\n10 km\n25 km\n50 km\nOrder places\nFrom map center\nDistance from me\nName\n\nDistances are straight-line estimates, not driving distance or travel time.\n\nFit results\nRecenter selection\nFullscreen\nNorth up\nCompact\nExpanded\nFull list\nMap help & keyboard\n\nSaved on this device\n2 places loaded\nSaved (1)\nH\nHellenic Bakery & Grocery\nBakeries · Livonia\n33308 Seven Mile Road, Livonia, MI 48152\nReviewed map position\nH\nHellenic Bakery & Grocery\nBakeries · Livonia\n33308 Seven Mile Road, Livonia, MI 48152\nMap position not selected\n\nIn these loaded results: 1 reviewed map positions; 0 stored positions awaiting independent verification; 1 awaiting a map position.\n\nLoad more area results\nGlobal map coverage\nΕλ\nOpenFreeMap · OpenMapTiles · © OpenStreetMap\nSaved view shows currently available published profiles in your filters."
+  }
+}

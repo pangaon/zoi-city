@@ -1,15 +1,25 @@
-/** Service-only executable consumer of the durable research lease queue.
- * Never applies a coordinate. Provider geocoding is deliberately not connected. */
-import {readFile,writeFile} from'node:fs/promises';import{runGeographyResearchJobs}from'./repair-job-runner.mjs';
-const input=process.argv[2],directory=process.argv[3];
-if(!directory)throw Error('usage_input_json_or_rpc_and_evidence_directory');
-const rpcMode=input==='rpc';
-const url=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY;
-if(rpcMode&&(!key||url!=='https://csebihpaychdkanjjsmz.supabase.co'))throw Error('authorized_geography_service_configuration_required');
-async function rpc(name,args){const response=await fetch(url+'/rest/v1/rpc/'+name,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify(args),signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('geography_rpc_http_'+response.status);return response.json();}
-const jobs=rpcMode?await rpc('geography_repair_lease',{p_limit:10,p_strategy:'official_sources_v1'}):JSON.parse(await readFile(input,'utf8'));
-const result=await runGeographyResearchJobs(jobs,{directory,finishJob:rpcMode?(p_job,p_lease,p_result)=>rpc('geography_repair_finish',{p_job,p_lease,p_result}):null});
-await writeFile(directory+'/run-summary.json',JSON.stringify(result,null,2));
-if(!rpcMode){const quote=v=>"'"+String(v).replaceAll("'","''")+"'";await writeFile(directory+'/finish-research-results.sql','BEGIN;\n'+result.results.map(r=>'SELECT public.geography_repair_finish('+quote(r.job_id)+'::uuid,'+quote(r.lease_id)+'::uuid,'+quote(JSON.stringify(r.result))+'::jsonb);').join('\n')+'\nCOMMIT;\n',{mode:0o600});}
-const queue=rpcMode&&!jobs.length?await rpc('geography_repair_summary',{}):null;
-console.log(JSON.stringify({empty_batch_state:jobs.length?null:rpcMode&&queue.pending_jobs>0?'pending_work_remains':'no_jobs_in_this_batch',pending_jobs:queue?.pending_jobs??null,processed_jobs:result.results.length,guarded_source_requests:result.source_requests,provider_calls:0,coordinate_writes:0,database_results_persisted:rpcMode}));
+/** Offline capture only. Canonical completion uses the existing finite-ticket Edge consumer. */
+import {readFile,writeFile,mkdir,readdir} from 'node:fs/promises';
+import {pathToFileURL} from 'node:url';
+import {runGeographyResearchJobs} from './repair-job-runner.mjs';
+import {geographyResearchSession} from './guarded-research-session.mjs';
+export async function runGeographyCapture({input,directory,runJobs=runGeographyResearchJobs}={}){
+ // A service key plus capture_acquire is concurrency control, not finite admission.
+ if(input==='rpc')throw Error('finite_ticket_edge_capture_required');
+ if(!input||!directory)throw Error('usage_input_json_and_evidence_directory');
+ await mkdir(directory,{recursive:true,mode:0o700});
+ if((await readdir(directory)).length)throw Error('fresh_private_evidence_directory_required');
+ const jobs=JSON.parse(await readFile(input,'utf8'));
+ if(!Array.isArray(jobs)||jobs.length>30)throw Error('bounded_leased_geography_jobs_required');
+ const session=geographyResearchSession({maxRequests:50,maxBytes:15000000,deadline:Date.now()+105000,spacingMs:1200});
+ const result=await runJobs(jobs,{directory,sourceFetch:session.sourceFetch,finishJob:null});
+ result.source_requests=session.stats.requests;
+ await writeFile(directory+'/run-summary.json',JSON.stringify({...result,database_results_persisted:false,non_authoritative:true},null,2),{mode:0o600,flag:'wx'});
+ // Keep the historical filename fail-closed for operators who used to execute it.
+ await writeFile(directory+'/finish-research-results.sql',"-- Capture-only evidence. No finite admission, canonical private archive or current server lease was verified.\nDO $unarchived$ BEGIN RAISE EXCEPTION 'canonical_private_archive_completion_required'; END $unarchived$;\n",{mode:0o600,flag:'wx'});
+ return{processed_jobs:result.results.length,guarded_source_requests:session.stats.requests,provider_calls:0,coordinate_writes:0,database_results_persisted:false,non_authoritative:true,next_action:'use_existing_finite_ticket_edge_consumer_for_canonical_capture'};
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
+ try{console.log(JSON.stringify(await runGeographyCapture({input:process.argv[2],directory:process.argv[3]})));}
+ catch(error){console.error(JSON.stringify({ok:false,error:error?.message==='finite_ticket_edge_capture_required'?'finite_ticket_edge_capture_required':'geography_capture_unconfirmed',next_action:'use_existing_finite_ticket_edge_consumer_for_canonical_capture',automatic_retry:false,reconciliation_required:true,coordinate_writes:0}));process.exitCode=1;}
+}

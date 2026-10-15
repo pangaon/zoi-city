@@ -1,0 +1,70 @@
+{
+  "basis": "Candidate two-file frontend overlay on actual public production API/assets/cartography. No API/Auth/Storage/image/point responses are intercepted or fabricated. No provider navigator is opened.",
+  "baseline": false,
+  "source": [
+    {
+      "file": "explore/map/index.html",
+      "sha256": "7e3b5be6c9b152fa6828e55cb9d8ce2bcb4a4f32b269deb6035f243b1602d407"
+    },
+    {
+      "file": "assets/map-data/interactions.css",
+      "sha256": "3c3cb7553ccb4f5cb7a2e6488f9f67fbcf3be1e87020e9fe5d41b817491871c9"
+    }
+  ],
+  "cases": [
+    {
+      "width": 390,
+      "height": 900,
+      "theme": "light",
+      "checks": [
+        {
+          "sheet": "Expanded",
+          "zoomInOut": true,
+          "compass": true,
+          "targets44": true,
+          "retainedMapAndControl": true
+        },
+        {
+          "sheet": "Compact",
+          "zoomInOut": true,
+          "compass": true,
+          "targets44": true,
+          "retainedMapAndControl": true
+        },
+        {
+          "sheet": "Full list",
+          "zoomInOut": true,
+          "compass": true,
+          "targets44": true,
+          "retainedMapAndControl": true
+        },
+        {
+          "fullscreenEnterZoomExit": true,
+          "recenterSelected": true
+        },
+        {
+          "keyboardSearch": true,
+          "theme": true,
+          "attributionPreserved": true,
+          "noOverflow": true
+        },
+        {
+          "savedFreshCanonicalAndPoint": true,
+          "numericDestination": true,
+          "walkingModePreservedBeforeSave": true
+        },
+        {
+          "legacyAliasCurrentCanonicalID": true,
+          "localSlugOnlyRekey": true
+        }
+      ]
+    }
+  ],
+  "passed": false,
+  "error": "page.waitForURL: Timeout 8000ms exceeded.\n=========================== logs ===========================\nwaiting for navigation until \"load\"\n  navigated to \"https://www.zoi.city/explore/map/?city=Livonia&country=United+States&q=old+city+query&t=business&radius=1&bbox=-83.38242%2C42.4127%2C-83.36568%2C42.43928#14.00/42.42636/-83.37405/0/0\"\n============================================================",
+  "failureState": {
+    "url": "https://www.zoi.city/explore/map/?city=Livonia&country=United+States&q=old+city+query&t=business&radius=1&bbox=-83.38242%2C42.4127%2C-83.36568%2C42.43928#14.00/42.42636/-83.37405/0/0",
+    "stage": "m-stage",
+    "body": "Zoi\nMenu\nDISCOVER, ON THE MAP\nYour Greek world.\nNear me ↗\n×\nGo\n300 m\nExploring Livonia, United States\nEverywhere\nPersonalize in Community\nStart in\nAthens\nToronto\nMelbourne\nFilter the map\n＋\nSearch this visible area\nClear map area\nDistance & map tools\nNearby radius\nAny distance\n1 km\n5 km\n10 km\n25 km\n50 km\nOrder places\nFrom map center\nDistance from me\nName\n\nDistances are straight-line estimates, not driving distance or travel time.\n\nFit results\nRecenter selection\nFullscreen\nNorth up\nCompact\nExpanded\nFull list\nMap help & keyboard\n\nChoose Near me and allow location for nearby distances. A coarse location cannot establish a nearby radius.\n\nSearch results\n0 places loaded\nSaved (0)\nNothing here yet.\nTry a different search, or zoom out to see more.\n\nIn these loaded results: 0 reviewed map positions; 0 stored positions awaiting independent verification; 0 awaiting a map position.\n\nNo street-level positions in these loaded results. Browse the list for details.\n\nGlobal map coverage\nΕλ\nOpenFreeMap · OpenMapTiles · © OpenStreetMap\nReviewed map position"
+  }
+}

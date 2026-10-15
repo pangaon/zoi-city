@@ -1,0 +1,371 @@
+{
+  "schema": "zoi.specialist-owner-freeze.v1",
+  "date": "2026-10-15",
+  "owner": "/root/enrichment_next",
+  "worktree": "/tmp/zoi-geography-reviewed-place-writer",
+  "branch": "geography-reviewed-place-writer-20261015",
+  "base_commit": "1b95f09213ae940d3a794efde1e51e90e784594b",
+  "status": "offline_implementation_frozen_pending_independent_and_root_actual_rollback_gate",
+  "change": "Explicit independently reviewed official place-destination evidence through existing canonical geography_review_apply. Existing automated capture remains support-only.",
+  "owned_files": [
+    {
+      "path": "scripts/geography/reviewed-place-evidence.mjs",
+      "sha256": "6ad21b5e72e43922492550ab06eab797a3df6ccc741e0c4bd7616acba6284d87",
+      "bytes": 18435
+    },
+    {
+      "path": "scripts/geography/reviewed-place-coordinate-request.mjs",
+      "sha256": "03a234c8866dc777900a3a5b1349311f8f026e3893e3fc491974d73564ec081a",
+      "bytes": 1518
+    },
+    {
+      "path": "scripts/geography/reviewed-coordinate-request.mjs",
+      "sha256": "fc64bccdb7124450ad3bd67f58a4339a20c4000fc780fb667b3abc1ff367f638",
+      "bytes": 4711
+    },
+    {
+      "path": "supabase/migrations/20261015165924_reviewed_official_place_destination.sql",
+      "sha256": "3a22bab271706d388be8823c1093b347d925222ffe043ca252335a9affe8b720",
+      "bytes": 50778
+    },
+    {
+      "path": "tests/unit/geography-reviewed-place-request.test.mjs",
+      "sha256": "d3d25b4415ed2c3627a3e7b0bd4e742e6ae00b230c79f6a26357b2f049d3db38",
+      "bytes": 14687
+    },
+    {
+      "path": "tests/database/geography-reviewed-place-writer.integration.mjs",
+      "sha256": "8095cd4f60267bf657f17b156ecbd23729b88dfe044c5453e517b61a279a5362",
+      "bytes": 33710
+    },
+    {
+      "path": "tests/database/fixtures/geography-reviewed-place-trigger-contract.json",
+      "sha256": "7e0d2def84258fbe66c69aac887d25ef73ba8a2adacc9c21ad46d5b6cdb4b743",
+      "bytes": 95549
+    }
+  ],
+  "unchanged_prerequisites": [
+    {
+      "path": "scripts/geography/place-destination-evidence.mjs",
+      "sha256": "5bb3c39c6482057274253c8d2de750188ff832c4415b154ed5ce89f3fb55b749",
+      "bytes": 6834,
+      "integration": "Exact frozen adapter overlay, not an owned delta; root separately integrated/deployed adapter. Do not overwrite newer root generated graph."
+    },
+    {
+      "path": "/tmp/zoi-geography-place-writer-contract/docs/audits/geography-reviewed-place-writer-contract-proposal-2026-10-15.json",
+      "sha256": "a3f9e8857840d3ab09e90254b77bb7f859141bc688405a918f9595df9ad3b210",
+      "bytes": 20612,
+      "purpose": "Root-approved offline contract"
+    },
+    {
+      "path": "/tmp/zoi-geography-place-evidence/docs/audits/geography-retained-place-evidence-owner-2026-10-15.json",
+      "sha256": "c33cea898ec7e27002e5c974b0bbcbead83e47b304147de383028821751f3275",
+      "bytes": 13246,
+      "purpose": "Frozen support-only adapter prerequisite"
+    }
+  ],
+  "actual_contract_receipts": [
+    {
+      "path": "/home/codespace/.cache/zoi/geography-place-writer-actual-contracts-20261015.json",
+      "sha256": "74f0b93970b8ac1b1d3d1374f9533e0c21c92de0291855dc61a51888bee1778b",
+      "bytes": 45478
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-place-writer-actual-dependencies-20261015.json",
+      "sha256": "d8f1a26d67169cd698611d241ddbab40cdda7899e749846601c3c54140664aa8",
+      "bytes": 15694
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-place-writer-actual-last-dependencies-20261015.json",
+      "sha256": "fdec3b4fdd089484cfc550b207d683e88c8b99109fb9dfe0cc25561b2847006e",
+      "bytes": 8391
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-place-writer-after-v4-seo-20261015.json",
+      "sha256": "fe27434e990507bc1c31d30c4555aa36e07dc5529bc7cc87c2b61d3dd1b07c15",
+      "bytes": 2411
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-place-writer-actual-read-source-allowed-20261015.json",
+      "sha256": "c224641ed048821f9befd0cf875668040851d680a5ad267976c59a3d3ecd3b63",
+      "bytes": 2147
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/hellenic-duplicate-v2-root-20261015/actual-trigger-contracts-with-helpers.json",
+      "sha256": "c81e33fa9497c0e5880e6b3e60a7439e22ead48b30da21d2b950aa6e9fed46a1",
+      "bytes": 9358
+    }
+  ],
+  "actual_v4_reconciliation": {
+    "root_main": "1ccc997f",
+    "actual_schema_ledger": "20261015170949",
+    "scope": "Only AFTER SEO helper body and listing trigger updated to exact root-supplied V4 receipt; all other actual BEFORE/source/authority/epoch/read contracts unchanged.",
+    "after_seo_md5": "f17b227663468c63feaafdda7caf903f"
+  },
+  "authority": {
+    "new_kind": "reviewed_official_place_destination",
+    "canonical_rpc": "public.geography_review_apply",
+    "new_public_rpcs": 0,
+    "new_tables_queues_or_stores": 0,
+    "automatic_promotion": false,
+    "trust_boundary": "Existing service-only archive and two independent named human-review identities. Offline preparer and independent reviewer rehash full exact decoded UTF8 source and visible occurrence inventory; SQL rehashes bounded exact card/anchor/quote evidence, verifies existing private storage metadata and completed canonical capture. SQL does not fetch or rehash the entire external archived HTML. No proof of archive bytes is claimed from storage metadata alone.",
+    "capture": "Existing completed official-source job, current input fingerprint, capture result and source JSON hashes, source URL/hash/bytes/date, private bucket/object/size; capture original age at most7days.",
+    "source": "Exact raw source, unique contiguous visible branch card and quote ranges; complete ordered recognized place-link occurrences, at most8. Exact repeated URLs retain separate byte offsets/hashes. Unsupported, malformed, conflicting or omitted map links refuse; viewport never becomes point.",
+    "country_locality": "Current exact canonical street/city/country match plus literal visible source country or independently reviewed exact jurisdiction/postcode primary reference bound to raw source quotes. Independently sourced bounded locality must contain destination; canonical labels/current pin/GeoNames centroid/NaturalEarth polygon suspicion never address/country proof.",
+    "fences": "Original service role, independent review, current unowned/unclaimed public eligible official source, all source holds, source-job shared lock before listing update lock, full-row preCAS and replay/revertCAS preserved.",
+    "postwrite": "All actual listing triggers active. Only coordinates, street precision, _geo evidence and canonical transaction_timestamp may change. Reread equals RETURNING; sparse autoSEO extra-field updates refuse atomically.",
+    "limits_bytes": {
+      "decoded_utf8_source": 1500000,
+      "report": 32768,
+      "review": 16384,
+      "card": 8192,
+      "anchor": 4096
+    },
+    "limits_occurrences": 8,
+    "original_capture_max_days": 7,
+    "overflow_policy": "Refuse, never truncate."
+  },
+  "trigger_guard": {
+    "actual_listing_triggers": 12,
+    "actual_guarded_functions": 35,
+    "finite_serialization_exception": {
+      "name": "geography_source_listing_update",
+      "actual": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN ((((((((((((((((((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type)) OR (old.address IS DISTINCT FROM new.address)) OR (old.city IS DISTINCT FROM new.city)) OR (old.country IS DISTINCT FROM new.country)) OR (old.website IS DISTINCT FROM new.website)) OR (old.source_url IS DISTINCT FROM new.source_url)) OR (old.latitude IS DISTINCT FROM new.latitude)) OR (old.longitude IS DISTINCT FROM new.longitude)) OR (old.geo_precision IS DISTINCT FROM new.geo_precision)) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id)) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id)) OR (old.publish_status IS DISTINCT FROM new.publish_status)) OR (old.moderation_status IS DISTINCT FROM new.moderation_status)) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status)) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status)) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+      "pg16_roundtrip": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN (((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type) OR (old.address IS DISTINCT FROM new.address) OR (old.city IS DISTINCT FROM new.city) OR (old.country IS DISTINCT FROM new.country) OR (old.website IS DISTINCT FROM new.website) OR (old.source_url IS DISTINCT FROM new.source_url) OR (old.latitude IS DISTINCT FROM new.latitude) OR (old.longitude IS DISTINCT FROM new.longitude) OR (old.geo_precision IS DISTINCT FROM new.geo_precision) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id) OR (old.publish_status IS DISTINCT FROM new.publish_status) OR (old.moderation_status IS DISTINCT FROM new.moderation_status) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()",
+      "actual_sha256": "61c0a27b84477066294aa320b56a8c8040fd80d1b335c80aac59656b0b74f502",
+      "pg16_roundtrip_sha256": "7ce54044238b78a5a9cf7a32cf0cf76b760e587809fbeb024807a71f551af9d1",
+      "same_ordered_20_pure_predicates": [
+        "old.name IS DISTINCT FROM new.name",
+        "old.entity_type IS DISTINCT FROM new.entity_type",
+        "old.address IS DISTINCT FROM new.address",
+        "old.city IS DISTINCT FROM new.city",
+        "old.country IS DISTINCT FROM new.country",
+        "old.website IS DISTINCT FROM new.website",
+        "old.source_url IS DISTINCT FROM new.source_url",
+        "old.latitude IS DISTINCT FROM new.latitude",
+        "old.longitude IS DISTINCT FROM new.longitude",
+        "old.geo_precision IS DISTINCT FROM new.geo_precision",
+        "old.owner_user_id IS DISTINCT FROM new.owner_user_id",
+        "old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id",
+        "old.publish_status IS DISTINCT FROM new.publish_status",
+        "old.moderation_status IS DISTINCT FROM new.moderation_status",
+        "old.marketplace_status IS DISTINCT FROM new.marketplace_status",
+        "old.duplicate_status IS DISTINCT FROM new.duplicate_status",
+        "old.profile -> '_geo'::text IS DISTINCT FROM new.profile -> '_geo'::text",
+        "old.profile #> '{_enrich,blocked_reason}'::text[] IS DISTINCT FROM new.profile #> '{_enrich,blocked_reason}'::text[]",
+        "old.profile #> '{_enrich,scope_review_required}'::text[] IS DISTINCT FROM new.profile #> '{_enrich,scope_review_required}'::text[]",
+        "old.profile #> '{_enrich,organization_identity_quarantine}'::text[] IS DISTINCT FROM new.profile #> '{_enrich,organization_identity_quarantine}'::text[]"
+      ],
+      "deferrability_prefix_equal": true,
+      "function_suffix_equal": true,
+      "no_other_boolean_operator_or_expression": true,
+      "runtime_guard": "Exactly these2whole strings for this named trigger only; all other trigger/function metadata exact."
+    },
+    "negative_checks": [
+      "Changed predicate refuses before helper creation",
+      "Removed source hold refuses before helper creation",
+      "Reordered predicate refuses before helper creation"
+    ],
+    "other_guards": "All other11trigger definitions exact; all35function definitions, owner, nullableACL, config, volatility and security metadata exact. No trigger disabled or recreated."
+  },
+  "verification": {
+    "source": {
+      "focused_command": "node --test tests/unit/geography-reviewed-place-request.test.mjs tests/unit/reviewed-coordinate-request.test.mjs tests/unit/source-coordinates.test.mjs tests/unit/source-shortlink-coordinates.test.mjs tests/unit/coordinate-audit-retention.test.mjs tests/unit/geography-repair-job-runner.test.mjs",
+      "tests": 72,
+      "failed": 0,
+      "skipped": 0,
+      "evidence": {
+        "path": "/home/codespace/.cache/zoi/geography-reviewed-place-writer-20261015/focused-frozen-final.log",
+        "sha256": "7d52e1721f1d44196a2d2c5d6fd8a6d38be41de77050092d329d8c590a951eba",
+        "bytes": 6869
+      },
+      "includes": "Actual retained StDemetrios/Fradelakis raw document occurrence inventories, positive controlled preparation, hidden/challenge/UTF8/byte bounds/aliases/country/collector/kind refusals. Actual retained clients remain held."
+    },
+    "canonical_writer": {
+      "command": "ZOI_PLACE_WRITER_RESULT=/absolute/NEW-result.json node tests/database/geography-reviewed-place-writer.integration.mjs",
+      "engine": "PostgreSQL16",
+      "groups": 52,
+      "failed": 0,
+      "evidence": [
+        {
+          "path": "/home/codespace/.cache/zoi/geography-reviewed-place-writer-20261015/pg-frozen.log",
+          "sha256": "e88f1f0fa7f119df53a10bf6b49ecfd3b2888a52b8303fbee4ac36586e1192d8",
+          "bytes": 6507
+        },
+        {
+          "path": "/home/codespace/.cache/zoi/geography-reviewed-place-writer-20261015/pg-frozen.json",
+          "sha256": "9a8ac7584ef3c01fe1a5df167318348c6c834cb6f39e7747819b3960e25a487d",
+          "bytes": 2498
+        }
+      ],
+      "group_names": [
+        "unchanged actual writer refuses the separately named place kind before extension without row/receipt/epoch mutation",
+        "migration refuses BEFORE trigger or shared decoder contract drift without partial helper creation",
+        "new migration pins35actual functions/all12actual listing triggers and preserves read/revert/epoch/fullrow/application functions byte-for-byte",
+        "independently reviewed exact source/card/anchor/place proof succeeds through real five BEFORE/AFTER triggers and unchanged public point; exact replay returns same receipt",
+        "only geographic/provenance/timestamp fields change and deferred existing source trigger sees accepted receipt without another source job",
+        "refuses wrong byte occurrence atomically",
+        "refuses numeric string byte range atomically",
+        "refuses query embedded inside label atomically",
+        "refuses wrong source host spelling atomically",
+        "refuses missing quote hash atomically",
+        "refuses wrong card hash atomically",
+        "refuses wrong place ID atomically",
+        "refuses camera point atomically",
+        "refuses query suffix atomically",
+        "refuses country canonical label only atomically",
+        "refuses unbound source hash atomically",
+        "refuses expired capture atomically",
+        "refuses inventory hash mismatch atomically",
+        "refuses self review atomically",
+        "refuses missing collector atomically",
+        "refuses mismatched collector atomically",
+        "refuses missing country review atomically",
+        "refuses wrong current branch atomically",
+        "refuses private bucket becomes public before writer authority",
+        "refuses archive object missing before writer authority",
+        "refuses source job context changes before writer authority",
+        "existing unchanged fullrow revert restores previous geography with legitimate canonical time; reverted authority never revives and replay refuses",
+        "real auto-SEO changes on an existing sparse row are refused and rolled back; no trigger is disabled or timestamp forged",
+        "fresh fullrow CAS and ownership refuse benign preapply edit",
+        "fresh fullrow CAS and ownership refuse owner acquired",
+        "fresh fullrow CAS and ownership refuse source hold",
+        "fresh fullrow CAS and ownership refuse canonical branch changed",
+        "offline preparation refuses current unknown/scope/member source holds without inventing source authority",
+        "routine copy preserves current public read but never weakens replay/revert fullrow CAS",
+        "server refuses unknown-source hold even with refreshed fullrow CAS and otherwise exact manual proof",
+        "real source-job-before-listing lock waits for concurrent capture metadata change and refuses stale source without deadlock",
+        "unchanged epoch authority invalidates source/address away-and-back and prevents old point resurrection",
+        "two real concurrent reviewed place writers serialize source-job/listing locks; one accepted receipt",
+        "current accepted point prevents existing source enqueue from manufacturing a recapture opportunity",
+        "same-point source revalidation establishes reviewed authority with real timestamp and existing application CAS, but is not a coordinate correction",
+        "same-transaction apply/revert and outer rollback respect actual canonical timestamp and leave no row/receipt/epoch mutation",
+        "old jsonld canonical positive receipt/provenance/read behavior remains equivalent to actual pre-extension writer",
+        "old official_destination canonical positive receipt/provenance/read behavior remains equivalent to actual pre-extension writer",
+        "old reviewed_named_place_shortlink canonical positive receipt/provenance/read behavior remains equivalent to actual pre-extension writer",
+        "bounded new proof cannot masquerade as any accepted old kind or support-only observation",
+        "server tokenizer respects quoted fake attributes and refuses duplicate href independently",
+        "repeated migration refuses before changing private helpers or canonical writer",
+        "all new bounded validators are private invoker helpers with zero API execute grants",
+        "existing API/private ACL and public read shapes remain; protected full-row writer/revert/application contracts unchanged",
+        "finite exact two-serialization guard refuses changed_predicate in independently bootstrapped actual-trigger PG cluster",
+        "finite exact two-serialization guard refuses removed_hold in independently bootstrapped actual-trigger PG cluster",
+        "finite exact two-serialization guard refuses reordered_predicate in independently bootstrapped actual-trigger PG cluster"
+      ],
+      "fixture_limits": [
+        "Controlled source proof fixtures exercise writer behavior; actual retained StDemetrios/Fradelakis still held",
+        "No actual map/native/directions journey or owner publish acceptance",
+        "Null vector represented as text; no vector operations",
+        "Storage tables model existing metadata; no external blob read, manual-review raw archive trust boundary retained"
+      ],
+      "local_port": 15934,
+      "cleanup": "Main and three guard-negative child clusters stopped and removed in finally; no production PostgreSQL accessed."
+    },
+    "cached_deno": {
+      "command": "/home/codespace/.npm/_npx/7a40be787520bede/node_modules/deno/deno check --cached-only scripts/geography/reviewed-place-coordinate-request.mjs",
+      "passed": true,
+      "evidence": {
+        "path": "/home/codespace/.cache/zoi/geography-reviewed-place-writer-20261015/deno-frozen.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      }
+    },
+    "node_syntax": "All changed/new .mjs runtime/test modules pass node --check.",
+    "diff_check": "git diff --check passed.",
+    "canonical_functions_after": {
+      "md5": "9b7223dd2e6752ca28762e9e8e1ab869",
+      "private_helpers": [
+        {
+          "signature": "zoi.geography_place_html_decode(text)",
+          "md5": "b9949947fae26d1a1e265dd0abb99e36"
+        },
+        {
+          "signature": "zoi.geography_place_norm(text)",
+          "md5": "ac9235a21dafc3931bfee9b06703796c"
+        },
+        {
+          "signature": "zoi.geography_place_anchor_href(text)",
+          "md5": "0f974f98a350a12633ddb0201f6ce25e"
+        },
+        {
+          "signature": "zoi.geography_place_quote(bytea,jsonb,text)",
+          "md5": "2370a3d4d34208172a01eb35751b2c0d"
+        },
+        {
+          "signature": "zoi.geography_reviewed_place_proof(jsonb,jsonb,zoi.listings,zoi.geography_repair_jobs)",
+          "md5": "65dc127bf783ad7f87d9d656b9b8afaa"
+        }
+      ]
+    },
+    "protected_functions_after": {
+      "public.geography_review_revert(uuid,text)": {
+        "md5": "e6f2ba4421641428065b817ad47bd3e8",
+        "unchanged": true
+      },
+      "public.geography_reviewed_point(uuid)": {
+        "md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+        "unchanged": true
+      },
+      "zoi.geography_fingerprint(zoi.listings)": {
+        "md5": "b77ed3d5d9004f1957503c2f848fe4c8",
+        "unchanged": true
+      },
+      "public.geography_repair_record_application(uuid,uuid)": {
+        "md5": "3f9e0896e6308211fd0366917f2ae68c",
+        "unchanged": true
+      },
+      "zoi.geography_read_authority_changed()": {
+        "md5": "baca38034b9b0974465026eff8aec89d",
+        "unchanged": true
+      },
+      "zoi.geography_read_authority_fingerprint(zoi.listings)": {
+        "md5": "2757c108471ef5a863f4700e615e34d8",
+        "unchanged": true
+      },
+      "zoi.geography_read_authority_input(zoi.listings)": {
+        "md5": "3a452d0b2b9902436360a47d3a575e4e",
+        "unchanged": true
+      },
+      "zoi.geography_read_source_allowed(zoi.listings)": {
+        "md5": "ecae4cf96a5794c0eb44154b145ef6eb",
+        "unchanged": true
+      }
+    },
+    "rendered": "Not exercised in this SQL/offline packet.",
+    "customer_owner_native_journeys": "Not exercised; no live map/directions/native/owner-publish acceptance claimed."
+  },
+  "current_source_case_gates": [
+    {
+      "case": "StDemetrios",
+      "status": "held",
+      "remaining": "RawSt vs canonicalSaint and Ave vs Avenue do not satisfy exact street; literal sourceUSA absent; independently reviewed jurisdiction/postcode country proof not yet bound. No actual correction approved."
+    },
+    {
+      "case": "Fradelakis",
+      "status": "held",
+      "remaining": "RawAstoria vs canonicalLongIslandCity remains unresolved locality alias; repeated identical destination URLs have distinct validated occurrence ranges, not authority to override locality."
+    },
+    {
+      "case": "Thoukididis",
+      "status": "held",
+      "remaining": "Malformed/concatenated destination link refuses."
+    }
+  ],
+  "production": {
+    "ddl_applied": false,
+    "factual_rows_written": 0,
+    "source_jobs_created": 0,
+    "leases_taken": 0,
+    "network_source_or_paid_provider_calls": 0,
+    "actual_client_repairs": 0,
+    "deployment": "Root-owned later gate; no specialist deployment."
+  },
+  "remaining": [
+    "Independent source/SQL/actual trigger acceptance",
+    "Root review of exact guarded migration and actual rollback-only fixture before any DDL",
+    "Root production schema application and served code verification if accepted",
+    "Per-client exact current source/country/locality and independent factual review before any request apply",
+    "Actual resulting public map/customer/native journey verification; population112/63 are not repaired by this packet."
+  ],
+  "scope": "No city/country suspicion relabels, finite policy extension, unattended kind promotion, old-kind masquerade, catalogue coverage claim, alternate writer, publicRPC or source store. Existing read/revert/epoch/fullrow/record_application bodies byte-identical."
+}
