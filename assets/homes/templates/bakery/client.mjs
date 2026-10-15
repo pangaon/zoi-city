@@ -1,4 +1,4 @@
-import {mountFoodMenu,foodMenuQuestion} from '../../food-offering.mjs';
+import {mountFoodMenu,foodMenuQuestion} from '../../food-offering.mjs?v=20261015-full-source-menu';
 import {mountPhotoGallery} from '../../photo-gallery.mjs?v=20261006';
 import{esc,bakeryRequest,localToday,OCCASIONS}from'./model.mjs';
 const element=document.querySelector('#bakery-home-content'),root=document.querySelector('#bakery-home');

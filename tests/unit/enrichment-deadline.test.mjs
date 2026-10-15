@@ -1,3 +1,4 @@
+import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
 import {prepareClientBrief} from '../../supabase/functions/zoi-enrich/_brief.js';
 import test from 'node:test';import assert from 'node:assert/strict';import{readFileSync}from'node:fs';import{stripTypeScriptTypes}from'node:module';
 const source=readFileSync(new URL('../../supabase/functions/zoi-enrich/index.ts',import.meta.url),'utf8');
@@ -25,7 +26,7 @@ test('DNS default remains compatible but a late first lookup cannot initiate a s
 });
 test('actual handler reports ambiguous apply outcome with original lease, without retry or false failed-write receipt',async()=>{
  let handler,applyCalls=0;const row={slug:'sample',website:'https://source.test',lease_id:'original-lease'};
- const {boundedIO}=rpc(()=>{});const deps={prepareClientBrief,Deno:{serve:fn=>handler=fn},Date,INVOCATION_MS:110000,RPC_MS:15000,TIMEOUT_MS:8000,boundedIO,authorised:()=>true,ENABLED:true,BATCH:3,Response,URL,enrichmentSample:x=>x,memberLeaseGuard:()=>({handled:false}),vet:async()=>({why:'refused'}),sbRpc:async fn=>{if(fn.endsWith('_lease'))return[row];applyCalls++;throw Error('operation_deadline_exceeded');}};
+ const {boundedIO}=rpc(()=>{});const deps={assessMachineSourceIdentity,prepareClientBrief,Deno:{serve:fn=>handler=fn},Date,INVOCATION_MS:110000,RPC_MS:15000,TIMEOUT_MS:8000,boundedIO,authorised:()=>true,ENABLED:true,BATCH:3,Response,URL,enrichmentSample:x=>x,memberLeaseGuard:()=>({handled:false}),vet:async()=>({why:'refused'}),sbRpc:async fn=>{if(fn.endsWith('_lease'))return[row];applyCalls++;throw Error('operation_deadline_exceeded');}};
  new Function(...Object.keys(deps),stripTypeScriptTypes(source.slice(source.indexOf('Deno.serve('))))(...Object.values(deps));
  const response=await handler(new Request('https://worker.test',{method:'POST',body:'{}'})),result=await response.json();
  assert.equal(response.status,503);assert.equal(applyCalls,1);assert.equal(result.outcome,'unknown');assert.equal(result.reconciliation_required,true);assert.deepEqual(result.leases,[{slug:'sample',lease_id:'original-lease'}]);assert.equal(Object.hasOwn(result,'applied'),false);

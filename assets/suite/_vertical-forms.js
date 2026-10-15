@@ -92,7 +92,7 @@
         { k: 'cuisine', label: 'Cuisine', type: T.TAGS, ph: 'Greek, Cretan, seafood' },
         { k: 'menu', label: 'Menu sections and items', type: T.REPEAT, maxRows: 20, of: [
           {k:'section',label:'Section name',type:T.TEXT,max:100,required:true},
-          {k:'items',label:'Items',type:T.REPEAT,required:true,maxRows:100,of:[
+          {k:'items',label:'Items',type:T.REPEAT,required:true,maxRows:300,of:[
             {k:'name',label:'Item name',type:T.TEXT,max:160,required:true},
             {k:'price',label:'Price (optional)',type:T.MONEY},
             {k:'note',label:'Description / dietary information',type:T.TEXT,max:600}

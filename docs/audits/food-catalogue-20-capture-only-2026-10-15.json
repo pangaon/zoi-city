@@ -1,0 +1,136 @@
+{
+  "schema": 1,
+  "specialist": "enrichment_next",
+  "role": "source capture and reviewed proposal preparation",
+  "at": "2026-10-15T12:58:09.227Z",
+  "worktree": "/tmp/zoi-food-catalogue-20",
+  "branch": "capture-food-catalogue-20-20261015",
+  "base": "5c603065",
+  "owned_paths": [
+    "ops/proposals/food-catalogue-20-capture-only-20261015.json",
+    "docs/audits/food-catalogue-20-capture-only-2026-10-15.json"
+  ],
+  "source_recipe": {
+    "strategy": "reviewed-food-source-v1",
+    "sha256": "584e32abb9dab689cfdeabfd9dc5c251c4711b7acab82fbcf5b1aeb82ec9332e",
+    "runtime_source_edits": 0,
+    "bounds": {
+      "records": 20,
+      "per_record_seconds": 40,
+      "requests": 80,
+      "total_bytes": 15000000,
+      "document_bytes": 1500000,
+      "photo_candidates": 4,
+      "linked_menu_children": 1
+    },
+    "robots_and_public_dns_guards_preserved": true,
+    "sandbox_preflight": {
+      "passed": true,
+      "browser_version": "153.0.8010.12",
+      "external_page_requests": 0
+    }
+  },
+  "selection": {
+    "at": "2026-10-15T12:53:09.474187+00:00",
+    "records": 20,
+    "countries": 15,
+    "bakery": 4,
+    "restaurant": 16,
+    "sparse": 11,
+    "populated": 9,
+    "actual_existing_jobs": true,
+    "public_unowned_known_context": true,
+    "prior_showcases_selected": 0,
+    "readonly_queries": 1
+  },
+  "capture": {
+    "start": "2026-10-15T12:53:59.487Z",
+    "end": "2026-10-15T12:55:12.793Z",
+    "elapsed_seconds": 73.306,
+    "statuses": {
+      "captured_pending_review": 11,
+      "repair_required": 9
+    },
+    "proposal_states": {
+      "rejected_source_or_family": 5,
+      "source_repair_required": 8,
+      "food_identity_or_branch_review_required": 6,
+      "identity_review_required": 1
+    },
+    "decoded_images": 22,
+    "visual_content_inspections": 22,
+    "potential_photos": 12,
+    "excluded_from_photo_gallery": 10,
+    "qualified_reviewed_menus": 0,
+    "source_menu_totals_unknown": 20,
+    "brief_drafts": 7,
+    "complete_profiles": 0
+  },
+  "verification": {
+    "report_hashes": 20,
+    "private_artifacts_hash_verified": 62,
+    "recipe_resume_all": 20,
+    "resume_network_requests": 0,
+    "root_production_or_browser_acceptance_claim": false
+  },
+  "files": [
+    {
+      "path": "ops/proposals/food-catalogue-20-capture-only-20261015.json",
+      "sha256": "19a0f66d9298f3a0e18fbfac62d644f7a76bb12f529647f5af03dfc48fd9aa40"
+    }
+  ],
+  "private_evidence": {
+    "directory": "/tmp/zoi-food-catalogue-20-private",
+    "snapshot_sha256": "018b452d7e8fb6bf0cfffc465b0429050530b9f12d697327037167136ba1d3f8",
+    "selection_sql_sha256": "31663b465174335319cc694fa835f3d1025152267161807e1982641f74079245",
+    "capture_receipts_sha256": "6acffda5e7bd4dff8b5feb107c4ed23eb166397c93f17248a1aae06969ad6995",
+    "artifact_verification_sha256": "14ed62455659a9c1eb0cef28a8267be0c9d1785eaa8ea9e00f48f890b0c7a911",
+    "contact_sheet_sha256": "f84694043a00f3707c1fb3b29682935d2e961d676d6852b3a66d96576f386ff1",
+    "source_html_committed": false,
+    "embedded_configs_committed": false,
+    "raw_profile_committed": false
+  },
+  "findings": [
+    {
+      "severity": "high",
+      "finding": "Yiamas registered domain serves unrelated gambling content. Generic capture status reached captured_pending_review; specialist source review rejects it. No writer payload or application was prepared."
+    },
+    {
+      "severity": "high",
+      "finding": "Kostas registered domain is parked/for sale and already blocked. Generic capture can extract its description; block is retained and proposal refused."
+    },
+    {
+      "severity": "medium",
+      "finding": "AGFG and EatOut canonical websites are directory sources, not accepted official restaurant authority."
+    },
+    {
+      "severity": "medium",
+      "finding": "Hellenic Market source describes an online supermarket. Bakery catalogue classification requires review."
+    },
+    {
+      "severity": "medium",
+      "finding": "Decoded image candidates include two actual logos, abstract placeholder, near duplicates and unverified promotion banners; decoded bytes alone do not qualify gallery identity."
+    },
+    {
+      "severity": "limitation",
+      "finding": "Six current Food reports require exact identity/branch review; the approved reviewed Food writer refuses unresolved evidence. No structured menu was accepted from this batch."
+    }
+  ],
+  "remaining_work": [
+    "Independent specialist identity/branch/source/visual review of each applicable record.",
+    "Current canonical website and classification corrections need their own guarded writer evidence.",
+    "Different bounded strategy for JS-only, sparse, robots, DNS and cross-host failures; no unchanged recipe retry.",
+    "Complete menu extraction and original/retained totals where current source evidence is unresolved.",
+    "Root-owned fresh real canonical leases, current prior-machine/context checks, independent approval, and rollback/application.",
+    "Actual rendered homes at desktop and 390px, owner edit/preview/publish, customer actions and native acceptance."
+  ],
+  "safety": {
+    "database_writes": 0,
+    "leases_created": 0,
+    "queue_mutations": 0,
+    "paid_calls": 0,
+    "automatic_apply": false,
+    "approved_profiles": 0,
+    "finished_homes": 0
+  }
+}

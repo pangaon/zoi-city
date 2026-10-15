@@ -1,0 +1,14 @@
+-- Root operator after reviewed capacity migration. No listing/owner writes,
+-- Storage/network/provider calls, session creation or function overrides.
+BEGIN;SET LOCAL statement_timeout='15s';SET LOCAL lock_timeout='2s';
+DO $proof$DECLARE menu jsonb;refused boolean;BEGIN
+IF NOT EXISTS(SELECT 1 FROM pg_proc WHERE oid='zoi.home_content_save_before_revision(uuid,uuid,text,uuid,jsonb,jsonb)'::regprocedure AND md5(prosrc)='722197013f30e8f1b7b03f146cc2bc85'AND proowner='postgres'::regrole AND proacl::text='{postgres=X/postgres}'AND proconfig=ARRAY['search_path=""']AND prosecdef=true AND provolatile='v')THEN RAISE EXCEPTION 'food_capacity_runtime_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc WHERE oid='zoi.home_revision_content_valid(jsonb,jsonb)'::regprocedure AND md5(prosrc)='5e2a7b292a87741df5d23f3d56177396'AND proowner='postgres'::regrole AND proacl::text='{postgres=X/postgres}'AND proconfig=ARRAY['search_path=""']AND prosecdef=false AND provolatile='i')THEN RAISE EXCEPTION 'food_capacity_runtime_changed';END IF;
+ SELECT jsonb_agg(jsonb_build_object('section',v.title,'items',(SELECT jsonb_agg(jsonb_build_object('name','Capacity-only item '||n))FROM generate_series(1,v.count)n))ORDER BY v.position)INTO menu FROM(VALUES(1,'Spanakopita',2),(2,'Tiropitakia',2),(3,'Desserts',2),(4,'List',145))v(position,title,count);
+ IF zoi.home_revision_content_valid('{}',jsonb_build_object('menu',menu))IS DISTINCT FROM true THEN RAISE EXCEPTION 'capacity151_refused';END IF;
+ refused:=false;BEGIN PERFORM zoi.home_revision_content_valid('{}',jsonb_build_object('menu',jsonb_build_array(jsonb_build_object('section','Original source section','items',(SELECT jsonb_agg(jsonb_build_object('name','Item '||n))FROM generate_series(1,301)n)))));EXCEPTION WHEN raise_exception THEN refused:=SQLERRM='invalid_menu_section';END;IF NOT refused THEN RAISE EXCEPTION 'capacity301_not_refused';END IF;
+ refused:=false;BEGIN PERFORM zoi.home_revision_content_valid('{}',jsonb_build_object('menu',(SELECT jsonb_agg(jsonb_build_object('section','Original source section','items','[]'::jsonb))FROM generate_series(1,21))));EXCEPTION WHEN raise_exception THEN refused:=SQLERRM='invalid_menu_sections';END;IF NOT refused THEN RAISE EXCEPTION 'capacity21sections_not_refused';END IF;
+ refused:=false;BEGIN PERFORM zoi.home_revision_content_valid(jsonb_build_object('description',repeat('x',200001)),'{}');EXCEPTION WHEN raise_exception THEN refused:=SQLERRM='invalid_content';END;IF NOT refused THEN RAISE EXCEPTION 'capacity_content_bytes_not_refused';END IF;
+END$proof$;
+ROLLBACK;
+SELECT true AS exact_two_runtime_contracts,true AS capacity151_accepted,true AS excess301items_refused,true AS excess21sections_refused,true AS content200KB_preserved,true AS no_listing_or_owner_writes,false AS actual_source_or_browser_acceptance;
