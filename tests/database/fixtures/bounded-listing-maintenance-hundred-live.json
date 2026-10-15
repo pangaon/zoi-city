@@ -1,0 +1,1528 @@
+{
+  "captured_at": "2026-10-15T21:20:08.524372+00:00",
+  "source": "Existing exact captured45d1 main/e1f helper; combines reviewed projection with only3helper seek LIMIT1000\u2192100 and matching bound comment. No actual SQL by author.",
+  "actual": {
+    "at": "2026-10-15T21:20:08.524372+00:00",
+    "job31": {
+      "id": 31,
+      "active": false,
+      "schedule": "7,17,27,37,47,57 * * * *",
+      "command_md5": "7876d3105fcf6a7917047851f0ba6af9",
+      "command_bytes": 80
+    },
+    "cursor": {
+      "version": 1,
+      "after_id": null
+    },
+    "functions": [
+      {
+        "acl": null,
+        "md5": "f3f56fbc83395559e0b883f610182017",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.auto_seo_fill()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.auto_seo_fill()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE\n  v_cat_slug text;\n  v_cat_label text;\n  v_slug text;\n  v_title text;\n  v_desc text;\nBEGIN\n  IF NEW.primary_category_id IS NOT NULL THEN\n    SELECT c.slug, c.label_en INTO v_cat_slug, v_cat_label\n    FROM zoi.categories c WHERE c.id = NEW.primary_category_id;\n  END IF;\n\n  v_slug := coalesce(NEW.slug, zoi.seo_slug(NEW.name || '-' || coalesce(NEW.city,'')));\n\n  IF NEW.schema_type IS NULL OR length(NEW.schema_type)=0 THEN\n    NEW.schema_type := zoi.schema_type(NEW.entity_type, coalesce(v_cat_slug,''));\n  END IF;\n\n  IF NEW.canonical_path IS NULL OR length(NEW.canonical_path)=0 THEN\n    NEW.canonical_path := '/' || NEW.entity_type || '/' || v_slug;\n  END IF;\n\n  IF NEW.meta_title IS NULL OR length(NEW.meta_title)=0 THEN\n    v_title := NEW.name\n      || coalesce(' \u2014 ' || zoi.seo_pluralize(v_cat_label), '')\n      || coalesce(' in ' || NEW.city, '')\n      || ' | Zoi';\n    IF length(v_title) > 66 THEN\n      v_title := NEW.name || coalesce(' in ' || NEW.city, '') || ' | Zoi';\n    END IF;\n    IF length(v_title) > 66 THEN\n      v_title := left(NEW.name, 60) || ' | Zoi';\n    END IF;\n    NEW.meta_title := v_title;\n  END IF;\n\n  IF NEW.meta_description IS NULL OR length(NEW.meta_description)=0 THEN\n    IF NEW.description IS NOT NULL AND length(NEW.description) >= 30\n       AND NEW.description !~* '^https?://' THEN\n      v_desc := left(NEW.description, 158);\n    ELSE\n      v_desc := NEW.name\n        || coalesce(' in ' || NEW.city, '')\n        || coalesce(', ' || NEW.country, '')\n        || '. Listed on Zoi, the Greek community directory.';\n    END IF;\n    NEW.meta_description := v_desc;\n  END IF;\n\n  RETURN NEW;\nEND$function$\n",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "e16849417c9c87d6a2ad8a4482dbb051",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.claim_owner_changed()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.claim_owner_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF NEW.owner_workspace_id IS DISTINCT FROM OLD.owner_workspace_id OR NEW.owner_user_id IS DISTINCT FROM OLD.owner_user_id THEN\n  INSERT INTO zoi.listing_claim_authority(listing_id)VALUES(NEW.id) ON CONFLICT(listing_id) DO UPDATE SET revision=gen_random_uuid();\n END IF;\n RETURN NEW;\nEND $function$\n",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": null,
+        "md5": "86de5ced4bc9ae28b48240ee6b149323",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.ensure_listing_slug()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.ensure_listing_slug()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare base text; cand text; n int := 0;\nbegin\n  if new.slug is not null and length(new.slug) > 0 then\n    return new;\n  end if;\n  begin\n    if new.canonical_path is not null and length(new.canonical_path) > 0 then\n      base := substring(new.canonical_path from '^/[^/]+/(.+)$');\n    end if;\n    if base is null or length(base) = 0 then\n      base := zoi.seo_slug(coalesce(new.name,'') || '-' || coalesce(new.city,''));\n    end if;\n    if base is null or length(base) = 0 then\n      return new;                              -- cannot derive; keep today's behavior\n    end if;\n    cand := base;\n    while exists (select 1 from zoi.listings x where x.slug = cand and x.id <> new.id) loop\n      n := n + 1;\n      cand := base || '-' || n;\n      if n > 50 then\n        cand := base || '-' || substr(replace(new.id::text,'-',''),1,8);\n        exit;\n      end if;\n    end loop;\n    new.slug := cand;\n  exception when others then\n    null;                                      -- never break the write\n  end;\n  return new;\nend\n$function$\n",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "baca38034b9b0974465026eff8aec89d",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_read_authority_changed()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF zoi.geography_read_authority_input(OLD) IS DISTINCT FROM zoi.geography_read_authority_input(NEW) THEN\n   UPDATE zoi.geography_read_authority_epochs SET epoch=epoch+1 WHERE listing_id=NEW.id;\n END IF;\n RETURN NULL;\nEND $function$\n",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "2d8c2ea0fb88550e057c51004100add1",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.geography_source_listing_changed()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.geography_source_listing_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;generation bigint;previous zoi.geography_repair_jobs;became_unowned_public boolean:=false;current_hash text;authority_hash text;BEGIN\n -- Deferred events must use the final row, not an intermediate NEW snapshot.\n SELECT * INTO l FROM zoi.listings WHERE id=NEW.id;\n IF l.id IS NULL OR NOT zoi.geography_source_eligible(l) OR public.geography_reviewed_point(l.id) IS NOT NULL THEN RETURN NULL;END IF;\n IF TG_OP='UPDATE' THEN became_unowned_public:=OLD.owner_user_id IS NOT NULL OR OLD.owner_workspace_id IS NOT NULL OR OLD.publish_status IS DISTINCT FROM 'published' OR (OLD.moderation_status IS DISTINCT FROM 'clean' AND OLD.moderation_status IS DISTINCT FROM 'cleared') OR OLD.marketplace_status='hidden';END IF;\n current_hash:=zoi.geography_repair_input(l);authority_hash:=zoi.geography_source_authority_input(l);generation:=zoi.geography_source_generation(l.id);\n SELECT * INTO previous FROM zoi.geography_repair_jobs WHERE listing_id=l.id AND strategy='official_sources_v1'AND source_generation=generation ORDER BY created_at DESC,id DESC LIMIT 1;\n IF NOT coalesce(became_unowned_public,false) AND previous.id IS NOT NULL AND previous.input_fingerprint=current_hash AND(previous.source_authority_fingerprint=authority_hash OR(previous.source_authority_fingerprint=''AND(TG_OP='INSERT'OR zoi.geography_source_authority_input(OLD)=authority_hash)))THEN\n  -- Same final input/generation: terminal history does not cause endless retries.\n  -- Still add a missing supporting lane idempotently when appropriate.\n  PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);RETURN NULL;\n END IF;\n generation:=generation+1;\n PERFORM zoi.geography_source_enqueue_one(l,'official_sources_v1',generation);\n PERFORM zoi.geography_source_enqueue_one(l,'publisher_profiles_v1',generation);\n RETURN NULL;\nEND $function$\n",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "f0ebb7ba92e72b6bd34b43acc2676789",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.guard_listing_quality_receipts()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.guard_listing_quality_receipts()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE prior_receipt jsonb;\nBEGIN\n IF TG_OP='UPDATE' THEN prior_receipt:=OLD.profile->'_coverage';END IF;\n IF (current_user IN('anon','authenticated') OR current_setting('request.jwt.claim.role',true) IN('anon','authenticated') OR coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb->>'role' IN('anon','authenticated')) AND NEW.profile->'_coverage' IS DISTINCT FROM prior_receipt THEN RAISE EXCEPTION 'quality_receipts_service_only';END IF;\n RETURN NEW;\nEND $function$\n",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "a6d10dbbedb1f4a9aff4a3010b3a03d0",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.maintain_seo_identity_keys()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_identity_keys()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n INSERT INTO zoi.seo_identity_keys VALUES\n (NEW.id,zoi.seo_name(NEW.name,NEW.city),zoi.seo_text(NEW.city),zoi.seo_text(NEW.region),zoi.seo_text(NEW.country),zoi.seo_text(NEW.address))\n ON CONFLICT (listing_id) DO UPDATE SET name_key=EXCLUDED.name_key,city_key=EXCLUDED.city_key,\n region_key=EXCLUDED.region_key,country_key=EXCLUDED.country_key,address_key=EXCLUDED.address_key;\n RETURN NEW;\nEND;\n$function$\n",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "md5": "f17b227663468c63feaafdda7caf903f",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.maintain_seo_projection()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_projection()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$ BEGIN UPDATE zoi.seo_identity_keys k SET slug=NEW.slug,entity_type=NEW.entity_type,updated_at=coalesce(NEW.updated_at,NEW.created_at),\n completeness=(((NEW.address IS NOT NULL)::int)+((NEW.phone IS NOT NULL)::int)+((NEW.website IS NOT NULL)::int)+((NEW.latitude IS NOT NULL)::int)+((NEW.description IS NOT NULL)::int)),\n ugly=(NEW.slug ~ '-[0-9a-f]{6}$')::int,\n is_indexable=coalesce(NEW.publish_status='published' AND NEW.moderation_status IN ('clean','cleared') AND coalesce(NEW.marketplace_status,'')<>'hidden' AND NEW.duplicate_status IS DISTINCT FROM 'confirmed_duplicate'\n AND nullif(btrim(NEW.slug),'') IS NOT NULL AND nullif(btrim(NEW.name),'') IS NOT NULL\n AND (NEW.city IS NOT NULL OR NEW.address IS NOT NULL OR NEW.website IS NOT NULL),false)\nWHERE k.listing_id=NEW.id;\n RETURN NEW; END $function$\n",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.maintenance_candidate_ids()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_candidate_ids()\n RETURNS uuid[]\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE s jsonb;after_id uuid;chosen uuid[];\nBEGIN\n IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN ARRAY[]::uuid[];END IF;\n SELECT value INTO s FROM zoi.delivery_state WHERE key='listing_score_cursor_v1' FOR UPDATE;\n IF s IS NULL OR jsonb_typeof(s) IS DISTINCT FROM 'object' OR s->'version' IS DISTINCT FROM '1'::jsonb OR NOT(s?'after_id') OR EXISTS(SELECT 1 FROM jsonb_object_keys(s)k WHERE k NOT IN('version','after_id')) THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n IF s->'after_id' IS DISTINCT FROM 'null'::jsonb THEN\n  IF jsonb_typeof(s->'after_id') IS DISTINCT FROM 'string' OR coalesce(s->>'after_id','')!~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n  after_id:=(s->>'after_id')::uuid;\n END IF;\n -- Two bounded PK seeks; the second runs only when the first found zero IDs.\n -- It is never a second batch: at most 1000 IDs are selected in total.\n IF after_id IS NULL THEN\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n ELSE\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l WHERE l.id>after_id ORDER BY l.id LIMIT 1000)c;\n  IF cardinality(chosen)=0 THEN\n   SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n  END IF;\n END IF;\n IF cardinality(chosen)>0 THEN\n  UPDATE zoi.delivery_state SET value=jsonb_build_object('version',1,'after_id',chosen[cardinality(chosen)]::text),updated_at=clock_timestamp() WHERE key='listing_score_cursor_v1';\n END IF;\n RETURN chosen;\nEND $function$\n",
+        "volatility": "v",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "2db348273194c690430a9809a6156f5b",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.maintenance_event_date(text)",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_event_date(p_value text)\n RETURNS date\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nBEGIN\n  IF p_value IS NULL OR p_value !~ '^\\d{4}-\\d{2}-\\d{2}($|T| )' THEN RETURN NULL; END IF;\n  RETURN left(p_value,10)::date;\nEXCEPTION WHEN invalid_datetime_format OR datetime_field_overflow THEN RETURN NULL;\nEND;\n$function$\n",
+        "volatility": "i",
+        "security_definer": false
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.run_maintenance()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.run_maintenance()\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE changed integer;candidates uuid[];\nBEGIN\n  -- A second cron/manual invocation must not compete for the same rows.\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN; END IF;\n  candidates:=zoi.maintenance_candidate_ids();\n  WITH selected AS MATERIALIZED (\n    SELECT l.* FROM unnest(candidates) WITH ORDINALITY c(id,ord)\n    CROSS JOIN LATERAL (SELECT row.* FROM zoi.listings row WHERE row.id=c.id FOR UPDATE OF row SKIP LOCKED)l\n    ORDER BY c.ord\n  ), scores AS MATERIALIZED (\n    SELECT id,\n      round(((CASE WHEN description IS NOT NULL AND length(description)>10 THEN 1 ELSE 0 END)\n       +(CASE WHEN website IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN address IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN phone IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN primary_category_id IS NOT NULL THEN 1 ELSE 0 END))::numeric/5,3) AS completeness,\n      least(1.0,round((CASE verification_status WHEN 'admin_verified' THEN 0.9 WHEN 'owner_verified' THEN 0.85\n        WHEN 'partner_verified' THEN 0.8 WHEN 'source_verified' THEN 0.6 WHEN 'owner_claimed' THEN 0.5 ELSE 0.3 END\n        +CASE source_trust_tier WHEN 'official' THEN 0.1 WHEN 'partner' THEN 0.08 WHEN 'public_directory' THEN 0.05 ELSE 0 END)::numeric,3)) AS trust,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date THEN 0.2\n        WHEN last_seen_at>now()-interval '14 days' THEN 0.95 ELSE 0.6 END AS freshness,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date-14\n         AND coalesce(profile->>'recurring','')<>'annual' THEN 'archived' ELSE publish_status END AS next_status\n    FROM selected\n  ), due AS (\n    SELECT s.* FROM scores s JOIN zoi.listings l USING(id)\n    WHERE ROW(l.completeness_score,l.trust_score,l.freshness_score,l.publish_status)\n      IS DISTINCT FROM ROW(s.completeness,s.trust,s.freshness,s.next_status)\n    ORDER BY s.id LIMIT 1000\n  )\n  UPDATE zoi.listings l SET completeness_score=d.completeness,trust_score=d.trust,\n    freshness_score=d.freshness,publish_status=d.next_status\n  FROM due d WHERE l.id=d.id;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  INSERT INTO zoi.audit_log(actor,action,target_type,reason)\n    VALUES('cron','run_maintenance','listing',format('Bounded score/freshness/archive maintenance: %s changed rows',changed));\nEND;\n$function$\n",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "1f8b6687e304c5f6502235344d4f0b7a",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.set_updated_at()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin new.updated_at = now(); return new; end; $function$\n",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "059ca37c376f88162bc84423c543b024",
+        "owner": "postgres",
+        "config": [
+          "search_path=zoi, public"
+        ],
+        "signature": "zoi.skip_noop_listing_update()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.skip_noop_listing_update()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  IF (to_jsonb(NEW) - 'updated_at') = (to_jsonb(OLD) - 'updated_at') THEN\n    RETURN NULL;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+        "volatility": "v",
+        "security_definer": false
+      },
+      {
+        "acl": null,
+        "md5": "48db3959fc1281e9f09af3ff8164dae6",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.tg_apply_publish_gate()",
+        "definition": "CREATE OR REPLACE FUNCTION zoi.tg_apply_publish_gate()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_gate jsonb;\nbegin\n if new.publish_status is null or new.publish_status in ('draft','published') then\n  v_gate:=zoi.publish_gate(new.name,new.entity_type,new.primary_category_id,new.city,new.country,new.phone,new.address,new.website);\n  if new.publish_status is distinct from 'draft' then\n   if (v_gate->>'ok')::boolean then new.publish_status:='published';\n   else new.publish_status:='pending_review';end if;\n  end if;\n  new.profile:=coalesce(new.profile,'{}'::jsonb)||jsonb_build_object('gate',jsonb_build_object(\n   'ok',v_gate->'ok','fails',v_gate->'fails','warnings',v_gate->'warnings',\n   'checked_at',to_char(now() at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')));\n  new.completeness_score:=round(((v_gate->>'quality_score')::numeric/100.0),3);\n end if;\n return new;\nend;\n$function$\n",
+        "volatility": "v",
+        "security_definer": false
+      }
+    ],
+    "listing_columns": [
+      {
+        "name": "id",
+        "type": "uuid"
+      },
+      {
+        "name": "entity_type",
+        "type": "text"
+      },
+      {
+        "name": "name",
+        "type": "text"
+      },
+      {
+        "name": "slug",
+        "type": "text"
+      },
+      {
+        "name": "legal_name",
+        "type": "text"
+      },
+      {
+        "name": "display_name",
+        "type": "text"
+      },
+      {
+        "name": "description",
+        "type": "text"
+      },
+      {
+        "name": "primary_category_id",
+        "type": "bigint"
+      },
+      {
+        "name": "tags",
+        "type": "text[]"
+      },
+      {
+        "name": "language_support",
+        "type": "text[]"
+      },
+      {
+        "name": "greek_language_available",
+        "type": "boolean"
+      },
+      {
+        "name": "city",
+        "type": "text"
+      },
+      {
+        "name": "region",
+        "type": "text"
+      },
+      {
+        "name": "province_state",
+        "type": "text"
+      },
+      {
+        "name": "country",
+        "type": "text"
+      },
+      {
+        "name": "neighborhood",
+        "type": "text"
+      },
+      {
+        "name": "address",
+        "type": "text"
+      },
+      {
+        "name": "latitude",
+        "type": "double precision"
+      },
+      {
+        "name": "longitude",
+        "type": "double precision"
+      },
+      {
+        "name": "region_id",
+        "type": "bigint"
+      },
+      {
+        "name": "phone",
+        "type": "text"
+      },
+      {
+        "name": "email",
+        "type": "text"
+      },
+      {
+        "name": "website",
+        "type": "text"
+      },
+      {
+        "name": "source_id",
+        "type": "uuid"
+      },
+      {
+        "name": "source_url",
+        "type": "text"
+      },
+      {
+        "name": "source_type",
+        "type": "text"
+      },
+      {
+        "name": "source_trust_tier",
+        "type": "text"
+      },
+      {
+        "name": "source_last_checked_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "first_seen_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "last_seen_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "last_verified_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "verification_status",
+        "type": "text"
+      },
+      {
+        "name": "claim_status",
+        "type": "text"
+      },
+      {
+        "name": "owner_user_id",
+        "type": "uuid"
+      },
+      {
+        "name": "duplicate_status",
+        "type": "text"
+      },
+      {
+        "name": "moderation_status",
+        "type": "text"
+      },
+      {
+        "name": "publish_status",
+        "type": "text"
+      },
+      {
+        "name": "freshness_score",
+        "type": "numeric(4,3)"
+      },
+      {
+        "name": "completeness_score",
+        "type": "numeric(4,3)"
+      },
+      {
+        "name": "trust_score",
+        "type": "numeric(4,3)"
+      },
+      {
+        "name": "profile",
+        "type": "jsonb"
+      },
+      {
+        "name": "field_meta",
+        "type": "jsonb"
+      },
+      {
+        "name": "trust_badges",
+        "type": "text[]"
+      },
+      {
+        "name": "created_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "updated_at",
+        "type": "timestamp with time zone"
+      },
+      {
+        "name": "created_by",
+        "type": "text"
+      },
+      {
+        "name": "updated_by",
+        "type": "text"
+      },
+      {
+        "name": "search_tsv",
+        "type": "tsvector"
+      },
+      {
+        "name": "meta_title",
+        "type": "text"
+      },
+      {
+        "name": "meta_description",
+        "type": "text"
+      },
+      {
+        "name": "canonical_path",
+        "type": "text"
+      },
+      {
+        "name": "schema_type",
+        "type": "text"
+      },
+      {
+        "name": "og_image",
+        "type": "text"
+      },
+      {
+        "name": "hreflang_alt",
+        "type": "jsonb"
+      },
+      {
+        "name": "sells_products",
+        "type": "boolean"
+      },
+      {
+        "name": "offers_services",
+        "type": "boolean"
+      },
+      {
+        "name": "is_professional",
+        "type": "boolean"
+      },
+      {
+        "name": "bookable",
+        "type": "boolean"
+      },
+      {
+        "name": "booking_type",
+        "type": "text"
+      },
+      {
+        "name": "service_on_demand",
+        "type": "boolean"
+      },
+      {
+        "name": "marketplace_status",
+        "type": "text"
+      },
+      {
+        "name": "price_range",
+        "type": "text"
+      },
+      {
+        "name": "hours",
+        "type": "text"
+      },
+      {
+        "name": "rating",
+        "type": "numeric(2,1)"
+      },
+      {
+        "name": "rating_count",
+        "type": "integer"
+      },
+      {
+        "name": "photo_url",
+        "type": "text"
+      },
+      {
+        "name": "amenities",
+        "type": "text[]"
+      },
+      {
+        "name": "geo_precision",
+        "type": "text"
+      },
+      {
+        "name": "embedding",
+        "type": "vector(1536)"
+      },
+      {
+        "name": "keywords",
+        "type": "text[]"
+      },
+      {
+        "name": "onboarding_path",
+        "type": "text"
+      },
+      {
+        "name": "social_links",
+        "type": "jsonb"
+      },
+      {
+        "name": "ingestion_source",
+        "type": "text"
+      },
+      {
+        "name": "owner_workspace_id",
+        "type": "uuid"
+      },
+      {
+        "name": "place_id",
+        "type": "bigint"
+      },
+      {
+        "name": "region_code",
+        "type": "text"
+      },
+      {
+        "name": "region_native",
+        "type": "text"
+      }
+    ],
+    "listing_indexes": [
+      {
+        "name": "listings_pkey",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE UNIQUE INDEX listings_pkey ON zoi.listings USING btree (id)"
+      },
+      {
+        "name": "listings_slug_key",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE UNIQUE INDEX listings_slug_key ON zoi.listings USING btree (slug)"
+      },
+      {
+        "name": "idx_zoi_listings_type",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_type ON zoi.listings USING btree (entity_type)"
+      },
+      {
+        "name": "idx_zoi_listings_city",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_city ON zoi.listings USING btree (city)"
+      },
+      {
+        "name": "idx_zoi_listings_country",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_country ON zoi.listings USING btree (country)"
+      },
+      {
+        "name": "idx_zoi_listings_publish",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_publish ON zoi.listings USING btree (publish_status)"
+      },
+      {
+        "name": "idx_zoi_listings_verif",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_verif ON zoi.listings USING btree (verification_status)"
+      },
+      {
+        "name": "idx_zoi_listings_claim",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_claim ON zoi.listings USING btree (claim_status)"
+      },
+      {
+        "name": "idx_zoi_listings_dupe",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_dupe ON zoi.listings USING btree (duplicate_status)"
+      },
+      {
+        "name": "idx_zoi_listings_region",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_region ON zoi.listings USING btree (region_id)"
+      },
+      {
+        "name": "idx_zoi_listings_tsv",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_tsv ON zoi.listings USING gin (search_tsv)"
+      },
+      {
+        "name": "idx_zoi_listings_name_trgm",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_name_trgm ON zoi.listings USING gin (lower(name) gin_trgm_ops)"
+      },
+      {
+        "name": "idx_zoi_listings_cat",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_cat ON zoi.listings USING btree (primary_category_id)"
+      },
+      {
+        "name": "idx_zoi_listings_source",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_zoi_listings_source ON zoi.listings USING btree (source_id)"
+      },
+      {
+        "name": "listings_place_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_place_idx ON zoi.listings USING btree (place_id)"
+      },
+      {
+        "name": "idx_listings_website_notnull",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_website_notnull ON zoi.listings USING btree (website) WHERE (website IS NOT NULL)"
+      },
+      {
+        "name": "idx_listings_phone_notnull",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_phone_notnull ON zoi.listings USING btree (phone) WHERE (phone IS NOT NULL)"
+      },
+      {
+        "name": "idx_listings_pub_created",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_pub_created ON zoi.listings USING btree (publish_status, created_at DESC)"
+      },
+      {
+        "name": "idx_listings_enrich_due",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_enrich_due ON zoi.listings USING btree ((((profile -> '_enrich'::text) ->> 'checked_at'::text))) WHERE ((website IS NOT NULL) AND (website <> ''::text))"
+      },
+      {
+        "name": "idx_listings_region",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_region ON zoi.listings USING btree (lower(region)) WHERE (region IS NOT NULL)"
+      },
+      {
+        "name": "idx_listings_region_code",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_region_code ON zoi.listings USING btree (upper(region_code)) WHERE (region_code IS NOT NULL)"
+      },
+      {
+        "name": "idx_listings_region_native",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX idx_listings_region_native ON zoi.listings USING btree (lower(region_native)) WHERE (region_native IS NOT NULL)"
+      },
+      {
+        "name": "listings_published_city_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_published_city_idx ON zoi.listings USING btree (city, country) WHERE ((publish_status = 'published'::text) AND (city IS NOT NULL) AND (city <> ''::text))"
+      },
+      {
+        "name": "listings_public_discovery_counts_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_discovery_counts_idx ON zoi.listings USING btree (entity_type) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_region_trgm_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_region_trgm_idx ON zoi.listings USING gin (lower(region) gin_trgm_ops, lower(region_native) gin_trgm_ops) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_canonical_identity_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_canonical_identity_idx ON zoi.listings USING btree (entity_type, md5(zoi.seo_name(name, city)), md5(zoi.seo_text(city))) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_locality_name_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_locality_name_idx ON zoi.listings USING btree (lower(city), lower(zoi.geo_country_canon(country))) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_geography_counts_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_geography_counts_idx ON zoi.listings USING btree (country, region, city) INCLUDE (region_code, region_native) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_directory_order_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_directory_order_idx ON zoi.listings USING btree (((rating IS NOT NULL)) DESC, rating DESC NULLS LAST, ((NULLIF((profile #>> '{brand,logo}'::text[]), ''::text) IS NOT NULL)) DESC, completeness_score DESC NULLS LAST, name) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_global_rank_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_global_rank_idx ON zoi.listings USING btree (lower(TRIM(BOTH FROM COALESCE(name, ''::text))), lower(TRIM(BOTH FROM COALESCE(city, ''::text))), lower(TRIM(BOTH FROM COALESCE(zoi.geo_country_canon(country), ''::text))), ((verification_status = 'verified'::text)) DESC, trust_score DESC NULLS LAST, (\nCASE entity_type\n    WHEN 'creator'::text THEN 0\n    WHEN 'artist'::text THEN 1\n    WHEN 'business'::text THEN 2\n    ELSE 3\nEND), name, id) INCLUDE (verification_status, entity_type, city, country) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_geo_order_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_geo_order_idx ON zoi.listings USING btree (id) INCLUDE (slug, entity_type, name, city, country, primary_category_id, latitude, longitude) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (duplicate_status <> 'confirmed_duplicate'::text) AND (latitude IS NOT NULL) AND (longitude IS NOT NULL))"
+      },
+      {
+        "name": "listings_public_category_counts_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_category_counts_idx ON zoi.listings USING btree (primary_category_id, country, region, city) INCLUDE (region_native, region_code, entity_type) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_place_candidates_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_place_candidates_idx ON zoi.listings USING btree (country, region, city, primary_category_id) INCLUDE (id, name, verification_status, trust_score, region_native, region_code) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_default_page_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_default_page_idx ON zoi.listings USING btree (((verification_status = 'verified'::text)) DESC, trust_score DESC NULLS LAST, name, id) INCLUDE (verification_status, entity_type, city, country) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text))"
+      },
+      {
+        "name": "listings_public_address_trgm_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_address_trgm_idx ON zoi.listings USING gin (lower(address) gin_trgm_ops) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text) AND (NULLIF(btrim(address), ''::text) IS NOT NULL))"
+      },
+      {
+        "name": "listings_public_geo_id_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_public_geo_id_idx ON zoi.listings USING btree (id) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (duplicate_status <> 'confirmed_duplicate'::text) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text) AND (latitude IS NOT NULL) AND (longitude IS NOT NULL))"
+      },
+      {
+        "name": "listings_enrichment_candidate_order_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_enrichment_candidate_order_idx ON zoi.listings USING btree ((\nCASE\n    WHEN ((profile #>> '{_enrich,crawl_status}'::text[]) = 'error'::text) THEN 1\n    ELSE 0\nEND), ((verification_status = ANY (ARRAY['verified'::text, 'owner_verified'::text, 'source_verified'::text]))) DESC, ((profile #>> '{_enrich,checked_at}'::text[])) NULLS FIRST, id) WHERE ((publish_status = 'published'::text) AND (moderation_status = ANY (ARRAY['clean'::text, 'cleared'::text])) AND (COALESCE(marketplace_status, ''::text) <> 'hidden'::text) AND (website ~* '^https?://'::text) AND (COALESCE((profile #>> '{_enrich,blocked}'::text[]), ''::text) <> 'true'::text))"
+      },
+      {
+        "name": "listings_owner_workspace_lookup_idx",
+        "ready": true,
+        "valid": true,
+        "definition": "CREATE INDEX listings_owner_workspace_lookup_idx ON zoi.listings USING btree (owner_workspace_id) WHERE (owner_workspace_id IS NOT NULL)"
+      }
+    ],
+    "listing_triggers": [
+      {
+        "name": "geography_read_authority_changed",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER geography_read_authority_changed AFTER UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.geography_read_authority_changed()"
+      },
+      {
+        "name": "geography_source_listing_insert",
+        "enabled": "O",
+        "trigger": "CREATE CONSTRAINT TRIGGER geography_source_listing_insert AFTER INSERT ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION zoi.geography_source_listing_changed()"
+      },
+      {
+        "name": "geography_source_listing_update",
+        "enabled": "O",
+        "trigger": "CREATE CONSTRAINT TRIGGER geography_source_listing_update AFTER UPDATE ON zoi.listings DEFERRABLE INITIALLY DEFERRED FOR EACH ROW WHEN ((((((((((((((((((old.name IS DISTINCT FROM new.name) OR (old.entity_type IS DISTINCT FROM new.entity_type)) OR (old.address IS DISTINCT FROM new.address)) OR (old.city IS DISTINCT FROM new.city)) OR (old.country IS DISTINCT FROM new.country)) OR (old.website IS DISTINCT FROM new.website)) OR (old.source_url IS DISTINCT FROM new.source_url)) OR (old.latitude IS DISTINCT FROM new.latitude)) OR (old.longitude IS DISTINCT FROM new.longitude)) OR (old.geo_precision IS DISTINCT FROM new.geo_precision)) OR (old.owner_user_id IS DISTINCT FROM new.owner_user_id)) OR (old.owner_workspace_id IS DISTINCT FROM new.owner_workspace_id)) OR (old.publish_status IS DISTINCT FROM new.publish_status)) OR (old.moderation_status IS DISTINCT FROM new.moderation_status)) OR (old.marketplace_status IS DISTINCT FROM new.marketplace_status)) OR (old.duplicate_status IS DISTINCT FROM new.duplicate_status)) OR ((old.profile -> '_geo'::text) IS DISTINCT FROM (new.profile -> '_geo'::text)) OR ((old.profile #> '{_enrich,blocked_reason}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,blocked_reason}'::text[])) OR ((old.profile #> '{_enrich,scope_review_required}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,scope_review_required}'::text[])) OR ((old.profile #> '{_enrich,organization_identity_quarantine}'::text[]) IS DISTINCT FROM (new.profile #> '{_enrich,organization_identity_quarantine}'::text[])))) EXECUTE FUNCTION zoi.geography_source_listing_changed()"
+      },
+      {
+        "name": "listing_claim_owner_epoch",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER listing_claim_owner_epoch AFTER UPDATE OF owner_workspace_id, owner_user_id ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.claim_owner_changed()"
+      },
+      {
+        "name": "listing_quality_receipts_guard",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER listing_quality_receipts_guard BEFORE INSERT OR UPDATE OF profile ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.guard_listing_quality_receipts()"
+      },
+      {
+        "name": "listings_aa_slug",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER listings_aa_slug BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.ensure_listing_slug()"
+      },
+      {
+        "name": "listings_publish_gate",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER listings_publish_gate BEFORE INSERT ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.tg_apply_publish_gate()"
+      },
+      {
+        "name": "listings_skip_noop",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER listings_skip_noop BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.skip_noop_listing_update()"
+      },
+      {
+        "name": "maintain_seo_identity_keys",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER maintain_seo_identity_keys AFTER INSERT OR UPDATE OF id, name, city, region, country, address ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_identity_keys()"
+      },
+      {
+        "name": "trg_listings_auto_seo",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER trg_listings_auto_seo BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.auto_seo_fill()"
+      },
+      {
+        "name": "trg_listings_updated",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER trg_listings_updated BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.set_updated_at()"
+      },
+      {
+        "name": "zz_maintain_seo_projection",
+        "enabled": "O",
+        "trigger": "CREATE TRIGGER zz_maintain_seo_projection AFTER INSERT OR UPDATE OF id, name, city, region, country, address, slug, entity_type, updated_at, created_at, phone, website, latitude, description, publish_status, moderation_status, marketplace_status, duplicate_status ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_projection()"
+      }
+    ]
+  },
+  "projected_main_definition": "CREATE OR REPLACE FUNCTION zoi.run_maintenance()\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE changed integer;candidates uuid[];\nBEGIN\n  -- A second cron/manual invocation must not compete for the same rows.\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN; END IF;\n  candidates:=zoi.maintenance_candidate_ids();\n  WITH selected AS MATERIALIZED (\n    SELECT l.id,l.description,l.website,l.address,l.phone,l.primary_category_id,l.verification_status,l.source_trust_tier,l.entity_type,l.last_seen_at,l.publish_status,l.completeness_score,l.trust_score,l.freshness_score,l.event_end_datetime,l.event_recurring\n    FROM unnest(candidates) WITH ORDINALITY c(id,ord)\n    CROSS JOIN LATERAL (\n      SELECT row.id,row.description,row.website,row.address,row.phone,row.primary_category_id,row.verification_status,row.source_trust_tier,row.entity_type,row.last_seen_at,row.publish_status,row.completeness_score,row.trust_score,row.freshness_score,\n        CASE WHEN row.entity_type='event' THEN row.profile->>'end_datetime' END AS event_end_datetime,\n        CASE WHEN row.entity_type='event' THEN row.profile->>'recurring' END AS event_recurring\n      FROM zoi.listings row WHERE row.id=c.id FOR UPDATE OF row SKIP LOCKED\n    )l\n    ORDER BY c.ord\n  ), scores AS MATERIALIZED (\n    SELECT id,\n      round(((CASE WHEN description IS NOT NULL AND length(description)>10 THEN 1 ELSE 0 END)\n       +(CASE WHEN website IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN address IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN phone IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN primary_category_id IS NOT NULL THEN 1 ELSE 0 END))::numeric/5,3) AS completeness,\n      least(1.0,round((CASE verification_status WHEN 'admin_verified' THEN 0.9 WHEN 'owner_verified' THEN 0.85\n        WHEN 'partner_verified' THEN 0.8 WHEN 'source_verified' THEN 0.6 WHEN 'owner_claimed' THEN 0.5 ELSE 0.3 END\n        +CASE source_trust_tier WHEN 'official' THEN 0.1 WHEN 'partner' THEN 0.08 WHEN 'public_directory' THEN 0.05 ELSE 0 END)::numeric,3)) AS trust,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(event_end_datetime)<current_date THEN 0.2\n        WHEN last_seen_at>now()-interval '14 days' THEN 0.95 ELSE 0.6 END AS freshness,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(event_end_datetime)<current_date-14\n         AND coalesce(event_recurring,'')<>'annual' THEN 'archived' ELSE publish_status END AS next_status\n    FROM selected\n  ), due AS (\n    SELECT s.* FROM scores s JOIN zoi.listings l USING(id)\n    WHERE ROW(l.completeness_score,l.trust_score,l.freshness_score,l.publish_status)\n      IS DISTINCT FROM ROW(s.completeness,s.trust,s.freshness,s.next_status)\n    ORDER BY s.id LIMIT 1000\n  )\n  UPDATE zoi.listings l SET completeness_score=d.completeness,trust_score=d.trust,\n    freshness_score=d.freshness,publish_status=d.next_status\n  FROM due d WHERE l.id=d.id;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  INSERT INTO zoi.audit_log(actor,action,target_type,reason)\n    VALUES('cron','run_maintenance','listing',format('Bounded score/freshness/archive maintenance: %s changed rows',changed));\nEND;\n$function$\n",
+  "old_selected": "    SELECT l.* FROM unnest(candidates) WITH ORDINALITY c(id,ord)\n    CROSS JOIN LATERAL (SELECT row.* FROM zoi.listings row WHERE row.id=c.id FOR UPDATE OF row SKIP LOCKED)l\n    ORDER BY c.ord",
+  "new_selected": "    SELECT l.id,l.description,l.website,l.address,l.phone,l.primary_category_id,l.verification_status,l.source_trust_tier,l.entity_type,l.last_seen_at,l.publish_status,l.completeness_score,l.trust_score,l.freshness_score,l.event_end_datetime,l.event_recurring\n    FROM unnest(candidates) WITH ORDINALITY c(id,ord)\n    CROSS JOIN LATERAL (\n      SELECT row.id,row.description,row.website,row.address,row.phone,row.primary_category_id,row.verification_status,row.source_trust_tier,row.entity_type,row.last_seen_at,row.publish_status,row.completeness_score,row.trust_score,row.freshness_score,\n        CASE WHEN row.entity_type='event' THEN row.profile->>'end_datetime' END AS event_end_datetime,\n        CASE WHEN row.entity_type='event' THEN row.profile->>'recurring' END AS event_recurring\n      FROM zoi.listings row WHERE row.id=c.id FOR UPDATE OF row SKIP LOCKED\n    )l\n    ORDER BY c.ord",
+  "selected_columns": [
+    "id",
+    "description",
+    "website",
+    "address",
+    "phone",
+    "primary_category_id",
+    "verification_status",
+    "source_trust_tier",
+    "entity_type",
+    "last_seen_at",
+    "publish_status",
+    "completeness_score",
+    "trust_score",
+    "freshness_score",
+    "event_end_datetime",
+    "event_recurring"
+  ],
+  "basis_fixture": "bounded-listing-maintenance-live.json",
+  "basis_fixture_sha256": "c4a20825d066f11cb6e78aa1afd309248f8ff79e908b7aca32e956b0a2c04103",
+  "actual_explain": [
+    {
+      "QUERY PLAN": [
+        {
+          "Plan": {
+            "Node Type": "ModifyTable",
+            "Operation": "Update",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Relation Name": "listings",
+            "Schema": "zoi",
+            "Alias": "l",
+            "Startup Cost": 83.72,
+            "Total Cost": 109.83,
+            "Plan Rows": 0,
+            "Plan Width": 0,
+            "Plans": [
+              {
+                "Node Type": "Nested Loop",
+                "Parent Relationship": "InitPlan",
+                "Subplan Name": "CTE selected",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Join Type": "Inner",
+                "Startup Cost": 24.05,
+                "Total Cost": 50.36,
+                "Plan Rows": 10,
+                "Plan Width": 2140,
+                "Output": [
+                  "l_2.id",
+                  "l_2.entity_type",
+                  "l_2.name",
+                  "l_2.slug",
+                  "l_2.legal_name",
+                  "l_2.display_name",
+                  "l_2.description",
+                  "l_2.primary_category_id",
+                  "l_2.tags",
+                  "l_2.language_support",
+                  "l_2.greek_language_available",
+                  "l_2.city",
+                  "l_2.region",
+                  "l_2.province_state",
+                  "l_2.country",
+                  "l_2.neighborhood",
+                  "l_2.address",
+                  "l_2.latitude",
+                  "l_2.longitude",
+                  "l_2.region_id",
+                  "l_2.phone",
+                  "l_2.email",
+                  "l_2.website",
+                  "l_2.source_id",
+                  "l_2.source_url",
+                  "l_2.source_type",
+                  "l_2.source_trust_tier",
+                  "l_2.source_last_checked_at",
+                  "l_2.first_seen_at",
+                  "l_2.last_seen_at",
+                  "l_2.last_verified_at",
+                  "l_2.verification_status",
+                  "l_2.claim_status",
+                  "l_2.owner_user_id",
+                  "l_2.duplicate_status",
+                  "l_2.moderation_status",
+                  "l_2.publish_status",
+                  "l_2.freshness_score",
+                  "l_2.completeness_score",
+                  "l_2.trust_score",
+                  "l_2.profile",
+                  "l_2.field_meta",
+                  "l_2.trust_badges",
+                  "l_2.created_at",
+                  "l_2.updated_at",
+                  "l_2.created_by",
+                  "l_2.updated_by",
+                  "l_2.search_tsv",
+                  "l_2.meta_title",
+                  "l_2.meta_description",
+                  "l_2.canonical_path",
+                  "l_2.schema_type",
+                  "l_2.og_image",
+                  "l_2.hreflang_alt",
+                  "l_2.sells_products",
+                  "l_2.offers_services",
+                  "l_2.is_professional",
+                  "l_2.bookable",
+                  "l_2.booking_type",
+                  "l_2.service_on_demand",
+                  "l_2.marketplace_status",
+                  "l_2.price_range",
+                  "l_2.hours",
+                  "l_2.rating",
+                  "l_2.rating_count",
+                  "l_2.photo_url",
+                  "l_2.amenities",
+                  "l_2.geo_precision",
+                  "l_2.embedding",
+                  "l_2.keywords",
+                  "l_2.onboarding_path",
+                  "l_2.social_links",
+                  "l_2.ingestion_source",
+                  "l_2.owner_workspace_id",
+                  "l_2.place_id",
+                  "l_2.region_code",
+                  "l_2.region_native",
+                  "c.ord"
+                ],
+                "Inner Unique": false,
+                "Plans": [
+                  {
+                    "Node Type": "Limit",
+                    "Parent Relationship": "InitPlan",
+                    "Subplan Name": "InitPlan 1",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Startup Cost": 0.41,
+                    "Total Cost": 23.63,
+                    "Plan Rows": 1000,
+                    "Plan Width": 16,
+                    "Output": [
+                      "listings.id"
+                    ],
+                    "Plans": [
+                      {
+                        "Node Type": "Index Only Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Scan Direction": "Forward",
+                        "Index Name": "listings_pkey",
+                        "Relation Name": "listings",
+                        "Schema": "zoi",
+                        "Alias": "listings",
+                        "Startup Cost": 0.41,
+                        "Total Cost": 1360.57,
+                        "Plan Rows": 58578,
+                        "Plan Width": 16,
+                        "Output": [
+                          "listings.id"
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Node Type": "Function Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Function Name": "unnest",
+                    "Schema": "pg_catalog",
+                    "Alias": "c",
+                    "Startup Cost": 0,
+                    "Total Cost": 0.1,
+                    "Plan Rows": 10,
+                    "Plan Width": 24,
+                    "Output": [
+                      "c.id",
+                      "c.ord"
+                    ],
+                    "Function Call": "unnest((InitPlan 1).col1)"
+                  },
+                  {
+                    "Node Type": "Subquery Scan",
+                    "Parent Relationship": "Inner",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Alias": "l_2",
+                    "Startup Cost": 0.41,
+                    "Total Cost": 2.65,
+                    "Plan Rows": 1,
+                    "Plan Width": 2132,
+                    "Output": [
+                      "l_2.id",
+                      "l_2.entity_type",
+                      "l_2.name",
+                      "l_2.slug",
+                      "l_2.legal_name",
+                      "l_2.display_name",
+                      "l_2.description",
+                      "l_2.primary_category_id",
+                      "l_2.tags",
+                      "l_2.language_support",
+                      "l_2.greek_language_available",
+                      "l_2.city",
+                      "l_2.region",
+                      "l_2.province_state",
+                      "l_2.country",
+                      "l_2.neighborhood",
+                      "l_2.address",
+                      "l_2.latitude",
+                      "l_2.longitude",
+                      "l_2.region_id",
+                      "l_2.phone",
+                      "l_2.email",
+                      "l_2.website",
+                      "l_2.source_id",
+                      "l_2.source_url",
+                      "l_2.source_type",
+                      "l_2.source_trust_tier",
+                      "l_2.source_last_checked_at",
+                      "l_2.first_seen_at",
+                      "l_2.last_seen_at",
+                      "l_2.last_verified_at",
+                      "l_2.verification_status",
+                      "l_2.claim_status",
+                      "l_2.owner_user_id",
+                      "l_2.duplicate_status",
+                      "l_2.moderation_status",
+                      "l_2.publish_status",
+                      "l_2.freshness_score",
+                      "l_2.completeness_score",
+                      "l_2.trust_score",
+                      "l_2.profile",
+                      "l_2.field_meta",
+                      "l_2.trust_badges",
+                      "l_2.created_at",
+                      "l_2.updated_at",
+                      "l_2.created_by",
+                      "l_2.updated_by",
+                      "l_2.search_tsv",
+                      "l_2.meta_title",
+                      "l_2.meta_description",
+                      "l_2.canonical_path",
+                      "l_2.schema_type",
+                      "l_2.og_image",
+                      "l_2.hreflang_alt",
+                      "l_2.sells_products",
+                      "l_2.offers_services",
+                      "l_2.is_professional",
+                      "l_2.bookable",
+                      "l_2.booking_type",
+                      "l_2.service_on_demand",
+                      "l_2.marketplace_status",
+                      "l_2.price_range",
+                      "l_2.hours",
+                      "l_2.rating",
+                      "l_2.rating_count",
+                      "l_2.photo_url",
+                      "l_2.amenities",
+                      "l_2.geo_precision",
+                      "l_2.embedding",
+                      "l_2.keywords",
+                      "l_2.onboarding_path",
+                      "l_2.social_links",
+                      "l_2.ingestion_source",
+                      "l_2.owner_workspace_id",
+                      "l_2.place_id",
+                      "l_2.region_code",
+                      "l_2.region_native"
+                    ],
+                    "Plans": [
+                      {
+                        "Node Type": "LockRows",
+                        "Parent Relationship": "Subquery",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Startup Cost": 0.41,
+                        "Total Cost": 2.64,
+                        "Plan Rows": 1,
+                        "Plan Width": 2138,
+                        "Output": [
+                          "\"row\".id",
+                          "\"row\".entity_type",
+                          "\"row\".name",
+                          "\"row\".slug",
+                          "\"row\".legal_name",
+                          "\"row\".display_name",
+                          "\"row\".description",
+                          "\"row\".primary_category_id",
+                          "\"row\".tags",
+                          "\"row\".language_support",
+                          "\"row\".greek_language_available",
+                          "\"row\".city",
+                          "\"row\".region",
+                          "\"row\".province_state",
+                          "\"row\".country",
+                          "\"row\".neighborhood",
+                          "\"row\".address",
+                          "\"row\".latitude",
+                          "\"row\".longitude",
+                          "\"row\".region_id",
+                          "\"row\".phone",
+                          "\"row\".email",
+                          "\"row\".website",
+                          "\"row\".source_id",
+                          "\"row\".source_url",
+                          "\"row\".source_type",
+                          "\"row\".source_trust_tier",
+                          "\"row\".source_last_checked_at",
+                          "\"row\".first_seen_at",
+                          "\"row\".last_seen_at",
+                          "\"row\".last_verified_at",
+                          "\"row\".verification_status",
+                          "\"row\".claim_status",
+                          "\"row\".owner_user_id",
+                          "\"row\".duplicate_status",
+                          "\"row\".moderation_status",
+                          "\"row\".publish_status",
+                          "\"row\".freshness_score",
+                          "\"row\".completeness_score",
+                          "\"row\".trust_score",
+                          "\"row\".profile",
+                          "\"row\".field_meta",
+                          "\"row\".trust_badges",
+                          "\"row\".created_at",
+                          "\"row\".updated_at",
+                          "\"row\".created_by",
+                          "\"row\".updated_by",
+                          "\"row\".search_tsv",
+                          "\"row\".meta_title",
+                          "\"row\".meta_description",
+                          "\"row\".canonical_path",
+                          "\"row\".schema_type",
+                          "\"row\".og_image",
+                          "\"row\".hreflang_alt",
+                          "\"row\".sells_products",
+                          "\"row\".offers_services",
+                          "\"row\".is_professional",
+                          "\"row\".bookable",
+                          "\"row\".booking_type",
+                          "\"row\".service_on_demand",
+                          "\"row\".marketplace_status",
+                          "\"row\".price_range",
+                          "\"row\".hours",
+                          "\"row\".rating",
+                          "\"row\".rating_count",
+                          "\"row\".photo_url",
+                          "\"row\".amenities",
+                          "\"row\".geo_precision",
+                          "\"row\".embedding",
+                          "\"row\".keywords",
+                          "\"row\".onboarding_path",
+                          "\"row\".social_links",
+                          "\"row\".ingestion_source",
+                          "\"row\".owner_workspace_id",
+                          "\"row\".place_id",
+                          "\"row\".region_code",
+                          "\"row\".region_native",
+                          "\"row\".ctid"
+                        ],
+                        "Plans": [
+                          {
+                            "Node Type": "Index Scan",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Scan Direction": "Forward",
+                            "Index Name": "listings_pkey",
+                            "Relation Name": "listings",
+                            "Schema": "zoi",
+                            "Alias": "row",
+                            "Startup Cost": 0.41,
+                            "Total Cost": 2.63,
+                            "Plan Rows": 1,
+                            "Plan Width": 2138,
+                            "Output": [
+                              "\"row\".id",
+                              "\"row\".entity_type",
+                              "\"row\".name",
+                              "\"row\".slug",
+                              "\"row\".legal_name",
+                              "\"row\".display_name",
+                              "\"row\".description",
+                              "\"row\".primary_category_id",
+                              "\"row\".tags",
+                              "\"row\".language_support",
+                              "\"row\".greek_language_available",
+                              "\"row\".city",
+                              "\"row\".region",
+                              "\"row\".province_state",
+                              "\"row\".country",
+                              "\"row\".neighborhood",
+                              "\"row\".address",
+                              "\"row\".latitude",
+                              "\"row\".longitude",
+                              "\"row\".region_id",
+                              "\"row\".phone",
+                              "\"row\".email",
+                              "\"row\".website",
+                              "\"row\".source_id",
+                              "\"row\".source_url",
+                              "\"row\".source_type",
+                              "\"row\".source_trust_tier",
+                              "\"row\".source_last_checked_at",
+                              "\"row\".first_seen_at",
+                              "\"row\".last_seen_at",
+                              "\"row\".last_verified_at",
+                              "\"row\".verification_status",
+                              "\"row\".claim_status",
+                              "\"row\".owner_user_id",
+                              "\"row\".duplicate_status",
+                              "\"row\".moderation_status",
+                              "\"row\".publish_status",
+                              "\"row\".freshness_score",
+                              "\"row\".completeness_score",
+                              "\"row\".trust_score",
+                              "\"row\".profile",
+                              "\"row\".field_meta",
+                              "\"row\".trust_badges",
+                              "\"row\".created_at",
+                              "\"row\".updated_at",
+                              "\"row\".created_by",
+                              "\"row\".updated_by",
+                              "\"row\".search_tsv",
+                              "\"row\".meta_title",
+                              "\"row\".meta_description",
+                              "\"row\".canonical_path",
+                              "\"row\".schema_type",
+                              "\"row\".og_image",
+                              "\"row\".hreflang_alt",
+                              "\"row\".sells_products",
+                              "\"row\".offers_services",
+                              "\"row\".is_professional",
+                              "\"row\".bookable",
+                              "\"row\".booking_type",
+                              "\"row\".service_on_demand",
+                              "\"row\".marketplace_status",
+                              "\"row\".price_range",
+                              "\"row\".hours",
+                              "\"row\".rating",
+                              "\"row\".rating_count",
+                              "\"row\".photo_url",
+                              "\"row\".amenities",
+                              "\"row\".geo_precision",
+                              "\"row\".embedding",
+                              "\"row\".keywords",
+                              "\"row\".onboarding_path",
+                              "\"row\".social_links",
+                              "\"row\".ingestion_source",
+                              "\"row\".owner_workspace_id",
+                              "\"row\".place_id",
+                              "\"row\".region_code",
+                              "\"row\".region_native",
+                              "\"row\".ctid"
+                            ],
+                            "Index Cond": "(\"row\".id = c.id)"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "Node Type": "CTE Scan",
+                "Parent Relationship": "InitPlan",
+                "Subplan Name": "CTE scores",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "CTE Name": "selected",
+                "Alias": "selected",
+                "Startup Cost": 0,
+                "Total Cost": 6.05,
+                "Plan Rows": 10,
+                "Plan Width": 144,
+                "Output": [
+                  "selected.id",
+                  "round(((((((CASE WHEN ((selected.description IS NOT NULL) AND (length(selected.description) > 10)) THEN 1 ELSE 0 END + CASE WHEN (selected.website IS NOT NULL) THEN 1 ELSE 0 END) + CASE WHEN (selected.address IS NOT NULL) THEN 1 ELSE 0 END) + CASE WHEN (selected.phone IS NOT NULL) THEN 1 ELSE 0 END) + CASE WHEN (selected.primary_category_id IS NOT NULL) THEN 1 ELSE 0 END))::numeric / '5'::numeric), 3)",
+                  "LEAST(1.0, round((CASE selected.verification_status WHEN 'admin_verified'::text THEN 0.9 WHEN 'owner_verified'::text THEN 0.85 WHEN 'partner_verified'::text THEN 0.8 WHEN 'source_verified'::text THEN 0.6 WHEN 'owner_claimed'::text THEN 0.5 ELSE 0.3 END + CASE selected.source_trust_tier WHEN 'official'::text THEN 0.1 WHEN 'partner'::text THEN 0.08 WHEN 'public_directory'::text THEN 0.05 ELSE '0'::numeric END), 3))",
+                  "CASE WHEN ((selected.entity_type = 'event'::text) AND (zoi.maintenance_event_date((selected.profile ->> 'end_datetime'::text)) < CURRENT_DATE)) THEN 0.2 WHEN (selected.last_seen_at > (now() - '14 days'::interval)) THEN 0.95 ELSE 0.6 END",
+                  "CASE WHEN ((selected.entity_type = 'event'::text) AND (zoi.maintenance_event_date((selected.profile ->> 'end_datetime'::text)) < (CURRENT_DATE - 14)) AND (COALESCE((selected.profile ->> 'recurring'::text), ''::text) <> 'annual'::text)) THEN 'archived'::text ELSE selected.publish_status END"
+                ]
+              },
+              {
+                "Node Type": "Nested Loop",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Join Type": "Inner",
+                "Startup Cost": 27.31,
+                "Total Cost": 53.42,
+                "Plan Rows": 10,
+                "Plan Width": 242,
+                "Output": [
+                  "d.next_status",
+                  "d.freshness",
+                  "d.completeness",
+                  "d.trust",
+                  "l.ctid",
+                  "d.*"
+                ],
+                "Inner Unique": true,
+                "Plans": [
+                  {
+                    "Node Type": "Subquery Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Alias": "d",
+                    "Startup Cost": 26.89,
+                    "Total Cost": 27.02,
+                    "Plan Rows": 10,
+                    "Plan Width": 312,
+                    "Output": [
+                      "d.next_status",
+                      "d.freshness",
+                      "d.completeness",
+                      "d.trust",
+                      "d.*",
+                      "d.id"
+                    ],
+                    "Plans": [
+                      {
+                        "Node Type": "Limit",
+                        "Parent Relationship": "Subquery",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Startup Cost": 26.89,
+                        "Total Cost": 26.92,
+                        "Plan Rows": 10,
+                        "Plan Width": 144,
+                        "Output": [
+                          "s.id",
+                          "s.completeness",
+                          "s.trust",
+                          "s.freshness",
+                          "s.next_status"
+                        ],
+                        "Plans": [
+                          {
+                            "Node Type": "Sort",
+                            "Parent Relationship": "Outer",
+                            "Parallel Aware": false,
+                            "Async Capable": false,
+                            "Startup Cost": 26.89,
+                            "Total Cost": 26.92,
+                            "Plan Rows": 10,
+                            "Plan Width": 144,
+                            "Output": [
+                              "s.id",
+                              "s.completeness",
+                              "s.trust",
+                              "s.freshness",
+                              "s.next_status"
+                            ],
+                            "Sort Key": [
+                              "s.id"
+                            ],
+                            "Plans": [
+                              {
+                                "Node Type": "Nested Loop",
+                                "Parent Relationship": "Outer",
+                                "Parallel Aware": false,
+                                "Async Capable": false,
+                                "Join Type": "Inner",
+                                "Startup Cost": 0.41,
+                                "Total Cost": 26.73,
+                                "Plan Rows": 10,
+                                "Plan Width": 144,
+                                "Output": [
+                                  "s.id",
+                                  "s.completeness",
+                                  "s.trust",
+                                  "s.freshness",
+                                  "s.next_status"
+                                ],
+                                "Inner Unique": true,
+                                "Plans": [
+                                  {
+                                    "Node Type": "CTE Scan",
+                                    "Parent Relationship": "Outer",
+                                    "Parallel Aware": false,
+                                    "Async Capable": false,
+                                    "CTE Name": "scores",
+                                    "Alias": "s",
+                                    "Startup Cost": 0,
+                                    "Total Cost": 0.2,
+                                    "Plan Rows": 10,
+                                    "Plan Width": 144,
+                                    "Output": [
+                                      "s.id",
+                                      "s.completeness",
+                                      "s.trust",
+                                      "s.freshness",
+                                      "s.next_status"
+                                    ]
+                                  },
+                                  {
+                                    "Node Type": "Index Scan",
+                                    "Parent Relationship": "Inner",
+                                    "Parallel Aware": false,
+                                    "Async Capable": false,
+                                    "Scan Direction": "Forward",
+                                    "Index Name": "listings_pkey",
+                                    "Relation Name": "listings",
+                                    "Schema": "zoi",
+                                    "Alias": "l_1",
+                                    "Startup Cost": 0.41,
+                                    "Total Cost": 2.64,
+                                    "Plan Rows": 1,
+                                    "Plan Width": 38,
+                                    "Output": [
+                                      "l_1.id",
+                                      "l_1.entity_type",
+                                      "l_1.name",
+                                      "l_1.slug",
+                                      "l_1.legal_name",
+                                      "l_1.display_name",
+                                      "l_1.description",
+                                      "l_1.primary_category_id",
+                                      "l_1.tags",
+                                      "l_1.language_support",
+                                      "l_1.greek_language_available",
+                                      "l_1.city",
+                                      "l_1.region",
+                                      "l_1.province_state",
+                                      "l_1.country",
+                                      "l_1.neighborhood",
+                                      "l_1.address",
+                                      "l_1.latitude",
+                                      "l_1.longitude",
+                                      "l_1.region_id",
+                                      "l_1.phone",
+                                      "l_1.email",
+                                      "l_1.website",
+                                      "l_1.source_id",
+                                      "l_1.source_url",
+                                      "l_1.source_type",
+                                      "l_1.source_trust_tier",
+                                      "l_1.source_last_checked_at",
+                                      "l_1.first_seen_at",
+                                      "l_1.last_seen_at",
+                                      "l_1.last_verified_at",
+                                      "l_1.verification_status",
+                                      "l_1.claim_status",
+                                      "l_1.owner_user_id",
+                                      "l_1.duplicate_status",
+                                      "l_1.moderation_status",
+                                      "l_1.publish_status",
+                                      "l_1.freshness_score",
+                                      "l_1.completeness_score",
+                                      "l_1.trust_score",
+                                      "l_1.profile",
+                                      "l_1.field_meta",
+                                      "l_1.trust_badges",
+                                      "l_1.created_at",
+                                      "l_1.updated_at",
+                                      "l_1.created_by",
+                                      "l_1.updated_by",
+                                      "l_1.search_tsv",
+                                      "l_1.meta_title",
+                                      "l_1.meta_description",
+                                      "l_1.canonical_path",
+                                      "l_1.schema_type",
+                                      "l_1.og_image",
+                                      "l_1.hreflang_alt",
+                                      "l_1.sells_products",
+                                      "l_1.offers_services",
+                                      "l_1.is_professional",
+                                      "l_1.bookable",
+                                      "l_1.booking_type",
+                                      "l_1.service_on_demand",
+                                      "l_1.marketplace_status",
+                                      "l_1.price_range",
+                                      "l_1.hours",
+                                      "l_1.rating",
+                                      "l_1.rating_count",
+                                      "l_1.photo_url",
+                                      "l_1.amenities",
+                                      "l_1.geo_precision",
+                                      "l_1.embedding",
+                                      "l_1.keywords",
+                                      "l_1.onboarding_path",
+                                      "l_1.social_links",
+                                      "l_1.ingestion_source",
+                                      "l_1.owner_workspace_id",
+                                      "l_1.place_id",
+                                      "l_1.region_code",
+                                      "l_1.region_native"
+                                    ],
+                                    "Index Cond": "(l_1.id = s.id)",
+                                    "Filter": "((l_1.completeness_score IS DISTINCT FROM s.completeness) OR (l_1.trust_score IS DISTINCT FROM s.trust) OR (l_1.freshness_score IS DISTINCT FROM s.freshness) OR (l_1.publish_status IS DISTINCT FROM s.next_status))"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "Node Type": "Index Scan",
+                    "Parent Relationship": "Inner",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Scan Direction": "Forward",
+                    "Index Name": "listings_pkey",
+                    "Relation Name": "listings",
+                    "Schema": "zoi",
+                    "Alias": "l",
+                    "Startup Cost": 0.41,
+                    "Total Cost": 2.63,
+                    "Plan Rows": 1,
+                    "Plan Width": 22,
+                    "Output": [
+                      "l.ctid",
+                      "l.id"
+                    ],
+                    "Index Cond": "(l.id = d.id)"
+                  }
+                ]
+              }
+            ]
+          },
+          "Query Identifier": -3586977677470449000
+        }
+      ]
+    }
+  ],
+  "original_helper_definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_candidate_ids()\n RETURNS uuid[]\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE s jsonb;after_id uuid;chosen uuid[];\nBEGIN\n IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN ARRAY[]::uuid[];END IF;\n SELECT value INTO s FROM zoi.delivery_state WHERE key='listing_score_cursor_v1' FOR UPDATE;\n IF s IS NULL OR jsonb_typeof(s) IS DISTINCT FROM 'object' OR s->'version' IS DISTINCT FROM '1'::jsonb OR NOT(s?'after_id') OR EXISTS(SELECT 1 FROM jsonb_object_keys(s)k WHERE k NOT IN('version','after_id')) THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n IF s->'after_id' IS DISTINCT FROM 'null'::jsonb THEN\n  IF jsonb_typeof(s->'after_id') IS DISTINCT FROM 'string' OR coalesce(s->>'after_id','')!~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n  after_id:=(s->>'after_id')::uuid;\n END IF;\n -- Two bounded PK seeks; the second runs only when the first found zero IDs.\n -- It is never a second batch: at most 1000 IDs are selected in total.\n IF after_id IS NULL THEN\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n ELSE\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l WHERE l.id>after_id ORDER BY l.id LIMIT 1000)c;\n  IF cardinality(chosen)=0 THEN\n   SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n  END IF;\n END IF;\n IF cardinality(chosen)>0 THEN\n  UPDATE zoi.delivery_state SET value=jsonb_build_object('version',1,'after_id',chosen[cardinality(chosen)]::text),updated_at=clock_timestamp() WHERE key='listing_score_cursor_v1';\n END IF;\n RETURN chosen;\nEND $function$\n",
+  "hundred_helper_definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_candidate_ids()\n RETURNS uuid[]\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE s jsonb;after_id uuid;chosen uuid[];\nBEGIN\n IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN ARRAY[]::uuid[];END IF;\n SELECT value INTO s FROM zoi.delivery_state WHERE key='listing_score_cursor_v1' FOR UPDATE;\n IF s IS NULL OR jsonb_typeof(s) IS DISTINCT FROM 'object' OR s->'version' IS DISTINCT FROM '1'::jsonb OR NOT(s?'after_id') OR EXISTS(SELECT 1 FROM jsonb_object_keys(s)k WHERE k NOT IN('version','after_id')) THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n IF s->'after_id' IS DISTINCT FROM 'null'::jsonb THEN\n  IF jsonb_typeof(s->'after_id') IS DISTINCT FROM 'string' OR coalesce(s->>'after_id','')!~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n  after_id:=(s->>'after_id')::uuid;\n END IF;\n -- Two bounded PK seeks; the second runs only when the first found zero IDs.\n -- It is never a second batch: at most 100 IDs are selected in total.\n IF after_id IS NULL THEN\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 100)c;\n ELSE\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l WHERE l.id>after_id ORDER BY l.id LIMIT 100)c;\n  IF cardinality(chosen)=0 THEN\n   SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 100)c;\n  END IF;\n END IF;\n IF cardinality(chosen)>0 THEN\n  UPDATE zoi.delivery_state SET value=jsonb_build_object('version',1,'after_id',chosen[cardinality(chosen)]::text),updated_at=clock_timestamp() WHERE key='listing_score_cursor_v1';\n END IF;\n RETURN chosen;\nEND $function$\n",
+  "candidate_limit": 100,
+  "basis_projection_fixture_sha256": "fea4cc96d417143e26cae68b775fab6afa33ac8ed062b5b99ce53b103e6553c5"
+}
