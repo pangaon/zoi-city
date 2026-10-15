@@ -530,13 +530,15 @@ export default async function handler(req, res) {
     if (Array.isArray(e)) e = e[0];
     e = officialSourceEntity(e);
     // Reached via a legacy shape (/p/<slug> or /travel_place/<slug>)? Those were
-    // live duplicates of every listing. Send the crawler to the one canonical URL.
-    if (e && e.name && req.query && req.query.canon) {
+    // live duplicates of every listing. Reviewed canonical aliases and literal
+    // listing-ID reads also return the canonical record. Preserve their old URL
+    // as a redirect instead of rendering a second public home.
+    if (e && e.name && ((req.query && req.query.canon) || (e.slug && e.slug !== slug))) {
       var target = '/' + encodeURIComponent(typeSlug(e.entity_type)) + '/' +
         encodeURIComponent(e.canonical_slug || e.slug);
       res.statusCode = 301;
       res.setHeader('Location', target);
-      res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300');
+      res.setHeader('Cache-Control', e.slug && e.slug !== slug ? 'no-store' : 'public, max-age=0, s-maxage=300');
       res.end('');
       return;
     }

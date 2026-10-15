@@ -1,0 +1,106 @@
+{
+  "synthetic_only": true,
+  "listing_rows": 57840,
+  "key_rows": 41099,
+  "duplicate_rows": 489,
+  "output_digest": {
+    "sha": "406bc514123ef1ca178e961f24192972",
+    "count": 10000
+  },
+  "plan": [
+    {
+      "Plan": {
+        "Node Type": "Unique",
+        "Parallel Aware": false,
+        "Async Capable": false,
+        "Actual Rows": 10000,
+        "Actual Loops": 1,
+        "Plans": [
+          {
+            "Node Type": "Sort",
+            "Parent Relationship": "Outer",
+            "Parallel Aware": false,
+            "Async Capable": false,
+            "Actual Rows": 37597,
+            "Actual Loops": 1,
+            "Sort Key": [
+              "k.name_key",
+              "k.city_key",
+              "k.region_key",
+              "k.country_key",
+              "k.address_key",
+              "k.entity_type",
+              "k.completeness DESC",
+              "k.ugly",
+              "k.updated_at DESC",
+              "k.slug"
+            ],
+            "Sort Method": "external merge",
+            "Sort Space Used": 3976,
+            "Sort Space Type": "Disk",
+            "Plans": [
+              {
+                "Node Type": "Hash Join",
+                "Parent Relationship": "Outer",
+                "Parallel Aware": false,
+                "Async Capable": false,
+                "Join Type": "Anti",
+                "Actual Rows": 37597,
+                "Actual Loops": 1,
+                "Inner Unique": false,
+                "Hash Cond": "(k.listing_id = l.id)",
+                "Plans": [
+                  {
+                    "Node Type": "Seq Scan",
+                    "Parent Relationship": "Outer",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Relation Name": "keys",
+                    "Alias": "k",
+                    "Actual Rows": 37607,
+                    "Actual Loops": 1,
+                    "Filter": "is_indexable",
+                    "Rows Removed by Filter": 3492
+                  },
+                  {
+                    "Node Type": "Hash",
+                    "Parent Relationship": "Inner",
+                    "Parallel Aware": false,
+                    "Async Capable": false,
+                    "Actual Rows": 489,
+                    "Actual Loops": 1,
+                    "Hash Buckets": 1024,
+                    "Original Hash Buckets": 1024,
+                    "Hash Batches": 1,
+                    "Original Hash Batches": 1,
+                    "Peak Memory Usage": 31,
+                    "Plans": [
+                      {
+                        "Node Type": "Index Scan",
+                        "Parent Relationship": "Outer",
+                        "Parallel Aware": false,
+                        "Async Capable": false,
+                        "Scan Direction": "Forward",
+                        "Index Name": "perf_duplicate_status",
+                        "Relation Name": "listings",
+                        "Alias": "l",
+                        "Actual Rows": 489,
+                        "Actual Loops": 1,
+                        "Index Cond": "(duplicate_status = 'confirmed_duplicate'::text)",
+                        "Rows Removed by Index Recheck": 0
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "Planning Time": 0.812,
+      "Triggers": [],
+      "Execution Time": 60.28
+    }
+  ],
+  "limits": "Compact fixture does not model production wide-row/TOAST I/O; retained root actual plan/runtime is separate."
+}

@@ -1,5 +1,6 @@
 import {canonical,sha256} from '../quality/evidence.mjs';
 import {inspectSourceDocument} from '../../supabase/functions/zoi-enrich/_document-quality.js';
+import {placeDestinationSupport} from './place-destination-evidence.mjs';
 const norm=v=>typeof v==='string'?v.normalize('NFKC').toLowerCase().replace(/[\p{P}\p{S}\s]+/gu,' ').trim():'';
 const host=u=>{try{const v=new URL(u);return v.protocol==='https:'&&!v.username&&!v.password?v.hostname.replace(/^www\./,''):null}catch{return null}};
 const sourceWithin=(url,website)=>{try{const a=new URL(url),b=new URL(website),base=b.pathname.replace(/\/$/,'');return host(url)===host(website)&&(!base||a.pathname===base||a.pathname.startsWith(base+'/'));}catch{return false}};
@@ -150,7 +151,7 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
  const siteLocation=squarespaceCandidate(html,row,identity);if(siteLocation)candidates.push(siteLocation);
  const destination=destinationCandidate(html,row,identity);if(destination)candidates.push(destination);
  const unique=[...new Map(candidates.map(c=>[c.latitude+','+c.longitude,c])).values()];
- if(!unique.length)return refuse(addressMismatch?'structured_address_mismatch':'matching_structured_coordinates_missing');
+ if(!unique.length){const result=refuse(addressMismatch?'structured_address_mismatch':'matching_structured_coordinates_missing'),support=placeDestinationSupport(html,row,{sourceUrl,httpStatus,identityReview:identity,snapshotSha256:result.snapshot_sha256});return support?{...result,supporting_place_evidence:support}:result;}
  if(unique.length!==1)return refuse('conflicting_source_coordinates');
  const candidate=unique[0];if(unmatched.some(c=>(c.latitude!==candidate.latitude||c.longitude!==candidate.longitude)&&Math.abs(c.latitude-candidate.latitude)<0.001&&Math.abs(c.longitude-candidate.longitude)<0.001))return {...refuse('nearby_unmatched_identity_location_requires_review'),unmatched_locations:unmatched};if(norm(candidate.name)!==norm(row.name)){candidate.stored_name=row.name;candidate.name_identity_review_sha256=result.identity_review_sha256;}
  return {...result,reason:'coordinate_plausibility_review_required',candidate};

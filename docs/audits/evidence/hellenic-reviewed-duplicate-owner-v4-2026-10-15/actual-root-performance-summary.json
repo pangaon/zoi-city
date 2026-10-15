@@ -1,0 +1,18 @@
+{
+  "root_provided_actual_receipt_hashes": {
+    "actual-indexes-fk.json": "22d6a6bb2108735a1dd224923b761073240f1bb12eb6262bd0cafb5a0437a325",
+    "positive-join-plan.json": "a9503ef57f5d521f7b08e6d5170ee8a65e65ea4b391d695835427568aa36326e",
+    "positive-join-5s-result.json": "6293b8796d88d6595df0e803b6ba5b10932004d9650d674d57e5461332d4d382",
+    "anti-join-5s-plan-result.json": "f22af8b14003cdaffdda6bd69ab92532cad51a4e08c01cacf71c0a982e42921a",
+    "rollback-result.json": "09a0e11b5ebc344ca09d23a3dde7b1d61a1e48082fbc527b7948e6380642e0c7"
+  },
+  "actual_anti_query_only": {
+    "execution_ms": 1670.243,
+    "winner_rows": 37588,
+    "duplicate_index": "idx_zoi_listings_dupe",
+    "indexed_duplicate_rows": 489
+  },
+  "V3_failure": "20s cumulative DO timeout reached global canonical materialization; separate exact positive join alone exceeded bounded5s. Cannot attribute whole20s solely to one query.",
+  "rollback_receipt_label": "rollback-result.json is FAILED atomic attempt error, not successful post-ROLLBACK state proof. Root separately reported immediate ROLLBACK and originalCAS/readers/helper absence; reviewer did not run production SQL.",
+  "actual_index_flags": "Retained root metadata pins three index names/definitions and exact validated/nondeferrable FK. Source guards additionally require indisvalid/indisready=true; root independently rechecks all three flags before actualV4 rehearsal."
+}

@@ -1,0 +1,120 @@
+{
+  "kind": "geography_place_support_current_dependency_packaging_independent",
+  "at": "2026-10-15T17:02:51.757579+00:00",
+  "worktree": "/tmp/zoi-place-support-release-root",
+  "root_owner_audit_sha256": "e69e162b98d16876bceb39c034f87a18528faac479f6cf7c0f5c26cea723fd57",
+  "decision": "ACCEPT exact source packaging for root release gate; not deployed by reviewer and no coordinate authority granted",
+  "source_hashes": {
+    "scripts/geography/place-destination-evidence.mjs": "5bb3c39c6482057274253c8d2de750188ff832c4415b154ed5ce89f3fb55b749",
+    "scripts/geography/source-coordinates.mjs": "3ef86c26322837360d516adacf8a670a357c5b0417bf1388f6ff2befbafde4a9",
+    "scripts/geography/build-edge-source-consumer.mjs": "071ffcf0407857194856e7f531b004c24e0e7adb862e6d7c695747073db822f5",
+    "tests/unit/geography-place-destination-evidence.test.mjs": "49850d99debb9ffd4de16aa256c3adfde5e65a09032962601ea592b38446e3ef",
+    "tests/unit/geography-source-consumer.test.mjs": "e83cfd72f33130c027a7ea98e3fc23866dac5ba92de73b4861edc423550c4213",
+    "supabase/functions/geography-repair-source-consumer/_client-brief.js": "65d67d4c4143c0b63229925bb5bd0dff9ccb8f77661f48c034ba8168bfc71ebb",
+    "supabase/functions/geography-repair-source-consumer/_coordinates.js": "59719d47fdc579b72a33a240155d67441d58e057e6141ae5ca20ea1cb211c5ee",
+    "supabase/functions/geography-repair-source-consumer/_document-quality.js": "ed21fc9df59039292cd5cb14d00c4514c041b04d06018046ed6b0d778e6b6b9f",
+    "supabase/functions/geography-repair-source-consumer/_filesystem.js": "ad52c1b5860c3976a229c9226deebb73f14708be380623a5dec59d45181bb139",
+    "supabase/functions/geography-repair-source-consumer/_hash.js": "f18ff36b4cb3ec1cf743162d414fdd625c653ac01c79ec55620453418bc7e7e9",
+    "supabase/functions/geography-repair-source-consumer/_member-source.js": "ef854f902a1461371df2cba711d310191d0b50de2c52dd955fd89011db611633",
+    "supabase/functions/geography-repair-source-consumer/_native-request.js": "1c0432960c0b396a3321871f0415552d06e3860e11a0cec876e2a5a3dc998210",
+    "supabase/functions/geography-repair-source-consumer/_place-evidence.js": "6ab4030aa0af68d1146f8b886d1f037a9f00a2bc0d3745b70469a6c503c1543d",
+    "supabase/functions/geography-repair-source-consumer/_publisher-policy.js": "7e8554ca2d39714d77c5187331196511e0af54a8216a1852ac683a194d289b90",
+    "supabase/functions/geography-repair-source-consumer/_publisher-runner.js": "d189eec6afeeb8f5f71f8d9b0412356bca77c233ca529b24ed6755820e907a44",
+    "supabase/functions/geography-repair-source-consumer/_publisher.js": "9ff1be3f56d1c27735d2968ebba137a659096aa191f6427c72ba57d5c756e838",
+    "supabase/functions/geography-repair-source-consumer/_runner.js": "c39029c3abe9a36969d32df97d9c9d597f2c006351f0ceec2ab8fa97ba23eb81",
+    "supabase/functions/geography-repair-source-consumer/_session.js": "04fc302981f5c5c8f0e40241fee4d89c2530928d737e834764e05128afafbe51",
+    "supabase/functions/geography-repair-source-consumer/_ticket-auth.ts": "e6e0956bba27ea6b6a39415fb2bc4e36b33118f807746d3d40ed6f56c8b41042",
+    "supabase/functions/geography-repair-source-consumer/_transport.js": "8deee284a5382f80bd4bedc0ef0bcb66ff37d187aa6aec0e20681f1762e888f2",
+    "supabase/functions/geography-repair-source-consumer/index.ts": "a83db16ffbb06a4b09852fdae27d4580742e5ffbfdcae303087fcb7d55ec3d1e"
+  },
+  "independent_validation": {
+    "root_source_pins_verified_before_after": 21,
+    "two_generator_repeats": "Each in separate scratch copy of exact input modules; all generated files byte-identical to frozen root tree after both runs. Frozen owner tree never regenerated or edited.",
+    "reachable_graph_modules": 16,
+    "dangling_relative_imports": 0,
+    "remote_imports": 0,
+    "shared_policy_clientbrief_member_source_exact_current_HEAD": true,
+    "retained_actual_Edge23_all13_sources_exact_HEAD": true,
+    "candidate_unchanged_old_modules": [
+      "index.ts",
+      "_ticket-auth.ts",
+      "_publisher-runner.js",
+      "_publisher.js",
+      "_document-quality.js",
+      "_transport.js",
+      "_native-request.js",
+      "_hash.js",
+      "_session.js",
+      "_runner.js",
+      "_filesystem.js"
+    ],
+    "candidate_changed_old_modules": [
+      "_publisher-policy.js",
+      "_coordinates.js"
+    ],
+    "new_runtime_leaves": [
+      "_place-evidence.js",
+      "_client-brief.js",
+      "_member-source.js"
+    ],
+    "related_node_tests_passed": 66,
+    "generated_shared_Food_policy_cases": 14,
+    "failed_final": 0,
+    "skipped_final": 0,
+    "Deno": "PASS cached-only/no-remote/node-modules-dir=none/no-lock"
+  },
+  "review_findings": [
+    "Accepted retained place parser, optional-support integration and tests stay exact previously reviewed hashes; original report candidate/status/reason and current canonical writer eligibility are unchanged.",
+    "Builder copies actual current official-source-policy with only its local import renamed to _client-brief.js; client-brief similarly renames only member-source import, and member-source is copied unchanged. No hold stripping, stubs, alternate policy or shared web-source edits.",
+    "New current-policy dependency repairs preexisting generator drift: prior generated publisher-policy lacked current shared Food receipt/hold dependency. Exact generated functions now match current shared source. Existing publisher caller still invokes existing officialSourceQuarantined; no new source strategy/classification/authority extension inferred.",
+    "Generated/shared matrix exercises complete current manual receipt, review-needed deferral, stale identity/address/city/ownership/server-bit, genuine error/blocked/scope/challenge, owner changed/null/empty website and ordinary source. Serialized public output and private normalization-symbol values agree; each module uses its own private symbol identity.",
+    "All sixteen graph files are reachable through exact relative imports or permitted existing node builtins. Index/ticket-auth/transports/runners retain their baseline bytes except accepted coordinate support and current pure policy dependencies.",
+    "Generator parity verified twice without mutating source tree. Actual served Edge23 baseline is retained metadata read only, not a new deployment or proof Edge24 is live."
+  ],
+  "validation_commands": {
+    "focused": "node --test tests/unit/geography-source-consumer.test.mjs tests/unit/geography-publisher-source-consumer.test.mjs tests/unit/geography-place-destination-evidence.test.mjs tests/unit/geography-publisher-profile.test.mjs tests/unit/official-source-policy.test.mjs tests/unit/reviewed-visible-food.test.mjs",
+    "Deno": "deno check --cached-only --no-remote --node-modules-dir=none --no-lock supabase/functions/geography-repair-source-consumer/index.ts"
+  },
+  "diagnostic_limits": [
+    "First Deno attempt used default local node_modules resolution and lacked @types/node; explicit cached global dependency resolution passed without installation. This was not a product-source failure.",
+    "Private parity helper initially compared two independently-created module-local Symbol keys as identical; corrected comparison preserves all serialized data and compares symbol descriptions/values plus each module own normalized readers. No source change.",
+    "No repeated full396-file verification: root reported that gate separately. Independent focused/graph/generator/hold checks cover this packaging delta."
+  ],
+  "operations": {
+    "production_SQL": 0,
+    "Edge_network_calls": 0,
+    "deployments": 0,
+    "provider_calls": 0,
+    "frozen_source_mutations": 0,
+    "jobs_or_leases": 0,
+    "accepted_receipts": 0,
+    "coordinate_corrections": 0,
+    "policy_cron_extension": false
+  },
+  "root_remaining": [
+    "Root exact deployed16served-file readback and Edge/version/auth metadata verification.",
+    "Actual operational policy expiry/budget/capture guards remain authoritative; no supporting observation promoted to accepted geography."
+  ],
+  "evidence": {
+    "evidence/geography-place-support-packaging-independent-2026-10-15/packaging-verification.json": {
+      "bytes": 4851,
+      "sha256": "fdbabbeaaa939f9d9dfee09501ebd60996036f894ddf72aa62657173e8de96a8"
+    },
+    "evidence/geography-place-support-packaging-independent-2026-10-15/deno-cache-only.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "evidence/geography-place-support-packaging-independent-2026-10-15/generated-Food-policy.log": {
+      "bytes": 229,
+      "sha256": "ee41b2fc6ce46ea383655d9dd5b9d109d22e0f5249790dbbef4e0e2e2d4cff29"
+    },
+    "evidence/geography-place-support-packaging-independent-2026-10-15/generated-Food-policy-cases.json": {
+      "bytes": 1974,
+      "sha256": "852fbf8979161ee55105dd108251096828f23de76e04c8faa80153f7f40b45a5"
+    },
+    "evidence/geography-place-support-packaging-independent-2026-10-15/focused.log": {
+      "bytes": 7665,
+      "sha256": "c329221b8d66695e937c3b4d9d4827abecb74467df2c4a4c2a8f3fface7be7e8"
+    }
+  }
+}

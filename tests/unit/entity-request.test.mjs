@@ -15,7 +15,7 @@ const response=value=>new Response(JSON.stringify(value));
 test('canonical professional home applies only its matching published owner design',async()=>{
  const professional=JSON.parse(readFileSync(new URL('../../showcase/health/ageliki-tzakis/source.json',import.meta.url)));
  const design=normalizeDesign({schema_version:1,template:'parea',section_order:['contact','intro'],hidden_sections:['gallery'],copy:{headline:'Meet Angie on Zoi'},item_order:{offerings:[]}});
- const page=async published_design=>run(async fn=>response(fn==='home_entity'?{...professional,published_design}:null));
+ const page=async published_design=>run(async fn=>response(fn==='home_entity'?{...professional,published_design}:null),{slug:professional.slug});
  const current=await page({ok:true,listing:professional.id,version:2,design});
  assert.equal(current.status,200);assert.match(current.body,/data-template="parea"/);assert.match(current.body,/Meet Angie on Zoi/);
  const wrong=await page({ok:true,listing:'another-listing',version:2,design});
