@@ -60,3 +60,23 @@ when row width is unchanged. The exact previous1b95 source fails this case;
 the one-handler correction passes it at390/320 along with the prior20cases.
 This models the observed0683 installed failure; it does not prove the native
 Dimensions event stream. Installed acceptance remains open until a new build.
+
+Persistent sections acceptance runs separately with the same actual component bundle:
+
+```sh
+OUTPUT_DIR=/tmp/independent-sections-evidence node mobile/tests/navigation-layout-browser/verify-sections.mjs
+```
+
+The All sections control stays present at every size and opens the existing five
+destination IDs in a scrollable modal. Opening/closing never changes route; explicit
+section activation closes it and navigates once. Eight controlled English/Greek,
+phone/landscape/desktop cases hold all measurement callbacks while native text grows
+1→2 with the reported fontScale fixed at1, then shrinks to1. They check all five
+labels and44px targets, keyboard activation and retained navigation. This is a
+functional access guarantee independent of overflow measurement. The installed
+4ecf77a6 artifact still fails hot-font overflow arrows; this source is not included
+in that binary and has no installed acceptance yet.
+
+The last shrink test uses450px for its all-tabs-fit assertion because the persistent
+More control reserves48px. The390px cases still exercise every primary tab at1×/2×;
+arrows may correctly remain when the remaining viewport cannot hold all labels.

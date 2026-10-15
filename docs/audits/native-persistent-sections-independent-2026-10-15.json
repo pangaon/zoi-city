@@ -1,0 +1,128 @@
+{
+  "reviewer": "/root/qa_next",
+  "source_tree": "/tmp/zoi-native-navigation-access-root",
+  "base": "7d5d5e88e5e13e151bdec327679f43846eed9673",
+  "at": "2026-10-15T18:11:14.629763+00:00",
+  "status": "accepted_source_and_controlled_journeys_only",
+  "production_actions": [],
+  "checks": {
+    "frozen_owner_source_and_evidence_pins": "all35 aggregate owner pins matched before and after; source unchanged",
+    "focused": "19 tests, 0 failures, 0 skips: navigationLayout.test.mjs + profile-map-handoff.test.mjs + profile.test.mjs",
+    "typescript": "mobile/node_modules/.bin/tsc --noEmit -p mobile exited0"
+  },
+  "installed_limit": "Fourth installed 4ecf77a6 still has the hot-font missing-arrow defect. These new sources are not in that artifact. No ADB/EAS/Auth/SQL/network/provider actions by reviewer.",
+  "schema": "zoi.independent-native-sections-review.v1",
+  "owner_audit": {
+    "path": "/tmp/zoi-native-navigation-access-root/docs/audits/native-persistent-sections-owner-2026-10-15.json",
+    "bytes": 6992,
+    "sha256": "9816fcfac9d5fe0e4ab656baa86d3a80c2db900d42e3a7787dbd9ed7b792f4e1"
+  },
+  "source_files": [
+    {
+      "path": "mobile/src/AppChrome.tsx",
+      "bytes": 11567,
+      "sha256": "a32625e64be1e140fc9de6f0bdddd51730143f61a4b0c751e444501ef94d1f38"
+    },
+    {
+      "path": "mobile/tests/navigation-layout-browser/verify-sections.mjs",
+      "bytes": 4622,
+      "sha256": "51b120a90c266ba3a91fa6da1e6bf204e996a8d55c87882681fb0edf1fb17451"
+    },
+    {
+      "path": "mobile/tests/navigation-layout-browser/verify.mjs",
+      "bytes": 13546,
+      "sha256": "b5ade22d35f4f9b56d0dac2025462b5d60935b848008d7f2b5bc538f7b77a29c"
+    },
+    {
+      "path": "mobile/tests/navigation-layout-browser/README.md",
+      "bytes": 4852,
+      "sha256": "22dd6646e759f254a03d10aa6c90e2b3ab4cd3b64c12f9a381d197146f844e03"
+    }
+  ],
+  "verification": {
+    "actual_controlled_components": "Existing React/ReactNativeWeb component fixture, local server only. Controlled scaling and measurement suppression; no native font-metric claim.",
+    "sections": "8 independently rerun cases:320/390phone,844landscape,780shell \u00d7English/Greek. All measurement callbacks held, reported scale1 during actual Text1\u21922\u21921; all5 route IDs reachable,44px rows, full labels, open/close does not navigate, explicit activation exactlyonce, retained tablist.",
+    "regression": "All22 existing actual component navigation cases pass, including keyboard/reorder/rotation/newline/hotgrow/shrink.",
+    "supplement": "4 additional cases at390\u00d7320,844\u00d7320,390\u00d7844,450\u00d7844: long Greek/newline2x, each modal row scrollable fully into viewport, selected current marker, external route change updates current marker, Escape closes without navigation and returns focus to More;48px More visible.",
+    "geometry": [
+      {
+        "width": 390,
+        "viewport": 254,
+        "scrollWidth": 355,
+        "moreWidth": 48,
+        "tabUnion": 355,
+        "nativeScrollWidth": 355,
+        "arrows": 1
+      },
+      {
+        "width": 450,
+        "viewport": 402,
+        "scrollWidth": 402,
+        "moreWidth": 48,
+        "tabUnion": 402,
+        "nativeScrollWidth": 402,
+        "arrows": 0
+      }
+    ],
+    "test_assertion_delta": "Moving final all-fit assertion to450 is warranted:390 reserves48 plus88 arrows, viewport254, content355>342 available;450 reserves48, viewport/content402 and no arrows.390 remains exercised for overflow/access rather than all-fit.",
+    "source_review": "One fixed48px More control and scrollable Modal reuse exact existing five item IDs. Native onRequestClose closes only; activation closes then calls existing callback once.48 deducted from available space; no ScrollView remount or route/body/Auth changes. Existing App.tsx baseline unchanged.",
+    "fixture_correction": "Additional reviewer helper initially looked for aria-selected on RNWeb role=button (not emitted by RNWeb); corrected to actual Current section marker and its containing labeled row. This was a helper selector assumption, not a product failure."
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/sections/result.json",
+      "bytes": 3354,
+      "sha256": "a7b01eac1e6c60b71669637cb8f84dcf3f37bee2d260441c86ccf92564cc21bc"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/regression/report.json",
+      "bytes": 41039,
+      "sha256": "d531fc14148e5ae0b20d085cbfda09a058e794b6be1a2f6e3925ad70efac25e3"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/extra/result.json",
+      "bytes": 1141,
+      "sha256": "35867d02678bf58f327b3a6de6ed35bcd0df180c024fc3d932bd703c231f39c7"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/extra.mjs",
+      "bytes": 3616,
+      "sha256": "6c7b223ec911f93b7cbd17c08a5344e4ed08eac4e157a896c4e092a1cdf962e3"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/geometry/result.json",
+      "bytes": 323,
+      "sha256": "6a1e1b2d5e79830e205f32f005feffadb637f0eadc050b16cba61d10ee79b39e"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/geometry.mjs",
+      "bytes": 2307,
+      "sha256": "bb4b057b1de576410b610b15dad8fbd0636e0196994c5aecad66a42b7bb27775"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/sections/sections-390-844-el-font2.png",
+      "bytes": 71091,
+      "sha256": "4834013f90eccb8657fc2e2b71fd8674d5537e29c5e70c0dd860cf8462b32291"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/sections/sections-844-390-el-font2.png",
+      "bytes": 43723,
+      "sha256": "aca1e8d2093b00496dc8e7444a3d91c79377ea8659a59493c435ffbf6ce79898"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/extra/extra-390-320.png",
+      "bytes": 31089,
+      "sha256": "ea3e4ef8921eaa9edc8ad71b3de6921d4cdfc68d10be547bf802633ff1c54e15"
+    },
+    {
+      "path": "docs/audits/evidence/native-persistent-sections-independent-2026-10-15/extra/extra-844-320.png",
+      "bytes": 49219,
+      "sha256": "f9f48c7b47eae16f11a15008cb9c8c14adf7a60184293939ad87a3c92dea946f"
+    }
+  ],
+  "remaining": [
+    "Protected integration/release.",
+    "Actual future APK hotfont More\u2192allfive sections\u2192Home; Android hardwareBack/real focus/TalkBack/shortscreen/systeminsets. RNWeb Escape is not Android Back evidence.",
+    "Overflow arrows themselves remain an installed defect until a future artifact is exercised. More provides independently controlled access, not retrospective artifact repair."
+  ]
+}

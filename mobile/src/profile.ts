@@ -31,6 +31,12 @@ export function profileAction(value: unknown, kind: 'booking' | 'volunteer' | 'i
   const pattern=kind==='shows'?/^\/trips\/\?artist=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='festival'?/^\/festival\/\?event=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='calendar'?/^\/organization-calendar\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='group'?/^\/groups\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='inquiry'?/^\/inquiries\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:kind==='booking'?/^\/book\/\?listing=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i:/^\/volunteer\/\?workspace=([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
   return pattern.exec(value)?.[1].toLowerCase() || '';
 }
+/** Canonical public identity only. Discovery rereads the current reviewed point. */
+export function profileMapLink(value: {id?:unknown;slug?:unknown}) {
+ const id=value?.id,slug=value?.slug;
+ if(typeof id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)||typeof slug!=='string'||!slug||slug.length>240||/[\s/?#\\\u0000-\u001f]/.test(slug))return '';
+ try{return 'zoi://explore/map?place='+encodeURIComponent(slug);}catch{return '';}
+}
 export function normalizeProfile(input: unknown) {
   const e = object(officialSourceEntity(object(Array.isArray(input) ? input[0] : input)));
   if (!plain(e.name)) return null;
