@@ -1,5 +1,6 @@
+import {openCompanyPrivate} from './companyPrivateHandoff';
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useAuth, operationsRequestStore } from './Auth';
 import {randomUUID} from 'expo-crypto';
 import {createOperationsRecovery,operationsDenied} from '../../assets/operations/recovery.mjs';
@@ -85,6 +86,14 @@ function WorkspaceOperations({ workspace, userId, requestedRecordId,parentCurren
     }catch(e){if(current()){if(operationsDenied(e))clearPrivate();setError(e instanceof Error?e.message:'Saved project could not open.');}throw e;}
     finally{busy.current=false;if(current())setSaving(false);}
   };
+  const openPrivateCompany=async(companyId:string)=>{
+    if(busy.current||!current()||saving||recovery.state().blocked||!['owner','admin'].includes(role)||editingRef.current!==companyId||JSON.stringify(form)!==JSON.stringify(toForm(editing||undefined)))return;
+    busy.current=true;setSaving(true);setError('');
+    const scopedCurrent=()=>current()&&editingRef.current===companyId;
+    try{await openCompanyPrivate({workspace,company:companyId,current:scopedCurrent,read:(name,args)=>readCompany(companyId,name,args),open:url=>{if(!scopedCurrent())return Promise.resolve(false);return Linking.openURL(url);}});}
+    catch(e){if(scopedCurrent())setError(e instanceof Error?e.message:'Private Company records could not open.');}
+    finally{busy.current=false;if(current())setSaving(false);}
+  };
   const fields: [string, string][] = [['title', kind === 'company' ? 'Company display name' : kind === 'contact' ? 'Contact name' : 'Title'], ...(kind === 'company' ? [['legal_name', 'Legal name'], ['jurisdiction', 'Jurisdiction'], ['registration_number', 'Registration number']] as [string, string][] : []), ...(kind === 'company' || kind === 'contact' ? [['website', 'Website'], ['email', 'Email'], ['phone', 'Phone']] as [string, string][] : []), ['notes', 'Notes'], ['due_at', 'Due date · YYYY-MM-DD (UTC)']];
   const dirty=editing!==undefined&&JSON.stringify(form)!==JSON.stringify(toForm(editing||undefined));
   const parentCompany=editing?companyForRecord(records,editing,workspace):null;
@@ -101,7 +110,7 @@ function WorkspaceOperations({ workspace, userId, requestedRecordId,parentCurren
     {!loading&&!error&&kind==='company'&&editing===undefined?<CompanyConsole records={records} workspace={workspace} members={members} disabled={saving||dirty||recovery.state().blocked} onOpen={row=>{if(!current()||saving||recovery.state().blocked)return;setKind(row.kind);edit(row);}} onStart={['owner','admin'].includes(role)?()=>{setKind('company');edit();}:undefined}/>:null}
     {!loading && !records.filter(row => row.kind === kind).length && !error ? <Text style={s.body}>No {sections.find(([id]) => id === kind)?.[1].toLowerCase()} records yet.</Text> : null}
     {records.filter(row => row.kind === kind).map(row => <Pressable key={row.id} accessibilityRole="button" disabled={saving} onPress={() => edit(row)} style={[s.record, editing?.id === row.id && s.recordSelected]}><Text style={s.heading}>{row.title}</Text><Text style={s.small}>{row.status.replaceAll('_', ' ')} · version {row.version}{row.due_at ? ' · due ' + row.due_at.slice(0, 10) : ''}</Text></Pressable>)}
-    {companySummary?<CompanyWorkspace records={records} current={()=>current()&&editingRef.current===companySummary.company.id} read={(name,args)=>readCompany(companySummary.company.id,name,args)} model={companySummary} role={role} members={members} disabled={saving||dirty||recovery.state().blocked} onOpen={row=>{setKind(row.kind);edit(row);}} onStart={startLinked} onPlan={()=>{if(current()&&!saving&&!dirty&&!recovery.state().blocked&&canWrite(role,'project'))setActionPlans(true);}} onFiles={row=>{void openProjectDocuments(row);}} details={companyDetails} onDetails={()=>setCompanyDetails(v=>!v)}/>:null}
+    {companySummary?<CompanyWorkspace records={records} current={()=>current()&&editingRef.current===companySummary.company.id} read={(name,args)=>readCompany(companySummary.company.id,name,args)} model={companySummary} onPrivate={()=>{void openPrivateCompany(companySummary.company.id);}} role={role} members={members} disabled={saving||dirty||recovery.state().blocked} onOpen={row=>{setKind(row.kind);edit(row);}} onStart={startLinked} onPlan={()=>{if(current()&&!saving&&!dirty&&!recovery.state().blocked&&canWrite(role,'project'))setActionPlans(true);}} onFiles={row=>{void openProjectDocuments(row);}} details={companyDetails} onDetails={()=>setCompanyDetails(v=>!v)}/>:null}
     {parentCompany&&editing?.kind!=='company'?<Action label="Back to company workspace" disabled={saving||dirty||recovery.state().blocked} onPress={openCompany}/>:null}
     {editing !== undefined && (!companySummary||companyDetails) ? <View style={s.form}><Text style={s.heading}>{editing ? 'Record details' : 'New record'}</Text>{fields.map(([key, label]) => <View key={key} style={s.field}><Text style={s.label}>{label}</Text><TextInput accessibilityLabel={label} value={form[key] || ''} onChangeText={value => setForm(previous => ({ ...previous, [key]: value }))} editable={editable && !saving} multiline={key === 'notes'} maxLength={key === 'notes' ? 20000 : key === 'title' ? 200 : 500} autoCapitalize={['email', 'website'].includes(key) ? 'none' : 'sentences'} style={[s.input, key === 'notes' && { minHeight: 100, textAlignVertical: 'top' }]} /></View>)}
       {kind === 'company' ? <><Text style={s.label}>Sector</Text><View style={s.row}>{['business','lawyer','church','restaurant','stylist','creator'].map(sector => <Action key={sector} disabled={!editable || saving} label={(form.sector === sector ? '● ' : '') + sector} onPress={() => setForm(previous => ({...previous,sector}))} />)}</View></> : null}

@@ -1,0 +1,9 @@
+<!doctype html><html lang="en" data-theme="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Private Company controlled acceptance</title><link rel="stylesheet" href="/assets/zoi-theme.css"><style>body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.5 system-ui}body>header{display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--line);padding:16px 24px}body>header img{height:38px}main{padding:clamp(16px,3vw,30px);max-width:1300px;margin:auto;--bg3:var(--card)}</style></head><body><header><img src="/assets/brand/zoi-logo.png" alt="Zoi"><strong>Company workspace</strong></header><main id="root"></main><script src="/assets/zoi-core.js"></script><script src="/assets/suite/operations.js"></script><script>
+const search=new URLSearchParams(location.search),account=search.get('account'),workspace=search.get('workspace'),company=search.get('company'),sid=search.get('session');
+const token='controlled.'+btoa(JSON.stringify({sub:account,session_id:sid}))+'.controlled';
+window.qa={calls:[],holdDispatch:false,ctx:null,mount:null};
+ZoiCore.auth.save({user_id:account,access_token:token,refresh_token:'CONTROLLED_NO_PROVIDER',expires_at:Math.floor(Date.now()/1000)+3600});
+const actual=ZoiCore.api.rpc.bind(ZoiCore.api);ZoiCore.api.rpc=async function(name,args,opts){qa.calls.push({name,args});if(qa.holdDispatch&&name==='company_private_mutate')await new Promise(r=>qa.releaseDispatch=r);return actual(name,args,opts);};
+const ctx=qa.ctx={C:ZoiCore,ws:workspace,view:'company:'+company,navigate:async(_,view)=>{ctx.view=view;await qa.mount();}};
+qa.mount=()=>ZoiSuite.modules.find(m=>m.id==='operations').mount(document.querySelector('#root'),ctx);qa.mount();
+</script></body></html>
