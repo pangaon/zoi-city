@@ -1,0 +1,320 @@
+{
+  "observed_at": "2026-10-15T12:54:07.806622+00:00",
+  "reviewer": "qa_next",
+  "state": "Native source checks pass with one reviewed touch-target fix. Next coherent installed artifact is pending root build and device acceptance.",
+  "worktree": "/workspaces/zoi-native-readiness-qa",
+  "source_commit": "8c8fe88bd054c18e73e54eb1ca89451e47a6c7c6",
+  "feature_sources": {
+    "map_PR51": "ee7e3c018f1fd7041dc9487e49f172178d15cf1a",
+    "private_company_handoff": "5354ac0ad62c6215ef03792943e32cdf155f9e98",
+    "durable_community_and_verified_media": "01af39ab82d74e2be4efdc2456f1025b4b6a7a8b",
+    "foreground_location": "e39a8cc0",
+    "community_merge": "8c8fe88bd054c18e73e54eb1ca89451e47a6c7c6"
+  },
+  "runtime_delta": {
+    "only_file": "mobile/src/MapLocationControl.tsx",
+    "sha256": "c5a6d9b1d29e3e843ecea645d9623f7b626064c368a6ab26ea79b94137826fea",
+    "behavior": "Primary, cancel/hide and app-settings targets have minimum44px width/height; row wraps, controls/text can shrink and grow vertically. Permission/session/foreground/location logic unchanged.",
+    "root_authorized": true,
+    "not_yet_released": true
+  },
+  "source_files": [
+    {
+      "path": "mobile/src/MapLocationControl.tsx",
+      "sha256": "c5a6d9b1d29e3e843ecea645d9623f7b626064c368a6ab26ea79b94137826fea"
+    },
+    {
+      "path": "mobile/src/Discovery.tsx",
+      "sha256": "db1b4de534d78db2ddc6f4c97d4b6a839d400a95a0be8f1a4b526a6a7e07a616"
+    },
+    {
+      "path": "mobile/src/DiscoveryMap.android.tsx",
+      "sha256": "44f2c2d82e696286d76c1a1e199c0998680ec4c88d4067e03caebff0ba125d00"
+    },
+    {
+      "path": "mobile/src/DiscoveryMap.native.tsx",
+      "sha256": "21b564f664b3839d1fc3def86920ef53ebb0d725b81fced01f85b961b2692ea6"
+    },
+    {
+      "path": "mobile/src/discovery.ts",
+      "sha256": "e1cbc8b16de878b81c8a6ab977f21e9ef790d4366bc0a278675b28c9a9c85ebf"
+    },
+    {
+      "path": "mobile/src/discoveryRead.ts",
+      "sha256": "1d61fac781427eb2096c0477724a8340e6c6aeab14b30f19947e50859ad86a0b"
+    },
+    {
+      "path": "mobile/src/useMapLocation.ts",
+      "sha256": "b4ab17d184ee332393f5c78bbc0ba94d4e45f004521db3bec22ed08f7cc75011"
+    },
+    {
+      "path": "assets/map-data/loader.mjs",
+      "sha256": "4e9ea561f296e2ee2604b4b26e828933b9d9b9d91597d790e49265400a175033"
+    },
+    {
+      "path": "assets/map-data/foreground-location.mjs",
+      "sha256": "c20db70cb0c9eda7d1bda395036b7fa94fbef51c90343dc75acf0b3fafec42ee"
+    },
+    {
+      "path": "mobile/src/companyPrivateHandoff.ts",
+      "sha256": "e4fcb0f9a57beafca5bc24f00492054490daf98ff232db2603292f33ed0372fd"
+    },
+    {
+      "path": "mobile/src/Operations.tsx",
+      "sha256": "f9e101e12341230983fcf690be5fc4bb3a8e2567c6787b7ca32d22d535b81124"
+    },
+    {
+      "path": "mobile/src/CompanyWorkspace.tsx",
+      "sha256": "67b84db669c4d49c0877bbd694de922da4632ea1b0f35722b4c2bc995e4ff4d7"
+    },
+    {
+      "path": "mobile/src/CommunityPublish.tsx",
+      "sha256": "99be131aefb9802ef792c139e0a9f04e6003816610a9f93aa0895d9592a72fbf"
+    },
+    {
+      "path": "mobile/src/CommunityMediaPicker.tsx",
+      "sha256": "aae766204daefd3ebf7b8e0dbcd9237167c9cf0bf79f24fa848f7083544d7847"
+    },
+    {
+      "path": "mobile/src/communityDraft.ts",
+      "sha256": "1e886ea322bf5f0577581e2133f9478cecf25688de5729624e303c909273b00d"
+    },
+    {
+      "path": "assets/community/member-draft.mjs",
+      "sha256": "16083ac469d63a8bedbf725bf6be2b5be0310a716455df292eb9037ffd41ff49"
+    },
+    {
+      "path": "mobile/src/session.ts",
+      "sha256": "0ac04fdd653fae165b51d099983f15164b045ddaf149af8d71f3c2cae689031f"
+    },
+    {
+      "path": "mobile/app.json",
+      "sha256": "7d1c7a4724eadb4effa695245c2f8e259951ee00711406bf265ce4eadfe01b64"
+    },
+    {
+      "path": "mobile/package-lock.json",
+      "sha256": "f7f2fc1de0b5d675a7eb37e7b62ff355eae032582046462f3f75292324817db2"
+    }
+  ],
+  "checks": {
+    "strict_typescript_before_and_after_patch": true,
+    "native_official_npm_test_before_styling": {
+      "passed": 475,
+      "failed": 0,
+      "skipped": 0
+    },
+    "native_account_switch_scope": {
+      "passed": 3,
+      "failed": 0
+    },
+    "shared_community_map_company_contracts": {
+      "passed": 34,
+      "failed": 0
+    },
+    "post_patch_existing_foreground_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "node": "24.14.0",
+    "dependency_lock_matches_existing_root_Community_tree": true,
+    "dependency_use": "Symlink existing complete mobile node_modules; no install, package edit or provider build.",
+    "diff_check": true
+  },
+  "rendered_evidence": {
+    "actual_compiled_Expo_React_Native_web_control": true,
+    "method": "Local Metro compiles actual source. CDP retrieves already loaded actual MapLocationControl, React and ReactDOM exports and mounts the actual component with controlled state props; no substitute control implementation.",
+    "cases": 6,
+    "viewport": 390,
+    "font_scales": [
+      1,
+      2
+    ],
+    "states": [
+      "locating",
+      "ready_with_3km_accuracy",
+      "permanent_denial"
+    ],
+    "all_targets_at_least_44px": true,
+    "horizontal_overflow": false,
+    "visually_checked": [
+      "control-ready-2x.png",
+      "control-denied-2x.png"
+    ],
+    "limits": "Controlled component layout in browser; enlarged CSS text approximates large-text layout. This does not prove platform font scaling, system settings, permission prompts or an installed native artifact.",
+    "service_requests": 0
+  },
+  "actual_public_data_evidence": {
+    "observed_at": "2026-10-15T12:48:41.926Z",
+    "source_commit": "8c8fe88bd054c18e73e54eb1ca89451e47a6c7c6",
+    "anonymous_public_rpc_reads": 2,
+    "private_credentials": false,
+    "listing_id": "054dd95e-5253-4a86-9630-fe91c3f29c90",
+    "slug": "stalactites-restaurant-melbourne",
+    "receipt": {
+      "latitude": -37.8110808,
+      "longitude": 144.9670491,
+      "precision": "street",
+      "listing_id": "054dd95e-5253-4a86-9630-fe91c3f29c90",
+      "request_id": "841902d0-c90e-4547-9338-d1af00e13ac7"
+    },
+    "actual_native_helpers_accept_point": true,
+    "directions_basis": "reviewed",
+    "directions_url": "https://www.google.com/maps/dir/?api=1&destination=-37.8110808%2C144.9670491&travelmode=driving&dir_action=navigate",
+    "mutated_receipt_refused": true,
+    "installed_artifact_exercised": false,
+    "production_writes": 0
+  },
+  "actual_Community_dependency": {
+    "read_only_observed": "2026-10-15T12:47Z approximately",
+    "baseline_ledger": "20261015122305",
+    "phase_A_ledger": "20261015122314",
+    "phase_B_ledger_at_observation": null,
+    "edge": {
+      "version": 15,
+      "status": "ACTIVE",
+      "bundle_sha256": "5424fadc4e684acaade95c1d4f00ef583451b7d5a9b486ed4879d101f76e7c35",
+      "files": [
+        {
+          "path": "supabase/functions/community-media/index.ts",
+          "sha256": "15ac1fed821747dda0390c117c17560b379bb1127482b13256c1cac33ed351c6",
+          "matches_source": true
+        },
+        {
+          "path": "assets/community/media-rules.mjs",
+          "sha256": "126f0378a0b8a393494bea42ade498b9e28e6e3aeffd56e77975bb601f898469",
+          "matches_source": true
+        },
+        {
+          "path": "assets/documents/bounded-body.mjs",
+          "sha256": "ecb212d46b99b242de2a1e49bb000607b6646e66a723f6d1458b4bfe659df1ed",
+          "matches_source": true
+        }
+      ]
+    },
+    "supported_source_contract": "Native upload posts original selected file+same request UUID; reverify sends asset_id only and requires current actor before dispatch/after reply; saved-photo preview uses authenticated draft-scoped no-store endpoint and deletes local cache/URL on unmount. Ordinary members use canonical member actor RPCs, not founder or workspace administration.",
+    "gate": "Root must accept actual Storage bytes and apply guarded phaseB before declaring proof-required publication enforced globally."
+  },
+  "account_and_precision_review": [
+    "Community Publisher/Root keyed by account; memberDraftRpc checks actor before/after token refresh and after reply. Late replies cannot populate another account. Durable local reference is actor-scoped and stores request metadata only; same request retry/cancel/check remains explicit.",
+    "Discovery component keyed by actor and map scope includes actor; account/scope changes dispose/cancel ephemeral location. Location uses explicit foreground one-time request, reports coarse/unknown accuracy, clears on background/blur/scope/unmount and expires after120s; no device location persists or updates preferences.",
+    "Current public reviewed receipt can establish exact selected point without full feed. Wrong pair/receipt refuses numeric routing; address/name fallback remains labelled. Contradictory source/precision points are held; stored unreviewed positions are labelled separately.",
+    "Company private records deliberately open canonical website with workspace/company IDs only after fresh current owner/admin and exact company check. Browser signs in separately; tokens never transferred. Native private record forms are not implemented."
+  ],
+  "existing_artifact": {
+    "build_id": "bb424385-9a3a-4243-9b89-7e97eecfd85c",
+    "source_commit": "86bb929538c71aa9ede307f7fc8afa2f2fd896b6",
+    "apk_sha256": "28fa719ab987ee207f331fa510bd99c866cfc82797d510b8cde5432c8c51432c",
+    "limits": "Predates later map provenance, private Company handoff and Community changes and this touch fix. Prior permission denial/settings/timeout observations are historical evidence only. No successful sensor fix, physical Android, iOS or store acceptance claimed."
+  },
+  "installed_acceptance_plan": [
+    {
+      "step": 1,
+      "owner": "root",
+      "gate": "After actual Community Storage-byte acceptance and guarded phaseB, freeze one coherent final source containing all release changes and this exact touch fix. Run release checks, record exact source/config/lock and EAS build ID/artifact SHA, then make one build. No paid build triggered by reviewer."
+    },
+    {
+      "step": 2,
+      "gate": "Install exact new APK on clean Android emulator/device. Verify launch/crash log, map basemap/touch/cluster/manual-camera/offline recovery and Stalactites current public reviewed receipt. Exercise four external directions modes and browser handoff; do not claim embedded turn-by-turn navigation."
+    },
+    {
+      "step": 3,
+      "gate": "Exercise location only after tap: precise and approximate permissions, deny/permanent-deny/settings, location-services off, timeout, hide/cancel, foreground/background, account switch and scope change. Obtain a real or explicitly controlled sensor fix and compare accuracy circle/label without automatic pan after manual gesture. Inspect390px/large text and changed controls in the actual binary."
+    },
+    {
+      "step": 4,
+      "gate": "With dedicated ordinary member profile, save/edit/reopen private text+photo drafts, history, topic/tag/alt preservation, restart reference recovery, unknown request check/cancel/identical retry, concurrent version conflict, session revocation and account switch with held token/reply. Select/upload via native picker, remove local source, reopen private photo and reverify stored asset byID; wrong bytes/MIME/type/limit refusals and privacy remain explicit. Canonically discard dedicated test assets/draft; confirm no public post created. Native media upload with actual device remains unproven until this step."
+    },
+    {
+      "step": 5,
+      "gate": "Current owner/admin opens selected Company handoff; verify separate browser sign-in/current workspace+company, archived/foreign/role-loss/switch refusals and return/reload. Ordinary editor/viewer do not get private Company access. No provider integrations assumed."
+    },
+    {
+      "step": 6,
+      "gate": "Repeat applicable acceptance on actual iPhone/iPad artifact and physical Android; iOS/build/store distribution remains separate. Actual native publish/delete of a public post remains open unless root runs an explicitly authorized dedicated synthetic lifecycle with cleanup; source/unit/database acceptance alone cannot close it."
+    }
+  ],
+  "open_parity_gaps": [
+    "Selected/saved private native videos show filename/duration metadata rather than playable private draft preview. Public feed playback exists; do not advertise private video-preview parity. No video streaming change in this patch.",
+    "Company private minute/role/deadline forms/history are website handoff, not native equivalent.",
+    "Actual native upload/reverify/draft recovery/account-switch journeys in the next installed artifact remain pending.",
+    "Physical-device sensor success, iOS and store distribution remain unverified."
+  ],
+  "reviewer_production_writes": 0,
+  "paid_builds": 0,
+  "provider_operations": 0,
+  "public_content_operations": 0,
+  "evidence": [
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/capture-control.mjs",
+      "sha256": "0db44dfe9c1837d2b5ea68dfbca42f2029d2e8e54aac3f77c536c6d59be1a66b"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/community-edge-source.json",
+      "sha256": "4266c55674a8af5187f11f9b74a1f340746759afbb9c92354bdf55d1a6fccb0b"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/community-native-scope.log",
+      "sha256": "38fe89a9b75ad7a08075af91136464e046ea2b61a11545db41b945fba6d7d4af"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/control-denied-1x.png",
+      "sha256": "262cfd21f0da8975a801045f6fb21dc2f85b2eb53ca1e51b0ce020d7407ec967"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/control-denied-2x.png",
+      "sha256": "8fda31c6b6d5d242f753bbcec1b545f5107e59a2f1ee6c6e3c8ae33f33a0a0b7"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/control-locating-1x.png",
+      "sha256": "aa06272d8d7a1d0aba47f5f163e7ad7a96e3b3bc4dde3c995fd22c49195ae0db"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/control-locating-2x.png",
+      "sha256": "54d0282bdeeef8b634c9e28eb885ccd07543e90105e1c39866a49033cd1ec621"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/control-ready-1x.png",
+      "sha256": "8785a129f27c8a198bb761eeb064493a160f6acf24216ee804b839dfcd3839ce"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/control-ready-2x.png",
+      "sha256": "560523471c93812370209c7940076839aa39a0b982ee1d5034773f8cbc226deb"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/foreground-after-touch.log",
+      "sha256": "3528a6196aca8208dd5e6c483bf740b9422b9411943e6d7fdd91783a794753d3"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/mounted-control-modules.json",
+      "sha256": "9ad3bfebaa258ea6eb6f0e298d811d0223b8bc20550ab145a52a10c590bbe463"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/mounted-control.json",
+      "sha256": "ee083aa3c8d3a8438b8891d3fda66845b45ed484c9d41018ab02e8837f4f3947"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/mounted-control.log",
+      "sha256": "9179624fee77d01543098df31f12d9e2e0ec2f4fad65aa563be82c8cfa3a7ad4"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/native-tests.log",
+      "sha256": "0843d6c9750605f4bef736d3de6ba82a21aee5d436c107580450c1c3b3df513d"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/public-reviewed-point.json",
+      "sha256": "1d30b2b7c37932900e2f5eef147282ecb56abd4ae7963aeb5efa0b9a3baaab06"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/shared-contract-tests.log",
+      "sha256": "d01233ae83cba9822d232136a6aa9352d6b05595c11b3fb3be958411f2348967"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/typescript-after-touch.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "file": "docs/audits/evidence/native-readiness-2026-10-15/typescript.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}
