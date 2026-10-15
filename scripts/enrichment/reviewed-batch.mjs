@@ -3,6 +3,7 @@ import {validHospitalityFields,hospitalitySourceMatches} from '../../supabase/fu
  * Does not invent a lease or write around enrich_apply's owner/source fences.
  */
 import {buildClientBrief} from '../../assets/enrichment/client-brief.mjs';
+import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
 import {canonical,sha256} from '../quality/evidence.mjs';
 const hashPattern=/^[a-f0-9]{64}$/;
 const object=value=>value&&typeof value==='object'&&!Array.isArray(value);
@@ -12,6 +13,10 @@ export function reviewedEnrichmentBatch(report,review,lease){
  if(review.listing_id!==report.listing_id||lease.listing_id!==report.listing_id||lease.website!==report.website||!lease.lease_id||!lease.slug)throw Error('review_lease_mismatch');
  if(typeof lease.source_fingerprint!=='string'||!lease.source_fingerprint.trim()||report.source_fingerprint!==lease.source_fingerprint)throw Error('review_lease_fingerprint_mismatch');
  if(review.source_fingerprint!==report.source_fingerprint||review.identity_confirmed!==true||review.images_confirmed!==true||!review.reviewer||!review.reviewed_at)throw Error('source_review_required');
+ // Reassess retained reports too: an approval cannot revive a capture made before
+ // the current replacement/parking guard existed, or sanitize it with overrides.
+ const source=report.capture_kind==='source_html'?report.source:report.render;
+ if(assessMachineSourceIdentity({website:lease.website,finalUrl:source?.url,name:lease.name,title:source?.title,description:report.profile?.description}).outcome!=='continue')throw Error('source_identity_review_required');
  if(report.capture_kind==='source_html')return reviewedSourceHTML(report,review,lease);
  if(report.capture_kind&&report.capture_kind!=='rendered')throw Error('source_not_approved');
  if(!report.render?.url||report.aggregator||report.status==='repair_required'||report.source?.http_status!==200||new URL(report.render.url).hostname.replace(/^www\./,'')!==new URL(report.website).hostname.replace(/^www\./,''))throw Error('source_not_approved');
@@ -50,9 +55,9 @@ function reviewedFoodOffering(report,review,lease){
  if(evidence.kind==='menu_handoff'){
   if(evidence.source_format!=='source_document_handoff'||report.profile.menu_url!==source.href||foodKeys.some(key=>key!=='menu_url'&&Object.hasOwn(report.profile,key))||evidence.menu_sha256!==null||evidence.retained_items!==0||evidence.original_total!==null||evidence.truncated!==null)throw Error('food_menu_handoff_invalid');
  }else{
-  if(evidence.kind!=='structured_menu'||!['schema.org','html-product-fields','html-semantic-food-fields'].includes(evidence.source_format)||report.profile.menu_source_format!==evidence.source_format||report.profile.menu_source!==source.href||!Array.isArray(menu)||!menu.length||menu.length>30||sha256(canonical(menu))!==evidence.menu_sha256)throw Error('food_menu_evidence_invalid');
-  let count=0;for(const section of menu){if(!object(section)||typeof section.section!=='string'||section.section.length>160||!Array.isArray(section.items)||!section.items.length)throw Error('food_menu_fields_invalid');for(const item of section.items){if(!object(item)||typeof item.name!=='string'||!item.name.trim()||item.name.length>180||typeof item.price!=='string'||item.price.length>80||typeof item.note!=='string'||item.note.length>500||Object.keys(item).some(key=>!['name','price','note'].includes(key)))throw Error('food_menu_fields_invalid');count++;}}
-  if(count>100||evidence.retained_items!==count||!(evidence.original_total===null||Number.isInteger(evidence.original_total)&&evidence.original_total>=count)||!(evidence.truncated===null||typeof evidence.truncated==='boolean')||evidence.original_total===null&&evidence.total_state!=='unreported_by_extractor'||evidence.original_total!==null&&(evidence.total_state!=='observed'||evidence.truncated!==(evidence.original_total>count))||Object.hasOwn(report.profile,'menu_total_items')&&report.profile.menu_total_items!==evidence.original_total||Object.hasOwn(report.profile,'menu_truncated')&&report.profile.menu_truncated!==evidence.truncated)throw Error('food_menu_coverage_changed');
+  if(evidence.kind!=='structured_menu'||!['schema.org','html-product-fields','html-semantic-food-fields'].includes(evidence.source_format)||report.profile.menu_source_format!==evidence.source_format||report.profile.menu_source!==source.href||!Array.isArray(menu)||!menu.length||menu.length>20||Buffer.byteLength(JSON.stringify(menu),'utf8')>120000||sha256(canonical(menu))!==evidence.menu_sha256)throw Error('food_menu_evidence_invalid');
+  let count=0;for(const section of menu){if(!object(section)||typeof section.section!=='string'||section.section.length>100||!Array.isArray(section.items)||!section.items.length||section.items.length>300)throw Error('food_menu_fields_invalid');for(const item of section.items){if(!object(item)||typeof item.name!=='string'||!item.name.trim()||item.name.length>160||typeof item.price!=='string'||item.price.length>100||typeof item.note!=='string'||item.note.length>600||Object.keys(item).some(key=>!['name','price','note'].includes(key)))throw Error('food_menu_fields_invalid');count++;}}
+  if(count>300||evidence.retained_items!==count||!(evidence.original_total===null||Number.isInteger(evidence.original_total)&&evidence.original_total>=count)||!(evidence.truncated===null||typeof evidence.truncated==='boolean')||evidence.original_total===null&&evidence.total_state!=='unreported_by_extractor'||evidence.original_total!==null&&(evidence.total_state!=='observed'||evidence.truncated!==(evidence.original_total>count))||Object.hasOwn(report.profile,'menu_total_items')&&report.profile.menu_total_items!==evidence.original_total||Object.hasOwn(report.profile,'menu_truncated')&&report.profile.menu_truncated!==evidence.truncated)throw Error('food_menu_coverage_changed');
  }
  return evidence;
 }

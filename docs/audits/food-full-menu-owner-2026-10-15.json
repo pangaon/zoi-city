@@ -1,0 +1,396 @@
+{
+  "state": "frozen_owner_candidate_not_live_independent_review_pending",
+  "worktree": "/workspaces/zoi-food-full-menu-work",
+  "baseline": "2504df1a3f293329a81f44e009a69baaffb5d3a4",
+  "source_manifest": {
+    "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/source-manifest.json",
+    "sha256": "acbaf922652dbc5bd82e1432482ae788229cb707219e7c3c692527dde0e8ad32",
+    "files": [
+      {
+        "path": "api/_bakery-home.js",
+        "sha256": "88301a70aba3208d3b546c41ad0b7bd9e90c9317e3c320e5fcce0503b15c1c4a"
+      },
+      {
+        "path": "api/_restaurant-home.js",
+        "sha256": "4e3e490c188cdc509a1317607b8a47fd00345f079e738081cc2149aeb7c43315"
+      },
+      {
+        "path": "assets/homes/food-offering.mjs",
+        "sha256": "a2070348ad8f1c60f5aecd6add4ac209064b0b352010bb9c630468bf7ee85c6d"
+      },
+      {
+        "path": "assets/homes/templates/bakery/client.mjs",
+        "sha256": "235e28e6cb693e5e418a7aa1ecebbe6962e6858b0e2e75ee6555baa30838fde3"
+      },
+      {
+        "path": "assets/homes/templates/bakery/render.mjs",
+        "sha256": "2d03778cef66be500028ceb6314925dac8731738fc6cbb8cbaf99635b2715341"
+      },
+      {
+        "path": "assets/homes/templates/bakery/style.css",
+        "sha256": "8c782a1ed88dcb57fa8fc4cc7bcb13a769fa6e8a10e14f7569cf97aa1814bc75"
+      },
+      {
+        "path": "assets/homes/templates/restaurant/client.mjs",
+        "sha256": "cc9dfd591fb5a3860d8bead744523db8fabb58c9bacff69e405d4f1e3561198f"
+      },
+      {
+        "path": "assets/homes/templates/restaurant/model.mjs",
+        "sha256": "9159547b7bd504f29bcb9806f7f0b4181225cc2d9c8af6d3fff555d01d55a973"
+      },
+      {
+        "path": "assets/homes/templates/restaurant/render.mjs",
+        "sha256": "fcc7054db04e977ad6c1f490eb79ce1cc871ffa78f74ecd0c8c88aef16946057"
+      },
+      {
+        "path": "assets/homes/templates/restaurant/style.css",
+        "sha256": "d1db9fed550556f11ea388abd301e78d9d02997257daf7b9224eed94a0134b29"
+      },
+      {
+        "path": "assets/suite/_vertical-forms.js",
+        "sha256": "28647fe2758cf931228cced3703987c311f3de0d479c3af8040748a8690ec624"
+      },
+      {
+        "path": "supabase/functions/zoi-enrich/_menus.js",
+        "sha256": "73540458b6dd0622e80b06326d7305101a2297104fa6576aadbf951b7ebc42eb"
+      },
+      {
+        "path": "supabase/functions/zoi-enrich/index.ts",
+        "sha256": "685729ead092fbc4a17b870112458fa210d801b5803cf0b167dd8fc1f2c73530"
+      },
+      {
+        "path": "supabase/migrations/20261015123754_expand_owner_menu_item_capacity.sql",
+        "sha256": "66c8f6b11c8777633174ac282d7d4b85a61522cb497b40fd2287eb61981364a1"
+      },
+      {
+        "path": "tests/browser/food-full-menu/verify.mjs",
+        "sha256": "5689de02a50420fc5f3ec60798f4ff70b74f75bda6ae6a62b272890ee0400ee7"
+      },
+      {
+        "path": "tests/browser/food-offering/verify.mjs",
+        "sha256": "7a57bf903edfec38f0f3ce9e04af70012c8b97fc3964affdedeaaf0f9419ad57"
+      },
+      {
+        "path": "tests/database/fixtures/food-menu-capacity-live.json",
+        "sha256": "25599561ec6fbc61a261e8b641bf1b1c16841ce7444d1788a6c483b0494bc904"
+      },
+      {
+        "path": "tests/database/food-menu-capacity-production-rollback.sql",
+        "sha256": "943f613b8cbd59dd30d4cf292c5b076efb466af5bcfc89c693a4062844078f67"
+      },
+      {
+        "path": "tests/database/food-owner-full-menu.integration.mjs",
+        "sha256": "cf0784e8df38ac34501c7508ce383d8f93f85298078a76347aa5445cb4e8a04f"
+      },
+      {
+        "path": "tests/unit/enrichment-menu.test.mjs",
+        "sha256": "184f8aa3a1ecabcaaea6173f684f1b238466269b2e6dfa7bb369b5550e0ee297"
+      },
+      {
+        "path": "tests/unit/food-full-menu.test.mjs",
+        "sha256": "40a28eafc47bcf06d5aa76d446473bee4a2003081609ee613780537c5c3d9cc6"
+      },
+      {
+        "path": "tests/unit/food-source-branch-independent.test.mjs",
+        "sha256": "ef4d1da61942af87a9f5829485337210989cadb37c15c667eed3b3c76d22b4a0"
+      }
+    ]
+  },
+  "problem": "The official Hellenic menu has151 entries under four exact source sections, including145 in List. The old100 total import limit retained100 and omitted51; a100 per-section canonical limit also blocked publishing the full List. Public menus expanded into a long page and the source dialog duplicated the entire selection.",
+  "source": {
+    "url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+    "capture_sha256": "98327c9a383605c9630e977d3715b67aa4a7a8b967533c74bae09a61ffb1f6df",
+    "capture_bytes": 120675,
+    "retained_items": 151,
+    "observed_items": 151,
+    "truncated": false,
+    "sections": [
+      [
+        "Spanakopita",
+        2
+      ],
+      [
+        "Tiropitakia",
+        2
+      ],
+      [
+        "Desserts",
+        2
+      ],
+      [
+        "List",
+        145
+      ]
+    ],
+    "tail_item151": "Sardines in Can",
+    "proof": "docs/audits/evidence/food-full-menu-owner-2026-10-15/source-menu-proof.json",
+    "source_capture_is_retained_not_refetched": true
+  },
+  "changes": [
+    "Source parser retains at most300 items,300 per section,20 source sections and120KB UTF8 menu JSON, with original section names. Existing HTML/div traversal bounds remain. Source records beyond limits or canonical field lengths are omitted explicitly with truthful total/truncation metadata when the source scan completes. An incomplete bounded JSON-LD scan reports unknown coverage rather than a false total.",
+    "Owner menu item maxRows and public model limit expand from100 to300. A CLI-created migration changes exactly the per-section100 predicate to300 in the actual two canonical validator/writer bodies, guarded by full body MD5, owner, ACL, security-definer, volatility and empty search_path. Other writer bytes, CAS/idempotency/current authority,20sections and200KB constraints are preserved.",
+    "Linked worker supplements retain menu_total_items and menu_truncated, including false, only alongside their adopted menu_source. Primary menu coverage is not overwritten by unrelated child menu metadata. The default brief remains30.",
+    "Shared public menu starts with12 records, reveals12 more/all/fewer, searches all151 including the hidden tail, and filters original source sections. All records remain available with JavaScript disabled. Question actions have separate lines even when description is absent, and preserve focus.",
+    "Restaurant and bakery source-menu dialogs retain a bounded source information/handoff view rather than duplicate151 rows. The exact official menu URL remains reachable. Source coverage caption is suppressed for owner overrides/clears. Request drafting and external order-provider truth remain unchanged.",
+    "API cache strings and shared stylesheet/client module versions update so deployed clients obtain the changed source."
+  ],
+  "bounds": {
+    "source_total_items": 300,
+    "source_per_section_items": 300,
+    "source_sections": 20,
+    "source_menu_utf8_bytes": 120000,
+    "canonical_per_section_items": 300,
+    "canonical_sections": 20,
+    "canonical_payload_bytes": 200000,
+    "canonical_total_is_constrained_by_sections_and_payload_not_new300_total": true,
+    "name_characters": 160,
+    "price_characters": 100,
+    "note_characters": 600,
+    "section_characters": 100
+  },
+  "database": {
+    "migration": "supabase/migrations/20261015123754_expand_owner_menu_item_capacity.sql",
+    "cli_created": true,
+    "actual_production_metadata_fixture": "tests/database/fixtures/food-menu-capacity-live.json",
+    "before_contracts": [
+      {
+        "signature": "zoi.home_content_save_before_revision(uuid,uuid,text,uuid,jsonb,jsonb)",
+        "body_md5": "8455ff7d97ea4eaafc176de32099f8e1",
+        "definition_md5": "526495321101624bacfce7eb8a016427",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "security_definer": true,
+        "volatility": "v",
+        "config": [
+          "search_path=\"\""
+        ]
+      },
+      {
+        "signature": "zoi.home_revision_content_valid(jsonb,jsonb)",
+        "body_md5": "7f3850936d4e7b8cfe1ef99f8d005a71",
+        "definition_md5": "085981d41112fa34a9701c97f3455d4e",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "security_definer": false,
+        "volatility": "i",
+        "config": [
+          "search_path=\"\""
+        ]
+      }
+    ],
+    "after_contracts": [
+      {
+        "signature": "zoi.home_content_save_before_revision(uuid,uuid,text,uuid,jsonb,jsonb)",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "security_definer": true,
+        "config": [
+          "search_path=\"\""
+        ],
+        "volatility": "v",
+        "body_md5": "722197013f30e8f1b7b03f146cc2bc85"
+      },
+      {
+        "signature": "zoi.home_revision_content_valid(jsonb,jsonb)",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres}",
+        "security_definer": false,
+        "config": [
+          "search_path=\"\""
+        ],
+        "volatility": "i",
+        "body_md5": "5e2a7b292a87741df5d23f3d56177396"
+      }
+    ],
+    "production_rollback_only_fixture": "tests/database/food-menu-capacity-production-rollback.sql",
+    "guarded_patch": "Exactly one predicate occurrence per function, jsonb_array_length(sec->'items')>100 to >300; no other source change. Guard drift aborts atomically."
+  },
+  "verification": {
+    "focused": {
+      "command": "node --test tests/unit/enrichment-menu.test.mjs tests/unit/food-full-menu.test.mjs tests/unit/food-offering.test.mjs tests/unit/food-owner-provider.test.mjs tests/unit/restaurant-home.test.mjs tests/unit/bakery-home.test.mjs tests/unit/restaurant-owner-readback.test.mjs tests/unit/restaurant-brand.test.mjs tests/unit/food-source-branch-independent.test.mjs tests/unit/food-source-pipeline.test.mjs tests/unit/owner-menu-editor.test.mjs tests/unit/vertical-forms.test.mjs tests/unit/vertical-profile-contract.test.mjs tests/unit/home-revision.test.mjs",
+      "passed": 97,
+      "failed": 0,
+      "skipped": 0,
+      "log": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-focused.log"
+    },
+    "owner_mounted_real_postgresql": {
+      "command": "node tests/database/food-owner-full-menu.integration.mjs",
+      "result": "pass",
+      "routes": [
+        "actual mounted owner editor",
+        "home_revision_get/change",
+        "actual home-revision-preview API",
+        "home_revision_publish",
+        "public_owner_content",
+        "actual restaurant/bakery renderers"
+      ],
+      "families": [
+        {
+          "family": "restaurant",
+          "width": 1440
+        },
+        {
+          "family": "bakery",
+          "width": 390
+        }
+      ],
+      "proof": [
+        "151 exact source entries loaded under four source sections",
+        "explicit first name edit changes only intended nonempty fact; empty strings canonically normalize to absent keys",
+        "private save preserves published imported source151",
+        "preview/publish/reopen/readback151",
+        "stale revision refused with full draft row unchanged",
+        "explicit item94 removal leaves150 with source tail151 intact",
+        "explicit complete owner clear remains null and prevents source151 resurrection",
+        "300 accepted;301 per section/21 sections/200KB excess refused",
+        "both complete patched function bodies and authority preserved except exact predicate",
+        "drift guard aborts atomically",
+        "root-only rollback proof fixture executes locally without owner/listing writes"
+      ],
+      "results": "docs/audits/evidence/food-full-menu-owner-2026-10-15/owner-results.json",
+      "log": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-owner-full-menu.log"
+    },
+    "public_browser": {
+      "command": "node tests/browser/food-full-menu/verify.mjs",
+      "cases": 17,
+      "failed": 0,
+      "widths": [
+        390,
+        1440
+      ],
+      "color_scheme_preferences": [
+        "light",
+        "dark"
+      ],
+      "template_themes_are_the_existing_family_design_not_a_new_system_theme_feature": true,
+      "results": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-results.json",
+      "source_adapter": "Actual retained official HTML and source images with controlled localhost asset transport; external requests blocked. Restaurant-family case uses same controlled151 source to exercise shared family behavior, not a claim of151 factual items on another listing.",
+      "assertions": [
+        "all151 DOM records with12 initially visible",
+        "12to24to151to12 reveal",
+        "tail151 found through List145 filter and full search",
+        "request modal has correct item and says nothing has been sent, ordered or reserved",
+        "request focus returns to trigger; collapse focus returns to search",
+        "description-free tail item question action below name",
+        "no horizontal overflow or page errors",
+        "exact source URL in bounded source dialog",
+        "sparse/held records remain without invented menus",
+        "JavaScript disabled still exposes151 source records"
+      ]
+    },
+    "local_suite": {
+      "command": "npm run verify:local",
+      "passed_node_test_files": 378,
+      "passed_standalone_suites": 2,
+      "log": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-local-verify.log",
+      "timing": "Passed before final button block-layout fix and JSON-LD incomplete-total regression; final97 focused checks and17 actual browser cases cover those final changes."
+    },
+    "deno": {
+      "command": "deno check --node-modules-dir=none supabase/functions/zoi-enrich/index.ts",
+      "result": "pass",
+      "initial_environment_attempt": "Plain deno check could not infer a missing openai npm dependency directory. The successful explicit none mode uses cached resolver metadata; incidental generated deno.lock removed."
+    },
+    "diff_check": "git diff --check passed"
+  },
+  "network_and_writes": {
+    "production_mutations": false,
+    "provider_calls": false,
+    "paid_builds": false,
+    "authorized_production_read": "One root-authorized read-only pg_proc definition/metadata capture; no member/listing rows or secrets.",
+    "verification_scope_mistake": "npm run verify was accidentally run once and included live default API contract calls. It finished before stop. All anonymous mutation-denial checks passed; no authenticated credentials or factual writes were used. This was promptly disclosed to root.",
+    "live_contract_result": "Live contract check4 explore_search p_type failed because no rows were returned; no conclusion about filter implementation is established here. The other anonymous denial checks passed. This is outside this source packet and prevents claiming the broad network verify was green.",
+    "accidental_network_log": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-full-verify.log"
+  },
+  "commands_env": {
+    "ZOI_PLAYWRIGHT_MODULE": "/workspaces/zoi-city-release/node_modules/playwright-core/index.mjs",
+    "CHROMIUM_EXECUTABLE_PATH": "/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome",
+    "ZOI_FOOD_EVIDENCE": "set independent output path for owner integration",
+    "ZOI_FOOD_FULL_EVIDENCE": "set independent output path for public browser; do not overwrite owner evidence"
+  },
+  "dependencies_and_remaining": [
+    "Root alone applies production migration and rollback-only proof, deploys complete accepted Edge bundle and web source, and verifies real deployed read/render/canonical writes. No live151 factual update is claimed by this packet.",
+    "Frozen11-file generic reviewed Food pipeline remains untouched. After that baseline integrates, author/root must explicitly align its current100-total guard with300 and canonical20sections/field/byte bounds, refresh recipe/extractor hashes, update retained source100of151 proof to151of151, and rerun authority/hold tests before applying full source data.",
+    "Canonical source enrichment must retain current ownership/hold/source-context authority and owner edit/explicit clear precedence; no factual listing rewrite or source-proof bypass is included.",
+    "Owner PostgreSQL browser fixture uses an isolated schema/auth adapter and actual stored functions, not a production authenticated owner journey. Public browser uses controlled source asset transport, not provider submission. External ordering remains a provider handoff; no order/payment/reservation confirmation is created.",
+    "No native binary/provider validation or category-wide factual completeness claim. Existing native/public URL handoff needs root deployed route acceptance as applicable.",
+    "Independent QA review pending; candidate is not accepted or live merely because tests pass."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-browser.log",
+      "sha256": "055935c3f5b1be159f979669e799bcba9cf211114fecafd9c5af731661fd0606"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-focused.log",
+      "sha256": "ce467674dcd3cda7719fd367bc1141744e0e177cc99b8a10f14b1928401f5b0b"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-full-verify.log",
+      "sha256": "ec42421182e36cc58d4360d86ac0aae0ab15c9b984e775fba2af866b42d22aba"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-full-menu-local-verify.log",
+      "sha256": "97a416c33de85b068d9d741db9bebc8f27eb60eddc211cfa2eb63d095c225e6b"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-menu-capacity-after-contracts.json",
+      "sha256": "dfd5c7a891b7cf361c285eca33b821ec80d2472673f5803cd260b524cc95a9fb"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/food-owner-full-menu.log",
+      "sha256": "410ae660481a2dbd1e98ebf8c49a0fe1b6e262a382b8060f431501ee07bbae02"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/full-menu-0-owner-item151.png",
+      "sha256": "254b8925c36952e7c946029b3cc33fedaf194fba6692b390039c9b374ce44707"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/full-menu-0-public-item151.png",
+      "sha256": "1cf9c47da7220e5d93f6e03673a743bd6452b052a933faf37775325a42c5763c"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/full-menu-1-owner-item151.png",
+      "sha256": "4a976d608781bf318cf652b9b51fa21e376251ad51171f3a5bcab21ce2e0cb73"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/full-menu-1-public-item151.png",
+      "sha256": "5583bf880bb2f74265e37d5417217f69f78f9f93ec7967f189f243cf2b9b6aca"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/owner-results.json",
+      "sha256": "5a6c36f7ac18ac56242b3c918b6990fa668d0cb30dd9f30dce24798d0c016524"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-hellenic-1440-light-initial.png",
+      "sha256": "0880e592ea13f731b0943209a3c0e35916a96e3a81f4f789635b820bb1cbe6fb"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-hellenic-390-light-initial.png",
+      "sha256": "409785c424c6202f1c2102aa9879bab30f56fd83e6c5cd7223c9ad768a018309"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-hellenic-390-light-tail151.png",
+      "sha256": "0e54ff597cffd8da5e3e725cf40003a69fba06bdce5f3d4d6990b0bbe3c2733f"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-restaurant-1440-light-initial.png",
+      "sha256": "0914c5c278993885bcda7b8a39bec7c22e59feb6f51ad7a80591f7a1aa1ff380"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-restaurant-390-dark-tail151.png",
+      "sha256": "638b74b21cecc1469261ef293c8078cd7ff8cf70bb3f4581faf7a43cb7af34d4"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/public-results.json",
+      "sha256": "aa65e95f91a6ad397c535e6c3d93c59a5c624177f2652d59ed9a5a8ee1646966"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/source-manifest.json",
+      "sha256": "acbaf922652dbc5bd82e1432482ae788229cb707219e7c3c692527dde0e8ad32"
+    },
+    {
+      "path": "docs/audits/evidence/food-full-menu-owner-2026-10-15/source-menu-proof.json",
+      "sha256": "b23db9a9efdec215f86956bffc43e5eee514229defcf795090421b24a9c46894"
+    }
+  ]
+}

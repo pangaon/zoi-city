@@ -1,0 +1,175 @@
+{
+  "schema": 1,
+  "specialist": "enrichment_next",
+  "at": "2026-10-15T13:16:26.101615+00:00",
+  "worktree": "/tmp/zoi-source-replacement-guard",
+  "branch": "fix-source-replacement-guard-20261015",
+  "base": "2f2e51de32a41551524563e1ac225a78f123defd",
+  "problem": "Actual current canonical website for Yiamas Glasgow serves casino replacement content; Kostas bakery returns domain-for-sale copy. Previous shared assessor missed both, worker did not invoke it, and retained pre-guard captures could be approved through the reviewed merge.",
+  "result": "Review-only refusal for clear domain-parking or nonmatching monetary casino metadata at source capture, generic worker and both reviewed merge boundaries. Existing source identity, owner precedence and canonical writer remain authoritative.",
+  "files": [
+    {
+      "path": "supabase/functions/zoi-enrich/_source-identity.js",
+      "sha256": "2c806660ab26e98bd452b2baa23d4de228edd1f1edad52100d0410513f3cc6bb"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/index.ts",
+      "sha256": "eaa2ac4fd983c8d7a1b54d660e2fc327dddb3a547a68d9c0533e9a636b7cf3b7"
+    },
+    {
+      "path": "scripts/enrichment/reviewed-batch.mjs",
+      "sha256": "85693caed71ccf6030939028142f62b11266282113abd57f86b0005cfc541c98"
+    },
+    {
+      "path": "tests/unit/enrichment-source-replacement-identity.test.mjs",
+      "sha256": "a2c16c052cb6d57d1020c32db86575bbdec1def5258c514bf301b90ac4bf9840"
+    },
+    {
+      "path": "tests/unit/food-source-pipeline.test.mjs",
+      "sha256": "d42f9b7dfe438bcbd74b77848ef8ffa637dc1f82b68c4cb55495244d97965381"
+    },
+    {
+      "path": "tests/unit/food-source-branch-independent.test.mjs",
+      "sha256": "901a88c31960d53c33c8917f6f7096e497587327f5b7640f5a2cfad738d13c03"
+    },
+    {
+      "path": "tests/unit/enrichment-member-worker.test.mjs",
+      "sha256": "9c6607284ede2fb450d87d5af0a3b4bc583c5c2c3d952d2e88c43038a72384cd"
+    },
+    {
+      "path": "tests/unit/client-services-extractor.test.mjs",
+      "sha256": "fe36067c961279550868ab8fb95569341fe4550405678e271b7c649719f9fcc0"
+    },
+    {
+      "path": "tests/unit/enrichment-deadline.test.mjs",
+      "sha256": "8e1d086a39e9f855d6c1858e4ad907d632e33393d126557e42ab8056fb9d12e1"
+    },
+    {
+      "path": "tests/unit/enrichment-packaging.test.mjs",
+      "sha256": "c9847c0cfccb9d7eb4daf40ae35ac1f747b65289f6fdbf6df3f5dc767a97085d"
+    }
+  ],
+  "source_evidence": {
+    "private_batch_directory": "/home/codespace/.cache/zoi/food-catalogue-20-private-20261015",
+    "retained_reports_sha_verified": true,
+    "original_tmp_artifacts_retained": true,
+    "copied_capture_artifacts_sha_verified": 62,
+    "all_copied_files_sha_verified": 71,
+    "cases": [
+      {
+        "name": "Yiamas Greek Taverna",
+        "url": "https://www.yiamas-greek-taverna.co.uk/",
+        "decoded_utf8_source_sha256": "4f06a47d94f808a7fcf1ad123cd8c53d47498c47d2085a9cd9afb2bf55c0f8c7",
+        "observed_metadata": "Tower Rush / UK casinos / real money / RTP / bonuses",
+        "new_disposition": "conflicting_wagering_identity"
+      },
+      {
+        "name": "Kostas Greek Bakery",
+        "url": "https://www.kostasgreekbakery.com/",
+        "decoded_utf8_source_sha256": "cfa58bf146006594b8f1e7ff63562e0c8973701899ab615859f7a472d9f427ff",
+        "observed_metadata": "Bare-domain title and this domain may be for sale description",
+        "new_disposition": "parked_or_for_sale_source"
+      }
+    ],
+    "replay_basis": "The immutable canonical capture reports contain sanitized source HTML and observed original source hashes. Replay verifies report bytes and exact captured metadata, then uses retained sanitized HTML as untrusted input. This does not claim raw original HTML was retained or separately rehashed for these two generic source captures.",
+    "full_source_html_or_configs_committed": false
+  },
+  "implementation": {
+    "shared_assessor": "Same-host monetary casino review requires expected identity absent and expected business name not itself a gaming identity. Ordinary bonuses, deposits, casino-night events and Greek cuisine words remain insufficient. Explicit domain parking/sale notices refuse even with a stale matching title. A continue result never proves identity.",
+    "worker": "One import and one guard after generic extract, before sourceClientIdentity, structured services, menu context/supplements or brief. Emits only blocked/error metadata with current registered website and original lease; no extracted facts on refusal. Existing enrich_apply handles persistence; unchanged. Member-specific source handling remains separate.",
+    "reviewed_merge": "Current shared assessor checks original captured title/description before either rendered or source-HTML branch and before approved description overrides; no merge for wrong-site pre-guard reports.",
+    "owner_data": "Actual owner menu wins even when stale machine menu is hidden by source hold. Unknown source holds and input objects are not cleared by this gate. No owner editing/runtime paths changed.",
+    "harness_changes": "Only real assessor imports/dependency injections in five existing worker harnesses. Reverse-diff verified all old assertions byte-identical.",
+    "packaging": "Pinned dependency walker unchanged; expected graph adds only _source-identity.js (20 total modules).",
+    "unchanged_bounds": "Reviewed Food total100/sections30 guard remains untouched. Root owns later coherent151/300 bound integration.",
+    "index_merge": "Only import near _brief.js and one guard after main extract; disjoint from owner_next menu coverage whitelist hunk. Root must preserve both deltas, not overwrite whole file.",
+    "overlap_test_merge": "food-source-pipeline and food-source-branch-independent additions are assessor import/injection only; owner151 assertions remain owned by owner_next/root."
+  },
+  "verification": {
+    "focused_with_retained_capture_replay": {
+      "command": "ZOI_SOURCE_REPLACEMENT_CAPTURE_DIR=/home/codespace/.cache/zoi/food-catalogue-20-private-20261015 node --test tests/unit/enrichment-source-replacement-identity.test.mjs tests/unit/source-identity-gate.test.mjs tests/unit/source-html.test.mjs tests/unit/reviewed-source-html.test.mjs tests/unit/reviewed-official-source.test.mjs tests/unit/rendered-source.test.mjs tests/unit/reviewed-food-source.test.mjs tests/unit/food-source-pipeline.test.mjs tests/unit/food-source-branch-independent.test.mjs tests/unit/enrichment-member-worker.test.mjs tests/unit/client-services-extractor.test.mjs tests/unit/enrichment-deadline.test.mjs tests/unit/enrichment-packaging.test.mjs",
+      "tests": 119,
+      "passed": 119,
+      "failed": 0,
+      "skipped": 0,
+      "log": "/home/codespace/.cache/zoi/source-replacement-guard-20261015/zoi-source-replacement-retained-focused-revised.log",
+      "sha256": "4668c24e2b7d7597668b2929722879e4913e9bee6f3ce72232af47532c745b08"
+    },
+    "deno_check": {
+      "version": "2.9.6",
+      "command": "/home/codespace/.npm/_npx/7a40be787520bede/node_modules/deno/deno check --cached-only --node-modules-dir=none --no-lock supabase/functions/zoi-enrich/index.ts",
+      "passed": true,
+      "log": "/home/codespace/.cache/zoi/source-replacement-guard-20261015/zoi-source-replacement-deno-check-revised.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "node_syntax": true,
+    "git_diff_check": true,
+    "actual_controlled_worker_handler": "Current repository TypeScript handler and extractor, real shared identity/brief/member helpers, controlled RPC/source responses; no external HTTP or production write. Asserts failure-only metadata, same website/lease, no new identity/supplement/brief/factual fields.",
+    "negative_cases": [
+      "ordinary promotions/bonus dessert",
+      "casino-night fundraiser with deposits",
+      "casino-night fundraiser with no real money",
+      "restaurant parking and restaurant business for sale",
+      "matching legitimate restaurant identity",
+      "genuine casino names",
+      "Greek καζίνο and καζινο business names",
+      "Greek κουζίνα and μπόνους restaurant text",
+      "unrelated CDN image paths",
+      "unchanged invalid/cross-host URL refusal",
+      "explicit no-real-money/play-money charity slots with free spins",
+      "explicit no-money educational RTP/probability lesson",
+      "positive real-money title plus negated free-demo description still refuses",
+      "commercial cash/deposit/welcome offers cannot be neutralized by no-money event wording"
+    ],
+    "real_canonical_writer_or_browser_journey": "Not rerun by this source-only packet; root owns combined canonical writer regression/deployment and public/owner/customer acceptance."
+  },
+  "cache_strategy": {
+    "strategy_name": "reviewed-food-source-v1",
+    "old_recipe_sha256": "584e32abb9dab689cfdeabfd9dc5c251c4711b7acab82fbcf5b1aeb82ec9332e",
+    "new_recipe_sha256": "27061e89058b0f04466475d42e0cc29844ef8d7f27271cd7fbbfb0c52e9c37b8",
+    "node": "24.14.0",
+    "change": "Existing recipe identity includes _source-identity.js bytes; old capture artifacts remain immutable and a later authorized capture uses a new cache key. No fresh external recapture was run here."
+  },
+  "private_delta_patch": {
+    "path": "/home/codespace/.cache/zoi/source-replacement-guard-20261015/guard-delta.patch",
+    "sha256": "1869fb260896ad1d9c509e273c2d7fca931f6c52330db28f3d2212491efda5cd",
+    "note": "Initial tracked delta only, before play-money revision. Use separately pinned two-file revision patch after integrating original packet; NEW focused test separately pinned."
+  },
+  "safety": {
+    "live_database_writes": 0,
+    "leases_created": 0,
+    "registered_website_swaps": 0,
+    "paid_calls": 0,
+    "source_network_requests_during_guard_replay": 0,
+    "automatic_apply": false
+  },
+  "remaining": [
+    "Independent source guard review, then root combines exact index/test hunks with accepted full menu packet.",
+    "Root updates reviewed menu bounds coherently, runs combined tests, packages all20source modules and verifies actual worker deployment once.",
+    "No existing poisoned listing data or registered websites have been changed; any correction needs separately reviewed canonical current-fingerprint proposals.",
+    "Other unfamiliar or ambiguous website identities still require independent source and branch review; continue is not acceptance.",
+    "No catalogue-wide completed-home, rendered, owner/customer or native acceptance claimed."
+  ],
+  "supersedes": {
+    "audit_sha256": "7d5ee5e75f39c89bd644769d0035d0bbdcce9a219151d8a863f4616329043757",
+    "retained_initial_audit": "/home/codespace/.cache/zoi/source-replacement-guard-20261015/owner-audit-initial.json",
+    "reason": "Independent QA found explicit no-real-money charity free-spins and probability/RTP lesson false positives."
+  },
+  "revision": {
+    "edited_runtime_and_test_paths": [
+      "supabase/functions/zoi-enrich/_source-identity.js",
+      "tests/unit/enrichment-source-replacement-identity.test.mjs"
+    ],
+    "all_other_eight_pinned_files_byte_identical": true,
+    "policy": "Only explicit play-money/no-money fundraising or probability/statistics lesson context may avoid replacement review; separate positive real-money or commercial cash/deposit/welcome-bonus claims retain refusal. Continue remains unknown/unapproved identity.",
+    "cases": [
+      "No real money. Free spins on play-money slots support our charity.",
+      "No real money is used. RTP statistics are demonstrated for our probability lesson."
+    ],
+    "positive_money_title_and_description_regressions_retained": true,
+    "two_file_patch": "/home/codespace/.cache/zoi/source-replacement-guard-20261015/guard-play-money-revision.patch",
+    "patch_sha256": "cbdfaeb3efcf80c39845629e6a7db557d2927b9c95cd21109427b53c64768581",
+    "initial_identity_sha256": "17129551facb395c8b2b01a2d00bc966d898f401b5118f7abbd761b92c304acd",
+    "initial_test_sha256": "5fbf1c34a5f48b0064d51765d0fddb1850aadb52fa9fb77d8d4656ea3c2e2526"
+  }
+}

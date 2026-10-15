@@ -135,6 +135,7 @@ import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
+import { assessMachineSourceIdentity } from "./_source-identity.js";
 import { extractStructuredMenu } from "./_menus.js";
 import { extractStructuredServices, structuredSourceContextMatches } from "./_services.js";
 import { extractHospitality, hospitalitySupplements, hospitalitySourceMatches, validHospitalityFields } from "./_hospitality.js";
@@ -634,6 +635,15 @@ Deno.serve(async (req) => {
         continue; // Never run generic metadata or supplementary crawls for a person on a member source.
       }
       const { profile, provenance, aggregator } = extract(got.doc!, got.finalUrl!);
+      const sourceAssessment = assessMachineSourceIdentity({website:row.website,finalUrl:got.finalUrl!,name:row.name,
+        title:got.doc!.match(/<title\b[^>]*>([\s\S]*?)<\/title\s*>/i)?.[1]||"",description:typeof profile.description==="string"?profile.description:""});
+      if (sourceAssessment.outcome !== "continue") {
+        bump("source-identity-review");
+        batch.push({slug:row.slug,website:row.website,lease_id:row.lease_id,
+          profile:{...identityStatus,blocked:"true",blocked_reason:"source_scope_mismatch",crawl_status:"error",last_error:"source_identity_review:"+sourceAssessment.reason},
+          provenance:{},source_evidence:sourceEvidence});
+        continue;
+      }
       const sourceIdentity = aggregator ? null : sourceClientIdentity(row, got.doc!, got.finalUrl!);
       if (sourceIdentity) { profile.source_identity = sourceIdentity; provenance.source_identity = sourceIdentity.verification; }
       // This context is projected from current canonical listing columns by the
@@ -695,6 +705,12 @@ Deno.serve(async (req) => {
               profile.email = null; profile.email_conflict = profile.email_conflict || next.profile.email_conflict; provenance.email = "conflicting-source-emails"; provenance.email_conflict = provenance.email_conflict || next.provenance.email_conflict; continue;
             }
             if (!profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
+          }
+          // Coverage belongs to the exact menu adopted above, including false.
+          if (profile.menu_source === next.profile.menu_source && Array.isArray(profile.menu)) {
+            for (const key of ["menu_total_items", "menu_truncated"]) {
+              if (!Object.hasOwn(profile, key) && Object.hasOwn(next.profile, key)) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
+            }
           }
           profile.social = { ...(next.profile.social || {}) as object, ...(profile.social || {}) as object };
           if (next.profile.social) provenance.social = "same-origin-pages";
