@@ -1,0 +1,46 @@
+{
+  "observed_at": "2026-10-15T03:53:59.994434+00:00",
+  "status": "Frozen diagnostic source candidate; no live rerun or mutations",
+  "base": "623caa4a",
+  "failed_run": 38678324678,
+  "actual_failure_cause": "Unproven: prior generic error did not expose stage. No artifact because evidence directory was created only after metadata validation.",
+  "files": [
+    {
+      "path": "scripts/auth-qa/document-blob-ci.mjs",
+      "sha256": "5f2595346b8e5efc6baf53a6781eb727d83c6960f8c0c15bee8fbc95daec9af3"
+    },
+    {
+      "path": "tests/unit/document-blob-ci.test.mjs",
+      "sha256": "a93bf3d958810240429b4209048bc9ff833755fe8b20430f36f45005fa6760b7"
+    }
+  ],
+  "official_metadata_reference": "https://supabase.com/docs/reference/api/v1-get-a-function",
+  "reference_contract": "Top-level ezbr_sha256 is documented; exact ACTIVE bundle binding is retained, no alternate field/id/version fallback introduced.",
+  "independent_tool_readback": {
+    "id": "c243c87b-ed73-4c39-af59-915f94754cae",
+    "status": "ACTIVE",
+    "version": 16,
+    "ezbr_sha256": "aa9f08dd1256a3f429aebcc85dda685eff60359da5760eacb28f23e86e17bb16",
+    "meaning": "Current MCP function readback includes expected field; not proof of raw CI Management response or earlier network cause."
+  },
+  "changes": [
+    "Create private evidence directory after request preflight, before metadata fetch.",
+    "Fixed whitelist stage events and fixed failure classification; optional HTTP status only. Never raw error/body/URL or arbitrary field names.",
+    "Log only metadata object/ACTIVE/bundle-present/bundle-match boolean predicates.",
+    "Bound metadata stream to32KiB with fatal UTF8 and cancellation.",
+    "Successful local logout preserves original failed operation stage; failed logout exposes its own fixed stage.",
+    "Keep exact expiring main-only request/hash guards, private routes, canonical mutations/cleanup and no retries unchanged."
+  ],
+  "verification": {
+    "focused_tests": 15,
+    "syntax": "passed",
+    "live_calls": 0,
+    "provider_calls": 0
+  },
+  "remaining": [
+    "Root independent source review and code-first release",
+    "Root read-only reconciliation of failed run before any new admission",
+    "Fresh exact request only if explicitly activated by root; no unchanged automatic rerun",
+    "Actual private blob success/refusal/recovery and cleanup remain open"
+  ]
+}
