@@ -22,12 +22,23 @@ Deno.serve(async(req:Request)=>{
    const bytes=new Uint8Array(await file.arrayBuffer());const metadata=validateFileBytes({name:file.name,type:file.type,size:file.size},bytes);const digest=await sha256(bytes);
    const started=await rpc('document_upload_begin',{p_workspace:parsed.get('workspace'),p_project:parsed.get('project'),p_document:parsed.get('document')||null,p_expected_version:Number(parsed.get('expected_version')),p_title:parsed.get('title'),p_request:parsed.get('request_id'),p_filename:metadata.name,p_mime:metadata.type,p_size:metadata.size,p_sha256:digest},token);
    const upload=started.upload;
-   if(upload.state==='ready')return response(200,{ok:true,document:started.document,version:{id:upload.id,version:upload.version,state:upload.state}});
-   if(upload.state!=='pending')throw Error('upload_request_closed');
+   if(upload.state!=='pending'&&upload.state!=='ready')throw Error('upload_request_closed');
+   if(typeof upload.object_path!=='string'||!/^[-a-zA-Z0-9_]+\/[-a-zA-Z0-9_]+\/[-a-zA-Z0-9_]+\.(pdf|txt|png|jpg)$/.test(upload.object_path))throw Error('document_storage_path_unavailable');
+   if(upload.state==='pending'){
    const stored=await request(objectPath(upload.object_path),SERVICE,{method:'POST',headers:{'Content-Type':metadata.type,'Cache-Control':'private, max-age=0, no-store','x-upsert':'false'},body:bytes});
-   if(!stored.ok){const error=await stored.json().catch(()=>({}));if(stored.status!==409&&error.statusCode!=='409'&&error.error!=='Duplicate')throw Error('document_storage_failed');}
-   // A timed-out finalization may have committed. Never delete here; retry reads the same request.
-   const done=await rpc('document_upload_finish',{p_version:upload.id},SERVICE);
+   if(!stored.ok){let error;try{error=JSON.parse(new TextDecoder().decode(await readBoundedBody(stored,4096,20000)));}catch{error={};}if(stored.status!==409&&error.statusCode!=='409'&&error.error!=='Duplicate')throw Error('document_storage_failed');}
+   }
+   // A conflict or lost reply may leave a different/stored object. Verify actual private bytes.
+   // The path comes only from canonical upload_begin, with a fixed bucket and no redirects.
+   const saved=await request('/storage/v1/object/authenticated/'+BUCKET+'/'+upload.object_path.split('/').map(encodeURIComponent).join('/'),SERVICE,{redirect:'error'});
+   if(!saved.ok||!saved.body)throw Error('document_storage_readback_unavailable');
+   if((saved.headers.get('content-type')||'').split(';')[0].trim()!==metadata.type)throw Error('document_storage_readback_mismatch');
+   const savedBytes=await readBoundedBody(saved,metadata.size,20000);
+   if(savedBytes.byteLength!==metadata.size)throw Error('document_storage_readback_mismatch');
+   const savedDigest=await sha256(savedBytes);
+   if(savedDigest!==digest)throw Error('uploaded_object_hash_mismatch');
+   // A timed-out finalization may have committed. Never delete; explicit retry uses the same nonce.
+   const done=await rpc('document_upload_finish_verified',{p_version:upload.id,p_sha256:savedDigest},SERVICE);
    return response(200,{ok:true,document:done.document,version:{id:done.version.id,version:done.version.version,state:done.version.state}});
   }
   const bytes=await readBoundedBody(req,4096);let data;try{data=JSON.parse(new TextDecoder().decode(bytes));}catch{throw Error('invalid_document_request');}

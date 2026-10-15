@@ -1,0 +1,59 @@
+{
+  "observed_at": "2026-10-15T03:35:47.713901+00:00",
+  "status": "Independent source and isolated runtime gate accepted; production gates pending",
+  "source_worktree": "/workspaces/zoi-document-finalizer-recovery",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015031840_document_upload_finish_foundation_authority.sql",
+      "sha256": "68cf3519f1363e4f59ed0d4e9b7a5f19f56ebe5bcc95af773057d41e24098063"
+    },
+    {
+      "path": "supabase/migrations/20261015032509_require_verified_document_upload_completion.sql",
+      "sha256": "47f73e3e418fa3853be6a39d37ffcec9e2a6d5fa8c6947c9df3ca7e96c296518"
+    },
+    {
+      "path": "supabase/functions/ops-documents/index.ts",
+      "sha256": "15b3a44103bf94479d21421c3d5b5a167411fb9af6e7dad2dc96253b42e3ea09"
+    },
+    {
+      "path": "tests/unit/document-edge.test.mjs",
+      "sha256": "34a6cfc1764dc3cd51e3e41b841d7b4ce2dc6f42ce44109dfe3d17b8d3a8c771"
+    },
+    {
+      "path": "tests/unit/document-finalizer-readback.test.mjs",
+      "sha256": "b5073ad81c966af3fe09626355c3b1faf9305b6a42185e61afdcfa322e602b0b"
+    },
+    {
+      "path": "tests/database/document-finalizer-foundation.integration.mjs",
+      "sha256": "38b3b5452e728480510a1fc76014d11e0246d0f83eefc164d2bc6875e9bb96bf"
+    },
+    {
+      "path": "tests/database/document-finalizer-production-rollback.sql",
+      "sha256": "81bb62acb9ae51069a463dbdbd8803f7cf61bda08faf053c5fe0a062b3a2688a"
+    },
+    {
+      "path": "tests/database/fixtures/document-finalizer-authority-live.json",
+      "sha256": "a2e74108dd5807709731e22b50705d53acab29ee9655249c4f6e3ff51f9a26b6"
+    }
+  ],
+  "independent_checks": {
+    "frozen_hashes_matched": 8,
+    "real_postgres_groups_passed": 26,
+    "edge_client_file_units_passed": 28,
+    "skipped": 0,
+    "live_writes": 0,
+    "provider_calls": 0
+  },
+  "review": {
+    "authority": "Immutable actor/account/session grant appended only through authorized exact-nonce begin replay; service reselects latest grant after workspace lock. Real owner fallback, explicit viewer and forged-owner refusal retained. Account/session and profile mapping locks checked again after storage waits.",
+    "bytes": "Fixed private canonical path, nonupsert write; bounded no-redirect object readback, exact MIME/size and SHA before service-only verified finish. Unknown finish does not delete or silently repeat.",
+    "phase_order": "Apply phase A, deploy and exercise new Edge with real private Storage bytes, then phase B. Phase A compatibility is metadata-only; phase B refuses pending legacy completion.",
+    "production_fixture": "Reviewed exact SQL runs BEGIN/ROLLBACK with fresh synthetic sessions and metadata; existing QA account/current session unchanged; no private helper grant weakening. actual_storage_body_checked remains false."
+  },
+  "remaining": [
+    "Root actual migration guards and production rollback absence readback",
+    "Deployed Edge compile/runtime and real private Storage upload/readback, wrong-blob refusal, lost-response retry",
+    "Browser/native upload UX acceptance",
+    "Object-store replacement after readback is not transactionally prevented by SQL authority locks"
+  ]
+}
