@@ -1,0 +1,58 @@
+{
+  "at": "2026-10-15T20:59:00.006Z",
+  "groups": 21,
+  "passed": [
+    "pre-admission dashboard dependency refuses atomically",
+    "exact function, private-state ACL and existing job guards reject drift",
+    "migration refuses an active old maintenance transaction without partial installation",
+    "only main scoring selection changes; dependencies/trigger functions/ACL/job preserved",
+    "fixed-key helper private to service/postgres; state remains inaccessible and empty work allowed",
+    "empty catalogue preserves cursor and original zero-change audit",
+    "malformed/missing/unknown cursor states fail closed",
+    "2501 rows score in bounded batches then no-op batch advances and wraps without writes",
+    "insertions below cursor and deleted cursor/candidates are revisited without permanent skips",
+    "actual BEFORE/SEO/epoch triggers preserve owner facts and original formulas including invalid dates/annual archive policy",
+    "audit failure rolls cursor, scoring and actual trigger effects back together",
+    "independent backend advisory holder prevents both main and direct helper work before cursor access",
+    "actual direct service helper transaction excludes concurrent main/helper without listing writes",
+    "actual main transaction excludes direct helper until score/audit transaction commits",
+    "locked row is skipped safely and repaired on next round-robin pass",
+    "concurrent owner edit and explicit clears survive skip/revisit",
+    "existing service main invocation remains invoker without new state privileges or caller-selected cursor",
+    "EXPLAIN proves bounded PK seek before 1000 profile-bearing locked rows",
+    "actual complete score/update EXPLAIN has 1000 score rows and no full listings sequential scan",
+    "other operational state and canonical dashboard/job contracts remain exact",
+    "mechanical reversal proves every original formula/due/update/audit byte preserved"
+  ],
+  "new_function_contracts": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.maintenance_candidate_ids()",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.run_maintenance()",
+      "volatility": "v",
+      "security_definer": false
+    }
+  ],
+  "migration_sha256": "8f0774798f48c041d16eecece95d7079b3de722efae02a3df726836fe1f4beeb",
+  "pg_version": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
+  "bounded_plan": "/home/codespace/.cache/zoi/maintenance-independent-20261015/bounded-explain.json",
+  "limitations": [
+    "Local vector column uses text for unused NULL vector; all 77 listing column names and other types are retained.",
+    "Actual production deployment and timing remain root-owned; EXPLAIN is local evidence, not a production incident cause."
+  ]
+}

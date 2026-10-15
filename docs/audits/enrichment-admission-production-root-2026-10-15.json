@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:03:29.304367+00:00",
+  "state": "Actual admission and worker73 installed; existing job30 active every5minutes; default bootstrap holds source work until21:57:59UTC",
+  "release": {
+    "PR": 89,
+    "main": "bfdb308e0880e9d05c0a182cbb79a01cc0479314",
+    "CI": 38805570543,
+    "web": "Vercel production pending behind other project build; professional CSS not yet live"
+  },
+  "database": {
+    "at": "2026-10-15T20:58:56.164369+00:00",
+    "jobs": [
+      {
+        "id": 10,
+        "name": "zoi-enrich-fullblast",
+        "active": false,
+        "schedule": "*/5 * * * *",
+        "command_md5": "4b82a985f467b9356a18d248d550483e"
+      },
+      {
+        "id": 30,
+        "name": "zoi-enrich-hourly",
+        "active": true,
+        "schedule": "*/5 * * * *",
+        "command_md5": "2ade25bb2cc7e9ab304662844ca1acfa"
+      }
+    ],
+    "admission": {
+      "flight": {
+        "kind": "bootstrap",
+        "lease_id": "05d561fa-76a5-43ee-96e1-530003c43f9f",
+        "expires_at": "2026-10-15T21:57:59.029892+00:00"
+      },
+      "utc_day": "2026-10-15",
+      "version": 1,
+      "leased_attempts": 0
+    },
+    "available": 0,
+    "migrations": [
+      {
+        "name": "enrichment_shared_bounded_admission",
+        "version": "20261015205758"
+      },
+      {
+        "name": "enrichment_five_minute_existing_job",
+        "version": "20261015205824"
+      }
+    ],
+    "writer_md5": "310678a4bd7d77d5467dbd07604349d9",
+    "release_anon": false,
+    "dashboard_md5": "47af16fd2d7d5e165ffcce23ef89a862",
+    "release_service": true,
+    "release_authenticated": false
+  },
+  "edge": {
+    "version": 73,
+    "status": "ACTIVE",
+    "bundle": "72dd7fbba4b669be4199bab398efe92fe5c65a52695d262f6eeb2ed93a7376c6",
+    "all20served_exact": true,
+    "unrelated19unchanged": true,
+    "anonymous_POST": 401
+  },
+  "quiescence": {
+    "rows": 41391,
+    "pages": 21,
+    "active_leases": 0,
+    "method": "2000-ID PK seek pages with indexed LATERAL profile lookup after original job30 paused; no reset, no role timeout increase; known old invocation beyond110-second bound"
+  },
+  "historical_preflight_failures": [
+    "cron.job FOR UPDATE denied by platform; transaction rolled back, supported cron.alter_job used with exact before/after contracts",
+    "One full lease scan exceeded5s and rolled back; bounded page scan completed"
+  ],
+  "security_before": {
+    "rls_enabled_no_policy": 296,
+    "function_search_path_mutable": 19,
+    "extension_in_public": 3,
+    "anon_security_definer_function_executable": 174,
+    "authenticated_security_definer_function_executable": 511,
+    "auth_leaked_password_protection": 1
+  },
+  "security_after": {
+    "rls_enabled_no_policy": 296,
+    "function_search_path_mutable": 19,
+    "extension_in_public": 3,
+    "anon_security_definer_function_executable": 174,
+    "authenticated_security_definer_function_executable": 511,
+    "auth_leaked_password_protection": 1
+  },
+  "remaining": [
+    "First scheduled source batch after bootstrap expiry, then actual facts/owner preservation",
+    "Entire catalogue source/home/design/customer acceptance remains incomplete"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/enrichment-admission-production-root-2026-10-15/actual-activation.json",
+      "sha256": "433f5dd257cf196e92d7c6c4ef4aa34ec75783062983ba002d13d39d56f09330",
+      "bytes": 7973
+    }
+  ]
+}

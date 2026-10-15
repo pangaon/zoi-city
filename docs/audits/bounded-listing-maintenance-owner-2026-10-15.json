@@ -1,0 +1,267 @@
+{
+  "version": 1,
+  "at": "2026-10-15T20:57:19.411047+00:00",
+  "status": "frozen_for_independent_review_not_live",
+  "base_commit": "be60cb576b7a24ec3061448f80872835274f3097",
+  "worktree": "/workspaces/zoi-maintenance-score-work",
+  "problem": "Existing run_maintenance materializes scores for the whole listings table before selecting at most 1000 changed rows. This is a concrete avoidable workload; it is not established as the cause of the earlier Athens HTTP timeouts.",
+  "result": "A fixed-key private round-robin cursor selects at most 1000 IDs before any listing profile/scoring computation. Existing maintenance scoring, archiving, write authority and cadence remain unchanged.",
+  "owned_paths": [
+    {
+      "path": "supabase/migrations/20261015204248_bounded_listing_score_candidates.sql",
+      "sha256": "8f0774798f48c041d16eecece95d7079b3de722efae02a3df726836fe1f4beeb",
+      "bytes": 9806
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance.integration.mjs",
+      "sha256": "4d85b9cd8dd41eda4f48191d0ce01e449bcdfe59cfe64d6381d88c60c5dce57f",
+      "bytes": 22586
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-live.json",
+      "sha256": "c4a20825d066f11cb6e78aa1afd309248f8ff79e908b7aca32e956b0a2c04103",
+      "bytes": 56740
+    }
+  ],
+  "source_prerequisites": {
+    "post_admission_dashboard_md5": "47af16fd2d7d5e165ffcce23ef89a862",
+    "dependency": "Accepted 20261015200620_enrichment_shared_bounded_admission.sql must be installed first, including its four-feed dashboard filter. This migration refuses the old dashboard.",
+    "actual_two_function_capture_at": "2026-10-15T20:42:32.246156+00:00",
+    "metadata_query": "One approved two-function read-only transaction, 5s statement / 1s lock bounds, rolled back. No further production reads, writes, source requests or provider calls."
+  },
+  "authority": {
+    "main": "Existing SECURITY INVOKER, postgres owner, empty search_path, postgres/service_role EXECUTE preserved.",
+    "helper": "New zoi.maintenance_candidate_ids(): zero arguments, SECURITY DEFINER/postgres/empty search_path, PUBLIC/anon/authenticated revoked, service_role EXECUTE only. Fixed key and bounded ID read; no listing/content writes.",
+    "state": "Existing private delivery_state only; key listing_score_cursor_v1; exact table ACL/RLS/columns/PK/policy/trigger guards and exact whitelisted progress writer guard. No new queue/table/ledger.",
+    "server_versions": "Finite Postgres 16/17 only; exact PG16 ACL lacks MAINTAIN m, exact captured actual PG17 includes m. Other majors refuse.",
+    "guarded_functions": [
+      {
+        "signature": "zoi.run_maintenance()",
+        "md5": "9d70cd4a53a9707ec4aa0be1ffb87ca6",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": false,
+        "volatility": "v"
+      },
+      {
+        "signature": "zoi.maintenance_event_date(text)",
+        "md5": "2db348273194c690430a9809a6156f5b",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": false,
+        "volatility": "i"
+      },
+      {
+        "signature": "public.zoi_delivery_dashboard(timestamp with time zone)",
+        "md5": "47af16fd2d7d5e165ffcce23ef89a862",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true,
+        "volatility": "s"
+      },
+      {
+        "signature": "public.zoi_delivery_progress(uuid,text,jsonb)",
+        "md5": "e0e5e2a8c2ca5b2c6c88cfef25b0fe38",
+        "owner": "postgres",
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "config": [
+          "search_path=\"\""
+        ],
+        "security_definer": true,
+        "volatility": "v"
+      }
+    ]
+  },
+  "algorithm": {
+    "limit": 1000,
+    "ordering": "Ascending immutable UUID primary key. First page after last selected ID; wrap only if the forward page is empty. Never two nonempty batches in one invocation.",
+    "cursor_validation": "Version 1 object with exact allowed keys and null/canonical UUID after_id. Missing/malformed/unknown state refuses without repair/reset.",
+    "lock_order": "Existing pg_try_advisory_xact_lock(hashtextextended(zoi.run_maintenance,0)), then fixed cursor row FOR UPDATE, then per-ID listing locks. Migration uses the same advisory gate and refuses current maintenance work.",
+    "rows": "Correlated primary-key LATERAL lookup with SKIP LOCKED for each bounded ID. Row/profile computation occurs only after selection.",
+    "transaction": "Cursor, scores, actual trigger effects and audit share one transaction. Any error rolls all back.",
+    "fairness": "No-op batches advance. Deleted cursor IDs do not break seeks. Insertions behind cursor and temporarily locked rows are revisited on wrap. A continually locked row can remain deferred until its owner transaction permits progress.",
+    "lag": "At unchanged six invocations/hour, stable N listings require ceil(N/1000) successful invocations for a full pass. This intentionally bounds work; no unmeasured production pass-time claim."
+  },
+  "preservation": {
+    "mechanical_proof": {
+      "original_definition_md5": "9d70cd4a53a9707ec4aa0be1ffb87ca6",
+      "original_definition_sha256": "45c3a10401210f9547ea8e2ba1b3b915d9a0d466e789b88086216b988e3ea4a6",
+      "new_source_sha256": "21a92e5198b10d1a4e91edb6e582a6128809623ab471c9746d32b79710bbe5c7",
+      "restored_definition_sha256": "45c3a10401210f9547ea8e2ba1b3b915d9a0d466e789b88086216b988e3ea4a6",
+      "exact": true,
+      "preserved": [
+        "Every original score expression",
+        "due predicate/order/limit",
+        "UPDATE target fields and expressions",
+        "GET DIAGNOSTICS and complete original audit insert",
+        "existing leading advisory authority"
+      ],
+      "changed_only": [
+        "Declare candidates uuid[]",
+        "Obtain <=1000 candidate IDs through fixed-key helper",
+        "Materialize only selected locked rows before scores",
+        "Change score source from all listings to selected"
+      ]
+    },
+    "triggers_exercised": [
+      "geography_read_authority_changed",
+      "listing_quality_receipts_guard",
+      "listings_aa_slug",
+      "listings_publish_gate",
+      "listings_skip_noop",
+      "maintain_seo_identity_keys",
+      "trg_listings_auto_seo",
+      "trg_listings_updated",
+      "zz_maintain_seo_projection"
+    ],
+    "trigger_boundary": "Nine exact retained actual BEFORE/SEO/geography-read-epoch triggers and seventeen dependency functions are loaded in the local fixture. Source enqueue and owner-transfer triggers are not exercised by this focused fixture; their source is not changed.",
+    "owner": "Full synthetic rows compared excluding only original score fields, archive status where prescribed, and legitimate canonical updated_at. Owner IDs, explicit clears, profiles, source facts and all other values remain exact.",
+    "job31": {
+      "id": 31,
+      "name": "zoi-maintenance-bounded",
+      "active": true,
+      "schedule": "7,17,27,37,47,57 * * * *",
+      "command_md5": "7876d3105fcf6a7917047851f0ba6af9",
+      "command_bytes": 80
+    },
+    "dashboard": "Exact definition unchanged; four fixed feeds continue to exclude both private operational keys. No new feed, external action or customer-completion claim."
+  },
+  "tests": {
+    "command": "ZOI_MAINTENANCE_EVIDENCE_DIR=/home/codespace/.cache/zoi/maintenance-bounded-20261015 node tests/database/bounded-listing-maintenance.integration.mjs",
+    "independent_command": "Use a NEW persistent ZOI_MAINTENANCE_EVIDENCE_DIR path for reviewer evidence; test creates a unique socket/data directory with port15939 and stops/removes only that cluster in finally.",
+    "real_pg_groups": 21,
+    "passed": [
+      "pre-admission dashboard dependency refuses atomically",
+      "exact function, private-state ACL and existing job guards reject drift",
+      "migration refuses an active old maintenance transaction without partial installation",
+      "only main scoring selection changes; dependencies/trigger functions/ACL/job preserved",
+      "fixed-key helper private to service/postgres; state remains inaccessible and empty work allowed",
+      "empty catalogue preserves cursor and original zero-change audit",
+      "malformed/missing/unknown cursor states fail closed",
+      "2501 rows score in bounded batches then no-op batch advances and wraps without writes",
+      "insertions below cursor and deleted cursor/candidates are revisited without permanent skips",
+      "actual BEFORE/SEO/epoch triggers preserve owner facts and original formulas including invalid dates/annual archive policy",
+      "audit failure rolls cursor, scoring and actual trigger effects back together",
+      "independent backend advisory holder prevents both main and direct helper work before cursor access",
+      "actual direct service helper transaction excludes concurrent main/helper without listing writes",
+      "actual main transaction excludes direct helper until score/audit transaction commits",
+      "locked row is skipped safely and repaired on next round-robin pass",
+      "concurrent owner edit and explicit clears survive skip/revisit",
+      "existing service main invocation remains invoker without new state privileges or caller-selected cursor",
+      "EXPLAIN proves bounded PK seek before 1000 profile-bearing locked rows",
+      "actual complete score/update EXPLAIN has 1000 score rows and no full listings sequential scan",
+      "other operational state and canonical dashboard/job contracts remain exact",
+      "mechanical reversal proves every original formula/due/update/audit byte preserved"
+    ],
+    "node_syntax_check": "passed",
+    "json_and_whitespace": "passed",
+    "local_postgres": "PostgreSQL 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, 64-bit",
+    "full_scoring_explain": {
+      "cohort": 12000,
+      "selected_rows": 1000,
+      "score_rows": 1000,
+      "listing_sequential_scan": false,
+      "planning_ms": 1.189,
+      "execution_ms": 242.772,
+      "meaning": "Local complete scoring UPDATE under real retained triggers, transaction rolled back. Not a production latency measurement."
+    },
+    "test_only_substitutions": [
+      "Unused NULL vector column represented as text because the local PG16 fixture does not install pgvector. No vector data or vector operation is exercised.",
+      "cron.job table metadata fixture, not a running scheduler. Exact captured job31 schedule/id/command hash retained.",
+      "A separate temporary test-only audit trigger proves real concurrent main/helper exclusion; removed before final contracts."
+    ],
+    "pg_socket_stopped": true
+  },
+  "new_function_contracts": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "e1f4272e7b6942daab40aeb1dfd4e13a",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.maintenance_candidate_ids()",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "md5": "45d1da61f3c02e2bdc4e601f1c6cf769",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.run_maintenance()",
+      "volatility": "v",
+      "security_definer": false
+    }
+  ],
+  "root_release_gates": [
+    "Independent source and real-PG review of frozen hashes.",
+    "Verify exact post-admission dashboard prerequisite and all other actual guards.",
+    "Root rollback-only rehearsal with existing 5s/1s bounds; strip only known outer BEGIN/COMMIT when embedding in a root rollback transaction. Preserve function bytes.",
+    "Protected integration of exact owned files. Root applies atomically; active maintenance advisory lock causes refusal, not concurrent scoring.",
+    "Verify actual helper/main body, owner/ACL/config, unchanged job31 and scoring/owner behavior. No cadence or policy extension."
+  ],
+  "rollback_plan": [
+    "Root only: stop concurrent maintenance execution using existing advisory gate, retain exact operational cursor metadata privately, and guard exact new helper/main body and metadata.",
+    "Restore the retained original run_maintenance definition preserving its invoker ACL/config; DROP only the new fixed-key helper with RESTRICT; delete only listing_score_cursor_v1 in the same transaction. No listing/factual/owner/audit/history rollback is fabricated.",
+    "Original restore reintroduces whole-table score computation. Existing job31 command/schedule never changed by this migration; do not reset unrelated operational state."
+  ],
+  "evidence": [
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/actual-contract-parsed.json",
+      "sha256": "854c2a57d4a0cbc7d4e9ce1ef9220c9b5a3e8ebbd270a0f28677aeab8d758913",
+      "bytes": 3818
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/post-admission-dashboard.json",
+      "sha256": "b3d971dc9328824b4e79fba2a69356bf022836fd012a9cb278197fa4fc8b8493",
+      "bytes": 6238
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/pg-final.log",
+      "sha256": "5c49f1a49079481f0527054e0f4bfa4eab0cc2bd4f44606d165f39218df74b37",
+      "bytes": 1922
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/pg-result.json",
+      "sha256": "ba54195f3fdd21027a9f404aeac1f16e3d054fe0c491da66761e90ffbe832648",
+      "bytes": 3208
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/bounded-explain.json",
+      "sha256": "b0eba9bdf004ec3bfbf63e0b7c204d868b8b0fea8f5ff425ac9d53ae1ff00163",
+      "bytes": 7110
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/full-score-explain.json",
+      "sha256": "96b8e8cd80c04986793c902e2c81f64fe8c758fa2fc1a629636b6797c1535d3d",
+      "bytes": 20429
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/new-function-contracts.json",
+      "sha256": "54652f344eccb9dfcc5858364bd706d22d01ec6cee52257f6345d6e1d9e6df4a",
+      "bytes": 5165
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/maintenance-bounded-20261015/formula-byte-preservation.json",
+      "sha256": "01321d03a5a2a0b005adf64870d0fc49a2d0c89880a7e1a6da7abecd5bc71a4b",
+      "bytes": 847
+    }
+  ],
+  "limitations": [
+    "No production DDL, cron change, source capture, provider call or deployment by the specialist.",
+    "Source acceptance and local query-plan bounds do not establish a fixed production timeout cause or complete any client home.",
+    "Full catalogue workflow/source-to-render quality and criterion recording remain separately open in the frozen brief trace proposal."
+  ]
+}

@@ -1,0 +1,122 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T20:59:52.085527+00:00",
+  "status": "independently_accepted_source_and_isolated_database_not_live",
+  "author_worktree": "/workspaces/zoi-maintenance-score-work",
+  "review_worktree": "/workspaces/zoi-maintenance-score-independent",
+  "baseline": "be60cb576b7a24ec3061448f80872835274f3097",
+  "frozen_manifest_sha256": "180e95272e64a4c5c1e0f993016e5d1401190ebf347f2af83e7e4ecb1efbc2a3",
+  "source_pins": [
+    {
+      "path": "supabase/migrations/20261015204248_bounded_listing_score_candidates.sql",
+      "sha256": "8f0774798f48c041d16eecece95d7079b3de722efae02a3df726836fe1f4beeb",
+      "bytes": 9806
+    },
+    {
+      "path": "tests/database/bounded-listing-maintenance.integration.mjs",
+      "sha256": "4d85b9cd8dd41eda4f48191d0ce01e449bcdfe59cfe64d6381d88c60c5dce57f",
+      "bytes": 22586
+    },
+    {
+      "path": "tests/database/fixtures/bounded-listing-maintenance-live.json",
+      "sha256": "c4a20825d066f11cb6e78aa1afd309248f8ff79e908b7aca32e956b0a2c04103",
+      "bytes": 56740
+    },
+    {
+      "path": "docs/audits/bounded-listing-maintenance-owner-2026-10-15.json",
+      "sha256": "ca8c8d598d0335a7f892b4bbf758260f5ca2c0d3685ecd4beb07d5420d3ab506",
+      "bytes": 15112
+    }
+  ],
+  "retained_owner_evidence_pins_verified": 8,
+  "review": {
+    "actual_retained_contracts": "Original run_maintenance and maintenance_event_date definitions/MD5 match actual retained capture; accepted post-admission dashboard prerequisite is exact guarded47af16fd...",
+    "source_reversal": "Extracted new main directly from migration and reversed only declaration/candidate selection/materialized bounded source; complete result exactly matches retained production original. Scoring, due predicate, update fields, audit and invoker authority preserved.",
+    "work_bound": "Fixed no-argument helper selects <=1000 IDs through btree primary-key seeks before profile-bearing locks/scores; wrap only on zero forward IDs. Selected CTE locks current rows with SKIP LOCKED. Full update plan on 12000 local rows scores1000 without listing sequential scan.",
+    "authority": "Helper postgres/SECURITY DEFINER/empty search_path; PUBLIC/anon/authenticated execution revoked, service-only. Existing main remains SECURITY INVOKER and original ACL/config. Existing state table stays private; no generic key API.",
+    "lock_and_currentness": "Same maintenance advisory gate precedes cursor lock and listing locks for main/helper/install. Direct helper/main two-backend exclusion, locked-row skip/revisit, owner edit/explicit clears and transaction rollback all pass.",
+    "preservation": "Job31 schedule/command/id unchanged. Dashboard exact four feeds unchanged, private cursor not exposed. Other operational keys unchanged. No new source/provider/cron behavior."
+  },
+  "independent_tests": {
+    "command": "ZOI_MAINTENANCE_EVIDENCE_DIR=/home/codespace/.cache/zoi/maintenance-independent-20261015 node tests/database/bounded-listing-maintenance.integration.mjs",
+    "groups": 21,
+    "passed": [
+      "pre-admission dashboard dependency refuses atomically",
+      "exact function, private-state ACL and existing job guards reject drift",
+      "migration refuses an active old maintenance transaction without partial installation",
+      "only main scoring selection changes; dependencies/trigger functions/ACL/job preserved",
+      "fixed-key helper private to service/postgres; state remains inaccessible and empty work allowed",
+      "empty catalogue preserves cursor and original zero-change audit",
+      "malformed/missing/unknown cursor states fail closed",
+      "2501 rows score in bounded batches then no-op batch advances and wraps without writes",
+      "insertions below cursor and deleted cursor/candidates are revisited without permanent skips",
+      "actual BEFORE/SEO/epoch triggers preserve owner facts and original formulas including invalid dates/annual archive policy",
+      "audit failure rolls cursor, scoring and actual trigger effects back together",
+      "independent backend advisory holder prevents both main and direct helper work before cursor access",
+      "actual direct service helper transaction excludes concurrent main/helper without listing writes",
+      "actual main transaction excludes direct helper until score/audit transaction commits",
+      "locked row is skipped safely and repaired on next round-robin pass",
+      "concurrent owner edit and explicit clears survive skip/revisit",
+      "existing service main invocation remains invoker without new state privileges or caller-selected cursor",
+      "EXPLAIN proves bounded PK seek before 1000 profile-bearing locked rows",
+      "actual complete score/update EXPLAIN has 1000 score rows and no full listings sequential scan",
+      "other operational state and canonical dashboard/job contracts remain exact",
+      "mechanical reversal proves every original formula/due/update/audit byte preserved"
+    ],
+    "pg_cluster": "Stopped and removed by test finally; unique Unix socket, no production connection."
+  },
+  "limits": [
+    "Local PG16 fixture uses text for unused null vector column and inert cron metadata. Production PG17 finite ACL branch and exact catalogue require root rollback-only gate.",
+    "Nine retained BEFORE/SEO/epoch triggers exercised; source-enqueue/owner-transfer trigger side effects not exercised, their source is unchanged.",
+    "Round-robin fairness assumes stable/bounded growth; continually locked rows remain deferred. At unchanged six runs/hour, a stable N rows requires ceil(N/1000) successful runs for one pass.",
+    "No attribution of prior production timeouts to this workload and no fixed production latency improvement claimed.",
+    "No production SQL, DDL, captures, provider requests, policy/cron changes or deployments by reviewer."
+  ],
+  "root_gates": [
+    "Verify accepted admission dashboard installed and all exact actual guards.",
+    "Atomic actual rollback-only rehearsal within existing5s statement/1s lock bounds; refuse active maintenance work.",
+    "Protected source integration then root deployment/catalogue verification; preserve job31 and unrelated operational state."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/bounded-explain.json",
+      "sha256": "507ce3d537ad836edc1140184410913673cf46dbc42a88acae6b75f512f22450",
+      "bytes": 7110
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/full-score-explain.json",
+      "sha256": "b67269dfff2454e8ec6228aa17eb54508ffbb2b67416ecae29d1af01122c251f",
+      "bytes": 20429
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/independent-pg.log",
+      "sha256": "77f271faa8f1601771afc3619660baea3a03b61018a8425760d5ac7ca3d1ecfb",
+      "bytes": 1926
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/independent-source-reversal.json",
+      "sha256": "d723f70ea1d76c763c4ed8f07603aab84a0ca91e22e6e64e34360c723815424a",
+      "bytes": 389
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/new-function-contracts.json",
+      "sha256": "54652f344eccb9dfcc5858364bd706d22d01ec6cee52257f6345d6e1d9e6df4a",
+      "bytes": 5165
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/owner-audit.json",
+      "sha256": "ca8c8d598d0335a7f892b4bbf758260f5ca2c0d3685ecd4beb07d5420d3ab506",
+      "bytes": 15112
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/owner-frozen-manifest.json",
+      "sha256": "180e95272e64a4c5c1e0f993016e5d1401190ebf347f2af83e7e4ecb1efbc2a3",
+      "bytes": 2750
+    },
+    {
+      "path": "docs/audits/evidence/bounded-listing-maintenance-independent-2026-10-15/pg-result.json",
+      "sha256": "4c3f38caf8f5861d8a0f6d546bb195068479a1daf1288b59d424b9b089da39e5",
+      "bytes": 3212
+    }
+  ]
+}

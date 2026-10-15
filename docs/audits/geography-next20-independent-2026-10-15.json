@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T20:58:12.708557+00:00",
+  "status": "bounded_batch_reviewed_no_existing_report_candidate_ready_for_manual_apply",
+  "population": "Newest 20 completed official_sources_v1 jobs by created_at DESC,id DESC, not whole catalogue.",
+  "selection": "Per terminal status newest20 backward geography_repair_queue_idx scan; global newest20 MATERIALIZED; only then PK join/listing/report projection. EXPLAIN retained. All share seed created_at; id is deterministic tie-break, not claimed capture-time ordering.",
+  "counts": {
+    "jobs": 20,
+    "source_blocked": 8,
+    "unresolved": 12,
+    "successful_page_reports": 19,
+    "manual_requests_prepared": 0
+  },
+  "blocked_reasons": {
+    "robots_unavailable": 5,
+    "queryA ENOTFOUND www.andrewstravel.co.uk": 1,
+    "source_http_encoding_unsupported": 1,
+    "robots_disallow": 1
+  },
+  "current_context": {
+    "all_input_fingerprints_current": true,
+    "all_row_snapshots_unchanged": true
+  },
+  "grouped_blocker": {
+    "code": "existing_reports_lack_typed_point_identity_address_proof",
+    "details": "All successful reports say matching_structured_coordinates_missing and contain no candidate/candidates/proposed/point, official destination support or typed Wix support. A current canonical archive does not itself establish a factual coordinate or branch identity. No guessed points or locality extents were introduced.",
+    "archive_availability": "Three bounded exact-key metadata checks confirm private retained contact-page objects for Saint Spyridon (19249 bytes), Dafermou (88356 bytes), Kisamos (73239 bytes); object IDs/versions retained. No raw archive retrieval or new origin fetch.",
+    "next_reusable_step": "Offline bounded batch extraction of already archived bytes, retaining distinct typed JSONLD/business-location/map-destination roles and exact visible identity/address. Only candidates with current canonical source and independently supported locality can proceed to existing manual review. Parser absence cannot establish source absence."
+  },
+  "limits": [
+    "Zero listing/queue/policy/lease writes; no capture, requeue, provider call or actual manual request submission.",
+    "No source factual acceptance from report summaries alone.",
+    "This batch has zero report-ready candidates; it is not a claim that these websites have no geographic evidence."
+  ],
+  "evidence": [
+    {
+      "path": "/home/codespace/.cache/zoi/geography-next20-independent-20261015/actual-indexes.json",
+      "sha256": "7f435135968db62a4ece3951848d676bd1f2b1a69b190c31be407013a654210c",
+      "bytes": 2645
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-next20-independent-20261015/archive-metadata.json",
+      "sha256": "57eed648b44cba7aef2958462b73114f62c6f40b7f907cef88aa4d7ba5c17b3f",
+      "bytes": 1570
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-next20-independent-20261015/explain.json",
+      "sha256": "c562d9ea905b3ebe25a781781c07ebdaf21aa47eda8e5e998aa6f6b418f4597d",
+      "bytes": 3658
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-next20-independent-20261015/latest20.json",
+      "sha256": "09d75ca89ebf97ff10177cbee953a69b622b9fe21de947e5cc72318292f8adbf",
+      "bytes": 48487
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/geography-next20-independent-20261015/read.sql",
+      "sha256": "8b24474438b724c9c692c00afac463d9a6f40ce5d7206c50fd13dde96b7d71fe",
+      "bytes": 2221
+    }
+  ]
+}

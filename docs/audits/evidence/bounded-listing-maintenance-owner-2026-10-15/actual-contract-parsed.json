@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-15T20:42:32.246156+00:00",
+  "job31": {
+    "id": 31,
+    "name": "zoi-maintenance-bounded",
+    "active": true,
+    "schedule": "7,17,27,37,47,57 * * * *",
+    "command_md5": "7876d3105fcf6a7917047851f0ba6af9",
+    "command_bytes": 80
+  },
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "language": "plpgsql",
+      "signature": "zoi.run_maintenance()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.run_maintenance()\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE changed integer;\nBEGIN\n  -- A second cron/manual invocation must not compete for the same rows.\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN; END IF;\n  WITH scores AS MATERIALIZED (\n    SELECT id,\n      round(((CASE WHEN description IS NOT NULL AND length(description)>10 THEN 1 ELSE 0 END)\n       +(CASE WHEN website IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN address IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN phone IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN primary_category_id IS NOT NULL THEN 1 ELSE 0 END))::numeric/5,3) AS completeness,\n      least(1.0,round((CASE verification_status WHEN 'admin_verified' THEN 0.9 WHEN 'owner_verified' THEN 0.85\n        WHEN 'partner_verified' THEN 0.8 WHEN 'source_verified' THEN 0.6 WHEN 'owner_claimed' THEN 0.5 ELSE 0.3 END\n        +CASE source_trust_tier WHEN 'official' THEN 0.1 WHEN 'partner' THEN 0.08 WHEN 'public_directory' THEN 0.05 ELSE 0 END)::numeric,3)) AS trust,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date THEN 0.2\n        WHEN last_seen_at>now()-interval '14 days' THEN 0.95 ELSE 0.6 END AS freshness,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date-14\n         AND coalesce(profile->>'recurring','')<>'annual' THEN 'archived' ELSE publish_status END AS next_status\n    FROM zoi.listings\n  ), due AS (\n    SELECT s.* FROM scores s JOIN zoi.listings l USING(id)\n    WHERE ROW(l.completeness_score,l.trust_score,l.freshness_score,l.publish_status)\n      IS DISTINCT FROM ROW(s.completeness,s.trust,s.freshness,s.next_status)\n    ORDER BY s.id LIMIT 1000\n  )\n  UPDATE zoi.listings l SET completeness_score=d.completeness,trust_score=d.trust,\n    freshness_score=d.freshness,publish_status=d.next_status\n  FROM due d WHERE l.id=d.id;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  INSERT INTO zoi.audit_log(actor,action,target_type,reason)\n    VALUES('cron','run_maintenance','listing',format('Bounded score/freshness/archive maintenance: %s changed rows',changed));\nEND;\n$function$\n",
+      "source_md5": "254c9694f050019f4404a35bd41009c7",
+      "volatility": "v",
+      "definition_md5": "9d70cd4a53a9707ec4aa0be1ffb87ca6",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "language": "plpgsql",
+      "signature": "zoi.maintenance_event_date(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_event_date(p_value text)\n RETURNS date\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nBEGIN\n  IF p_value IS NULL OR p_value !~ '^\\d{4}-\\d{2}-\\d{2}($|T| )' THEN RETURN NULL; END IF;\n  RETURN left(p_value,10)::date;\nEXCEPTION WHEN invalid_datetime_format OR datetime_field_overflow THEN RETURN NULL;\nEND;\n$function$\n",
+      "source_md5": "fae5ab566fbacf26b69890021969b890",
+      "volatility": "i",
+      "definition_md5": "2db348273194c690430a9809a6156f5b",
+      "security_definer": false
+    }
+  ]
+}

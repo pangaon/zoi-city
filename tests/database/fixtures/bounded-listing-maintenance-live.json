@@ -1,0 +1,648 @@
+{
+  "captured_at": "2026-10-15T20:42:32.246156+00:00",
+  "source": "bounded actual two-function read; accepted post-admission dashboard; exact retained actual BEFORE and SEO contracts from accepted Wix fixture",
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "language": "plpgsql",
+      "signature": "zoi.run_maintenance()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.run_maintenance()\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE changed integer;\nBEGIN\n  -- A second cron/manual invocation must not compete for the same rows.\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN; END IF;\n  WITH scores AS MATERIALIZED (\n    SELECT id,\n      round(((CASE WHEN description IS NOT NULL AND length(description)>10 THEN 1 ELSE 0 END)\n       +(CASE WHEN website IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN address IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN phone IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN primary_category_id IS NOT NULL THEN 1 ELSE 0 END))::numeric/5,3) AS completeness,\n      least(1.0,round((CASE verification_status WHEN 'admin_verified' THEN 0.9 WHEN 'owner_verified' THEN 0.85\n        WHEN 'partner_verified' THEN 0.8 WHEN 'source_verified' THEN 0.6 WHEN 'owner_claimed' THEN 0.5 ELSE 0.3 END\n        +CASE source_trust_tier WHEN 'official' THEN 0.1 WHEN 'partner' THEN 0.08 WHEN 'public_directory' THEN 0.05 ELSE 0 END)::numeric,3)) AS trust,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date THEN 0.2\n        WHEN last_seen_at>now()-interval '14 days' THEN 0.95 ELSE 0.6 END AS freshness,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date-14\n         AND coalesce(profile->>'recurring','')<>'annual' THEN 'archived' ELSE publish_status END AS next_status\n    FROM zoi.listings\n  ), due AS (\n    SELECT s.* FROM scores s JOIN zoi.listings l USING(id)\n    WHERE ROW(l.completeness_score,l.trust_score,l.freshness_score,l.publish_status)\n      IS DISTINCT FROM ROW(s.completeness,s.trust,s.freshness,s.next_status)\n    ORDER BY s.id LIMIT 1000\n  )\n  UPDATE zoi.listings l SET completeness_score=d.completeness,trust_score=d.trust,\n    freshness_score=d.freshness,publish_status=d.next_status\n  FROM due d WHERE l.id=d.id;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  INSERT INTO zoi.audit_log(actor,action,target_type,reason)\n    VALUES('cron','run_maintenance','listing',format('Bounded score/freshness/archive maintenance: %s changed rows',changed));\nEND;\n$function$\n",
+      "source_md5": "254c9694f050019f4404a35bd41009c7",
+      "volatility": "v",
+      "definition_md5": "9d70cd4a53a9707ec4aa0be1ffb87ca6",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "language": "plpgsql",
+      "signature": "zoi.maintenance_event_date(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintenance_event_date(p_value text)\n RETURNS date\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\nBEGIN\n  IF p_value IS NULL OR p_value !~ '^\\d{4}-\\d{2}-\\d{2}($|T| )' THEN RETURN NULL; END IF;\n  RETURN left(p_value,10)::date;\nEXCEPTION WHEN invalid_datetime_format OR datetime_field_overflow THEN RETURN NULL;\nEND;\n$function$\n",
+      "source_md5": "fae5ab566fbacf26b69890021969b890",
+      "volatility": "i",
+      "definition_md5": "2db348273194c690430a9809a6156f5b",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "public.zoi_delivery_dashboard(timestamp with time zone)",
+      "definition": "CREATE OR REPLACE FUNCTION public.zoi_delivery_dashboard(p_since timestamp with time zone DEFAULT NULL::timestamp with time zone)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;queue jsonb;metrics jsonb;actions jsonb;mobiles jsonb;last_activity timestamptz;ready jsonb;groups jsonb;history jsonb;reports jsonb;feeds jsonb;\nBEGIN\n actor:=zoi.delivery_require_founder();\n SELECT value INTO queue FROM zoi.delivery_state WHERE key='queue_sync';\n SELECT value INTO metrics FROM zoi.delivery_state WHERE key='metrics_sync';\n SELECT jsonb_set(coalesce(metrics,'{}'::jsonb),'{metrics}',coalesce((SELECT jsonb_agg(m||jsonb_build_object('records_available',CASE WHEN m->>'key'IN('websites_reviewed','profiles_enriched','homes_visual','customer_actions') THEN (m->'value'<>'null'::jsonb OR EXISTS(SELECT 1 FROM zoi.delivery_record_evidence e WHERE e.category=m->>'key')) ELSE coalesce((m->>'records_available')::boolean,false) END,'value',CASE WHEN m->>'key'IN('websites_reviewed','profiles_enriched','homes_visual','customer_actions')AND(m->'value'<>'null'::jsonb OR EXISTS(SELECT 1 FROM zoi.delivery_record_evidence e WHERE e.category=m->>'key'))THEN to_jsonb((SELECT count(DISTINCT e.listing_id)FROM zoi.delivery_record_evidence e JOIN zoi.listings l ON l.id=e.listing_id WHERE e.category=m->>'key'AND e.record_fingerprint=zoi.geography_fingerprint(l)AND(e.category<>'customer_actions'OR EXISTS(SELECT 1 FROM zoi.delivery_features f WHERE f.state='live and verified'AND f.release->>'id'=e.release->>'id'AND f.proof->'record_ids'@>jsonb_build_array(l.id::text)))))ELSE m->'value'END))FROM jsonb_array_elements(coalesce(metrics->'metrics','[]'::jsonb))m),'[]'::jsonb))INTO metrics;\n SELECT value INTO actions FROM zoi.delivery_state WHERE key='owner_actions_sync';\n SELECT value INTO mobiles FROM zoi.delivery_state WHERE key='mobile_sync';\n SELECT max(created_at)INTO last_activity FROM zoi.delivery_events;\n SELECT coalesce(jsonb_agg(info||jsonb_build_object('id',id,'release',release,'verification',proof,'verified_at',proof->>'verified_at','status',state)ORDER BY updated_at DESC),'[]'::jsonb)INTO ready FROM zoi.delivery_features WHERE state='live and verified';\n SELECT coalesce(jsonb_agg(g||jsonb_build_object('status',CASE WHEN g->>'status'='live and verified' THEN CASE WHEN jsonb_array_length(coalesce(g->'outcomes','[]'::jsonb))>0 AND NOT EXISTS(SELECT 1 FROM jsonb_array_elements(coalesce(g->'outcomes','[]'::jsonb))o WHERE NOT EXISTS(SELECT 1 FROM zoi.delivery_features f WHERE f.id=o->>'id'AND f.state='live and verified'))THEN 'live and verified'ELSE 'being tested'END ELSE coalesce(g->>'status','not started')END,'outcomes',coalesce((SELECT jsonb_agg(o||jsonb_build_object('status',CASE WHEN f.state='live and verified'THEN f.state WHEN f.state IS NOT NULL THEN 'being tested'WHEN o->>'status'='live and verified'THEN 'being tested'ELSE coalesce(o->>'status','not started')END))FROM jsonb_array_elements(coalesce(g->'outcomes','[]'::jsonb))o LEFT JOIN zoi.delivery_features f ON f.id=o->>'id'),'[]'::jsonb))),'[]'::jsonb)\n INTO groups FROM jsonb_array_elements(coalesce(queue->'groups','[]'::jsonb))g;\n SELECT coalesce(jsonb_agg(g||jsonb_build_object('status',CASE WHEN EXISTS(SELECT 1 FROM zoi.delivery_reports r WHERE r.queue_group=g->>'id' AND r.state<>'live and verified') THEN 'being tested' ELSE g->>'status' END,'outcomes',coalesce(g->'outcomes','[]'::jsonb)||coalesce((SELECT jsonb_agg(jsonb_build_object('id','problem:'||r.request_id,'title',r.message,'status',r.state,'remaining','Investigate and verify the reported problem with its original profile, feature and release context.','evidence',r.context,'reported_at',r.created_at))FROM zoi.delivery_reports r WHERE r.queue_group=g->>'id'),'[]'::jsonb))),'[]'::jsonb)INTO groups FROM jsonb_array_elements(groups)g;\n SELECT coalesce(jsonb_agg(x ORDER BY x->>'at' DESC),'[]'::jsonb)INTO history FROM(SELECT jsonb_build_object('id',id,'event',kind,'title',title,'at',created_at,'evidence_state',evidence_state,'record_id',payload->>'listing_id','release',payload->'release')x FROM zoi.delivery_events WHERE p_since IS NULL OR created_at>p_since ORDER BY created_at DESC LIMIT 60)s;\n SELECT coalesce(jsonb_agg(jsonb_build_object('id',request_id,'message',message,'context',context,'status',state,'at',created_at)ORDER BY created_at DESC),'[]'::jsonb)INTO reports FROM(SELECT *FROM zoi.delivery_reports ORDER BY created_at DESC LIMIT 100)s;\n SELECT coalesce(jsonb_agg(jsonb_build_object('name',CASE key WHEN 'queue_sync'THEN 'Authoritative work queue'WHEN 'metrics_sync'THEN 'Record coverage and corrections'WHEN 'owner_actions_sync'THEN 'Owner actions'WHEN 'mobile_sync'THEN 'Mobile releases'END,'state','connected','last_success_at',updated_at)),'[]'::jsonb)INTO feeds FROM zoi.delivery_state WHERE key IN('queue_sync','metrics_sync','owner_actions_sync','mobile_sync');\n feeds:=feeds||coalesce(queue->'feeds','[]'::jsonb);\n RETURN jsonb_build_object('jobs',zoi.delivery_job_status())||jsonb_build_object('schema_version',1,'generated_at',now(),'last_activity_at',last_activity,'scope',coalesce(queue->'scope','{}'::jsonb),'metrics',coalesce(metrics->'metrics','[]'::jsonb),'coverage',coalesce(metrics->'coverage','{}'::jsonb),'groups',groups,'ready',ready,'actions',coalesce((SELECT jsonb_agg(a||jsonb_build_object('status',coalesce((SELECT state FROM zoi.delivery_action_checks c WHERE c.action_id=a->>'id'ORDER BY created_at DESC LIMIT 1),a->>'status','needs your action'),'last_checked_at',(SELECT checked_at FROM zoi.delivery_action_checks c WHERE c.action_id=a->>'id'ORDER BY created_at DESC LIMIT 1)))FROM jsonb_array_elements(coalesce(actions->'actions','[]'::jsonb))a),'[]'::jsonb),'activity',history,'mobile',coalesce(mobiles->'mobile','[]'::jsonb),'feeds',feeds,'reported_problems',reports);\nEND $function$\n",
+      "volatility": "s",
+      "security_definer": true,
+      "definition_md5": "47af16fd2d7d5e165ffcce23ef89a862"
+    },
+    {
+      "signature": "public.zoi_delivery_progress(uuid,text,jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.zoi_delivery_progress(p_request uuid, p_kind text, p_payload jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE prior zoi.delivery_events;payload_size integer:=octet_length(p_payload::text);feature text;\nBEGIN\n IF p_request IS NULL OR jsonb_typeof(p_payload) IS DISTINCT FROM 'object' OR payload_size>1800000\n OR p_kind NOT IN('queue_sync','metrics_sync','owner_actions_sync','mobile_sync','activity','release_verified','release_failed','release_rolled_back','record_verified','action_observed')\n OR p_payload::text ~ '(gh[pousr]_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{40}|sk_(live|test)_[A-Za-z0-9]{16}|AIza[0-9A-Za-z_-]{35}|BEGIN [A-Z ]*PRIVATE KEY)'\n THEN RAISE EXCEPTION 'invalid_delivery_event';END IF;\n PERFORM pg_advisory_xact_lock(hashtextextended('delivery-event:'||p_request::text,0));\n SELECT * INTO prior FROM zoi.delivery_events WHERE request_id=p_request;\n IF FOUND THEN IF prior.kind<>p_kind OR prior.payload IS DISTINCT FROM p_payload THEN RAISE EXCEPTION 'delivery_event_payload_conflict';END IF;RETURN jsonb_build_object('ok',true,'id',prior.id,'replayed',true);END IF;\n IF p_kind IN('queue_sync','metrics_sync','owner_actions_sync','mobile_sync') THEN\n  INSERT INTO zoi.delivery_state(key,value)VALUES(p_kind,p_payload) ON CONFLICT(key)DO UPDATE SET value=excluded.value,updated_at=now();\n ELSIF p_kind='release_verified' THEN\n  IF p_payload#>>'{proof,result}' IS DISTINCT FROM 'passed' OR p_payload#>>'{proof,environment}' IS DISTINCT FROM 'production'\n  OR p_payload#>'{proof,independent}' IS DISTINCT FROM 'true'::jsonb OR p_payload#>>'{proof,type}' IS DISTINCT FROM 'customer_journey'\n  OR p_payload#>>'{release,state}' IS DISTINCT FROM 'READY' OR nullif(p_payload#>>'{release,id}','') IS NULL\n  OR jsonb_typeof(p_payload#>'{proof,evidence}') IS DISTINCT FROM 'array' OR jsonb_array_length(p_payload#>'{proof,evidence}')=0\n  OR EXISTS(SELECT 1 FROM jsonb_array_elements(p_payload#>'{proof,evidence}') x WHERE jsonb_typeof(x)<>'string' OR length(btrim(x#>>'{}'))<3)\n  OR jsonb_typeof(p_payload#>'{proof,record_ids}') IS DISTINCT FROM 'array' OR jsonb_array_length(p_payload#>'{proof,record_ids}')=0\n  OR EXISTS(SELECT 1 FROM jsonb_array_elements(p_payload#>'{proof,record_ids}') x WHERE jsonb_typeof(x)<>'string' OR length(btrim(x#>>'{}'))NOT BETWEEN 1 AND 240)\n  OR coalesce(p_payload#>>'{proof,verified_at}','')!~'^\\d{4}-\\d{2}-\\d{2}T[0-9:.]+Z$'\n  OR(p_payload#>>'{proof,verified_at}')::timestamptz<now()-interval '7 days' OR(p_payload#>>'{proof,verified_at}')::timestamptz>now()+interval '5 minutes'\n  OR coalesce(p_payload#>>'{release,commit}','')!~'^[0-9a-f]{40}$' OR nullif(p_payload#>>'{info,open_url}','') IS NULL\n  THEN RAISE EXCEPTION 'deployed_independent_journey_proof_required';END IF;\n  feature:=p_payload->>'feature_id';IF nullif(feature,'') IS NULL OR length(feature)>160 THEN RAISE EXCEPTION 'invalid_delivery_feature';END IF;\n  INSERT INTO zoi.delivery_features(id,info,release,proof,state)VALUES(feature,p_payload->'info',p_payload->'release',p_payload->'proof','live and verified')\n  ON CONFLICT(id)DO UPDATE SET info=excluded.info,release=excluded.release,proof=excluded.proof,state=excluded.state,updated_at=now();\n ELSIF p_kind IN('release_failed','release_rolled_back') THEN\n  UPDATE zoi.delivery_features SET state=CASE WHEN p_kind='release_failed'THEN 'failed'ELSE 'rolled back'END,updated_at=now()\n  WHERE id=p_payload->>'feature_id' AND (nullif(p_payload->>'release_id','') IS NULL OR release->>'id'=p_payload->>'release_id');\n ELSIF p_kind='record_verified' THEN\n  IF p_payload->>'category' NOT IN('websites_reviewed','profiles_enriched','homes_visual','customer_actions')\n  OR p_payload->>'verification' NOT IN('independent source verified','production journey verified')\n  OR jsonb_typeof(p_payload->'evidence') IS DISTINCT FROM 'array' OR jsonb_array_length(p_payload->'evidence')=0\n  OR p_payload->>'category'='customer_actions' AND(p_payload->>'verification'<>'production journey verified' OR NOT EXISTS(SELECT 1 FROM zoi.delivery_features f WHERE f.state='live and verified'AND f.release->>'id'=p_payload#>>'{release,id}'AND f.proof->'record_ids'@>jsonb_build_array(p_payload->>'listing_id')))\n  THEN RAISE EXCEPTION 'record_verification_required';END IF;\n  INSERT INTO zoi.delivery_record_evidence(category,listing_id,changed,before_value,after_value,evidence,release,verification,record_fingerprint)\n  VALUES(p_payload->>'category',(p_payload->>'listing_id')::uuid,left(p_payload->>'changed',1000),p_payload->'before',p_payload->'after',p_payload->'evidence',p_payload->'release',p_payload->>'verification',(SELECT zoi.geography_fingerprint(l)FROM zoi.listings l WHERE l.id=(p_payload->>'listing_id')::uuid))\n  ON CONFLICT(category,listing_id)DO UPDATE SET changed=excluded.changed,before_value=excluded.before_value,after_value=excluded.after_value,evidence=excluded.evidence,release=excluded.release,verification=excluded.verification,record_fingerprint=excluded.record_fingerprint,completed_at=now();\n ELSIF p_kind='action_observed' THEN\n  IF p_payload->>'state' NOT IN('not configured','authorized','degraded','revoked','externally blocked','ready for operator verification') THEN RAISE EXCEPTION 'operational_verification_cannot_be_inferred';END IF;\n  UPDATE zoi.delivery_action_checks SET state=p_payload->>'state',observation=p_payload->'observation',checked_at=now() WHERE request_id=(p_payload->>'check_request')::uuid;\n END IF;\n INSERT INTO zoi.delivery_events(request_id,kind,title,payload,evidence_state) VALUES(p_request,p_kind,left(coalesce(p_payload->>'title','Delivery update'),300),p_payload,CASE WHEN p_kind IN('release_verified','record_verified')THEN 'independent_verified'WHEN p_kind IN('queue_sync','activity')THEN 'reported'ELSE 'automatic'END)RETURNING * INTO prior;\n RETURN jsonb_build_object('ok',true,'id',prior.id,'replayed',false);\nEND $function$\n",
+      "definition_md5": "e0e5e2a8c2ca5b2c6c88cfef25b0fe38",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres}",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "volatility": "v"
+    }
+  ],
+  "job31": {
+    "id": 31,
+    "name": "zoi-maintenance-bounded",
+    "active": true,
+    "schedule": "7,17,27,37,47,57 * * * *",
+    "command_md5": "7876d3105fcf6a7917047851f0ba6af9",
+    "command_bytes": 80
+  },
+  "listing_columns": [
+    {
+      "name": "id",
+      "type": "uuid"
+    },
+    {
+      "name": "entity_type",
+      "type": "text"
+    },
+    {
+      "name": "name",
+      "type": "text"
+    },
+    {
+      "name": "slug",
+      "type": "text"
+    },
+    {
+      "name": "legal_name",
+      "type": "text"
+    },
+    {
+      "name": "display_name",
+      "type": "text"
+    },
+    {
+      "name": "description",
+      "type": "text"
+    },
+    {
+      "name": "primary_category_id",
+      "type": "bigint"
+    },
+    {
+      "name": "tags",
+      "type": "text[]"
+    },
+    {
+      "name": "language_support",
+      "type": "text[]"
+    },
+    {
+      "name": "greek_language_available",
+      "type": "boolean"
+    },
+    {
+      "name": "city",
+      "type": "text"
+    },
+    {
+      "name": "region",
+      "type": "text"
+    },
+    {
+      "name": "province_state",
+      "type": "text"
+    },
+    {
+      "name": "country",
+      "type": "text"
+    },
+    {
+      "name": "neighborhood",
+      "type": "text"
+    },
+    {
+      "name": "address",
+      "type": "text"
+    },
+    {
+      "name": "latitude",
+      "type": "double precision"
+    },
+    {
+      "name": "longitude",
+      "type": "double precision"
+    },
+    {
+      "name": "region_id",
+      "type": "bigint"
+    },
+    {
+      "name": "phone",
+      "type": "text"
+    },
+    {
+      "name": "email",
+      "type": "text"
+    },
+    {
+      "name": "website",
+      "type": "text"
+    },
+    {
+      "name": "source_id",
+      "type": "uuid"
+    },
+    {
+      "name": "source_url",
+      "type": "text"
+    },
+    {
+      "name": "source_type",
+      "type": "text"
+    },
+    {
+      "name": "source_trust_tier",
+      "type": "text"
+    },
+    {
+      "name": "source_last_checked_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "first_seen_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_seen_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "last_verified_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "verification_status",
+      "type": "text"
+    },
+    {
+      "name": "claim_status",
+      "type": "text"
+    },
+    {
+      "name": "owner_user_id",
+      "type": "uuid"
+    },
+    {
+      "name": "duplicate_status",
+      "type": "text"
+    },
+    {
+      "name": "moderation_status",
+      "type": "text"
+    },
+    {
+      "name": "publish_status",
+      "type": "text"
+    },
+    {
+      "name": "freshness_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "completeness_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "trust_score",
+      "type": "numeric(4,3)"
+    },
+    {
+      "name": "profile",
+      "type": "jsonb"
+    },
+    {
+      "name": "field_meta",
+      "type": "jsonb"
+    },
+    {
+      "name": "trust_badges",
+      "type": "text[]"
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone"
+    },
+    {
+      "name": "created_by",
+      "type": "text"
+    },
+    {
+      "name": "updated_by",
+      "type": "text"
+    },
+    {
+      "name": "search_tsv",
+      "type": "tsvector"
+    },
+    {
+      "name": "meta_title",
+      "type": "text"
+    },
+    {
+      "name": "meta_description",
+      "type": "text"
+    },
+    {
+      "name": "canonical_path",
+      "type": "text"
+    },
+    {
+      "name": "schema_type",
+      "type": "text"
+    },
+    {
+      "name": "og_image",
+      "type": "text"
+    },
+    {
+      "name": "hreflang_alt",
+      "type": "jsonb"
+    },
+    {
+      "name": "sells_products",
+      "type": "boolean"
+    },
+    {
+      "name": "offers_services",
+      "type": "boolean"
+    },
+    {
+      "name": "is_professional",
+      "type": "boolean"
+    },
+    {
+      "name": "bookable",
+      "type": "boolean"
+    },
+    {
+      "name": "booking_type",
+      "type": "text"
+    },
+    {
+      "name": "service_on_demand",
+      "type": "boolean"
+    },
+    {
+      "name": "marketplace_status",
+      "type": "text"
+    },
+    {
+      "name": "price_range",
+      "type": "text"
+    },
+    {
+      "name": "hours",
+      "type": "text"
+    },
+    {
+      "name": "rating",
+      "type": "numeric(2,1)"
+    },
+    {
+      "name": "rating_count",
+      "type": "integer"
+    },
+    {
+      "name": "photo_url",
+      "type": "text"
+    },
+    {
+      "name": "amenities",
+      "type": "text[]"
+    },
+    {
+      "name": "geo_precision",
+      "type": "text"
+    },
+    {
+      "name": "embedding",
+      "type": "vector(1536)"
+    },
+    {
+      "name": "keywords",
+      "type": "text[]"
+    },
+    {
+      "name": "onboarding_path",
+      "type": "text"
+    },
+    {
+      "name": "social_links",
+      "type": "jsonb"
+    },
+    {
+      "name": "ingestion_source",
+      "type": "text"
+    },
+    {
+      "name": "owner_workspace_id",
+      "type": "uuid"
+    },
+    {
+      "name": "place_id",
+      "type": "bigint"
+    },
+    {
+      "name": "region_code",
+      "type": "text"
+    },
+    {
+      "name": "region_native",
+      "type": "text"
+    }
+  ],
+  "trigger_functions": [
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "a6d10dbbedb1f4a9aff4a3010b3a03d0",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.maintain_seo_identity_keys()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_identity_keys()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n INSERT INTO zoi.seo_identity_keys VALUES\n (NEW.id,zoi.seo_name(NEW.name,NEW.city),zoi.seo_text(NEW.city),zoi.seo_text(NEW.region),zoi.seo_text(NEW.country),zoi.seo_text(NEW.address))\n ON CONFLICT (listing_id) DO UPDATE SET name_key=EXCLUDED.name_key,city_key=EXCLUDED.city_key,\n region_key=EXCLUDED.region_key,country_key=EXCLUDED.country_key,address_key=EXCLUDED.address_key;\n RETURN NEW;\nEND;\n$function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "md5": "979e6dbac201900f10e2a1cdb7a4d226",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.schema_type(text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.schema_type(p_entity text, p_cat text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n  select case\n    when p_entity='event' then 'Event'\n    when p_entity='church' then 'Church'\n    when p_entity='school' then 'EducationalOrganization'\n    when p_entity='organization' then 'Organization'\n    when p_entity='venue' then 'EventVenue'\n    when p_entity in ('creator','artist') then 'Person'\n    when p_entity='travel_place' then 'TouristAttraction'\n    when p_entity='product' then 'Product'\n    when p_entity='vendor' then 'Store'\n    when p_entity='professional' then case p_cat\n         when 'lawyers' then 'Attorney' when 'dentists' then 'Dentist'\n         when 'doctors' then 'Physician' when 'accountants' then 'AccountingService'\n         when 'realtors' then 'RealEstateAgent' when 'insurance' then 'InsuranceAgency'\n         else 'ProfessionalService' end\n    when p_entity='business' then case p_cat\n         when 'restaurants' then 'Restaurant' when 'tavernas' then 'Restaurant'\n         when 'bakeries' then 'Bakery' when 'cafes' then 'CafeOrCoffeeShop'\n         when 'groceries' then 'GroceryStore' when 'specialty-food' then 'GroceryStore'\n         else 'LocalBusiness' end\n    else 'LocalBusiness' end;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "86de5ced4bc9ae28b48240ee6b149323",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.ensure_listing_slug()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.ensure_listing_slug()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare base text; cand text; n int := 0;\nbegin\n  if new.slug is not null and length(new.slug) > 0 then\n    return new;\n  end if;\n  begin\n    if new.canonical_path is not null and length(new.canonical_path) > 0 then\n      base := substring(new.canonical_path from '^/[^/]+/(.+)$');\n    end if;\n    if base is null or length(base) = 0 then\n      base := zoi.seo_slug(coalesce(new.name,'') || '-' || coalesce(new.city,''));\n    end if;\n    if base is null or length(base) = 0 then\n      return new;                              -- cannot derive; keep today's behavior\n    end if;\n    cand := base;\n    while exists (select 1 from zoi.listings x where x.slug = cand and x.id <> new.id) loop\n      n := n + 1;\n      cand := base || '-' || n;\n      if n > 50 then\n        cand := base || '-' || substr(replace(new.id::text,'-',''),1,8);\n        exit;\n      end if;\n    end loop;\n    new.slug := cand;\n  exception when others then\n    null;                                      -- never break the write\n  end;\n  return new;\nend\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "baca38034b9b0974465026eff8aec89d",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_read_authority_changed()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_changed()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN\n IF zoi.geography_read_authority_input(OLD) IS DISTINCT FROM zoi.geography_read_authority_input(NEW) THEN\n   UPDATE zoi.geography_read_authority_epochs SET epoch=epoch+1 WHERE listing_id=NEW.id;\n END IF;\n RETURN NULL;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "3a452d0b2b9902436360a47d3a575e4e",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.geography_read_authority_input(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.geography_read_authority_input(l zoi.listings)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT jsonb_build_object(\n 'schema',1,'listing_id',l.id,'entity_type',l.entity_type,'name',l.name,\n 'legal_name',l.legal_name,'display_name',l.display_name,\n 'address',l.address,'city',l.city,'country',l.country,'region',l.region,\n 'province_state',l.province_state,'neighborhood',l.neighborhood,'region_id',l.region_id,\n 'place_id',l.place_id,'region_code',l.region_code,'region_native',l.region_native,\n 'website',l.website,'source_id',l.source_id,'source_url',l.source_url,\n 'source_type',l.source_type,'source_trust_tier',l.source_trust_tier,\n 'claim_status',l.claim_status,'verification_status',l.verification_status,\n 'field_authority',(SELECT coalesce(jsonb_object_agg(k,v),'{}'::jsonb) FROM jsonb_each(CASE WHEN jsonb_typeof(l.field_meta)='object' THEN l.field_meta ELSE '{}'::jsonb END) AS f(k,v) WHERE k IN('name','legal_name','display_name','address','city','country','region','province_state','latitude','longitude','geo_precision','website','source_url','source_id','source_type','place_id')),\n 'owner_user',l.owner_user_id,'owner_workspace',l.owner_workspace_id,\n 'publish_status',l.publish_status,'moderation_status',l.moderation_status,\n 'marketplace_status',l.marketplace_status,'duplicate_status',l.duplicate_status,\n 'latitude',l.latitude,'longitude',l.longitude,'precision',l.geo_precision,\n 'geo_provenance',l.profile->'_geo',\n 'published_overrides',(SELECT coalesce(jsonb_object_agg(k,v),'{}'::jsonb) FROM jsonb_each(CASE WHEN jsonb_typeof(l.profile)='object' THEN l.profile ELSE '{}'::jsonb END) AS f(k,v) WHERE k IN('name','legal_name','display_name','address','city','country','region','province_state','neighborhood','website','latitude','longitude','geo_precision','location','locations','branches')),\n 'source_authority',jsonb_build_object(\n   'source_url',l.profile#>'{_enrich,source_url}','source_kind',l.profile#>'{_enrich,source_kind}',\n   'identity_scope',l.profile#>'{_enrich,identity_scope}',\n   'source_identity',l.profile#>'{_enrich,source_identity}',\n   'source_scope_mismatch',coalesce(l.profile#>>'{_enrich,source_scope_mismatch}'='true',false),\n   'scope_mismatch_reason',coalesce(l.profile#>>'{_enrich,blocked_reason}'='source_scope_mismatch',false),\n   'scope_review_required',coalesce(l.profile#>>'{_enrich,scope_review_required}'='true',false),\n   'organization_identity_quarantine',coalesce(l.profile#>>'{_enrich,organization_identity_quarantine}'='true',false),\n   'blocked',coalesce(l.profile#>>'{_enrich,blocked}'='true',false),\n   'source_challenge',coalesce(l.profile#>>'{_enrich,source_challenge}'='true',false)\n ))\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "3a441e4585bf57f2b1da52a9c816029b",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_pluralize(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_pluralize(p text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case\n    when p ~ '(ch|sh|s|x|z)$' then p||'es'\n    when p ~ '[^aeiou]y$'     then regexp_replace(p,'y$','ies')\n    else p||'s'\n  end\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "f3f56fbc83395559e0b883f610182017",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.auto_seo_fill()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.auto_seo_fill()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE\n  v_cat_slug text;\n  v_cat_label text;\n  v_slug text;\n  v_title text;\n  v_desc text;\nBEGIN\n  IF NEW.primary_category_id IS NOT NULL THEN\n    SELECT c.slug, c.label_en INTO v_cat_slug, v_cat_label\n    FROM zoi.categories c WHERE c.id = NEW.primary_category_id;\n  END IF;\n\n  v_slug := coalesce(NEW.slug, zoi.seo_slug(NEW.name || '-' || coalesce(NEW.city,'')));\n\n  IF NEW.schema_type IS NULL OR length(NEW.schema_type)=0 THEN\n    NEW.schema_type := zoi.schema_type(NEW.entity_type, coalesce(v_cat_slug,''));\n  END IF;\n\n  IF NEW.canonical_path IS NULL OR length(NEW.canonical_path)=0 THEN\n    NEW.canonical_path := '/' || NEW.entity_type || '/' || v_slug;\n  END IF;\n\n  IF NEW.meta_title IS NULL OR length(NEW.meta_title)=0 THEN\n    v_title := NEW.name\n      || coalesce(' \u2014 ' || zoi.seo_pluralize(v_cat_label), '')\n      || coalesce(' in ' || NEW.city, '')\n      || ' | Zoi';\n    IF length(v_title) > 66 THEN\n      v_title := NEW.name || coalesce(' in ' || NEW.city, '') || ' | Zoi';\n    END IF;\n    IF length(v_title) > 66 THEN\n      v_title := left(NEW.name, 60) || ' | Zoi';\n    END IF;\n    NEW.meta_title := v_title;\n  END IF;\n\n  IF NEW.meta_description IS NULL OR length(NEW.meta_description)=0 THEN\n    IF NEW.description IS NOT NULL AND length(NEW.description) >= 30\n       AND NEW.description !~* '^https?://' THEN\n      v_desc := left(NEW.description, 158);\n    ELSE\n      v_desc := NEW.name\n        || coalesce(' in ' || NEW.city, '')\n        || coalesce(', ' || NEW.country, '')\n        || '. Listed on Zoi, the Greek community directory.';\n    END IF;\n    NEW.meta_description := v_desc;\n  END IF;\n\n  RETURN NEW;\nEND$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "1f8b6687e304c5f6502235344d4f0b7a",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.set_updated_at()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.set_updated_at()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nbegin new.updated_at = now(); return new; end; $function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "059ca37c376f88162bc84423c543b024",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "signature": "zoi.skip_noop_listing_update()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.skip_noop_listing_update()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  IF (to_jsonb(NEW) - 'updated_at') = (to_jsonb(OLD) - 'updated_at') THEN\n    RETURN NULL;\n  END IF;\n  RETURN NEW;\nEND;\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "905be3e3473f808c3c50a4a6f5e7279c",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "signature": "zoi.publish_gate(text,text,bigint,text,text,text,text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.publish_gate(p_name text, p_entity_type text, p_category bigint, p_city text, p_country text, p_phone text, p_address text, p_website text)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\nDECLARE\n  v_name  text := coalesce(btrim(p_name),'');\n  v_alpha text;\n  v_et    text := lower(coalesce(btrim(p_entity_type),''));\n  v_fails text[] := array[]::text[];\n  v_warn  text[] := array[]::text[];\n  v_lq    jsonb;\n  v_physical boolean;\n  v_any_channel boolean;\nBEGIN\n  v_alpha := regexp_replace(v_name,'[^[:alpha:]]','','g');\n  -- Entity types that exist at a physical place. Creators, vendors (online shops),\n  -- artists and travel listings are legitimately location-less.\n  v_physical := v_et IN ('business','church','school','venue','sports','professional');\n  v_any_channel := coalesce(btrim(p_website),'') <> ''\n                OR coalesce(btrim(p_phone),'')   <> ''\n                OR coalesce(btrim(p_address),'') <> '';\n\n  -- 1. NAME INTEGRITY\n  IF v_name = '' THEN v_fails := array_append(v_fails,'name_empty'); END IF;\n  IF length(v_alpha) < 2 THEN v_fails := array_append(v_fails,'name_no_real_letters'); END IF;\n  IF length(v_name) > 120 THEN v_fails := array_append(v_fails,'name_too_long'); END IF;\n\n  -- 2. SCRAPE ARTEFACTS\n  -- Listicle: \"Top 10 Best ...\" \u2014 number must be followed by a word, so \"Best 92.6\" (radio) is safe.\n  IF v_name ~* '(^|[^[:alpha:]])(top|best)[[:space:]]+[0-9]{1,3}[[:space:]]+[[:alpha:]]' THEN\n    v_fails := array_append(v_fails,'listicle_title');\n  END IF;\n  IF v_name ~* '(yelp|tripadvisor|wikipedia|google maps|facebook\\.com|instagram\\.com|linkedin\\.com)' THEN\n    v_fails := array_append(v_fails,'platform_title');\n  END IF;\n  IF v_name ~* 'near me$|^the [0-9]+ (best|top) |updated [0-9]{4}|^[0-9]+ (best|top) ' THEN\n    v_fails := array_append(v_fails,'seo_title');\n  END IF;\n  -- Pipe alone is NOT junk (real names like \"Astra Report | WNTN 1550 AM\" exist).\n  -- Only flag a trailing \" - <platform>\" or \" | <platform>\" suffix.\n  IF v_name ~* '[[:space:]][-|][[:space:]]*(yelp|tripadvisor|facebook|instagram|menu|home|official site)[[:space:]]*$' THEN\n    v_fails := array_append(v_fails,'page_title_artefact');\n  END IF;\n  IF lower(v_name) ~ '^(home|about|about us|contact|contact us|menu|untitled|test|n/?a|null|none|unknown|tbd|click here|read more|business directory)$' THEN\n    v_fails := array_append(v_fails,'nav_or_placeholder_name');\n  END IF;\n\n  -- 3. CLASSIFICATION\n  IF p_category IS NULL THEN v_fails := array_append(v_fails,'missing_category'); END IF;\n\n  -- 4. LOCATION \u2014 only required for physical entity types, and only when there is\n  -- also no contact channel to identify the entity by.\n  IF v_physical\n     AND coalesce(btrim(p_city),'') = ''\n     AND coalesce(btrim(p_country),'') = ''\n     AND NOT v_any_channel THEN\n    v_fails := array_append(v_fails,'no_location_and_no_contact');\n  END IF;\n\n  -- 5. Existing scorer's hard-junk judgement\n  v_lq := zoi.listing_quality(p_name,p_phone,p_address,p_website,p_category,p_entity_type);\n  IF (v_lq->>'ok')::boolean IS FALSE THEN\n    v_fails := array_append(v_fails,'listing_quality_fail');\n  END IF;\n\n  -- 6. WARNINGS \u2014 never block; these feed the enrichment queue.\n  IF NOT v_any_channel THEN v_warn := array_append(v_warn,'no_contact_channel'); END IF;\n  IF coalesce(btrim(p_city),'')='' THEN v_warn := array_append(v_warn,'no_city'); END IF;\n  IF coalesce(btrim(p_country),'')='' THEN v_warn := array_append(v_warn,'no_country'); END IF;\n\n  RETURN jsonb_build_object(\n    'ok', (array_length(v_fails,1) IS NULL),\n    'fails', to_jsonb(v_fails),\n    'warnings', to_jsonb(v_warn),\n    'quality_score', (v_lq->>'score')::int\n  );\nEND;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "48db3959fc1281e9f09af3ff8164dae6",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.tg_apply_publish_gate()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.tg_apply_publish_gate()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\ndeclare v_gate jsonb;\nbegin\n if new.publish_status is null or new.publish_status in ('draft','published') then\n  v_gate:=zoi.publish_gate(new.name,new.entity_type,new.primary_category_id,new.city,new.country,new.phone,new.address,new.website);\n  if new.publish_status is distinct from 'draft' then\n   if (v_gate->>'ok')::boolean then new.publish_status:='published';\n   else new.publish_status:='pending_review';end if;\n  end if;\n  new.profile:=coalesce(new.profile,'{}'::jsonb)||jsonb_build_object('gate',jsonb_build_object(\n   'ok',v_gate->'ok','fails',v_gate->'fails','warnings',v_gate->'warnings',\n   'checked_at',to_char(now() at time zone 'UTC','YYYY-MM-DD\"T\"HH24:MI:SS\"Z\"')));\n  new.completeness_score:=round(((v_gate->>'quality_score')::numeric/100.0),3);\n end if;\n return new;\nend;\n$function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "45ca783e5e2b06098a7c025a69347b9f",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_text(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_text(p_value text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE PARALLEL SAFE\nAS $function$\n SELECT pg_catalog.btrim(pg_catalog.regexp_replace(pg_catalog.lower(coalesce(p_value,'')), '[^[:alnum:]]+', ' ', 'g'));\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f0ebb7ba92e72b6bd34b43acc2676789",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.guard_listing_quality_receipts()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.guard_listing_quality_receipts()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE prior_receipt jsonb;\nBEGIN\n IF TG_OP='UPDATE' THEN prior_receipt:=OLD.profile->'_coverage';END IF;\n IF (current_user IN('anon','authenticated') OR current_setting('request.jwt.claim.role',true) IN('anon','authenticated') OR coalesce(nullif(current_setting('request.jwt.claims',true),''),'{}')::jsonb->>'role' IN('anon','authenticated')) AND NEW.profile->'_coverage' IS DISTINCT FROM prior_receipt THEN RAISE EXCEPTION 'quality_receipts_service_only';END IF;\n RETURN NEW;\nEND $function$\n",
+      "volatility": "v",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "6681315c7a01314ba7851d65c6fd2dce",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_name(text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_name(p_name text, p_city text)\n RETURNS text\n LANGUAGE plpgsql\n IMMUTABLE PARALLEL SAFE\nAS $function$\nDECLARE n text:=zoi.seo_text(p_name); c text:=zoi.seo_text(p_city);\nBEGIN\n IF c<>'' AND pg_catalog.length(n)>pg_catalog.length(c)+1 AND pg_catalog.right(n,pg_catalog.length(c)+1)=' '||c THEN\n  RETURN pg_catalog.left(n,pg_catalog.length(n)-pg_catalog.length(c)-1);\n END IF;\n RETURN n;\nEND;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": null,
+      "md5": "9b36fe6c6fabbe222376430aacf73323",
+      "owner": "postgres",
+      "config": null,
+      "signature": "zoi.seo_slug(text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.seo_slug(p text)\n RETURNS text\n LANGUAGE sql\n IMMUTABLE\nAS $function$\n  select case when p is null then null else\n    trim(both '-' from regexp_replace(lower(p), '[^a-z0-9]+', '-', 'g'))\n  end\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "6d842320cba4f04697493b746ecea663",
+      "owner": "postgres",
+      "config": [
+        "search_path=pg_catalog, pg_temp"
+      ],
+      "signature": "zoi.listing_quality(text,text,text,text,bigint,text)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.listing_quality(p_name text, p_phone text, p_address text, p_website text, p_category bigint, p_entity_type text)\n RETURNS jsonb\n LANGUAGE plpgsql\n IMMUTABLE\n SET search_path TO 'pg_catalog', 'pg_temp'\nAS $function$\ndeclare\n  v_score int := 60;\n  v_reasons text[] := array[]::text[];\n  v_name text := coalesce(btrim(p_name), '');\n  v_phone text := coalesce(btrim(p_phone), '');\n  v_addr text := coalesce(btrim(p_address), '');\n  v_web text := coalesce(btrim(p_website), '');\n  v_et text := lower(coalesce(btrim(p_entity_type), ''));\n  v_tokens int; v_alpha text;\n  v_has_contact boolean; v_any_channel boolean;\n  v_is_person boolean; v_needs_physical boolean;\n  v_biz_token boolean; v_looks_personal boolean; v_allcaps_surname boolean;\n  v_identifiable boolean; v_hard_junk boolean := false;\n  v_threshold int := 55;\nbegin\n  v_alpha := regexp_replace(v_name, '[^[:alpha:]]', '', 'g');\n  v_tokens := array_length(regexp_split_to_array(v_name, '\\s+'), 1);\n  if v_name = '' then v_tokens := 0; end if;\n\n  v_is_person := v_et in ('professional','creator','artist');\n  v_needs_physical := v_et in ('business','church','school','venue','organization','sports');\n\n  v_biz_token := v_name ~* '(restaurant|taverna|taverne|tavern|ouzeri|mezze?|meze|cuisine|cafe|caf[e\u00e9]|kafe|kafenio|coffee|bakery|patisserie|pastry|pastries|grill|kitchen|kouzina|koyzina|estiatorio|psistaria|deli|market|bazaar|grocery|foods?|seafood|diner|pita|gardens|honey|farm|mastiha|apothecary|magazine|bar|bistro|pizz|gyro|souvlaki|club|hotel|inn|resort|room|studio|salon|spa|clinic|center|centre|institute|academy|school|college|church|kirche|orthodox|cathedral|parish|monastery|temple|shrine|theotokos|annunciation|dormition|nativity|ascension|assumption|transfiguration|filoptochos|brotherhood|pancyprian|associat|society|federation|foundation|council|union|chamber|company|co\\.|corp|inc\\.?|ltd|llc|gmbh|group|network|television|world|services|solutions|consult|agency|law|legal|medical|dental|pharmac|insurance|realty|real estate|travel|tours|imports|exports|trading|wines|winery|brewery|distillery|productions|media|radio|fm|tv|ert|gallery|museum|theatre|theater|festival|function|expo|games|fc|f\\.c\\.|football|soccer|hellenic|greek|grecian|hellas|athenian|mitilini|parthenon|delfini|myth|casa|saint|st\\.|holy|cosmos|concept|grove|olive|blue)';\n\n  -- ALLCAPS \"SURNAME FIRSTNAME\" Greek scrape junk (the named hard pattern)\n  v_allcaps_surname := (not v_biz_token) and v_tokens between 2 and 3\n    and v_name = upper(v_name) and v_name ~ '^[[:upper:]]{2,}([[:space:]\\-]+[[:upper:]]{2,}){1,2}$';\n  -- Titlecase personal-name shape: SOFT signal only (too many brand collisions)\n  v_looks_personal := (not v_biz_token) and v_tokens between 2 and 3\n    and v_name ~ '^[[:upper:]][[:lower:]]+([[:space:]\\-]+[[:upper:]][[:lower:]]+){1,2}$';\n\n  v_has_contact := (v_phone <> '' or v_addr <> '');\n  v_any_channel := (v_phone <> '' or v_addr <> '' or v_web <> '');\n\n  v_identifiable := v_any_channel or v_biz_token or (coalesce(v_tokens,0) >= 2) or v_is_person;\n\n  -- HARD JUNK NAME CHECKS\n  if v_name = '' then\n    v_score := 0; v_hard_junk := true; v_reasons := array_append(v_reasons, 'name_empty'::text);\n  elsif v_name ~ '^[0-9[:space:][:punct:]]+$' then\n    v_score := 0; v_hard_junk := true; v_reasons := array_append(v_reasons, 'name_digits_or_symbols_only'::text);\n  elsif length(v_alpha) < 2 then\n    v_score := 0; v_hard_junk := true; v_reasons := array_append(v_reasons, 'name_no_real_letters'::text);\n  elsif v_tokens = 1 and length(v_name) <= 3 and not v_any_channel then\n    -- single very short token AND no way to find it = junk; with contact it's identifiable\n    v_score := v_score - 40; v_hard_junk := true;\n    v_reasons := array_append(v_reasons, 'name_single_short_token_no_contact'::text);\n  end if;\n\n  -- BUSINESS as bare ALLCAPS personal name with NO contact = junk (named pattern)\n  if v_et = 'business' and v_allcaps_surname and not v_any_channel then\n    v_score := v_score - 50; v_hard_junk := true;\n    v_reasons := array_append(v_reasons, 'business_allcaps_personal_name_no_contact'::text);\n  end if;\n\n  -- SOFT SIGNALS\n  if v_phone <> '' then v_score := v_score + 10; v_reasons := array_append(v_reasons, 'has_phone'::text); end if;\n  if v_addr  <> '' then v_score := v_score + 10; v_reasons := array_append(v_reasons, 'has_address'::text); end if;\n  if v_web   <> '' then v_score := v_score + 8;  v_reasons := array_append(v_reasons, 'has_website'::text); end if;\n  if v_biz_token  then v_score := v_score + 5;  v_reasons := array_append(v_reasons, 'has_business_keyword'::text); end if;\n\n  -- Titlecase personal-name business with no contact: soft warning only\n  if v_et = 'business' and v_looks_personal and not v_any_channel then\n    v_reasons := array_append(v_reasons, 'business_name_may_be_personal'::text);\n  end if;\n\n  if p_category is not null then\n    v_score := v_score + 8; v_reasons := array_append(v_reasons, 'has_category'::text);\n  else\n    v_score := v_score - 6; v_reasons := array_append(v_reasons, 'missing_category'::text);\n  end if;\n\n  if not v_has_contact then\n    if v_is_person then\n      v_reasons := array_append(v_reasons, 'person_no_physical_contact_ok'::text);\n    elsif v_web <> '' then\n      v_score := v_score - 4; v_reasons := array_append(v_reasons, 'no_phone_or_address_website_only'::text);\n    else\n      v_score := v_score - 8; v_reasons := array_append(v_reasons, 'thin_contact_needs_enrichment'::text);\n    end if;\n  end if;\n\n  -- FLOOR: identifiable, non-junk listings stay published despite incompleteness\n  if not v_hard_junk and v_identifiable and v_score < v_threshold then\n    v_score := v_threshold;\n  end if;\n\n  if v_score < 0 then v_score := 0; end if;\n  if v_score > 100 then v_score := 100; end if;\n\n  return jsonb_build_object(\n    'score', v_score, 'ok', (v_score >= v_threshold),\n    'threshold', v_threshold, 'reasons', to_jsonb(v_reasons));\nend;\n$function$\n",
+      "volatility": "i",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "md5": "f17b227663468c63feaafdda7caf903f",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "signature": "zoi.maintain_seo_projection()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.maintain_seo_projection()\n RETURNS trigger\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$ BEGIN UPDATE zoi.seo_identity_keys k SET slug=NEW.slug,entity_type=NEW.entity_type,updated_at=coalesce(NEW.updated_at,NEW.created_at),\n completeness=(((NEW.address IS NOT NULL)::int)+((NEW.phone IS NOT NULL)::int)+((NEW.website IS NOT NULL)::int)+((NEW.latitude IS NOT NULL)::int)+((NEW.description IS NOT NULL)::int)),\n ugly=(NEW.slug ~ '-[0-9a-f]{6}$')::int,\n is_indexable=coalesce(NEW.publish_status='published' AND NEW.moderation_status IN ('clean','cleared') AND coalesce(NEW.marketplace_status,'')<>'hidden' AND NEW.duplicate_status IS DISTINCT FROM 'confirmed_duplicate'\n AND nullif(btrim(NEW.slug),'') IS NOT NULL AND nullif(btrim(NEW.name),'') IS NOT NULL\n AND (NEW.city IS NOT NULL OR NEW.address IS NOT NULL OR NEW.website IS NOT NULL),false)\nWHERE k.listing_id=NEW.id;\n RETURN NEW; END $function$\n",
+      "volatility": "v",
+      "security_definer": true
+    }
+  ],
+  "listing_triggers": [
+    {
+      "name": "geography_read_authority_changed",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER geography_read_authority_changed AFTER UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.geography_read_authority_changed()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "listing_quality_receipts_guard",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listing_quality_receipts_guard BEFORE INSERT OR UPDATE OF profile ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.guard_listing_quality_receipts()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "listings_aa_slug",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_aa_slug BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.ensure_listing_slug()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "listings_publish_gate",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_publish_gate BEFORE INSERT ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.tg_apply_publish_gate()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "listings_skip_noop",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER listings_skip_noop BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.skip_noop_listing_update()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "maintain_seo_identity_keys",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER maintain_seo_identity_keys AFTER INSERT OR UPDATE OF id, name, city, region, country, address ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_identity_keys()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "trg_listings_auto_seo",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER trg_listings_auto_seo BEFORE INSERT OR UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.auto_seo_fill()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "trg_listings_updated",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER trg_listings_updated BEFORE UPDATE ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.set_updated_at()",
+      "deferrable": false,
+      "initially_deferred": false
+    },
+    {
+      "name": "zz_maintain_seo_projection",
+      "enabled": "O",
+      "trigger": "CREATE TRIGGER zz_maintain_seo_projection AFTER INSERT OR UPDATE OF id, name, city, region, country, address, slug, entity_type, updated_at, created_at, phone, website, latitude, description, publish_status, moderation_status, marketplace_status, duplicate_status ON zoi.listings FOR EACH ROW EXECUTE FUNCTION zoi.maintain_seo_projection()",
+      "deferrable": false,
+      "initially_deferred": false
+    }
+  ],
+  "delivery_state": {
+    "owner": "postgres",
+    "acl": "{postgres=arwdDxtm/postgres}",
+    "rls": true,
+    "policies": [],
+    "triggers": []
+  },
+  "new_main_definition": "CREATE OR REPLACE FUNCTION zoi.run_maintenance()\n RETURNS void\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$\nDECLARE changed integer;candidates uuid[];\nBEGIN\n  -- A second cron/manual invocation must not compete for the same rows.\n  IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN; END IF;\n  candidates:=zoi.maintenance_candidate_ids();\n  WITH selected AS MATERIALIZED (\n    SELECT l.* FROM unnest(candidates) WITH ORDINALITY c(id,ord)\n    CROSS JOIN LATERAL (SELECT row.* FROM zoi.listings row WHERE row.id=c.id FOR UPDATE OF row SKIP LOCKED)l\n    ORDER BY c.ord\n  ), scores AS MATERIALIZED (\n    SELECT id,\n      round(((CASE WHEN description IS NOT NULL AND length(description)>10 THEN 1 ELSE 0 END)\n       +(CASE WHEN website IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN address IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN phone IS NOT NULL THEN 1 ELSE 0 END)\n       +(CASE WHEN primary_category_id IS NOT NULL THEN 1 ELSE 0 END))::numeric/5,3) AS completeness,\n      least(1.0,round((CASE verification_status WHEN 'admin_verified' THEN 0.9 WHEN 'owner_verified' THEN 0.85\n        WHEN 'partner_verified' THEN 0.8 WHEN 'source_verified' THEN 0.6 WHEN 'owner_claimed' THEN 0.5 ELSE 0.3 END\n        +CASE source_trust_tier WHEN 'official' THEN 0.1 WHEN 'partner' THEN 0.08 WHEN 'public_directory' THEN 0.05 ELSE 0 END)::numeric,3)) AS trust,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date THEN 0.2\n        WHEN last_seen_at>now()-interval '14 days' THEN 0.95 ELSE 0.6 END AS freshness,\n      CASE WHEN entity_type='event' AND zoi.maintenance_event_date(profile->>'end_datetime')<current_date-14\n         AND coalesce(profile->>'recurring','')<>'annual' THEN 'archived' ELSE publish_status END AS next_status\n    FROM selected\n  ), due AS (\n    SELECT s.* FROM scores s JOIN zoi.listings l USING(id)\n    WHERE ROW(l.completeness_score,l.trust_score,l.freshness_score,l.publish_status)\n      IS DISTINCT FROM ROW(s.completeness,s.trust,s.freshness,s.next_status)\n    ORDER BY s.id LIMIT 1000\n  )\n  UPDATE zoi.listings l SET completeness_score=d.completeness,trust_score=d.trust,\n    freshness_score=d.freshness,publish_status=d.next_status\n  FROM due d WHERE l.id=d.id;\n  GET DIAGNOSTICS changed=ROW_COUNT;\n  INSERT INTO zoi.audit_log(actor,action,target_type,reason)\n    VALUES('cron','run_maintenance','listing',format('Bounded score/freshness/archive maintenance: %s changed rows',changed));\nEND;\n$function$\n",
+  "new_helper_definition": "CREATE FUNCTION zoi.maintenance_candidate_ids() RETURNS uuid[]\nLANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $fn$\nDECLARE s jsonb;after_id uuid;chosen uuid[];\nBEGIN\n IF NOT pg_try_advisory_xact_lock(hashtextextended('zoi.run_maintenance',0)) THEN RETURN ARRAY[]::uuid[];END IF;\n SELECT value INTO s FROM zoi.delivery_state WHERE key='listing_score_cursor_v1' FOR UPDATE;\n IF s IS NULL OR jsonb_typeof(s) IS DISTINCT FROM 'object' OR s->'version' IS DISTINCT FROM '1'::jsonb OR NOT(s?'after_id') OR EXISTS(SELECT 1 FROM jsonb_object_keys(s)k WHERE k NOT IN('version','after_id')) THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n IF s->'after_id' IS DISTINCT FROM 'null'::jsonb THEN\n  IF jsonb_typeof(s->'after_id') IS DISTINCT FROM 'string' OR coalesce(s->>'after_id','')!~'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' THEN RAISE EXCEPTION 'maintenance_candidates_cursor_invalid';END IF;\n  after_id:=(s->>'after_id')::uuid;\n END IF;\n -- Two bounded PK seeks; the second runs only when the first found zero IDs.\n -- It is never a second batch: at most 1000 IDs are selected in total.\n IF after_id IS NULL THEN\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n ELSE\n  SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l WHERE l.id>after_id ORDER BY l.id LIMIT 1000)c;\n  IF cardinality(chosen)=0 THEN\n   SELECT coalesce(array_agg(c.id ORDER BY c.id),ARRAY[]::uuid[]) INTO chosen FROM(SELECT l.id FROM zoi.listings l ORDER BY l.id LIMIT 1000)c;\n  END IF;\n END IF;\n IF cardinality(chosen)>0 THEN\n  UPDATE zoi.delivery_state SET value=jsonb_build_object('version',1,'after_id',chosen[cardinality(chosen)]::text),updated_at=clock_timestamp() WHERE key='listing_score_cursor_v1';\n END IF;\n RETURN chosen;\nEND $fn$"
+}
