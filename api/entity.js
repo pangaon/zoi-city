@@ -11,6 +11,7 @@ import {withMonasteryNetwork} from './_monastery-network.js';
 import {withPublicOwnerMedia} from './_owner-media.js';
 import {publishedHomeDesign} from './_home-design.js';
 import {profileMedia} from './_profile-media.js';
+import {publicListingMedia} from '../assets/discovery/public-listing-media.mjs';
 import {renderAvliHome} from '../assets/homes/templates/restaurant/avli.mjs';
 import {renderChurchHome} from './_church-home.js';
 import {renderRestaurantHome} from './_restaurant-home.js';
@@ -22,6 +23,7 @@ import {renderProfessionalHome} from './_professional-home.js';
 import {renderHealthHome} from './_health-home.js';
 import {renderSocietyHome} from './_society-home.js';
 import {renderConsulateHome} from './_consulate-home.js';
+import {renderSchoolHome} from './_school-home.js';
 import { verticalFor, profileOf, profileForVertical, provenanceNote, icon, IC } from './_verticals.js';
 
 // Server-rendered Zoi entity page: full HTML + schema.org JSON-LD + internal links for search + AI indexing.
@@ -285,6 +287,8 @@ function socialIcon(k){
      https only — a mixed-content image would be blocked and leave a hole. */
   var media = profileMedia(e,p);
   var coverImg = media.hero || '';
+  var publicMedia = publicListingMedia(e);
+  var coverFit = publicMedia.hero === coverImg && publicMedia.imageFit === 'cover' ? 'cover' : 'contain';
   var logoImg = media.logo || '';
   var heroPosition = ({top:'top',bottom:'bottom',left:'left',right:'right',center:'center'})[p && p.hero_position] || 'center';
   var logoFit = p && p.logo_fit === 'cover' ? 'cover' : 'contain';
@@ -372,10 +376,10 @@ function socialIcon(k){
    +'<main class="wrap home-main">'
    +'<nav class="bc" aria-label="Breadcrumb"><a href="/explore">Discover</a> &rsaquo; '
      +'<a href="/explore?type='+attr(e.entity_type||'')+'">'+esc(catLabel)+'</a></nav>'
-   +'<div class="ep-cover '+(coverImg?'has-img':logoImg?'logo-only':'no-photo')+'" id="epCover"'+(!coverImg&&!logoImg?' hidden':'')
+   +'<div class="ep-cover '+(coverImg?'has-img'+(coverFit==='contain'?' contained-media':''):logoImg?'logo-only':'no-photo')+'" id="epCover"'+(!coverImg&&!logoImg?' hidden':'')
      + (coverImg ? ' data-img="'+attr(coverImg)+'" data-alt="'+attr(e.name||'')+'"' : '')
-     + ' data-position="'+heroPosition+'"'
-     + '>' + (coverImg ? '<img id="epCoverImage" src="'+attr(coverImg)+'" alt="'+attr(e.name||'')+'" width="1600" height="600" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" style="object-position:'+heroPosition+'">' : '') + '<div class="ep-brand">'
+     + ' data-position="'+heroPosition+'" data-fit="'+coverFit+'"'
+     + '>' + (coverImg ? '<img id="epCoverImage" src="'+attr(coverImg)+'" alt="'+attr(e.name||'')+'" width="1600" height="600" fetchpriority="high" decoding="async" referrerpolicy="no-referrer" style="object-fit:'+coverFit+';object-position:'+heroPosition+'">' : '') + '<div class="ep-brand">'
      + (logoImg ? '<img src="'+attr(logoImg)+'" alt="'+attr(e.name||'')+' logo" loading="eager" referrerpolicy="no-referrer" style="object-fit:'+logoFit+'">' : '<span class="ep-monogram">'+esc((e.name||'?').trim().charAt(0).toUpperCase())+'</span>')
      + '</div></div>'
    +'<section class="home-intro" id="about"><div class="home-heading"><span class="ep-type">'+esc(eyebrow)+'</span>'
@@ -405,7 +409,7 @@ function socialIcon(k){
      +'if(src){var im=document.getElementById("epCoverImage")||new Image();im.alt=h.getAttribute("data-alt")||"";'
        +'im.loading="eager";im.decoding="async";im.referrerPolicy="no-referrer";'
        +'im.style.objectPosition=h.getAttribute("data-position")||"center";'
-      +'im.onload=function(){var ratio=im.naturalWidth/im.naturalHeight;if(ratio>3.2||ratio<.8||im.naturalWidth<640){h.classList.add("contained-media");im.style.objectFit="scale-down";}if(!im.parentNode)h.insertBefore(im,h.firstChild);h.classList.add("has-img");};'
+      +'im.onload=function(){im.style.objectFit=h.getAttribute("data-fit")==="cover"?"cover":"contain";if(im.style.objectFit==="contain")h.classList.add("contained-media");if(!im.parentNode)h.insertBefore(im,h.firstChild);h.classList.add("has-img");};'
        +'im.onerror=function(){im.remove();emblem();};if(im.complete){if(im.naturalWidth)im.onload();else im.onerror();}else if(!im.src)im.src=src;}else{emblem();}'
      +'})();</script>'
    +'<script src="/assets/zoi-theme.js"></script>'
@@ -537,7 +541,7 @@ export default async function handler(req, res) {
     }
     if (!e || !e.name) { res.statusCode=404; res.setHeader('Cache-Control','no-store'); res.setHeader('Content-Type','text/html; charset=utf-8'); res.setHeader('X-Robots-Tag','noindex'); res.end('<!doctype html><title>Not found — Zoi</title><h1>Home not found</h1><p><a href="'+SITE+'/">Browse Zoi</a></p>'); return; }
     const design = publishedHomeDesign(e);
-    const designedHome = renderConsulateHome(e, design) || renderHospitalityHome(e, design) || renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
+    const designedHome = renderConsulateHome(e, design) || renderSchoolHome(e, design) || renderHospitalityHome(e, design) || renderSocietyHome(e) || renderAvliHome(e, design) || renderChurchHome(e, design) || renderCreatorCanonicalHome(e, design) || renderEventCanonicalHome(e, design) || renderMusicHome(e, design) || renderHealthHome(e, design) || renderProfessionalHome(e, design) || renderBakeryHome(e, design) || renderRestaurantHome(e, design);
     if (designedHome) {
       res.statusCode=200;
       res.setHeader('Content-Type','text/html; charset=utf-8');
