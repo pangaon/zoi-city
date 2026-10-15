@@ -1,0 +1,81 @@
+{
+  "created_at": "2026-10-15T04:10:40.153278+00:00",
+  "status": "Frozen source candidate; root independent review, application, actual tick/Edge proof and activation pending",
+  "worktree": "/workspaces/zoi-source-ticket-scheduler",
+  "base": "28268612",
+  "cli_generated_migration": "20261015040100_geography_source_capture_tickets.sql",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015040100_geography_source_capture_tickets.sql",
+      "sha256": "153b2168e511657dfaee3d7ac61f55141e6ef846afc2c77927d7c14732ca51ae"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "sha256": "a83db16ffbb06a4b09852fdae27d4580742e5ffbfdcae303087fcb7d55ec3d1e"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_ticket-auth.ts",
+      "sha256": "e6e0956bba27ea6b6a39415fb2bc4e36b33118f807746d3d40ed6f56c8b41042"
+    },
+    {
+      "path": "tests/unit/geography-source-ticket-auth.test.mjs",
+      "sha256": "fc0a9c073caa9ff011de1547d3985c7b54b100d2c8cfdbf69981519d2bc809be"
+    },
+    {
+      "path": "tests/unit/geography-source-consumer.test.mjs",
+      "sha256": "0bae69fee877ca06990badfd39e9590c5756d2e38e8145520b153f8b876c1283"
+    },
+    {
+      "path": "tests/database/geography-source-capture-ticket.integration.mjs",
+      "sha256": "b79b4eb13dea5868b7b7f4a968d904b69e2e8d37b984b9e8394cc3d3d6487f75"
+    },
+    {
+      "path": "tests/database/fixtures/geography-source-ticket-live.json",
+      "sha256": "a263b232a67b55a1884a31a0a73aa8725903fcf9298018f4bbe7d14e79736ddc"
+    }
+  ],
+  "contract": {
+    "default": "Disabled policy, no Cron installation or automatic activation. No existing Vault read, reusable credential queueing, app-schema exposure or queue ACL mutation.",
+    "capability": "256-bit random capability, SHA256-only private ledger. Fixed purpose/project/strategy/jobcap, <=2min admission TTL; atomic service-only consume once before existing private bucket/capture lock/budget/job lease. Both auth headers refuse; legacy token mode remains compatible.",
+    "rate": "Private postgres-only fixed tick; policy row serializes admissions. At least5min between reserved dispatches; <=288durable ticket reservations per UTCday including unused/expired. Alternates official/publisher admissions.",
+    "budgets": "Official<=4jobs,50source requests,15MB source responses; publisher<=4jobs,30requests,12MB. Exact existing runner host/robots/HTTP/TLS/crawler bounds unchanged. Existing private archive512MiB cap/15MB reserve and singleton remain enforced.",
+    "policy": "Explicit root-enabled window <=24h, hard expiry prevents new ticket admission. Disable/re-enable or window change rotates generation and permanently invalidates prior queued tickets. No automatic renewal. Already admitted existing110s runtime may finish after admission expiry.",
+    "immutability": "Ticket purpose/project/strategy/caps/hash/issued/expiry/net-ID immutable; consumed/revoked stamps cannot be cleared or rewritten. No delete path or ledger cleanup introduced.",
+    "failure": "Unknown consume/queue/worker/capture-busy is not retried. SQL queue failure/no request ID rolls back ticket and queued insert transactionally. Existing canonical job retry policy unchanged.",
+    "scope": "Source-only research and existing canonical per-client finish; no coordinate, website, provider or customer authority changes."
+  },
+  "tests": {
+    "command_pg": "node tests/database/geography-source-capture-ticket.integration.mjs",
+    "real_postgres_groups": 14,
+    "command_units": "node --test tests/unit/geography-source-ticket-auth.test.mjs tests/unit/geography-source-consumer.test.mjs tests/unit/geography-publisher-source-consumer.test.mjs",
+    "units_passed": 30,
+    "skipped": 0,
+    "deno": "npx --yes deno@2.9.6 check --no-lock --node-modules-dir=auto supabase/functions/geography-repair-source-consumer/index.ts passed",
+    "graph": "Actual pinnedCLI regex traverses all13runtime modules; exact-list test changed only title/list.",
+    "fixture": "Exact live six helper/transport definitions, owner/ACL/MD5 installed without authority/hash adaptation. Isolated net.http_post transport replaced ONLY after migration guards to capture fixed queued request. Storage budget uses real captured helper over controlled metadata.",
+    "actual_handler": "Actual Edge ticket mode\u2192real isolated service-role consume and existing capture lock; controlled empty queue boundary. Not a hosted source capture claim.",
+    "concurrency": [
+      "Two actual ticks queue one request",
+      "Two actual consumes admit once",
+      "Policy disable while consume waits refuses",
+      "Natural ticket expiry while ticket row locked refuses",
+      "Re-enable does not resurrect old policy-generation ticket"
+    ],
+    "live_mutations": 0,
+    "provider_calls": 0
+  },
+  "integration_required": [
+    "Root independently review SQL/Edge/tests and pin new service consume plus runtime13module manifest",
+    "Apply schema while policy disabled; deploy reviewed Edge; verify unsigned denial and actual one-use fixed ticket\u2192source-only result, replay/expiry/strategy refusal without credential leakage",
+    "Root install Cron only after actual proof, with explicit policy window and sanitized request/result monitoring",
+    "Disable/replace existing automatic GitHub direct-token capture lane or route it through SAME private admission tick; legacy token canaries are outside ticket daily ledger",
+    "Root owns all actual configuration, Cron, migrations, deployments, rollback and activation"
+  ],
+  "privacy": "Platform net queue remains readable to trusted database-login roles. It holds only a short-lived one-batch capability; no reusable source token/service key is queued. This does not claim queue ACL privacy or prevent a trusted SQL reader racing the intended same fixed action.",
+  "remaining": [
+    "Independent review and actual production schema/Edge/canonical Cron acceptance",
+    "Actual per-source outcomes and global catalogue accuracy/individual client homes remain separate",
+    "Configured Storage capacity can halt capture; no evidence retention/deletion/paid expansion authorized here",
+    "Public GitHub schedule absence remains unproven; new admission avoids dependence on it"
+  ]
+}

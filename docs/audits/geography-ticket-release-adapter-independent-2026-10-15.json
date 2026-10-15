@@ -1,0 +1,62 @@
+{
+  "reviewed_at": "2026-10-15T04:26:59.712291+00:00",
+  "reviewer": "independent enrichment specialist",
+  "decision": "accepted frozen adapter/bootstrap source; no deployment or activation claim",
+  "files": [
+    {
+      "path": "scripts/geography/run-scheduled-capture.mjs",
+      "sha256": "5dba9c15d86be0bdbc83ac6fc0b5c762c3a001c86ad980701907534f31692f92"
+    },
+    {
+      "path": "tests/unit/geography-scheduled-capture.test.mjs",
+      "sha256": "b61e883cf3b2e1c3f823e1e60cba2ab14f0d2e6ada20f9a11e97e4231fd63142"
+    },
+    {
+      "path": ".github/workflows/geography-source-capture-scheduled.yml",
+      "sha256": "792265b287921a17063f7a519b80328a330ff2fc34aa8dd29f77b99b6bde0a17"
+    },
+    {
+      "path": "scripts/release-geography-source-consumer.mjs",
+      "sha256": "959b15da98ec2611bd008e67fe4abd5f4792d65afae96dfff996036ea4fe4219"
+    },
+    {
+      "path": "tests/unit/geography-source-consumer-release.test.mjs",
+      "sha256": "c4d62835f69884d8be0f796889961c8f444160384409528fe0a44ecaf292cecb"
+    },
+    {
+      "path": "docs/audits/geography-source-consumer-release-manifest-2026-10-14.json",
+      "sha256": "282abbd1ade36e2223275cef19fe244342cdafb6849ee0cb2a71c82fe76ff3dd"
+    }
+  ],
+  "verification": {
+    "focused_tests_passed": 56,
+    "commands": [
+      "node --test tests/unit/geography-scheduled-capture.test.mjs tests/unit/geography-source-ticket-auth.test.mjs tests/unit/geography-source-consumer.test.mjs tests/unit/geography-publisher-source-consumer.test.mjs (39 passed)",
+      "node --test tests/unit/geography-source-consumer-release.test.mjs (17 passed)"
+    ],
+    "release_manifest_files": 27,
+    "all_manifest_hashes_match": true,
+    "source_edits": 0,
+    "live_writes": 0,
+    "provider_calls": 0
+  },
+  "reviewed": [
+    "Trusted fixed public repository/main/schedule-or-dispatch/first attempt admission, repository metadata verified before Management mutation; bounded Linux workflow serialized without credential persistence/artifact uploads.",
+    "Fixed project Management query checks exact tick definition hash, postgres owner/ACL/security definer/empty search_path, then invokes SAME private admission tick used by future Cron. No Vault read/direct source consumer invocation in automatic adapter.",
+    "One request per endpoint; redirect:error for GitHub, Management and hosted token paths. Unknown network/mutation outcome refuses without retries or raw error/body output.",
+    "Adapter reports queued or not_admitted, always complete:false; ticket IDs, net request IDs and capability values never logged. Queue admission is not source capture.",
+    "Bootstrap adds exact typed ticket helper allowpath/static diagnostics and sixth fixed publisher consume dependency hash/ACL/owner guard before Vault configuration/deploy. All27 manifest hashes match.",
+    "Legacy bootstrap install_schedule still refuses platform PUBLIC queue select permissions; no ACL weakening or platform table modification. New ticket cron remains separate root operation after hosted proof."
+  ],
+  "limits": [
+    "This review performs no hosted invocation, actual cron installation, policy activation, production SQL mutation or source/provider call.",
+    "Queued response expiry is parsed for shape only; actual lifetime and revocation authority remain enforced by pinned SQL consume, not adapter queued reporting.",
+    "Legacy direct-token manual canary remains compatible and outside ticket daily admission ledger; automatic workflow now uses shared tick. Root must verify no other automatic legacy caller remains."
+  ],
+  "production_prerequisites_reported_by_root": {
+    "schema_ledger": "20261015042453",
+    "consume_functiondef_md5": "72b59d9f898b9ace96ad5fd9933e7e07",
+    "tick_functiondef_md5": "5b80199a53795d335da09b94577e9115",
+    "independently_requeried": false
+  }
+}
