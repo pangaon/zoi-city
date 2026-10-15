@@ -527,6 +527,30 @@
     left.appendChild(bannerBox);
 
     var businessCreativeSlot=el('div');left.appendChild(businessCreativeSlot);
+    var imageLayoutButton=el('button','zc-btn','Image layout · PNG');imageLayoutButton.type='button';imageLayoutButton.style.minHeight='44px';left.appendChild(imageLayoutButton);
+    imageLayoutButton.onclick=async function(){
+      try{
+        await linkedContextReady;await businessCreativeReady;
+        if(!scopeActive())return;if(!businessCreative||!state.businessCreative)throw Error('Choose published business details first, then open Image layout.');
+        if(state.businessCreativeNeedsReview)throw Error('Refresh and review the published business details before editing an image.');
+        if(businessCreative.workflow.pending())throw Error('Check or cancel the unconfirmed draft save before editing another image.');
+        var source=state.businessCreative,postId=state.editId,version=state.businessCreativeUpdatedAt,composition=state.originMeta?.creative_composition,module=await import('/assets/studio/image-composition-ui.mjs');if(!scopeActive())return;
+        var dialog=openModal('Image layout');
+        module.mountImageComposition(dialog.body,{C:C,workspace:workspaceAtMount,source:source,caption:ta.value,recipe:composition?.recipe||null,originalAsset:composition?.original?.asset_id||null,
+          isCurrent:function(){return scopeActive()&&state.businessCreative===source&&state.editId===postId&&state.businessCreativeUpdatedAt===version;},onClose:dialog.close,
+          onAdd:async function(image){
+            if(!scopeActive()||state.businessCreative!==source||state.businessCreativeNeedsReview||state.editId!==postId||state.businessCreativeUpdatedAt!==version)throw Error('This draft or business selection changed. Reopen Image layout.');
+            if(!currentCampaign())throw Error('Close Image layout and add a campaign name before saving this image.');
+            var meta=buildMeta();delete meta.business_creative;delete meta.client_listing_id;delete meta.creative_composition;
+            try{
+              var receipt=await businessCreative.workflow.saveRender(source,{body:ta.value,meta:meta,id:postId,expectedUpdatedAt:postId?version:null},module.compositionRender(image),{...(image.original.reference?.kind==='local_file'?{original:image.original.blob}:{}),output:image.output.blob});
+              if(!scopeActive())return;if(receipt.state!=='saved')throw Error('The request was cancelled or its post was removed. Review the saved draft before trying again.');
+              state.businessCreativeUpdatedAt=receipt.post.updated_at;applyIncomingPost(receipt.post,true);dialog.close();toast('Image added to the saved private campaign draft. Nothing was sent.');
+            }catch(error){clearOnDenied(error);throw error;}finally{businessCreative?.refreshRecovery();}
+          }
+        });
+      }catch(error){clearOnDenied(error);if(scopeActive())toast(error.message||'Image layout could not load. Your draft is retained.');}
+    };
 
     /* ----- LEFT: Greek caption starters ----- */
     var tplBox = el('div', 'zc-tpl-box');
@@ -1982,8 +2006,13 @@
       if(state.businessCreative){
         if(!businessCreative)throw Error('Business draft recovery could not load. Retry loading this tool before saving.');
         if(!currentCampaign())throw Error('Add a campaign name before saving this business creative.');
-        var creativeMeta=Object.assign({},params.p_meta);delete creativeMeta.business_creative;delete creativeMeta.client_listing_id;
-        try{var creativeReceipt=await businessCreative.workflow.save(state.businessCreative,{body:params.p_body,media:params.p_media,meta:creativeMeta,id:state.editId,expectedUpdatedAt:state.editId?state.businessCreativeUpdatedAt:null});
+        var creativeMeta=Object.assign({},params.p_meta);delete creativeMeta.business_creative;delete creativeMeta.client_listing_id;delete creativeMeta.creative_composition;
+        try{var creativeDraft={body:params.p_body,media:params.p_media,meta:creativeMeta,id:state.editId,expectedUpdatedAt:state.editId?state.businessCreativeUpdatedAt:null},composition=state.originMeta?.creative_composition,creativeReceipt;
+          if(composition&&state.media.length){
+            if(state.media.length!==1||state.media[0]!==composition.output?.url)throw Error('Use Image layout to replace a composed image, or remove it to save a copy-only draft.');
+            var descriptor=function(part){return{asset_id:part.asset_id,mime_type:part.mime_type,sha256:part.sha256,size_bytes:part.size_bytes,width:part.width,height:part.height};};
+            creativeReceipt=await businessCreative.workflow.saveRender(state.businessCreative,creativeDraft,{schema:1,recipe:composition.recipe,original:descriptor(composition.original),output:descriptor(composition.output),alt:state.alts[state.media[0]]||''});
+          }else creativeReceipt=await businessCreative.workflow.save(state.businessCreative,creativeDraft);
           if(creativeReceipt.state!=='saved'||creativeReceipt.post?.status!=='draft')throw Error('The saved post changed or was removed. Open Calendar to review it.');
           res=creativeReceipt.post;state.businessCreativeUpdatedAt=res.updated_at;state.originMeta=JSON.parse(JSON.stringify(res.meta||{}));
         }finally{businessCreative.refreshRecovery();}
