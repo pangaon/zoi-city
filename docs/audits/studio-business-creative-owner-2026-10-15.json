@@ -1,0 +1,174 @@
+{
+  "schema": 1,
+  "outcome": "An explicitly selected current owned published business supplies editable caption and selected existing image to the existing Composer; saved campaign drafts, same-row revisions, reopen and uncertain-response recovery use canonical social_posts only.",
+  "status": "owner frozen for independent review; not deployed; parent alone owns production DDL, integration and release",
+  "worktree": "/tmp/zoi-studio-campaign-asset-work",
+  "baseline": "d1484881ce5e754c3a0838dd5714d63e7b73537f",
+  "source_manifest": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/source-manifest.json",
+  "source_manifest_sha256": "ca4d65296099bbd3c2c064a8cd110cbe7f9a444d82c274c5f4fb1877cf883bc2",
+  "runtime_paths": [
+    "assets/suite/composer.js",
+    "assets/studio/business-creative.mjs",
+    "assets/studio/business-creative.css"
+  ],
+  "migration": "supabase/migrations/20261015160834_business_creative_draft_receipts.sql",
+  "source_evidence": {
+    "baseline_missing_link": "Actual mounted baseline Composer had paste-URL/upload media inputs and no current owned-business selector. Captured original canonical writer creates two different posts when identical new-save payload is repeated; same-ID edits update one row. Retained baseline/result.json and save-retry.log.",
+    "actual_function_metadata": [
+      "tests/database/fixtures/business-creative-live-contracts.json",
+      "tests/database/fixtures/business-creative-after-health-metadata.json"
+    ],
+    "exact_five_guarded_dependencies": [
+      "public.home_entity(text)",
+      "public.social_save_post(uuid,text,text[],timestamptz,text,jsonb,text,jsonb,uuid)",
+      "zoi.assert_workspace_write(uuid,text[])",
+      "zoi.home_content_authorize(uuid,uuid)",
+      "zoi.suite_current_session()"
+    ],
+    "all10_existing_bodies_unchanged_in_local_gate": true,
+    "additional_guard": "social_posts.updated_at nullable timestamptz DEFAULT now()",
+    "health_reconciliation": "After parent confirmed recovered DB health, one bounded read-only metadata reconciliation matched all five retained bodies, owners, ACL, search_path, security and volatility. No production mutations."
+  },
+  "contracts": {
+    "stores": "social_posts is the sole editable campaign object. The new private RLS receipt ledger contains only immutable manual-social request payload/snapshot or cancellation tombstone, no editor/media/campaign store. Existing AI/editorial/email/creator/Ops receipt tables require unrelated domain generation/item/source/campaign/action identifiers and cannot safely represent this manual-social request.",
+    "authority": "Existing current-session, workspace role and owned-listing authorization retained unchanged. Browser fences actor + Auth SID + explicit workspace. Server receipt nonce is actor/workspace/listing/payload bound and always requires current valid session/authority; server receipt does not require the original SID after a later legitimate sign-in. Authorized current teammates may edit/get the canonical draft; cannot replay another actor nonce.",
+    "request": "business_creative_draft_save(workspace,listing,request,payload) requires exact source/body/media/meta/rights_confirmed/id/expected_updated_at keys. Max100000 canonical JSON bytes, source64000, body20000 characters, metadata32000 bytes, four HTTPS source-referenced images. Campaign1..200 characters. New IDs/revision bothnull; update requires exact existing ID and expected_updated_at.",
+    "projection": "Version1 explicit allowlist preserves presence/null for current identity/publication/owner IDs/claim/current manual receipt validity, description/media/brand/site and relevant source identity/provenance/holds/challenges. Menus/contact channels/hours/design/crawl timestamps/leases are excluded. SQL and JS projections compared exactly; unrelated menu151 and timestamp refresh remain current.",
+    "draft_only": "Empty destinations, draft status and null scheduled time required. No publish/schedule/provider path added. Current changed source refuses new/edit save; current receipt reports stale while original saved reference is retained. No claim that published source presence proves image copyright, identity or MIME; user explicitly confirms permission and reviews the chosen image.",
+    "recovery": "Before dispatch sessionStorage retains exact nonce and immutable original payload under exact actor/SID/workspace key. Retry reuses it; recover reads current canonical result plus immutable snapshot; cancel-if-missing takes same nonce lock and creates tombstone. Deleted posts never recreated. Same-post edits use row lock + exact timestamp CAS, one unchanged canonical writer call, and one append-only receipt. Reopen follows workspace/member/profile -> listing -> post lock order.",
+    "failure": "No generic writer fallback for pending/unknown business state, linked metadata or unreadable storage. Optional-module load failure allows ordinary drafts only with provably absent exact current-session request and no business metadata. Explicit module retry retains editor content. Actor/SID/workspace/access changes dispose private DOM. SID/account changes also remove the outgoing exact pending key and autosave through existing clearDraft; same-session navigation preserves recovery scoped to its original workspace. A delayed prior source choice cannot repopulate the editor."
+  },
+  "verification": {
+    "focused_tests": 35,
+    "postgres_groups": 21,
+    "postgres_checks_including_negative_assertions": 60,
+    "mounted_cases": 12,
+    "viewports": [
+      390,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "source_selection_and_reopen_screens_visually_reviewed": true,
+    "existing_ai_regression": {
+      "postgres_checks": 24,
+      "actual_mounted": true,
+      "generation": "retained local synthetic result; no provider generation"
+    },
+    "existing_editorial_regression": {
+      "postgres_checks": 23,
+      "actual_calendar_picker_composer_and_explicit_schedule_queue": true,
+      "publication": false
+    },
+    "root_only_production_rollback_fixture": "Catalog/ACL/private-ledger/no-session probe locally exercised; always rolls back. Has not been run in production by owner.",
+    "cache": "Existing social/index.html references composer.js?v=20261001-actor-drafts; actual canonical www HEAD returns max-age=0,must-revalidate. New module currently404 with same revalidation. No extra entry/cache path edits needed; no live feature claim."
+  },
+  "commands": [
+    "node --test tests/unit/business-creative.test.mjs tests/unit/composer-ai.test.mjs tests/unit/composer-import-context.test.mjs tests/unit/community-publish.test.mjs",
+    "ZOI_BUSINESS_CREATIVE_BROWSER=1 ZOI_BUSINESS_CREATIVE_EVIDENCE=/tmp/UNIQUE node tests/database/business-creative-draft.integration.mjs",
+    "ZOI_AI_BROWSER=1 ZOI_AI_DRAFT_BROWSER_EVIDENCE=/tmp/UNIQUE_AI node tests/database/ai-generation-draft.integration.mjs",
+    "ZOI_EDITORIAL_BROWSER=1 ZOI_EDITORIAL_BROWSER_EVIDENCE=/tmp/UNIQUE_EDITORIAL node tests/database/editorial-draft.integration.mjs"
+  ],
+  "environment": {
+    "postgres_bin": "/usr/lib/postgresql/16/bin",
+    "business_pg_port_default": 15768,
+    "playwright_module": "/workspaces/zoi-city-release/node_modules/playwright-core/index.mjs",
+    "chromium": "/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome",
+    "existing_browser_harness_resolution": "Owner used a disposable untracked node_modules symlink to the existing installed Playwright package; it is not part of the source packet."
+  },
+  "test_only_changes": "Existing AI/editorial mounted harnesses use a valid synthetic local JWT sub/session_id and ensureFresh only; optional evidence destination + mkdir prevent overwriting historical owner artifacts. Existing assertions unchanged. Existing composer-ai extracted savePost tests only receive new default dependencies.",
+  "limits": [
+    "Local PostgreSQL and actual mounted browser proof use controlled synthetic Auth and source fixture boundaries seo_entity/home_design_public, plus synthetic image bytes. This is not actual customer Auth or production journey proof.",
+    "This incremental source/copy/image journey has no raster/video creation, portable asset export, AI/provider generation, native implementation, sends or publication. The broader Studio engine and exported-asset attachment scope remains open.",
+    "Canonical draft editing tools outside this new source flow retain their existing behavior; this packet does not assert all Composer/provider features work.",
+    "Parent must reconcile exact actual guard contracts, independently accept source, apply migration and verify deployed artifact before any live claim."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/ai/composer-390.jpg",
+      "sha256": "1d4666415c5b477089249b261ba010eb3cd7529558c6a3daf129e72a1a0fb264"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/ai/journey.json",
+      "sha256": "65b810756976f87c0453271603420072d356826037f80a36ba76dc1c59ed34ab"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/ai-regression.log",
+      "sha256": "016acc9b5ca5f0e161a69d5bf29a0d3e95e87ade4f75a606849a85fa19dbe6ef"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/baseline/composer-390.png",
+      "sha256": "d3ba0765e429f8591b3bcc611b837e5d9e3e064319ca14a1c28fcefc3a367294"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/baseline/reproduce-composer-baseline.mjs",
+      "sha256": "7502353f58ead6a9c15e3cbbbbc2500753e030131cd0e05a6028ecaafa45a68a"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/baseline/reproduce-writer-retry.mjs",
+      "sha256": "3e4a83b42142d9c2aad3b6ba57d070a44e5455305717c61c4efcbc0bc1df502f"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/baseline/result.json",
+      "sha256": "0627fa1b3d4b59f25262af0f2b3d0dd2700ec6d571de95881b2dff852c4ca8da"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/baseline/save-retry.log",
+      "sha256": "6c77b24e6fc62186014d900dbeb57ce58bda5c223a739114971b24e2a0f483ed"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/canonical/browser/reopened-1440.png",
+      "sha256": "945024376c452adaaaec8350dd6e098e0805cd8bff94d37e49c6e45221b01773"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/canonical/browser/reopened-390.png",
+      "sha256": "4368c728a4b8ab7fe105b84e0e5414fc3de842bc21970cabd0305a60a4b3fc85"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/canonical/browser/results.json",
+      "sha256": "245a6d07af2bb41b6745eb43fe0a2b6b53ed29e99e851e9f5d004e7b9cbeacc3"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/canonical/browser/selected-source-1440.png",
+      "sha256": "c6f94e03ed80382c6e83e2db3257800b9477081e39baa63ce28f1b3f546c6226"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/canonical/browser/selected-source-390.png",
+      "sha256": "373ac255b2027a9609331fc3d7ce86ccf1ae5d2d2588d062f78153012770273b"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/canonical/results.json",
+      "sha256": "3a6c13b94691cf58f7185a432cd01380f388f40f4f2e64cd688198b686220ce7"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/composer-live-cache-head.txt",
+      "sha256": "c00d1b35457be1cf46babff2e261db59ddb402fbd41bbf997aa9efc25070a73f"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/editorial/composer-390.jpg",
+      "sha256": "ad80d07efe5e0d88bf0978d7ae2e41baec7e2866acbf2fc417f4934bd87f8f35"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/editorial/journey.json",
+      "sha256": "749b444a9b5d3b9b483c7e1f5ac5b4812d55b22f5251fdf0957c253b6aab84ea"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/editorial-regression.log",
+      "sha256": "d319ba6aec26b0fbb2c722beca29e5bb59728c1fa2053ad45ccb0f93759cd439"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/focused.log",
+      "sha256": "c4d85cc841c1c7b1333ec6cc1bea5a8684e9ccbe65489d8f0a31896a2ddd4ff8"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/new-module-not-live-head.txt",
+      "sha256": "f02f4f18121167fece59000116a3f6ef68bed280f227f0fb295177c447ea6771"
+    },
+    {
+      "path": "docs/audits/evidence/studio-business-creative-owner-2026-10-15/postgres-mounted.log",
+      "sha256": "917a4a1133e306b0e6aa325c04433609983247e618d725c284013708db2128c0"
+    }
+  ]
+}

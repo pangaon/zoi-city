@@ -1,0 +1,26 @@
+PASS canonical source/profile/campaign and no implicit audience, scheduling or publication
+PASS lost-response exact request replay preserves one canonical draft
+PASS nonce item/context changes cannot reinterpret a prior receipt
+PASS new click/request for same generation item reopens its existing canonical draft
+PASS receipt immutable while reopen preserves later owner text/assets/audience edits
+PASS wrong workspace, nonexistent item and unauthorized client identity fail
+PASS current write role rechecked even for successful receipt replay
+PASS other actor cannot use nonce and expired current session cannot recover private receipt
+PASS anonymous RPC and direct authenticated receipt/table access denied; private RLS enabled
+PASS failed generation cannot create draft; authorized prior success remains recoverable
+PASS simultaneous distinct requests for one generation item create one canonical draft
+PASS deleted canonical draft never silently recreated by retry or new request
+PASS actual owner authority permits current-workspace owned client and canonical provenance
+PASS actual owner authority denies another workspace client without a draft
+PASS private canonical context exposes the original authorized client and campaign
+PASS canonical edits cannot erase/relabel client or change the originally bound campaign
+PASS originally campaign-free drafts allow ordinary campaign selection while null client remains immutable
+PASS actual workspace owner without membership retains foundation authority for linked edits
+PASS forged owner membership cannot replace actual workspace ownership
+PASS viewer cannot edit or delete existing linked drafts or read their private context
+PASS expired sessions cannot edit/delete linked drafts
+PASS current original client authority is rechecked for edits and deletes
+PASS owned client authority revoked after success prevents private receipt replay
+PASS real owner without membership prepares new canonical AI draft
+{"kind":"Actual AI Studio DOM and draft workflow to isolated real canonical PostgreSQL writer; controlled auth/profile/history; saved generation fixture, no provider generation or publication","pass":true,"actualStudioDOM":true,"actualOwnedClientAuthority":true,"committedLostReplyRecovered":true,"oneCanonicalPost":true,"originalCampaignRetained":true,"explicitEmptyAudience":true,"canonicalScopedComposerHandoff":true,"actualComposerEditSavedSameCanonicalId":true,"connectedChannelsNotDefaulted":true,"privateWritingSampleExcluded":true,"canonicalPostId":"47c7c04f-4995-42bd-87a9-965997326429"}
+{"pass":true,"checks":24,"kind":"isolated PostgreSQL, captured legacy canonical writer, actual current-session helper, captured live owner/client authority helpers; no provider/publication calls"}

@@ -1,0 +1,163 @@
+{
+  "schema": 1,
+  "decision": "ACCEPT_NARROW_SOURCE_FIX; INSTALLED_0683_DEFECT_REMAINS_OPEN",
+  "reviewer": "qa_next independent review of root-authored correction",
+  "reviewed_at_utc": "2026-10-15T17:19:38.467113+00:00",
+  "source_tree": "/tmp/zoi-native-font-layout-event-root",
+  "base": "1ccc997f909f7e00e7c4117bbe4dda9335293493",
+  "owner_audit": {
+    "path": "docs/audits/native-nav-row-event-owner-2026-10-15.json",
+    "sha256": "3045f6a1d9cc28c8087058c3f388f9b82cae61c62fb96e9d2ede0b535b0427d9"
+  },
+  "source_hashes": {
+    "mobile/src/AppChrome.tsx": "3c15b31256ed330234440d1155ff0b8d04f4d8cb1034a05a605f4bd417374fb4",
+    "mobile/tests/navigation-layout-browser/README.md": "1b08908446efa646ba48b2123394c9e669ed587c56c025c0a0da0c76bbbd1c4a",
+    "mobile/tests/navigation-layout-browser/fixture.jsx": "ba8a04a67ee536b43a266354058b86ba0f727b7d1dd04c8632f6252f9e22a03a",
+    "mobile/tests/navigation-layout-browser/rn-web-scale-shim.jsx": "7f1ca7d8b79a19daffeee5641b8c516d628f17aab7bd223ac11297e32ba97cce",
+    "mobile/tests/navigation-layout-browser/verify.mjs": "1d85c5567ac3d92323be35bbcc3210bf0f23afdf3657ee6e041467c4fc739227"
+  },
+  "scope": "One runtime handler refreshes retained current tab measurements on any actual outer navigation-row layout event, including height-only change with unchanged row width. Four test/documentation paths decouple actual Text metrics from reported hook fontScale.",
+  "static_review": [
+    "Runtime diff was independently reconstructed from exact previous AppChrome SHA a4467836116932d167d8ccb675bd72d23833b0987cdba3363a36b5999b962735 by replacing only outer onLayout setAvailable(width) with setAvailable(width);refreshMeasurements().",
+    "navigationLayout.ts, route IDs, App route bodies, Auth, selected/focus reveal, ScrollView identity, touch targets, current ref/version guards, complete union authority and bounded retries remain unchanged.",
+    "Refresh is triggered by a real layout event and coalesces via existing RAF/version checks. An unchanged measured extent can rerender/reveal but does not itself force a native layout or introduce an indefinite frame loop.",
+    "The fixture holds reported fontScale at1 while actual Text grows1\u21922\u21921; content-size and individual tab-layout callbacks are suppressed. IDs/labels/route remain constant, avoiding the earlier regression gap.",
+    "Observed installed0683 row height change without width change motivates this boundary. Missing native Dimensions notification remains a hypothesis; no captured native event trace establishes it."
+  ],
+  "independent_checks": {
+    "frozen_sources_and_owner_evidence": "All five source hashes and every owner evidence hash verified before and after; no frozen source modifications.",
+    "focused_layout_tests": {
+      "pass": 4,
+      "fail": 0
+    },
+    "typescript": "PASS noEmit -p mobile exit0",
+    "controlled_RNWeb": {
+      "pass": 22,
+      "includes": "English/Greek,320/390portrait/844landscape/780shell,font1/2,newlines,focus/selected reveal,44px controls,content/tab callback suppression,delayed obsolete callbacks,retained ScrollView,hot growth/shrink,reorder; two added stale-reported-scale cases."
+    },
+    "negative_control": {
+      "basis": "Same frozen fixture,shim,helper,logo and dependencies; private read-only loader substitutes only exact baseline AppChrome source during bundling. Frozen tree untouched.",
+      "previous_AppChrome_sha256": "a4467836116932d167d8ccb675bd72d23833b0987cdba3363a36b5999b962735",
+      "old_hot_cases_passed": 2,
+      "new_case_failed": {
+        "case": {
+          "nativeTextWithoutDimensions": true,
+          "width": 390
+        },
+        "error": "locator.waitFor: Timeout 3000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Show more navigation tabs', exact: true }) to be visible\u001b[22m\n"
+      },
+      "exit_code": 1
+    },
+    "additional_growth_evidence": {
+      "basis": "Private verifier copy adds only row geometry assertions and screenshot before shrink; same source bundle. Four hot cases pass.",
+      "widths": [
+        320,
+        390
+      ],
+      "row_height_before": 75,
+      "row_height_after": 115,
+      "row_width_unchanged": true,
+      "retained_scroll_view": true,
+      "actual_text_scale": 2,
+      "reported_hook_scale": 1,
+      "Grow_reachable": true,
+      "route_unchanged": true,
+      "shrink_restores_controls": true
+    },
+    "visual": "Independently viewed grown390 image showing More/Previous controls and reachable Grow; baseline failure image shows clipped later tabs and no controls. Partial earlier offscreen tabs after manual paging are not claimed fully visible.",
+    "full_mobile": "Root-reported486 pass, not independently repeated because only one event handler changed; independent four focused, TS and22 mounted cases cover affected path."
+  },
+  "bundle_pins_private_only": {
+    "candidate_sha256": "7c674917627eae912a568410a88dccef4209ea36e73b1b2d2ccdd5921438fde1",
+    "baseline_sha256": "7980c029717b05e211a367923252cec3cddd6ac61bfab940059e6a217e06ac86",
+    "modules_each": 270
+  },
+  "remaining_acceptance": [
+    "Actual0683 installed hot-font defect remains OPEN. This source fix does not alter the installed APK.",
+    "Root must merge protected source, bind one coherent future APK to it, then exercise actual hot1\u21922\u21921 on retained navigation, Grow/focus/selected reveal and header containment. No claim of Android event-stream or iOS acceptance from RN-Web.",
+    "Actual device measurement failures or absent outer-row layout events remain possible and require installed evidence; no guarantee of zero defects."
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/positive.log",
+      "sha256": "52eb5eb5e836ec0aa2b7108c8a22f3f72edd17baab0311dae8229080545956e1",
+      "bytes": 986
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/negative.log",
+      "sha256": "cd0e9bad37dd72ae10277f8daa5371949504fd3599fff4c69ecc705c9fb6ae28",
+      "bytes": 576
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/grown-evidence.log",
+      "sha256": "f43153115804b4f332882b517d7e56abb591018539b80c5077b1aff0622fba1f",
+      "bytes": 121
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/positive/report.json",
+      "sha256": "8529fce396830c96a4aca6d665fe8e22520109f8b60d64183b5ae6a9ca91231b",
+      "bytes": 41089
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/negative/report.json",
+      "sha256": "41cf3543e719018e047319dd771229ef9f258c86aff2f8dc03fb61fe566f27da",
+      "bytes": 549
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/negative/failure.json",
+      "sha256": "692c053d234e40f8e6020083a50b8b3d8cfdb1fb2c34e4565b358d298ae1fc7b",
+      "bytes": 268
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/negative/failure.png",
+      "sha256": "71aec80f836a54b50fbe695edff9ccc9091599f05e7fb9e465789df0cd8d666f",
+      "bytes": 27756
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/grown-evidence/report.json",
+      "sha256": "4a241e47ca53d13c035b9a388b133ea19b3d27b616ffdf7859cf8c34850ac7f3",
+      "bytes": 977
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/grown-evidence/grown-metrics-320.json",
+      "sha256": "5778242d218625af3d613e8b292c307016cbbe20ae6b5d7df336a8b8c49e7d57",
+      "bytes": 334
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/grown-evidence/grown-metrics-390.json",
+      "sha256": "07749bad15e777210672db4bab69879f48b8356646a6349a8bdbe5725e8c6017",
+      "bytes": 334
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/grown-evidence/native-text-grown-320.png",
+      "sha256": "984b72008a475c1d1352a9b63d06a7f025affa1ad827b78fe398384da32070af",
+      "bytes": 23873
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/grown-evidence/native-text-grown-390.png",
+      "sha256": "57692e2c3674d35f2b5279db8599c32dfc45b4b5cf23313f7fb24f022f1fe1e1",
+      "bytes": 25892
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/positive/el-390-844-font2.png",
+      "sha256": "8d857f4429b345845821cfd94a0743003b3ba64f871ef0145f60e61051119d61",
+      "bytes": 29655
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/positive/el-844-390-font2.png",
+      "sha256": "89c84a19fe496bd3501e24a8908ce846a85bd11a711ae9ad4340384f1b29f5e2",
+      "bytes": 38230
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/verify-grown-evidence.mjs",
+      "sha256": "e69babbcad915f7e91227adf67b8fb924ef6fd7a08647b00233fe0ab629757ed",
+      "bytes": 14165
+    },
+    {
+      "path": "docs/audits/evidence/native-nav-row-event-independent-2026-10-15/baseline-loader.cjs",
+      "sha256": "2aad75d0e5a4e8baabcabe410a3fd2e7e2e687de9fc22a1042fbb325c011fb29",
+      "bytes": 383
+    }
+  ],
+  "mutations": "Only new private independent test artifacts and independent audit/evidence files. No author/root source edits; no ADB/EAS/provider/network/production SQL."
+}
