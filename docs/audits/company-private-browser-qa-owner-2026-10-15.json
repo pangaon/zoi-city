@@ -1,0 +1,63 @@
+{
+  "created_at": "2026-10-15T04:39:46.557048+00:00",
+  "state": "disabled root-reviewable source candidate; no CI push or actual production browser/database run",
+  "baseline": "137551fd84bb7bd0444a469a4b2c41e8d9995916",
+  "ownership": "Exactly six new implementation/request/test/workflow paths plus this new owner audit. Existing session and credential helpers unchanged.",
+  "files": [
+    {
+      "path": "scripts/auth-qa/company-private-browser.mjs",
+      "sha256": "85077e964345f30e12b00c8ec328badb3ad98ff32f990266542afd90c6054c47"
+    },
+    {
+      "path": "scripts/auth-qa/company-private-browser-ci.mjs",
+      "sha256": "5b5e0cb978beec27e11f56e5bb5931eef398b4d9f64e25796460af8e203efb2a"
+    },
+    {
+      "path": "scripts/auth-qa/company-private-browser-policy.mjs",
+      "sha256": "7c48a18bec5db022d577d3018466713226d768620ecade813f9f67ecc712ab28"
+    },
+    {
+      "path": "tests/unit/company-private-browser-qa.test.mjs",
+      "sha256": "4859054fd1ea2ed295a4fcc071612f9ed397eed08d45e69f49e51f66aa6b7b16"
+    },
+    {
+      "path": ".github/workflows/company-private-browser-qa.yml",
+      "sha256": "025c8a7c4473a143436013b4a30ef5e10894b7ace3f15cce1d932c86f8107724"
+    },
+    {
+      "path": "ops/company-private-browser-qa.json",
+      "sha256": "f94e1310594e6661a2b1b642b7d748da8c9842dcd55d8d1153f95a33c34bf33f"
+    }
+  ],
+  "contracts": [
+    "Dedicated existing QA identity/session helper and workspace only; no founder/reissue/new identity. Session issued and logged out through existing withQaSession finally; browser local/session storage replaced by memory, no token/email artifacts or argv.",
+    "Expiring <=30min exact trusted public-main first-attempt request-only single-parent commit, exact code hashes and six actual deployed web module hashes before service resolver/session. Disabled example requests make zero network calls.",
+    "Canonical Ops synthetic Company created once with exact synthetic title/request nonce; prior request must be missing. No ad hoc SQL/data writes. Lost creation response checks original canonical receipt, never repeats create.",
+    "Browser fixed private Company route, exact five minute writes: create/edit/archive/restore/archive, source UI actions, rendered version history, actual page reload/open current record and canonical private receipt check. Named role/deadline and Connect/planner mutations intentionally not exercised.",
+    "Browser request fence permits only exact synthetic minute fields/current versions/scope/caps and scoped read RPCs; no provider, caller URLs, unrelated Ops writes, factual listing changes or direct table access. Mutation admission expires at request deadline.",
+    "Finally archives ONLY exact nonce-created synthetic Company after fresh current owner/admin read and title/scope match, confirms archived readback. Separate always workflow cleanup uses same original receipt/canonical authority, never creates replacement and grants only bounded one-hour cleanup expiry grace. No ambiguous IO retry.",
+    "Result file booleans only; no session/token/email/private response/actual user data/screenshot/HAR/trace. Result written only after browser, canonical cleanup and logout complete. Failed/uncertain cleanup cannot produce a success result."
+  ],
+  "verification": {
+    "new_controlled_tests": 10,
+    "new_plus_existing_private_model_handoff_tests": 26,
+    "failed": 0,
+    "skipped": 0,
+    "syntax_checks": "three new modules pass Node check",
+    "disabled_check": {
+      "enabled": false,
+      "network_requests": 0
+    },
+    "git_diff_check": "passed",
+    "actual_browser_execution": false,
+    "live_mutations": 0,
+    "provider_calls": 0
+  },
+  "root_gates": [
+    "Independent review of exact code/request fence/source gates and controlled cleanup failures.",
+    "Root integrates reviewed source first; only then separate exact request-only main commit pins parent/code and actual deployed web source hashes with fresh expiry. No activation in this candidate.",
+    "Production database currently incident under root diagnosis; do not invoke until root verifies healthy. One bounded source/actual browser run after review; root owns CI push and actual mutations.",
+    "Observe actual positive/negative browser outcomes and cleanup/logout receipts; source/control tests do not establish deployed Company flow acceptance.",
+    "A process/job kill can interrupt JS finally. Always cleanup step compensates within same workflow while runner remains available; infrastructure cancellation/lost runner still requires root canonical receipt-based cleanup from original request ID."
+  ]
+}
