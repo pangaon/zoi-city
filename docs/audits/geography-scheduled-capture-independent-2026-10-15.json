@@ -1,0 +1,24 @@
+{
+  "reviewer": "qa_release",
+  "source_gate": "accepted",
+  "files": {
+    ".github/workflows/geography-source-capture-scheduled.yml": "380536fc40a04e654938696e405f08c975df403008f0c0e1c1484853bc0a21e7",
+    "scripts/geography/run-scheduled-capture.mjs": "96a864563a7de80e9255fb05983a6e31ec03a8fb60e3be2b2a4c7d371049c2f0",
+    "tests/unit/geography-scheduled-capture.test.mjs": "d22b0b5cec2ae1659c6c5b84e76a3cbb3ef090e3615aeb5ddcd4763a8c637db0",
+    "docs/audits/geography-scheduled-capture-owner-2026-10-15.md": "a99ba6ddc575732692ec9a36b35dfabca51aa65e2a8e816a89a3400aa5b55cbb",
+    "docs/audits/evidence/geography-scheduled-capture-owner-2026-10-15/repository.json": "72e7a0641c02516e941c3e11e4e49cd62adb774067f672dfd28345f49599ffa5",
+    "docs/audits/evidence/private-net-queue-owner-2026-10-15/rest-schema-probe.json": "217eeb11ff4d473e50320b4bc86cb9e6a02e77aba6990fedf785bfc651cf3876"
+  },
+  "independent_tests": {
+    "passed": 12,
+    "failed": 0
+  },
+  "review": [
+    "trusted public main and attempt1 before secrets",
+    "fixed bounded Vault read and one hosted request",
+    "masked memory-only token; no retries or provisioning",
+    "bounded allowlisted counters and diagnostics"
+  ],
+  "live_activation_verified": false,
+  "scope": "Source/control tests only; root owns activation and real first scheduled run. No full catalogue completion claim."
+}
