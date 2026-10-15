@@ -1,0 +1,96 @@
+{
+  "basis": "Actual captured legacy definitions + exact frozen candidate17 applied in isolated PostgreSQL; root installation simulated as postgres owner. Not a live post-install readback.",
+  "baseline_manifest": "677201527f6525b87c05261422133d28ad803f441ce483e59e5dcf0f4ec88b18",
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "args": "p_draft uuid, p_asset uuid",
+      "name": "community_draft_media_preview",
+      "owner": "postgres",
+      "schema": "public",
+      "body_md5": "21572d0416225375cc8621eea1c37ef9",
+      "signature": "public.community_draft_media_preview(uuid, uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.community_draft_media_preview(p_draft uuid, p_asset uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.community_member_actor();a zoi.community_media_assets;\nBEGIN\n IF NOT EXISTS(SELECT 1 FROM zoi.community_member_drafts WHERE id=p_draft AND profile_id=actor AND account_id=auth.uid()AND state='draft'AND payload->'media' @> to_jsonb(ARRAY[p_asset::text]))THEN RAISE EXCEPTION 'community_draft_unavailable' USING ERRCODE='42501';END IF;\n SELECT * INTO a FROM zoi.community_media_assets WHERE id=p_asset AND profile_id=actor AND state='ready'AND purpose='post'AND mime_type IN('image/jpeg','image/png','image/webp')FOR SHARE;\n IF NOT FOUND THEN RAISE EXCEPTION 'media_unavailable' USING ERRCODE='42501';END IF;\n PERFORM zoi.suite_current_session();RETURN jsonb_build_object('ok',true,'schema_version',1,'path',actor::text||'/'||a.id::text,'mime_type',a.mime_type,'size_bytes',a.size_bytes);\nEND$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "args": "p_request uuid, p_purpose text, p_mime text, p_size integer, p_sha256 text, p_metadata jsonb",
+      "name": "community_media_begin",
+      "owner": "postgres",
+      "schema": "public",
+      "body_md5": "06fda786010e1cd39a371dd798857d5c",
+      "signature": "public.community_media_begin(uuid, text, text, integer, text, jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.community_media_begin(p_request uuid, p_purpose text, p_mime text, p_size integer, p_sha256 text, p_metadata jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.community_member_actor();a zoi.community_media_assets;\nBEGIN\n IF actor IS NULL THEN RAISE EXCEPTION 'sign_in_required'; END IF;\n PERFORM 1 FROM zoi.user_profiles WHERE id=actor FOR UPDATE;\n IF p_request IS NULL OR p_purpose NOT IN('post','avatar') OR p_mime NOT IN('image/jpeg','image/png','image/webp','video/mp4') OR p_size IS NULL OR p_size<16 OR p_size>(CASE WHEN p_mime='video/mp4' THEN 33554432 ELSE 8388608 END) OR (p_purpose='avatar' AND p_mime='video/mp4') OR p_sha256 IS NULL OR p_sha256!~'^[0-9a-f]{64}$' THEN RAISE EXCEPTION 'invalid_media_metadata'; END IF;\n IF jsonb_typeof(p_metadata) IS DISTINCT FROM 'object' OR octet_length(p_metadata::text)>1000 THEN RAISE EXCEPTION 'invalid_media_metadata';END IF;\n SELECT * INTO a FROM zoi.community_media_assets WHERE profile_id=actor AND request_id=p_request;\n IF FOUND THEN\n  IF (a.purpose,a.mime_type,a.size_bytes,a.sha256,a.metadata) IS DISTINCT FROM (p_purpose,p_mime,p_size,p_sha256,p_metadata) THEN RAISE EXCEPTION 'request_payload_changed'; END IF;\n ELSE\n  IF (SELECT count(*) FROM zoi.community_media_assets WHERE profile_id=actor AND created_at>now()-interval '1 day')>=50 THEN RAISE EXCEPTION 'media_rate_limited'; END IF;\n  INSERT INTO zoi.community_media_assets(profile_id,request_id,purpose,mime_type,size_bytes,sha256,metadata) VALUES(actor,p_request,p_purpose,p_mime,p_size,p_sha256,p_metadata) RETURNING * INTO a;\n END IF;\n IF a.state='pending' AND a.created_at<now()-interval '23 hours' THEN RAISE EXCEPTION 'media_request_expired';END IF;\n PERFORM zoi.suite_current_session(); RETURN jsonb_build_object('ok',true,'id',a.id,'path',a.profile_id::text||'/'||a.id::text,'state',a.state,'asset',CASE WHEN a.state='ready' THEN zoi.community_media_projection(a) ELSE NULL END);\nEND $function$\n"
+    },
+    {
+      "acl": "{codespace=X/codespace,service_role=X/codespace}",
+      "args": "p_id uuid",
+      "name": "community_media_finish",
+      "owner": "codespace",
+      "schema": "public",
+      "body_md5": "83501ab0e655d6b9283ffe67d41c454a",
+      "signature": "public.community_media_finish(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.community_media_finish(p_id uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE a zoi.community_media_assets;\nBEGIN\n SELECT * INTO a FROM zoi.community_media_assets WHERE id=p_id FOR UPDATE;\n IF NOT FOUND OR a.state='discarded' THEN RAISE EXCEPTION 'media_unavailable'; END IF;\n UPDATE zoi.community_media_assets SET state='ready',finalized_at=coalesce(finalized_at,now()) WHERE id=p_id RETURNING * INTO a;\n RETURN jsonb_build_object('ok',true,'asset',zoi.community_media_projection(a));\nEND $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "args": "p_request uuid, p_body text, p_media uuid[], p_listing uuid, p_context jsonb",
+      "name": "community_publish",
+      "owner": "postgres",
+      "schema": "public",
+      "body_md5": "25155ddd03f059dfb1a224265800f513",
+      "signature": "public.community_publish(uuid, text, uuid[], uuid, jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION public.community_publish(p_request uuid, p_body text, p_media uuid[] DEFAULT '{}'::uuid[], p_listing uuid DEFAULT NULL::uuid, p_context jsonb DEFAULT '{}'::jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.community_member_actor(); payload jsonb; old zoi.community_publish_requests;mid uuid;a zoi.community_media_assets;media jsonb:='[]'; post uuid;ln text;ls text;videos integer:=0;alts jsonb:=coalesce(p_context->'media_alts','{}');\nBEGIN\n IF actor IS NULL THEN RAISE EXCEPTION 'sign_in_required'; END IF;\n PERFORM 1 FROM zoi.user_profiles WHERE id=actor FOR UPDATE;\n IF p_request IS NULL OR coalesce(length(btrim(p_body)),0) NOT BETWEEN 1 AND 1000 OR p_media IS NULL OR cardinality(p_media)>4 OR array_position(p_media,NULL) IS NOT NULL OR cardinality(p_media)<>(SELECT count(DISTINCT x) FROM unnest(p_media)x) THEN RAISE EXCEPTION 'invalid_post'; END IF;\n IF octet_length(p_context::text)>16000 THEN RAISE EXCEPTION 'invalid_post_context';END IF;\n IF jsonb_typeof(alts) IS DISTINCT FROM 'object' OR EXISTS(SELECT 1 FROM jsonb_each(alts) e WHERE NOT(e.key=ANY(p_media::text[])) OR jsonb_typeof(e.value)<>'string' OR length(e.value#>>'{}')>500) THEN RAISE EXCEPTION 'invalid_media_alt';END IF;\n payload:=jsonb_build_object('body',btrim(p_body),'media',p_media,'listing',p_listing,'context',p_context);\n SELECT * INTO old FROM zoi.community_publish_requests WHERE profile_id=actor AND request_id=p_request;\n IF FOUND THEN IF old.payload IS DISTINCT FROM payload THEN RAISE EXCEPTION 'request_payload_changed'; END IF;PERFORM zoi.suite_current_session(); RETURN jsonb_build_object('ok',true,'id',old.post_id,'request_id',p_request);END IF;\n IF (SELECT count(*) FROM zoi.feed_posts WHERE profile_id=actor AND created_at>now()-interval '1 minute')>=5 OR (SELECT count(*) FROM zoi.feed_posts WHERE profile_id=actor AND created_at>now()-interval '1 day')>=100 THEN RAISE EXCEPTION 'rate_limited'; END IF;\n FOREACH mid IN ARRAY p_media LOOP\n  SELECT * INTO a FROM zoi.community_media_assets WHERE id=mid FOR UPDATE;\n  IF NOT FOUND OR a.profile_id<>actor OR a.state<>'ready' OR a.purpose<>'post' THEN RAISE EXCEPTION 'invalid_post_media';END IF;\n  IF a.mime_type='video/mp4' THEN videos:=videos+1;END IF;\n  media:=media||jsonb_build_array(zoi.community_media_projection(a)||jsonb_build_object('alt',coalesce(alts->>mid::text,'')));\n END LOOP;\n IF videos>0 AND cardinality(p_media)<>1 THEN RAISE EXCEPTION 'one_video_or_four_images'; END IF;\n IF p_listing IS NOT NULL THEN SELECT name,slug INTO ln,ls FROM zoi.listings WHERE id=p_listing AND publish_status='published' AND coalesce(marketplace_status,'')<>'hidden';IF NOT FOUND THEN RAISE EXCEPTION 'listing_unavailable';END IF;END IF;\n INSERT INTO zoi.feed_posts(profile_id,body,listing_id,listing_name,listing_slug,media) VALUES(actor,btrim(p_body),p_listing,ln,ls,media) RETURNING id INTO post;\n PERFORM zoi.community_context_set(actor,post,p_context);\n INSERT INTO zoi.community_publish_requests(profile_id,request_id,payload,post_id) VALUES(actor,p_request,payload,post);\n PERFORM zoi.suite_current_session(); RETURN jsonb_build_object('ok',true,'id',post,'request_id',p_request);\nEND $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "",
+      "name": "community_member_actor",
+      "owner": "postgres",
+      "schema": "zoi",
+      "body_md5": "5e9d91d496c61e25be634223b0afdb29",
+      "signature": "zoi.community_member_actor()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.community_member_actor()\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;\nBEGIN\n IF auth.uid()IS NULL THEN RAISE EXCEPTION 'community_sign_in_required' USING ERRCODE='42501';END IF;\n PERFORM pg_advisory_xact_lock(hashtextextended('community_auth:'||auth.uid()::text,0));\n PERFORM zoi.suite_lock_session();\n SELECT id INTO actor FROM zoi.user_profiles WHERE auth_user_id=auth.uid() FOR UPDATE;\n IF actor IS NULL THEN RAISE EXCEPTION 'community_profile_required' USING ERRCODE='42501';END IF;\n PERFORM zoi.suite_current_session();RETURN actor;\nEND$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "d zoi.community_member_drafts",
+      "name": "community_member_draft_projection",
+      "owner": "postgres",
+      "schema": "zoi",
+      "body_md5": "aa7bcac33ec3728587d25577b5233cad",
+      "signature": "zoi.community_member_draft_projection(zoi.community_member_drafts)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.community_member_draft_projection(d zoi.community_member_drafts)\n RETURNS jsonb\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$SELECT jsonb_build_object('id',d.id,'version',d.version,'state',d.state,'payload',d.payload,'post_id',d.post_id,'updated_at',d.updated_at,'media_assets',coalesce((SELECT jsonb_agg(jsonb_build_object('id',a.id,'type',CASE WHEN a.mime_type='video/mp4'THEN'video'ELSE'image'END,'mime_type',a.mime_type,'width',a.metadata->'width','height',a.metadata->'height','duration_seconds',a.metadata->'duration_seconds'))FROM zoi.community_media_assets a WHERE a.profile_id=d.profile_id AND d.payload->'media' @> to_jsonb(ARRAY[a.id::text])),'[]'))$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "p_actor uuid, p_data jsonb",
+      "name": "community_member_payload",
+      "owner": "postgres",
+      "schema": "zoi",
+      "body_md5": "a44c3b071fb1a658724a59dda8f5977b",
+      "signature": "zoi.community_member_payload(uuid, jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.community_member_payload(p_actor uuid, p_data jsonb)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE mid uuid;a zoi.community_media_assets; videos integer:=0;media uuid[];ctx jsonb:=p_data->'context';alts jsonb:=ctx->'media_alts';\nBEGIN\n IF jsonb_typeof(p_data)IS DISTINCT FROM'object'OR octet_length(p_data::text)>20000 OR p_data-ARRAY['body','media','listing','context']<>'{}'::jsonb\n OR jsonb_typeof(p_data->'body')IS DISTINCT FROM'string'OR length(p_data->>'body')>1000\n OR jsonb_typeof(p_data->'media')IS DISTINCT FROM'array'OR jsonb_array_length(p_data->'media')>4\n OR jsonb_typeof(ctx)IS DISTINCT FROM'object'OR ctx-ARRAY['intent','topics','city','country','media_alts']<>'{}'::jsonb\n OR coalesce(ctx->>'intent','')NOT IN('moment','question','recommendation','event')\n OR length(coalesce(ctx->>'city',''))>120 OR length(coalesce(ctx->>'country',''))>120\n OR jsonb_typeof(alts)IS DISTINCT FROM'object'\n THEN RAISE EXCEPTION 'invalid_community_draft';END IF;\n PERFORM zoi.community_topic_array(ctx->'topics',5);\n SELECT coalesce(array_agg(x::uuid),'{}')INTO media FROM jsonb_array_elements_text(p_data->'media')x;\n IF cardinality(media)<>(SELECT count(DISTINCT x)FROM unnest(media)x)OR array_position(media,NULL)IS NOT NULL\n OR EXISTS(SELECT 1 FROM jsonb_each(alts)e WHERE NOT(e.key=ANY(media::text[]))OR jsonb_typeof(e.value)<>'string'OR length(e.value#>>'{}')>500)THEN RAISE EXCEPTION 'invalid_community_draft_media';END IF;\n FOREACH mid IN ARRAY media LOOP\n SELECT * INTO a FROM zoi.community_media_assets WHERE id=mid FOR UPDATE;\n IF NOT FOUND OR a.profile_id<>p_actor OR a.state<>'ready'OR a.purpose<>'post'THEN RAISE EXCEPTION 'invalid_post_media';END IF;\n IF a.mime_type='video/mp4' THEN videos:=videos+1;END IF;\n END LOOP;\n IF videos>0 AND cardinality(media)<>1 THEN RAISE EXCEPTION 'one_video_or_four_images';END IF;\n IF p_data->>'listing'IS NOT NULL AND NOT EXISTS(SELECT 1 FROM zoi.listings WHERE id=(p_data->>'listing')::uuid AND publish_status='published'AND coalesce(marketplace_status,'')<>'hidden')THEN RAISE EXCEPTION 'listing_unavailable';END IF;\nEND$function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "",
+      "name": "suite_current_session",
+      "owner": "postgres",
+      "schema": "zoi",
+      "body_md5": "70cb927f126f251f229c450bf9f792e8",
+      "signature": "zoi.suite_current_session()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.suite_current_session()\n RETURNS void\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "args": "",
+      "name": "suite_lock_session",
+      "owner": "postgres",
+      "schema": "zoi",
+      "body_md5": "ab5f8703ced5f96c0ac69257281ffe00",
+      "signature": "zoi.suite_lock_session()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.suite_lock_session()\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp()) for share;\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp()) for share;\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n"
+    }
+  ]
+}

@@ -8,10 +8,35 @@ async function request(path:string,token:string,options:RequestInit={}){return f
 async function rpc(name:string,args:unknown,token:string){const r=await request('/rest/v1/rpc/'+name,token,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(args)});const d=await r.json();if(!r.ok||d?.ok===false||d?.error)throw Error(d.message||d.error||'media_request_unconfirmed');return d;}
 const path=(p:string)=>p.split('/').map(encodeURIComponent).join('/');
 async function remove(paths:string[]){if(!paths.length)return;const r=await request('/storage/v1/object/'+BUCKET,SERVICE,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths})});if(!r.ok)throw Error('media_cleanup_unconfirmed');await rpc('community_media_cleanup_finish',{p_paths:paths},SERVICE);}
+
+async function verifyStored(started:any,expected:any){
+ if(!/^[-0-9a-f]{36}\/[-0-9a-f]{36}$/i.test(started.path)||!/^[-0-9a-f]{36}$/i.test(started.grant_id))throw Error('media_grant_unavailable');
+ const stored=await request('/storage/v1/object/'+BUCKET+'/'+path(started.path),SERVICE,{redirect:'error'});
+ if(!stored.ok||(stored.headers.get('content-type')||'').split(';')[0].trim().toLowerCase()!==expected.mime_type)throw Error('media_byte_proof_mismatch');
+ const bytes=await readBoundedBody(stored,expected.size_bytes,20000);
+ if(bytes.byteLength!==expected.size_bytes)throw Error('media_byte_proof_mismatch');
+ const metadata=inspectMedia(bytes,expected.mime_type,expected.purpose),digest=await mediaDigest(bytes);
+ if(digest!==expected.sha256)throw Error('media_byte_proof_mismatch');
+ return rpc('community_media_finish_verified',{p_grant:started.grant_id,p_sha256:digest,p_mime:expected.mime_type,p_size:bytes.byteLength,p_metadata:metadata},SERVICE);
+}
 Deno.serve(async(req:Request)=>{
  if(req.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
  const url=new URL(req.url);
  try{
+  if(req.method==='GET'&&url.searchParams.get('action')==='draft-preview'){
+   const bearer=req.headers.get('authorization')||'',token=/^Bearer [^\s]+$/.test(bearer)?bearer.slice(7):'';
+   if(!token||!(await request('/auth/v1/user',token)).ok)return reply(401,{ok:false,error:'sign_in_required'});
+   const args={p_draft:url.searchParams.get('draft'),p_asset:url.searchParams.get('asset')};
+   const allowed=await rpc('community_draft_media_preview',args,token);
+   if(allowed.schema_version!==1||!/^image\/(jpeg|png|webp)$/.test(allowed.mime_type)||!Number.isInteger(allowed.size_bytes)||allowed.size_bytes<16||allowed.size_bytes>8*1024*1024||!/^[-0-9a-f]{36}\/[-0-9a-f]{36}$/i.test(allowed.path))throw Error('media_unavailable');
+   const stored=await request('/storage/v1/object/'+BUCKET+'/'+path(allowed.path),SERVICE,{redirect:'error'});
+   if(!stored.ok)throw Error('media_unavailable');
+   const bytes=await readBoundedBody(stored,8*1024*1024);
+   if(bytes.byteLength!==allowed.size_bytes)throw Error('media_unavailable');
+   const again=await rpc('community_draft_media_preview',args,token);
+   if(again.path!==allowed.path||again.mime_type!==allowed.mime_type||again.size_bytes!==allowed.size_bytes)throw Error('media_unavailable');
+   return new Response(bytes,{headers:{...cors,'Content-Type':allowed.mime_type,'X-Content-Type-Options':'nosniff','Cache-Control':'private, no-store'}});
+  }
   if(req.method==='GET'){
    const id=url.searchParams.get('asset');if(!/^[0-9a-f-]{36}$/i.test(id||''))return reply(404,{ok:false,error:'media_unavailable'});
    const allowed=await rpc('community_media_read',{p_id:id},SERVICE);
@@ -25,6 +50,11 @@ Deno.serve(async(req:Request)=>{
    const d=await rpc('community_media_cleanup',{},SERVICE);await remove(d.paths);return reply(200,{ok:true,removed:d.paths.length});
   }
   if(!token||!(await request('/auth/v1/user',token)).ok)return reply(401,{ok:false,error:'sign_in_required'});
+  if(url.searchParams.get('action')==='reverify'){
+   const data=JSON.parse(new TextDecoder().decode(await readBoundedBody(req,4096)));
+   const started=await rpc('community_media_reverify',{p_id:data.asset_id},token);
+   return reply(200,await verifyStored(started,started));
+  }
   if(url.searchParams.get('action')==='upload'){
    const body=await readBoundedBody(req,VIDEO_MAX+65536);
    const form=await new Request('https://local.invalid',{method:'POST',headers:{'Content-Type':req.headers.get('content-type')||''},body}).formData();
@@ -33,10 +63,10 @@ Deno.serve(async(req:Request)=>{
    try{metadata=inspectMedia(bytes,file.type,purpose);}catch(e){throw Error(e instanceof RangeError?'invalid_media_content':e instanceof Error?e.message:'invalid_media_content');}
    const digest=await mediaDigest(bytes);
    const started=await rpc('community_media_begin',{p_request:form.get('request_id'),p_purpose:purpose,p_mime:file.type,p_size:bytes.length,p_sha256:digest,p_metadata:metadata},token);
-   if(started.state==='ready')return reply(200,{ok:true,asset:started.asset});if(started.state!=='pending')throw Error('media_request_closed');
-   const stored=await request('/storage/v1/object/'+BUCKET+'/'+path(started.path),SERVICE,{method:'POST',headers:{'Content-Type':file.type,'x-upsert':'false','Cache-Control':'private, no-store'},body:bytes});
-   if(!stored.ok){const err=await stored.json().catch(()=>({}));if(stored.status!==409&&err.statusCode!=='409'&&err.error!=='Duplicate')throw Error('media_storage_unconfirmed');}
-   return reply(200,await rpc('community_media_finish',{p_id:started.id},SERVICE));
+   if(!['pending','ready'].includes(started.state))throw Error('media_request_closed');
+   if(started.state==='pending'){const stored=await request('/storage/v1/object/'+BUCKET+'/'+path(started.path),SERVICE,{method:'POST',headers:{'Content-Type':file.type,'x-upsert':'false','Cache-Control':'private, no-store'},body:bytes});
+   if(!stored.ok){const err=await stored.json().catch(()=>({}));if(stored.status!==409&&err.statusCode!=='409'&&err.error!=='Duplicate')throw Error('media_storage_unconfirmed');}}
+   return reply(200,await verifyStored(started,{mime_type:file.type,size_bytes:bytes.length,sha256:digest,purpose}));
   }
   if(url.searchParams.get('action')==='discard'){
    const data=JSON.parse(new TextDecoder().decode(await readBoundedBody(req,4096)));

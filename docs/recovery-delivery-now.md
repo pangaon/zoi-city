@@ -27,3 +27,19 @@ Finite enrichment trial stopped03:38:47 after8totalcalls24outcomes13fetches,0hom
 Founderfullaccess expired02:18:26UTC; no renewal. DedicatedQAidentityonlyfornewtests. Exactowneractions in connected-owner-actions-2026-10-14.md; providers notoperationalwithoutreceipts. Schools3/diplomatic3 actual3901440 journeys do notestablishfamilycoverage. Connect localstatus/disconnect/history andplannerSQLaccepted; actualsignedinproduction/browser/provider dependentgates stayopen. AllremainingStudio/AI/marketing/SEO/commerce/events/community/native scope remains987queue.
 
 Current owners: root integration/production/PR/native/releases; enrichment_next guardedFood2clientSQL thencataloguepipeline; owner_next Communitymedia proof/reverify; qa_next independentmediareview/Company acceptanceprep and2geographicproposal sourcequalification. No automaticposts/emails/payments. Continue unblockedwork; completion requireswholeobjectiveactualevidence, neverbatchhandoff.
+
+## Execution update 15 October,12:25 UTC
+
+Whole987-item goal remains active. PR53 merged4c62067f with live Food2client source/readback and four phone/desktop journeys. Hellenic100/151 official menu items and Corfu real menu handoff are live; owner100-item mounted editor/real SQL proof now confirms save/preview/publish/reload and explicit removal. Full family/catalogue acceptance remains open.
+
+Company diagnostic run38734066275 reached saved version2/history/receipt, failed at reload because the QA fence omitted canonical /social root; parent Company archived, synthetic private minute retained as version2 under archived parent. Exact reload filter correction is under PR54; next fresh run and original fixture cleanup remain required. No blind retry.
+
+Community root accepted26combined source paths,27real PG groups,8controlled SQL-connected browser cases and37focused checks. Actual baseline schema20261015122305 and phaseA20261015122314 applied; actual rollback proved six absences. Actual community-media15 exact3files/bundle5424fadc4e684acaade95c1d4f00ef583451b7d5a9b486ed4879d101f76e7c35 deployed. PhaseB remains UNAPPLIED until real private Storage acceptance. qa_next prepares bounded trusted-main blob harness; no public posts. Web release and coherent native binary pending.
+
+Geography narrow read authority is in root independent integration /workspaces/zoi-geography-live-release. Root fixed missing direct source-scope/association/organization holds;15real PG groups pass, independent enrichment_next review now required. No live geo schema or Stalactites revalidation yet. Revalidation uses unchanged point, never counts as coordinate correction. Full-row write/revert CAS remains intact.
+
+Enrichment_next Food capture/review pipeline and atomic server lease authority context frozen; owner_next independently reviews it. Entire current machine facts/provenance protects concurrent corrections. Root owns later guarded schema/worker/capture release and actual acceptance.
+
+New explicit user request for full founder QA access fulfilled using existing account permissions, no role changes. Live browser entry/dashboard verified12:18; exact signed JWT+session deadline13:17:46UTC. No refresh shared; issuer disabled9/actual403. Original expired session remains expired; this is a separately authorized new session. Access URL/JWT are private local artifacts only.
+
+Current owners: root integration/production/Company/map/Community/native release; enrichment_next frozen Food source plus independent map review; owner_next Food pipeline independent acceptance and owner menu evidence; qa_next actual Community Storage QA harness. Scheduler finite policy still expires16Oct04:42:40.780975 without renewal; source outcomes are not finished homes.
