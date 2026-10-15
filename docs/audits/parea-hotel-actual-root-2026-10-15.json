@@ -1,0 +1,97 @@
+{
+  "kind": "parea_hotel_actual_production",
+  "at": "2026-10-15T16:47:37.728395+00:00",
+  "main_commit": "64db916c7c51fcf1be7b118fffb29b99da405b42",
+  "deployment": "dpl_5kSpoNvce7Kx7YEJSoewjun75fU5",
+  "domain": "https://www.zoi.city",
+  "results": {
+    "source": "64db916c7c51fcf1be7b118fffb29b99da405b42",
+    "deployment": "dpl_5kSpoNvce7Kx7YEJSoewjun75fU5",
+    "hashes": [
+      {
+        "path": "assets/contacts/workspace-picker.mjs",
+        "sha256": "efa0567cace691df1a841978c8c8cde4ab0bd668ca4179fd24235215f079ee09",
+        "cache": "public, max-age=0, must-revalidate"
+      },
+      {
+        "path": "assets/contacts/guest-picker.mjs",
+        "sha256": "a9276722a557f8f13cb30d8ee7852c748b28b862dbc760759594a1e77b3a2316",
+        "cache": "public, max-age=0, must-revalidate"
+      },
+      {
+        "path": "assets/contacts/picker.mjs",
+        "sha256": "615d95be99bd7998bb8d94c95a0d1ee496aab82ec02c328f0fc277ce3479dd81",
+        "cache": "public, max-age=0, must-revalidate"
+      },
+      {
+        "path": "assets/tickets/host-allocations.mjs",
+        "sha256": "4490af00c47a2a1e565c1807c613bc96c170788bd180540aa0fded17afa2d0e4",
+        "cache": "public, max-age=0, must-revalidate"
+      },
+      {
+        "path": "assets/tickets/host-allocations.css",
+        "sha256": "488453dbc8a3bfad4c0c32a1b3e8a1708e169963395d0225ebfa0a03e6fa81bf",
+        "cache": "public, max-age=0, must-revalidate"
+      },
+      {
+        "path": "assets/tickets/parea-roster-plan.mjs",
+        "sha256": "99a7c5fe995da60303699aa7cf7e87dfe4731301f4bf33c3f7f54e62f2e270af",
+        "cache": "public, max-age=0, must-revalidate"
+      },
+      {
+        "path": "assets/homes/templates/hospitality/style.css",
+        "sha256": "e0a8f0c4279d1395e1d183910ad2a5cfe03172a0cc078e57f6d0daf16a0b3d55",
+        "cache": "public, max-age=0, must-revalidate"
+      }
+    ],
+    "cases": [
+      {
+        "width": 390,
+        "actualProduction": true,
+        "heroHeight": 379.59375,
+        "missingPhoto": true,
+        "localStayPlanSavedAndReopened": true,
+        "noReservationOrSend": true,
+        "errors": []
+      },
+      {
+        "width": 1440,
+        "actualProduction": true,
+        "heroHeight": 485.703125,
+        "missingPhoto": true,
+        "localStayPlanSavedAndReopened": true,
+        "noReservationOrSend": true,
+        "errors": []
+      },
+      {
+        "guestHostPageStatus": 200,
+        "signInGate": true,
+        "authenticatedPickerExercised": false
+      }
+    ],
+    "limits": "No intercepted requests; publichotelplan uses local storage only. Guesthostgate does not establish signed-in picker/phoneOS/canonical productionguest-write acceptance."
+  },
+  "evidence": {
+    "maricas-1440.png": {
+      "bytes": 125424,
+      "sha256": "2879078fb96189c1c9126a822eeb5050112948820bb7f88eef3c2d6608bcc4a8"
+    },
+    "maricas-390.png": {
+      "bytes": 95778,
+      "sha256": "c1d6406d4a3d501f769b6573a4a0f90561d976d1ea7284262fb65fdc6c886822"
+    },
+    "result.json": {
+      "bytes": 2307,
+      "sha256": "67e83154d07f135197386747b34ed817c50362b9c23e06986b79fc52c6292a65"
+    },
+    "verify.mjs": {
+      "bytes": 3455,
+      "sha256": "4ac9c2d9358ece126027eaca5df785cd9451994718fd4cfd05cbc2ba134c1fe5"
+    }
+  },
+  "limits": [
+    "Parea authenticated contact-picker/save production journey remains unverified; actual signed-out canonical /tickets/hosts gate passed.",
+    "Phone OS contact permission unverified. Hotel dates are a local stay plan, not a booking/reservation."
+  ],
+  "review_note": "Initial root probe used non-product singular /tickets/host and got404; corrected canonical /tickets/hosts200 sign-in gate. No singular link found in product source."
+}
