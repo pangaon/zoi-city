@@ -1,0 +1,38 @@
+{
+  "observed_at": "2026-10-15T03:39:55.713875+00:00",
+  "run_id": 38675549792,
+  "request_id": "e801b99b-2a77-4845-b5c5-bd6232234523",
+  "original_cutoff": "2026-10-15T03:41:34.971Z",
+  "status": "Stopped before sixth admission because projected next start exceeded original window",
+  "github_conclusion": "failure",
+  "safe_stop_error": "window_expired",
+  "automatic_retry": false,
+  "admitted_attempts": 5,
+  "queued": 15,
+  "applied_canonical_results": 15,
+  "source_fetch_ok": 8,
+  "other_applied_results": 7,
+  "failed_record_results": 2,
+  "unprocessed": 0,
+  "finished_homes_measured": false,
+  "final_live_readback": {
+    "active_future_canonical_leases": 0,
+    "legacy_missing_task_included": true,
+    "cron_restore": {
+      "independently_observed": true,
+      "job30_active": true,
+      "schedule": "45 * * * *",
+      "command_md5": "2ade25bb2cc7e9ab304662844ca1acfa",
+      "job10_active": false,
+      "root_restored_at": "2026-10-15T03:40:05.720044Z"
+    }
+  },
+  "evidence": "docs/audits/evidence/enrichment-finite-remainder-independent-2026-10-15/sanitized-receipts.json",
+  "boundaries": [
+    "Source fetch/apply results do not prove completed individual homes",
+    "Stats expose two failed record results despite successful canonical batch receipts",
+    "No retries, private worker invocation, live mutations or Auth renewal by QA"
+  ],
+  "request_removal_root_reported_commit": "021da3722feb0adb98efb6c4ad2aea906f482ac7",
+  "remote_main_readback_matches": true
+}

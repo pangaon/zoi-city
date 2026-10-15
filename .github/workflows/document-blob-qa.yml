@@ -1,0 +1,39 @@
+name: Dedicated QA private document blob
+on:
+  push:
+    branches: [main]
+    paths: ['ops/document-blob-qa-request.json']
+permissions:
+  contents: read
+concurrency:
+  group: dedicated-private-document-blob-qa
+  cancel-in-progress: false
+jobs:
+  private-blob:
+    if: github.repository == 'pangaon/zoi-city' && github.ref == 'refs/heads/main' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate exact expiring request before credentials
+        run: node scripts/auth-qa/document-blob-ci.mjs check
+      - name: Verify scope and canonical recovery tests
+        run: node --test tests/unit/document-blob-ci.test.mjs
+      - name: Dedicated QA private bytes and canonical recovery
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/auth-qa/document-blob-ci.mjs run
+      - name: Sanitized evidence only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: document-blob-${{ github.run_id }}-${{ github.run_attempt }}
+          path: qa-document-blob-evidence/*.json
+          if-no-files-found: ignore
+          retention-days: 7
