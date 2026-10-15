@@ -1,3 +1,5 @@
+import {assetRole,assetFit} from './media-role.mjs';
+import {REVIEWED_MEDIA_ROLES} from './reviewed-media-roles.mjs';
 import {selectedOfficialWebsite} from '../enrichment/official-source-policy.mjs';
 import {auxiliaryImage} from '../../supabase/functions/zoi-enrich/_image-context.js';
 import {ARTIST_SOURCES} from '../homes/templates/music/sources.mjs';
@@ -52,8 +54,8 @@ export function profileMedia(entity,profile={},options={}){
  // a nullable base column alone does not erase a source/curated fallback.
  const currentBase=!ownerHero.present&&rawHero.key==='hero_url'&&httpsImage(rawHero.value)&&httpsImage(base)&&!interfaceArtwork(base)&&!galleryOnly.has(base)?httpsImage(base):null;
  const hero=explicitHero.present?(currentBase||httpsImage(explicitHero.value)):candidates[0]||null;
- const inferredLogo=trusted&&derived.hero_url&&/logo/i.test(derived.hero_url)?httpsImage(derived.hero_url):null;
- const logo=explicitLogo.present?httpsImage(explicitLogo.value):machineImage(reviewed.logo)||(trusted?machineImage(entity?.logo_url||profile.logo_url||derived.logo_url||derived.logo):null)||inferredLogo;
+ // A filename containing logo does not establish visual identity.
+ const logo=explicitLogo.present?httpsImage(explicitLogo.value):machineImage(reviewed.logo)||(trusted?machineImage(entity?.logo_url||profile.logo_url||derived.logo_url||derived.logo):null);
  return{hero,logo,gallery,heroGallery};
 }
 export function reviewedListingMedia(entity){
@@ -73,11 +75,12 @@ export function publicListingMedia(row){
  const entity=listingMediaEntity(row),raw=object(entity?.profile),owner=object(entity?.owner_content),op=object(owner.profile),q=object(raw._enrich);
  // Older search deployments have only a selected photo field. Keep that field
  // usable until the bounded projection is installed; do not infer source data.
- if(!row?.media_input&&!row?.profile&&!row?.owner_content){const hero=machineImage(row?.photo_url);return{hero,logo:null,gallery:[],heroGallery:[],logoFit:'contain',logoBackdrop:'light',imageKind:row?.image_kind==='event_poster'?'event_poster':null};}
- const profile={...q,...raw,...op},reviewed=reviewedListingMedia(entity),media=profileMedia(entity,profile,{reviewed,allowUnbound:false}),kind=selected([owner,op,raw],['hero_kind']),url=selected([owner,op,raw],['hero_url']);
+ if(!row?.media_input&&!row?.profile&&!row?.owner_content){const hero=machineImage(row?.photo_url);return{hero,logo:null,gallery:[],heroGallery:[],logoFit:'contain',logoBackdrop:'light',imageKind:row?.image_kind==='event_poster'?'event_poster':null,imageFit:'contain'};}
+ const profile={...q,...raw,...op},reviewed=reviewedListingMedia(entity),media=profileMedia(entity,profile,{reviewed,allowUnbound:false}),roleLayer=[owner,op,raw].find(layer=>has(layer,'hero_kind')),kind=roleLayer?.hero_kind,roleURL=roleLayer?selected([roleLayer],['photo_url','hero_url']).value:null;
+ const role=media.hero&&reviewed?.hero===media.hero?'photograph':media.hero?assetRole({url:media.hero,ownerRole:kind,ownerURL:roleURL,sourceURL:q.source_url,registeredSource:effectiveWebsite(entity),trusted:sourceIdentity(entity),evidence:REVIEWED_MEDIA_ROLES.filter(r=>r.listing_id===entity.id&&r.name===entity.name)}):null;
  // Exact native asset inspected at 792x612: its outer white padding can be
  // cropped inside a badge without changing the source logo or its identity.
- return{...media,logoFit:media.logo==='https://www.yamas.co.ke/logo.png'?'cover':'contain',logoBackdrop:reviewed?.logoBackdrop||'light',imageKind:kind.value==='event_poster'&&media.hero&&media.hero===httpsImage(url.value)?'event_poster':null};
+ return{...media,logoFit:media.logo==='https://www.yamas.co.ke/logo.png'?'cover':'contain',logoBackdrop:reviewed?.logoBackdrop||'light',imageKind:role==='unknown_media'?null:role,imageFit:assetFit(role)};
 }
 
 export function publicListingDescription(row){

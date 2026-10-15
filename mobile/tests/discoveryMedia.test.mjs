@@ -140,5 +140,7 @@ test("legacy selected logo and sparse selected photo preserve fallback semantics
     fit: "contain",
     backdrop: "light",
   });
-  assert.equal(discoveryMedia({ photo_url: image }).fit, "cover");
+  assert.equal(discoveryMedia({ photo_url: image }).fit, "contain");
 });
+
+test('reviewed exact Wix assets retain whole logo role and unknown artwork does not crop',()=>{const row={id:'83f5650e-ae53-48fe-878a-3a6ea7f54000',name:'EKKY Studio Architects',website:'https://www.ekkystudioarchitects.com/',profile:{_enrich:{source_url:'https://www.ekkystudioarchitects.com/',photo_url:'https://static.wixstatic.com/media/50da4e_5e67dc1822e44034998f33880136e7c2~mv2.png'}}};assert.equal(discoveryMedia(row).kind,'logo');assert.equal(discoveryMedia(row).fit,'contain');assert.equal(discoveryMedia({...row,owner_content:{photo_url:'https://owner.example/chosen.png'}}).fit,'contain');});

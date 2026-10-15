@@ -1,0 +1,62 @@
+{
+  "reviewer": "qa_release",
+  "gate": "accepted",
+  "candidate_manifest": "docs/audits/booking-owner-save-recovery-frozen-owner-2026-10-15.json",
+  "frozen_candidate": {
+    "frozen": true,
+    "files": {
+      "supabase/migrations/20261014165715_booking_owner_save_receipts.sql": "7bced261010949365f8a7c21008181e9b9c823938645a9a2bee664b272c81fc5",
+      "assets/bookings/owner-save.mjs": "20a2020874aa1b32c6246e85ed90326d4525d80be0cb420eb3d8bf19945d5a8d",
+      "assets/bookings/operator.mjs": "7d1aba458ea45581e0f9151268d72fa3c729b0069a4c7f1c0224649c165697ed",
+      "assets/suite/bookings.js": "de2953ba013ac797856767153fa15c94bbc3689b6d23d8d80a865a877ebba03c",
+      "tests/unit/booking-owner-save.test.mjs": "2402247ac46806231ef3d34645d48a06a7e7d1d4b588d0bd1ca85db3e3b12603",
+      "tests/database/booking-owner-save.integration.mjs": "ff0402a533362b8836df02f2c08f41f2de1efb2c83d3d26ad24d80b6acd4c1ac",
+      "tests/database/booking-owner-save.browser.mjs": "d50c2721d7d64ae91845697f371d9f65061fd5c6a94b4735884e1c600bd775b1",
+      "tests/database/booking-owner-save-production-rollback.sql": "3f008f46a3b57ad8a294602a25ce2622ec29a4f4d9abf068bdc6aba311965d82",
+      "tests/database/booking-owner-scope.browser.mjs": "9be4d48393b787464c64d1ba3d9d904186b89d28431223ce0f3412fc40ea315d",
+      "docs/audits/booking-owner-save-recovery-owner-2026-10-15.md": "a140e24a9ad47b43e303272602e70dfcbe4d3fd53e10aa711959306f9d4e03d2"
+    },
+    "real_pg_grouped_checks": 21,
+    "booking_units": 24,
+    "prior_scope_browser_checks": 12,
+    "sql_connected_browser_contexts": [
+      {
+        "workspace": "populated",
+        "width": 390
+      },
+      {
+        "workspace": "populated",
+        "width": 1440
+      },
+      {
+        "workspace": "initially_sparse",
+        "width": 390
+      },
+      {
+        "workspace": "initially_sparse",
+        "width": 1440
+      }
+    ],
+    "production_schema_applied": false,
+    "production_fixture_executed": false,
+    "live_provider_calls": false,
+    "independent_review_pending": true,
+    "release_owner": "root"
+  },
+  "verification": {
+    "real_postgres_groups_passed": 21,
+    "focused_units_passed": 24,
+    "actual_operator_real_canonical_sql": "four forms; populated and initially sparse workspaces; 390/1440; lost response/exact retry, account switch, saved ID/version retained on refresh failure"
+  },
+  "review": [
+    "immutable nonce/context receipt atomic with existing canonical writers",
+    "current-session owner/admin and original client authority rechecked on replay",
+    "actor/workspace final dispatch fence and uncertain-outcome preservation",
+    "canonical ID/version adopted before refresh"
+  ],
+  "limitations": [
+    "Controlled authentication and dropped transport response; no live customer writes",
+    "Production rollback fixture reviewed; root execution separate",
+    "No booking customer/provider/payment operation claimed"
+  ]
+}

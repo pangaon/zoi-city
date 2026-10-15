@@ -1,0 +1,34 @@
+{
+  "reviewer": "qa_release",
+  "source_gate": "accepted",
+  "files": {
+    "supabase/migrations/20261015012143_customer_booking_current_session.sql": "2acfb84c7fe6fbf128af398892edc706918bc41ecccf7a15be2a8c5913ad3642",
+    "tests/database/customer-booking-authority.integration.mjs": "8129583d7ec3553541a39b444d04264882fb51513f9182c59ef499e85c8b560b",
+    "tests/database/fixtures/customer-booking-live.json": "d7466ad099044328127444eba49f6aa472fcb68674198feb3b1cc79325376e9c"
+  },
+  "independent_real_pg_groups": 20,
+  "source_review": [
+    "Exact7existing RPC and3authority body/owner/ACL/search-path guards",
+    "Existing current-session helper and locked workspace role reused; no independent identity or ownerrole shortcut",
+    "Nonmember customer session/profile mapping locks precede canonical private access and nonce replay",
+    "Operator candidates acquire workspace-first existingfoundation locks; actual ownerfallback remains and forgedownerlabel is downgraded",
+    "event_plan_confirm moves authority admission before successful replay/profile lock to preserve source-linked multi-slot lockorder",
+    "Canonicalbooking/reschedule/status/history nonce/CAS/return semantics retained",
+    "New helper private: PUBLIC/anon/authenticated/service_role directexecute revoked"
+  ],
+  "real_pg_evidence": [
+    "Nonmember create/list/options/history/reschedule/cancel",
+    "Expired/deleted/revoked/banned users refused byall6booking RPCs incl prior successful receipt replay",
+    "Crosscustomer private isolation and profile reassignment",
+    "Concurrent identical creates one booking",
+    "Concurrent sessiondelete/profile transfer/operator demotion refused",
+    "Actual multi-slot eventconfirm receipt and expiry refusal"
+  ],
+  "limitations": [
+    "Isolated fixture uses captured real authority helper definitions and canonical writers; no actual live customer operation",
+    "Current production apply/rollback proof remains root-owned",
+    "No provider sends, payments, physicaldevice booking or wholefamily publication claimed"
+  ],
+  "provider_calls": 0,
+  "qa_production_writes": 0
+}
