@@ -1,0 +1,142 @@
+{
+  "observed_at": "2026-10-15T04:23:50.658821+00:00",
+  "status": "Production schema applied; independent source and SQL-connected browser acceptance passed. Web release and installed native handoff pending.",
+  "source_files": [
+    {
+      "path": "assets/operations/company-dashboard.mjs",
+      "sha256": "b68a9b6f9641f6ef1b69bb3edab200efb485dd62453a6f900f82cda5411c08d4"
+    },
+    {
+      "path": "assets/operations/company-private-controller.mjs",
+      "sha256": "cfce9acf000771c99500154706d89eb3fc8ba31911e71c66a244bbb8e754a698"
+    },
+    {
+      "path": "assets/operations/company-private-model.mjs",
+      "sha256": "eb27d6e78d22c16b7813194e06d9108611e28fbaa6fab1f9f64e7b8cc012e8e9"
+    },
+    {
+      "path": "assets/operations/company-private-view.mjs",
+      "sha256": "743e5ee3152812cc6946fdfc8f64b0e7f2e573c084e8e1d1ccd9dc66a5a661df"
+    },
+    {
+      "path": "assets/operations/company-private.css",
+      "sha256": "648da4fb84ff1f8170c9a72a097b710180fd1781f896b94d97931b28929efd65"
+    },
+    {
+      "path": "assets/operations/company-workspace.mjs",
+      "sha256": "743dd661e52680db5f86fd19fcfce5ed33f768dba31f8758dcdf508851408536"
+    },
+    {
+      "path": "assets/suite/operations.js",
+      "sha256": "15e57a1780506f0a85df083296dfb3a913b16860375caf027548156b51b212a4"
+    },
+    {
+      "path": "mobile/src/CompanyWorkspace.tsx",
+      "sha256": "67b84db669c4d49c0877bbd694de922da4632ea1b0f35722b4c2bc995e4ff4d7"
+    },
+    {
+      "path": "mobile/src/Operations.tsx",
+      "sha256": "f9e101e12341230983fcf690be5fc4bb3a8e2567c6787b7ca32d22d535b81124"
+    },
+    {
+      "path": "mobile/src/companyPrivateHandoff.ts",
+      "sha256": "e4fcb0f9a57beafca5bc24f00492054490daf98ff232db2603292f33ed0372fd"
+    },
+    {
+      "path": "social/index.html",
+      "sha256": "182aa59c82cb83479419b4f225d3851a24950846fc37c03864b905ee8176faf2"
+    },
+    {
+      "path": "supabase/migrations/20261015033616_private_company_governance_records.sql",
+      "sha256": "06c6d3c9e48fd018a398c20e6aac175412d67d6643b6db4ddbf255e9f079b5e4"
+    },
+    {
+      "path": "tests/browser/company-private/fixture.html",
+      "sha256": "7857300f06e52d1466d18a93fea7e0d28bda83852b2493fdce684fcbfb3b93ea"
+    },
+    {
+      "path": "tests/browser/company-private/verify-handoff.mjs",
+      "sha256": "15b6bfd054730d6a0fe8a4ef7c1e9058309ce43dda724be4efaada3e47fe8a79"
+    },
+    {
+      "path": "tests/browser/company-private/verify.mjs",
+      "sha256": "98d75d771b498f52ba61d8e982dfe67d4223802d0a0eb1a008019e0305d2baca"
+    },
+    {
+      "path": "tests/database/company-private-handoff.integration.mjs",
+      "sha256": "a16cce14c3753bb31dd6c6813c2054cd186b146b355c28abe8d38bd502042f85"
+    },
+    {
+      "path": "tests/database/company-private-production-rollback.sql",
+      "sha256": "69016e9bd165949f50fa986d56004ec83c7fe12b818be4e98fd4ce71394d0cdc"
+    },
+    {
+      "path": "tests/database/company-private.integration.mjs",
+      "sha256": "1b9e738e04e025f19db18f4f2b4773b13ff8705e0772c06984c89e0adf53ac94"
+    },
+    {
+      "path": "tests/database/fixtures/company-private-authority-live.json",
+      "sha256": "7299bf8c7018beff19d8162e31f7fbcb9903d8cd4298e47b04efbcba94d2f07b"
+    },
+    {
+      "path": "tests/unit/company-private-handoff.test.mjs",
+      "sha256": "1558eb73fdeb59207bebe96ab6907aca14d6649839a2faac6e9a59c4737572b0"
+    },
+    {
+      "path": "tests/unit/company-private.test.mjs",
+      "sha256": "5358b20518face100ae4276dec8175b4c828e8e9ab6291e60d5636443c0560ea"
+    }
+  ],
+  "production_schema": {
+    "project": "csebihpaychdkanjjsmz",
+    "source": "supabase/migrations/20261015033616_private_company_governance_records.sql",
+    "sha256": "06c6d3c9e48fd018a398c20e6aac175412d67d6643b6db4ddbf255e9f079b5e4",
+    "ledger_version": "20261015041653",
+    "name": "private_company_governance_records",
+    "rollback_fixture_sha256": "69016e9bd165949f50fa986d56004ec83c7fe12b818be4e98fd4ce71394d0cdc",
+    "rollback_observed_at": "2026-10-15T04:17:22Z",
+    "absence_flags": {
+      "workspace": true,
+      "profile": true,
+      "session": true,
+      "canonical_company": true,
+      "private_records": true,
+      "private_versions": true,
+      "private_requests": true,
+      "canonical_audit": true
+    },
+    "rollback_completed": true,
+    "provider_calls": 0,
+    "automated_reminders": 0,
+    "legal_filing_or_signature": false,
+    "private_tables": "All three postgres-only ACL, RLS enabled; no direct authenticated or service table grant.",
+    "public_rpc_md5": {
+      "company_private_get(uuid,uuid,uuid,integer)": "4b0f3e517144d6646dbac246cc84452f",
+      "company_private_list(uuid,uuid,text,boolean,integer,integer)": "a6498c7639aac7d0ed5d1154b9130b31",
+      "company_private_mutate(uuid,uuid,uuid,text,jsonb)": "f4c4b96074a1ad30bc7d407c3f817c8f",
+      "company_private_request(uuid,uuid,uuid,boolean)": "dc4a4dc3d53a61b557f57a15a77c4fbb"
+    },
+    "rpc_boundary": "postgres/authenticated only, SECURITY DEFINER empty search_path; existing current authority checks."
+  },
+  "controlled_checks": {
+    "real_pg_groups": 21,
+    "actual_sql_connected_browser_cases": 14,
+    "widths": [
+      390,
+      1440
+    ],
+    "themes": [
+      "light",
+      "dark"
+    ],
+    "root_label_delta": "Plain Time zone label/error, browser assertions updated; independent string-only comparison accepted, root full21PG14browser rerun passed.",
+    "full_local_verify": "check-inline + HTML lint +371 node:test files +2 standalone suites passed.",
+    "native_typescript": "passed",
+    "native_full_tests": "passed from mobile working directory; initial root-cwd invocation had fixture ENOENT and was corrected"
+  },
+  "remaining": [
+    "Actual deployed web bytes and signed-in production browser journey",
+    "Installed coherent next native build handoff, iOS/physical device acceptance",
+    "Broader Company scope in authoritative board remains active"
+  ]
+}

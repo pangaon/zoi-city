@@ -1,0 +1,152 @@
+{
+  "schema_version": 1,
+  "status": "candidate frozen for independent acceptance; not released",
+  "worktree": "/workspaces/zoi-company-native-recovery",
+  "base": "28268612",
+  "capability": "Current owner/admin opens selected Company private minutes, named responsibilities and manual deadlines in canonical authenticated web suite. Native private record forms are a deliberate browser handoff, not native equivalent.",
+  "baseline_only": {
+    "source": "/workspaces/zoi-company-minutes-recovery/docs/audits/company-private-owner-2026-10-15.json",
+    "files": [
+      {
+        "path": "assets/operations/company-dashboard.mjs",
+        "sha256": "b68a9b6f9641f6ef1b69bb3edab200efb485dd62453a6f900f82cda5411c08d4"
+      },
+      {
+        "path": "assets/operations/company-workspace.mjs",
+        "sha256": "743dd661e52680db5f86fd19fcfce5ed33f768dba31f8758dcdf508851408536"
+      },
+      {
+        "path": "assets/suite/operations.js",
+        "sha256": "63759b6d1ab3a3d27dea7a851e33c85761573fcb2d8c121752078f81c1b4dbda"
+      },
+      {
+        "path": "social/index.html",
+        "sha256": "182aa59c82cb83479419b4f225d3851a24950846fc37c03864b905ee8176faf2"
+      },
+      {
+        "path": "assets/operations/company-private-model.mjs",
+        "sha256": "d615ba9ff1377800f2d7cf73d9ab8436f172cd1d2b39e61cee509f27fb415bd5"
+      },
+      {
+        "path": "assets/operations/company-private-controller.mjs",
+        "sha256": "cfce9acf000771c99500154706d89eb3fc8ba31911e71c66a244bbb8e754a698"
+      },
+      {
+        "path": "assets/operations/company-private-view.mjs",
+        "sha256": "b9d324f8df11d39126647ec3002106e24c0eec164b2ad449ca1a1cbc9dbe50bd"
+      },
+      {
+        "path": "assets/operations/company-private.css",
+        "sha256": "648da4fb84ff1f8170c9a72a097b710180fd1781f896b94d97931b28929efd65"
+      },
+      {
+        "path": "supabase/migrations/20261015033616_private_company_governance_records.sql",
+        "sha256": "06c6d3c9e48fd018a398c20e6aac175412d67d6643b6db4ddbf255e9f079b5e4"
+      },
+      {
+        "path": "tests/unit/company-private.test.mjs",
+        "sha256": "5358b20518face100ae4276dec8175b4c828e8e9ab6291e60d5636443c0560ea"
+      },
+      {
+        "path": "tests/database/company-private.integration.mjs",
+        "sha256": "1b9e738e04e025f19db18f4f2b4773b13ff8705e0772c06984c89e0adf53ac94"
+      },
+      {
+        "path": "tests/database/fixtures/company-private-authority-live.json",
+        "sha256": "7299bf8c7018beff19d8162e31f7fbcb9903d8cd4298e47b04efbcba94d2f07b"
+      },
+      {
+        "path": "tests/database/company-private-production-rollback.sql",
+        "sha256": "69016e9bd165949f50fa986d56004ec83c7fe12b818be4e98fd4ce71394d0cdc"
+      },
+      {
+        "path": "tests/browser/company-private/fixture.html",
+        "sha256": "7857300f06e52d1466d18a93fea7e0d28bda83852b2493fdce684fcbfb3b93ea"
+      },
+      {
+        "path": "tests/browser/company-private/verify.mjs",
+        "sha256": "282b3c2f47557ee38f3af47764da59ff8b6d7f262ddaee7a7d4e1302b53d5275"
+      }
+    ],
+    "note": "15 frozen Company web files copied unchanged as prerequisite baseline; not new work claimed by this delta. operations.js alone has authorized additional query-consumption hook."
+  },
+  "files": [
+    {
+      "path": "mobile/src/companyPrivateHandoff.ts",
+      "sha256": "e4fcb0f9a57beafca5bc24f00492054490daf98ff232db2603292f33ed0372fd"
+    },
+    {
+      "path": "mobile/src/CompanyWorkspace.tsx",
+      "sha256": "67b84db669c4d49c0877bbd694de922da4632ea1b0f35722b4c2bc995e4ff4d7"
+    },
+    {
+      "path": "mobile/src/Operations.tsx",
+      "sha256": "f9e101e12341230983fcf690be5fc4bb3a8e2567c6787b7ca32d22d535b81124"
+    },
+    {
+      "path": "assets/suite/operations.js",
+      "sha256": "15e57a1780506f0a85df083296dfb3a913b16860375caf027548156b51b212a4"
+    },
+    {
+      "path": "tests/unit/company-private-handoff.test.mjs",
+      "sha256": "1558eb73fdeb59207bebe96ab6907aca14d6649839a2faac6e9a59c4737572b0"
+    },
+    {
+      "path": "tests/database/company-private-handoff.integration.mjs",
+      "sha256": "a16cce14c3753bb31dd6c6813c2054cd186b146b355c28abe8d38bd502042f85"
+    },
+    {
+      "path": "tests/browser/company-private/verify-handoff.mjs",
+      "sha256": "0b68b7dd2a4b7ba6dd05294a28ecd88fb2cb59ba9ae2789808c58b7694fab9ca"
+    }
+  ],
+  "authority": [
+    "Native owner/admin visibility and scoped pending/dirty guard; fresh ops_records_list through existing organizationRpc final dispatch fence.",
+    "Fresh exact current-workspace nonarchived canonical Company and role validated; current actor/workspace/selection checked after await and immediately before Linking.openURL.",
+    "Browser URL carries only workspace and Company UUIDs. Browser authentication separate; no token, title, minute text, or request payload transferred.",
+    "Web untrusted query requires unique workspace/company_private with matching current canonical route and selection; aliases/duplicates/foreign/malformed/archived hints refuse. Hint cleared with history.replaceState on consumption or safe unavailable.",
+    "Web re-reads canonical records/current role after lazy module await before private mount. Existing current-session private RPC authorization remains authoritative."
+  ],
+  "acceptance": {
+    "unit": {
+      "command": "node --test tests/unit/company-private-handoff.test.mjs tests/unit/company-private.test.mjs",
+      "new_handoff_checks": 7,
+      "baseline_private_checks": 9,
+      "passed": true
+    },
+    "database_browser": {
+      "command": "COMPANY_PRIVATE_BROWSER=1 COMPANY_PRIVATE_PORT=15689 node tests/database/company-private-handoff.integration.mjs",
+      "groups": 21,
+      "actual_browser_cases": 14,
+      "new_handoff_cases": 2,
+      "widths": [
+        390,
+        1440
+      ],
+      "passed": true,
+      "new_case": "Actual Core -> Operations query hint -> fresh canonical role/company read after import -> actual private SQL list -> hint consumed; no horizontal overflow. Remaining12 cases rerun unchanged baseline journeys."
+    },
+    "typescript": {
+      "command": "node mobile/node_modules/typescript/bin/tsc --noEmit -p mobile/tsconfig.json",
+      "passed": true,
+      "dependency_location": "/workspaces/zoi-native-live-release/mobile/node_modules",
+      "note": "First attempt using zoi-city-release dependencies lacked expo-location. Existing complete native dependencies pass; no installation/package modification."
+    },
+    "syntax": "node --check assets/suite/operations.js and browser runner; git diff --check pass",
+    "native_layout": "Source reviewed accessible button, min44 target, wrapping text, no numberOfLines. Actual device/RN browser presentation not exercised in this delta; no build authorized."
+  },
+  "evidence_directory": "docs/audits/evidence/company-private-native-handoff-2026-10-15",
+  "release_gates": [
+    "Independent QA acceptance of native helper and web query boundary.",
+    "Root integrate baseline private Company schema/web and this minimal delta coherently.",
+    "Current web deployment must serve private schema1 canonical writer and modules before binary handoff is advertised.",
+    "Coherent root native binary must include this handoff and map copy fix; actual iOS/Android open, browser sign-in, account switch and390long-name presentation remain device acceptance gates."
+  ],
+  "remaining": [
+    "Native private record forms/history are web handoff only.",
+    "No reminders, legal filings, membership grants, signatures, or providers connected by this change."
+  ],
+  "live_writes_by_child": false,
+  "builds_by_child": false,
+  "provider_calls": false
+}
