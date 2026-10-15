@@ -1,0 +1,215 @@
+diff --git a/scripts/check-source-credentials.mjs b/scripts/check-source-credentials.mjs
+index c1a98de0..be8658bb 100644
+--- a/scripts/check-source-credentials.mjs
++++ b/scripts/check-source-credentials.mjs
+@@ -23,13 +23,73 @@ export function credentialFindings(source) {
+   return findings;
+ }
+ 
++const BLOB_LIMIT = 64 * 1024 * 1024;
++const BATCH_LIMIT = 32 * 1024 * 1024;
++const INDEX_LIMIT = 32 * 1024 * 1024;
++function gitBytes(root, args, input, maxBuffer) {
++  // Replacement refs must never substitute other bytes for a staged object.
++  try { return execFileSync('git', ['--no-replace-objects', ...args], { cwd: root, input, maxBuffer, stdio: 'pipe' }); }
++  catch { throw Error('credential_git_read_failed'); }
++}
++function scanStagedFiles(root) {
++  const index = gitBytes(root, ['ls-files', '--stage', '-z'], undefined, INDEX_LIMIT);
++  if (index.length && index[index.length - 1] !== 0) throw Error('credential_index_framing');
++  const entries = [], objects = new Map(), paths = new Set();
++  for (const entry of index.toString('utf8').split('\0').filter(Boolean)) {
++    const tab = entry.indexOf('\t'), header = entry.slice(0, tab);
++    const match = /^([0-7]{6}) ([0-9a-f]{40}|[0-9a-f]{64}) ([0-3])$/.exec(header);
++    if (tab < 0 || !match || !entry.slice(tab + 1)) throw Error('credential_index_framing');
++    if (match[3] !== '0') throw Error('credential_index_unmerged');
++    const name = entry.slice(tab + 1), oid = match[2];
++    if (paths.has(name)) throw Error('credential_index_duplicate_path');
++    paths.add(name); entries.push({ name, oid }); objects.set(oid, null);
++  }
++  if (!entries.length) return { files: 0, findings: [] };
++  const ids = [...objects.keys()], input = ids.join('\n') + '\n';
++  const sizes = gitBytes(root, ['cat-file', '--batch-check'], input, INDEX_LIMIT).toString('utf8');
++  const lines = sizes.split('\n');
++  if (lines.pop() !== '' || lines.length !== ids.length) throw Error('credential_object_framing');
++  const metadata = lines.map((line, i) => {
++    const m = /^([0-9a-f]{40}|[0-9a-f]{64}) blob (0|[1-9][0-9]*)$/.exec(line);
++    if (!m || m[1] !== ids[i]) throw Error('credential_object_unavailable');
++    const size = Number(m[2]);
++    if (!Number.isSafeInteger(size) || size > BLOB_LIMIT) throw Error('credential_blob_size_limit');
++    return { oid: ids[i], size, header: line + '\n', bytes: line.length + 1 + size + 1 };
++  });
++  function scanBatch(batch) {
++    const expected = batch.reduce((sum, item) => sum + item.bytes, 0);
++    const output = gitBytes(root, ['cat-file', '--batch'], batch.map(item => item.oid).join('\n') + '\n', expected);
++    if (output.length !== expected) throw Error('credential_blob_framing');
++    let offset = 0;
++    for (const item of batch) {
++      const header = Buffer.from(item.header, 'ascii');
++      if (!output.subarray(offset, offset + header.length).equals(header)) throw Error('credential_blob_framing');
++      offset += header.length;
++      const bytes = output.subarray(offset, offset + item.size); offset += item.size;
++      if (output[offset++] !== 10) throw Error('credential_blob_framing');
++      objects.set(item.oid, credentialFindings(bytes.toString('utf8')));
++    }
++    if (offset !== output.length) throw Error('credential_blob_framing');
++  }
++  let batch = [], bytes = 0;
++  for (const item of metadata) {
++    if (batch.length && bytes + item.bytes > BATCH_LIMIT) { scanBatch(batch); batch = []; bytes = 0; }
++    batch.push(item); bytes += item.bytes;
++    if (bytes >= BATCH_LIMIT) { scanBatch(batch); batch = []; bytes = 0; }
++  }
++  if (batch.length) scanBatch(batch);
++  const findings = [];
++  for (const { name, oid } of entries) for (const finding of objects.get(oid)) findings.push({ path: name, ...finding });
++  return { files: entries.length, findings };
++}
++
+ export function scanTrackedFiles(root, { staged = false } = {}) {
++  if (staged) return scanStagedFiles(root);
+   const names = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
+   const findings = [];
+   for (const name of names) {
+     let bytes;
+-    if (staged) bytes = execFileSync('git', ['show', `:${name}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 });
+-    else {
++    {
+       const path = resolve(root, name);
+       let stat;
+       try { stat = lstatSync(path); } catch (error) { if (error.code === 'ENOENT') continue; throw error; }
+diff --git a/tests/unit/source-credentials.test.mjs b/tests/unit/source-credentials.test.mjs
+index 76924b80..6622569c 100644
+--- a/tests/unit/source-credentials.test.mjs
++++ b/tests/unit/source-credentials.test.mjs
+@@ -1,6 +1,6 @@
+ import { test } from 'node:test';
+ import assert from 'node:assert/strict';
+-import { mkdtempSync, writeFileSync, rmSync, mkdirSync } from 'node:fs';
++import { mkdtempSync, writeFileSync, rmSync, mkdirSync, readFileSync } from 'node:fs';
+ import { tmpdir } from 'node:os';
+ import { join } from 'node:path';
+ import { execFileSync } from 'node:child_process';
+@@ -36,3 +36,122 @@ test('includes audit captures and checks staged bytes independently of working t
+     assert.equal(scanTrackedFiles(root, { staged: true }).findings.length, 0);
+   } finally { rmSync(root, { recursive: true, force: true }); }
+ });
++
++function repository(t) {
++  const root = mkdtempSync(join(tmpdir(), 'zoi-credential-git-'));
++  execFileSync('git', ['init', '-q'], { cwd: root });
++  t.after(() => rmSync(root, { recursive: true, force: true }));
++  return root;
++}
++function oracle(root) {
++  const names = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
++  return { files: names.length, findings: names.flatMap(path => credentialFindings(execFileSync('git', ['--no-replace-objects', 'show', `:${path}`], { cwd: root, maxBuffer: 64 * 1024 * 1024 }).toString('utf8')).map(f => ({ path, ...f }))) };
++}
++function stage(root, name, bytes) {
++  writeFileSync(join(root, name), bytes);
++  execFileSync('git', ['--literal-pathspecs', 'add', '--', name], { cwd: root });
++}
++function instrumentGit(t, root, mutation = '') {
++  const actual = execFileSync('which', ['git'], { encoding: 'utf8' }).trim();
++  const bin = join(root, '.probe-bin'); mkdirSync(bin);
++  const log = join(bin, 'calls.jsonl');
++  // Delegate to actual Git in the actual fixture repository; only output-corruption
++  // cases alter its returned bytes. This never substitutes fake staged contents.
++  writeFileSync(join(bin, 'git'), '#!/usr/bin/env node\n' +
++    `const {execFileSync}=require('node:child_process'),fs=require('node:fs');const args=process.argv.slice(2),input=fs.readFileSync(0);fs.appendFileSync(${JSON.stringify(log)},JSON.stringify(args)+'\\n');let bytes=execFileSync(${JSON.stringify(actual)},args,{input,maxBuffer:70*1024*1024});` + mutation + '\nprocess.stdout.write(bytes);\n', { mode: 0o700 });
++  const old = process.env.PATH; process.env.PATH = bin + ':' + old;
++  t.after(() => { process.env.PATH = old; });
++  return () => readFileSync(log, 'utf8').trim().split('\n').map(line => JSON.parse(line));
++}
++
++test('staged oracle parity covers binary, exact paths, identical blobs, symlinks and working-tree independence', async t => {
++  const root = repository(t), secret = 'gh' + 'p_' + 'z'.repeat(36);
++  for (const name of ['line\nbreak.txt', 'tab\tname.txt', ':leading.txt', 'Ελληνικά name.txt', '-option.txt']) stage(root, name, '\n' + secret);
++  stage(root, 'binary.data', Buffer.concat([Buffer.from([0, 255, 10]), Buffer.from(secret), Buffer.from([0, 254])]));
++  stage(root, 'deleted-after-stage', secret); rmSync(join(root, 'deleted-after-stage'));
++  const { symlinkSync } = await import('node:fs'); symlinkSync(secret, join(root, 'link')); execFileSync('git', ['add', 'link'], { cwd: root });
++  const expected = oracle(root), calls = instrumentGit(t, root);
++  const actual = scanTrackedFiles(root, { staged: true });
++  assert.deepEqual(actual, expected); assert.equal(actual.findings.length, 8);
++  assert.equal(calls().length, 3); // one index, one metadata, one bounded body batch
++  assert.equal(scanTrackedFiles(root).findings.length, 6); // deleted file and symlink excluded as before
++});
++
++test('all current credential signatures and lines retain exact staged oracle results', t => {
++  const root = repository(t), tokens = ['AI' + 'za' + 'x'.repeat(35), 'github_' + 'pat_' + 'a'.repeat(45), 'AS' + 'IA' + 'A'.repeat(16), 'sk_' + 'test_' + 'b'.repeat(20), ['-----BEGIN RSA ' + 'PRIVATE KEY-----', 'YWJjZA==', '-----END RSA ' + 'PRIVATE KEY-----'].join('\n')];
++  stage(root, 'captured-source', tokens.join('\n'));
++  assert.deepEqual(scanTrackedFiles(root, { staged: true }), oracle(root));
++  assert.equal(scanTrackedFiles(root, { staged: true }).findings.length, 5);
++});
++
++test('empty index, intent-to-add and replacement refs never hide original staged bytes', t => {
++  const root = repository(t); assert.deepEqual(scanTrackedFiles(root, { staged: true }), { files: 0, findings: [] });
++  stage(root, 'original', 'AI' + 'za' + 'x'.repeat(35));
++  const oid = execFileSync('git', ['rev-parse', ':original'], { cwd: root, encoding: 'utf8' }).trim();
++  const clean = execFileSync('git', ['hash-object', '-w', '--stdin'], { cwd: root, input: 'redacted', encoding: 'utf8' }).trim();
++  execFileSync('git', ['replace', oid, clean], { cwd: root });
++  writeFileSync(join(root, 'intent'), 'unstaged'); execFileSync('git', ['add', '-N', 'intent'], { cwd: root });
++  assert.deepEqual(scanTrackedFiles(root, { staged: true }), oracle(root));
++  assert.equal(scanTrackedFiles(root, { staged: true }).findings.length, 1);
++});
++
++test('unmerged index and missing or nonblob objects fail closed before returning a scan', t => {
++  const root = repository(t); stage(root, 'file', 'clean');
++  const oid = execFileSync('git', ['rev-parse', ':file'], { cwd: root, encoding: 'utf8' }).trim();
++  execFileSync('git', ['update-index', '--index-info'], { cwd: root, input: `0 ${'0'.repeat(40)}\tfile\n100644 ${oid} 1\tfile\n100644 ${oid} 2\tfile\n100644 ${oid} 3\tfile\n` });
++  assert.throws(() => scanTrackedFiles(root, { staged: true }), /credential_index_unmerged/);
++  execFileSync('git', ['read-tree', '--empty'], { cwd: root });
++  execFileSync('git', ['update-index', '--add', '--cacheinfo', `160000,${'1'.repeat(40)},missing-submodule`], { cwd: root });
++  assert.throws(() => scanTrackedFiles(root, { staged: true }), /credential_object_unavailable/);
++  execFileSync('git', ['read-tree', '--empty'], { cwd: root });
++  const tree = execFileSync('git', ['mktree'], { cwd: root, input: '', encoding: 'utf8' }).trim();
++  execFileSync('git', ['update-index', '--add', '--cacheinfo', `160000,${tree},not-a-blob`], { cwd: root });
++  assert.throws(() => scanTrackedFiles(root, { staged: true }), /credential_object_unavailable/);
++});
++
++test('32MiB batch boundary includes framing and 64MiB singleton retains the tail credential', t => {
++  const root = repository(t), limit = 64 * 1024 * 1024, key = 'AI' + 'za' + 'x'.repeat(35);
++  const a = Buffer.alloc(16 * 1024 * 1024); a[0] = 1;
++  const b = Buffer.alloc(16 * 1024 * 1024); b[0] = 2;
++  const c = Buffer.alloc(limit); c.write(key, limit - key.length);
++  stage(root, 'first', a); stage(root, 'second', b); stage(root, 'maximum', c);
++  const calls = instrumentGit(t, root), result = scanTrackedFiles(root, { staged: true });
++  assert.equal(result.files, 3); assert.deepEqual(result.findings, [{ path: 'maximum', type: 'Google API key', line: 1 }]);
++  assert.equal(calls().filter(args => args.includes('--batch')).length, 3); // 16+16MiB cannot share a32MiB group after headers
++});
++
++test('larger than64MiB refuses after metadata without reading any body', t => {
++  const root = repository(t); stage(root, 'oversize', Buffer.alloc(64 * 1024 * 1024 + 1));
++  const calls = instrumentGit(t, root);
++  assert.throws(() => scanTrackedFiles(root, { staged: true }), /credential_blob_size_limit/);
++  assert.equal(calls().filter(args => args.includes('--batch')).length, 0);
++});
++
++for (const [label, mutation] of [
++  ['OID', `if(args.includes('--batch'))bytes[0]=bytes[0]===97?98:97;`],
++  ['type', `if(args.includes('--batch'))bytes=Buffer.from(bytes.toString().replace(' blob ',' tree '));`],
++  ['size', `if(args.includes('--batch'))bytes=Buffer.from(bytes.toString().replace('blob 5','blob 4'));`],
++  ['terminator', `if(args.includes('--batch'))bytes[bytes.length-1]=0;`],
++  ['truncated', `if(args.includes('--batch'))bytes=bytes.subarray(0,bytes.length-1);`],
++  ['trailing', `if(args.includes('--batch'))bytes=Buffer.concat([bytes,Buffer.from('x')]);`],
++  ['Git failure', `if(args.includes('--batch'))process.exit(2);`],
++]) test(`unexpected Git ${label} fails closed on actual staged fixture`, t => {
++  const root = repository(t); stage(root, 'file', 'clean'); instrumentGit(t, root, mutation);
++  assert.throws(() => scanTrackedFiles(root, { staged: true }));
++});
++
++test('SHA256 Git repositories retain staged object identity and shared path findings', t => {
++  const root = mkdtempSync(join(tmpdir(), 'zoi-credential-sha256-')); t.after(() => rmSync(root, { recursive: true, force: true }));
++  execFileSync('git', ['init', '-q', '--object-format=sha256'], { cwd: root });
++  const value = 'AI' + 'za' + 'x'.repeat(35); stage(root, 'one', value); stage(root, 'two', value);
++  assert.deepEqual(scanTrackedFiles(root, { staged: true }), oracle(root));
++  assert.equal(scanTrackedFiles(root, { staged: true }).findings.length, 2);
++});
++
++test('failed Git output never exposes staged credential bytes in errors or CLI output', t => {
++  const root = repository(t), key = 'AI' + 'za' + 'x'.repeat(35); stage(root, 'file', key);
++  instrumentGit(t, root, `if(args.includes('--batch')){process.stdout.write(bytes);process.stderr.write(${JSON.stringify(key)});process.exit(2);}`);
++  assert.throws(() => scanTrackedFiles(root, { staged: true }), error => error.message === 'credential_git_read_failed' && !String(error).includes(key));
++  try { execFileSync(process.execPath, [new URL('../../scripts/check-source-credentials.mjs', import.meta.url).pathname, root, '--staged'], { encoding: 'utf8', stdio: 'pipe' }); assert.fail('CLI must refuse'); }
++  catch (error) { assert(error.status); assert(!String(error.stdout).includes(key)); assert(!String(error.stderr).includes(key)); assert.match(String(error.stderr), /credential_git_read_failed/); }
++});
