@@ -1,4 +1,4 @@
-import { buildClientBrief, briefURL, briefBlocked } from '../../../assets/enrichment/client-brief.mjs';
+import { buildClientBrief, briefURL, briefBlocked, sourceCopyProfile, retainedSourceCopy } from '../../../assets/enrichment/client-brief.mjs';
 import { inspectSourceDocument } from './_document-quality.js';
 const normalized=value=>typeof value==='string'?value.normalize('NFKC').replace(/\s+/g,' ').trim().toLowerCase():'';
 /** Exact source-name evidence, not ownership/credential verification. A linked
@@ -36,7 +36,21 @@ export function prepareClientBrief(batch,queue,checkedAt=new Date().toISOString(
  for(const result of batch){
   const row=rows.get(result.slug);
   if(!row||result.profile?.crawl_status==='error'||briefBlocked(result.profile))continue;
+  const before=new TextEncoder().encode(JSON.stringify(result)).byteLength;
+  result.profile=sourceCopyProfile(result.profile);
+  result.provenance=result.provenance||{};
+  for(const key of ['description','tagline'])if(!Object.hasOwn(result.profile,key))delete result.provenance[key];
+  const retained=retainedSourceCopy(row,result.profile,result.website);
   const brief=buildClientBrief({listing:row,profile:result.profile,provenance:result.provenance,sourceURL:result.website,checkedAt,sources:result.source_evidence});
+  Object.assign(result.profile,retained.fields);Object.assign(result.provenance,retained.provenance);
+  const added=new TextEncoder().encode(JSON.stringify(result)).byteLength-before;
+  if(Object.keys(retained.fields).length&&bytes+added>=1950000){
+   // Preserve the prior canonical profile through its existing error merge rather
+   // than silently drop old copy or exceed the shared apply payload budget.
+   result.profile={crawl_status:'error',last_error:'source_copy_retention_payload_limit'};result.provenance={};
+   bytes+=new TextEncoder().encode(JSON.stringify(result)).byteLength-before;continue;
+  }
+  bytes+=added;
   if(!brief)continue;
   if(result.profile.client_brief)bytes-=new TextEncoder().encode(JSON.stringify(result.profile.client_brief)).byteLength;
   const extra=new TextEncoder().encode(JSON.stringify(brief)).byteLength+100;

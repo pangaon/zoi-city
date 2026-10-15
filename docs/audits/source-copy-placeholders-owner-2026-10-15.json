@@ -1,0 +1,186 @@
+{
+  "date": "2026-10-15",
+  "scope": "Whole-value placeholder metadata in source descriptions/taglines, canonical worker payload preservation, reviewed merge lanes and public machine fallback; no source identity promotion, owner content write, live SQL or new network.",
+  "worktree": "/tmp/zoi-source-copy-placeholders",
+  "branch": "fix-source-copy-placeholders-20261015",
+  "base_commit": "afe271b3fc507e745ee2ab8ce6ed63d1db753773",
+  "freeze_status": "frozen",
+  "owned_files": [
+    {
+      "path": "api/_verticals.js",
+      "sha256": "a43367b0024c5b58d0186609d50e6c8598cfef325dc635c47bc125cce9f4113d"
+    },
+    {
+      "path": "assets/enrichment/client-brief.mjs",
+      "sha256": "d0888635355c529eac18be812162a8952d66d7298e84fcf6bc81bd2b43ecfbc3"
+    },
+    {
+      "path": "mobile/src/profile.ts",
+      "sha256": "7132be6be065e919b8312f867bbf77987c1425e3621ad35d0e869a69b5144ac1"
+    },
+    {
+      "path": "scripts/enrichment/extractor.mjs",
+      "sha256": "32a216f9e36f24191572c5d20747aee662f41b2bfcb913a726507c1583e9dd1a"
+    },
+    {
+      "path": "scripts/enrichment/render-queue.mjs",
+      "sha256": "9c9759fa8d5ce7c30d9833cae19389e22e950eacc71e49516d774878d7064ade"
+    },
+    {
+      "path": "scripts/enrichment/reviewed-batch.mjs",
+      "sha256": "d5ccfca3f5cbee712b46f00bc9ac97ea90128285fc8e8d1c8c82954feda3d07b"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_brief.js",
+      "sha256": "b60ffdfb50a64286cc319dba1df31fb6c9839e8f6420226865acd20896b4609c"
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/index.ts",
+      "sha256": "5f338a735d1c1049310373026684091959d58f7596e3be35d0e0d52fbd33caae"
+    },
+    {
+      "path": "tests/unit/client-services-extractor.test.mjs",
+      "sha256": "8aa57ec933985a2119427cab66eb4184950078a1a33f2d1d68f7aeca5b1346a2"
+    },
+    {
+      "path": "tests/unit/enrichment-deadline.test.mjs",
+      "sha256": "f6f604c36f363fd671863a0a641152efe5900e09d5b0f6c41f43dbfacc53eaa9"
+    },
+    {
+      "path": "tests/unit/enrichment-member-worker.test.mjs",
+      "sha256": "0d5e67e65db211d802376ac1ef8dbaed7bcaf3098d470caeadd5408b8b6d6320"
+    },
+    {
+      "path": "tests/unit/enrichment-profile-extraction.test.mjs",
+      "sha256": "1313b76c6c41d8cc7b92c5db7b5b3cd993fbf72634bb723eb0e16ce34a8384aa"
+    },
+    {
+      "path": "tests/unit/enrichment-source-replacement-identity.test.mjs",
+      "sha256": "1a3671a3bb4b5ba9dec01b3b8b9b44c8f3680a054162a514edd8582d5baeea84"
+    },
+    {
+      "path": "tests/unit/food-source-branch-independent.test.mjs",
+      "sha256": "25d7f5ba5480a2b789eddd2283d203205415332dda4c71c1314eae6dd7339f52"
+    },
+    {
+      "path": "tests/unit/food-source-pipeline.test.mjs",
+      "sha256": "98f83df7d158ec254601ee22e08d36a6df92872c586c991a6130432927a35ca1"
+    },
+    {
+      "path": "tests/unit/source-copy-placeholders.test.mjs",
+      "sha256": "c030311e78d2dd7f981abc9214cf282d3eab9baf405afa61baa30bd633575d23"
+    }
+  ],
+  "policy": {
+    "sentinels": [
+      "...",
+      "\u2026",
+      "null",
+      "undefined",
+      "[object Object]"
+    ],
+    "match": "Whole normalized trimmed string only, case-insensitive. Applies only to machine source description and tagline. Names and substantive short copy remain untouched.",
+    "source_clear": "Explicit raw/owner values and clears are preserved. Rendered review explicit approved null remains a distinct clear; source HTML approved override validation remains unchanged except rejecting literal sentinels.",
+    "prior_copy": "Only matching registered/source documents with nonempty original per-field provenance; no owner-managed, stale, held, quarantined, unknown, mismatched-family or mismatched-identity source fallback. No proof re-timestamp or new source approval.",
+    "brief": "Build from fresh filtered fields before adding old copy; retained old description is excluded from fresh brief evidence.",
+    "payload": "Retention contributes to existing budget. Overflow uses error-only metadata, so canonical error merge preserves old facts. Writer and schema unchanged.",
+    "public": "Filter only _enrich machine fallback; raw/owner fields applied afterward remain authoritative."
+  },
+  "actual_source": {
+    "url": "https://hellenicbakery.com/livonia-hellenic-bakery-and-grocery-food-menu",
+    "sha256": "a3f6a5b1c4c78f4a66283fdea52e3eca11b5dc2b9d151e94ebf07896792b7267",
+    "og_description": "...",
+    "og_site_name": "null",
+    "standard_description": "",
+    "filtered_description": null,
+    "filtered_tagline": null,
+    "source_items_observed": 151,
+    "note": "Menu price fidelity has its own separately frozen packet and independent source gate; this tree does not overwrite that runtime fix."
+  },
+  "recipe": {
+    "base": "afe271b3fc507e745ee2ab8ce6ed63d1db753773",
+    "node": "24.14.0",
+    "strategy": "reviewed-food-source-v1",
+    "extractor_before": "272ea43f915d52d863a7c7cc3e8d27f0c442566fa0b3935716a261db4154d5c7",
+    "extractor_after": "0128692767ed4c7db356837e4a01bdf520b21da73055fa6749d80874e8c80942",
+    "recipe_before": "8fb7e7c723e73a31aef6da20bf93d10dc365e48c64417f25e4c2c8195249ca53",
+    "recipe_after": "c06e230f476293cc86673b8d0de1942b4c29094ea11190a2eb117b5ab43108ee",
+    "changed_identity": true,
+    "new_store": false,
+    "old_artifacts_retained": true,
+    "extra_graph_modules": 0
+  },
+  "validation": {
+    "focused_tests": 160,
+    "failed": 0,
+    "actual_worker_handler": true,
+    "source_capture": true,
+    "both_reviewed_lanes": true,
+    "automatic_rendered_merge": true,
+    "public_machine_fallback_families": [
+      "restaurant",
+      "bakery",
+      "parish",
+      "professional"
+    ],
+    "owner_raw_values_and_clears": true,
+    "near_payload_limit_error_preservation": true,
+    "actual_retained_source_proof": true,
+    "cached_deno": "pass",
+    "packaging": "existing20module graph passes; no additional module",
+    "seven_existing_harnesses": "After reversing import/dependency injections only, all seven baseline test bodies are byte-identical. No assertion/fixture weakening.",
+    "source_resume": "Existing changed-recipe/no-network-resume test passes; originals retained.",
+    "node_syntax": "pass",
+    "diff_check": "pass",
+    "production_writes": 0,
+    "sql_calls": 0,
+    "paid_calls": 0,
+    "network_requests": 0,
+    "browser_acceptance": false,
+    "native_journey_acceptance": false,
+    "actual_native_normalizeProfile": true,
+    "prior_copy_beyond_fresh_extraction_bounds": "Original historical strings retained exactly when source eligible; no new historical clipping. Shared payload-budget error preservation remains authoritative."
+  },
+  "remaining": [
+    "Independent review of exact frozen sources",
+    "Root integrates separate price commit with this helper packet and verifies combined hashes/recipe",
+    "Root release and deployed behavior acceptance",
+    "Visible official branch review lane remains design only; no unattended or forged typed identity promotion",
+    "Installed APK bd5e9c4 awaits a coherent native build containing this source fix."
+  ],
+  "native": {
+    "source_fix": "mobile/src/profile.ts reuses existing shared classifier and skips only machine description/tagline sentinels; actual normalizeProfile assertions pass",
+    "installed_apk_commit": "bd5e9c4",
+    "installed_apk_includes_this_fix": false,
+    "release": "Awaiting a coherent later native build; no EAS build or installed-device acceptance performed"
+  },
+  "private_evidence": {
+    "directory": "/home/codespace/.cache/zoi/source-copy-placeholders-20261015",
+    "files": [
+      {
+        "name": "zoi-source-copy-deno.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "zoi-source-copy-recipe.json",
+        "sha256": "4a8145e9682ad6ac941b2eb3d6cdd64e26cdc67e935ed4ac9541b186632fe4b7"
+      },
+      {
+        "name": "source-copy-placeholders.test.mjs",
+        "sha256": "c030311e78d2dd7f981abc9214cf282d3eab9baf405afa61baa30bd633575d23"
+      },
+      {
+        "name": "zoi-source-copy-focused.log",
+        "sha256": "d8e9060e532ef15749e449d02d93cb0df0f9cf7faf444236bf2e7fffe91e6718"
+      },
+      {
+        "name": "tracked-delta.patch",
+        "sha256": "1e19bc2b184ff8169957cba5d6675e03979b921b2edfad797fc5db9aaf649bfb"
+      },
+      {
+        "name": "zoi-source-copy-retained.log",
+        "sha256": "2107521571cdcdd9d4577a9cca1ed59beabe88c741b983d5b569a113d9c91e33"
+      }
+    ]
+  }
+}

@@ -1,3 +1,4 @@
+import {sourceCopyPlaceholder} from '../assets/enrichment/client-brief.mjs';
 import {ownerFoodProfile} from '../assets/homes/templates/restaurant/model.mjs';
 import {resolveSocialLinks} from '../assets/homes/social-links.mjs';
 import {officialSourceEntity,sourceIdentityContentHeld} from '../assets/enrichment/official-source-policy.mjs';
@@ -109,6 +110,7 @@ export function safeProfile(e) {
   // Enrichment first, so an owner key written afterwards overwrites it.
   for (const k of Object.keys(enr)) {
     if (BANNED_PROFILE_KEYS.test(k) || ENRICH_META_KEYS.has(k) || RESERVED_PROFILE_KEYS.has(k)) continue;
+    if (['description','tagline'].includes(k) && sourceCopyPlaceholder(enr[k])) continue;
     // Legacy imports also pass the current crawler's profile-link classifier.
     // Filter machine fallbacks only; explicit owner values are applied below.
     if(sharedBranchContactSource(e,enr.source_url)&&BRANCH_CONTACT_FIELDS.has(k))continue;
