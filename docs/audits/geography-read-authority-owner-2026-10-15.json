@@ -1,0 +1,106 @@
+{
+  "observed_at": "2026-10-15T12:21:22.013543+00:00",
+  "state": "Frozen source candidate; real PostgreSQL behavior passed, independent implementation review and production migration/application remain root-owned",
+  "baseline": "2ff3284a47ea0984212ed30ea8318fcc69027ad7",
+  "worktree": "/workspaces/zoi-geography-read-authority",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015120726_geography_reviewed_read_authority.sql",
+      "sha256": "651181b20b1a02572f11ba37d57c66ed6bc436c1482fd65bf89cebfabae8c162"
+    },
+    {
+      "path": "tests/database/fixtures/geography-read-authority-live.json",
+      "sha256": "e788d29254ade7971138e04445afa754357f276e4471e4db7d0302e61dd08719"
+    },
+    {
+      "path": "tests/database/geography-read-authority.integration.mjs",
+      "sha256": "edf187bc651ec06b0bcc718f02109b7ee07d75e99c7f14e2007892b7b875b351"
+    },
+    {
+      "path": "tests/database/geography-read-authority-production-rollback.sql",
+      "sha256": "21e6bd92f50a94af1ef8672f93db3d9a760c05948abc0bbf80b6702af72b3fdd"
+    },
+    {
+      "path": "docs/audits/evidence/stalactites-revalidation-2026-10-15/readme.json",
+      "sha256": "779a30b935d7d98186402a64662221b0b78edcdab067fb661feaffca65696443"
+    },
+    {
+      "path": "docs/audits/evidence/stalactites-revalidation-2026-10-15/report.json",
+      "sha256": "a6233e188010879770f729f9b28a07e1d7cf59337822581fd4e42d0b641ffb5e"
+    },
+    {
+      "path": "docs/audits/evidence/stalactites-revalidation-2026-10-15/request.json",
+      "sha256": "721c092f33274d8cdf5dd0a8c10393a87d93ec674d484eab5976c523778a9e21"
+    },
+    {
+      "path": "docs/audits/evidence/stalactites-revalidation-2026-10-15/review.json",
+      "sha256": "6e0db9caaeb3fb1859b4709161bca697a28f0f399370a9161a9c398a64c93003"
+    },
+    {
+      "path": "docs/audits/evidence/stalactites-revalidation-2026-10-15/snapshot.json",
+      "sha256": "f108406f94eadb0a34e808e5e259564aade9b13f109f91bacc3fc1a6c37e8007"
+    },
+    {
+      "path": "docs/audits/evidence/geography-read-authority-2026-10-15/postgres-local.log",
+      "sha256": "97afebeb38990ffaa97dcbdb80ccb7c60be32185e385a0f6b40fefdc67c64bb0"
+    },
+    {
+      "path": "docs/audits/geography-source-outcome-independent-2026-10-15.json",
+      "sha256": "16490ddfd716a4dde4870d9b28fca6c840d2e51772a193ca8845d14d5d0a2dc8"
+    }
+  ],
+  "root_cause": {
+    "actual_full_row_fingerprint_definition": "md5(to_jsonb(p_listing)::text)",
+    "actual_helper_md5": "b77ed3d5d9004f1957503c2f848fe4c8",
+    "actual_reader_md5_before": "96ab6ffd834c20e8f75e69a788bbc0d6",
+    "consequence": "Any listing-row edit, including routine menu, enrichment, coverage or updated_at, makes a prior full-row read receipt stale. The full-row write CAS is intentionally retained.",
+    "stalactites_evidence": "Prior and current quality fingerprint ac41a1c6802308fb9ecb47f5df2f7ce7 and identity/address/source/point are unchanged; full-row after_fingerprint81d165fe5f031baebfa84992f8ef0967 differs from current b7d3dbe9001bcea181512994cae69dff. Exact historical changed field cannot be reconstructed because the ledger stores only before_geo, not a full prior row."
+  },
+  "design": [
+    "No zoi.listings column/default/row-shape change. A private RLS-enabled per-listing epoch is established lazily only by a successful newly source-reviewed canonical write. No population seeding or legacy receipt re-signing.",
+    "New immutable canonical input covers listing identity/branch, exact canonical and published address/city/country/website overrides, source registration/trust and geographic field metadata, source identity/holds, ownership, visibility, point/precision and the complete _geo provenance/request binding. Menu/content/media/hours/coverage/crawl timestamps/updated_at are excluded.",
+    "An AFTER UPDATE trigger sees the final row and advances an existing epoch only for a relevant input change. It creates no epoch for an unreviewed listing. A change away and back cannot revive the earlier receipt. Listing lock precedes private epoch mutation; no listing update or competing job store is introduced.",
+    "New nullable private geography_reviews.read_authority_fingerprint captures SHA256 of the narrow input plus epoch after the canonical actual write. Legacy NULL receipts retain the original strict full-row comparison.",
+    "The actual writer retains every full-row application/source/snapshot/independence/CAS/replay check. It additionally refuses held or contradictory published source/address overrides, lazily establishes the epoch and records read authority. Full-row geography_fingerprint and geography_review_revert definitions remain byte-identical.",
+    "The public reviewed-point RPC returns the original five-field shape and retains exact existing ACL/public eligibility/reverted/wrong-request/wrong-point gates. New receipts compare narrow authority; legacy receipts compare the full row. An exact validated _geo request UUID enables the existing request-ID primary-key lookup; no new review-table scan/index is required."
+  ],
+  "verification": {
+    "real_engine": "PostgreSQL16 with pgcrypto",
+    "passed_groups": 14,
+    "failed": 0,
+    "skipped": 0,
+    "concurrent_first_writers": "Two real PostgreSQL clients, one accepted/one current full-row CAS refusal, one receipt and epoch.",
+    "authority_changes": "Nineteen canonical identity/address/source/owner/visibility/coordinate/field-authority transitions; twelve published/source-hold transitions; eight _geo provenance field changes. Relevant changes and restoration refuse prior authority.",
+    "retained_on_benign_changes": "Menu, coverage, description, photo, hours, unrelated field metadata, crawl timestamp and updated_at changes retain a new read receipt without advancing epoch.",
+    "bounded_update_benchmark": {
+      "relevant_ms": 33.047,
+      "unrelated_ms": 26.867,
+      "updates_each": 200
+    },
+    "legacy": "Migration does not alter existing listing hashes or promote old receipts. A benign edit still invalidates a legacy NULL receipt.",
+    "security": "All API roles denied epoch table and four private helpers; exact original RPC execute ACLs and full-row helper/revert definitions preserved.",
+    "prepared_production_rollback": "Runs exact canonical writer/read/replay/revert behavior and rolls back listing, three receipts and epoch; only locally exercised so far. No actual public source proof is claimed from synthetic SQL.",
+    "syntax_and_whitespace": "Node syntax and staged diff checks required before root handoff."
+  },
+  "production_writes": 0,
+  "paid_provider_calls": 0,
+  "live_schema_applied": false,
+  "source_revalidation_proposal": {
+    "listing_id": "054dd95e-5253-4a86-9630-fe91c3f29c90",
+    "request_id": "841902d0-c90e-4547-9338-d1af00e13ac7",
+    "path": "docs/audits/evidence/stalactites-revalidation-2026-10-15/request.json",
+    "report_sha256": "a6233e188010879770f729f9b28a07e1d7cf59337822581fd4e42d0b641ffb5e",
+    "state": "Prepared and unexecuted. Root review/current CAS and accepted schema release required. Candidate equals stored coordinates; count as provenance revalidation, not coordinate correction."
+  },
+  "remaining": [
+    "Independent review of the frozen exact source and production rollback SQL.",
+    "Root exact source integration and guarded migration; actual schema/ACL/epoch readback and actual rollback proof.",
+    "Root re-read current Stalactites snapshot/authority and source evidence, then apply the prepared canonical request only if unchanged and accepted. No blind CAS rewrite or retry.",
+    "Verify the deployed API/marker/directions journey and native consumer behavior before claiming end-to-end map delivery.",
+    "Catalogue-wide address correction remains open; bounded230 source outcomes and this same-point revalidation are not coverage completion."
+  ],
+  "references": [
+    "https://www.postgresql.org/docs/16/trigger-definition.html",
+    "https://supabase.com/docs/guides/database/postgres/triggers"
+  ]
+}

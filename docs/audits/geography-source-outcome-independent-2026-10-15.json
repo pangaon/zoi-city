@@ -1,0 +1,174 @@
+{
+  "observed_at": "2026-10-15T12:03:00Z",
+  "reviewer": "qa_next",
+  "state": "Read-only independent scheduled-source outcome review; one current official point revalidation supported, one supporting publisher record still unresolved for coordinates",
+  "production_mutations": 0,
+  "paid_api_calls": 0,
+  "new_coordinate_corrections": 0,
+  "completed_homes": 0,
+  "scheduler": {
+    "observed_at": "2026-10-15T11:58:48.521953Z",
+    "cron_job": 33,
+    "active": true,
+    "schedule": "* * * * *",
+    "command_md5": "94f698017c0c92a4b53867e7bf74a784",
+    "admission_minimum_minutes": 5,
+    "tickets_reserved": 76,
+    "tickets_consumed": 76,
+    "tickets_revoked": 0,
+    "last_issued_at": "2026-10-15T11:53:00.351190Z",
+    "policy_starts_at": "2026-10-15T04:42:40.780975Z",
+    "policy_expires_at": "2026-10-16T04:42:40.780975Z",
+    "archive_stored_bytes": 34382924,
+    "archive_limit_bytes": 536870912,
+    "unknown_size_objects": 0,
+    "latest_three_cron_runs": "Succeeded at11:56,11:57,11:58; these are admissions checks, not evidence that every minute dispatched a source batch."
+  },
+  "bounded_outcomes": {
+    "window_start": "2026-10-15T04:42:40.780975Z",
+    "limit": 512,
+    "actual_rows": 230,
+    "definition": "Recent geography_repair_jobs with captured_at at or after policy start, ordered latest first, LIMIT512. All returned jobs fit within bound; this does not count the full catalogue. Captured source outcomes are not approved addresses or completed homes.",
+    "official_sources_v1": {
+      "unresolved": 83,
+      "source_blocked": 65,
+      "needs_address_review": 2,
+      "needs_identity_review": 1
+    },
+    "publisher_profiles_v1": {
+      "unresolved": 51,
+      "source_blocked": 27,
+      "needs_identity_review": 1
+    },
+    "nonnull_proposals": 2,
+    "applied_jobs": 0,
+    "reason_top_12": {
+      "matching_structured_coordinates_missing": 83,
+      "individual_publisher_profile_identity_unconfirmed": 51,
+      "robots_unavailable": 50,
+      "publisher_document_branch_changed": 10,
+      "robots_disallow": 7,
+      "source_http_403": 6,
+      "javascript_render_required": 3,
+      "source_http_404": 3,
+      "source_timeout": 3,
+      "structured_address_mismatch": 2,
+      "coordinate_plausibility_review_required": 1,
+      "individual_supporting_publisher_proposal_requires_review": 1
+    }
+  },
+  "candidates": [
+    {
+      "listing_id": "054dd95e-5253-4a86-9630-fe91c3f29c90",
+      "job_id": "e963b848-c88f-4a77-9551-797c65418319",
+      "name": "Stalactites Restaurant",
+      "canonical_source": "https://www.stalactites.com.au/",
+      "canonical_address": "177-183 Lonsdale Street, Melbourne VIC 3000",
+      "country": "Australia",
+      "current_point": {
+        "latitude": -37.8110808,
+        "longitude": 144.9670491
+      },
+      "proposed_equals_stored": true,
+      "current_job": true,
+      "current_database_snapshot": "b7d3dbe9001bcea181512994cae69dff",
+      "current_quality_fingerprint": "ac41a1c6802308fb9ecb47f5df2f7ce7",
+      "current_reviewed_point_rpc": null,
+      "prior_receipt": "59ca1977-37f5-4d02-8a35-c2cb68346be6",
+      "prior_after_fingerprint": "81d165fe5f031baebfa84992f8ef0967",
+      "official_source_sha256": "e581b946d8676c703a05327e8696b66b8f80e6ccb8e0f6a1ebfbefe45470ba85",
+      "official_capture_matches_scheduled": true,
+      "identity_evidence": "Restaurant JSON-LD binds exact business name, street range, Melbourne, VIC,3000,AU and single source-published point. FAQ corroborates177-183; footer175-183 is an overlapping range, not a separate branch. No factual address rewrite proposed.",
+      "independent_source": "https://whatson.melbourne.vic.gov.au/eat-and-drink/stalactites-restaurant",
+      "independent_sha256": "114c8784f816923a84918dc1fb09380decfa5a087bd231d963f6cf86d81a8c2e",
+      "independent_evidence": "Municipal named-venue page confirms177/183 Lonsdale St, Melbourne3000, same telephone/official domain; its data-listing-map-location-value publishes the exact same pair. No map API request was made.",
+      "disposition": "Accepted for a fresh provenance revalidation through current canonical guards, subject to root review and current-row CAS. This moves neither coordinate and must not increment coordinate-correction counts.",
+      "remaining": "Root must construct fresh exact report with canonical quality fingerprint/current snapshot, retain evidence and independently review before write. Collector source_fingerprint is job.input_fingerprint by design and cannot be replayed as writer-ready quality fingerprint. Recheck current authority/source bytes if changed.",
+      "locality_extent": {
+        "south": -37.8160808,
+        "north": -37.8060808,
+        "west": 144.9620491,
+        "east": 144.9720491,
+        "source_url": "https://whatson.melbourne.vic.gov.au/eat-and-drink/stalactites-restaurant",
+        "kind": "reviewer_defined_plausibility_guard",
+        "basis": "Independent municipal named-venue point corroborates exact official point; +/-0.005degree review envelope. This is not an official locality boundary, parcel, entrance or rooftop certification."
+      }
+    },
+    {
+      "listing_id": "5e1f5e3e-a641-4d10-9b55-0b6bf0bd98ba",
+      "job_id": "6a9fefd4-a783-4e50-be7f-7d1dd8abe3e9",
+      "name": "Qahwa Roastery",
+      "canonical_source": "https://caffeatlas.com/qahwa-roastery-athens",
+      "canonical_address": "Agiou Spiridonos48,Egaleo,12243Athens",
+      "canonical_website": null,
+      "current_point": null,
+      "current_job": true,
+      "current_database_snapshot": "e8d496a5e178c56bde9fe59cfce33c44",
+      "current_quality_fingerprint": "5638ccb827c1247d4cb364869dd6bbcd",
+      "stored_proposal_kind": "supporting_source_proposal",
+      "stored_proposal_has_coordinates": false,
+      "current_source_sha256": "f21c1254b12e768db3068603b790a054f79ba4c2217d9c9d521e2c6fc72a9886",
+      "scheduled_source_sha256": "ff4dce5dbf7ebf63e18d81b68aaf34537af98a4dc0da5d5a018d66f8d3a40733",
+      "publisher_evidence": "Exact canonical profile and H1 match. Current JSON-LD contains the street, country, broader Athens locality, coordinates38.0043553,23.6768169 and qahwa.gr/q1/ link. Publisher coordinates remain supporting evidence, not official website evidence. Its logo field is the publisher logo and must not become client branding.",
+      "official_domain_candidate": "https://qahwa.gr/",
+      "official_home_sha256": "6f80ed8f6cf357813b9451ca87b15cafa5ef9c55dd06436419d5459f783be560",
+      "official_home_evidence": "HTTP200 coming-soon page lists three explicit branches including Aigaleo:Agiou Spiridonos48, plus+302105989996. No point or branch map destination is published in retrieved page. Linked/q1/ isHTTP404 and must not become canonical website.",
+      "secondary_support": "European Coffee Trip web reader confirms exact roastery address, but direct robots fetch is unavailable. No direct crawl or paid static-map retrieval attempted after that refusal. Other publisher snippets identify a separate QAHWA at Markou Mpotsari1; never substitute its location.",
+      "disposition": "Exact supporting publisher identity/address corroborated; official-domain qualification candidate prepared. Coordinates remain unresolved under the existing official-source-only writer.",
+      "remaining": "Root may separately review/register correct current homepage with branch scope and owner/hold/CAS guards. Obtain official branch destination/point or authorized licensed geocoding; otherwise retain missing coordinates. Do not rewrite website/address or assert official coordinate authority from the publisher. No writer permission changes proposed."
+    }
+  ],
+  "source_captures": [
+    {
+      "observed_at": "2026-10-15T12:00:44.198Z",
+      "url": "https://europeancoffeetrip.com/cafe/qahwaroastery-athens/",
+      "error": "robots_unavailable"
+    },
+    {
+      "observed_at": "2026-10-15T12:01:22.009Z",
+      "url": "https://qahwa.gr/",
+      "status": 200,
+      "bytes": 25292,
+      "sha256": "6f80ed8f6cf357813b9451ca87b15cafa5ef9c55dd06436419d5459f783be560"
+    },
+    {
+      "observed_at": "2026-10-15T12:00:43.787Z",
+      "url": "https://qahwa.gr/q1/",
+      "status": 404,
+      "bytes": 25292,
+      "sha256": "c5d4dc8259e783abd567f0671b7bbd1853a9b805fa0f135211933193192840b7"
+    },
+    {
+      "observed_at": "2026-10-15T12:01:22.077Z",
+      "url": "https://www.xo.gr/profile/profile-911679635/en/",
+      "error": "robots_unavailable"
+    },
+    {
+      "observed_at": "2026-10-15T12:00:03.911Z",
+      "url": "https://caffeatlas.com/qahwa-roastery-athens",
+      "status": 200,
+      "bytes": 145550,
+      "sha256": "f21c1254b12e768db3068603b790a054f79ba4c2217d9c9d521e2c6fc72a9886"
+    },
+    {
+      "observed_at": "2026-10-15T12:02:26.669Z",
+      "url": "https://whatson.melbourne.vic.gov.au/eat-and-drink/stalactites-restaurant",
+      "status": 200,
+      "bytes": 229386,
+      "sha256": "114c8784f816923a84918dc1fb09380decfa5a087bd231d963f6cf86d81a8c2e"
+    },
+    {
+      "observed_at": "2026-10-15T12:00:02.251Z",
+      "url": "https://www.stalactites.com.au/",
+      "status": 200,
+      "bytes": 335040,
+      "sha256": "e581b946d8676c703a05327e8696b66b8f80e6ccb8e0f6a1ebfbefe45470ba85"
+    }
+  ],
+  "evidence_separation": {
+    "source": "Actual robots-respecting bounded captures with hashes; factual extraction and municipal corroboration above.",
+    "rendered": "No new Zoi listing/map render in this review.",
+    "exercised_journey": "No new end-to-end source-to-map-to-directions acceptance and no native artifact acceptance.",
+    "production_database": "Read-only bounded outcome/policy/ticket aggregates and two exact current record/provenance checks."
+  }
+}

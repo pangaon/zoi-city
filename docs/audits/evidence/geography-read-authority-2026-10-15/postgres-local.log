@@ -1,0 +1,16 @@
+PASS legacy receipts and all listings full-row hashes unchanged by migration; no historical promotion
+PASS real canonical source-reviewed writer creates new private authority and supports unchanged exact replay
+PASS menu/coverage/crawl timestamps/description/photo/hours changes preserve reads without weakening write replay or revert CAS
+PASS nineteen identity/address/source/owner/visibility/coordinate transitions revoke authority, including away-and-back restoration
+PASS published overrides, identity quarantine and imported source authority changes invalidate; routine imported content remains allowed
+PASS all geographic request/source/provenance binding fields invalidate on change
+PASS reverted, wrong coordinate/request/listing/precision and mismatched authority receipts refuse
+PASS new application still requires fresh full-row CAS and rejects held sources before authority establishment
+PASS unchanged full-row revert succeeds and permanently removes new read acceptance
+PASS exact public RPC/ACL shape retained, private epoch/helpers inaccessible to all API roles, full-row helper and revert definition byte-identical
+PASS two real concurrent first-review writers serialize under the unchanged listing CAS; one accepted receipt/epoch
+{"bounded_local_update_benchmark":{"relevant_ms":33.047,"unrelated_ms":26.867,"updates_each":200}}
+PASS bounded200/200 update benchmark: unrelated content writes do not advance epoch, each geography change advances once
+PASS exact prepared production rollback fixture runs through real writer/read/revert and leaves no listing, receipt or epoch
+PASS no epoch seeded on unrelated/pre-review listings; migration repeat fails closed
+{"passed":14,"engine":"PostgreSQL16","actual_source_captures":0,"production_writes":0}
