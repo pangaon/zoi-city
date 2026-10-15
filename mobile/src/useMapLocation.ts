@@ -5,7 +5,9 @@ export function useMapLocation(scope:string,onFix:(fix:any,options:{center:boole
  const [state,setState]=useState<any>({phase:'idle',fix:null,canAskAgain:true}),callback=useRef(onFix),controller=useRef<any>(null);callback.current=onFix;
  useEffect(()=>{
   let focused=true;
-  const control=createForegroundLocation({getPermission:()=>Location.getForegroundPermissionsAsync(),requestPermission:()=>Location.requestForegroundPermissionsAsync(),servicesEnabled:()=>Location.hasServicesEnabledAsync(),watch:(success:any,error:any)=>{if(AppState.currentState!=='active'||!focused)throw Error('foreground_required');return Location.watchPositionAsync({accuracy:Location.Accuracy.Balanced,distanceInterval:0,timeInterval:1000,mayShowUserSettingsDialog:false},success,error);},onState:setState,onFix:(fix:any,options:any)=>callback.current(fix,options)});controller.current=control;
+  // An explicit Android snapshot can use GPS when network location is unavailable.
+  // The existing controller stops after one fix, cancellation or its20s deadline.
+  const control=createForegroundLocation({getPermission:()=>Location.getForegroundPermissionsAsync(),requestPermission:()=>Location.requestForegroundPermissionsAsync(),servicesEnabled:()=>Location.hasServicesEnabledAsync(),watch:(success:any,error:any)=>{if(AppState.currentState!=='active'||!focused)throw Error('foreground_required');return Location.watchPositionAsync({accuracy:Platform.OS==='android'?Location.Accuracy.High:Location.Accuracy.Balanced,distanceInterval:0,timeInterval:1000,mayShowUserSettingsDialog:false},success,error);},onState:setState,onFix:(fix:any,options:any)=>callback.current(fix,options)});controller.current=control;
   const background=AppState.addEventListener('change',status=>{if(status==='background'||status==='inactive'&&control.getState().phase!=='permission')control.cancel();});
   // React Native AppState focus/blur events exist on Android only.
   const focus=Platform.OS==='android'?AppState.addEventListener('focus',()=>{focused=true;}):null;

@@ -1,0 +1,123 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T21:17:54.705956+00:00",
+  "status": "INDEPENDENTLY_ACCEPTED_SOURCE_AND_EXPO_GENERATION_NOT_INSTALLED_ACCEPTANCE",
+  "baseline": "9a3b056bbbae6b9e7d8cdc78dfb0cf054ef0998a",
+  "root_tree": "/workspaces/zoi-map-studio-ops-release",
+  "review_tree": "/workspaces/zoi-native-font-scale-independent",
+  "owned_source_pins": {
+    "mobile/app.json": "4b6146b9a54af56267736bdafaddf51bf28f23a09f6de32a9a994de23cb6440d",
+    "mobile/plugins/with-font-scale.cjs": "7b6886b3da62f4e83726186e8c910e22372a7c791a4468c5580c918e8fcde3db",
+    "mobile/tests/android-font-scale.test.mjs": "2b88f22a30a4c05648a435d414a47151991420b5e229821d775a0260a734a6d3",
+    "mobile/tests/fixtures/android-manifest-before-font-scale.json": "efa995fdaaa34344586ad9e139391d31177c45661a283598d6220349de7c93ab",
+    "mobile/src/useMapLocation.ts": "28d086a7f860ee2dcde8ea70688ae294117063ff19c0f8b6681e66b9da905006",
+    "mobile/tests/foreground-map-location.test.mjs": "63d9e3be9847e041cf175a8a82b479c6bbf77d5aba8fcf7173c45c8a3f931c8f"
+  },
+  "readonly_dependency_pins": {
+    "mobile/package.json": "52667c9adc7d0909a176f5c44fbdf9fd578d9710a720328ad4571eaaba540913",
+    "mobile/package-lock.json": "f7f2fc1de0b5d675a7eb37e7b62ff355eae032582046462f3f75292324817db2",
+    "mobile/assets/icon.png": "dcb62a907e3d72c404395a5cef806de726f186eb753e195f0171ea6778b60d2c",
+    "mobile/assets/android-icon-foreground.png": "b3a5d6db8a333964ec67c779ffafc6c2acc79976e238f1ffc58a74e34a43e04a",
+    "mobile/assets/android-icon-background.png": "c98a86e4558781ad0abe9c23ea463ac000cf38d25f2db7860e73661a1224ff46",
+    "mobile/assets/android-icon-monochrome.png": "9cdad1e46fe9a28071341cd3a76eff4f19ca2728765a0f3f219eaad26b8414e9",
+    "mobile/assets/favicon.png": "3d0b290f745ad8a8b73f242d392b3b37bea49cb88502abcec25359b1da7b731a",
+    "mobile/src/MapLocationControl.tsx": "ebc8b2c18ef3270881fda3b54c8416b83f9ef145c9a38d264a987f94bb58ebe9",
+    "mobile/src/DiscoveryMap.android.tsx": "c3fe516bc9eb8cdc7f52a96e49223451a1ac15d7f05b6b9c5a46d2156652a404",
+    "mobile/src/DiscoveryMap.native.tsx": "ee8869dda14a3401951b95c019756ce30433c040eed817da092ea4a2a4aeca8d",
+    "assets/map-data/foreground-location.mjs": "c20db70cb0c9eda7d1bda395036b7fa94fbef51c90343dc75acf0b3fafec42ee"
+  },
+  "source_review": {
+    "font_plugin": "Existing real Expo Android manifest hook selects MainActivity via standard helper, refuses absent/empty/nonstring existing configuration, appends fontScale only if absent. Actual CLI full manifest differs solely that flag; missing activity fails, repeated real mod application is idempotent.",
+    "app_config": "Exactly one local plugin added to prior full app config. Permissions, orientation, scheme, package, version and all existing plugin settings unchanged.",
+    "gps_hook": "Whole original hook is restored byte-for-byte after removing2comments and changing the Android-only Accuracy.High conditional back to Balanced. Web/iOS remain Balanced. No controller, permission, storage, camera or Auth changes.",
+    "sdk_boundary": "Installed Expo57.0.26 and locked expo-location57.0.21 verified. Actual Android SDK maps High4 to high-accuracy priority; Balanced maps balanced-power. Higher priority allows more capable providers; it does not guarantee GPS availability, accuracy or a timely fix."
+  },
+  "verification": {
+    "focused_command": "node --test mobile/tests/android-font-scale.test.mjs mobile/tests/foreground-map-location.test.mjs",
+    "focused_passed": 11,
+    "independent_generation_and_edge_checks": 7,
+    "additional_cases": [
+      "Entire manifest comparison against actual retained root pre-plugin introspection",
+      "Real mod idempotence preserves every other activity field",
+      "Missing/null/empty/whitespace/nonstring flags refuse unchanged",
+      "Missing MainActivity refuses instead of choosing another activity",
+      "App config exact one-plugin delta",
+      "Exact current SDK priority mapping",
+      "Full original hook byte reversal"
+    ],
+    "device_operations": 0,
+    "build_operations": 0,
+    "providers_or_actual_auth": 0
+  },
+  "observed_issue_context": {
+    "root_report": "Sixth installed APK font1\u21922 returned Home/lost selected map; previous explicit Balanced location requests timed out despite granted permissions/services. Root owns device evidence and exact diagnosis.",
+    "binary_manifest": "Retained sixth MainActivity configChanges2147487664 lacks0x40000000 CONFIG_FONT_SCALE. The plugin generation now adds fontScale, but a corrected APK has not been inspected by reviewer.",
+    "factual_limit": "High priority eligibility is supported; the precise cause of the prior timeout is not proven. Root mutable device metadata is not copied or promoted to reviewer-installed proof."
+  },
+  "remaining_installed_gates": [
+    "Root coherent seventh artifact from protected integrated exact source; inspect new binary MainActivity font-scale bit.",
+    "Hot font1\u21922\u21921 must preserve current map selection/camera and full readable labels; verify no unexpected activity recreation/state loss.",
+    "Explicit location grant/fix/cancel/deny/background/account-switch on new installed Android artifact; preserve20s deadline and no auto prompt.",
+    "No iOS installed parity inferred from controlled source tests."
+  ],
+  "references": [
+    {
+      "url": "https://docs.expo.dev/versions/v57.0.0/",
+      "use": "Exact versioned docs required by mobile AGENTS; installed SDK57."
+    },
+    {
+      "url": "https://docs.expo.dev/config-plugins/plugins/",
+      "use": "Official manifest plugin mechanism."
+    },
+    {
+      "url": "https://developer.android.com/reference/android/content/pm/ActivityInfo#CONFIG_FONT_SCALE",
+      "use": "Font-scale configuration flag0x40000000; handled configChanges can avoid system activity restart."
+    },
+    {
+      "url": "https://docs.expo.dev/versions/v57.0.0/sdk/location/",
+      "use": "Accuracy/provider tradeoff and mayShowUserSettingsDialog behavior."
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/actual-generated-manifest.json",
+      "sha256": "7070e67e4992e87bb94144e21872e38a9ba124406e9c35d9d9f279c37111a65f",
+      "bytes": 5209
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/focused-six.log",
+      "sha256": "77178eab63f0676947dbfde1a4b3b3cd24268ee269f549fcf61c6bbb3b9d0b3b",
+      "bytes": 1403
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/installed-sdk-pins.json",
+      "sha256": "c420ac48c0ccf3f98bc09f111108c00265c58bb0190175735c90b385254a1180",
+      "bytes": 380
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/review-result.json",
+      "sha256": "93538345e0e604464b7bb55011c47ce63b10a23b7f2293249c85c14006573a3a",
+      "bytes": 887
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/review.log",
+      "sha256": "de6d937b87bf33277042b3efeba53cfc54945ec0c406741400eadb16801b2d80",
+      "bytes": 770
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/review.mjs",
+      "sha256": "a8916aa8cf92f653f9f2f2282d338c6b94a13c7e18e0528901e19f71ccd4b394",
+      "bytes": 4044
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/source-pins-six.json",
+      "sha256": "52b6da5b16b067bf91ff3c4b41c6f378d99581419dd0fd40bd096b1bc1cb8eb0",
+      "bytes": 1838
+    },
+    {
+      "path": "docs/audits/evidence/native-font-and-location-independent-2026-10-15/source-reversal.json",
+      "sha256": "dde5b57a8c20ffa5564806d52e169af60c8c8733ca91f3f99872578a5101afb7",
+      "bytes": 394
+    }
+  ]
+}
