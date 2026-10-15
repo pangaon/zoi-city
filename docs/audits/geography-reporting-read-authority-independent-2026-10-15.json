@@ -1,0 +1,132 @@
+{
+  "observed_at": "2026-10-15T13:11:09.968853+00:00",
+  "reviewer": "qa_next",
+  "verdict": "Accepted reporting-only release gate: exact applied migration, main read dependency and actual runtime definitions match; same-point revalidation does not become corrected-address evidence.",
+  "source_tree": "/workspaces/zoi-geography-reporting-work",
+  "frozen_owner_audit_sha256": "1b4e5fd566d36723a9154a799a5ff5551e2a55e6eb181a89f3c84a109215991b",
+  "files": [
+    {
+      "path": "supabase/migrations/20261015123706_geography_reporting_read_authority.sql",
+      "sha256": "f5f0279baa0e55d6152d35de2cffaa19b6c952879e83f9efbc777208a7af4527"
+    },
+    {
+      "path": "tests/database/geography-reporting-read-authority.integration.mjs",
+      "sha256": "449ef714f6fe6ec9a985a91939359a3d6cf24a389469b0a7eadada7c77c01cd2"
+    },
+    {
+      "path": "tests/database/fixtures/geography-reporting-read-authority-live.json",
+      "sha256": "89d6a610528d115a9edb4577344f133b99231dfc464c8d90e28bc7751659756f"
+    }
+  ],
+  "hashes_unchanged_before_after_independent_run": true,
+  "main_dependency": {
+    "actual_main_commit": "2f2e51de32a41551524563e1ac225a78f123defd",
+    "path": "supabase/migrations/20261015120726_geography_reviewed_read_authority.sql",
+    "sha256": "88167423b36ba6c3135822a19f330c1991f709767ad520b42d0c8dccce44a50b"
+  },
+  "actual_applied_ledger": {
+    "version": "20261015125926",
+    "name": "geography_reporting_read_authority",
+    "one_statement": true,
+    "sql_sha256": "f5f0279baa0e55d6152d35de2cffaa19b6c952879e83f9efbc777208a7af4527"
+  },
+  "actual_current_contracts": {
+    "public.geography_reviewed_point(uuid)": {
+      "definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+      "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    "public.geography_repair_record_application(uuid,uuid)": {
+      "definition_md5": "3f9e0896e6308211fd0366917f2ae68c",
+      "unchanged_full_row_CAS": true,
+      "acl": "{postgres=X/postgres,service_role=X/postgres}"
+    },
+    "public.zoi_delivery_records(text,integer,integer,text)": {
+      "definition_md5": "639618ce0597c16ea0cda4a22e881509",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+    },
+    "zoi.delivery_job_status()": {
+      "definition_md5": "75742c38c2bd09e92c3f9830b0f5a693",
+      "acl": "{postgres=X/postgres}"
+    },
+    "zoi.geography_fingerprint(zoi.listings)": {
+      "definition_md5": "b77ed3d5d9004f1957503c2f848fe4c8",
+      "unchanged": true
+    },
+    "public.geography_review_revert(uuid,text)": {
+      "definition_md5": "e6f2ba4421641428065b817ad47bd3e8",
+      "unchanged": true
+    },
+    "all_owners": "postgres",
+    "all_search_paths": "empty"
+  },
+  "independent_local_postgres": {
+    "captured_at": "2026-10-15T13:09:13.769Z",
+    "passed_groups": 13,
+    "engine": "isolated PostgreSQL16 with exact reporting/geography runtime definitions and existing founder/session helper; auth and admin registry fixture only",
+    "production_mutations": 0,
+    "provider_requests": 0,
+    "after_contracts": [
+      {
+        "signature": "geography_reviewed_point(uuid)",
+        "definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "signature": "geography_repair_record_application(uuid,uuid)",
+        "definition_md5": "3f9e0896e6308211fd0366917f2ae68c",
+        "acl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "signature": "zoi_delivery_records(text,integer,integer,text)",
+        "definition_md5": "639618ce0597c16ea0cda4a22e881509",
+        "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "signature": "zoi.delivery_job_status()",
+        "definition_md5": "75742c38c2bd09e92c3f9830b0f5a693",
+        "acl": "{postgres=X/postgres}"
+      }
+    ]
+  },
+  "reviewed_contract": [
+    "Only three read predicates change across founder records and private job status. Current street correction uses exact public-reader requestID; benign menu edits retain new authority.",
+    "The existing coordinate-movement test remains before_geo numeric lat/lng IS DISTINCT FROM current pair. Same-point source/precision revalidation is excluded; older movement receipt cannot resurrect under a newer same-point receipt.",
+    "Application writer full-row fingerprint, locks, role/visibility/CAS checks and job mutation source remain byte-identical; actual attempted application after benign full-row change refuses without job edit in isolated PostgreSQL.",
+    "City/precision history and non-geography evidence retain prior full-row behavior. LegacyNULL receipts retain strict full-row currentness.",
+    "Held source/typed identity/explicit address clear, away-and-back, wrong/reverted/refused receipts remain excluded. Founder/session and private API-role gates remain exact.",
+    "No listing/review/job data or acceptance-store writer introduced; reverse-diff assertion restores original reporting definitions exactly. Historical workload/processed metrics are not coordinate correction or complete-home counts."
+  ],
+  "bounded_actual_Stalactites": {
+    "listing_id": "054dd95e-5253-4a86-9630-fe91c3f29c90",
+    "current_request": "841902d0-c90e-4547-9338-d1af00e13ac7",
+    "current_request_reader_current": true,
+    "current_request_coordinate_changed": false,
+    "old_movement_request": "59ca1977-37f5-4d02-8a35-c2cb68346be6",
+    "old_request_reader_current": false,
+    "old_request_coordinate_changed": true,
+    "addresses_corrected_qualification": "Neither qualifies: current receipt has no movement; old movement receipt is not current. This is a bounded row/read-predicate proof, not an authenticated founder dashboard request.",
+    "current_request_has_applied_matching_job": true,
+    "old_request_has_applied_matching_job": false
+  },
+  "limits": [
+    "No new founder session, access link or production write by reviewer.",
+    "No full catalogue scan, aggregate job-status invocation or global corrected-address count by reviewer.",
+    "Actual founder browser counters/rows acceptance remains separate; no rendered dashboard evidence is added by this SQL/source review.",
+    "No new coordinate repair, source fetch, provider capability, completed home or global coverage claimed."
+  ],
+  "reviewer_production_mutations": 0,
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/geography-reporting-independent-2026-10-15/local-postgres.log",
+      "sha256": "1750372bd316c2c5beede894ea78393d810a5f091e0caf1bdbe7d173bc162ddc"
+    },
+    {
+      "path": "docs/audits/evidence/geography-reporting-independent-2026-10-15/local-result.json",
+      "sha256": "9a7b8c5ed24a2e1f3dfe44ce155d4f39a18ed0e2e06c5cb40c4a99b154076176"
+    },
+    {
+      "path": "docs/audits/evidence/geography-reporting-independent-2026-10-15/main-dependency.json",
+      "sha256": "4cea1956acd9accdac159bc93ae90146fbd501ceb842f00d00351710365703ac"
+    }
+  ]
+}

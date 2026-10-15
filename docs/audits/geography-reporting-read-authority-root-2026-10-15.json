@@ -1,0 +1,114 @@
+{
+  "created_at": "2026-10-15T13:09:20.966Z",
+  "owner": "/root",
+  "state": "Reporting migration applied and actual founder RPC reads verified; source release pending",
+  "source_migration": "supabase/migrations/20261015123706_geography_reporting_read_authority.sql",
+  "source_sha256": "f5f0279baa0e55d6152d35de2cffaa19b6c952879e83f9efbc777208a7af4527",
+  "production_ledger": "20261015125926",
+  "root_controlled_pg": {
+    "captured_at": "2026-10-15T12:52:46.300Z",
+    "passed_groups": 13,
+    "engine": "isolated PostgreSQL16 with exact reporting/geography runtime definitions and existing founder/session helper; auth and admin registry fixture only",
+    "production_mutations": 0,
+    "provider_requests": 0,
+    "after_contracts": [
+      {
+        "signature": "geography_reviewed_point(uuid)",
+        "definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "signature": "geography_repair_record_application(uuid,uuid)",
+        "definition_md5": "3f9e0896e6308211fd0366917f2ae68c",
+        "acl": "{postgres=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "signature": "zoi_delivery_records(text,integer,integer,text)",
+        "definition_md5": "639618ce0597c16ea0cda4a22e881509",
+        "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+      },
+      {
+        "signature": "zoi.delivery_job_status()",
+        "definition_md5": "75742c38c2bd09e92c3f9830b0f5a693",
+        "acl": "{postgres=X/postgres}"
+      }
+    ]
+  },
+  "production_metadata": {
+    "functions": [
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_reviewed_point(uuid)",
+        "definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "geography_repair_record_application(uuid,uuid)",
+        "definition_md5": "3f9e0896e6308211fd0366917f2ae68c",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi_delivery_records(text,integer,integer,text)",
+        "definition_md5": "639618ce0597c16ea0cda4a22e881509",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "signature": "zoi.delivery_job_status()",
+        "definition_md5": "75742c38c2bd09e92c3f9830b0f5a693",
+        "security_definer": true
+      }
+    ],
+    "captured_at": "2026-10-15T13:09:37.832926+00:00",
+    "migration_applied": true
+  },
+  "production_founder_rpc": {
+    "checked_at": "2026-10-15T13:09:20.966Z",
+    "reads": [
+      {
+        "query": null,
+        "http_status": 200,
+        "founder_authorized": true,
+        "category": "addresses_corrected",
+        "total": 6,
+        "returned_rows": 5
+      },
+      {
+        "query": "Stalactites",
+        "http_status": 200,
+        "founder_authorized": true,
+        "category": "addresses_corrected",
+        "total": 0,
+        "returned_rows": 0
+      }
+    ],
+    "same_point_revalidation_excluded": true,
+    "no_mutations": true,
+    "no_provider_calls": true,
+    "scope": "Actual authenticated founder RPC reads. No rendered dashboard acceptance claimed."
+  },
+  "limitations": [
+    "Reporting consistency only; no new coordinates changed or client homes completed.",
+    "Actual authenticated RPC read is distinct from rendered founder dashboard acceptance.",
+    "Independent frozen-source review and protected source integration still required."
+  ],
+  "safety": "Only three read predicates change. Existing full-row mutation CAS, permissions, current-session checks and point-reader contracts stay exact."
+}

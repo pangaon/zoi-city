@@ -1,0 +1,152 @@
+{
+  "created_at": "2026-10-15T12:49:01.718490+00:00",
+  "owner": "/root/enrichment_next",
+  "state": "Frozen reporting-only source candidate for independent review and root production apply; no live mutation",
+  "base_commit": "8c8fe88bd054c18e73e54eb1ca89451e47a6c7c6",
+  "frozen_files": [
+    {
+      "path": "supabase/migrations/20261015123706_geography_reporting_read_authority.sql",
+      "sha256": "f5f0279baa0e55d6152d35de2cffaa19b6c952879e83f9efbc777208a7af4527"
+    },
+    {
+      "path": "tests/database/geography-reporting-read-authority.integration.mjs",
+      "sha256": "449ef714f6fe6ec9a985a91939359a3d6cf24a389469b0a7eadada7c77c01cd2"
+    },
+    {
+      "path": "tests/database/fixtures/geography-reporting-read-authority-live.json",
+      "sha256": "89d6a610528d115a9edb4577344f133b99231dfc464c8d90e28bc7751659756f"
+    }
+  ],
+  "customer_outcome": "Founder reporting retains a currently accepted address correction when a menu or other unrelated content changes, using the same guarded street-point authority as the actual public map. Same-point provenance revalidation remains excluded from address coordinate-correction totals.",
+  "scope": {
+    "changed_functions": [
+      "public.zoi_delivery_records(text,integer,integer,text)",
+      "zoi.delivery_job_status()"
+    ],
+    "new_store_or_writer": false,
+    "migration_created_by": "SupabaseCLI2.115.0 migration new geography_reporting_read_authority",
+    "source_data_writes": 0,
+    "read_currentness": "public.geography_reviewed_point(l.id)->>request_id must equal the exact review request UUID",
+    "actual_coordinate_changed_filter": "Original before_geo latitude/longitude IS DISTINCT FROM current point filter retained unchanged for addresses_corrected. No source revalidation or precision relabel promoted to coordinate movement.",
+    "legacy_paths": "Original precision_labels/city_coordinates filtering and full-row current/historical labels remain exact. Non-geography record evidence remains full-row. Legacy NULL street receipts still use the accepted public reader strict full-row fallback without epochs/backfill.",
+    "authorization": "Existing founder/current-session gate and exact execute ACLs remain unchanged. No public private-status grant.",
+    "write_CAS": "public.geography_repair_record_application(uuid,uuid) is a pinned immutable dependency only; its existing job/listing/review locks and full-row CAS remain byte-identical.",
+    "historical_workload": "Job-status historical/latest-generation definitions and totals remain unchanged; accepted research/job counts do not become coordinate-correction or completed-client counts."
+  },
+  "production_read_only_contract_snapshot": {
+    "functions": [
+      {
+        "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "language": "sql",
+        "signature": "geography_reviewed_point(uuid)",
+        "volatility": "s",
+        "definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "language": "plpgsql",
+        "signature": "geography_repair_record_application(uuid,uuid)",
+        "volatility": "v",
+        "definition_md5": "3f9e0896e6308211fd0366917f2ae68c",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "language": "plpgsql",
+        "signature": "zoi_delivery_records(text,integer,integer,text)",
+        "volatility": "s",
+        "definition_md5": "9e535bd2ebf49cb4fb11ff5189b2379e",
+        "security_definer": true
+      },
+      {
+        "acl": "{postgres=X/postgres}",
+        "owner": "postgres",
+        "config": [
+          "search_path=\"\""
+        ],
+        "language": "sql",
+        "signature": "zoi.delivery_job_status()",
+        "volatility": "s",
+        "definition_md5": "47989e76146d2659fe57e47d9467e83c",
+        "security_definer": true
+      }
+    ],
+    "captured_at": "2026-10-15T12:37:39.460929+00:00"
+  },
+  "accepted_geo_dependency": {
+    "migration_sha256": "88167423b36ba6c3135822a19f330c1991f709767ad520b42d0c8dccce44a50b",
+    "public_point_definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+    "test_fixture": "Exact frozen prerequisite source included solely as fixture because isolated current-main base predates the separately root-applied geography migration."
+  },
+  "verification": {
+    "command": "ZOI_GEOGRAPHY_REPORTING_RESULT=/path/private-result.json node tests/database/geography-reporting-read-authority.integration.mjs",
+    "result": {
+      "captured_at": "2026-10-15T12:47:06.890Z",
+      "passed_groups": 13,
+      "engine": "isolated PostgreSQL16 with exact reporting/geography runtime definitions and existing founder/session helper; auth and admin registry fixture only",
+      "production_mutations": 0,
+      "provider_requests": 0,
+      "after_contracts": [
+        {
+          "signature": "geography_reviewed_point(uuid)",
+          "definition_md5": "a3320206addf52bd1bf5521ca1ac6cd9",
+          "acl": "{postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "signature": "geography_repair_record_application(uuid,uuid)",
+          "definition_md5": "3f9e0896e6308211fd0366917f2ae68c",
+          "acl": "{postgres=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "signature": "zoi_delivery_records(text,integer,integer,text)",
+          "definition_md5": "639618ce0597c16ea0cda4a22e881509",
+          "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}"
+        },
+        {
+          "signature": "zoi.delivery_job_status()",
+          "definition_md5": "75742c38c2bd09e92c3f9830b0f5a693",
+          "acl": "{postgres=X/postgres}"
+        }
+      ]
+    },
+    "syntax_and_diff_check": "passed",
+    "meaningful_cases": [
+      "Reproduce all four current function contracts and existing execute ACLs",
+      "Migration leaves all listing, review and job bytes unchanged",
+      "Exact reverse-diff checks prove only three read predicates changed",
+      "Actual canonical corrected point plus existing application job stays current after benign menu edits",
+      "The unchanged mutation writer still refuses after the same full-row change and leaves jobs unchanged",
+      "Same-point review has coordinate_changed=false and never enters addresses_corrected while accepted job currentness remains accurate",
+      "Non-geography evidence still becomes stale on unrelated full-row edits",
+      "City-coordinate and precision-label historical/current behavior unchanged",
+      "Source holds, typed identity changes, explicit address clears and restoration remain excluded",
+      "Current source revalidation/reversion excludes outdated receipts and cannot count as a new coordinate correction",
+      "An actual refused canonical review creates no epoch or reported point",
+      "Legacy NULL-authority full-row receipt becomes stale after benign edits with no promotion",
+      "Founder allowlist/session denial and API-role private-status denial",
+      "Repeat/drift transaction aborts before patches; application writer and public point definitions remain exact"
+    ],
+    "controlled_environment_limits": "Isolated PostgreSQL16, full production listing-column metadata with unused null vector column represented as text; exact geography/reporting functions and existing founder/session helper. Auth JWT/UID and trusted admin registry are fixture transports. Does not establish production HTTP authentication, source validation or a rendered founder journey."
+  },
+  "remaining_root_gates": [
+    "Independent reviewer on frozen source hashes",
+    "Source integration and exact guarded production migration",
+    "Production post-definition/owner/ACL readback; application writer MD5 must stay3f9e0896e6308211fd0366917f2ae68c",
+    "Actual production current corrected/same-point/held reporting readback and founder dashboard counters/rows alignment",
+    "Actual authenticated founder browser acceptance, distinct from SQL and source tests"
+  ],
+  "scope_statement": "Reporting consistency only. No new address correction, source fetch, provider operation, completed home or catalogue-wide completion is claimed."
+}
