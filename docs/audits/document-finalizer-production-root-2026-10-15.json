@@ -1,0 +1,60 @@
+{
+  "observed_at": "2026-10-15T04:29:41.239042+00:00",
+  "status": "Actual private blob upload/readback/rejection/canonical cleanup succeeded; phaseB applied and actual production rollback passed.",
+  "actual_blob": {
+    "request_id": "4eb0a10b-625f-423a-9aea-8b97916df4a3",
+    "commit": "52a3d657bbb74875879af5fc901b7412f23f258c",
+    "result": {
+      "same_nonce_one_version_one_uploaded_audit": true,
+      "actual_private_download_digest_matches": true,
+      "wrong_same_mime_same_size_object_refused_pending": true,
+      "pending_object_canonically_cleaned": true,
+      "documents_and_qa_records_archived": true,
+      "actual_storage_body_checked": true,
+      "ready_object_retained_with_archived_history": true,
+      "provider_calls": 0,
+      "auth_user_created": false,
+      "founder_session_used": false
+    },
+    "local_logout_completed": true
+  },
+  "run": 38680262586,
+  "run_url": "https://github.com/pangaon/zoi-city/actions/runs/38680262586",
+  "source_commit": "52a3d657bbb74875879af5fc901b7412f23f258c",
+  "phaseA_ledger": "20261015034102",
+  "phaseB_ledger": "20261015042848",
+  "phaseB_source_sha256": "47f73e3e418fa3853be6a39d37ffcec9e2a6d5fa8c6947c9df3ca7e96c296518",
+  "edge_bundle_sha256": "aa9f08dd1256a3f429aebcc85dda685eff60359da5760eacb28f23e86e17bb16",
+  "old_finish_after_phaseB": {
+    "source_md5": "2b7a34d924909e6678079f6c468dd89c",
+    "definition_md5": "fe4879e9629bb0da5666dc07b3f21821",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres}",
+    "search_path": "empty",
+    "capability": "Only current-authorized ready receipt recovery; pending cannot be made ready through metadata-only finish."
+  },
+  "production_rollback": {
+    "fixture_sha256": "81bb62acb9ae51069a463dbdbd8803f7cf61bda08faf053c5fe0a062b3a2688a",
+    "rollback_completed": true,
+    "absence_flags": {
+      "workspace": true,
+      "synthetic_profile": true,
+      "synthetic_sessions": true,
+      "records": true,
+      "documents": true,
+      "versions": true,
+      "authority_grants": true,
+      "storage_metadata": true,
+      "document_audit": true
+    },
+    "actual_storage_body_checked": false,
+    "provider_calls": 0
+  },
+  "actual_archive_readback": "Both QA workspace documents archived after canonical pending cleanup; positive current_version1, negative0. Ready private blob retained with archived version/history.",
+  "limits": [
+    "Actual same-nonce repeat verified; no intentionally injected lost-network response claim",
+    "Isolated production SQL fixture is authority/metadata only, actual blob evidence is separate CIrun",
+    "No founder session used, no user created, no email/provider sends",
+    "Physical iOS/Android actual document upload remains separate acceptance"
+  ]
+}
