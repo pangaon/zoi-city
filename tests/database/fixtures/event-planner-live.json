@@ -1,0 +1,67 @@
+[
+  {
+    "nspname": "public",
+    "proname": "event_plan_capabilities",
+    "args": "",
+    "body_hash": "63f92dcf42589bcfeefc2da544b4b1db",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "definition": "CREATE OR REPLACE FUNCTION public.event_plan_capabilities()\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin if auth.uid() is null then raise exception 'sign_in_required' using errcode='42501';end if;return jsonb_build_object('ok',true,'version',1,'resource_kinds',jsonb_build_array('staff','table','venue','performer','equipment'));end $function$\n"
+  },
+  {
+    "nspname": "public",
+    "proname": "event_plan_get",
+    "args": "p_plan uuid",
+    "body_hash": "c85d981411e57ef619a628dee5f3ddc9",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "definition": "CREATE OR REPLACE FUNCTION public.event_plan_get(p_plan uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid;plan zoi.event_plans;rows jsonb;\nbegin\n if auth.uid() is null then raise exception 'sign_in_required' using errcode='42501';end if;actor:=zoi.ensure_profile();\n select * into plan from zoi.event_plans where id=p_plan and profile_id=actor;\n if plan.id is null then raise exception 'event_plan_not_owned' using errcode='42501';end if;\n select coalesce(jsonb_agg(jsonb_build_object('booking',to_jsonb(b),'slot',to_jsonb(s),'role',p.role,'shared_context',p.shared_context,'listing_id',c.listing_id,'timezone',c.timezone,'reviewed_slot',p.reviewed_slot) order by s.starts_at,b.id),'[]') into rows from zoi.event_plan_bookings p join zoi.bookings b on b.id=p.booking_id join zoi.booking_slots s on s.id=b.slot_id join zoi.booking_settings c on c.workspace_id=b.workspace_id where p.plan_id=plan.id;\n return jsonb_build_object('ok',true,'plan',to_jsonb(plan),'bookings',rows);\nend $function$\n"
+  },
+  {
+    "nspname": "public",
+    "proname": "event_plan_list",
+    "args": "p_offset integer",
+    "body_hash": "d84f9c07aa0072b8cadf2b35aa0493cd",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "definition": "CREATE OR REPLACE FUNCTION public.event_plan_list(p_offset integer DEFAULT 0)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid;\nbegin\n if auth.uid() is null then raise exception 'sign_in_required' using errcode='42501';end if;actor:=zoi.ensure_profile();if actor is null then raise exception 'sign_in_required' using errcode='42501';end if;\n if p_offset is null or p_offset<0 or p_offset>100000 then raise exception 'invalid_offset';end if;\n return jsonb_build_object('ok',true,'offset',p_offset,'plans',(select coalesce(jsonb_agg(jsonb_build_object('id',id,'title',data->>'title','kind',data->>'kind','status',status,'version',version,'updated_at',updated_at) order by created_at desc,id desc),'[]') from(select * from zoi.event_plans where profile_id=actor order by created_at desc,id desc limit 51 offset p_offset)p));\nend $function$\n"
+  },
+  {
+    "nspname": "public",
+    "proname": "event_plan_provider_context",
+    "args": "p_booking uuid",
+    "body_hash": "fd7142fcc481535f4601d301642b9573",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "definition": "CREATE OR REPLACE FUNCTION public.event_plan_provider_context(p_booking uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid;b zoi.bookings;context zoi.event_plan_bookings;\nbegin\n if auth.uid() is null then raise exception 'sign_in_required' using errcode='42501';end if;actor:=zoi.ensure_profile();\n select * into b from zoi.bookings where id=p_booking;\n if b.id is null or not exists(select 1 from zoi.workspace_members where workspace_id=b.workspace_id and profile_id=actor and role in('owner','admin')) then raise exception 'workspace_permission_denied' using errcode='42501';end if;\n select * into context from zoi.event_plan_bookings where booking_id=b.id;\n return jsonb_build_object('ok',true,'booking_id',b.id,'context',case when context.booking_id is not null then jsonb_build_object('role',context.role,'shared_context',context.shared_context) else null end);\nend $function$\n"
+  },
+  {
+    "nspname": "public",
+    "proname": "event_plan_save",
+    "args": "p_plan uuid, p_expected_version integer, p_request_id uuid, p_data jsonb",
+    "body_hash": "118438a49166de3dbab2a8c10988071d",
+    "owner": "postgres",
+    "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+    "prosecdef": true,
+    "proconfig": [
+      "search_path=\"\""
+    ],
+    "definition": "CREATE OR REPLACE FUNCTION public.event_plan_save(p_plan uuid, p_expected_version integer, p_request_id uuid, p_data jsonb)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare actor uuid;plan zoi.event_plans;prior zoi.event_plan_requests;payload jsonb;receipt jsonb;\nbegin\n if auth.uid() is null then raise exception 'sign_in_required' using errcode='42501';end if;actor:=zoi.ensure_profile();if actor is null then raise exception 'sign_in_required' using errcode='42501';end if;\n if p_request_id is null then raise exception 'request_id_required';end if;\n perform 1 from zoi.user_profiles where id=actor for update;\n payload:=jsonb_build_object('plan',p_plan,'version',p_expected_version,'data',p_data);\n select * into prior from zoi.event_plan_requests where profile_id=actor and request_id=p_request_id;\n if prior.id is not null then if prior.operation<>'save' or prior.payload is distinct from payload then raise exception 'request_id_conflict';end if;return prior.receipt;end if;\n perform zoi.event_plan_validate(p_data);\n if p_plan is null then\n  if p_expected_version is distinct from 0 then raise exception 'version_conflict';end if;\n  insert into zoi.event_plans(profile_id,data) values(actor,p_data) returning * into plan;\n else\n  select * into plan from zoi.event_plans where id=p_plan and profile_id=actor for update;\n  if plan.id is null then raise exception 'event_plan_not_owned' using errcode='42501';end if;\n  if plan.version is distinct from p_expected_version then raise exception 'version_conflict';end if;\n  if plan.status<>'draft' then raise exception 'event_plan_already_confirmed';end if;\n  update zoi.event_plans set data=p_data,version=version+1,updated_at=clock_timestamp() where id=p_plan returning * into plan;\n end if;\n receipt:=jsonb_build_object('ok',true,'plan',to_jsonb(plan));\n insert into zoi.event_plan_requests(profile_id,request_id,operation,payload,receipt) values(actor,p_request_id,'save',payload,receipt);\n return receipt;\nend $function$\n"
+  }
+]

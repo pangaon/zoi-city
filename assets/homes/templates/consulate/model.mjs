@@ -1,6 +1,8 @@
 import{officialSourceQuarantined}from'../../../enrichment/official-source-policy.mjs';
 import{briefBlocked,scopedSourceServices}from'../../../enrichment/client-brief.mjs';
 import{DIPLOMATIC_SOURCE_PROFILES}from'./source-profiles.mjs';
+import{reviewedOfficialSource}from'../../../enrichment/reviewed-official-source.mjs';
+import{DIPLOMATIC_MANUAL_REVIEW_RECEIPTS}from'./manual-review-receipts.mjs';
 import{orderedRecords}from'../design.mjs';
 const object=v=>v&&typeof v==='object'&&!Array.isArray(v)?v:{};
 export const text=v=>typeof v==='string'?v.replace(/\s+/g,' ').trim():'';
@@ -15,7 +17,7 @@ export function diplomaticEntity(e){
 }
 function countryMatches(actual,expected){return({ 'United Kingdom':['united kingdom','gb','uk','great britain'],Canada:['canada','ca'],Australia:['australia','au']}[expected]||[norm(expected)]).includes(norm(actual));}
 function sourceHeld(e){const q=object(e.profile?._enrich);return officialSourceQuarantined(e)||briefBlocked(q)||q.source_scope_mismatch===true||q.source_scope_mismatch==='true'||['association_directory','association_member','publisher_profile'].includes(q.source_kind)||q.identity_scope==='organization'||q.source_affiliation||q.member?.affiliation||q.association_member;}
-function sourceProfile(e,website){if(sourceHeld(e))return null;return DIPLOMATIC_SOURCE_PROFILES.find(p=>p.id===e.id&&norm(p.name)===norm(e.name)&&norm(p.city)===norm(e.city)&&countryMatches(e.country,p.country)&&documentKey(p.website)&&documentKey(p.website)===documentKey(website))||null;}
+function sourceProfile(e,website){const source=DIPLOMATIC_SOURCE_PROFILES.find(p=>p.id===e.id&&norm(p.name)===norm(e.name)&&norm(p.city)===norm(e.city)&&countryMatches(e.country,p.country)&&documentKey(p.website)&&documentKey(p.website)===documentKey(website));if(!source)return null;const receipt=DIPLOMATIC_MANUAL_REVIEW_RECEIPTS.find(r=>r.scope.id===source.id);return reviewedOfficialSource(e,source,receipt)?source:null;}
 const email=v=>/^[^\s<>@]+@[^\s<>@]+\.[^\s<>@]+$/.test(text(v))?text(v):'';
 const phone=v=>/^\+?[\d ()-]{7,30}$/.test(text(v))?text(v):'';
 export function consulateContent(entity,design={}){
@@ -31,12 +33,13 @@ export function consulateContent(entity,design={}){
  if(!source)contacts.unshift({label:'Contact the mission',email:email(value('email','')),phone:phone(value('phone','')),source_url:''});
  else if(contacts.length&&(explicit('email')||explicit('phone')))contacts[0]={...contacts[0],label:'Published contact',email:explicit('email')?email(value('email','')):contacts[0].email,phone:explicit('phone')?phone(value('phone','')):contacts[0].phone};
  const addressLayer=explicit('address'),address=addressLayer?text(addressLayer.address):text(source?.address||e.address);
- const addressConflict=!!source?.address_conflict&&!addressLayer&&norm(e.address)!==norm(source.address);
+ const sourceFloor=source?.address?.match(/\blevel\s+(\d+)\b/i)?.[1],storedFloor=text(e.address).match(/\blevel\s+(\d+)\b/i)?.[1];
+ const addressConflict=!!source&&!addressLayer&&norm(e.address)!==norm(source.address)&&(!!source.address_conflict||!!sourceFloor&&!!storedFloor&&sourceFloor!==storedFloor);
  const introLayer=explicit('description'),intro=introLayer?text(introLayer.description):source?.intro||text(e.description);
  return{id:e.id,name:text(e.name),slug:text(e.canonical_slug||e.slug),kind:source?.kind||(/embassy/i.test(text(e.name))?'Embassy':'Consular mission'),city:text(e.city),country:text(e.country),website,intro,
-  services:orderedRecords(services,design.item_order?.offerings),services_from_owner:!!serviceLayer,appointment,contacts:contacts.filter(c=>c.email||c.phone),address,address_conflict:addressConflict,
+  services:orderedRecords(services,design.item_order?.offerings),services_from_owner:!!serviceLayer,appointment,contacts:contacts.filter(c=>c.email||c.phone),address,address_conflict:addressConflict,published_address:addressConflict?text(e.address):'',
   jurisdiction:source?.jurisdiction||'',jurisdiction_url:source?.jurisdiction_url||'',visit_note:source?.visit_note||'Contact the mission to confirm the service, required documents and visiting arrangements before travelling.',visit_source:source?.visit_source||'',
   useful_links:source?.useful_links||[],source_url:source?.contact_url||website,source_checked_at:source?.checked_at||'',source_profile_applied:!!source,
   hours:explicit('hours')?text(explicit('hours').hours):'',photo:explicit('photo_url')?safeURL(explicit('photo_url').photo_url):'',
-  source_coverage:source?'individually sourced mission pages':structured.length?'verified structured services; remaining mission research pending':'published listing fields; individual mission research pending'};
+  source_channel:source?'manual_reviewed_official_source':null,source_coverage:source?'individually reviewed official mission pages':structured.length?'verified structured services; remaining mission research pending':'published listing fields; individual mission research pending'};
 }
