@@ -15,3 +15,6 @@
 #hh-dialog .hh-image-notice{padding:20px;background:#e8eceb;border-radius:9px;color:#273f4b}
 @media(max-width:700px){.hh-home .hh-hero.hh-image-unavailable{min-height:420px}}
 .hh-hero-copy>p.hh-image-notice{font-size:13px}
+
+/* Keep a missing or failed photograph from reserving a photo-sized hero. */
+.hh-home .hh-hero:not(:has(>img)),.hh-home .hh-hero.hh-image-unavailable{display:flow-root;min-height:0}

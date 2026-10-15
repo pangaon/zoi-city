@@ -1,0 +1,65 @@
+{
+  "scope": "Read-only actual zoi.audience_contacts pg_attribute metadata; no contact rows.",
+  "columns": [
+    {
+      "name": "id",
+      "type": "uuid",
+      "not_null": true,
+      "default_expression": "gen_random_uuid()"
+    },
+    {
+      "name": "workspace_id",
+      "type": "uuid",
+      "not_null": true,
+      "default_expression": null
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "not_null": true,
+      "default_expression": null
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "not_null": false,
+      "default_expression": null
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "not_null": false,
+      "default_expression": null
+    },
+    {
+      "name": "nameday",
+      "type": "text",
+      "not_null": false,
+      "default_expression": null
+    },
+    {
+      "name": "tags",
+      "type": "text[]",
+      "not_null": false,
+      "default_expression": "'{}'::text[]"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "not_null": false,
+      "default_expression": null
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default_expression": "now()"
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "not_null": false,
+      "default_expression": "now()"
+    }
+  ]
+}

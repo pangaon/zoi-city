@@ -1,0 +1,94 @@
+{
+  "captured_at": "2026-10-15",
+  "scope": "Read-only pg_proc definitions/ACL/config; no customer rows or mutation.",
+  "functions": [
+    {
+      "signature": "audience_access(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_access(p_workspace uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare v_role text;\nbegin\n perform zoi.assert_ws(p_workspace);\n v_role:=zoi.audience_asset_role(p_workspace,false);\n return jsonb_build_object('ok',true,'workspace_id',p_workspace,'role',v_role,'can_write',v_role in ('owner','admin','editor'),'can_record_consent',coalesce(zoi.ops_role(p_workspace) in ('owner','admin','editor'),false));\nend; $function$\n",
+      "body_md5": "6fe2d0f929a50a2ca5cb848a8c8c8b44",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "audience_list(uuid,text,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.audience_list(p_workspace uuid, p_q text DEFAULT NULL::text, p_tag text DEFAULT NULL::text)\n RETURNS SETOF zoi.audience_contacts\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  RETURN QUERY SELECT * FROM zoi.audience_contacts c\n  WHERE c.workspace_id=p_workspace\n    AND (p_q IS NULL OR c.name ILIKE '%'||p_q||'%' OR c.email ILIKE '%'||p_q||'%' OR c.phone ILIKE '%'||p_q||'%')\n    AND (p_tag IS NULL OR p_tag = ANY(c.tags))\n  ORDER BY c.created_at DESC LIMIT 500;\nEND;$function$\n",
+      "body_md5": "640a7ad3b93ddd8e093c8c3b5c8a7162",
+      "owner": "postgres",
+      "acl": "{=X/postgres,postgres=X/postgres,anon=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=zoi, public"
+      ]
+    },
+    {
+      "signature": "event_host_get(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.event_host_get(p_allocation uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE v_actor uuid:=zoi.table_inventory_actor();a zoi.event_host_allocations;guests jsonb;\nBEGIN SELECT * INTO a FROM zoi.event_host_allocations WHERE id=p_allocation;IF a.id IS NULL THEN RAISE EXCEPTION 'allocation_unavailable';END IF;\n IF v_actor IS DISTINCT FROM a.host_profile_id THEN PERFORM zoi.table_inventory_operator(a.workspace_id,a.event_id);END IF;\n IF NOT EXISTS(SELECT 1 FROM zoi.listings WHERE id=a.event_id AND owner_workspace_id=a.workspace_id) THEN RAISE EXCEPTION 'allocation_unavailable';END IF;\n SELECT coalesce(jsonb_agg(jsonb_build_object('id',id,'label',label,'quantity',quantity,'status',status,'version',version) ORDER BY id),'[]') INTO guests FROM zoi.event_host_guests WHERE event_allocation_id=a.id;\n PERFORM zoi.suite_lock_session();IF zoi.table_inventory_actor() IS DISTINCT FROM v_actor THEN RAISE EXCEPTION 'not_authorized' USING ERRCODE='42501';END IF;RETURN jsonb_build_object('ok',true,'allocation',zoi.event_host_view(a),'guests',guests,'payment_collected',false,'delivery_configured',false);\nEND $function$\n",
+      "body_md5": "672d9def6474954ff441045dd8aa9132",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "event_host_guest_save(uuid,uuid,integer,uuid,text,integer,text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.event_host_guest_save(p_allocation uuid, p_guest uuid, p_expected_version integer, p_request uuid, p_label text, p_quantity integer, p_token text)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE v_actor uuid:=zoi.table_inventory_actor();a zoi.event_host_allocations;g zoi.event_host_guests;payload jsonb;prior zoi.event_host_requests;hash text;r jsonb;ev uuid;\nBEGIN IF p_request IS NULL OR p_guest IS NULL OR p_expected_version IS NULL OR p_expected_version<0 OR p_quantity IS NULL OR p_quantity NOT BETWEEN 1 AND 100 OR length(btrim(coalesce(p_label,''))) NOT BETWEEN 1 AND 80 OR p_label~'[[:cntrl:]]' OR coalesce(p_token,'')!~'^[0-9a-f]{64}$' THEN RAISE EXCEPTION 'invalid_guest';END IF;\n hash:=encode(extensions.digest(p_token,'sha256'),'hex');payload:=jsonb_build_object('kind','guest','allocation',p_allocation,'guest',p_guest,'version',p_expected_version,'label',btrim(p_label),'quantity',p_quantity,'token_hash',hash);\n PERFORM pg_advisory_xact_lock(hashtextextended('event-host-request:'||v_actor::text||':'||p_request::text,0));PERFORM pg_advisory_xact_lock(hashtextextended('event-host-actor:'||v_actor::text,0));r:=zoi.event_host_cancelled(v_actor,p_request,'guest');IF r IS NOT NULL THEN PERFORM zoi.suite_lock_session();IF zoi.table_inventory_actor() IS DISTINCT FROM v_actor THEN RAISE EXCEPTION 'not_authorized' USING ERRCODE='42501';END IF;RETURN r;END IF;SELECT event_id INTO ev FROM zoi.event_host_allocations WHERE id=p_allocation;PERFORM 1 FROM zoi.event_table_settings WHERE event_id=ev FOR UPDATE;SELECT * INTO a FROM zoi.event_host_allocations WHERE id=p_allocation FOR UPDATE;\n PERFORM 1 FROM zoi.listings WHERE id=a.event_id AND owner_workspace_id=a.workspace_id FOR SHARE;IF zoi.table_inventory_actor() IS DISTINCT FROM v_actor THEN RAISE EXCEPTION 'not_authorized' USING ERRCODE='42501';END IF;IF NOT FOUND THEN RAISE EXCEPTION 'allocation_unavailable';END IF;\n IF a.id IS NULL OR a.host_profile_id IS DISTINCT FROM v_actor OR NOT zoi.event_host_valid(a) THEN RAISE EXCEPTION 'allocation_unavailable';END IF;\n SELECT * INTO prior FROM zoi.event_host_requests WHERE event_host_requests.actor=v_actor AND request=p_request;IF FOUND THEN IF prior.payload IS DISTINCT FROM payload THEN RAISE EXCEPTION 'request_conflict';END IF;PERFORM zoi.suite_lock_session();IF zoi.table_inventory_actor() IS DISTINCT FROM v_actor THEN RAISE EXCEPTION 'not_authorized' USING ERRCODE='42501';END IF;RETURN prior.receipt;END IF;PERFORM zoi.event_host_budget(v_actor);\n SELECT * INTO g FROM zoi.event_host_guests WHERE id=p_guest FOR UPDATE;IF zoi.table_inventory_actor() IS DISTINCT FROM v_actor THEN RAISE EXCEPTION 'not_authorized' USING ERRCODE='42501';END IF;\n IF g.id IS NOT NULL AND(g.event_allocation_id IS DISTINCT FROM a.id OR g.status<>'invited') THEN RAISE EXCEPTION 'guest_not_editable';END IF;\n IF coalesce(g.version,0)<>p_expected_version THEN RAISE EXCEPTION 'version_conflict';END IF;\n IF coalesce((SELECT sum(quantity) FROM zoi.event_host_guests WHERE event_allocation_id=a.id AND status<>'revoked' AND id<>p_guest),0)+p_quantity>a.quota THEN RAISE EXCEPTION 'allocation_quota_exceeded';END IF;\n INSERT INTO zoi.event_host_guests(id,event_allocation_id,label,quantity,token_hash)VALUES(p_guest,a.id,btrim(p_label),p_quantity,hash)ON CONFLICT(id)DO UPDATE SET label=excluded.label,quantity=excluded.quantity,token_hash=excluded.token_hash,version=event_host_guests.version+1 RETURNING * INTO g;\n r:=jsonb_build_object('ok',true,'guest',jsonb_build_object('id',g.id,'quantity',g.quantity,'label',g.label,'status',g.status,'version',g.version),'delivery_configured',false,'payment_collected',false);INSERT INTO zoi.event_host_requests(actor,request,payload,receipt) VALUES(v_actor,p_request,payload,r);PERFORM zoi.suite_lock_session();IF zoi.table_inventory_actor() IS DISTINCT FROM v_actor THEN RAISE EXCEPTION 'not_authorized' USING ERRCODE='42501';END IF;RETURN r;\nEND $function$\n",
+      "body_md5": "8167b4bb5a78339f947af9b73bd1f7b6",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,authenticated=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "ops_records_list(uuid,text,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION public.ops_records_list(p_workspace uuid, p_kind text DEFAULT NULL::text, p_include_archived boolean DEFAULT false)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE authority_actor uuid; role_name text; records jsonb; members jsonb;\nBEGIN\n authority_actor:=zoi.company_document_authority(p_workspace,'ops_read',NULL,false);\n role_name:=zoi.ops_role(p_workspace);\n IF auth.uid() IS NULL OR role_name IS NULL THEN RAISE EXCEPTION 'not_authorized'; END IF;\n IF p_kind IS NOT NULL AND p_kind NOT IN ('company','contact','project','task') THEN RAISE EXCEPTION 'invalid_kind'; END IF;\n SELECT COALESCE(jsonb_agg(to_jsonb(r) ORDER BY r.updated_at DESC),'[]') INTO records FROM zoi.ops_records r\n WHERE r.workspace_id=p_workspace AND (p_kind IS NULL OR r.kind=p_kind) AND (p_include_archived OR r.archived_at IS NULL);\n SELECT COALESCE(jsonb_agg(jsonb_build_object('profile_id',wm.profile_id,'display_name',COALESCE(up.display_name,'Team member'),'role',wm.role)),'[]') INTO members FROM zoi.workspace_members wm JOIN zoi.user_profiles up ON up.id=wm.profile_id WHERE wm.workspace_id=p_workspace;\n PERFORM zoi.company_document_authority(p_workspace,'ops_read',authority_actor,true); role_name:=zoi.ops_role(p_workspace); RETURN jsonb_build_object('ok',true,'role',role_name,'records',records,'members',members);\nEND; $function$\n",
+      "body_md5": "870c6d822c2c71b84dad5cbd2671cf8d",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.assert_ws(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_ws(p_ws uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin perform zoi.workspace_current_role(p_ws);end $function$\n",
+      "body_md5": "7813c61a30a77c170c624bc3bcf983da",
+      "owner": "postgres",
+      "acl": null,
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.audience_asset_role(uuid,boolean)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.audience_asset_role(p_workspace uuid, p_lock boolean DEFAULT false)\n RETURNS text\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin\n if p_lock then return zoi.workspace_locked_role(p_workspace);end if;\n return zoi.workspace_current_role(p_workspace);\nend $function$\n",
+      "body_md5": "494b025d262568e0c8ec679c4d48e4a0",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.ops_role(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.ops_role(p_workspace uuid)\n RETURNS text\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$ SELECT CASE\n WHEN wm.profile_id IS NULL THEN CASE WHEN w.owner_profile_id=up.id THEN 'owner' END\n WHEN wm.role='owner'AND w.owner_profile_id IS DISTINCT FROM up.id THEN 'viewer'\n WHEN wm.role IN('owner','admin','editor','viewer')THEN wm.role END\n FROM zoi.workspaces w JOIN zoi.user_profiles up ON up.auth_user_id=auth.uid()\n LEFT JOIN zoi.workspace_members wm ON wm.workspace_id=w.id AND wm.profile_id=up.id\n WHERE w.id=p_workspace;\n$function$\n",
+      "body_md5": "3e2d145871c46ba34fa43c7a74053859",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    }
+  ]
+}

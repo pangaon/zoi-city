@@ -1,0 +1,176 @@
+{
+  "schema": 2,
+  "date": "2026-10-15",
+  "outcome": "Accepted Parea saved-contact source with V2 shared query-epoch correction. Historical V1 hold remains immutable; established stale Work selection blocker is closed.",
+  "supersedes": "parea-audience-independent-v1-held-2026-10-15.json",
+  "source_tree": "/tmp/zoi-parea-audience-v2",
+  "owner_audit_sha256": "004be22cf7827cd796371ae7e851a8fdda4ef252d26b41fb1ebc584d5d77b854",
+  "source_manifest_sha256": "4d250b3e04a3fdc41b1b69e2925fa4aa78920443eee23e821fadbc61a4fec6bb",
+  "source_pins": [
+    {
+      "path": "assets/contacts/workspace-picker.mjs",
+      "sha256": "efa0567cace691df1a841978c8c8cde4ab0bd668ca4179fd24235215f079ee09"
+    },
+    {
+      "path": "assets/contacts/guest-picker.mjs",
+      "sha256": "a9276722a557f8f13cb30d8ee7852c748b28b862dbc760759594a1e77b3a2316"
+    },
+    {
+      "path": "assets/contacts/picker.mjs",
+      "sha256": "615d95be99bd7998bb8d94c95a0d1ee496aab82ec02c328f0fc277ce3479dd81"
+    },
+    {
+      "path": "assets/tickets/host-allocations.mjs",
+      "sha256": "4490af00c47a2a1e565c1807c613bc96c170788bd180540aa0fded17afa2d0e4"
+    },
+    {
+      "path": "assets/tickets/host-allocations.css",
+      "sha256": "488453dbc8a3bfad4c0c32a1b3e8a1708e169963395d0225ebfa0a03e6fa81bf"
+    },
+    {
+      "path": "assets/tickets/parea-roster-plan.mjs",
+      "sha256": "99a7c5fe995da60303699aa7cf7e87dfe4731301f4bf33c3f7f54e62f2e270af"
+    },
+    {
+      "path": "tests/unit/guest-contacts.test.mjs",
+      "sha256": "831935f68389ade6d453f7101d62668157af7c97e6a58015238f0cfedc0f34f8"
+    },
+    {
+      "path": "tests/browser/parea-saved-contacts/README.md",
+      "sha256": "199463c633db35c55ddeac77f119f7a578d0429741fbfbca832f20e06001fd37"
+    },
+    {
+      "path": "tests/browser/parea-saved-contacts/baseline-proof.cjs",
+      "sha256": "651be4bda5e3f2d415f6bd508043d8dcb366e29e949ba2c1208d24c3600efbc0"
+    },
+    {
+      "path": "tests/browser/parea-saved-contacts/fixture.html",
+      "sha256": "5165f503d21c7da9d27a6b88c346d9a23d4d18d54c1a92e3398a319757684bfc"
+    },
+    {
+      "path": "tests/browser/parea-saved-contacts/verify.cjs",
+      "sha256": "cd35d7684e023032ee43ca9f0f8d91acb4c6e418edc99aa0d3d0b8bf31931ebc"
+    },
+    {
+      "path": "tests/database/parea-contact-journey.integration.mjs",
+      "sha256": "ef653e587e3c1930361af3742af8d5662a1bd1060bc7ba206bf203e2228e69c3"
+    },
+    {
+      "path": "tests/database/fixtures/parea-contacts-live-contracts.json",
+      "sha256": "84480235314d86deff8dda3762ac507f001a177e3303f3cabc157a77f514e2bb"
+    },
+    {
+      "path": "tests/database/fixtures/parea-audience-columns.json",
+      "sha256": "57d9117810a6f754eb1226296a0fd64e312b8a797d7a19f560d46e20b66d68ee"
+    },
+    {
+      "path": "tests/browser/workspace-contact-host/fixture.html",
+      "sha256": "fe2602532aafc92d9bedb5342090116137521789af0b483a6d493e99d6d9ab63"
+    },
+    {
+      "path": "tests/browser/workspace-contact-host/verify.cjs",
+      "sha256": "1d79e4410040f40defc1f63884acfdcf657062c08c847516176f122110004e35"
+    },
+    {
+      "path": "tests/browser/workspace-contact-host/scope-independent.cjs",
+      "sha256": "d624dccd3de21fb9d3b17987c374d486a94bd0f5260ccc0ad979f099b0b6c29c"
+    }
+  ],
+  "readonly_dependencies": [
+    {
+      "path": "assets/tickets/host-allocation-client.mjs",
+      "sha256": "5ae80fe98d06f128ed10f52c7dd7a8c4f63aa9ee31e852390baaa48c1163546b"
+    },
+    {
+      "path": "assets/tickets/invitation-share.mjs",
+      "sha256": "ae92479e395d6a7d94247aabbb7625816eedad671075fa23e0198c86e7570486"
+    },
+    {
+      "path": "assets/community/session-state.mjs",
+      "sha256": "b0f7bdc79ad9a3f2ed6b08bf1d08ab0b40282e93a908338d3ff622630f7b7769"
+    },
+    {
+      "path": "tests/database/event-table-current-session.integration.mjs",
+      "sha256": "82bb486fc8f2f27aec758c41fca1ee8e971ec1c0fcf3f7338ab93bf7b600993d"
+    }
+  ],
+  "verified_owner_evidence": 15,
+  "delta_from_reviewed_v1": {
+    "changed_paths": [
+      "assets/contacts/workspace-picker.mjs",
+      "tests/browser/parea-saved-contacts/verify.cjs"
+    ],
+    "runtime": "One input handler moves epoch++/busy=false/open.disabled=false before source branch. Work retains local filtering; Audience retains explicit server search clearing. Existing old request completion checks epoch and cannot affect newer selection.",
+    "canonical_PG_no_rerun": "Original independent five actual isolated PG/mounted groups and29 exact event authority guards remain valid; DB fixtures, readers, writers, quotas/CAS/receipt code and roster calculations unchanged."
+  },
+  "independent_verification": {
+    "focused": 30,
+    "controlled_actual_host_browser": 23,
+    "original_independent_race_replayed": {
+      "before": "",
+      "after": "",
+      "currentQuery": "Different contact",
+      "writes": 0,
+      "raceReproduced": false
+    },
+    "new_regression": "At390/1440, old Maria recheck cannot overwrite manual guest/quantity4 after query edit; fresh Maria selection works, and rapid current Alex selection remains after old Maria returns.",
+    "full_browser_scope": "Audience same-name identity/current workspace/server search/keyboard; guest and roster quantity/review/edit; current role/contact change/wrongscope/error/retry/empty/long names; actor/session/source/removal late responses; name-only phone gesture/review/cancel/denial/manual fallback.",
+    "canonical_flow_basis": "Exact isolated reader/save/current-session definitions from V1 evidence; select\u2192label edit/review\u2192one canonical guest save\u2192lost committed response\u2192same receipt recovery\u2192SQL readback/fresh reopen; contacts unchanged, no contact metadata in writer.",
+    "diff_check": "pass"
+  },
+  "source_review": {
+    "explicit_authorized_workspace_no_enumeration": true,
+    "audience_access_and_list_rechecked_before_name_use": true,
+    "same_name_people_distinct_by_ID_with_visible_contact_hint": true,
+    "only_guest_label_copied": true,
+    "actor_and_session_scope_invalidate_private_results": true,
+    "name_only_phone_properties_requested": true,
+    "no_new_contact_store_RPC_or_schema": true,
+    "all_canonical_math_writer_request_and_receipt_dependencies_unchanged": true
+  },
+  "limits": [
+    "Controlled JWT identity and phone API; actual production Auth/OS contact permission/native device are not verified.",
+    "Audience at most500 per reader and30 displayed; explicit server query used beyond initial500. No unbounded address-book enumeration.",
+    "Manual guest label changes do not edit shared contact/consent. No automatic invitation/message/schedule/payment/admission/provider claim.",
+    "Root owns source integration, protected CI, actual production/runtime/device acceptance. No production SQL reads performed during root DB health hold."
+  ],
+  "production_writes": 0,
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-browser/audience-1440.png",
+      "sha256": "36924457c9deb549639d756930a30ca8b89bd74c330ee5ce420160c5613afb4a"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-browser/audience-390.png",
+      "sha256": "8f87543fa691c242e79e4c717c67e38b15aca804794e040722d4fb118cecf429"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-browser/results.json",
+      "sha256": "d26cd57ffeb9940021416467fdce56a2d04c1b29828e5c8b45e197bf695ab92b"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-browser.log",
+      "sha256": "93f4a8d91c16bbdb2ae1e62113020a29cd6d8f0380d9a0021261d444ab7da423"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-focused.log",
+      "sha256": "61015cc43c3ac38ec1a2baedda03a05ae13b03ea17fcb1441d76ff6d9bda6e43"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-original-race/after.png",
+      "sha256": "1a91fff39dbe522d578fa7079bd7ece811af3aab36adf965af6e4e030355756f"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-original-race/result.json",
+      "sha256": "f864e71f1e86a18babe4a833509d17fb83ba1cc0b460f5673e5205516bebdd8b"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-original-race.cjs",
+      "sha256": "3efbbe9844267b4f30b833b4137a19a4360644196c8f95aebfeea0ba4619202b"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-independent-v2-2026-10-15/parea-v2-independent-original-race.log",
+      "sha256": "2877c4c35be0be7188b89adb843b81548b5ab04c7fa577584da090c5532847c0"
+    }
+  ]
+}

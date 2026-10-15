@@ -1,0 +1,214 @@
+{
+  "schema": 1,
+  "date": "2026-10-15",
+  "status": "owner source and local acceptance complete; independent review and root release pending",
+  "worktree": "/tmp/zoi-parea-audience-work",
+  "baseline": "f26484237805a6138a37acbe579fb8f414e493de",
+  "source_manifest": {
+    "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/source-manifest.json",
+    "sha256": "265d4a9cf08596ee173905279e6d22a855839554bd1c4a93afacc85f8b221575"
+  },
+  "problem": {
+    "baseline_source": "Actual baseline host guest entry exposes Work relationships only; primary Audience and pre-entry phone selection absent.",
+    "evidence": "evidence/parea-audience-owner-2026-10-15/baseline/result.json"
+  },
+  "result": [
+    "Explicit host workspace can select primary Audience people or existing Work relationships into guest or roster name drafts without retyping.",
+    "Supported phone picker requests names only by direct gesture, then requires explicit name review/use; manual entry remains available.",
+    "Audience access/list use existing canonical readers and exact explicit workspace; no workspace enumeration/default selection or new contact store.",
+    "Duplicate same-name contacts stay distinct; selection rechecks current access and exact contact name; edits change only guest label.",
+    "Actor/session/source/query/removal changes dispose and scrub private results, including detached DOM; late responses cannot reselect.",
+    "Canonical guest writer, quotas, CAS, request identity, receipt recovery and four roster math/model functions are unchanged."
+  ],
+  "runtime_paths": [
+    "assets/contacts/workspace-picker.mjs",
+    "assets/contacts/guest-picker.mjs",
+    "assets/contacts/picker.mjs",
+    "assets/tickets/host-allocations.mjs",
+    "assets/tickets/host-allocations.css",
+    "assets/tickets/parea-roster-plan.mjs"
+  ],
+  "source_count": 17,
+  "no_schema_or_rpc_change": true,
+  "actual_read_only_contract_capture": {
+    "scope": "pg_proc definition/body MD5/owner/ACL/config and ten audience_contacts column metadata only; no customer rows.",
+    "functions": [
+      {
+        "signature": "audience_access(uuid)",
+        "body_md5": "6fe2d0f929a50a2ca5cb848a8c8c8b44"
+      },
+      {
+        "signature": "audience_list(uuid,text,text)",
+        "body_md5": "640a7ad3b93ddd8e093c8c3b5c8a7162"
+      },
+      {
+        "signature": "event_host_get(uuid)",
+        "body_md5": "672d9def6474954ff441045dd8aa9132"
+      },
+      {
+        "signature": "event_host_guest_save(uuid,uuid,integer,uuid,text,integer,text)",
+        "body_md5": "8167b4bb5a78339f947af9b73bd1f7b6"
+      },
+      {
+        "signature": "ops_records_list(uuid,text,boolean)",
+        "body_md5": "870c6d822c2c71b84dad5cbd2671cf8d"
+      },
+      {
+        "signature": "zoi.assert_ws(uuid)",
+        "body_md5": "7813c61a30a77c170c624bc3bcf983da"
+      },
+      {
+        "signature": "zoi.audience_asset_role(uuid,boolean)",
+        "body_md5": "494b025d262568e0c8ec679c4d48e4a0"
+      },
+      {
+        "signature": "zoi.ops_role(uuid)",
+        "body_md5": "3e2d145871c46ba34fa43c7a74053859"
+      }
+    ]
+  },
+  "verification": {
+    "focused": {
+      "passed": 30,
+      "command": "node --test tests/unit/guest-contacts.test.mjs tests/unit/contact-picker.test.mjs tests/unit/workspace-contacts.test.mjs tests/unit/parea-roster-plan.test.mjs tests/unit/invitation-share.test.mjs tests/unit/parea-readiness.test.mjs tests/unit/host-allocation-client.test.mjs"
+    },
+    "controlled_browser": {
+      "passed": 21,
+      "viewports": [
+        390,
+        1440
+      ],
+      "command": "node tests/browser/parea-saved-contacts/verify.cjs",
+      "env": {
+        "NODE_PATH": "/workspaces/zoi-city-release/node_modules",
+        "CHROMIUM_EXECUTABLE_PATH": "/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome",
+        "ZOI_PAREA_CONTACT_BROWSER": "/tmp/independent-parea-contacts"
+      }
+    },
+    "postgres_and_mounted": {
+      "passed_groups": 5,
+      "retained_event_definitions_and_acl_guards": 29,
+      "command": "node tests/database/parea-contact-journey.integration.mjs",
+      "env": {
+        "ZOI_PAREA_CONTACT_EVIDENCE": "/tmp/independent-parea-contact-pg",
+        "PGPORT": "15763"
+      },
+      "details": [
+        "Exact captured readers and existing event authority/writer definitions installed in disposable PostgreSQL16; body hashes checked.",
+        "Two same-name contacts are outside initial500; server query finds both. Wrong workspace/actor refused.",
+        "Mounted guest select/review/back keeps quantity3; existing writer saves; response intentionally lost after commit; original receipt recovers; SQL readback and fresh page reopen match.",
+        "Exactly one guest write; no contact identity/channel in writer parameters; complete contact-row fingerprints unchanged.",
+        "Local TLS test origin preserves real HTTPS invitation validation; cluster and certificate removed after run."
+      ],
+      "intentional_log": "FIXTURE_RPC_ERROR controlled_lost_response_after_commit"
+    },
+    "existing_browser_regressions": {
+      "passed_viewport_journeys": 6,
+      "commands": [
+        "node tests/browser/workspace-contact-host/verify.cjs",
+        "node tests/browser/workspace-contact-host/scope-independent.cjs",
+        "node tests/browser/host-allocation-drafts/verify.cjs"
+      ],
+      "fixture_changes": "Valid synthetic JWT session_id and guest-form scoped ambiguous selectors; original assertions retained."
+    },
+    "baseline_reproduction": {
+      "command": "node tests/browser/parea-saved-contacts/baseline-proof.cjs",
+      "result": "Exact baseline has Work contacts, no Audience/phone pre-entry."
+    },
+    "source_checks": [
+      "All17 frozen source and4 read-only dependency hashes verified after evidence packaging.",
+      "git diff --check passed; four roster math/model functions byte-identical to baseline."
+    ],
+    "cache": {
+      "scope": "Read-only current deployed entry JS/CSS HEADs; new feature not deployed by author.",
+      "result": "Both cache-control public,max-age=0,must-revalidate; imports need no additional entry reference changes."
+    }
+  },
+  "limits": [
+    "Local controlled Auth identity boundary is not actual production sign-in proof; canonical current-session/role checks run inside isolated PostgreSQL.",
+    "Phone API/permission is simulated; actual OS contact permission acceptance remains unclaimed.",
+    "Primary Audience requires explicit authorized host workspace. No-workspace links offer phone/manual only; separate customer-a planner unchanged.",
+    "Existing reader returns at most500 and UI displays at most30; explicit server search/refine reaches contacts beyond initial window.",
+    "Names longer than80 or containing control characters require explicit shorter single-line guest label, with no silent stored truncation.",
+    "Shared contact edits remain in existing Contacts tools and permissions; no contact/consent writer, automatic invitation, message, provider send, schedule, payment or admission ticket is created.",
+    "No production mutations, provider calls, paid services, new Auth issuer, EAS build or ADB actions. Root owns release and actual live acceptance."
+  ],
+  "evidence_files": [
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/allocation-math-preserved.json",
+      "sha256": "917b3b5717a6d904b7021250ddf84dd735a4a1363dfb88a0f8da51de08bb58cf"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/baseline/baseline-guest-390.png",
+      "sha256": "0c8f4a03fd817b9d7d0100e60ba3b4065651819e74694bf562eed9efc1c955aa"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/baseline/result.json",
+      "sha256": "44993786f4ddf05ac5f5c497d775f507fa9d690911d00981cd07011536426d47"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/baseline.log",
+      "sha256": "66923e4c2d5855346d039df9648b4a1e05cd29ef7e88e1664684436a349e9300"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/browser/audience-1440.png",
+      "sha256": "84542d187225eaec06d5c1b1ecdb81449864823261b7e9395ca75604dd71f10f"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/browser/audience-390.png",
+      "sha256": "acbb3f5f2d0a42f57f0dd31793a9b462ed3999a0b2d73cceb936bbd873edc987"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/browser/results.json",
+      "sha256": "5e027b7bbfa34af0d8fd0b6c2be8a2b33152279c9c69fe04676c5fa52069f94c"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/browser.log",
+      "sha256": "8e05338b3d46d9c57aa382d7ce31f5a584b41501444904e65bc9726771b3faeb"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/existing-contacts.log",
+      "sha256": "32748acf5f5f05acfe8d160f132126df232ab7b80cc3d91b88e2e8de116c4187"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/existing-host-drafts.log",
+      "sha256": "81534b1cf2f364078ded922197b8de89e89a5f87d2022d2e82f44fa8aa702bb4"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/existing-scope.log",
+      "sha256": "32748acf5f5f05acfe8d160f132126df232ab7b80cc3d91b88e2e8de116c4187"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/focused-tests.log",
+      "sha256": "b537d390730c3d475339cfb7fe2ee72136fc303ce4730e71f5c9c55a78c5c52e"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/host-script-cache.headers",
+      "sha256": "9cb8b8a597869e528a62828df11e4e69a6b0b4201b7a9d0a7161187a175a9973"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/host-style-cache.headers",
+      "sha256": "0ff6d96d46a77a4cd65f8d5919e53ab777b0acd437a9452d90b1ae9642764c14"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/postgres-mounted/host-1440.png",
+      "sha256": "435259324a90c76cd4d0aa376484e96903868c09ca3f4c2d895586d539883a22"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/postgres-mounted/host-390.png",
+      "sha256": "de2b2cdd623ad8ea2ad4d45661da2ec15b01d94acef94e464dd0456e939f749a"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/postgres-mounted/results.json",
+      "sha256": "572f6b3f4d8cdabbdfe1fe0c0ee44c291c35e0bc8388a3b1d503fa89578aa39a"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/postgres-mounted.log",
+      "sha256": "cb9425c6914f609424d9a1999bf47c0adeb7f12ee61b9940313e99f821e66ee5"
+    },
+    {
+      "path": "docs/audits/evidence/parea-audience-owner-2026-10-15/source-manifest.json",
+      "sha256": "265d4a9cf08596ee173905279e6d22a855839554bd1c4a93afacc85f8b221575"
+    }
+  ]
+}

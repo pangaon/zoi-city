@@ -13,22 +13,24 @@ export function confirmedContact(raw){
  if(!email&&!tel)throw Error('Choose or enter an email address or phone number.');
  return{name,email:email||null,tel:tel||null};
 }
-export function createContactPicker({navigatorObject=globalThis.navigator,windowObject=globalThis.window}={}){
+export function createContactPicker({navigatorObject=globalThis.navigator,windowObject=globalThis.window,requestedProperties=['name','email','tel']}={}){
+ if(!Array.isArray(requestedProperties)||!requestedProperties.length||new Set(requestedProperties).size!==requestedProperties.length||requestedProperties.some(p=>!['name','email','tel'].includes(p)))throw Error('invalid_contact_properties');
+ const requested=[...requestedProperties],namesOnly=requested.length===1&&requested[0]==='name';
  let props=[],dead=false,working=false;
  const supported=()=>{try{return !!windowObject?.isSecureContext&&windowObject.top===windowObject.self&&typeof navigatorObject?.contacts?.select==='function'&&typeof navigatorObject?.contacts?.getProperties==='function';}catch{return false;}};
  return{
-  async prepare(){if(!supported())return false;try{const available=await navigatorObject.contacts.getProperties();if(dead)return false;props=['name','email','tel'].filter(p=>available.includes(p));return props.includes('email')||props.includes('tel');}catch{return false;}},
+  async prepare(){if(!supported())return false;try{const available=await navigatorObject.contacts.getProperties();if(dead)return false;props=requested.filter(p=>available.includes(p));return namesOnly?props.includes('name'):props.includes('email')||props.includes('tel');}catch{return false;}},
   async select(){
-   if(dead||working||!supported()||!props.some(p=>p==='email'||p==='tel'))return{status:'unavailable'};
+   if(dead||working||!supported()||!(namesOnly?props.includes('name'):props.some(p=>p==='email'||p==='tel')))return{status:'unavailable'};
    if(navigatorObject.userActivation&&navigatorObject.userActivation.isActive===false)return{status:'gesture_required'};
    working=true;
    try{
     // Keep this invocation before any await: it must run in the user's gesture.
-    const pending=navigatorObject.contacts.select([...props],{multiple:false});
+    const selectedProperties=[...props],pending=navigatorObject.contacts.select(selectedProperties,{multiple:false});
     const contacts=await pending;if(dead)return{status:'cancelled'};
     if(!Array.isArray(contacts)||contacts.length===0)return{status:'cancelled'};
     if(contacts.length!==1)return{status:'error'};
-    return{status:'selected',contact:contactOptions(contacts[0])};
+    return{status:'selected',contact:contactOptions(Object.fromEntries(selectedProperties.map(key=>[key,contacts[0]?.[key]])))};
    }catch(error){return{status:error?.name==='AbortError'?'cancelled':'error'};}
    finally{working=false;}
   },
