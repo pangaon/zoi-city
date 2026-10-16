@@ -40,6 +40,14 @@ export function profileMapLink(value: {id?:unknown;slug?:unknown}) {
  if(typeof id!=='string'||!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i.test(id)||typeof slug!=='string'||!slug||slug.length>240||/[\s/?#\\\u0000-\u001f]/.test(slug))return '';
  try{return 'zoi://explore/map?place='+encodeURIComponent(slug);}catch{return '';}
 }
+/** Publicly render only bounded property details linked to the selected official site.
+ * These are catalogue facts, never availability or a reservation system. */
+export function hospitalityCatalog(profile:RecordValue,website:string){
+ let origin='';try{const site=new URL(website);if(site.protocol==='https:'&&!site.username&&!site.password)origin=site.origin;}catch{}
+ const items=(key:string)=>{const value=profile[key];if(!origin||!Array.isArray(value))return[];const seen=new Set<string>();return value.slice(0,30).flatMap((row:unknown)=>{const item=object(row),name=plain(item.name),detail=plain(item.detail),source=publicURL(item.source);if(!name||name.length>160||detail.length>500||!source)return[];try{const url=new URL(source);if(url.origin!==origin||url.username||url.password||url.hash||url.search||seen.has(url.href))return[];seen.add(url.href);return[{id:url.href,name,detail,source:url.href}];}catch{return[];}});};
+ const raw=Array.isArray(profile.amenities)?profile.amenities:[],seen=new Set<string>(),amenities=raw.flatMap((value:unknown)=>{const name=plain(value),key=name.toLowerCase();if(!name||name.length>120||seen.has(key)||seen.size>=20)return[];seen.add(key);return[name];});
+ return{rooms:items('rooms'),dining:items('dining'),venues:items('venues'),amenities};
+}
 export function normalizeProfile(input: unknown) {
   const e = object(officialSourceEntity(object(Array.isArray(input) ? input[0] : input)));
   if (!plain(e.name)) return null;
@@ -68,7 +76,8 @@ export function normalizeProfile(input: unknown) {
   const booking = profileAction(e.booking_url, 'booking'), inquiry = profileAction(e.inquiry_url, 'inquiry');
   const addressLookup=publishedAddressLookup({s:plain(e.canonical_slug||e.slug),n:plain(e.name),addr:plain(e.address),city:plain(e.city),country:plain(e.country)});
   const publishedDesign=object(e.published_design).ok===true?publishedHomeDesign(e):null;
-  return { food:foodForProfile(e), publishedDesign, addressLookup, showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
+  const hotelCatalog=hospitalityCatalog(profile,publicURL(selectedOfficialWebsite(e)));
+  return { ...hotelCatalog,food:foodForProfile(e), publishedDesign, addressLookup, showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
     groupListing:profileAction(e.group_url,'group')===String(e.id||'').toLowerCase()?profileAction(e.group_url,'group'):'',
     inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), category: plain(e.category_slug || e.category).toLowerCase(), description: plain(publishedField(e,'description',e.description || profile.about || profile.description)), location: [e.city, e.country].map(plain).filter(Boolean).join(' · '), address: plain(e.address), website: publicURL(selectedOfficialWebsite(e)), phone, phoneHref:phoneHref(phone), email: publishedEmail(e,e.email || profile.email), photo, logo, gallery: media.gallery.map(publicURL).filter(Boolean), socials, services, serviceOfferings:serviceOfferingsForProfile(e), verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };
 }

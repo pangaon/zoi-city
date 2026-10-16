@@ -24,7 +24,7 @@ test('Home keeps actual child records and all seven destination actions across s
   for(const label of ['Discover places and people','Explore the map','Shop BuyGreek marketplace','Community','Events','Discover','For business'])h.click(label);
   assert.deepEqual(h.calls,['discover','map','shop','community','tickets','discover','grow']);
   for(const n of h.nodes().filter(n=>n.type==='Text')){assert.equal(n.props.numberOfLines,undefined);assert.equal(n.props.maxFontSizeMultiplier,undefined);assert.equal(flatten(n.props.style).height,undefined);}
-  const headings=h.nodes().filter(n=>n.type==='Text'&&n.props.accessibilityRole==='header');assert(headings.length>=2);for(const n of headings){const style=flatten(n.props.style);assert.equal(style.fontFamily,undefined);assert.ok(style.fontSize<=32,`display type ${style.fontSize} should stay compact`);}
+  const headings=h.nodes().filter(n=>n.type==='Text'&&n.props.accessibilityRole==='header');assert(headings.length>=2);for(const n of headings){const style=flatten(n.props.style);assert.equal(style.fontFamily,'Georgia');assert.ok(style.fontSize<=32,`display type ${style.fontSize} should stay compact`);}
   const image=h.nodes().find(n=>n.type==='Image');assert.equal(image.props.accessible,false);assert.match(text(h.render('home')),/Your people\.\s*Your possibilities\./);assert.doesNotMatch(text(h.render('home')),/A little closer to home/);
  }
 });

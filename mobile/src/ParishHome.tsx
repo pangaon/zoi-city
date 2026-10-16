@@ -152,7 +152,7 @@ export function ParishHome({ profile, actions, publishedColors, onBack }: Parish
 }
 
 function makeStyles(palette: ReturnType<typeof colorsFor>, width: number) {
-  const titleSize = width < 360 ? 29 : 32;
+  const titleSize = width < 360 ? 26 : 28;
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: palette.background },
     content: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 18, paddingTop: 8, paddingBottom: 32, gap: 16 },
@@ -174,7 +174,7 @@ function makeStyles(palette: ReturnType<typeof colorsFor>, width: number) {
     name: { color: palette.foreground, fontFamily: 'Georgia', fontSize: titleSize, lineHeight: titleSize * 1.12, fontWeight: '500', flexShrink: 1 },
     nameOnImage: { color: '#FFFFFF' },
     descriptionBlock: { paddingHorizontal: 3, paddingVertical: 2 },
-    description: { color: palette.muted, fontSize: 15, lineHeight: 23 },
+    description: { color: palette.muted, fontSize: 14, lineHeight: 21 },
     contactCard: { borderRadius: 18, padding: 16, backgroundColor: palette.surface, borderWidth: 1, borderColor: palette.border, gap: 12 },
     address: { color: palette.foreground, fontSize: 14, lineHeight: 21 },
     contactActions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

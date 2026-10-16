@@ -1,5 +1,5 @@
 type ProfileLike={
- food?:{family?:string}|null;type?:string;category?:string;name?:string;profile?:Record<string,any>;
+ food?:{family?:string;menuSections?:{items?:unknown[]}[]}|null;type?:string;category?:string;name?:string;profile?:Record<string,any>;
  serviceOfferings?:{items?:unknown[]};bookingListing?:string;inquiryListing?:string;
  website?:string;phoneHref?:string|null;address?:string;location?:string;gallery?:string[];description?:string;socials?:unknown[];
  publishedDesign?:{template?:string;section_order?:string[];hidden_sections?:string[];copy?:Record<string,string>}|null;
@@ -64,6 +64,7 @@ export function clientHomeDesign(profile:ProfileLike,dark=false){
   return available.filter(item=>item.ownerSection===section);
  }):available;
  const tabs=display.map(({key,label,ownerSection})=>({key,label:ownerSection==='offerings'?(owner?.copy?.offerings_title?.trim()||label):ownerSection==='gallery'?(owner?.copy?.gallery_title?.trim()||label):ownerSection==='calendar'?(owner?.copy?.calendar_title?.trim()||'Times'):ownerSection==='socials'?(owner?.copy?.contact_title?.trim()||label):label,ownerSection}));
- const primary=profile.bookingListing?'Check availability':profile.food?'View menu':profile.inquiryListing?(family==='grooming'?'Enquire about a service':'Send an enquiry'):profile.website?'Visit website':profile.phoneHref?'Call':profile.address||profile.location?'Get directions':'';
+ const hasPublishedMenu=!!profile.food&&profile.food.menuSections?.some(section=>!!section.items?.length);
+ const primary=profile.bookingListing?'Check availability':hasPublishedMenu?'View menu':profile.inquiryListing?(family==='grooming'?'Enquire about a service':'Send an enquiry'):profile.website?'Visit website':profile.phoneHref?'Call':profile.address||profile.location?'Get directions':'';
  return{family,background,ink,muted:darkSurface?'#B8C5D2':'#5D6874',accent,primaryColor,surface,line,tabs:tabs.slice(0,4),contentOrder:display.map(x=>x.key),copy:owner?.copy||{},template,primary};
 }

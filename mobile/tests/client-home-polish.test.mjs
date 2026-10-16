@@ -23,6 +23,10 @@ test('native client homes use distinct source-backed restaurant and grooming com
  assert.equal(grooming.family,'grooming');assert.equal(grooming.tabs[0].label,'Services');assert.notEqual(food.background,grooming.background);
  assert.notEqual(grooming.accent,'#1C2735');assert.equal(food.primary,'View menu');
 });
+test('native hospitality projection carries verified same-site room, dining, venue and amenity details without inventory claims',()=>{
+ const hotel=normalizeProfile({id:'10000000-0000-4000-8000-000000000086',name:'Harbour House',entity_type:'business',category_slug:'hotels',website:'https://harbour.example/',profile:{rooms:[{name:'Garden suite',source:'https://harbour.example/rooms/garden-suite',detail:'Private terrace.'},{name:'Injected room',source:'https://unrelated.example/rooms',detail:'Not this hotel.'}],dining:[{name:'The Harbour Room',source:'https://harbour.example/dining/harbour-room',detail:'Seasonal menu.'}],venues:[{name:'Garden room',source:'https://harbour.example/venues/garden',detail:''}],amenities:['Sea views','Wi-Fi','SEA VIEWS']}});
+ assert.equal(clientHomeDesign(hotel).family,'hospitality');assert.deepEqual(hotel.rooms.map(x=>x.name),['Garden suite']);assert.deepEqual(hotel.dining.map(x=>x.name),['The Harbour Room']);assert.deepEqual(hotel.venues.map(x=>x.name),['Garden room']);assert.deepEqual(hotel.amenities,['Sea views','Wi-Fi']);for(const item of[...hotel.rooms,...hotel.dining,...hotel.venues])assert.equal('availability'in item,false);
+});
 test('sparse profile stays compact and brand buttons keep readable contrast',()=>{
  const sparse=clientHomeDesign(normalizeProfile({id:'10000000-0000-4000-8000-000000000083',name:'New member',entity_type:'business',profile:{brand:{primary:'#F5C542'}}}));
  assert.equal(sparse.family,'directory');assert.deepEqual(sparse.tabs,[]);assert.equal(sparse.primary,'');assert.equal(sparse.accent,'#1F64CD');
