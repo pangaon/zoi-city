@@ -1,3 +1,4 @@
+import {createCommunityErasureWorker} from './community-erasure.ts';
 // A purpose-specific erasure worker. User requests never supply another actor,
 // Storage URL or Auth identifier. Existing history is held for reviewed handling.
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -26,9 +27,12 @@ export function createAccountDeleteHandler({ url, publicKey, serviceKey, fetch: 
     } finally { clearTimeout(timer); }
   }
   const rpc=(name:string,body:unknown,token:string,key=publicKey)=>call('/rest/v1/rpc/'+name,body,token,key!);
-  const safe=(data:{request_id:string;state:string},id:string)=>{if(!data||data.request_id!==id||!STATES.has(data.state))throw Error('Invalid receipt.');return {request_id:id,state:data.state};};
+  const safe=(data:{request_id:string;state:string;[key:string]:unknown},id:string)=>{if(!data||data.request_id!==id||!STATES.has(data.state))throw Error('Invalid receipt.');const result:{request_id:string;state:string;[key:string]:unknown}={request_id:id,state:data.state};for(const key of ['accepted_at','updated_at','due_at','completed_at'])if(key in data){const value=data[key];if(value!==null&&(typeof value!=='string'||value.length>64||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,6})?(?:Z|[+-]\d{2}:\d{2})$/.test(value)||!Number.isFinite(Date.parse(value))))throw Error('Invalid receipt.');result[key]=value;}if('stage'in data){if(typeof data.stage!=='string'||!['community','media','account','additional_cleanup','completed'].includes(data.stage))throw Error('Invalid receipt.');result.stage=data.stage;}return result;};
+  const eraseCommunity=createCommunityErasureWorker({url:origin.origin,serviceKey:serviceKey!,fetch:transport,rpc:(name,body)=>rpc(name,body,serviceKey!,serviceKey!)});
   async function process(id:string) {
     const worker=cryptoApi.randomUUID();
+    const cleanup=await eraseCommunity(id,worker);
+    if(!cleanup.community_complete)return safe(cleanup,id);
     const result=await rpc('account_delete_process',{p_request:id,p_worker:worker},serviceKey!,serviceKey!);
     const resultSafe=safe(result,id);if(resultSafe.state!=='auth_pending')return resultSafe;
     if(!validId(result.actor_id)||result.worker_id!==worker)throw Error('Invalid worker receipt.');
@@ -52,7 +56,7 @@ export function createAccountDeleteHandler({ url, publicKey, serviceKey, fetch: 
       if(body.action==='process_pending'){
         // This RPC validates the presented service JWT through PostgREST first.
         const ids=await rpc('account_delete_pending',{},token,publicKey);if(!Array.isArray(ids)||ids.length>5||ids.some(id=>!validId(id)))throw Error('Invalid queue.');
-        let processed=0;for(const id of ids){try{await process(id);processed++;}catch{/* durable checkpoint remains retryable; never log actor/provider data */}}
+        let processed=0;const started=Date.now();for(const id of ids){if(Date.now()-started>45000)break;try{await process(id);processed++;}catch{/* durable checkpoint remains retryable; never log actor/provider data */}}
         return reply(200,{processed});
       }
       if(!validId(body.request_id))return reply(400,{error:'invalid_request'});

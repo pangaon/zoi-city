@@ -1,0 +1,198 @@
+{
+  "core_source_sha256": "4698f2d6823274375897f9f530b4e99441c6db0b7a30bbdb2e90d13231ec7845",
+  "core_contracts": {
+    "prepare": {
+      "arguments": "p_request uuid,p_recovery_hash text",
+      "prosrc_md5": "7b926a953ab26e8c7ac4e1add70d2129"
+    },
+    "confirm": {
+      "arguments": "p_request uuid",
+      "prosrc_md5": "fc344c289a5b7a1aab75532527e8ae25"
+    },
+    "cancel": {
+      "arguments": "p_request uuid",
+      "prosrc_md5": "e26af799279e704b7100ee763e33861d"
+    },
+    "status": {
+      "arguments": "p_request uuid,p_recovery_token text",
+      "prosrc_md5": "034dcb6451daced76d839024b6dd0e90"
+    },
+    "process": {
+      "arguments": "p_request uuid,p_worker uuid",
+      "prosrc_md5": "66fe7ee37e142f48e637c3fc7b59e285"
+    },
+    "finish": {
+      "arguments": "p_request uuid,p_worker uuid",
+      "prosrc_md5": "528d5f7a9dd7536d8f26ec803baf5bb9"
+    },
+    "pending": {
+      "arguments": "",
+      "prosrc_md5": "9045c4033d3a64e8c38cf014b42c4963"
+    }
+  },
+  "source_baseline": "6c2f013d3ffa3a1d39dda6922c433de39d3550d4",
+  "supported_namespace": "community-private/<profileUUID>/<assetUUID>",
+  "limits": {
+    "sql_rows": 100,
+    "storage_objects": 100,
+    "requests_per_run": 5
+  },
+  "limitations": [
+    "Local source schema proof only; hosted full schema/ACL/worker/Storage admission remains root gate.",
+    "Shared business/transaction/unknown domains are not removed by this explicit Community map.",
+    "No configured deadline or live operational timing until root has measured activated worker/backlog."
+  ],
+  "child_fks": [
+    {
+      "child": "zoi.community_comment_requests",
+      "parent": "zoi.feed_comments",
+      "conname": "community_comment_requests_comment_id_fkey",
+      "definition": "FOREIGN KEY (comment_id) REFERENCES zoi.feed_comments(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.community_comment_requests",
+      "parent": "zoi.feed_posts",
+      "conname": "community_comment_requests_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.community_media_byte_proofs",
+      "parent": "zoi.community_media_assets",
+      "conname": "community_media_byte_proofs_asset_id_fkey",
+      "definition": "FOREIGN KEY (asset_id) REFERENCES zoi.community_media_assets(id)"
+    },
+    {
+      "child": "zoi.community_media_upload_grants",
+      "parent": "zoi.community_media_assets",
+      "conname": "community_media_upload_grants_asset_id_fkey",
+      "definition": "FOREIGN KEY (asset_id) REFERENCES zoi.community_media_assets(id)"
+    },
+    {
+      "child": "zoi.community_member_draft_versions",
+      "parent": "zoi.community_member_drafts",
+      "conname": "community_member_draft_versions_draft_id_fkey",
+      "definition": "FOREIGN KEY (draft_id) REFERENCES zoi.community_member_drafts(id)"
+    },
+    {
+      "child": "zoi.community_notifications",
+      "parent": "zoi.feed_comments",
+      "conname": "community_notifications_comment_id_fkey",
+      "definition": "FOREIGN KEY (comment_id) REFERENCES zoi.feed_comments(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.community_notifications",
+      "parent": "zoi.feed_posts",
+      "conname": "community_notifications_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.community_post_context",
+      "parent": "zoi.feed_comments",
+      "conname": "community_post_context_accepted_comment_id_fkey",
+      "definition": "FOREIGN KEY (accepted_comment_id) REFERENCES zoi.feed_comments(id) ON DELETE SET NULL"
+    },
+    {
+      "child": "zoi.community_post_context",
+      "parent": "zoi.feed_posts",
+      "conname": "community_post_context_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.community_reports",
+      "parent": "zoi.feed_posts",
+      "conname": "community_reports_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE SET NULL"
+    },
+    {
+      "child": "zoi.community_saved",
+      "parent": "zoi.feed_posts",
+      "conname": "community_saved_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.feed_comments",
+      "parent": "zoi.feed_posts",
+      "conname": "feed_comments_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE CASCADE"
+    },
+    {
+      "child": "zoi.feed_likes",
+      "parent": "zoi.feed_posts",
+      "conname": "feed_likes_post_id_fkey",
+      "definition": "FOREIGN KEY (post_id) REFERENCES zoi.feed_posts(id) ON DELETE CASCADE"
+    }
+  ],
+  "immutable_helpers": [
+    {
+      "signature": "zoi.community_media_immutable()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.community_media_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$BEGIN RAISE EXCEPTION 'media_immutable_evidence';END$function$\n",
+      "owner": "postgres",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.community_member_immutable()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.community_member_immutable()\n RETURNS trigger\n LANGUAGE plpgsql\n SET search_path TO ''\nAS $function$BEGIN RAISE EXCEPTION 'community_member_receipt_immutable';END$function$\n",
+      "owner": "postgres",
+      "prosecdef": false,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}"
+    }
+  ],
+  "existing_triggers": [
+    {
+      "table_name": "zoi.community_media_byte_proofs",
+      "tgname": "community_media_proof_immutable",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER community_media_proof_immutable BEFORE DELETE OR UPDATE ON zoi.community_media_byte_proofs FOR EACH ROW EXECUTE FUNCTION zoi.community_media_immutable()"
+    },
+    {
+      "table_name": "zoi.community_media_upload_grants",
+      "tgname": "community_media_grant_immutable",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER community_media_grant_immutable BEFORE DELETE OR UPDATE ON zoi.community_media_upload_grants FOR EACH ROW EXECUTE FUNCTION zoi.community_media_immutable()"
+    },
+    {
+      "table_name": "zoi.community_member_draft_versions",
+      "tgname": "community_member_versions_immutable",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER community_member_versions_immutable BEFORE DELETE OR UPDATE ON zoi.community_member_draft_versions FOR EACH ROW EXECUTE FUNCTION zoi.community_member_immutable()"
+    },
+    {
+      "table_name": "zoi.community_member_requests",
+      "tgname": "community_member_requests_immutable",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER community_member_requests_immutable BEFORE DELETE OR UPDATE ON zoi.community_member_requests FOR EACH ROW EXECUTE FUNCTION zoi.community_member_immutable()"
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "tgname": "feed_comment_notify",
+      "tgenabled": "O",
+      "definition": "CREATE TRIGGER feed_comment_notify AFTER INSERT ON zoi.feed_comments FOR EACH ROW EXECUTE FUNCTION zoi.notif_on_comment()"
+    }
+  ],
+  "source_readonly": [
+    {
+      "path": "supabase/migrations/20260930042430_community_profiles_graph_and_personal_feeds.sql",
+      "sha256": "676ee20cbfef2a5463f03e96fdc6ab47d3135b2379e46140d41a63353460badc"
+    },
+    {
+      "path": "supabase/migrations/20260930042431_community_private_media_publish.sql",
+      "sha256": "81c27ea12f0ee988173a83cfe20d5db47675e826297df98df076898e5ec1a776"
+    },
+    {
+      "path": "supabase/migrations/20261015041204_community_member_private_draft_lifecycle.sql",
+      "sha256": "e650df06cb7d32f5706d4c67a7825087235ba565c8c8c2240bfa9317ad6855d6"
+    },
+    {
+      "path": "supabase/migrations/20261015044310_community_media_verified_grants.sql",
+      "sha256": "d17dccc1624461e1ffc6cc5bf1d7a07047122343686bcb56523538d42209f22c"
+    }
+  ],
+  "community_schema_sql": "drop table zoi.community_profiles;\ncreate table zoi.community_profiles(profile_id uuid primary key references zoi.user_profiles(id),handle text not null unique,display_name text not null,bio text not null default '',city text,country text,interests text[] not null default '{}',avatar_media_id uuid,avatar_url text,version integer not null default 1,initial_data jsonb not null,created_at timestamptz not null default clock_timestamp(),updated_at timestamptz not null default clock_timestamp());\ncreate table zoi.community_saved(profile_id uuid not null references zoi.user_profiles(id),post_id uuid not null references zoi.feed_posts(id) on delete cascade,created_at timestamptz not null default clock_timestamp(),primary key(profile_id,post_id));\ncreate table zoi.community_mutes(profile_id uuid not null references zoi.user_profiles(id),muted uuid not null references zoi.user_profiles(id),created_at timestamptz not null default clock_timestamp(),primary key(profile_id,muted),check(profile_id<>muted));\ndrop table zoi.community_preferences;\ncreate table zoi.community_preferences(profile_id uuid primary key references zoi.user_profiles(id),topics text[] not null default '{}',city text,country text,locality_enabled boolean not null default false,version integer not null default 1,initial_data jsonb not null,updated_at timestamptz not null default clock_timestamp());\ncreate table zoi.community_post_context(post_id uuid primary key references zoi.feed_posts(id) on delete cascade,intent text not null default 'moment' check(intent in('question','recommendation','moment','event')),topics text[] not null default '{}',city text,country text,accepted_comment_id uuid references zoi.feed_comments(id) on delete set null,version integer not null default 1);\ncreate table zoi.community_comment_requests(profile_id uuid not null references zoi.user_profiles(id),request_id uuid not null,post_id uuid not null references zoi.feed_posts(id) on delete cascade,comment_id uuid not null references zoi.feed_comments(id) on delete cascade,body text not null,primary key(profile_id,request_id));\ncreate table zoi.community_notifications(id uuid primary key default gen_random_uuid(),recipient uuid not null references zoi.user_profiles(id),actor uuid not null references zoi.user_profiles(id),kind text not null check(kind in('follow','like','comment','accepted_answer')),post_id uuid references zoi.feed_posts(id) on delete cascade,comment_id uuid references zoi.feed_comments(id) on delete cascade,event_key text not null unique,created_at timestamptz not null default clock_timestamp(),read_at timestamptz);\ndrop table zoi.community_reports;\ncreate table zoi.community_reports(id uuid primary key default gen_random_uuid(),reporter uuid not null references zoi.user_profiles(id),post_id uuid references zoi.feed_posts(id) on delete set null,request_id uuid not null,reason text not null,details text not null,content_snapshot jsonb not null,status text not null default 'pending' check(status in('pending','dismissed','hidden')),reviewed_by uuid references zoi.user_profiles(id),review_note text,created_at timestamptz not null default clock_timestamp(),reviewed_at timestamptz,unique(reporter,request_id));\ndrop table zoi.community_media_assets;\nCREATE TABLE zoi.community_media_assets(\n id uuid PRIMARY KEY DEFAULT gen_random_uuid(), profile_id uuid NOT NULL REFERENCES zoi.user_profiles(id),request_id uuid NOT NULL,\n purpose text NOT NULL CHECK(purpose IN('post','avatar')),mime_type text NOT NULL CHECK(mime_type IN('image/jpeg','image/png','image/webp','video/mp4')),\n size_bytes integer NOT NULL CHECK(size_bytes BETWEEN 16 AND 33554432),sha256 text NOT NULL CHECK(sha256~'^[0-9a-f]{64}$'),\n metadata jsonb NOT NULL,state text NOT NULL DEFAULT 'pending' CHECK(state IN('pending','ready','discarded')),\n created_at timestamptz NOT NULL DEFAULT now(),storage_deleted_at timestamptz,finalized_at timestamptz, UNIQUE(profile_id,request_id)\n);\nCREATE TABLE zoi.community_publish_requests(profile_id uuid NOT NULL REFERENCES zoi.user_profiles(id),request_id uuid NOT NULL,payload jsonb NOT NULL,post_id uuid NOT NULL,created_at timestamptz NOT NULL DEFAULT now(),PRIMARY KEY(profile_id,request_id));\nCREATE TABLE zoi.community_member_drafts(\n id uuid PRIMARY KEY DEFAULT gen_random_uuid(),profile_id uuid NOT NULL REFERENCES zoi.user_profiles(id),account_id uuid NOT NULL,\n version integer NOT NULL CHECK(version>0),state text NOT NULL CHECK(state IN('draft','published','discarded')),\n payload jsonb NOT NULL CHECK(jsonb_typeof(payload)='object'),post_id uuid,\n created_at timestamptz NOT NULL DEFAULT clock_timestamp(),updated_at timestamptz NOT NULL DEFAULT clock_timestamp()\n);\nCREATE TABLE zoi.community_member_draft_versions(\n draft_id uuid NOT NULL REFERENCES zoi.community_member_drafts(id),version integer NOT NULL,profile_id uuid NOT NULL,account_id uuid NOT NULL,\n state text NOT NULL,payload jsonb NOT NULL,post_id uuid,at timestamptz NOT NULL DEFAULT clock_timestamp(),PRIMARY KEY(draft_id,version)\n);\nCREATE TABLE zoi.community_member_requests(\n account_id uuid NOT NULL,profile_id uuid NOT NULL,request_id uuid NOT NULL,action text NOT NULL,\n payload jsonb NOT NULL,receipt jsonb NOT NULL,at timestamptz NOT NULL DEFAULT clock_timestamp(),PRIMARY KEY(account_id,profile_id,request_id)\n);\nCREATE TABLE zoi.community_media_upload_grants(id uuid PRIMARY KEY DEFAULT gen_random_uuid(),asset_id uuid NOT NULL REFERENCES zoi.community_media_assets(id),account_id uuid NOT NULL,profile_id uuid NOT NULL,session_id uuid NOT NULL,created_at timestamptz NOT NULL DEFAULT clock_timestamp(),expires_at timestamptz NOT NULL DEFAULT clock_timestamp()+interval '15 minutes');\nCREATE TABLE zoi.community_media_byte_proofs(asset_id uuid PRIMARY KEY REFERENCES zoi.community_media_assets(id),sha256 text NOT NULL CHECK(sha256~'^[0-9a-f]{64}$'),mime_type text NOT NULL,size_bytes integer NOT NULL,metadata jsonb NOT NULL,verified_at timestamptz NOT NULL DEFAULT clock_timestamp());"
+}

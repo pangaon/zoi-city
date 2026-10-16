@@ -1,0 +1,76 @@
+{
+  "verdict": "ACCEPT scoped root integration deltas and exact expiring ROLLBACK request",
+  "reviewer": "owner_next",
+  "at": "2026-10-16T06:28:13.508491+00:00",
+  "tree": "/workspaces/zoi-map-studio-ops-release",
+  "head": "50b84981bf745f28d19030745c8c25ccca89da94",
+  "sources": {
+    "mobile/src/AccountDeletionProgress.tsx": "c48f8d7c7123f8fedd05201b41f114b46bf9d147a692359cc7413e8cd6e6a06c",
+    "mobile/tests/browser/account-deletion-progress-browser.cjs": "12043f87c05fa8593017d9b2a844e4e6872fc43f6b81fec05b4e9e00a9a35f91",
+    "mobile/src/accountDeletion.ts": "684c53adf352dad40b9019aab4e4558ef22727c1ee388be00232787f67141977",
+    "scripts/release-backend.mjs": "1cf2dc3cd76fe24b5b6f4bc940339efd955c822d261312b6aeee76e06abfc731",
+    "ops/backend-release-request.json": "63b1970952947e0d9d7acb8d1ceadfa7d5b87964a6424c557628e4fac8130b88",
+    "ops/qa-account-deletion-install-rollback.sql": "390b0ab92258d85b78bc9d8edcc0856171e953f6f56224f2f6ed513b58f49912"
+  },
+  "mechanical_reversal": {
+    "progress_styles": "Only body15->16pt and label15->16pt+lineHeight24; runtime logic exact accepted source.",
+    "browser_runner": "Only default controller private path->current repo path; override retained, assertion bodies exact.",
+    "backend_release": "Only account-delete verifyJwtfalse worker allowlist and exact rollback fixture allowlist added; every other runtime byte equals HEAD."
+  },
+  "mounted": {
+    "pass": true,
+    "cases": 5,
+    "default_controller": true,
+    "controller_overlay_environment": "UNSET",
+    "actual_component_and_controller": true,
+    "controlled_status_transport": true,
+    "viewports": [
+      "390x700 font1 pending",
+      "390x390 font2 pending",
+      "1440x900 font1 pending",
+      "390x700 font2 held",
+      "390x700 font2 completed"
+    ],
+    "covers": [
+      "44px refresh/keyboard Enter",
+      "error then retry",
+      "background pause/foreground resume",
+      "completion removes refresh",
+      "account switch discards delayed private status",
+      "no horizontal overflow"
+    ],
+    "visual_review": [
+      "390x390font2 fully readable with vertical scrolling; target remains reachable",
+      "1440desktop populated progress legible"
+    ]
+  },
+  "release_request": {
+    "one_fixture_only": true,
+    "migrations": 0,
+    "workers": 0,
+    "expiry": "2026-10-16T07:20:24.776204+00:00",
+    "exact_atomic_sql_sha256": "390b0ab92258d85b78bc9d8edcc0856171e953f6f56224f2f6ed513b58f49912",
+    "controlled_run_requests": 1,
+    "controlled_route": "/database/query",
+    "controlled_deploy_calls": 0,
+    "controlled_migration_calls": 0,
+    "expired_and_attempt2_refuse": true
+  },
+  "evidence": {
+    "mounted/complete-390-700-font2.png": "cf92d5e44e81a512dedb60559f754e4d693c26ecd50001361d2241b34031b366",
+    "mounted/fixture.jsx": "6bfbe79fd633be9cbc8bcbdc65f06617abcd080cadba2d232cd2fa042bedd30c",
+    "mounted/held-390-700-font2.png": "5f83527341f2cfda8ccd3cf39c832c773cf7e1f7fefd82be519193d924a6958b",
+    "mounted/pending-1440-900-font1.png": "071ea67b49e6129e0312f513f4cf857a656290618af580eb425796ddab86abd7",
+    "mounted/pending-390-390-font2.png": "569e33576621b237f5cff2603dedc83746f18b044698ed90867439c9fba22c9b",
+    "mounted/pending-390-700-font1.png": "ffe1f6fd87ca8bc4543d87dc6bc2265db07577036ad526b89c07341264fcae1e",
+    "mounted/result.json": "8caf48e6b3b35b90a4d5c0681ab734ed94a74863e5b148210e279f6e4d4cbca2",
+    "mounted/rn-web.jsx": "7f1ca7d8b79a19daffeee5641b8c516d628f17aab7bd223ac11297e32ba97cce"
+  },
+  "actual_api_db_auth_storage_calls": 0,
+  "source_edits": 0,
+  "limits": [
+    "This is source/controlled mounted and mocked release execution only; hosted rollback rehearsal still root gate.",
+    "No migration install, Edge deployment, deletion admission, cron activation or real-user erasure performed.",
+    "Request expires; any later changed request requires separate exact review."
+  ]
+}
