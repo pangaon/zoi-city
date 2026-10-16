@@ -9,10 +9,10 @@ import{clampNavigationOffset,navigationContentExtent,pageNavigationOffset,reveal
 export const PRIMARY_TABS=[{id:'home',icon:'⌂',label:'Home'},{id:'discover',icon:'◎',label:'Discover'},{id:'community',icon:'☷',label:'Community'},{id:'tickets',icon:'◇',label:'Events'},{id:'grow',icon:'↗',label:'Grow'}]as const;
 export type PrimaryTab=typeof PRIMARY_TABS[number]['id'];
 type NavigationItem={id:PrimaryTab;icon:string;label:string};
-export function AppHeader({onHome,onAccount,accountLabel='Your Zoi ↗',tagline='GREEK ROOTS. GLOBAL LIFE.'}:{onHome:()=>void;onAccount:()=>void;accountLabel?:string;tagline?:string}){
+export function AppHeader({onHome,onAccount,accountLabel='Your Zoi ↗',tagline=''}:{onHome:()=>void;onAccount:()=>void;accountLabel?:string;tagline?:string}){
  const s=useChromeStyles();
  const{width,fontScale}=useWindowDimensions(),stacked=fontScale>1.3&&width<650;
- const tag=<Text testID="shell-tagline" style={[s.headerTag,stacked&&s.fullTag]}>{stacked?tagline:tagline.replace('. ','.\n')}</Text>;
+ const tag=tagline?<Text testID="shell-tagline" style={[s.headerTag,stacked&&s.fullTag]}>{stacked?tagline:tagline.replace('. ','.\n')}</Text>:null;
  return <View style={s.header}><View style={s.headerRow}><Pressable accessibilityRole="button" accessibilityLabel="Zoi home" onPress={onHome} style={s.brandButton}><View style={s.brandLockup}><Image source={require('../assets/zoi-logo.png')} resizeMode="contain" style={s.brandEmblem} accessible={false}/><Text style={s.wordmark}>Zoi</Text></View></Pressable>{!stacked&&tag}<Pressable accessibilityRole="link" accessibilityLabel="Your Zoi account" onPress={onAccount} style={[s.account,stacked&&s.accountLarge]}><Text style={s.accountText}>{accountLabel}</Text></Pressable></View>{stacked&&tag}</View>;
 }
 export function PrimaryNavigation({activeId,onNavigate,items=PRIMARY_TABS,blurTarget}:{activeId:string;onNavigate:(tab:PrimaryTab)=>void;items?:readonly NavigationItem[];blurTarget?:BlurViewProps['blurTarget']}){

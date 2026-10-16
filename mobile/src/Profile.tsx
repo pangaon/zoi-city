@@ -8,6 +8,10 @@ import {musicDraft} from './music';
 import {BookingPanel} from './Bookings';
 import {EventHomeTools} from './EventHome';
 import {ArtistHome} from './ArtistHome';
+import {GroomingHome} from './GroomingHome';
+import {HospitalityHome} from './HospitalityHome';
+import {ParishHome} from './ParishHome';
+import {ProfessionalHome} from './ProfessionalHome';
 import {uuid} from './artistMusic';
 import {FoodMenu} from './FoodMenu';
 import {ServiceOfferings} from './ServiceOfferings';
@@ -17,11 +21,11 @@ type ClientProfile=NonNullable<ReturnType<typeof normalizeProfile>>;
 type Section='offerings'|'booking'|'gallery'|'about'|'visit'|'contact';
 export function BusinessProfile({slug,back,signIn,volunteer,enquiry,calendar,group,festival,shows}:{slug:string;back:()=>void;signIn:()=>void;volunteer:(workspace:string)=>void;enquiry:(listing:string)=>void;calendar:(listing:string)=>void;group:(listing:string)=>void;festival:(listing:string)=>void;shows:(artist:string)=>void}){
  const{client}=useAuth(),dark=useColorScheme()==='dark',{width,fontScale}=useWindowDimensions();
- const[profile,setProfile]=useState<ClientProfile|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[retry,setRetry]=useState(0),[imageFailed,setImageFailed]=useState(false),[logoFailed,setLogoFailed]=useState(false);
+ const[profile,setProfile]=useState<ClientProfile|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[retry,setRetry]=useState(0),[imageFailed,setImageFailed]=useState(false),[logoFailed,setLogoFailed]=useState(false),[hospitalityBooking,setHospitalityBooking]=useState(false);
  const[failedGallery,setFailedGallery]=useState<Record<string,boolean>>({});
  const[galleryIndex,setGalleryIndex]=useState<number|null>(null),[activeTab,setActiveTab]=useState('');
  const scroll=useRef<ScrollView>(null),sectionY=useRef<Partial<Record<Section,number>>>({});
- useEffect(()=>{let active=true;setLoading(true);setProfile(null);setError('');setImageFailed(false);setLogoFailed(false);setFailedGallery({});setGalleryIndex(null);setActiveTab('');sectionY.current={};client.request('/rest/v1/rpc/home_entity',{p_slug:slug}).then(data=>{if(active)setProfile(normalizeProfile(data));}).catch(()=>{if(active)setError('Could not load this profile.');}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;}},[slug,retry,client]);
+ useEffect(()=>{let active=true;setLoading(true);setProfile(null);setError('');setImageFailed(false);setLogoFailed(false);setFailedGallery({});setGalleryIndex(null);setActiveTab('');setHospitalityBooking(false);sectionY.current={};client.request('/rest/v1/rpc/home_entity',{p_slug:slug}).then(data=>{if(active)setProfile(normalizeProfile(data));}).catch(()=>{if(active)setError('Could not load this profile.');}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;}},[slug,retry,client]);
  const visibleGallery=profile?profile.gallery.filter(url=>!failedGallery[url]):[];
  const design=useMemo(()=>profile?clientHomeDesign({...profile,gallery:visibleGallery},dark):null,[profile,dark,failedGallery]);
  const styles=useMemo(()=>profileStyles(dark,design?.background||'#F4F6F9',design?.ink||'#1D2C40',design?.muted||'#687483',design?.accent||'#1F64CD',design?.primaryColor||design?.accent||'#1F64CD',design?.surface||'#FFFFFF',design?.line||'#DCE3EB'),[dark,design]);
@@ -30,7 +34,14 @@ export function BusinessProfile({slug,back,signIn,volunteer,enquiry,calendar,gro
  const move=(key:Section)=>{const y=sectionY.current[key];if(typeof y==='number'){setActiveTab(key);scroll.current?.scrollTo({y:Math.max(0,y-12),animated:true});}};
  const open=async(url:string)=>{try{await Linking.openURL(url);}catch{setError('That link could not be opened.');}};
  const action=(label:string,url:string,kind:'button'|'link'='link')=><Pressable key={label+url} accessibilityRole={kind} accessibilityLabel={label} onPress={()=>void open(url)} style={styles.utility}><Text style={styles.utilityText}>{label}</Text></Pressable>;
- if(profile?.type==='artist'&&uuid(profile.id)&&!loading&&!error)return <ArtistHome key={profile.id} profile={profile} back={back} signIn={signIn} shows={shows} enquiry={enquiry}/>;
+ // An owner-published section layout takes precedence; sector editions fill the
+ // gap for clients who have not published their own home yet.
+ if(profile?.type==='artist'&&uuid(profile.id)&&!profile.publishedDesign&&!loading&&!error)return <ArtistHome key={profile.id} profile={profile} back={back} signIn={signIn} shows={shows} enquiry={enquiry}/>;
+ if(profile&&design?.family==='grooming'&&!profile.publishedDesign&&!loading&&!error)return <GroomingHome key={profile.id} profile={profile} design={design} back={back} signIn={signIn} enquiry={enquiry}/>;
+ if(profile&&design?.family==='hospitality'&&!profile.publishedDesign&&!loading&&!error&&!hospitalityBooking)return <HospitalityHome key={profile.id} hotel={{id:profile.id,name:profile.name,city:profile.location,address:profile.address,description:design.copy.intro?.trim()||profile.description,hero:profile.photo,photos:visibleGallery,phone:profile.phone,website:profile.website,booking:profile.bookingListing?'/book/?listing='+profile.bookingListing:'',inquiry:profile.inquiryListing?'/inquiries/?listing='+profile.inquiryListing:''}} design={design} back={back} onBooking={id=>{if(id===profile.id)setHospitalityBooking(true);}} onInquiry={enquiry}/>;
+ if(profile&&design?.family==='parish'&&!profile.publishedDesign&&!loading&&!error)return <ParishHome key={profile.id} profile={profile} onBack={back} publishedColors={{accent:design.accent,background:design.background,surface:design.surface,foreground:design.ink,muted:design.muted,border:design.line}} actions={{calendar:profile.calendarListing?{listingId:profile.id,run:calendar}:undefined,groups:profile.groupListing?{listingId:profile.id,run:group}:undefined,volunteer:profile.volunteerWorkspace===profile.id?{listingId:profile.id,run:volunteer}:undefined}}/>;
+ if(profile&&design?.family==='professional'&&!profile.publishedDesign&&!loading&&!error)return <ProfessionalHome key={profile.id} profile={profile} appearance={design} back={back} enquiry={enquiry}/>;
+ if(profile&&design?.family==='hospitality'&&hospitalityBooking&&profile.bookingListing)return <View style={[styles.screen,{backgroundColor:design.background,padding:16,gap:12}]}><Pressable accessibilityRole="button" accessibilityLabel="Back to hotel" onPress={()=>setHospitalityBooking(false)} style={styles.utility}><Text style={styles.utilityText}>‹ Back to hotel</Text></Pressable><BookingPanel listingId={profile.bookingListing} signIn={signIn}/></View>;
  // Keep the photographic header editorial and compact. A profile without
  // verified photography gets a short identity panel instead of a large blank
  // hero; long names wrap inside the panel and system text scaling remains on.

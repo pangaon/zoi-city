@@ -12,7 +12,7 @@ export type ParishHomeProfile = {
   address?: string;
   website?: string;
   phone?: string;
-  phoneHref?: string;
+  phoneHref?: string | null;
   email?: string;
   photo?: string;
   logo?: string;

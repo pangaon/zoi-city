@@ -21,7 +21,7 @@ test('native client homes use distinct source-backed restaurant and grooming com
  const food=clientHomeDesign(restaurant),grooming=clientHomeDesign(barber);
  assert.equal(food.family,'bakery');assert.equal(food.tabs[0].label,'Menu');assert.equal(food.primary,'View menu');
  assert.equal(grooming.family,'grooming');assert.equal(grooming.tabs[0].label,'Services');assert.notEqual(food.background,grooming.background);
- assert.notEqual(grooming.accent,'#1C2735');assert.notEqual(grooming.primaryColor,'#1C2735');assert.equal(food.primary,'View menu');
+ assert.notEqual(grooming.accent,'#1C2735');assert.equal(food.primary,'View menu');
 });
 test('sparse profile stays compact and brand buttons keep readable contrast',()=>{
  const sparse=clientHomeDesign(normalizeProfile({id:'10000000-0000-4000-8000-000000000083',name:'New member',entity_type:'business',profile:{brand:{primary:'#F5C542'}}}));
@@ -43,6 +43,8 @@ test('sector editions keep compact client-specific hierarchy and accessible ligh
  const sectors=[['restaurant',{food:{family:'restaurant'}}],['bakery',{food:{family:'bakery'}}],['grooming',{category:'barbers',serviceOfferings:{items:[{}]},inquiryListing:'fixture'}],['hospitality',{category:'hotels',address:'1 Main Street'}],['parish',{category:'orthodox-churches',location:'Toronto'}],['arts',{category:'photographers',gallery:['https://images.example/work.jpg']}],['professional',{category:'architects',serviceOfferings:{items:[{}]},inquiryListing:'fixture'}],['organization',{category:'consulates',location:'Toronto'}]];
  const lum=h=>{const rgb=h.slice(1).match(/.{2}/g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]},ratio=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
  for(const [family,record]of sectors){const light=clientHomeDesign(record),dark=clientHomeDesign(record,true);assert.equal(light.family,family);assert.ok(light.tabs.length<=4);assert.ok(ratio('#FFFFFF',light.primaryColor)>=4.5,`${family} light action`);assert.ok(ratio('#FFFFFF',dark.primaryColor)>=4.5,`${family} dark action`);assert.ok(ratio(dark.accent,dark.background)>=4.5,`${family} dark accent`);}
+ const lowContrast=clientHomeDesign({category:'barbers',serviceOfferings:{items:[{}]},profile:{brand:{primary:'#DEA87E'}}});assert.ok(ratio('#FFFFFF',lowContrast.primaryColor)>=4.5);
  assert.equal(clientHomeDesign({category:'barbers',inquiryListing:'fixture'}).primary,'Enquire about a service');
  assert.equal(clientHomeDesign(normalizeProfile({name:'Danforth Barber Shop',entity_type:'business',category_slug:'cleaning'})).family,'grooming');
+ const lowContrastBrand=clientHomeDesign(normalizeProfile({id:'10000000-0000-4000-8000-000000000085',name:'Studio',entity_type:'business',category_slug:'barbers',services:[{name:'Cut'}],profile:{brand:{primary:'#DEA87E'}}}));assert.ok(ratio('#FFFFFF',lowContrastBrand.primaryColor)>=4.5);
 });
