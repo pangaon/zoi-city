@@ -1,0 +1,23 @@
+--- held-v2/assets/suite/calendar.js
++++ root-current-v3/assets/suite/calendar.js
+@@ -1354,6 +1354,9 @@
+ 
+     /* ---------- DETAIL modal ---------- */
+     function openDetail(post) {
++      if(!scopeActive())return;
++      post=findPost(post&&post.id);
++      if(!post){toast('This post is no longer in Calendar. Refresh the list before opening it.');return;}
+       var m = openModal('Post details',
+         '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>', false);
+       var d = postDate(post);
+--- held-v2/tests/database/business-destination-review.browser.mjs
++++ root-current-v3/tests/database/business-destination-review.browser.mjs
+@@ -47,6 +47,8 @@
+    await page.getByText(draft.post.body,{exact:true}).click();
+    await page.getByRole('button',{name:'Review destinations',exact:true}).click();
+    await page.getByText('Saved privately. Not scheduled or published.',{exact:true}).waitFor();
++   await page.keyboard.press('Escape');
++   await page.getByText(draft.post.body,{exact:true}).click();
+   }
+   await page.getByRole('button',{name:'Edit in Composer',exact:true}).click();await page.locator('.zc-ta').waitFor();await page.waitForFunction(()=>document.querySelector('.zc-ta').value.startsWith('Reviewed owner copy'));
+   assert.equal(await page.locator('[data-role=publish]').isDisabled(),true);assert.equal(await page.locator('[data-role=schedule]').isDisabled(),true);assert.equal(await page.locator('.zc-chip.on').count(),1);await page.locator('.zc-ta').fill('Reviewed owner edit · Ελληνικά '+width);await page.locator('[data-role=draft]').click();

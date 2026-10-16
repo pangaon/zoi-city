@@ -1,0 +1,170 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:16px;background:#071726;color:#f4f8ff;--tx:#f4f8ff;--mut:#bbcede;--acc:#57c9ff;--gold:#edcc86;--bdr:#36566f;--line:#36566f;--card:#102b42;--bg:#071726;font:16px Arial}*{box-sizing:border-box}body[data-theme=light]{background:#f4f8fc;color:#102b42;--tx:#102b42;--mut:#456176;--bdr:#8fa8bd;--line:#8fa8bd;--card:#fff;--bg:#f4f8fc}</style><style id="zc-styles">.zc-wrap{font-family:"Hanken Grotesk",system-ui,sans-serif;color:var(--tx);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:18px;align-items:start}
+@media(max-width:900px){.zc-wrap{grid-template-columns:1fr}}
+.zc-card{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px}
+.zc-col{display:flex;flex-direction:column;gap:14px;min-width:0}
+.zc-h{font-weight:800;font-size:15px;letter-spacing:.01em;margin:0 0 2px;display:flex;align-items:center;gap:8px}
+.zc-sub{color:var(--mut);font-size:12px;margin:0}
+.zc-chips{display:flex;flex-wrap:wrap;gap:8px}
+.zc-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 12px;border-radius:22px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font-size:12.5px;font-weight:700;cursor:pointer;transition:.15s;position:relative}
+.zc-chip svg{width:15px;height:15px;fill:currentColor;flex:none}
+.zc-chip .zc-ava{width:18px;height:18px;border-radius:50%;font-size:8px}
+.zc-chip:hover{border-color:var(--acc)}
+.zc-chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.zc-chip.off{opacity:.5;cursor:not-allowed}
+.zc-chip.off:hover{border-color:var(--line)}
+.zc-chip .zc-hint{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);margin-left:2px}
+.zc-ta{width:100%;box-sizing:border-box;min-height:150px;resize:vertical;background:var(--bg);border:1px solid var(--line);border-radius:12px;color:var(--tx);font:400 14.5px/1.5 "Hanken Grotesk",system-ui;padding:12px 14px}
+.zc-ta:focus{outline:none;border-color:var(--acc)}
+.zc-toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.zc-tb{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.zc-tb:hover{border-color:var(--acc);color:var(--acc)}
+.zc-tb svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:2}
+.zc-counters{display:flex;flex-wrap:wrap;gap:7px}
+.zc-cnt{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:4px 9px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);color:var(--mut)}
+.zc-cnt svg{width:12px;height:12px;fill:currentColor}
+.zc-cnt b{color:var(--tx);font-variant-numeric:tabular-nums}
+.zc-cnt.over{color:#fff;background:#c0392b;border-color:#c0392b}
+.zc-cnt.over b{color:#fff}
+.zc-cnt.warn b{color:var(--gold)}
+.zc-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.zc-in{flex:1;min-width:120px;box-sizing:border-box;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--tx);font:400 13px "Hanken Grotesk",system-ui;padding:9px 11px}
+.zc-in:focus{outline:none;border-color:var(--acc)}
+.zc-in.sm{flex:none;width:110px}
+.zc-sel{background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--tx);font:400 13px "Hanken Grotesk",system-ui;padding:9px 11px}
+.zc-lab{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin:0 0 6px;display:block}
+.zc-media{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.zc-thumb{position:relative;width:70px;height:70px;border-radius:9px;overflow:hidden;border:1px solid var(--line);background:var(--bg3)}
+.zc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.zc-thumb .zc-x{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;border:none;cursor:pointer;font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center}
+.zc-thumb .zc-broke{display:flex;align-items:center;justify-content:center;height:100%;font-size:9px;color:var(--mut);text-align:center;padding:4px}
+.zc-btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:2px}
+.zc-btn{padding:10px 16px;border-radius:11px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:800 13px "Hanken Grotesk";cursor:pointer;transition:.15s}
+.zc-btn:hover{border-color:var(--acc)}
+.zc-btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.zc-btn.gold{background:var(--gold);border-color:var(--gold);color:#1a1205}
+.zc-btn:disabled{opacity:.45;cursor:not-allowed}
+.zc-btn:disabled:hover{border-color:var(--line)}
+.zc-note{font-size:11.5px;color:var(--gold);background:rgba(184,137,59,.1);border:1px solid rgba(184,137,59,.3);border-radius:9px;padding:8px 11px;line-height:1.4}
+.zc-hintbox{font-size:12px;color:var(--tx);background:var(--bg3);border:1px solid var(--line);border-radius:10px;padding:9px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.zc-hintbox b{color:var(--green)}
+.zc-emoji{position:absolute;z-index:40;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:8px;display:grid;grid-template-columns:repeat(8,1fr);gap:2px;box-shadow:0 12px 34px rgba(0,0,0,.35);max-width:290px}
+.zc-emoji button{background:none;border:none;font-size:18px;cursor:pointer;padding:3px;border-radius:6px;line-height:1}
+.zc-emoji button:hover{background:var(--bg3)}
+.zc-pop{position:relative}
+.zc-thread{display:flex;flex-direction:column;gap:8px}
+.zc-tweet{display:flex;gap:8px;align-items:flex-start}
+.zc-tweet .zc-ta{min-height:60px}
+.zc-tweet .zc-idx{font-size:11px;font-weight:800;color:var(--mut);width:30px;flex:none;padding-top:10px}
+.zc-tweet .zc-x{flex:none;margin-top:8px;width:24px;height:24px;border-radius:7px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer}
+.zc-previews{display:flex;flex-direction:column;gap:14px}
+.zc-empty{color:var(--mut);font-size:12.5px;text-align:center;padding:26px 10px;border:1px dashed var(--line);border-radius:12px}
+.zc-pv{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#fff;color:#0b0b0b;font-size:13px}
+.zc-pv *{box-sizing:border-box}
+.zc-pv .zc-pvh{display:flex;align-items:center;gap:9px;padding:11px 12px}
+.zc-pv .zc-ava{width:38px;height:38px;border-radius:50%;font-size:13px;flex:none}
+.zc-pv .zc-nm{font-weight:700;font-size:13.5px;line-height:1.2;color:#0b0b0b}
+.zc-pv .zc-mt{font-size:11.5px;color:#5b6b7a}
+.zc-pv .zc-body{padding:2px 12px 10px;line-height:1.45;white-space:normal;word-wrap:break-word;color:#0b0b0b}
+.zc-pv .zc-more{color:#5b6b7a;cursor:default}
+.zc-pv .zc-lnk{color:#1a6dcc}
+.zc-pv .zc-tag{color:#1a6dcc}
+.zc-pv .zc-mention{color:#1a6dcc}
+.zc-pv .zc-imgs{display:grid;gap:2px;background:#e9edf1}
+.zc-pv .zc-imgs.n1{grid-template-columns:1fr}
+.zc-pv .zc-imgs.n2{grid-template-columns:1fr 1fr}
+.zc-pv .zc-imgs.n3{grid-template-columns:1fr 1fr}
+.zc-pv .zc-imgs.n4{grid-template-columns:1fr 1fr}
+.zc-pv .zc-imgs img{width:100%;height:150px;object-fit:cover;display:block}
+.zc-pv .zc-imgs.n3 img:first-child{grid-row:span 2;height:302px}
+.zc-pv .zc-badge{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;padding:3px 8px;border-radius:20px;color:#fff;margin-left:auto}
+.zc-pv .zc-acts{display:flex;gap:18px;padding:9px 12px;border-top:1px solid #eceef1;color:#5b6b7a;font-size:12px;font-weight:600}
+.zc-pv.ig .zc-square{width:100%;aspect-ratio:1/1;background:#e9edf1}
+.zc-pv.ig .zc-square img{width:100%;height:100%;object-fit:cover;display:block}
+.zc-pv.ig .zc-igbar{display:flex;gap:14px;padding:9px 12px;font-size:18px}
+.zc-pv.ig .zc-body{font-size:12.5px}
+.zc-pv.ig .zc-body b{margin-right:5px}
+.zc-pv.x{border-radius:14px}
+.zc-pv.x .zc-nm{display:inline}
+.zc-pv.x .zc-handle{color:#5b6b7a;font-weight:400}
+.zc-pv.x .zc-tline{margin-top:8px;border-left:2px solid #e1e8ed;padding-left:12px;margin-left:6px}
+.zc-pv.tiktok{background:#000;color:#fff;position:relative}
+.zc-pv.tiktok .zc-tkframe{position:relative;width:100%;aspect-ratio:9/16;max-height:420px;background:#111;overflow:hidden}
+.zc-pv.tiktok .zc-tkframe img{width:100%;height:100%;object-fit:cover;opacity:.85}
+.zc-pv.tiktok .zc-tkcap{position:absolute;left:0;right:44px;bottom:0;padding:12px;background:linear-gradient(transparent,rgba(0,0,0,.65));font-size:12.5px;line-height:1.4}
+.zc-pv.tiktok .zc-tkcap .zc-nm{color:#fff}
+.zc-pv.tiktok .zc-tkcap .zc-tag{color:#fff;font-weight:700}
+.zc-pv.tiktok .zc-tknoimg{display:flex;align-items:center;justify-content:center;height:100%;color:#666;font-size:11px}
+.zc-pv.youtube .zc-ytthumb{width:100%;aspect-ratio:16/9;background:#000;position:relative}
+.zc-pv.youtube .zc-ytthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.zc-pv.youtube .zc-ytplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;color:rgba(255,255,255,.85)}
+.zc-pv.youtube .zc-body{font-size:12px;color:#0b0b0b}
+.zc-divider{height:1px;background:var(--line);border:none;margin:2px 0}
+.zc-flex{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.zc-grow{flex:1;min-width:0}
+.zc-banner{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--tx);background:color-mix(in srgb,var(--acc) 10%,transparent);border:1px solid color-mix(in srgb,var(--acc) 40%,transparent);border-radius:12px;padding:10px 13px}
+.zc-banner b{color:var(--acc)}
+.zc-checks{display:flex;flex-direction:column;gap:7px;margin-bottom:12px}
+.zc-check{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.45;border-radius:10px;padding:9px 12px;border:1px solid var(--line)}
+.zc-check .zc-cico{flex:none;width:16px;height:16px;margin-top:1px}
+.zc-check .zc-cico svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+.zc-check b{display:block;font-weight:800}
+.zc-check.stop{color:var(--red);background:color-mix(in srgb,var(--red) 12%,transparent);border-color:color-mix(in srgb,var(--red) 42%,transparent)}
+.zc-check.warn{color:var(--gold);background:color-mix(in srgb,var(--gold) 12%,transparent);border-color:color-mix(in srgb,var(--gold) 42%,transparent)}
+.zc-check.ok{color:var(--green);background:color-mix(in srgb,var(--green) 10%,transparent);border-color:color-mix(in srgb,var(--green) 34%,transparent)}
+.zc-check span.zc-ctx{color:var(--tx);font-weight:500}
+.zc-lit{display:flex;flex-direction:column;gap:10px}
+.zc-litrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.zc-fast{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;padding:5px 11px;border-radius:20px;border:1px solid var(--line);background:var(--bg3);color:var(--mut)}
+.zc-fast .zc-fdot{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none}
+.zc-fast.f-none{color:var(--green);border-color:color-mix(in srgb,var(--green) 40%,transparent);background:color-mix(in srgb,var(--green) 10%,transparent)}
+.zc-fast.f-dairy{color:var(--acc);border-color:color-mix(in srgb,var(--acc) 40%,transparent);background:color-mix(in srgb,var(--acc) 10%,transparent)}
+.zc-fast.f-fast{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 42%,transparent);background:color-mix(in srgb,var(--gold) 10%,transparent)}
+.zc-fast.f-strict{color:var(--red);border-color:color-mix(in srgb,var(--red) 46%,transparent);background:color-mix(in srgb,var(--red) 12%,transparent)}
+.zc-feast{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:5px 11px;border-radius:20px;background:var(--bg3);border:1px solid var(--line);color:var(--tx)}
+.zc-feast.great{color:var(--gold);border-color:color-mix(in srgb,var(--gold) 45%,transparent)}
+.zc-litwhy{font-size:11.5px;color:var(--mut);line-height:1.5;margin:0}
+.zc-nameday{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--tx)}
+.zc-nameday .zc-nm2{font-weight:800;color:var(--gold)}
+.zc-src{font-size:10.5px;color:var(--dim);letter-spacing:.02em}
+.zc-opps{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow:auto}
+.zc-opp{display:flex;gap:11px;align-items:flex-start;border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--bg3);transition:border-color .18s var(--ease)}
+.zc-opp:hover{border-color:var(--acc)}
+.zc-opp .zc-od{flex:none;width:44px;text-align:center}
+.zc-opp .zc-od i{display:block;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+.zc-opp .zc-od b{display:block;font-size:18px;font-weight:800;line-height:1.1}
+.zc-opp.great .zc-od b{color:var(--gold)}
+.zc-opp .zc-ob{flex:1;min-width:0}
+.zc-opp .zc-ot{font-size:12.5px;font-weight:700;line-height:1.35}
+.zc-opp .zc-os{font-size:11px;color:var(--mut);margin-top:2px}
+.zc-opp .zc-oa{flex:none;display:flex;flex-direction:column;gap:5px}
+.zc-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.zc-tab{display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--mut);font-size:12px;font-weight:700;cursor:pointer;transition:.15s}
+.zc-tab svg{width:13px;height:13px;fill:currentColor}
+.zc-tab:hover{color:var(--tx);border-color:var(--acc)}
+.zc-tab.on{color:var(--tx);border-color:var(--acc);background:color-mix(in srgb,var(--acc) 14%,transparent)}
+.zc-tab .zc-tdot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none}
+.zc-alt{position:absolute;bottom:2px;left:2px;font-size:8.5px;font-weight:800;letter-spacing:.04em;padding:1px 5px;border-radius:5px;border:none;cursor:pointer;background:rgba(0,0,0,.68);color:#fff}
+.zc-alt.set{background:var(--gold);color:#1a1205}
+.zc-altrow{display:flex;gap:8px;align-items:center;margin-top:8px}
+.zc-ov,.zc-ov *{box-sizing:border-box}.zc-ov{position:fixed;inset:0;top:var(--suite-modal-top,0px);bottom:auto;height:var(--suite-modal-height,100dvh);background:rgba(4,6,10,.66);display:flex;align-items:flex-start;justify-content:center;padding:max(16px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));z-index:9000;overflow:auto;overscroll-behavior:contain}
+.zc-modal{background:var(--bg2);border:1px solid var(--line);border-radius:16px;width:100%;max-width:560px;max-height:calc(var(--suite-modal-height,100dvh) - max(16px,env(safe-area-inset-top)) - max(16px,env(safe-area-inset-bottom)));display:flex;flex-direction:column;overflow:hidden;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+.zc-mh{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);flex:0 0 auto}
+.zc-mh h3{margin:0;font-size:15.5px;font-weight:800;min-width:0;overflow-wrap:anywhere}
+.zc-mx{width:44px;height:44px;flex:0 0 44px;border-radius:9px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;font-size:16px;line-height:1;display:flex;align-items:center;justify-content:center}
+.zc-mx:hover{border-color:var(--acc);color:var(--acc)}
+.zc-mb{padding:16px 18px;display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto;overscroll-behavior:contain}.zc-mb>*{flex-shrink:0}.zc-mb .zc-tpl .zc-grow{display:grid;gap:4px;overflow:hidden}.zc-modal :is(button,select,input:not([type=checkbox]):not([type=radio])){min-height:44px}.zc-modal label:has(input:is([type=checkbox],[type=radio])){min-height:44px}.zc-modal :focus-visible{outline:3px solid var(--acc);outline-offset:2px}.zc-modal button{min-width:44px}@media(max-width:640px){.zc-modal :is(input,textarea,select){font-size:16px}}
+.zc-tpl{display:flex;gap:10px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:var(--bg3);text-align:left;cursor:pointer;color:var(--tx);font:inherit}
+.zc-tpl:hover{border-color:var(--acc)}
+.zc-tpl .zc-tn{font-weight:800;font-size:13px}
+.zc-tpl .zc-tb2{font-size:11.5px;color:var(--mut);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.zc-keys{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;align-items:center;font-size:12.5px}
+.zc-kbd{font:700 11px "JetBrains Mono",monospace;background:var(--bg3);border:1px solid var(--line2);border-bottom-width:2px;border-radius:6px;padding:3px 7px;white-space:nowrap;color:var(--tx)}
+.zc-tpl-box{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px}
+.zc-tpl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:10px}
+.zc-tpl-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;text-align:left;transition:all .18s}
+.zc-tpl-btn:hover{border-color:var(--acc);background:color-mix(in srgb,var(--acc) 10%,var(--bg3));transform:translateY(-1px)}
+.zc-tpl-btn b{font-size:12.5px;font-weight:750;color:var(--tx);display:flex;align-items:center;gap:6px}
+.zc-tpl-btn span{font-size:11px;color:var(--mut);line-height:1.3}
+.zc-ai-box{background:linear-gradient(135deg,color-mix(in srgb,var(--acc) 12%,transparent),color-mix(in srgb,var(--gold) 10%,transparent));border:1px solid color-mix(in srgb,var(--acc) 30%,transparent);border-radius:14px;padding:14px;margin-bottom:14px}
+.zc-wrap button:focus-visible,.zc-wrap [tabindex]:focus-visible,.zc-wrap input:focus-visible,.zc-wrap textarea:focus-visible,.zc-wrap select:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+@media(prefers-reduced-motion:reduce){.zc-wrap *{transition:none!important}}</style><script id="zoi-lib-_orthocal" src="http://127.0.0.1:39157/assets/suite/_orthocal.js"></script><link rel="stylesheet" href="/assets/studio/business-creative.css" data-business-creative-css=""></head><body data-theme="light"><main id="root"><div class="zc-wrap"><div class="zc-col"><div></div><div class="z-business-creative"><h3>Start from your business</h3><p>Choose your published business or private owner draft and an existing image, then edit your caption in Composer. Save it with a campaign. Nothing is sent.</p><div><label>Owned business<select aria-label="Owned business"><option value="">Choose a business</option><option value="11111111-1111-4111-8111-000000000800">QA owner private · QA city</option><option value="11111111-1111-4111-8111-000000000030">QA bakery · QA city</option></select></label><section class="zbc-source"><strong>QA bakery</strong><p>Bread made daily.</p><div class="zbc-images"><label><input type="radio" name="zbc-image-e983a970-c9b2-4032-8a1d-bb99b0f11bc9" value="" style=""><span>Copy only</span></label><label><input type="radio" name="zbc-image-e983a970-c9b2-4032-8a1d-bb99b0f11bc9" value="https://qa.example.test/bread.jpg" aria-label="Use business image 1" style=""><img src="https://qa.example.test/bread.jpg" alt="Business image 1" referrerpolicy="no-referrer"></label></div><label class="zbc-rights"><input type="checkbox" style=""><span>I have permission to reuse the selected image and will review these details.</span></label><button type="button">Use details in Composer</button></section></div><div></div><p role="status">The current business source could not be confirmed.</p><button type="button">Refresh business choices</button></div><button class="zc-btn" type="button" style="min-height: 44px;">Image layout · PNG</button><div class="zc-tpl-box"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px"><div><b style="font-size:14px;color:var(--tx);display:flex;align-items:center;gap:6px">⚡ Smart Greek Post Templates</b><span style="font-size:11.5px;color:var(--mut)">Editable caption starters. Replace bracketed details before publishing.</span></div><button class="zc-btn sm" data-role="customtplbtn">+ Custom Template</button></div><div class="zc-tpl-grid"><button type="button" class="zc-tpl-btn" data-tpl="nameday"><b>🎉 Nameday Wish</b><span>A greeting to personalise for your community</span></button><button type="button" class="zc-tpl-btn" data-tpl="taverna"><b>🍷 Taverna Special</b><span>Describe your actual special and add a booking link</span></button><button type="button" class="zc-tpl-btn" data-tpl="panigiri"><b>🎭 Panigiri &amp; Event</b><span>Add confirmed programme, location and ticket details</span></button><button type="button" class="zc-tpl-btn" data-tpl="feast"><b>⛪ Orthodox Feast</b><span>Add the feast, service time and parish details</span></button><button type="button" class="zc-tpl-btn" data-tpl="creator"><b>🎙️ Creator Spotlight</b><span>New podcast episode / video drop with streaming links</span></button><button type="button" class="zc-tpl-btn" data-tpl="weekend"><b>🌿 Family Banquet</b><span>Describe your menu and how guests can book</span></button></div></div><div class="zc-ai-box"><div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px"><b style="font-size:13.5px;color:var(--gold);display:flex;align-items:center;gap:6px">🪄 AI Caption Assistant</b><span style="font-size:11px;color:var(--mut)">Draft from your topic and saved brand profile</span></div><div class="zc-row" style="margin-bottom:8px"><select class="zc-sel zc-grow" data-role="aitone"><option value="authentic">Tone: Authentic Diaspora Greek (Warm &amp; Bilingual)</option><option value="filoxenia">Tone: Heartfelt Filoxenia (Welcoming &amp; Family)</option><option value="dining">Tone: Fine Dining &amp; Gastronomy (Sophisticated)</option><option value="festive">Tone: High-Energy &amp; Festive (Bouzouki Night)</option><option value="reverent">Tone: Solemn &amp; Orthodox (Sacrament &amp; Feast)</option></select><button class="zc-btn gold" type="button" data-role="runai" disabled="">✨ Polish / Write with AI</button></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="zc-btn sm" type="button" data-role="quicktags" style="font-size:11px">+ Suggested Diaspora Tags</button><button class="zc-btn sm" type="button" data-role="namedaytag" style="font-size:11px">+ Nameday Tags</button></div><p class="zc-sub" role="status">AI drafting is unavailable. You can write and save your draft manually.</p></div><div class="zc-card"><div class="zc-h"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"></path><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"></path></svg>Compose</div><p class="zc-sub">Write once, tailor per network, preview live.</p><div class="zc-chips" style="margin: 12px 0px;"><button class="zc-chip on"><svg viewBox="0 0 24 24"><path d="M4 5h16v11a3 3 0 0 1-3 3H9l-5 4V5Z"></path><path d="M8 10h8M8 13.5h5"></path></svg><span>Zoi Community</span></button></div><textarea class="zc-ta" placeholder="What do you want to share with your community?" style=""></textarea><div class="zc-toolbar" style="margin: 10px 0px;"><div class="zc-pop"><button class="zc-tb" data-role="emoji">😊 Emoji</button></div><button class="zc-tb" data-role="quickclear">↺ Reset text</button><button class="zc-tb" type="button" data-role="templates">Templates</button></div><div class="zc-counters"><span class="zc-cnt" title="Zoi Community: 0 of 1000 characters"><svg viewBox="0 0 24 24"><path d="M4 5h16v11a3 3 0 0 1-3 3H9l-5 4V5Z"></path><path d="M8 10h8M8 13.5h5"></path></svg>Zoi Community <b>0</b>/1000</span></div><div style="margin-top: 14px;"><span class="zc-lab">Media (up to 4)</span><p class="zc-sub">Image descriptions are saved with your draft. Publishing integrations do not yet send alt text.</p><div class="zc-row"><input class="zc-in" type="url" placeholder="Paste image URL…" data-role="mediaurl" style=""><button class="zc-btn" data-role="addmedia">Add</button><button class="zc-btn" data-role="upload" title="Upload image">Upload</button><input type="file" accept="image/*" style="display: none;" data-role="file"></div><div class="zc-media"></div><div></div></div></div><div class="zc-card" style="margin-top: 0px;"><span class="zc-lab">Brand &amp; hashtag sets</span><div class="zc-row" style="margin-bottom:12px"><select class="zc-sel zc-grow" data-role="hashsel"><option value="">No saved sets</option></select><button class="zc-btn" data-role="appendtags">Append</button><button class="zc-btn" data-role="savetags" title="Save the brand or campaign hashtags">Save set</button></div><input class="zc-in" style="width: 100%; margin-bottom: 14px;" placeholder="Brand hashtags, e.g. #MythosTaverna #GreekFoodNYC" data-role="brandtags" aria-label="Brand hashtags"><span class="zc-lab">Link &amp; UTM builder</span><div class="zc-row" style="margin-bottom:6px"><input class="zc-in" type="url" placeholder="https://long-url…" data-role="lu_url" style=""></div><div class="zc-row" style="margin-bottom:8px"><input class="zc-in sm" placeholder="source" data-role="lu_source" style=""><input class="zc-in sm" placeholder="medium" data-role="lu_medium" style=""><input class="zc-in sm" placeholder="campaign" data-role="lu_campaign" style=""><button class="zc-btn" data-role="lu_make">Shorten + insert</button></div></div><div class="zc-card"><div class="zc-h">Tailor per network</div><p class="zc-sub">Optional. Pick a network to write it a version of its own — everything else keeps the shared text.</p><div class="zc-tabs" data-role="ovtabs" style="margin-top:12px"><button class="zc-tab" type="button" aria-pressed="false"><svg viewBox="0 0 24 24"><path d="M4 5h16v11a3 3 0 0 1-3 3H9l-5 4V5Z"></path><path d="M8 10h8M8 13.5h5"></path></svg>Zoi Community</button></div><div data-role="ovbody" data-open="null"><p class="zc-sub">All networks share the same text.</p></div></div><div class="zc-card"><span class="zc-lab">First comment</span><p class="zc-sub" style="margin:-2px 0 6px">Posted automatically right after publish (great for #tags or links).</p><input class="zc-in" style="width: 100%; flex: 0 0 auto;" placeholder="First-comment draft (delivery unavailable)…" data-role="firstcomment"><div style="margin-top:14px"><label class="zc-flex" style="cursor:pointer;font-size:12.5px;font-weight:700"><input type="checkbox" data-role="threadtoggle" style=""> X / Twitter thread mode</label></div><div data-role="threadbox" style="margin-top:10px;display:none"></div></div><div class="zc-card"><div class="zc-h"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M7 7h10M9 21h6"></path></svg>Liturgical context</div><p class="zc-sub" data-role="litsub">Today. Pick a date below and this follows it.</p><div class="zc-lit" data-role="lit" style="margin-top:12px"><div class="zc-litrow"><span class="zc-fast f-none"><span class="zc-fdot"></span>Not a fast day</span></div><p class="zc-litwhy">No feast or name day today. An ordinary day is a fine day to post.</p></div></div><div class="zc-card"><span class="zc-lab">Next open slots in your queue</span><div class="zc-hintbox" data-role="besttime"><span class="zc-sub">No posting-time slots yet. Add them in Calendar → Posting queue and they will be offered here.</span></div><div style="height:14px"></div><span class="zc-lab">Schedule <span class="zc-src" data-role="tzlab">· UTC (UTC+00:00)</span></span><div class="zc-row" style="margin-bottom:12px"><input class="zc-in" type="date" data-role="date" aria-label="Scheduled date" style=""><input class="zc-in" type="time" data-role="time" aria-label="Scheduled time" style=""><button class="zc-btn" data-role="clearsched">Clear</button></div><div class="zc-checks" data-role="checks" aria-live="polite"></div><div class="zc-note" data-role="publishnote" style="display:none;margin-bottom:12px"></div><div class="zc-btns"><button class="zc-btn pri" data-role="publish">Publish now</button><button class="zc-btn gold" data-role="schedule">Schedule</button><button class="zc-btn" data-role="draft">Save draft</button><button class="zc-btn" data-role="template">Save as template</button><button class="zc-btn" data-role="clear">Clear</button><button class="zc-btn" data-role="keys" title="Keyboard shortcuts" aria-label="Keyboard shortcuts">⌘ Shortcuts</button></div></div></div><div class="zc-col"><div class="zc-card"><div class="zc-h">Live previews</div><p class="zc-sub">Approximate layouts. Published appearance varies by network and device.</p><div class="zc-previews" style="margin-top: 14px;"><div class="zc-pv facebook"><div class="zc-pvh"><span class="zc-ava " style="display:inline-flex;align-items:center;justify-content:center;background:#4f9be8;color:#fff;font-weight:800">ZC</span><div><div class="zc-nm">Zoi Community</div><div class="zc-mt">@zoi.city/community · 🌐</div></div><span class="zc-badge" style="background:#4f9be8">f</span></div><div class="zc-body"><span class="zc-more">Your text will appear here…</span></div><div class="zc-acts"><span>👍 Like</span><span>💬 Comment</span><span>↪ Share</span></div></div></div></div><div class="zc-card"><div class="zc-h"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 6.9H22l-6 4.4 2.3 7-6.3-4.6L5.7 20 8 13.3 2 8.9h7.6z"></path></svg>Opportunities</div><p class="zc-sub">Feasts and name days in the next fortnight, computed — not typed. One click puts a draft in the box.</p><div class="zc-opps" data-role="opps" style="margin-top:12px"><div class="zc-opp"><div class="zc-od"><i>Oct</i><b>26</b></div><div class="zc-ob"><div class="zc-ot">St Demetrios the Myrrh-streaming</div><div class="zc-os">in 11d · name day: Dimitris, Dimitra</div></div><div class="zc-oa"><button class="zc-btn" data-role="opdraft">Draft</button></div></div><div class="zc-opp"><div class="zc-od"><i>Oct</i><b>28</b></div><div class="zc-ob"><div class="zc-ot">Oxi Day</div><div class="zc-os">in 13d · Wednesday fast</div></div><div class="zc-oa"><button class="zc-btn" data-role="opdraft">Draft</button></div></div></div></div></div></div></main><p id="toast" role="status"></p><script src="/assets/suite/_schedule.js"></script><script src="/assets/suite/composer.js"></script><script>window.fixture={actor:"11111111-1111-4111-8111-000000000002",sid:'11111111-1111-4111-8111-000000000020',holdHome:false,calls:[]};const f=fixture;window.C={BASE:'https://fixture.example.test',KEY:'fixture',esc:s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),auth:{load:()=>f.actor?{user_id:f.actor}:null,token:()=>f.actor?'x.'+btoa(JSON.stringify({sub:f.actor,session_id:f.sid}))+'.x':'',ensureFresh:async()=>!!f.actor},api:{rpc:async(fn,p,opts)=>{f.calls.push(fn);if(fn==='business_creative_source_get'&&f.holdHome)await new Promise(r=>f.releaseHome=r);if(opts?.beforeDispatch&&opts.beforeDispatch()===false)throw Error('Account or workspace changed.');const r=await fetch('/rpc',{method:'POST',body:JSON.stringify({fn,p})}),v=await r.json();if(!r.ok)throw Object.assign(Error(v.error||'reader failed'),{status:r.status});return v;}},toast:s=>document.querySelector('#toast').textContent=s};window.ctx={C,ws:"11111111-1111-4111-8111-000000000010",channels:[],avail:{publish:false},toast:C.toast};(async()=>{const post=new URL(location.href).searchParams.get('post');if(post){const v=await C.api.rpc('business_creative_draft_get',{p_workspace:ctx.ws,p_post:post});ZoiSchedule.setHandoff({...v.post,scheduledAt:v.post.scheduled_at},localStorage,{actor:f.actor,workspace:ctx.ws});}window.handle=await ZoiSuite.modules.find(m=>m.id==='composer').mount(document.querySelector('#root'),ctx);window.ready=true;})();</script></body></html>

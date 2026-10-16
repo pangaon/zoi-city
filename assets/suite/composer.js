@@ -479,6 +479,7 @@
         if(state.S.draftIsMeaningful(pendingDraft))state.S.saveDraft(workspaceAtMount,pendingDraft,null,actorAtMount);
       }
       ended=true;
+      destinationReview?.destroy();destinationWorkflow?.releaseCopy();state.businessDestination=null;
       businessCreative?.destroy();
       state.businessCreative=null;state.businessCreativeNeedsReview=false;
       root.querySelectorAll('*').forEach(function(n){if('value'in n)n.value='';n.textContent='';Array.from(n.attributes||[]).forEach(function(a){n.removeAttribute(a.name);});});
@@ -503,6 +504,7 @@
     var scopeObserver=new MutationObserver(scopeChanged);scopeObserver.observe(doc.body,{childList:true,subtree:true});
     ['zoi:auth-change','zoi:authchange','storage','focus'].forEach(function(n){global.addEventListener(n,scopeChanged);});
     var businessCreative=null,businessCreativeReady=Promise.resolve(),businessCreativeSessionChanged=false,businessCreativeUnavailable=false;
+    var destinationWorkflow=null,destinationReview=null;
     // When the optional source module cannot load, only an exact-key absence
     // permits ordinary drafts. This reads the same protocol; it creates no store.
     function businessRequestState(){
@@ -806,6 +808,7 @@
           });
         }
         if(state.businessCreative){chip.disabled=true;chip.title='Private creative draft. Review destinations in Calendar after saving.';}
+        if(state.businessDestination){chip.disabled=true;chip.title='This reviewed draft keeps Zoi Community selected. Nothing is scheduled or sent.';}
         chips.appendChild(chip);
       });
     }
@@ -1643,6 +1646,7 @@
         toast('This will now be saved as a new post.');
       });
       b.appendChild(stop);
+      if(state.businessDestination)stop.hidden=true;
       bannerBox.appendChild(b);
       if (post && post.status) applyGating();
     }
@@ -1653,14 +1657,27 @@
     function applyIncomingPost(h,businessConfirmed) {
       if(h.meta?.business_creative&&!businessConfirmed){
         linkedContextReady=businessCreativeReady.then(async function(){
+          if(Object.prototype.hasOwnProperty.call(h.meta,'destination_review')){
+            var destinationModule=await import('/assets/studio/business-destination-review.mjs?v=20261015');if(!scopeActive())throw Error('Your workspace changed.');
+            var destinationValue=await C.api.rpc('business_creative_destinations_context',{p_workspace:workspaceAtMount,p_post:h.id},{auth:'require',beforeDispatch:scopeActive});if(!scopeActive())throw Error('Your workspace changed.');
+            var destination=destinationModule.destinationContext(destinationValue,{workspace:workspaceAtMount,post:h.id});
+            if(destination.stage!=='reviewed'||!destination.source_current)throw Error('Published business details changed. Review this saved business draft in Calendar before continuing.');
+            if(destinationReview)destinationReview.destroy();if(destinationWorkflow)destinationWorkflow.releaseCopy();
+            state.businessCreative=null;state.businessCreativeNeedsReview=false;state.businessCreativeUpdatedAt=null;state.businessDestination=destination;state.businessDestinationNeedsReview=false;applyIncomingPost(destination.post,true);
+            destinationWorkflow=destinationModule.createDestinationWorkflow({C:C,workspace:workspaceAtMount,post:destination.post_id,current:function(){return scopeActive()&&state.editId===destination.post_id&&!!state.businessDestination;}});
+            var destinationHost=doc.createElement('section');businessCreativeSlot.appendChild(destinationHost);
+            destinationReview=destinationModule.mountDestinationReview(destinationHost,{C:C,workspace:workspaceAtMount,postId:destination.post_id,active:scopeActive,workflow:destinationWorkflow,onPrepared:function(current){if(scopeActive()&&current)applyIncomingPost(current);}});
+            toast('Zoi Community draft ready for review. Nothing has been sent.');return;
+          }
           if(!businessCreative)throw Error('Business draft tools could not load. Reopen this saved draft.');
           var saved=await businessCreative.workflow.open(h.id);if(!scopeActive())throw Error('Your workspace changed.');
+          state.businessDestination=null;state.businessDestinationNeedsReview=false;destinationReview?.destroy();destinationWorkflow?.releaseCopy();destinationReview=null;destinationWorkflow=null;
           state.businessCreative={listing:saved.listing,entity:saved.source};state.businessCreativeUpdatedAt=saved.post.updated_at;
           state.businessCreativeNeedsReview=!saved.source_current;applyIncomingPost(saved.post,true);
           if(!saved.source_current)toast('Published business details changed. Review and copy current details before updating this draft. Your saved copy is retained.');
         });linkedContextReady.catch(function(error){if(scopeActive())toast(error.message);});return;
       }
-      if(!businessConfirmed){state.businessCreative=null;state.businessCreativeNeedsReview=false;state.businessCreativeUpdatedAt=null;}
+      if(!businessConfirmed){state.businessCreative=null;state.businessCreativeNeedsReview=false;state.businessCreativeUpdatedAt=null;state.businessDestination=null;state.businessDestinationNeedsReview=false;if(destinationReview)destinationReview.destroy();if(destinationWorkflow)destinationWorkflow.releaseCopy();destinationReview=null;destinationWorkflow=null;}
 
       state.editId = h.id || null;
       ta.value = String(h.body || '');
@@ -1986,6 +2003,10 @@
       if(businessCreative?.workflow.pending())throw Error('Check the unconfirmed business draft save before making another change.');
       if(state.businessCreativeNeedsReview)throw Error('The business selection changed. Review and copy current details again, or clear Composer to start a manual draft.');
       if(state.businessCreative&&(status!=='draft'||opts.publishNow))throw Error('Business creatives use Save draft here. Open the saved draft in Calendar to review existing destination tools.');
+      if(state.businessDestinationNeedsReview)throw Error('This reviewed post changed. Reopen it from Calendar before editing again.');
+      if(state.businessDestination&&(status!=='draft'||opts.publishNow))throw Error('Save this reviewed business post as a draft. Publishing and scheduling are not enabled for this step.');
+      if(state.businessDestination&&JSON.stringify(currentChannelIds())!=='["zoi"]')throw Error('Reopen the reviewed Zoi Community draft before saving.');
+      if(destinationWorkflow&&destinationWorkflow.pending())throw Error('Check the unconfirmed saved result before editing this reviewed business draft again.');
       if(!scopeActive())throw Error('The workspace changed. Reopen this draft.');
       var editorialContext=state.originMeta&&state.originMeta.editorial;
       if(editorialContext&&opts.publishNow)throw Error('Source-backed calendar drafts use an explicit scheduled time on their occurrence date. Review the source, choose a destination and schedule this draft.');
@@ -2019,6 +2040,13 @@
           if(creativeReceipt.state!=='saved'||creativeReceipt.post?.status!=='draft')throw Error('The saved post changed or was removed. Open Calendar to review it.');
           res=creativeReceipt.post;state.businessCreativeUpdatedAt=res.updated_at;state.originMeta=JSON.parse(JSON.stringify(res.meta||{}));
         }finally{businessCreative.refreshRecovery();}
+      }else if(state.businessDestination){
+        if(!destinationWorkflow)throw Error('Reopen this reviewed draft from Calendar before saving.');
+        try{var destinationSaved=await destinationWorkflow.save({body:params.p_body,media:params.p_media,meta:params.p_meta,expected_updated_at:state.businessDestination.post.updated_at});
+          if(destinationSaved.state!=='saved'||!destinationSaved.current_post)throw Error('The saved post changed or was removed. Reopen it from Calendar.');
+          res=destinationSaved.current_post;state.businessDestination=Object.assign({},state.businessDestination,{post:res});state.originMeta=JSON.parse(JSON.stringify(res.meta||{}));
+          if(!destinationSaved.current_matches_snapshot){state.businessDestinationNeedsReview=true;throw Error('The original save was recorded, but this post changed. Reopen it from Calendar to review its current version.');}
+        }finally{if(destinationReview)destinationReview.refresh();}
       }else res=await C.api.rpc('social_save_post', params, { auth: 'require' });
       if(!res||!res.id||res.workspace_id!==workspaceAtMount)throw Error('The saved post could not be confirmed. Reload the draft before continuing.');
       state.editId = res.id;
@@ -2048,6 +2076,7 @@
       if(!scopeActive())return;
       var pubBtn = q('publish');
       var note = q('publishnote');
+      if(state.businessDestination){pubBtn.disabled=true;q('schedule').disabled=true;note.style.display='block';note.textContent='Zoi Community draft selected. You can edit and save this reviewed business post here. Publishing and scheduling are not enabled for this step.';return;}
       if(state.businessCreative){pubBtn.disabled=true;q('schedule').disabled=true;note.style.display='block';note.textContent='Save this private business creative as a draft. Review existing destination tools in Calendar after saving.';return;}
       q('schedule').disabled=false;
       /* The old gate keyed off ctx.avail.publish alone, which is about external
@@ -2301,6 +2330,7 @@
       });
     });
     q('clear').addEventListener('click', function () {
+      if(destinationWorkflow?.pending()){toast('Check or cancel the unconfirmed saved result before clearing this reviewed draft.');return;}
       if(businessCreative?.workflow.pending()){toast('Check or cancel the unconfirmed business draft before clearing.');return;}
       if (global.confirm && !global.confirm('Clear everything in the composer?')) return;
       ta.value = '';
@@ -2314,6 +2344,7 @@
       state.scheduledAt = null;
       state.editId = null;
       state.originMeta={};state.businessCreative=null;state.businessCreativeNeedsReview=false;state.businessCreativeUpdatedAt=null;
+      state.businessDestination=null;state.businessDestinationNeedsReview=false;destinationReview?.destroy();destinationWorkflow?.releaseCopy();destinationReview=null;destinationWorkflow=null;
       if (state.S) state.S.clearDraft(workspaceAtMount, null, actorAtMount);
       bannerBox.innerHTML = '';   // and with it the "editing an existing post" notice
       q('threadtoggle').checked = false;

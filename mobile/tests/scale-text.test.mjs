@@ -68,7 +68,9 @@ test('native host follows actual scale; all caller props, children and callback 
     assert.equal(element.type, native); assert.equal(element.key, scale);
     assert.equal(element.props.ref, ref);
     for (const key of Object.keys(props)) assert.equal(element.props[key], props[key], key);
-    assert.equal(Object.keys(element.props).length, Object.keys(props).length + 1);
+    assert.equal(Object.keys(element.props).length, Object.keys(props).length + (platform === 'android' ? 2 : 1));
+    if (platform === 'android') assert.equal(element.props.fontSizeMultiplier, scale);
+    else assert.equal('fontSizeMultiplier' in element.props, false);
   }
 });
 
@@ -79,5 +81,6 @@ test('web host key stays stable across font and viewport changes; default scalin
     assert.equal(element.key, 'web'); assert.equal(element.props.ref, ref);
     assert.equal('allowFontScaling' in element.props, false);
     assert.equal('style' in element.props, false);
+    assert.equal('fontSizeMultiplier' in element.props, false);
   }
 });

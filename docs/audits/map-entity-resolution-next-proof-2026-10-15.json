@@ -1,0 +1,82 @@
+{
+  "at": "2026-10-15T21:40:03Z",
+  "kind": "retained_map_factual_followup_and_bounded_primary_discovery",
+  "source_audit": "/workspaces/zoi-geography-map-reference-work/docs/audits/geography-next3-map-resolution-factual-2026-10-15.json",
+  "existing_support_manifest": "/home/codespace/.cache/zoi/geography-map-reference-support-20261015/frozen-manifest.json",
+  "cases": [
+    {
+      "name": "St.Spyridon Greek Orthodox Cathedral",
+      "jurisdiction": "Worcester Massachusetts US (not Union NewJersey)",
+      "address": "102 Russell St Worcester MA01609",
+      "tuple": [
+        42.2663928,
+        -71.8149779
+      ],
+      "authority": "unverified named-provider tuple; NOTcamera",
+      "gap": "Changed providerID, name/address aliases, primary MA/ZIP\u2192US and independent locality/property evidence."
+    },
+    {
+      "name": "Kisamos Taverna",
+      "jurisdiction": "Richmond BritishColumbia Canada",
+      "address": "3420 Moncton St Richmond BC V7E3A2",
+      "tuple": [
+        49.1250796,
+        -123.1853559
+      ],
+      "authority": "unverified named-provider tuple; NOTcamera",
+      "gap": "Provider-ID upper component changed, KisamosGreekTaverna alias, primary BC/postal\u2192Canada and independent locality/property evidence."
+    },
+    {
+      "name": "Dafermou",
+      "result": "Published shortlink resolves SanFermoHills Italy; rejected wrong named destination. No whole-source URL correction inferred."
+    }
+  ],
+  "proposed_kind": "reviewed_official_embed_entity_resolution",
+  "contract": "Distinct manual only: exact official active iframe occurrence and archived currentjob/fullsourceSHA; full provider rawHTTP/activeinitEmbedJSON and named record/point roles; reject extra/conflicting roles; independently reviewed provider-ID alias/address/country/locality/property. Existing owner/context/fullCAS/timestamp/read/revert authority unchanged. No automatic camera/CID/locale proof.",
+  "pipeline_bottleneck": {
+    "cohort": "Retained indexed newest20completedofficialjobs; not a catalogue census.",
+    "unresolved": 12,
+    "source_blocked": 8,
+    "successful_page_reports": 19,
+    "accepted_candidates": 0,
+    "meaning": "Parser absence is not source absence. Support adapter exposes source references but does not grant writer eligibility or remove independent factual gates."
+  },
+  "approved_primary_discovery": {
+    "requests": [
+      {
+        "name": "massgis",
+        "url": "https://www.mass.gov/info-details/massgis-data-standardized-assessors-parcels",
+        "at": "2026-10-15T21:40:03Z",
+        "redirect_followed": false,
+        "max_bytes": 262144,
+        "deadline_seconds": 8,
+        "status": 403,
+        "headers": {
+          "Content-Length": "14061",
+          "Content-Type": "text/html"
+        },
+        "complete": true,
+        "bytes": 14061,
+        "sha256": "74f2fb952d0a56262989b2a0351b0ca6b64ff14875e554831f4616cad043be6d",
+        "body_path": "/home/codespace/.cache/zoi/map-primary-catalogue-discovery-20261015/massgis.response.bin",
+        "outcome": "retained_bounded_response"
+      },
+      {
+        "name": "richmond",
+        "url": "https://opendata.richmond.ca/",
+        "at": "2026-10-15T21:40:03Z",
+        "redirect_followed": false,
+        "max_bytes": 262144,
+        "deadline_seconds": 8,
+        "error": "URLError",
+        "outcome": "held_no_retry"
+      }
+    ],
+    "no_retry_or_followup": true
+  },
+  "result": "Both primary discovery routes held: MassGIS403; RichmondURLError. No usable primary parcel/service metadata endpoint established. No retries, redirect-following, endpoint guessing or additional reads.",
+  "next_gate": "Separately review exact primary documented metadata/service endpoint before address-filtered non-owner-field geometry read. Do not invent layer/field names.",
+  "canonical_writes": 0,
+  "corrections": 0,
+  "new_capture_lease_jobs": 0
+}

@@ -1,0 +1,9 @@
+import {writeFileSync} from 'node:fs';
+import {sourceClientIdentity} from '../../../../supabase/functions/zoi-enrich/_brief.js';
+import {actualHandler} from '../../../../tests/unit/enrichment-source-context.test.mjs';
+const website='https://event-source.example.org/current',row={listing_id:'80000000-0000-4000-8000-000000000001',slug:'exact-event',name:'Exact Event',entity_type:'event',website};
+const script=url=>'<script type="application/ld+json">'+JSON.stringify({'@type':'Festival',name:row.name,url})+'</script>',photo='<img src="/eligible.jpg">';
+const cases=[['comment-hidden-typed','<div style="display:/**/none">'+script(website)+'</div>'+photo],['closed-dialog-typed','<dialog>'+script(website)+'</dialog>'+photo],['closed-details-typed','<details><summary>More</summary>'+script(website)+'</details>'+photo],['query-mismatched-typed',script(website+'?archive=2024')+photo],['downgrade-typed',script(website.replace('https:','http:'))+photo],['port-mismatched-typed',script(website.replace('.org/','.org:8443/'))+photo]];
+const out=[];for(const [key,html]of cases){const {batch}=await actualHandler({row,html});out.push({key,html,identity:sourceClientIdentity(row,html,website),submitted_profile:batch[0].profile});}
+const malformed='<script type="application/ld+json">'+JSON.stringify({'@type':'Organization',name:'Exact Organization',url:website,image:'/structured.jpg'})+'</script><div title="unclosed'; const mb=await actualHandler({row:{...row,name:'Exact Organization',entity_type:'organization'},html:malformed});out.push({key:'malformed-structured-image',html:malformed,submitted_profile:mb.batch[0].profile});
+writeFileSync(new URL('./event-counterprobes-result.json',import.meta.url),JSON.stringify(out,null,2));console.log(JSON.stringify(out.map(x=>({key:x.key,identity:x.identity,hero:x.submitted_profile.hero_url,briefIdentity:x.submitted_profile.client_brief?.source.identity_match,mediaHold:x.submitted_profile.media_review_required})),null,2));

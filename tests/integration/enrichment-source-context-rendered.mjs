@@ -1,0 +1,54 @@
+/** Offline candidate render proof: real source extractor/worker + canonical SSR.
+ * Public reader/transport are controlled fixtures; no remote image bytes are
+ * downloaded or visually approved, and no production writes occur. */
+import assert from 'node:assert/strict';
+import {readFileSync,mkdirSync,writeFileSync,existsSync} from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {imageDocumentElements,imageStyleEvidence} from '../../supabase/functions/zoi-enrich/_image-document.js';
+import {extractSiteImages} from '../../supabase/functions/zoi-enrich/_images.js';
+import {createHash} from 'node:crypto';
+import {retainedSourceCases,actualHandler} from '../unit/enrichment-source-context.test.mjs';
+import handler from '../../api/entity.js';
+import {profileOf} from '../../api/_verticals.js';
+import {profileMedia} from '../../api/_profile-media.js';
+const evidence=process.env.ZOI_SOURCE_CONTEXT_EVIDENCE;
+assert.ok(evidence,'ZOI_SOURCE_CONTEXT_EVIDENCE required');mkdirSync(evidence,{recursive:true,mode:0o700});
+const root=path.resolve(new URL('../..',import.meta.url).pathname),{chromium}=await import('/workspaces/zoi-city-release/node_modules/playwright-core/index.mjs');
+const cases=[];
+for(const c of retainedSourceCases()){
+ const finalURL=c.final||c.row.website,redirectReceipt=c.key==='oslo'?{start_url:new URL(c.row.website).href,final_url:finalURL,hops:[{from:new URL(c.row.website).href,to:finalURL,location:finalURL,status:301}]}:undefined;
+ const {batch,result}=await actualHandler({row:c.row,html:c.html,finalURL,redirectReceipt});
+ const e={...c.row,id:c.row.listing_id,publish_status:'published',moderation_status:'clean',city:c.key==='event'?'Braintree':c.key==='oslo'?'Oslo':'Cheyenne',country:c.key==='oslo'?'Norway':'United States',owner_content:{},profile:{_enrich:{...batch[0].profile,source_url:finalURL,provenance:batch[0].provenance}}};cases.push({key:c.key,entity:e,result});
+}
+const event=cases.find(c=>c.key==='event').entity;
+cases.push({key:'sparse-event',entity:{...event,id:'90000000-0000-4000-8000-000000000001',slug:'sparse-current-event',name:'Sparse current event',profile:{_enrich:{source_url:event.website,photo_urls:[],media_review_required:'event_source_identity_unverified'}},owner_content:{}}});
+cases.push({key:'owner-explicit-clear',entity:{...event,id:'90000000-0000-4000-8000-000000000002',slug:'owner-cleared-event',owner_content:{photo_url:null,profile:{photo_urls:[],logo_url:null}}}});
+cases.push({key:'owner-explicit-image',entity:{...event,id:'90000000-0000-4000-8000-000000000003',slug:'owner-authored-event',owner_content:{photo_url:'https://owner.example.org/selected.jpg',profile:{photo_urls:['https://owner.example.org/selected.jpg']}}}});
+const nativeFetch=globalThis.fetch;
+const records=[];for(const c of cases){let html,code;globalThis.fetch=async(url,options)=>{assert.match(String(url),/^https:\/\/csebihpaychdkanjjsmz\.supabase\.co\/rest\/v1\/rpc\//);const fn=String(url).split('/').at(-1);return new Response(JSON.stringify(fn==='home_entity'?c.entity:fn==='seo_related'?[]:null),{status:200,headers:{'content-type':'application/json'}});};
+ try{await handler({query:{slug:c.entity.slug}},{setHeader(){},set statusCode(v){code=v},get statusCode(){return code},end(value){html=value}});}finally{globalThis.fetch=nativeFetch;}
+ assert.equal(code,200);assert.ok(html.includes(c.entity.name.replace(/'/g,'&#39;'))||html.includes(c.entity.name));
+ if(c.key==='event'||c.key==='sparse-event')for(const value of ['Ministries+2024','Hope+Oct+2026','IMG_1623.JPG'])assert.ok(!html.includes(value));
+ if(c.key==='renzios')assert.ok(!html.includes('3484811.png'));
+ const media=profileMedia(c.entity,profileOf(c.entity));if(c.key==='owner-explicit-clear')assert.equal(media.hero,null);if(c.key==='owner-explicit-image')assert.equal(media.hero,'https://owner.example.org/selected.jpg');
+ writeFileSync(path.join(evidence,c.key+'.html'),html,{mode:0o600});writeFileSync(path.join(evidence,c.key+'-payload.json'),JSON.stringify({entity:c.entity,media,worker:c.result},null,2),{mode:0o600});records.push({...c,html,media});}
+const browser=await chromium.launch({headless:true,executablePath:'/home/codespace/.cache/ms-playwright/chromium-1243/chrome-linux64/chrome',args:['--no-sandbox']});
+const renders=[],activeDOM=[];
+try{for(const record of records)for(const width of [390,1440]){const context=await browser.newContext({viewport:{width,height:1000},serviceWorkers:'block'}),page=await context.newPage();let external=0;
+ await context.route('**/*',async route=>{const u=new URL(route.request().url());if(u.origin==='https://candidate.zoi.invalid'&&u.pathname===`/${record.key}`)return route.fulfill({status:200,contentType:'text/html',body:record.html});if(u.origin==='https://candidate.zoi.invalid'&&u.pathname.startsWith('/assets/')){const file=path.resolve(root,'.'+u.pathname);if(file.startsWith(root+'/assets/')&&existsSync(file))return route.fulfill({status:200,body:readFileSync(file),contentType:u.pathname.endsWith('.css')?'text/css':u.pathname.endsWith('.svg')?'image/svg+xml':'text/javascript'});}external++;return route.abort();});
+ await page.goto('https://candidate.zoi.invalid/'+record.key,{waitUntil:'domcontentloaded'});await page.waitForTimeout(200);
+ const geometry=await page.evaluate(()=>({title:document.querySelector('h1')?.textContent?.trim(),width:innerWidth,scrollWidth:document.documentElement.scrollWidth,images:[...document.querySelectorAll('img')].map(e=>e.getAttribute('src')),links:[...document.querySelectorAll('a[href]')].filter(e=>e.getClientRects().length).map(e=>({text:e.textContent.trim(),href:e.getAttribute('href')}))}));assert.ok(geometry.title?.includes(record.entity.name));assert.ok(geometry.scrollWidth<=width+1,`${record.key} ${width} overflow ${geometry.scrollWidth}`);
+ const shot=path.join(evidence,`${record.key}-${width}.png`);await page.screenshot({path:shot,fullPage:true});renders.push({key:record.key,width,geometry,blocked_requests:external,screenshot:shot});await context.close();}
+ const ctx=await browser.newContext({serviceWorkers:'block'}),page=await ctx.newPage();await ctx.route('**/*',r=>r.abort());
+ const img='<img src="https://actual.example.org/photo.jpg" style="width:200px;height:200px">',sibling='<img src="https://actual.example.org/sibling.jpg" style="width:200px;height:200px">';
+ const hidden=[`<div style="--state:none;display:var(--state)">${img}</div>`,`<div style="--state:hidden;visibility:var(--state)">${img}</div>`,`<div style="opacity:.0">${img}</div>`,`<div style="opacity:0%">${img}</div>`,`<div style="opacity:0e0">${img}</div>`,`<div popover>${img}</div>`,`<div style="display:/**/none">${img}</div>`,`<dialog>${img}</dialog>`,`<details><summary>More</summary>${img}</details>`,`<div style="content-visibility:hidden">${img}</div>`,`<div style="display:n\\6f ne">${img}</div>`,...['template','noscript','textarea','title','xmp','iframe','noembed','noframes','script','style'].flatMap(tag=>[`<${tag}>${img}</${tag}>`,`<${tag}/>${img}</${tag}>`]),`<div hidden>${img}</div>`,`<div style="display:none">${img}</div>`,`<div style="position:absolute;left:-20000px">${img}</div>`,`<div title='${img}'></div>`,`<svg><title>${img}</title></svg>`,`<math>${img}</math>`,`<select>${img}</select>`];
+ for(const [index,html] of hidden.entries()){await page.setContent(html+sibling);const visible=await page.locator('img').evaluateAll(elements=>elements.filter(e=>!e.closest('template,noscript,svg,math,select')).filter(e=>{const r=e.getBoundingClientRect(),s=getComputedStyle(e);return e.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})&&r.width>0&&r.height>0&&r.right>0&&r.bottom>0&&s.display!=='none'&&s.visibility!=='hidden'}).map(e=>e.getAttribute('src')));const proposed=extractSiteImages(html+sibling,'https://actual.example.org/').photos.map(e=>e.url);const falseActive=proposed.filter(url=>!visible.includes(url));assert.deepEqual(falseActive,[],`active DOM case ${index}`);activeDOM.push({index,html,visible,proposed,exclusions:imageDocumentElements(html).filter(e=>e.excluded).map(e=>({tag:e.tag,reasons:e.exclusion_reasons})),conservative_hold:visible.some(url=>!proposed.includes(url))});}
+ const website='https://current-source.example.org/current',row={listing_id:'80000000-0000-4000-8000-000000000001',id:'80000000-0000-4000-8000-000000000001',slug:'exact-event',name:'Exact Event',entity_type:'event',website},script='<script type="application/ld+json">'+JSON.stringify({'@type':'Festival',name:row.name,url:website})+'</script>';
+ const extended=[{key:'display-variable',html:`<div style="--state:none;display:var(--state)">${script}${img}</div>`,refuse:true},{key:'visibility-variable',html:`<div style="--state:hidden;visibility:var(--state)">${script}${img}</div>`,refuse:true},...['.0','0%','0e0','-1','calc(0)','var(--zero,0)'].map(v=>({key:'opacity:'+v,html:`<div style="opacity:${v}">${script}${img}</div>`,refuse:true})),{key:'native-popover',html:`<div popover>${script}${img}</div>`,refuse:true},{key:'role-list',html:`<div role="navigation presentation">${script}${img}</div>`,refuse:true},{key:'safe-positive',html:`<main style="opacity:50%">${script}${img}</main>`,refuse:false},{key:'layered-background',html:'<div hidden style="background-image:url(/first.jpg),url(/second.jpg)"></div><meta property="og:image" content="/second.jpg">',refuse:true}];
+ const extendedResults=[];
+ for(const item of extended){await page.setContent(item.html);const browser=await page.locator('img').evaluateAll(es=>es.map(e=>({src:e.getAttribute('src'),visible:e.checkVisibility({checkOpacity:true,checkVisibilityCSS:true})})));const {batch}=await actualHandler({row,html:item.html}),source=extractSiteImages(item.html,website);if(item.refuse){assert.equal(source.hero,null,item.key);assert.equal(batch[0].profile.hero_url,null,item.key);assert.equal(batch[0].profile.client_brief.source.identity_match,false,item.key);}else{assert.ok(source.hero);assert.equal(batch[0].profile.client_brief.source.identity_match,true);}extendedResults.push({...item,browser,proposed:source.photos,submitted:batch[0].profile,exclusions:imageDocumentElements(item.html).filter(e=>e.excluded).map(e=>({tag:e.tag,reasons:e.exclusion_reasons,style:e.styleEvidence}))});}
+ writeFileSync(path.join(evidence,'extended-source-browser-results.json'),JSON.stringify(extendedResults,null,2),{mode:0o600});
+ await ctx.close();
+}finally{await browser.close();}
+writeFileSync(path.join(evidence,'render-results.json'),JSON.stringify({created_at:new Date().toISOString(),state:'offline_controlled_source_worker_and_canonical_render',no_production_writes:true,remote_images_downloaded:0,visual_identity_approved:false,activeDOM,renders},null,2),{mode:0o600});console.log(JSON.stringify({renders:renders.length,active_dom_cases:activeDOM.length,source_cases:3,owner_sparse_cases:3,evidence}));

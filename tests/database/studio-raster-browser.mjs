@@ -6,6 +6,7 @@ export async function studioRasterBrowser({q,claims,editor,ws,listing,entity,quo
  const server=createServer(async(req,res)=>{try{const url=new URL(req.url,'http://local');if(url.pathname==='/rpc'){
   let raw='';for await(const c of req)raw+=c;const{fn,p}=JSON.parse(raw);let value;requests.push(fn);
   if(fn==='bizpage_status')value=sqlJSON(`select public.bizpage_status('${ws}')`);
+  else if(fn==='business_creative_source_get')value=sqlJSON(`select public.business_creative_source_get('${ws}',${quote(p.p_listing)}::uuid)`);
   else if(fn==='home_entity')value=sqlJSON(`select public.home_entity(${quote(p.p_slug)})`);
   else if(fn==='audience_access')value=sqlJSON(`select public.audience_access('${ws}')`);
   else if(fn==='asset_list')value=sqlJSON(`select coalesce(jsonb_agg(t),'[]'::jsonb)from public.asset_list('${ws}')t`);
@@ -27,8 +28,8 @@ export async function studioRasterBrowser({q,claims,editor,ws,listing,entity,quo
   }
   if(url.pathname.startsWith('/storage/v1/object/public/media/')){const path=decodeURIComponent(url.pathname.split('/public/media/')[1]),stored=edge.bytesByPath.get(path);if(stored)return route.fulfill({status:200,contentType:stored.mime,body:Buffer.from(stored.bytes)});}
   // Source image is a controlled fixture only; export sources use actual scoped assets/files.
-  if(url.hostname==='qa.example.test')return route.fulfill({status:200,contentType:'image/png',body:png});return route.abort();});await page.goto(origin+(post?'/?post='+post:''));await page.waitForFunction(()=>window.ready===true);await page.getByRole('combobox',{name:'Published business',exact:true}).waitFor();}
- async function select(){await page.getByRole('combobox',{name:'Published business',exact:true}).selectOption(listing);await page.getByRole('checkbox',{name:'I have permission to reuse the selected image and will review these details.',exact:true}).check();await page.getByRole('button',{name:'Use details in Composer',exact:true}).click();await page.locator('[data-role=lu_campaign]').fill('Mounted raster campaign');}
+  if(url.hostname==='qa.example.test')return route.fulfill({status:200,contentType:'image/png',body:png});return route.abort();});await page.goto(origin+(post?'/?post='+post:''));await page.waitForFunction(()=>window.ready===true);await page.getByRole('combobox',{name:'Owned business',exact:true}).waitFor();}
+ async function select(){await page.getByRole('combobox',{name:'Owned business',exact:true}).selectOption(listing);await page.getByRole('checkbox',{name:'I have permission to reuse the selected image and will review these details.',exact:true}).check();await page.getByRole('button',{name:'Use details in Composer',exact:true}).click();await page.locator('[data-role=lu_campaign]').fill('Mounted raster campaign');}
  const dialog=()=>page.getByRole('dialog',{name:'Image layout',exact:true});
  async function open(){await page.getByRole('button',{name:'Image layout · PNG',exact:true}).click();await dialog().getByRole('region',{name:'Image layout',exact:true}).waitFor();}
  async function file(){await dialog().getByLabel('Or choose an original image from your files',{exact:true}).setInputFiles({name:'original.png',mimeType:'image/png',buffer:png});await dialog().getByRole('button',{name:'Download PNG',exact:true}).waitFor({state:'visible'});await page.waitForFunction(()=>!document.querySelector('.zic-actions button').disabled);}

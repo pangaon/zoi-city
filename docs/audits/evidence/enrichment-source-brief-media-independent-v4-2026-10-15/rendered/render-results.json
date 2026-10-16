@@ -1,0 +1,1541 @@
+{
+  "created_at": "2026-10-15T23:06:06.871Z",
+  "state": "offline_controlled_source_worker_and_canonical_render",
+  "no_production_writes": true,
+  "remote_images_downloaded": 0,
+  "visual_identity_approved": false,
+  "activeDOM": [
+    {
+      "index": 0,
+      "html": "<div style=\"--state:none;display:var(--state)\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "display_requires_rendering"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 1,
+      "html": "<div style=\"--state:hidden;visibility:var(--state)\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "visibility_requires_rendering"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 2,
+      "html": "<div style=\"opacity:.0\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "zero_or_negative_opacity"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 3,
+      "html": "<div style=\"opacity:0%\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "zero_or_negative_opacity"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 4,
+      "html": "<div style=\"opacity:0e0\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "zero_or_negative_opacity"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 5,
+      "html": "<div popover><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "native_popover_static_closed"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 6,
+      "html": "<div style=\"display:/**/none\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "hidden_css_declaration"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 7,
+      "html": "<dialog><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></dialog>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "dialog",
+          "reasons": []
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 8,
+      "html": "<details><summary>More</summary><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></details>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "details",
+          "reasons": []
+        },
+        {
+          "tag": "summary",
+          "reasons": []
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 9,
+      "html": "<div style=\"content-visibility:hidden\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "hidden_css_declaration"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 10,
+      "html": "<div style=\"display:n\\6f ne\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "escaped_css_requires_rendering"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": true
+    },
+    {
+      "index": 11,
+      "html": "<template><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></template>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "template",
+          "reasons": [
+            "structural_image_role"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 12,
+      "html": "<template/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></template>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "template",
+          "reasons": [
+            "structural_image_role"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 13,
+      "html": "<noscript><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></noscript>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 14,
+      "html": "<noscript/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></noscript>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 15,
+      "html": "<textarea><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></textarea>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 16,
+      "html": "<textarea/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></textarea>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 17,
+      "html": "<title><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></title>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 18,
+      "html": "<title/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></title>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 19,
+      "html": "<xmp><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></xmp>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 20,
+      "html": "<xmp/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></xmp>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 21,
+      "html": "<iframe><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></iframe>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 22,
+      "html": "<iframe/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></iframe>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 23,
+      "html": "<noembed><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></noembed>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 24,
+      "html": "<noembed/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></noembed>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 25,
+      "html": "<noframes><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></noframes>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 26,
+      "html": "<noframes/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></noframes>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 27,
+      "html": "<script><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></script>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 28,
+      "html": "<script/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></script>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 29,
+      "html": "<style><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></style>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 30,
+      "html": "<style/><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></style>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 31,
+      "html": "<div hidden><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": []
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 32,
+      "html": "<div style=\"display:none\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "hidden_css_declaration"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 33,
+      "html": "<div style=\"position:absolute;left:-20000px\"><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "div",
+          "reasons": [
+            "offscreen_css_position"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 34,
+      "html": "<div title='<img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\">'></div>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [],
+      "conservative_hold": false
+    },
+    {
+      "index": 35,
+      "html": "<svg><title><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></title></svg>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "svg",
+          "reasons": [
+            "structural_image_role"
+          ]
+        },
+        {
+          "tag": "title",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    },
+    {
+      "index": 36,
+      "html": "<math><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></math>",
+      "visible": [
+        "https://actual.example.org/photo.jpg",
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "math",
+          "reasons": [
+            "structural_image_role"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": true
+    },
+    {
+      "index": 37,
+      "html": "<select><img src=\"https://actual.example.org/photo.jpg\" style=\"width:200px;height:200px\"></select>",
+      "visible": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "proposed": [
+        "https://actual.example.org/sibling.jpg"
+      ],
+      "exclusions": [
+        {
+          "tag": "select",
+          "reasons": [
+            "structural_image_role"
+          ]
+        },
+        {
+          "tag": "img",
+          "reasons": []
+        }
+      ],
+      "conservative_hold": false
+    }
+  ],
+  "renders": [
+    {
+      "key": "renzios",
+      "width": 390,
+      "geometry": {
+        "title": "Make time for Renzios Greek Food.",
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [
+          "https://renzioscheyenne.com//franquias/2/7038683/editor-html/11660182.jpg",
+          "https://renzioscheyenne.com//franquias/2/7038683/editor-html/11660182.jpg",
+          "/assets/brand/zoi-logo.png"
+        ],
+        "links": [
+          {
+            "text": "Skip to restaurant home",
+            "href": "#main"
+          },
+          {
+            "text": "Renzios Greek FoodCheyenne · United States",
+            "href": "#top"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Explore the official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Visit the restaurant’s website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Open workspace tools ↗",
+            "href": "/social/"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "published website ↗",
+            "href": "https://renzioscheyenne.com/"
+          }
+        ]
+      },
+      "blocked_requests": 4,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/renzios-390.png"
+    },
+    {
+      "key": "renzios",
+      "width": 1440,
+      "geometry": {
+        "title": "Make time for Renzios Greek Food.",
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [
+          "https://renzioscheyenne.com//franquias/2/7038683/editor-html/11660182.jpg",
+          "https://renzioscheyenne.com//franquias/2/7038683/editor-html/11660182.jpg",
+          "/assets/brand/zoi-logo.png"
+        ],
+        "links": [
+          {
+            "text": "Skip to restaurant home",
+            "href": "#main"
+          },
+          {
+            "text": "Renzios Greek FoodCheyenne · United States",
+            "href": "#top"
+          },
+          {
+            "text": "The place",
+            "href": "#intro"
+          },
+          {
+            "text": "The menu",
+            "href": "#offerings"
+          },
+          {
+            "text": "Visit",
+            "href": "#calendar"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Explore the official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Visit the restaurant’s website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://renzioscheyenne.com/"
+          },
+          {
+            "text": "Open workspace tools ↗",
+            "href": "/social/"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "published website ↗",
+            "href": "https://renzioscheyenne.com/"
+          }
+        ]
+      },
+      "blocked_requests": 4,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/renzios-1440.png"
+    },
+    {
+      "key": "oslo",
+      "width": 390,
+      "geometry": {
+        "title": "Greek School Parents' Association Oslo",
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          "https://lh7-us.googleusercontent.com/sitesv-images-rt/AMxu72vnMfwsUWkCHgCQbC0LE2OVD_aDPmM0yaElhpH-YDe4C6kkfApL5_nFn25KNySsxcgztUWxCDIUt8Pyjj-92_hmgwQMrjLQzmRzmz-NGy5d9N86N90pDy1XrG0b7V75vVPQOUlwekDBA4tucnOE-wJNPQGc5H1ZnBsAn22OyJ5KmdybiOGnO0cfj3u55k8=w16383",
+          null
+        ],
+        "links": [
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Discover",
+            "href": "/explore"
+          },
+          {
+            "text": "Organization",
+            "href": "/explore?type=organization"
+          },
+          {
+            "text": "Website",
+            "href": "http://www.greskskole.no"
+          },
+          {
+            "text": "Contact",
+            "href": "mailto:skole@greskskole.no?subject=Enquiry%20via%20Zoi%20%E2%80%94%20Greek%20School%20Parents'%20Association%20Oslo"
+          },
+          {
+            "text": "Overview",
+            "href": "#about"
+          },
+          {
+            "text": "Photos",
+            "href": "#gallery"
+          },
+          {
+            "text": "Contact & details",
+            "href": "#contact"
+          },
+          {
+            "text": "",
+            "href": "https://lh7-us.googleusercontent.com/sitesv-images-rt/AMxu72vnMfwsUWkCHgCQbC0LE2OVD_aDPmM0yaElhpH-YDe4C6kkfApL5_nFn25KNySsxcgztUWxCDIUt8Pyjj-92_hmgwQMrjLQzmRzmz-NGy5d9N86N90pDy1XrG0b7V75vVPQOUlwekDBA4tucnOE-wJNPQGc5H1ZnBsAn22OyJ5KmdybiOGnO0cfj3u55k8=w16383"
+          },
+          {
+            "text": "Find and claim this listing",
+            "href": "/explore"
+          },
+          {
+            "text": "Find your page to claim or manage it",
+            "href": "/explore?q=Greek%20School%20Parents'%20Association%20Oslo"
+          },
+          {
+            "text": "Discover",
+            "href": "/explore"
+          },
+          {
+            "text": "Community",
+            "href": "/community"
+          },
+          {
+            "text": "Events",
+            "href": "/tickets"
+          },
+          {
+            "text": "Marketplace",
+            "href": "/shop/"
+          },
+          {
+            "text": "For Business",
+            "href": "/business"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/oslo-390.png"
+    },
+    {
+      "key": "oslo",
+      "width": 1440,
+      "geometry": {
+        "title": "Greek School Parents' Association Oslo",
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          "https://lh7-us.googleusercontent.com/sitesv-images-rt/AMxu72vnMfwsUWkCHgCQbC0LE2OVD_aDPmM0yaElhpH-YDe4C6kkfApL5_nFn25KNySsxcgztUWxCDIUt8Pyjj-92_hmgwQMrjLQzmRzmz-NGy5d9N86N90pDy1XrG0b7V75vVPQOUlwekDBA4tucnOE-wJNPQGc5H1ZnBsAn22OyJ5KmdybiOGnO0cfj3u55k8=w16383",
+          null
+        ],
+        "links": [
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Discover",
+            "href": "/explore"
+          },
+          {
+            "text": "Community",
+            "href": "/community"
+          },
+          {
+            "text": "Events",
+            "href": "/tickets"
+          },
+          {
+            "text": "Marketplace",
+            "href": "/shop/"
+          },
+          {
+            "text": "For Business",
+            "href": "/business"
+          },
+          {
+            "text": "Join Zoi",
+            "href": "/social?signin=1"
+          },
+          {
+            "text": "Discover",
+            "href": "/explore"
+          },
+          {
+            "text": "Organization",
+            "href": "/explore?type=organization"
+          },
+          {
+            "text": "Website",
+            "href": "http://www.greskskole.no"
+          },
+          {
+            "text": "Contact",
+            "href": "mailto:skole@greskskole.no?subject=Enquiry%20via%20Zoi%20%E2%80%94%20Greek%20School%20Parents'%20Association%20Oslo"
+          },
+          {
+            "text": "Overview",
+            "href": "#about"
+          },
+          {
+            "text": "Photos",
+            "href": "#gallery"
+          },
+          {
+            "text": "Contact & details",
+            "href": "#contact"
+          },
+          {
+            "text": "",
+            "href": "https://lh7-us.googleusercontent.com/sitesv-images-rt/AMxu72vnMfwsUWkCHgCQbC0LE2OVD_aDPmM0yaElhpH-YDe4C6kkfApL5_nFn25KNySsxcgztUWxCDIUt8Pyjj-92_hmgwQMrjLQzmRzmz-NGy5d9N86N90pDy1XrG0b7V75vVPQOUlwekDBA4tucnOE-wJNPQGc5H1ZnBsAn22OyJ5KmdybiOGnO0cfj3u55k8=w16383"
+          },
+          {
+            "text": "Find and claim this listing",
+            "href": "/explore"
+          },
+          {
+            "text": "Find your page to claim or manage it",
+            "href": "/explore?q=Greek%20School%20Parents'%20Association%20Oslo"
+          },
+          {
+            "text": "Discover",
+            "href": "/explore"
+          },
+          {
+            "text": "Community",
+            "href": "/community"
+          },
+          {
+            "text": "Events",
+            "href": "/tickets"
+          },
+          {
+            "text": "Marketplace",
+            "href": "/shop/"
+          },
+          {
+            "text": "For Business",
+            "href": "/business"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/oslo-1440.png"
+    },
+    {
+      "key": "event",
+      "width": 390,
+      "geometry": {
+        "title": "Greek Festival at St. Catherine",
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Greek Festival at St. Catherine",
+            "href": "#main"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=128e075b-aaf5-4d21-a3f2-4b0aaa743e97"
+          },
+          {
+            "text": "Call (781) 843-0047",
+            "href": "tel:7818430047"
+          },
+          {
+            "text": "Email Greek Festival at St. Catherine",
+            "href": "mailto:office@stcatherinebraintree.org"
+          },
+          {
+            "text": "youtube ↗",
+            "href": "https://www.youtube.com/@saintcatherinebraintree5731"
+          },
+          {
+            "text": "facebook ↗",
+            "href": "https://www.facebook.com/SaintCatherinesChurchBraintree/"
+          },
+          {
+            "text": "instagram ↗",
+            "href": "https://www.instagram.com/saintcatherinesbraintree/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/event-390.png"
+    },
+    {
+      "key": "event",
+      "width": 1440,
+      "geometry": {
+        "title": "Greek Festival at St. Catherine",
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Greek Festival at St. Catherine",
+            "href": "#main"
+          },
+          {
+            "text": "Details",
+            "href": "#offerings"
+          },
+          {
+            "text": "Enquire",
+            "href": "#contact"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=128e075b-aaf5-4d21-a3f2-4b0aaa743e97"
+          },
+          {
+            "text": "Call (781) 843-0047",
+            "href": "tel:7818430047"
+          },
+          {
+            "text": "Email Greek Festival at St. Catherine",
+            "href": "mailto:office@stcatherinebraintree.org"
+          },
+          {
+            "text": "youtube ↗",
+            "href": "https://www.youtube.com/@saintcatherinebraintree5731"
+          },
+          {
+            "text": "facebook ↗",
+            "href": "https://www.facebook.com/SaintCatherinesChurchBraintree/"
+          },
+          {
+            "text": "instagram ↗",
+            "href": "https://www.instagram.com/saintcatherinesbraintree/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/event-1440.png"
+    },
+    {
+      "key": "sparse-event",
+      "width": 390,
+      "geometry": {
+        "title": "Sparse current event",
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Sparse current event",
+            "href": "#main"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=90000000-0000-4000-8000-000000000001"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/sparse-event-390.png"
+    },
+    {
+      "key": "sparse-event",
+      "width": 1440,
+      "geometry": {
+        "title": "Sparse current event",
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Sparse current event",
+            "href": "#main"
+          },
+          {
+            "text": "Details",
+            "href": "#offerings"
+          },
+          {
+            "text": "Enquire",
+            "href": "#contact"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=90000000-0000-4000-8000-000000000001"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/sparse-event-1440.png"
+    },
+    {
+      "key": "owner-explicit-clear",
+      "width": 390,
+      "geometry": {
+        "title": "Greek Festival at St. Catherine",
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Greek Festival at St. Catherine",
+            "href": "#main"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=90000000-0000-4000-8000-000000000002"
+          },
+          {
+            "text": "Call (781) 843-0047",
+            "href": "tel:7818430047"
+          },
+          {
+            "text": "Email Greek Festival at St. Catherine",
+            "href": "mailto:office@stcatherinebraintree.org"
+          },
+          {
+            "text": "youtube ↗",
+            "href": "https://www.youtube.com/@saintcatherinebraintree5731"
+          },
+          {
+            "text": "facebook ↗",
+            "href": "https://www.facebook.com/SaintCatherinesChurchBraintree/"
+          },
+          {
+            "text": "instagram ↗",
+            "href": "https://www.instagram.com/saintcatherinesbraintree/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/owner-explicit-clear-390.png"
+    },
+    {
+      "key": "owner-explicit-clear",
+      "width": 1440,
+      "geometry": {
+        "title": "Greek Festival at St. Catherine",
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Greek Festival at St. Catherine",
+            "href": "#main"
+          },
+          {
+            "text": "Details",
+            "href": "#offerings"
+          },
+          {
+            "text": "Enquire",
+            "href": "#contact"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=90000000-0000-4000-8000-000000000002"
+          },
+          {
+            "text": "Call (781) 843-0047",
+            "href": "tel:7818430047"
+          },
+          {
+            "text": "Email Greek Festival at St. Catherine",
+            "href": "mailto:office@stcatherinebraintree.org"
+          },
+          {
+            "text": "youtube ↗",
+            "href": "https://www.youtube.com/@saintcatherinebraintree5731"
+          },
+          {
+            "text": "facebook ↗",
+            "href": "https://www.facebook.com/SaintCatherinesChurchBraintree/"
+          },
+          {
+            "text": "instagram ↗",
+            "href": "https://www.instagram.com/saintcatherinesbraintree/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 3,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/owner-explicit-clear-1440.png"
+    },
+    {
+      "key": "owner-explicit-image",
+      "width": 390,
+      "geometry": {
+        "title": "Greek Festival at St. Catherine",
+        "width": 390,
+        "scrollWidth": 390,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          "https://owner.example.org/selected.jpg",
+          "https://owner.example.org/selected.jpg",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Greek Festival at St. Catherine",
+            "href": "#main"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=90000000-0000-4000-8000-000000000003"
+          },
+          {
+            "text": "Call (781) 843-0047",
+            "href": "tel:7818430047"
+          },
+          {
+            "text": "Email Greek Festival at St. Catherine",
+            "href": "mailto:office@stcatherinebraintree.org"
+          },
+          {
+            "text": "youtube ↗",
+            "href": "https://www.youtube.com/@saintcatherinebraintree5731"
+          },
+          {
+            "text": "facebook ↗",
+            "href": "https://www.facebook.com/SaintCatherinesChurchBraintree/"
+          },
+          {
+            "text": "instagram ↗",
+            "href": "https://www.instagram.com/saintcatherinesbraintree/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 5,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/owner-explicit-image-390.png"
+    },
+    {
+      "key": "owner-explicit-image",
+      "width": 1440,
+      "geometry": {
+        "title": "Greek Festival at St. Catherine",
+        "width": 1440,
+        "scrollWidth": 1440,
+        "images": [
+          "/assets/brand/zoi-logo.png",
+          "https://owner.example.org/selected.jpg",
+          "https://owner.example.org/selected.jpg",
+          null
+        ],
+        "links": [
+          {
+            "text": "Skip to content",
+            "href": "#main"
+          },
+          {
+            "text": "Zoi",
+            "href": "/"
+          },
+          {
+            "text": "Greek Festival at St. Catherine",
+            "href": "#main"
+          },
+          {
+            "text": "Details",
+            "href": "#offerings"
+          },
+          {
+            "text": "Photos",
+            "href": "#gallery"
+          },
+          {
+            "text": "Enquire",
+            "href": "#contact"
+          },
+          {
+            "text": "Explore the event",
+            "href": "#offerings"
+          },
+          {
+            "text": "Get your parea ready",
+            "href": "#parea-plan"
+          },
+          {
+            "text": "Manage my table allocation",
+            "href": "/tickets/hosts/?event=90000000-0000-4000-8000-000000000003"
+          },
+          {
+            "text": "Call (781) 843-0047",
+            "href": "tel:7818430047"
+          },
+          {
+            "text": "Email Greek Festival at St. Catherine",
+            "href": "mailto:office@stcatherinebraintree.org"
+          },
+          {
+            "text": "youtube ↗",
+            "href": "https://www.youtube.com/@saintcatherinebraintree5731"
+          },
+          {
+            "text": "facebook ↗",
+            "href": "https://www.facebook.com/SaintCatherinesChurchBraintree/"
+          },
+          {
+            "text": "instagram ↗",
+            "href": "https://www.instagram.com/saintcatherinesbraintree/"
+          },
+          {
+            "text": "Official website ↗",
+            "href": "https://stcatherinebraintree.org/new-events"
+          },
+          {
+            "text": "Owner workspace",
+            "href": "/social/#home-design"
+          }
+        ]
+      },
+      "blocked_requests": 5,
+      "screenshot": "/workspaces/zoi-source-brief-media-independent-v4/docs/audits/evidence/enrichment-source-brief-media-independent-v4-2026-10-15/rendered/owner-explicit-image-1440.png"
+    }
+  ]
+}

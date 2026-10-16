@@ -1,0 +1,354 @@
+diff --git a/assets/enrichment/client-brief.mjs b/assets/enrichment/client-brief.mjs
+index 9209c2d5..05a2ceb9 100644
+--- a/assets/enrichment/client-brief.mjs
++++ b/assets/enrichment/client-brief.mjs
+@@ -8,8 +8,18 @@ const list=v=>Array.isArray(v)?v:[];
+ const heldSource=p=>p?.blocked_reason==='source_scope_mismatch'||p?.scope_review_required===true||p?.scope_review_required==='true'||p?.organization_identity_quarantine===true||p?.organization_identity_quarantine==='true';
+ export const briefBlocked=profile=>profile?.blocked===true||profile?.blocked==='true'||profile?.status==='blocked'||profile?.crawl_status==='blocked';
+ export function briefURL(value){if(typeof value!=='string'||value.length>2048)return null;try{const u=new URL(value);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password&&!u.port?u.href:null;}catch{return null;}}
+-function sameSource(a,b){try{const x=new URL(a),y=new URL(b);return x.protocol===y.protocol&&x.hostname.replace(/^www\./,'')===y.hostname.replace(/^www\./,'')&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search;}catch{return false;}}
+-function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
++/** Identity scopes never infer aliases or normalize one page into another. */
++export function sameSource(a,b){try{for(const value of [a,b])if(typeof value!=='string'||value.length>2048||/[\\\x00-\x20]/.test(value)||/^https?:\/\/[^/?#]*:/i.test(value))return false;const x=new URL(a),y=new URL(b);return ['http:','https:'].includes(x.protocol)&&!x.username&&!x.password&&!y.username&&!y.password&&!x.port&&!y.port&&!x.hash&&!y.hash&&x.protocol===y.protocol&&x.hostname===y.hostname&&x.pathname===y.pathname&&x.search===y.search;}catch{return false;}}
++/** A recorded secure transport upgrade binds only a research draft. It never
++ * establishes entity identity or changes the canonical registered website. */
++export function secureDraftRedirect(registered,final,receipt){
++ try{
++  if(typeof registered!=='string'||typeof final!=='string'||/^https?:\/\/[^/?#]*:/i.test(registered)||/^https?:\/\/[^/?#]*:/i.test(final)||!receipt||!Array.isArray(receipt.hops)||receipt.hops.length!==1)return false;
++  const a=new URL(registered),b=new URL(final),hop=receipt.hops[0];
++  return typeof hop.location==='string'&&hop.location.length<=2048&&hop.location===b.href&&a.protocol==='http:'&&b.protocol==='https:'&&!a.username&&!a.password&&!b.username&&!b.password&&!a.port&&!b.port&&a.hostname===b.hostname&&a.pathname===b.pathname&&a.search===b.search&&!a.hash&&!b.hash&&receipt.start_url===a.href&&receipt.final_url===b.href&&hop.from===a.href&&hop.to===b.href&&[301,302,303,307,308].includes(hop.status);
++ }catch{return false;}
++}
++function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','Event','Festival','MusicEvent','EducationEvent','BusinessEvent','SocialEvent','SportsEvent','TheaterEvent','DanceEvent','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
+ 
+ export const reviewedFoodReviewNeeded='reviewed_visible_food_requires_review';
+ export function reviewedFoodDeferralProfile(prior={}){return{crawl_status:'error',last_error:prior.crawl_status==='error'&&prior.last_error!==reviewedFoodReviewNeeded?(typeof prior.last_error==='string'&&prior.last_error?prior.last_error:'reviewed_visible_food_existing_source_error'):reviewedFoodReviewNeeded};}
+@@ -57,11 +67,13 @@ export function retainedSourceCopy(row,current,url){
+ export function buildClientBrief({listing,profile={},provenance={},sourceURL,checkedAt=new Date().toISOString(),sources=[]}){
+  const p=object(profile),proof=object(provenance),url=briefURL(sourceURL),registered=briefURL(listing?.website);
+  if(!url||!registered||!text(listing?.name)||!text(listing?.entity_type)||p.crawl_status==='error'&&!(reviewedFoodErrorDeferred(p)&&reviewedFoodReceiptCurrent({...listing,profile:{_enrich:p}}))||briefBlocked(p))return null;
+- const member=object(p.member),matchedMember=member.provenance?.identity_match===true&&identityMatches(listing.name,member.name)&&sameSource(member.source_url,url);
+- const matchedReviewedFood=hasReviewedFoodIdentity(p,listing,url,proof),matchedSource=hasIdentity(object(p.source_identity),listing,url,proof)||matchedReviewedFood;
++ const redirect=list(sources).find(s=>s.state==='fetched'&&s.purpose==='registered_source'&&s.url===url)?.redirect_receipt;
++ const upgraded=secureDraftRedirect(listing?.website,sourceURL,redirect);
++ const member=object(p.member),matchedMember=!upgraded&&member.provenance?.identity_match===true&&identityMatches(listing.name,member.name)&&sameSource(member.source_url,url);
++ const matchedReviewedFood=hasReviewedFoodIdentity(p,listing,url,proof),matchedSource=!upgraded&&(hasIdentity(object(p.source_identity),listing,url,proof)||matchedReviewedFood);
+  const familyConflict=p.source_identity?.verification==='entity_family_review_required'&&p.source_identity?.name===listing.name&&sameSource(p.source_identity.source_url,url);
+  // Redirects to another property or organization cannot compose this client.
+- if(!sameSource(url,registered))return null;
++ if(!sameSource(url,registered)&&!upgraded)return null;
+  const evidence=(field)=>({field,source_url:list(sources).filter(s=>s.state==='fetched'&&briefURL(s.url)&&text(proof[field],2000).includes(s.url)).at(-1)?.url||url,retrieved_at:checkedAt,method:text(proof[field],240)||'identity_scoped_member',verification:'source_extracted_requires_review'});
+  const has=field=>Object.hasOwn(p,field)&&!!text(proof[field],2000)&&proof[field]!=='aggregator-branding-excluded';
+  const offerings=[];
+@@ -104,7 +116,7 @@ export function buildClientBrief({listing,profile={},provenance={},sourceURL,che
+  if(actions.some(a=>a.kind==='booking'))needs.push({tool:'booking_provider',state:'external_link_only'});
+  if(offerings.some(o=>o.kind==='rooms'))needs.push({tool:'accommodation_inventory',state:'not_connected_by_source_extraction'});
+  const brief={schema_version:1,status:'draft_requires_review',listing:{id:text(listing.listing_id||listing.id,80)||null,slug:text(listing.slug,200),name:text(listing.name),entity_type:text(listing.entity_type,80)},
+-  source:{registered_url:registered,url,retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedReviewedFood?'reviewed_official_visible_branch':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
++  source:{registered_url:registered,url,...(upgraded?{redirect_receipt:redirect}:{}),retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedReviewedFood?'reviewed_official_visible_branch':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
+   offering:offerings,audience:[],differentiators:[],description:has('description')&&!sourceCopyPlaceholder(p.description)?{text:text(p.description,1200),evidence:evidence('description')}:null,
+   primary_actions:actions,visual_assets:visuals,tools_needed:needs,unknowns,
+   composition:{section_order:sectionOrder,evidenced_sections:available,copy_generated:false,hidden_sections:[]},
+diff --git a/scripts/enrichment/extractor.mjs b/scripts/enrichment/extractor.mjs
+index adb76a74..4c364fdb 100644
+--- a/scripts/enrichment/extractor.mjs
++++ b/scripts/enrichment/extractor.mjs
+@@ -1,3 +1,4 @@
++import {imageDocumentElements} from '../../supabase/functions/zoi-enrich/_image-document.js';
+ import {sourceCopyPlaceholder} from '../../assets/enrichment/client-brief.mjs';
+ import {usablePhone} from '../../supabase/functions/zoi-enrich/_phone.js';
+ import {extractHospitality} from '../../supabase/functions/zoi-enrich/_hospitality.js';
+@@ -17,7 +18,7 @@ if(start<0||end<start)throw Error('extractor_contract_changed');
+ const body=source.slice(start,end+marker.length);
+ // A capture must identify the helper code that actually shaped its result, too.
+ // Keep this explicit manifest in sync with the injected pure helpers and their imports.
+-const helpers=['_phone.js','_menus.js','_images.js','_image-context.js','_social.js','_media.js','_hospitality.js'];
++const helpers=['_phone.js','_menus.js','_images.js','_image-context.js','_image-document.js','_social.js','_media.js','_hospitality.js'];
+ const implementation={body,source_copy_helper:readFileSync(new URL('../../assets/enrichment/client-brief.mjs',import.meta.url),'utf8'),helpers:Object.fromEntries(helpers.map(name=>[name,readFileSync(new URL('../../supabase/functions/zoi-enrich/'+name,import.meta.url),'utf8')]))};
+ export const extractorHash=createHash('sha256').update(JSON.stringify(implementation)).digest('hex');
+-export const extractRenderedSource=new Function('sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(body)+';return extract;')(sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
++export const extractRenderedSource=new Function('imageDocumentElements','sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(body)+';return extract;')(imageDocumentElements,sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
+diff --git a/supabase/functions/zoi-enrich/_brief.js b/supabase/functions/zoi-enrich/_brief.js
+index 69cd0e2b..558d8ed7 100644
+--- a/supabase/functions/zoi-enrich/_brief.js
++++ b/supabase/functions/zoi-enrich/_brief.js
+@@ -1,24 +1,27 @@
+-import { buildClientBrief, briefURL, briefBlocked, sourceCopyProfile, retainedSourceCopy } from '../../../assets/enrichment/client-brief.mjs';
++import { buildClientBrief, briefURL, sameSource, briefBlocked, sourceCopyProfile, retainedSourceCopy } from '../../../assets/enrichment/client-brief.mjs';
+ import { inspectSourceDocument } from './_document-quality.js';
++import { imageDocumentElements } from './_image-document.js';
+ const normalized=value=>typeof value==='string'?value.normalize('NFKC').replace(/\s+/g,' ').trim().toLowerCase():'';
+ /** Exact source-name evidence, not ownership/credential verification. A linked
+  * publisher/partner/review node or ambiguous same-named node cannot qualify. */
+ export function sourceClientIdentity(row,html,url){
+- if(typeof html!=='string'||html.length>1500000||!normalized(row?.name)||!briefURL(url))return null;
++ if(typeof html!=='string'||html.length>1500000||!normalized(row?.name)||!briefURL(url)||!sameSource(row?.website,url))return null;
+  if(inspectSourceDocument(html).source_state==='source_challenge'||/cf-chl-|\/cdn-cgi\/challenge-platform\//i.test(html))return null;
+  const body=html.match(/<body\b[^>]*>([\s\S]*?)<\/body>/i)?.[1]||html;
+  const visible=body.replace(/<(script|style|head)\b[^>]*>[\s\S]*?<\/\1>/gi,'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim();
+  if(visible.length<500&&/^(?:verify you are human|checking your browser|please wait while your request is being verified|one moment,? please|request (?:is )?being verified)(?:[.!…]|\s|$)/i.test(visible))return null;
+  const organizations=['LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','NGO','SportsTeam'];
+- const types=row.entity_type==='artist'?['Person','MusicGroup']:row.entity_type==='creator'?['Person']:row.entity_type==='professional'?['Person','Physician','Dentist','Attorney','ProfessionalService']:organizations;
+- const entityTypes=[...new Set([...organizations,'Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup'])];
+- const queue=[];for(const tag of html.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)){try{queue.push(JSON.parse(tag[1]));}catch{}}
++ const types=row.entity_type==='artist'?['Person','MusicGroup']:row.entity_type==='creator'?['Person']:row.entity_type==='professional'?['Person','Physician','Dentist','Attorney','ProfessionalService']:row.entity_type==='event'?['Event','Festival','MusicEvent','EducationEvent','BusinessEvent','SocialEvent','SportsEvent','TheaterEvent','DanceEvent']:organizations;
++ const events=['Event','Festival','MusicEvent','EducationEvent','BusinessEvent','SocialEvent','SportsEvent','TheaterEvent','DanceEvent'];
++ const entityTypes=[...new Set([...events,...organizations,'Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup'])];
++ const typedBodies=imageDocumentElements(html).filter(e=>e.tag==='script'&&!e.excluded&&e.attrs.type==='application/ld+json'&&typeof e.body==='string').map(e=>e.body);
++ const queue=[];for(const body of typedBodies){try{queue.push(JSON.parse(body));}catch{}}
+  const candidates=[];let count=0;
+  while(queue.length&&count++<1000){
+   const node=queue.shift();if(Array.isArray(node)){if(node.length>100)return null;queue.push(...node);continue;}if(!node||typeof node!=='object')continue;
+   const nodeTypes=(Array.isArray(node['@type'])?node['@type']:[node['@type']]).map(t=>String(t).replace(/^https?:\/\/schema.org\//,''));
+   if(nodeTypes.some(t=>entityTypes.includes(t))){
+-   let scope=true;if(node.url){try{const a=new URL(node.url),b=new URL(url);scope=briefURL(node.url)&&a.hostname.replace(/^www\./,'')===b.hostname.replace(/^www\./,'')&&a.pathname.replace(/\/$/,'')===b.pathname.replace(/\/$/,'');}catch{scope=false;}}
++   const scope=node.url===undefined||sameSource(node.url,url);
+    if(scope)candidates.push(node);
+   }
+   for(const key of ['@graph','mainEntity'])if(node[key])queue.push(node[key]);
+@@ -37,11 +40,18 @@ export function prepareClientBrief(batch,queue,checkedAt=new Date().toISOString(
+   const row=rows.get(result.slug);
+   if(!row||result.profile?.crawl_status==='error'||briefBlocked(result.profile))continue;
+   const before=new TextEncoder().encode(JSON.stringify(result)).byteLength;
++  if(row.entity_type==='event'&&(result.profile?.source_identity?.verification!=='exact_name_typed_jsonld'||result.profile?.source_identity?.name!==row.name||!['Event','Festival','MusicEvent','EducationEvent','BusinessEvent','SocialEvent','SportsEvent','TheaterEvent','DanceEvent'].includes(result.profile.source_identity.schema_type))){
++   for(const key of ['logo_url','photo_url','hero_url']){result.profile[key]=null;if(result.provenance)delete result.provenance[key];}
++   result.profile.photo_urls=[];result.profile.menu_image_urls=[];result.profile.listen={};result.profile.embeds=[];result.profile.video_urls=[];
++   if(result.provenance){delete result.provenance.photo_urls;delete result.provenance.menu_image_urls;for(const key of ['listen','embeds','video_urls'])delete result.provenance[key];}
++   result.profile.media_review_required='event_source_identity_unverified';
++  }
++
+   result.profile=sourceCopyProfile(result.profile);
+   result.provenance=result.provenance||{};
+   for(const key of ['description','tagline'])if(!Object.hasOwn(result.profile,key))delete result.provenance[key];
+   const retained=retainedSourceCopy(row,result.profile,result.website);
+-  const brief=buildClientBrief({listing:row,profile:result.profile,provenance:result.provenance,sourceURL:result.website,checkedAt,sources:result.source_evidence});
++  const brief=result.profile.crawl_status==='checked_no_data'?null:buildClientBrief({listing:row,profile:result.profile,provenance:result.provenance,sourceURL:result.website,checkedAt,sources:result.source_evidence});
+   Object.assign(result.profile,retained.fields);Object.assign(result.provenance,retained.provenance);
+   const added=new TextEncoder().encode(JSON.stringify(result)).byteLength-before;
+   if(Object.keys(retained.fields).length&&bytes+added>=1950000){
+@@ -51,7 +61,14 @@ export function prepareClientBrief(batch,queue,checkedAt=new Date().toISOString(
+    bytes+=new TextEncoder().encode(JSON.stringify(result)).byteLength-before;continue;
+   }
+   bytes+=added;
+-  if(!brief)continue;
++  if(!brief){
++   const registered=briefURL(row.website),actual=briefURL(result.website);
++   const reason=result.profile.crawl_status==='checked_no_data'?'source_has_no_usable_fields':!registered||!actual?'source_url_invalid':!row.name||!row.entity_type?'listing_context_incomplete':'source_redirect_requires_review';
++   result.profile.client_brief={schema_version:1,status:'pending_source_review',reason,progress:{brief:'pending',acceptance:'not_reviewed'},next_action:reason==='source_has_no_usable_fields'?'Review the accessible source for usable client content before preparing the brief.':'Review the registered source and its recorded redirect before preparing this client brief.'};
++   bytes+=new TextEncoder().encode(JSON.stringify(result.profile.client_brief)).byteLength+100;
++   result.provenance.client_brief='deterministic_source_brief_pending_v1';
++   continue;
++  }
+   if(result.profile.client_brief)bytes-=new TextEncoder().encode(JSON.stringify(result.profile.client_brief)).byteLength;
+   const extra=new TextEncoder().encode(JSON.stringify(brief)).byteLength+100;
+   // Stay below enrich_apply's shared 2MB limit. Source data is retained; a
+diff --git a/supabase/functions/zoi-enrich/_images.js b/supabase/functions/zoi-enrich/_images.js
+index bdbe04b7..7ba215b5 100644
+--- a/supabase/functions/zoi-enrich/_images.js
++++ b/supabase/functions/zoi-enrich/_images.js
+@@ -1,4 +1,5 @@
+ import { auxiliaryImage } from './_image-context.js';
++import { imageDocumentElements, imageStyleEvidence } from './_image-document.js';
+ // Source evidence only: never generate missing pictures or infer a photographed subject.
+ const decode=s=>String(s||'').replace(/&amp;|&#38;|&#x26;/gi,'&').replace(/&quot;/gi,'"').replace(/&#39;/g,"'");
+ export function sourceImage(raw,base){
+@@ -27,28 +28,40 @@ export function sourceSetCandidates(value){
+ }
+ export function imageIdentity(raw){const u=new URL(raw);u.pathname=u.pathname.replace(/\.(jpe?g|png)\.webp$/i,'.$1').replace(/-(?:\d{2,5}x\d{2,5}|\d{2,5}w)(?=\.[a-z]+$)/i,'');for(const k of ['w','h','width','height','q','quality','fit','format','auto'])u.searchParams.delete(k);return u.href;}
+ const attr=(tag,name)=>{const m=tag.match(new RegExp('(?:^|\\s)'+name+'\\s*=\\s*(?:"([^"]*)"|\'([^\']*)\'|([^\\s>]+))','i'));return decode(m?.[1]??m?.[2]??m?.[3]??'');};
+-// Read plugin attributes as complete HTML attributes, not text embedded in another value.
+-const declaredAttr=(tag,name)=>{for(const m of tag.matchAll(/([^\s=<>]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)){if(m[1].toLowerCase()===name)return decode(m[2]??m[3]??m[4]??'');}return '';};
+ const artwork=/(?:^|[\s/_.-])(?:logos?|icon|avatar|sprite|pixel|tracking|favicon|badge|food[-_ ]?rating|advert(?:isement)?|anzeige|flyer|poster|app[-_ ]?store|google[-_ ]?play|payment|placeholder|spinner|loader)(?:[\s/_.-]|$)/i;
+ const leaf=u=>{try{return decodeURIComponent(new URL(u).pathname).split('/').pop()||'';}catch{return u;}};
+ export function extractSiteImages(doc,base,business={}){
+- const candidates=[],logos=[],menuImages=[],seen=new Map();const clean=String(doc).replace(/<!--[\s\S]*?-->/g,'').replace(/<(script|video|audio)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
+- const add=(raw,kind,source,score=10,hint='')=>{const url=sourceImage(raw,base);if(!url||auxiliaryImage(url,hint))return;const name=leaf(url);if(/(?:pexels|unsplash|shutterstock|istockphoto|depositphotos)/i.test(url))return;let context=new URL(url).pathname;try{context=decodeURIComponent(context);}catch{}context+=' '+hint;if(/(?:^|[\s/_.-])(?:quotation[-_ ]?mark|quote[-_ ]?icon|pattern|texture|divider)(?:[\s/_.-]|$)/i.test(context))return;if(/(?:^|[\s/_.-])(?:menu|speisekarte|μενού)(?:[\s/_.-]|$)/i.test(name+' '+hint)){if(!menuImages.some(x=>x.url===url))menuImages.push({url,source});return;}const logo=/(?:^|[\s/_.+-])(?:web[-_]?logos?|logos?)(?:[\s/_.+-]|$)/i.test(context),ui=artwork.test(context)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(name);if(kind==='logo'||logo){logos.push({url,source,score});return;}if(ui||/\.svg(?:\?|$)/i.test(url))return;const key=imageIdentity(url),prior=seen.get(key);if(prior){if(score>prior.score){prior.url=url;prior.source=source;prior.score=score;}return;}const record={url,source,score};seen.set(key,record);candidates.push(record);};
++ const candidates=[],logos=[],menuImages=[],seen=new Map();const elements=imageDocumentElements(doc),active=elements.filter(e=>!e.excluded),read=(e,k)=>decode(e.attrs[k]||'');
++ if(elements.valid!==true||elements.some(e=>e.styleEvidence?.valid===false))return{logo:null,photos:[],hero:null,menuImages:[]};
++ // Both accepted and excluded occurrences use the same complete declaration
++ // inventory. Hidden responsive/lazy/CSS URLs cannot return through metadata.
++ let inventoryInvalid=false;
++ const declaredURLs=e=>{
++  const a=e.attrs,values=['src','data-src','data-lazy-src','data-original','data-lazyload','data-vc-parallax-image'].flatMap(key=>{const raw=a[key]||'';return [raw,...sourceSetCandidates(raw).map(x=>x.url)];});
++  for(const key of ['srcset','data-srcset'])values.push(...sourceSetCandidates(a[key]||'').map(x=>x.url));
++  values.push(...(e.styleEvidence?.urls||imageStyleEvidence(a.style).urls));
++  if(e.tag==='meta')values.push(a.content||'');
++  // The legacy extractor supplies a chosen JSON-LD node. Its images must not
++  // escape an excluded source script even when the caller already parsed it.
++  if(e.tag==='script'&&a.type==='application/ld+json'&&e.body){try{const queue=[JSON.parse(e.body)];let count=0;while(queue.length&&count++<1000){if(queue.length>1000||values.length>2000)throw Error();const node=queue.shift();if(Array.isArray(node)){if(node.length>1000)throw Error();queue.push(...node);continue;}if(!node||typeof node!=='object')continue;for(const [key,value]of Object.entries(node)){if(['image','logo','contentUrl','url'].includes(key)){const pending=[value];while(pending.length){if(pending.length>1000||values.length>2000)throw Error();const v=pending.pop();if(typeof v==='string')values.push(v);else if(Array.isArray(v))pending.push(...v);else if(v&&typeof v==='object')pending.push(v.contentUrl,v.url);}}if(value&&typeof value==='object')queue.push(value);}}if(queue.length)throw Error();}catch{inventoryInvalid=true;}}
++  return values.map(raw=>sourceImage(raw,base)).filter(Boolean);
++ };
++ const excludedURLs=new Set(elements.filter(e=>e.excluded).flatMap(declaredURLs).map(imageIdentity));
++ if(inventoryInvalid)return{logo:null,photos:[],hero:null,menuImages:[]};
++ const add=(raw,kind,source,score=10,hint='')=>{const url=sourceImage(raw,base);if(!url||excludedURLs.has(imageIdentity(url))||auxiliaryImage(url,hint))return;const name=leaf(url);if(/(?:pexels|unsplash|shutterstock|istockphoto|depositphotos)/i.test(url))return;let context=new URL(url).pathname;try{context=decodeURIComponent(context);}catch{}context+=' '+hint;if(/(?:^|[\s/_.-])(?:quotation[-_ ]?mark|quote[-_ ]?icon|pattern|texture|divider)(?:[\s/_.-]|$)/i.test(context))return;if(/(?:^|[\s/_.-])(?:menu|speisekarte|μενού)(?:[\s/_.-]|$)/i.test(name+' '+hint)){if(!menuImages.some(x=>x.url===url))menuImages.push({url,source});return;}const logo=/(?:^|[\s/_.+-])(?:web[-_]?logos?|logos?)(?:[\s/_.+-]|$)/i.test(context),ui=artwork.test(context)||/^(?:apple|google|top|bottom|blue(?:[-_]left)?)(?:[-_]\d+w)?\.(?:png|svg|webp)$/i.test(name);if(kind==='logo'||logo){logos.push({url,source,score});return;}if(ui||/\.svg(?:\?|$)/i.test(url))return;const key=imageIdentity(url),prior=seen.get(key);if(prior){if(score>prior.score){prior.url=url;prior.source=source;prior.score=score;}return;}const record={url,source,score};seen.set(key,record);candidates.push(record);};
+  const values=v=>Array.isArray(v)?v.flatMap(values):typeof v==='string'?[v]:v&&typeof v==='object'?values(v.contentUrl||v.url||[]):[];
+  for(const u of values(business.logo))add(u,'logo','jsonld-logo',100);
+  for(const u of values(business.image))add(u,'photo','jsonld-image',70);
+- for(const tag of clean.matchAll(/<meta\b[^>]*>/gi)){const key=(attr(tag[0],'property')||attr(tag[0],'name')).toLowerCase(),url=attr(tag[0],'content');if(['og:logo','logo'].includes(key))add(url,'logo','meta-logo',70);if(['og:image','og:image:url','twitter:image'].includes(key))add(url,'photo','meta-image',60);}
+- for(const m of clean.matchAll(/<(img|source)\b[^>]*>/gi)){
+-  const tag=m[0],hint=attr(tag,'alt')+' '+attr(tag,'class')+' '+attr(tag,'id');const width=Number(attr(tag,'width')),height=Number(attr(tag,'height'));if(!/logo/i.test(hint+' '+attr(tag,'src'))&&((width>0&&width<80)||(height>0&&height<60)))continue;
+-  const srcset=attr(tag,'data-srcset')||attr(tag,'srcset');const options=sourceSetCandidates(srcset);
+-  const fallback=attr(tag,'data-src')||attr(tag,'data-lazy-src')||attr(tag,'data-original')||(m[1].toLowerCase()==='img'?declaredAttr(tag,'data-lazyload'):'')||attr(tag,'src');const selected=options[0]?.url||(/\s+\d+(?:\.\d+)?[wx](?:\s*,|\s*$)/.test(fallback)?sourceSetCandidates(fallback)[0]?.url:fallback);add(selected,'photo','page-image',40+Math.min(width,2000)/1000,hint);
+- }
+- // WPBakery explicitly declares this background URL; never infer an original from a thumbnail.
+- for(const match of clean.matchAll(/<[a-z][a-z0-9:-]*\b(?:"[^"]*"|'[^']*'|[^'">])*>/gi)){
+-  const tag=match[0],raw=declaredAttr(tag,'data-vc-parallax-image');if(raw)add(raw,'photo','page-background',30,attr(tag,'class')+' '+attr(tag,'id'));
++ for(const e of active.filter(e=>e.tag==='meta')){const key=(read(e,'property')||read(e,'name')).toLowerCase(),url=read(e,'content');if(['og:logo','logo'].includes(key))add(url,'logo','meta-logo',70);if(['og:image','og:image:url','twitter:image'].includes(key))add(url,'photo','meta-image',60);}
++ for(const e of active.filter(e=>['img','source'].includes(e.tag))){
++  const hint=read(e,'alt')+' '+read(e,'class')+' '+read(e,'id'),width=Number(read(e,'width')),height=Number(read(e,'height'));if(!/logo/i.test(hint+' '+read(e,'src'))&&((width>0&&width<80)||(height>0&&height<60)))continue;
++  const srcset=read(e,'data-srcset')||read(e,'srcset'),options=sourceSetCandidates(srcset);
++  const fallback=read(e,'data-src')||read(e,'data-lazy-src')||read(e,'data-original')||(e.tag==='img'?read(e,'data-lazyload'):'')||read(e,'src');const selected=options[0]?.url||(/\s+\d+(?:\.\d+)?[wx](?:\s*,|\s*$)/.test(fallback)?sourceSetCandidates(fallback)[0]?.url:fallback);add(selected,'photo','page-image',40+Math.min(width,2000)/1000,hint);
+  }
++ // Explicit active-element background declaration, never source script text.
++ for(const e of active){const value=read(e,'data-vc-parallax-image');if(value)add(value,'photo','page-background',30,read(e,'class')+' '+read(e,'id'));}
+  // Inline/CSS background declarations only; do not crawl arbitrary URL functions/scripts.
+- for(const match of decode(clean).matchAll(/background(?:-image)?\s*:[^;{}<>]{0,1800}?url\(\s*["']?([^\s"')]+)["']?\s*\)/gi))add(match[1],'photo','page-background',30);
++ for(const e of active)for(const url of e.styleEvidence?.backgrounds||imageStyleEvidence(read(e,'style')).backgrounds)add(url,'photo','page-background',30);
+  const logo=logos.sort((a,b)=>b.score-a.score)[0];const photos=candidates.filter(c=>!logo||imageIdentity(c.url)!==imageIdentity(logo.url)).sort((a,b)=>b.score-a.score).slice(0,12);
+  return{logo:logo||null,photos,hero:photos[0]||null,menuImages:menuImages.slice(0,12)};
+ }
+diff --git a/supabase/functions/zoi-enrich/index.ts b/supabase/functions/zoi-enrich/index.ts
+index 33e2fdc4..a67b0f4c 100644
+--- a/supabase/functions/zoi-enrich/index.ts
++++ b/supabase/functions/zoi-enrich/index.ts
+@@ -135,6 +135,7 @@ import { extractSocialLinks } from "./_social.js";
+ import { extractPublicMedia } from "./_media.js";
+ import { memberLeaseGuard } from "./_member.js";
+ import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
++import { imageDocumentElements } from "./_image-document.js";
+ import { sourceCopyPlaceholder, reviewedFoodDeferralProfile } from "../../../assets/enrichment/client-brief.mjs";
+ import { assessMachineSourceIdentity } from "./_source-identity.js";
+ import { extractStructuredMenu } from "./_menus.js";
+@@ -232,6 +233,7 @@ async function getCapped(url: URL, accept: string, deadline = Infinity) {
+ /** Follow up to MAX_HOPS redirects, re-vetting each destination. */
+ async function fetchDoc(start: URL, deadline = Infinity) {
+   let url = start;
++  const redirects: {from:string;to:string;status:number;location:string}[] = [];
+   for (let hop = 0; hop <= MAX_HOPS; hop++) {
+     const r = await perHost(url.hostname, () =>
+       getCapped(url, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.1", deadline), deadline);
+@@ -246,6 +248,7 @@ async function fetchDoc(start: URL, deadline = Infinity) {
+       // A redirect is a fresh, untrusted URL. Vet it exactly like the first.
+       const v = await boundedIO(deadline, TIMEOUT_MS, () => vet(next.toString(), Math.min(deadline, Date.now() + TIMEOUT_MS)));
+       if (!v.url) return { error: `redirect-refused:${v.why}` };
++      redirects.push({from:url.toString(),to:v.url.toString(),status:r.status,location:r.redirect});
+       url = v.url;
+       continue;
+     }
+@@ -253,7 +256,7 @@ async function fetchDoc(start: URL, deadline = Infinity) {
+       return { error: `http${(r as { status?: number }).status ?? 0}` };
+     }
+     if (!/html|xml/.test(r.ct || "")) return { error: "not-html" };
+-    return { doc: r.body, finalUrl: url.toString() };
++    return { doc: r.body, finalUrl: url.toString(), redirectReceipt:{start_url:start.toString(),final_url:url.toString(),hops:redirects} };
+   }
+   return { error: "too-many-redirects" };
+ }
+@@ -337,12 +340,11 @@ function metaTag(doc: string, key: string, attr = "property"): string | null {
+ 
+ function ldNodes(doc: string): Record<string, unknown>[] {
+   const out: Record<string, unknown>[] = [];
+-  const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
+-  let m: RegExpExecArray | null;
+-  while ((m = re.exec(doc))) {
++  const scripts = imageDocumentElements(doc).filter(e => e.tag === "script" && !e.excluded && e.attrs.type === "application/ld+json" && typeof e.body === "string");
++  for (const script of scripts) {
+     let v: unknown;
+     try {
+-      v = JSON.parse(m[1].replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, "").trim());
++      v = JSON.parse(script.body!.replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, "").trim());
+     } catch { continue; }
+     const stack = [v];
+     let guard = 0;
+@@ -637,7 +639,7 @@ Deno.serve(async (req) => {
+           provenance: {} });
+         continue;
+       }
+-      const sourceEvidence = [{url: got.finalUrl!, purpose: "registered_source", state: "fetched"}];
++      const sourceEvidence: {url:string;purpose:string;state:string;redirect_receipt?:unknown}[] = [{url: got.finalUrl!, purpose: "registered_source", state: "fetched", ...(got.redirectReceipt ? {redirect_receipt:got.redirectReceipt} : {})}];
+       const member = memberLeaseGuard(row, got.doc!, got.finalUrl!);
+       if (member.handled) {
+         bump(member.profile?.last_error === "source_scope_mismatch" ? "source-scope-mismatch" : member.profile && "member" in member.profile ? "member-identity-matched" : "member-review-required");
+@@ -714,6 +716,7 @@ Deno.serve(async (req) => {
+             if (key === "email" && (profile.email_conflict || next.profile.email_conflict)) {
+               profile.email = null; profile.email_conflict = profile.email_conflict || next.profile.email_conflict; provenance.email = "conflicting-source-emails"; provenance.email_conflict = provenance.email_conflict || next.provenance.email_conflict; continue;
+             }
++            if (page.purpose === "contact" && ["logo_url","photo_url","hero_url"].includes(key)) continue;
+             if (!profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
+           }
+           // Coverage belongs to the exact menu adopted above, including false.
+@@ -724,7 +727,7 @@ Deno.serve(async (req) => {
+           }
+           profile.social = { ...(next.profile.social || {}) as object, ...(profile.social || {}) as object };
+           if (next.profile.social) provenance.social = "same-origin-pages";
+-          const photos = [...(Array.isArray(profile.photo_urls) ? profile.photo_urls : []), ...(Array.isArray(next.profile.photo_urls) ? next.profile.photo_urls : [])];
++          const photos = [...(Array.isArray(profile.photo_urls) ? profile.photo_urls : []), ...(page.purpose !== "contact" && Array.isArray(next.profile.photo_urls) ? next.profile.photo_urls : [])];
+           const keys = new Set(); profile.photo_urls = photos.filter(u => { const key = imageIdentity(u); if (keys.has(key)) return false; keys.add(key); return true; }).slice(0, 12);
+           if ((profile.photo_urls as string[]).length) provenance.photo_urls = "same-origin-pages";
+           bump("supplement:" + page.purpose);
+diff --git a/tests/unit/enrichment-packaging.test.mjs b/tests/unit/enrichment-packaging.test.mjs
+index 3728f4fc..10f68c68 100644
+--- a/tests/unit/enrichment-packaging.test.mjs
++++ b/tests/unit/enrichment-packaging.test.mjs
+@@ -5,6 +5,6 @@ const pattern=/(?:import|export)\s+(?:type\s+)?(?:{[^{}]+}|.*?)\s*(?:from)?\s*['
+ const root=path.resolve(new URL('../..',import.meta.url).pathname);
+ function graph(read=filename=>fs.readFileSync(path.join(root,filename),'utf8')){const queue=['supabase/functions/zoi-enrich/index.ts'],seen=new Set();while(queue.length){const current=queue.shift();if(seen.has(current))continue;seen.add(current);const text=read(current);for(const m of text.matchAll(new RegExp(pattern))){const raw=(m[1]??m[2]??'').trim();if(!raw.startsWith('./')&&!raw.startsWith('../'))continue;if(!raw.split('/').at(-1).includes('.'))continue;const next=path.posix.normalize(path.posix.join(path.posix.dirname(current),raw));assert(!next.startsWith('../'),'Import must stay inside repository');queue.push(next);}}return [...seen].sort();}
+ const expected=['assets/enrichment/client-brief.mjs','supabase/functions/zoi-enrich/_brief.js','supabase/functions/zoi-enrich/_decode.js','supabase/functions/zoi-enrich/_phone.js','supabase/functions/zoi-enrich/_hospitality.js','supabase/functions/zoi-enrich/_document-quality.js','supabase/functions/zoi-enrich/index.ts','supabase/functions/zoi-enrich/_ssrf.ts','supabase/functions/zoi-enrich/_social.js','supabase/functions/zoi-enrich/_media.js','supabase/functions/zoi-enrich/_member.js','supabase/functions/zoi-enrich/_menus.js','supabase/functions/zoi-enrich/_images.js','supabase/functions/zoi-enrich/_image-context.js','supabase/functions/zoi-enrich/_scope.js','supabase/functions/zoi-enrich/_receipts.js','assets/enrichment/member-source.mjs','assets/enrichment/association-cards.mjs'].sort();
+-expected.push('supabase/functions/zoi-enrich/_services.js','supabase/functions/zoi-enrich/_source-identity.js');expected.sort();
++expected.push('supabase/functions/zoi-enrich/_image-document.js','supabase/functions/zoi-enrich/_services.js','supabase/functions/zoi-enrich/_source-identity.js');expected.sort();
+ test('pinned API packaging reaches every worker and external shared source dependency',()=>{assert.deepEqual(graph(),expected);});
+ test('regression demonstrates compact import was skipped despite valid JavaScript',()=>{const files=graph(filename=>{const text=fs.readFileSync(path.join(root,filename),'utf8');return filename.endsWith('/_images.js')?text.replace("import { auxiliaryImage } from './_image-context.js';","import{auxiliaryImage}from'./_image-context.js';"):text;});assert.equal(files.includes('supabase/functions/zoi-enrich/_image-context.js'),false);assert.equal(files.includes('supabase/functions/zoi-enrich/_scope.js'),true);});
+diff --git a/tests/unit/enrichment-profile-extraction.test.mjs b/tests/unit/enrichment-profile-extraction.test.mjs
+index 3db03a25..85a4e26e 100644
+--- a/tests/unit/enrichment-profile-extraction.test.mjs
++++ b/tests/unit/enrichment-profile-extraction.test.mjs
+@@ -1,3 +1,4 @@
++import{imageDocumentElements}from'../../supabase/functions/zoi-enrich/_image-document.js';
+ import {sourceCopyPlaceholder} from '../../assets/enrichment/client-brief.mjs';
+ import {usablePhone} from '../../supabase/functions/zoi-enrich/_phone.js';
+ import {extractHospitality} from '../../supabase/functions/zoi-enrich/_hospitality.js';
+@@ -6,7 +7,7 @@ import{test}from'node:test';import assert from'node:assert/strict';import{readFi
+ import{extractSiteImages}from'../../supabase/functions/zoi-enrich/_images.js';import{extractSocialLinks}from'../../supabase/functions/zoi-enrich/_social.js';import{extractPublicMedia}from'../../supabase/functions/zoi-enrich/_media.js';
+ const source=readFileSync(new URL('../../supabase/functions/zoi-enrich/index.ts',import.meta.url),'utf8');
+ const start=source.indexOf('const AGGREGATORS ='),end=source.indexOf('return { profile, provenance, aggregator: isAgg, host };',start)+'return { profile, provenance, aggregator: isAgg, host };\n}'.length;
+-const extract=new Function('sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(source.slice(start,end))+';return extract;')(sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
++const extract=new Function('imageDocumentElements','sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(source.slice(start,end))+';return extract;')(imageDocumentElements,sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
+ test('actual worker extraction separates logo, hero, gallery and contact/social provenance',()=>{const r=extract('<script type="application/ld+json">{"@type":"Restaurant","logo":"/brand.png","telephone":"+302101234567","sameAs":["https://instagram.com/realrestaurant"]}</script><meta property="og:image" content="https://restaurant.example.org/logo.jpg"><div style="background-image:url(/dining.jpg)"></div><a href="mailto:hello@sample-bistro.gr">Email</a>','https://restaurant.example.org/');assert.equal(r.profile.logo_url,'https://restaurant.example.org/brand.png');assert.equal(r.profile.hero_url,'https://restaurant.example.org/dining.jpg');assert.deepEqual(r.profile.photo_urls,['https://restaurant.example.org/dining.jpg']);assert.equal(r.profile.phone,'+302101234567');assert.equal(r.profile.email,'hello@sample-bistro.gr');assert.equal(r.profile.social.instagram,'https://instagram.com/realrestaurant');});
+ test('successful page lacking images clears stale machine imagery instead of retaining old logo hero',()=>{const r=extract('<title>Business</title>','https://restaurant.example.org/');assert.equal(r.profile.photo_url,null);assert.equal(r.profile.hero_url,null);assert.deepEqual(r.profile.photo_urls,[]);});
+ test('aggregator subdomains do not gain website branding through new image extraction',()=>{const r=extract('<img src="https://cdn.example.org/brand.jpg">','https://m.facebook.com/business');assert.equal(r.aggregator,true);assert.equal(r.profile.hero_url,undefined);});
+diff --git a/tests/unit/food-source-branch-independent.test.mjs b/tests/unit/food-source-branch-independent.test.mjs
+index b3444713..f9fb95ad 100644
+--- a/tests/unit/food-source-branch-independent.test.mjs
++++ b/tests/unit/food-source-branch-independent.test.mjs
+@@ -1,3 +1,4 @@
++import{imageDocumentElements}from'../../supabase/functions/zoi-enrich/_image-document.js';
+ import {sourceCopyPlaceholder} from '../../assets/enrichment/client-brief.mjs';
+ import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
+ import {usablePhone} from '../../supabase/functions/zoi-enrich/_phone.js';
+@@ -7,7 +8,7 @@ import{test}from'node:test';import assert from'node:assert/strict';import{readFi
+ import{extractSiteImages,supplementaryPages as actualSupplementaryPages}from'../../supabase/functions/zoi-enrich/_images.js';import{extractSocialLinks}from'../../supabase/functions/zoi-enrich/_social.js';import{extractPublicMedia}from'../../supabase/functions/zoi-enrich/_media.js';
+ const source=readFileSync(new URL('../../supabase/functions/zoi-enrich/index.ts',import.meta.url),'utf8');
+ const start=source.indexOf('const AGGREGATORS ='),end=source.indexOf('return { profile, provenance, aggregator: isAgg, host };',start)+'return { profile, provenance, aggregator: isAgg, host };\n}'.length;
+-const extract=new Function('sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(source.slice(start,end))+';return extract;')(sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
++const extract=new Function('imageDocumentElements','sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(source.slice(start,end))+';return extract;')(imageDocumentElements,sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
+ 
+ import{webcrypto,createHash}from'node:crypto';import{sourceClientIdentity,prepareClientBrief}from'../../supabase/functions/zoi-enrich/_brief.js';import{extractStructuredServices,structuredSourceContextMatches}from'../../supabase/functions/zoi-enrich/_services.js';import{hospitalitySupplements,hospitalitySourceMatches,validHospitalityFields}from'../../supabase/functions/zoi-enrich/_hospitality.js';import{inspectSourceDocument}from'../../supabase/functions/zoi-enrich/_document-quality.js';import{memberLeaseGuard}from'../../supabase/functions/zoi-enrich/_member.js';import{confirmedEnrichmentReceipts,enrichmentSample}from'../../supabase/functions/zoi-enrich/_receipts.js';import{restaurantHomeContent,renderRestaurantHome}from'../../api/_restaurant-home.js';import{bakeryHomeContent,renderBakeryHome}from'../../api/_bakery-home.js';
+ const sourceHTML='<script type="application/ld+json">{"@type":"Bakery","name":"Source Bakery","url":"https://source-bakery.org/","address":{"streetAddress":"1 Main Street","addressLocality":"London","addressCountry":"CA"}}</script><div class="food-menu-grid-item-content"><h2>Pies</h2><div class="food-item-holder"><h3>Spinach pie (Full tray)</h3><div class="food-price">$38.00/+</div><div class="food-item-description">24 Piece $38 | Flat $40</div></div></div>';
+diff --git a/tests/unit/food-source-pipeline.test.mjs b/tests/unit/food-source-pipeline.test.mjs
+index 008524a4..5607cdda 100644
+--- a/tests/unit/food-source-pipeline.test.mjs
++++ b/tests/unit/food-source-pipeline.test.mjs
+@@ -1,3 +1,4 @@
++import{imageDocumentElements}from'../../supabase/functions/zoi-enrich/_image-document.js';
+ import {sourceCopyPlaceholder} from '../../assets/enrichment/client-brief.mjs';
+ import {assessMachineSourceIdentity} from '../../supabase/functions/zoi-enrich/_source-identity.js';
+ import {usablePhone} from '../../supabase/functions/zoi-enrich/_phone.js';
+@@ -7,7 +8,7 @@ import{test}from'node:test';import assert from'node:assert/strict';import{readFi
+ import{extractSiteImages}from'../../supabase/functions/zoi-enrich/_images.js';import{extractSocialLinks}from'../../supabase/functions/zoi-enrich/_social.js';import{extractPublicMedia}from'../../supabase/functions/zoi-enrich/_media.js';
+ const source=readFileSync(new URL('../../supabase/functions/zoi-enrich/index.ts',import.meta.url),'utf8');
+ const start=source.indexOf('const AGGREGATORS ='),end=source.indexOf('return { profile, provenance, aggregator: isAgg, host };',start)+'return { profile, provenance, aggregator: isAgg, host };\n}'.length;
+-const extract=new Function('sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(source.slice(start,end))+';return extract;')(sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
++const extract=new Function('imageDocumentElements','sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(source.slice(start,end))+';return extract;')(imageDocumentElements,sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
+ 
+ import{webcrypto}from'node:crypto';import{sourceClientIdentity,prepareClientBrief}from'../../supabase/functions/zoi-enrich/_brief.js';import{extractStructuredServices,structuredSourceContextMatches}from'../../supabase/functions/zoi-enrich/_services.js';import{hospitalitySupplements,hospitalitySourceMatches,validHospitalityFields}from'../../supabase/functions/zoi-enrich/_hospitality.js';import{inspectSourceDocument}from'../../supabase/functions/zoi-enrich/_document-quality.js';import{memberLeaseGuard}from'../../supabase/functions/zoi-enrich/_member.js';import{confirmedEnrichmentReceipts,enrichmentSample}from'../../supabase/functions/zoi-enrich/_receipts.js';import{restaurantHomeContent,renderRestaurantHome}from'../../api/_restaurant-home.js';import{bakeryHomeContent,renderBakeryHome}from'../../api/_bakery-home.js';
+ const sourceHTML='<script type="application/ld+json">{"@type":"Bakery","name":"Source Bakery","url":"https://source-bakery.org/"}</script><div class="food-menu-grid-item-content"><h2>Pies</h2><div class="food-item-holder"><h3>Spinach pie (Full tray)</h3><div class="food-price">$38.00/+</div><div class="food-item-description">24 Piece $38 | Flat $40</div></div></div>';

@@ -1,0 +1,238 @@
+{
+  "table": {
+    "acl": "{postgres=arwdDxtm/postgres}",
+    "rls": true,
+    "owner": "postgres",
+    "force_rls": false
+  },
+  "columns": [
+    {
+      "name": "request_id",
+      "type": "uuid",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "actor_auth",
+      "type": "uuid",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "workspace_id",
+      "type": "uuid",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "listing_id",
+      "type": "uuid",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "state",
+      "type": "text",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "payload",
+      "type": "jsonb",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "post_id",
+      "type": "uuid",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "post_snapshot",
+      "type": "jsonb",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "created_at",
+      "type": "timestamp with time zone",
+      "default": "clock_timestamp()",
+      "not_null": true
+    }
+  ],
+  "policies": [],
+  "triggers": [
+    {
+      "name": "business_creative_receipt_immutable",
+      "enabled": "O",
+      "function": "zoi.business_creative_receipt_immutable()",
+      "definition": "CREATE TRIGGER business_creative_receipt_immutable BEFORE DELETE OR UPDATE ON zoi.business_creative_requests FOR EACH ROW EXECUTE FUNCTION zoi.business_creative_receipt_immutable()"
+    },
+    {
+      "name": "studio_media_receipt_context",
+      "enabled": "O",
+      "function": "zoi.studio_media_receipt_guard()",
+      "definition": "CREATE TRIGGER studio_media_receipt_context BEFORE INSERT ON zoi.business_creative_requests FOR EACH ROW EXECUTE FUNCTION zoi.studio_media_receipt_guard()"
+    }
+  ],
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "62569b74f0831a60bf2d2688f0e48ac5",
+      "signature": "social_save_post(uuid,text,text[],timestamp with time zone,text,jsonb,text,jsonb,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.social_save_post(p_workspace uuid, p_body text, p_channels text[] DEFAULT '{}'::text[], p_scheduled_at timestamp with time zone DEFAULT NULL::timestamp with time zone, p_status text DEFAULT 'draft'::text, p_media jsonb DEFAULT '[]'::jsonb, p_nameday text DEFAULT NULL::text, p_meta jsonb DEFAULT '{}'::jsonb, p_id uuid DEFAULT NULL::uuid)\n RETURNS zoi.social_posts\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE r zoi.social_posts; pid uuid;\nBEGIN\n  PERFORM zoi.assert_workspace_write(p_workspace);\n  IF p_status NOT IN ('draft','scheduled') THEN p_status := 'draft'; END IF;\n  SELECT up.id INTO pid FROM zoi.user_profiles up WHERE up.auth_user_id = auth.uid() LIMIT 1;\n  IF p_id IS NOT NULL THEN\n    UPDATE zoi.social_posts SET body=p_body, channels=p_channels, scheduled_at=p_scheduled_at, status=p_status,\n      media=p_media, nameday_ref=p_nameday, meta=p_meta, updated_at=now()\n    WHERE id=p_id AND workspace_id=p_workspace RETURNING * INTO r;\n  ELSE\n    INSERT INTO zoi.social_posts (workspace_id, author_profile, body, channels, scheduled_at, status, media, nameday_ref, meta)\n    VALUES (p_workspace, pid, p_body, p_channels, p_scheduled_at, p_status, p_media, p_nameday, p_meta) RETURNING * INTO r;\n  END IF;\n  RETURN r;\nEND; $function$\n",
+      "volatility": "v",
+      "definition_md5": "d0302700d93948ac3892d766972272c2",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "bef2d5f9c0ca14096273b408dd5677a3",
+      "signature": "canonical_draft_context(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.canonical_draft_context(p_workspace uuid, p_post uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE ctx jsonb;kind text;\nBEGIN\n PERFORM zoi.assert_workspace_write(p_workspace);\n SELECT context,'ai'INTO ctx,kind FROM zoi.ai_generation_draft_links WHERE workspace_id=p_workspace AND post_id=p_post;\n IF NOT FOUND THEN SELECT context,'editorial'INTO ctx,kind FROM zoi.editorial_draft_links WHERE workspace_id=p_workspace AND post_id=p_post;END IF;\n IF ctx?'listing'THEN PERFORM zoi.home_content_authorize(p_workspace,(ctx->>'listing')::uuid);END IF;\n PERFORM zoi.suite_current_session();RETURN jsonb_build_object('ok',true,'workspace',p_workspace,'post_id',p_post,'kind',kind,'context',ctx);\nEND$function$\n",
+      "volatility": "v",
+      "definition_md5": "2378e972c6b8f03d8c2117d7307dce1a",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "555c138eb4f29e2ee0a533ba5e573004",
+      "signature": "zoi.business_creative_source(jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.business_creative_source(p_entity jsonb)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN jsonb_typeof(p_entity)='object'THEN jsonb_build_object('schema',1)||zoi.business_creative_project_layer(p_entity,'top')ELSE NULL END\n$function$\n",
+      "volatility": "i",
+      "definition_md5": "87b5bbc85920aff11b317c7752b7d3f3",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "80e289240781b9512829cfac8d1ac85f",
+      "signature": "zoi.business_creative_receipt(uuid,uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.business_creative_receipt(p_workspace uuid, p_listing uuid, p_request uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE r zoi.business_creative_requests;p jsonb;slug text;source jsonb;\nBEGIN\n SELECT *INTO r FROM zoi.business_creative_requests WHERE request_id=p_request;\n IF NOT FOUND THEN RETURN jsonb_build_object('ok',true,'actor',auth.uid(),'workspace',p_workspace,'listing',p_listing,'request',p_request,'state','missing');END IF;\n IF r.actor_auth IS DISTINCT FROM auth.uid()OR r.workspace_id IS DISTINCT FROM p_workspace OR r.listing_id IS DISTINCT FROM p_listing THEN RAISE EXCEPTION 'business_creative_request_scope_conflict';END IF;\n IF r.post_id IS NOT NULL THEN SELECT to_jsonb(s)INTO p FROM zoi.social_posts s WHERE id=r.post_id AND workspace_id=p_workspace;END IF;\n IF p IS NOT NULL THEN\n  IF p->>'status'IS DISTINCT FROM'draft'OR p->'scheduled_at'IS DISTINCT FROM'null'::jsonb OR p->'channels'IS DISTINCT FROM'[]'::jsonb THEN RAISE EXCEPTION 'business_creative_post_not_private_draft';END IF;\n  IF p->'meta'->>'client_listing_id'IS DISTINCT FROM p_listing::text OR p->'meta'->'business_creative'->>'listing'IS DISTINCT FROM p_listing::text OR NOT EXISTS(SELECT 1 FROM zoi.business_creative_requests r2 WHERE r2.post_id=r.post_id AND r2.workspace_id=p_workspace AND r2.listing_id=p_listing AND r2.state='saved'AND r2.request_id::text=p->'meta'->'business_creative'->>'request'AND encode(sha256(convert_to((r2.payload->'source')::text,'UTF8')),'hex')=p->'meta'->'business_creative'->>'source_hash')THEN RAISE EXCEPTION 'business_creative_context_changed';END IF;\n END IF;\n SELECT l.slug INTO slug FROM zoi.listings l WHERE id=p_listing AND owner_workspace_id=p_workspace;\n IF slug IS NOT NULL THEN source:=zoi.business_creative_source(public.home_entity(slug));END IF;\n PERFORM zoi.suite_current_session();\n RETURN jsonb_build_object('ok',true,'actor',auth.uid(),'workspace',p_workspace,'listing',p_listing,'request',p_request,\n 'state',CASE WHEN r.state='saved'AND p IS NULL THEN 'removed'ELSE r.state END,\n 'post_id',r.post_id,'snapshot',r.post_snapshot,'post',p,'source_current',source IS NOT DISTINCT FROM r.payload->'source');\nEND$function$\n",
+      "volatility": "v",
+      "definition_md5": "fbc0242f6015e2a9a414987ae2ab54b2",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "cbf00cb8b9000e19bcde4383eea8d023",
+      "signature": "business_creative_draft_get(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.business_creative_draft_get(p_workspace uuid, p_post uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE p zoi.social_posts;r zoi.business_creative_requests;original jsonb;source jsonb;slug text;\nBEGIN\n PERFORM zoi.assert_workspace_write(p_workspace);\n -- Resolve the listing without taking the post lock, then follow the same\n -- workspace/member/profile -> listing -> post order as draft_save.\n SELECT r0.*INTO r FROM zoi.business_creative_requests r0 JOIN zoi.social_posts p0 ON p0.id=r0.post_id AND p0.workspace_id=r0.workspace_id\n WHERE p0.id=p_post AND p0.workspace_id=p_workspace AND r0.state='saved'AND r0.request_id::text=p0.meta->'business_creative'->>'request';\n IF r.request_id IS NULL THEN RAISE EXCEPTION 'business_creative_post_removed';END IF;\n PERFORM zoi.home_content_authorize(p_workspace,r.listing_id);\n SELECT *INTO p FROM zoi.social_posts WHERE id=p_post AND workspace_id=p_workspace FOR SHARE;\n PERFORM zoi.assert_workspace_write(p_workspace);PERFORM zoi.home_content_authorize(p_workspace,r.listing_id);\n IF p.id IS NULL THEN RAISE EXCEPTION 'business_creative_post_removed';END IF;\n SELECT *INTO r FROM zoi.business_creative_requests WHERE post_id=p_post AND workspace_id=p_workspace AND state='saved'AND request_id::text=p.meta->'business_creative'->>'request';\n IF r.request_id IS NULL OR p.meta->>'client_listing_id'IS DISTINCT FROM r.listing_id::text OR p.meta->'business_creative'->>'listing'IS DISTINCT FROM r.listing_id::text OR encode(sha256(convert_to((r.payload->'source')::text,'UTF8')),'hex')IS DISTINCT FROM p.meta->'business_creative'->>'source_hash'THEN RAISE EXCEPTION 'business_creative_context_changed';END IF;\n PERFORM zoi.home_content_authorize(p_workspace,r.listing_id);PERFORM zoi.assert_workspace_write(p_workspace);\n IF p.status IS DISTINCT FROM'draft'OR p.scheduled_at IS NOT NULL OR p.channels IS DISTINCT FROM ARRAY[]::text[] THEN RAISE EXCEPTION 'business_creative_post_not_private_draft';END IF;\n SELECT l.slug INTO slug FROM zoi.listings l WHERE id=r.listing_id AND owner_workspace_id=p_workspace;\n IF slug IS NULL THEN RAISE EXCEPTION 'business_creative_listing_unavailable';END IF;\n source:=zoi.business_creative_source(public.home_entity(slug));\n SELECT payload->'source'INTO original FROM zoi.business_creative_requests WHERE post_id=p_post AND workspace_id=p_workspace AND listing_id=r.listing_id AND state='saved'ORDER BY created_at,request_id LIMIT 1;\n PERFORM zoi.suite_current_session();\n RETURN jsonb_build_object('ok',true,'workspace',p_workspace,'listing',r.listing_id,'post',to_jsonb(p),'source',r.payload->'source','original_source',original,'source_current',source IS NOT DISTINCT FROM r.payload->'source');\nEND$function$\n",
+      "volatility": "v",
+      "definition_md5": "6a251597fe35f9684629da20b749fb10",
+      "security_definer": true
+    }
+  ],
+  "constraints": [
+    {
+      "name": "business_creative_requests_check",
+      "definition": "CHECK ((((state = 'saved'::text) AND (payload IS NOT NULL) AND (post_id IS NOT NULL) AND (post_snapshot IS NOT NULL)) OR ((state = 'cancelled'::text) AND (payload IS NULL) AND (post_id IS NULL) AND (post_snapshot IS NULL))))"
+    },
+    {
+      "name": "business_creative_requests_pkey",
+      "definition": "PRIMARY KEY (request_id)"
+    },
+    {
+      "name": "business_creative_requests_state_check",
+      "definition": "CHECK ((state = ANY (ARRAY['saved'::text, 'cancelled'::text])))"
+    }
+  ],
+  "additional_dependencies": [
+    {
+      "signature": "zoi.studio_media_receipt_guard()",
+      "definition": "CREATE FUNCTION zoi.studio_media_receipt_guard()RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=''AS $$\nDECLARE g zoi.studio_media_events;\nBEGIN\n IF NOT pg_try_advisory_xact_lock(hashtextextended('business-creative:'||NEW.request_id::text,0))THEN RAISE EXCEPTION 'studio_media_request_busy';END IF;\n FOR g IN SELECT *FROM zoi.studio_media_events WHERE request_id=NEW.request_id AND phase='grant'LOOP\n  IF NEW.actor_auth IS DISTINCT FROM g.actor_auth OR NEW.workspace_id IS DISTINCT FROM g.workspace_id OR NEW.listing_id IS DISTINCT FROM g.listing_id THEN RAISE EXCEPTION 'studio_media_receipt_scope_conflict';END IF;\n  IF NEW.state='saved'AND encode(sha256(convert_to(NEW.payload::text,'UTF8')),'hex')IS DISTINCT FROM g.context_hash THEN RAISE EXCEPTION 'studio_media_receipt_payload_conflict';END IF;\n END LOOP;\n RETURN NEW;\nEND$$;",
+      "body_md5": "693d1e44c0c2337d9398bc1f55e599cc",
+      "security_definer": true,
+      "volatility": "v",
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "basis": "Exact accepted Raster source; root independently checks actual catalog before apply."
+    },
+    {
+      "signature": "zoi.studio_storage_path(text)",
+      "definition": "CREATE FUNCTION zoi.studio_storage_path(value text)RETURNS text LANGUAGE plpgsql IMMUTABLE SET search_path=''AS $$\nDECLARE prefix constant text:='https://csebihpaychdkanjjsmz.supabase.co/storage/v1/object/public/media/';raw text;bytes bytea:=''::bytea;i integer:=1;c text;path text;\nBEGIN\n IF value IS NULL OR left(value,length(prefix))<>prefix THEN RAISE EXCEPTION 'studio_media_invalid_source_path';END IF;\n raw:=substr(value,length(prefix)+1);\n IF length(raw)>6000 OR raw~'[?#]'THEN RAISE EXCEPTION 'studio_media_invalid_source_path';END IF;\n WHILE i<=length(raw)LOOP c:=substr(raw,i,1);IF c='%'THEN IF substr(raw,i+1,2)!~'^[a-fA-F0-9]{2}$'THEN RAISE EXCEPTION 'studio_media_invalid_source_path';END IF;bytes:=bytes||decode(substr(raw,i+1,2),'hex');i:=i+3;ELSE bytes:=bytes||convert_to(c,'UTF8');i:=i+1;END IF;END LOOP;\n path:=convert_from(bytes,'UTF8');\n IF length(path)NOT BETWEEN 1 AND 1800 OR path~'(^/|/$|//|(^|/)\\.\\.?(/|$)|[[:cntrl:]\\\\])'THEN RAISE EXCEPTION 'studio_media_invalid_source_path';END IF;\n RETURN path;\nEND$$;",
+      "body_md5": "279d854d86065688c43df0c2b86322a9",
+      "security_definer": false,
+      "volatility": "i",
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "basis": "Exact accepted Raster source; root independently checks actual catalog before apply."
+    },
+    {
+      "signature": "zoi.studio_object(text,boolean)",
+      "definition": "CREATE FUNCTION zoi.studio_object(path text,locked boolean DEFAULT false)RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=''AS $$\nDECLARE r record;result jsonb;count integer:=0;\nBEGIN\n IF locked THEN\n  FOR r IN SELECT *FROM storage.objects WHERE bucket_id='media'AND name=path AND archived_at IS NULL AND NOT is_delete_marker FOR SHARE LOOP\n   count:=count+1;result:=jsonb_build_object('id',r.id,'version',r.version,'updated_at',r.updated_at,'created_at',r.created_at,'metadata',r.metadata,'owner',r.owner,'owner_id',r.owner_id);\n  END LOOP;\n ELSE\n  FOR r IN SELECT *FROM storage.objects WHERE bucket_id='media'AND name=path AND archived_at IS NULL AND NOT is_delete_marker LOOP\n   count:=count+1;result:=jsonb_build_object('id',r.id,'version',r.version,'updated_at',r.updated_at,'created_at',r.created_at,'metadata',r.metadata,'owner',r.owner,'owner_id',r.owner_id);\n  END LOOP;\n END IF;\n IF count>1 THEN RAISE EXCEPTION 'studio_media_ambiguous_object';END IF;RETURN result;\nEND$$;",
+      "body_md5": "ef8f4f02631b156ebf802f2e696e071f",
+      "security_definer": true,
+      "volatility": "v",
+      "config": [
+        "search_path=\"\""
+      ],
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "basis": "Exact accepted Raster source; root independently checks actual catalog before apply."
+    },
+    {
+      "signature": "zoi.assert_workspace_write(uuid,text[])",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_workspace_write(p_workspace uuid, p_roles text[] DEFAULT ARRAY['owner'::text, 'admin'::text, 'editor'::text])\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare r text;\nbegin r:=zoi.workspace_locked_role(p_workspace);\n if not coalesce(r=any(p_roles),false) then raise exception 'insufficient_permission' using errcode='42501';end if;\nend $function$\n",
+      "body_md5": "0a1b64d6adee0e63726bab3c08b0be53",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "basis": "Retained current authority fixture; bodies untouched."
+    },
+    {
+      "signature": "zoi.home_content_authorize(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_authorize(p_workspace uuid, p_listing uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.org_actor();owner_ws uuid;\nBEGIN\n IF actor IS NULL THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n -- Verify the current account/session before any caller can return an old receipt.\n PERFORM zoi.workspace_invitation_email(false);\n PERFORM 1 FROM zoi.user_profiles WHERE id=actor FOR UPDATE;\n IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM zoi.user_profiles WHERE id=actor AND auth_user_id=auth.uid()) THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n -- The guard is VOLATILE and uses fresh statements after every existing lock wait.\n PERFORM zoi.workspace_invitation_email(false);\n PERFORM 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor AND role IN('owner','admin','editor')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n PERFORM zoi.workspace_invitation_email(false);\n SELECT owner_workspace_id INTO owner_ws FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND OR (owner_ws IS NOT NULL AND owner_ws<>p_workspace) OR NOT zoi.bizpage_can_edit(p_workspace,p_listing)THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;\n PERFORM zoi.workspace_invitation_email(false);\n IF owner_ws IS NULL THEN PERFORM 1 FROM zoi.listing_claims WHERE listing_id=p_listing AND workspace_id=p_workspace AND claim_status IN('approved','verified')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;\n PERFORM zoi.workspace_invitation_email(false);END IF;\n RETURN actor;\nEND $function$\n",
+      "body_md5": "d5e39d01982e0a8103e71d2e296d28cd",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "basis": "Retained current authority fixture; bodies untouched."
+    },
+    {
+      "signature": "zoi.suite_current_session()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.suite_current_session()\n RETURNS void\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n",
+      "body_md5": "70cb927f126f251f229c450bf9f792e8",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ],
+      "basis": "Retained current authority fixture; bodies untouched.",
+      "volatility": "s"
+    }
+  ]
+}

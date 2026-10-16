@@ -1,0 +1,58 @@
+--- author/assets/suite/calendar.js
++++ root/assets/suite/calendar.js
+@@ -199,12 +199,12 @@
+       '.zk-ic{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;transition:.15s}',
+       '.zk-ic:hover{border-color:var(--acc);color:var(--acc)}',
+       '.zk-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}',
+-      '.zk-today{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk";cursor:pointer;transition:.15s}',
++      '.zk-today{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk",system-ui,sans-serif;cursor:pointer;transition:.15s}',
+       '.zk-today:hover{border-color:var(--acc);color:var(--acc)}',
+       '.zk-range{font-weight:800;font-size:16px;letter-spacing:.01em;min-width:150px}',
+       '.zk-sel{background:var(--bg3);border:1px solid var(--line);border-radius:10px;color:var(--tx);font:600 12.5px "Hanken Grotesk";padding:8px 11px;cursor:pointer;max-width:200px}',
+       '.zk-sel:focus{outline:none;border-color:var(--acc)}',
+-      '.zk-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk";cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}',
++      '.zk-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk",system-ui,sans-serif;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}',
+       '.zk-btn:hover{border-color:var(--acc);color:var(--acc)}',
+       '.zk-btn.pri{background:var(--acc);border-color:var(--acc);color:#06101f}',
+       '.zk-btn.pri:hover{color:#06101f;filter:brightness(1.05)}',
+@@ -1414,7 +1414,7 @@
+         '<button class="zk-btn danger" data-role="del"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Delete</button>';
+ 
+       if(protectedBusinessDraft(post)){
+-        ['edit','dup','rp7','rp30'].forEach(function(role){var button=m.foot.querySelector('[data-role="'+role+'"]');button.disabled=true;button.title='Business drafts stay private. Review destinations or edit in Composer.';});
++        ['edit','dup','rp7','rp30'].forEach(function(role){var button=m.foot.querySelector('[data-role="'+role+'"]');button.disabled=true;button.hidden=true;button.style.display='none';button.title='Business drafts stay private. Review destinations or edit in Composer.';});
+         m.body.querySelector('[data-role="savetime"]').disabled=true;
+       }
+ 
+@@ -1428,7 +1428,7 @@
+         destinationButton.addEventListener('click',async function(){
+           if(!scopeActive()||m.body.querySelector('[data-destination-review]'))return;
+           var host=doc.createElement('section');host.setAttribute('data-destination-review','');m.body.appendChild(host);
+-          try{var destinations=await import('/assets/studio/business-destination-review.mjs?v=20261015');if(scopeActive()&&host.isConnected)destinations.mountDestinationReview(host,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive,onPrepared:function(current){if(scopeActive()&&current&&current.id===post.id){post=current;toast('Saved as a Zoi Community draft. Nothing was sent.');}}});}
++          try{var destinations=await import('/assets/studio/business-destination-review.mjs?v=20261015');if(scopeActive()&&host.isConnected)destinations.mountDestinationReview(host,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive,onPrepared:function(current){if(scopeActive()&&current&&current.id===post.id){post=current;destinationButton.hidden=true;destinationButton.style.display='none';toast('Saved as a Zoi Community draft. Nothing was sent.');}}});}
+           catch(error){if(scopeActive()&&host.isConnected)host.textContent='Destination review could not load. Your saved draft is unchanged. Reopen this post to try again.';}
+         });
+       }
+--- author/assets/studio/business-destination-review.mjs
++++ root/assets/studio/business-destination-review.mjs
+@@ -67,7 +67,7 @@
+  function destroy(){if(ended)return;ended=true;clearInterval(timer);workflow.releaseCopy();host.replaceChildren();context=null;}
+  const timer=setInterval(()=>{if(!live())destroy();},250);
+  function render(message=''){
+-  if(!live())return;host.replaceChildren();host.append(el('h3',context?.stage==='reviewed'?'Saved Community draft':'Review destinations'),el('p','This saved post stays a draft. Nothing is scheduled or sent.'));
++  if(!live())return;host.replaceChildren();host.append(el('h3',context?.stage==='reviewed'?'Zoi Community draft':'Review destinations'),el('p',context?.stage==='reviewed'?'Saved privately. Not scheduled or published.':'Choose where to prepare this draft. Nothing is scheduled or sent.'));
+   if(message){const p=el('p',message);p.setAttribute('role','status');host.append(p);}
+   let pending;try{pending=workflow.pending();}catch(e){host.append(el('p',e.message));return;}
+   const button=(label,fn)=>{const b=el('button',label);b.type='button';b.className='zk-btn zc-btn';b.disabled=busy;b.onclick=()=>act(fn);host.append(b);};
+@@ -75,9 +75,9 @@
+   if(context?.stage==='private'){
+    if(!context.source_current){host.append(el('p','Published business details changed. Reopen the private draft and review the current details.'));return;}
+    button('Prepare Zoi Community draft',()=>workflow.prepare(context));
+-  }else if(context?.stage==='reviewed')host.append(el('p','This business draft is ready to edit in Composer. Save your changes there. Publishing and scheduling are not available yet.'));
++  }else if(context?.stage==='reviewed')host.append(el('p','Edit this draft in Composer. Publishing and scheduling are not available yet.'));
+  }
+- async function act(fn){if(busy||!live())return;busy=true;render('Checking the saved draft…');try{const result=await fn();if(!live())return;if(result.state==='saved'){context=await workflow.context();if(!live())return;if(context.stage!=='reviewed'||!context.source_current){render('The saved result is recorded, but current business details need review. Reopen the draft from Calendar before editing.');return;}await onPrepared(context.post,result);if(!live())return;render(result.current_matches_snapshot?'Saved as a Zoi Community draft. Nothing was sent.':'The original review was saved; this post has since changed. Its current version is shown.');}else if(result.state==='cancelled'){context=await workflow.context();render('The unsaved review was cancelled. Your saved post is unchanged. You can edit its image or text before reviewing destinations again.');}else{if(result.state==='removed')context=null;render(result.state==='removed'?'This saved post was removed. It was not recreated.':'No saved result is confirmed yet. Retry the original review.');}}catch(e){if(live()){if([401,403].includes(Number(e.status))||/not_authorized|insufficient_permission|suite_session_unavailable|no_access_to/.test(String(e.message))){destroy();return;}render(destinationError(e));}}finally{busy=false;if(live())for(const b of host.querySelectorAll('button'))b.disabled=false;}}
++ async function act(fn){if(busy||!live())return;busy=true;render('Checking the saved draft…');try{const result=await fn();if(!live())return;if(result.state==='saved'){context=await workflow.context();if(!live())return;if(context.stage!=='reviewed'||!context.source_current){render('The saved result is recorded, but current business details need review. Reopen the draft from Calendar before editing.');return;}await onPrepared(context.post,result);if(!live())return;render(result.current_matches_snapshot?'Destination saved.':'The original review was saved; this post has since changed. Its current version is shown.');}else if(result.state==='cancelled'){context=await workflow.context();render('The unsaved review was cancelled. Your saved post is unchanged. You can edit its image or text before reviewing destinations again.');}else{if(result.state==='removed')context=null;render(result.state==='removed'?'This saved post was removed. It was not recreated.':'No saved result is confirmed yet. Retry the original review.');}}catch(e){if(live()){if([401,403].includes(Number(e.status))||/not_authorized|insufficient_permission|suite_session_unavailable|no_access_to/.test(String(e.message))){destroy();return;}render(destinationError(e));}}finally{busy=false;if(live())for(const b of host.querySelectorAll('button'))b.disabled=false;}}
+  render('Reading the saved draft…');workflow.context().then(value=>{if(live()){context=value;render();}}).catch(e=>{if(live())render(destinationError(e));});
+  return {destroy,workflow,refresh:()=>render()};
+ }

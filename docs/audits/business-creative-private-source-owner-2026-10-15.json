@@ -1,0 +1,354 @@
+{
+  "schema": 1,
+  "at": "2026-10-15T22:54:37.269600+00:00",
+  "status": "frozen_source_candidate_local_pass_requires_independent_and_actual_gate",
+  "baseline": "7d5e0a9b4f4c3fddbc9380d22fd19f3fbb9e606a",
+  "manifest": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/source-manifest.json",
+  "manifest_sha256": "9e5f46e940384b71f59a0f0c35a6b3b639ca0260f279540874088180d97323f8",
+  "problem": "Canonical business creative source was public-only. Hidden unpublished owner fixtures and legitimate active private drafts could not supply a source, while pretending they were published would bypass actual acceptance.",
+  "result": "New authenticated owner source getter and one read-only current source assembler support explicit owner_private_draft alongside unchanged published_reference. Existing canonical private creative, Raster and destination flows share the same source snapshot. No public visibility rule, content store, preview receipt or Auth/session authority is changed.",
+  "ownership": [
+    {
+      "path": "assets/studio/business-creative.mjs",
+      "sha256": "96f299b899e29b09d27ff551ab4c5f784abcb53613b5fbe02aadece710435eec",
+      "bytes": 23149
+    },
+    {
+      "path": "supabase/migrations/20261015222952_business_creative_owner_private_source.sql",
+      "sha256": "eecead7ca345d23745ddf06524abdbef5f81f39d63f2f9368ac9b737d5fac3ab",
+      "bytes": 59127
+    },
+    {
+      "path": "tests/database/business-creative-private-source.integration.mjs",
+      "sha256": "5499d4f23ae6ebfa91cc2fe9a0bee8fe97547bce8ed947332995805e7dad260c",
+      "bytes": 26883
+    },
+    {
+      "path": "tests/database/fixtures/business-creative-private-source-live.json",
+      "sha256": "1d2c81608b1418e54d2c9ef6ca895646a34df3a29fcd0a81a3a7f4a5ba290765",
+      "bytes": 21268
+    },
+    {
+      "path": "tests/unit/business-creative-private-source.test.mjs",
+      "sha256": "8c24fe44321011e940f982fccff8ca14d4720c8e5f94b14cf8fb9b4505efcefa",
+      "bytes": 5131
+    },
+    {
+      "path": "tests/database/business-creative-browser.mjs",
+      "sha256": "4a8874ed8021c0733b032709c9f03219321beaeae7a74390e577e2fa8af735af",
+      "bytes": 18686
+    },
+    {
+      "path": "tests/database/studio-raster-browser.mjs",
+      "sha256": "7755cd8a8dc7568d1b6d85fb5e364c7753d9ebfccd01ea7f40f2235f5e7ff632",
+      "bytes": 15049
+    },
+    {
+      "path": "tests/database/business-destination-review.browser.mjs",
+      "sha256": "da447d7c7a36038c1f2d62a57eca9cb34457fd6d413cf6e3f275a070b44c9aa1",
+      "bytes": 14210
+    }
+  ],
+  "author_actions": {
+    "actual_db_queries": 0,
+    "actual_ddl": 0,
+    "auth": 0,
+    "workflow_activation": 0,
+    "provider_calls": 0,
+    "adb_or_builds": 0,
+    "new_dependency_installs": 0
+  },
+  "contracts": {
+    "new_functions": [
+      "zoi.business_creative_current_entity(uuid,uuid)",
+      "zoi.business_creative_current_source(uuid,uuid)",
+      "public.business_creative_source_get(uuid,uuid)"
+    ],
+    "source_recomputations_changed": [
+      "zoi.business_creative_receipt",
+      "public.business_creative_draft_save",
+      "public.business_creative_draft_get",
+      "zoi.studio_render_context",
+      "zoi.studio_media_insert_allowed",
+      "zoi.business_creative_destination_context",
+      "public.business_creative_destinations_recover"
+    ],
+    "additional_marker_only_function": "public.business_creative_render_save",
+    "projection_extension": "zoi.business_creative_project_layer adds _creative_source only when present; no field in existing published schema1 projections",
+    "source_type": "Server-authenticated envelope published_reference/owner_private_draft. Private sources retain actual draft/hidden values; no renderer published flags. Private eligible branch is draft +clean/cleared only; archived/other unavailable states refuse.",
+    "owner_snapshot": "Read-only assembler mirrors exact captured canonical bizpage_get/home_content_get-before-revision values, lease/_coverage removal and actual public_owner_content markers. Staged draft base/profile/removals/media match exact captured home_revision_preview_data composition, without invoking preview or changing its receipt.",
+    "generation": "Private binding includes exact workspace/listing, canonical content version, home revision baseline, staged flag/revision and revision baseline; current identity/visibility/source holds are in the bounded projection. Published projection/input equality remains unchanged.",
+    "locks": "Authenticated getter uses existing assert/current-owner/home_content_get/session locks and rechecks. Read-only assembler and Storage source permission take no row/advisory locks. Existing listing-first final canonical consume rechecks source+session; earlier upload permission alone is not atomic owner-context authority.",
+    "isolation": "Private assembler refuses unsupported snapshot isolation before returning purported current private state. Published branch behavior unchanged.",
+    "recovery": "Known stale/invalid/oversized private revision cannot authorize a write. Current-source helper returnsNULL only for this finite error set so an authorized historical receipt remains saved/currentfalse. Unknown SQL, current authority and unsupported isolation errors still raise.",
+    "markers": "Private references emit owner_private_business_reference; private rendered output emits owner_private_business_image_composition. Published marker values unchanged. All consumers use immutable request/listing/source hash/key-presence authority, not a published-kind string.",
+    "guards": "CLI-created migration20261015222952 with BEGIN/COMMIT,postgres-only,1slock/5sstatement,24 exact prior function body/owner/ACL/config/volatility guards; current home_designs owner/ACL/RLS/12column type/nullability checks; no schema/store/policy/body rewrites outside nine approved source/marker/projection functions.",
+    "unchanged": [
+      "public.home_entity",
+      "public.seo_entity",
+      "private/public home preview writers",
+      "canonical home_content_get/save/revision lifecycle",
+      "social_save_post",
+      "existing Auth/session helpers",
+      "Storage policies/object tuple/byte proof/asset writer/cleanup authority",
+      "append-only business creative/media ledgers",
+      "finite runtime policies/workflows"
+    ]
+  },
+  "validation": {
+    "focused": 43,
+    "pg_groups": 42,
+    "pg_new_groups": 21,
+    "pg_inherited_groups": 21,
+    "mounted_groups": 27,
+    "mounted_published_creative": 12,
+    "mounted_owner_private_creative": 2,
+    "mounted_destination": 4,
+    "mounted_raster": 9,
+    "total_grouped_executions": 69,
+    "assertion_counter": 106,
+    "full_gate": "PASS on final exact8source paths",
+    "syntax_diff": "PASS",
+    "test_environment": "Disposable PostgreSQL16 + actual retained canonical definitions/AuthSID checks + controlled current Auth/public auxiliary readers/Storage byte transport. No real production Auth or provider. Private branch uses actual owner snapshot functions and actual public home_entity NULL gate, not a fake eligible public business.",
+    "shutdown": "Final integration stopped and removed its private PG15955 cluster in finally.",
+    "named_cases": [
+      "Published response/projection/immutable old receipt bytes preserved; legacy composed draft remains current",
+      "Actual hidden owner getter/JS-SQL private projection; no anonymous source",
+      "Valid viewer SID, anon/service/foreign workspace and repeatable-read denial",
+      "Private canonical create/get/receipt/replay and same-row Community draft prepare/edit/recovery",
+      "Forged private facts/type/generation refused before receipt",
+      "Actual base null/empty/replacement clears, source holds and explicit owner copy precedence",
+      "Staged null/removal preview parity, no preview mutation by getter, source generation and stale baseline hold",
+      "Two-backend owner edit/publication/visibility/transfer/member revocation/revision-generation waits refuse stale writes",
+      "Private Raster original/output object proof and private marker; changed private object version race refuses final consume",
+      "Storage INSERT150ms while listing held proves no reverse listing lock; final consume later source edit refuses",
+      "Published and private actual Composer save/edit/reopen; committed response losses; account/SID/workspace disposal; Calendar and image editor regression gates"
+    ]
+  },
+  "preserved_development_findings": [
+    "Local fixture SQL whitespace/default count/role and valid-viewer SID expectations corrected; all original failure logs retained.",
+    "Mounted copy recheck initially passed selected object with listing rather than business id; real browser timeout and screenshot retained, corrected canonical identity argument.",
+    "Generated private mounted helper initially imported Playwright from data URL, corrected file-backed module path without browser/runtime change.",
+    "Expected concurrent refusal promise initially attached assertion too late and caused Node unhandled rejection; immediate assertion now preserves and verifies actual canonical refusal."
+  ],
+  "remaining": [
+    "Independent source/isolated acceptance and root actual metadata/rollback/schema/web release still required.",
+    "Real authenticated owner-private browser QA harness is the next source packet; no production positive owner journey is claimed.",
+    "Root must separately reactivate the exact archived hidden QA fixture with current CAS/history guards, then archive it after the bounded run. No synthetic published listing.",
+    "Root-only QA plan is copy-only3positive intents(create/prepare/edit),one stale-version refusal,0sends/uploads/provider actions and exact canonical synthetic cleanup. It is not activated here.",
+    "Destination panel inherited copy can still refer to published details on a source change; parent owns its separate presentation delta, no editing/authority bypass claimed.",
+    "Native destination editor and real publication/provider delivery are outside this draft-only packet; unchanged legacy generic server writer remains separate scope."
+  ],
+  "evidence_count": 41,
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/derived-private-browser.mjs",
+      "sha256": "a386d46f8be049d7d230b90aa5aea85c16f2f730fdd7b35adf325b420639b466",
+      "bytes": 11854
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/1440-prepared.png",
+      "sha256": "8ba6bd79b11102e2db53385648edc87ec13c2a856e9034f431f5079764cf0e3c",
+      "bytes": 120495
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/1440-reopened.png",
+      "sha256": "c4026fd5fa56215edcfe75e3525df4cc33c024ba66e78d5ca29a08d58da296c9",
+      "bytes": 363965
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/390-media-refusal.png",
+      "sha256": "248881be984b21fdd678d6e7cd8741f49ec147be7d23d148170a034506182054",
+      "bytes": 62996
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/390-prepared.png",
+      "sha256": "5350d28a87bba25cc37a6945c92951fa559dd3a1bfd1fd102a87b7efb7d53aeb",
+      "bytes": 58621
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/390-reopened.png",
+      "sha256": "e7f6f60b65fbc6122510b7b6982c6331777135e919750db2ab134e47289e1bb4",
+      "bytes": 334169
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/390-source-changed-recovery.png",
+      "sha256": "661fda1fac04beb19537b645c407309db5f365d58d4f1771cbed686f6844583d",
+      "bytes": 60176
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/destination-browser/destination-browser/results.json",
+      "sha256": "049249c7afe789c9a71732e4d8cfe61c11bf64216668fd54d7617d1a79b051e0",
+      "bytes": 19418
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-browser/browser/reopened-1440.png",
+      "sha256": "58b7f58ea498490beb852510aae09a5abb6690c56a4a85c148763c40a4cf6342",
+      "bytes": 364757
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-browser/browser/reopened-390.png",
+      "sha256": "1a55d6c892d226b3636f5792f19df21cb671e2204cefc8dbde99fccfc193e560",
+      "bytes": 332295
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-browser/browser/results.json",
+      "sha256": "4f56ec57dedd4396ea3f94d376aecc4697e7c519a1b8246b7a27ccd534a73ed9",
+      "bytes": 666
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-browser/browser/selected-source-1440.png",
+      "sha256": "ccfa724b8a373ceb4a0fe43318fbcec98e9352d1ab810619d8f62a11c9099ebe",
+      "bytes": 347709
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-browser/browser/selected-source-390.png",
+      "sha256": "25ce9cff68ad04337275f2ce683f9f1358a3e64795c795c7c553e6d44bd54240",
+      "bytes": 313302
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-source-function-contracts.json",
+      "sha256": "52c378bea087351a18e1f416714f2fbdc2c017dc259db78e5cd973252a2378ca",
+      "bytes": 6765
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/private-source-results.json",
+      "sha256": "92dca600fef8515048fcbf6d13afaac69b4471ad69191901d23c37fdc57bb939",
+      "bytes": 12588
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/published-browser/browser/reopened-1440.png",
+      "sha256": "55400ccb8ae92c5c710896059ef198ce65e213bf83ed94d41a3f1385da65831d",
+      "bytes": 363709
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/published-browser/browser/reopened-390.png",
+      "sha256": "7d79da821f65f862415fa3e6f8c7144a1407f961dbd29c617b9771f99fd104af",
+      "bytes": 331440
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/published-browser/browser/results.json",
+      "sha256": "245a6d07af2bb41b6745eb43fe0a2b6b53ed29e99e851e9f5d004e7b9cbeacc3",
+      "bytes": 2141
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/published-browser/browser/selected-source-1440.png",
+      "sha256": "a9e20fa61f9d269ff43ff05610035bb1ac27ab10490d8090ad437a3673d444de",
+      "bytes": 346374
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/published-browser/browser/selected-source-390.png",
+      "sha256": "77394965a93c632fdbc513b6ab9179198cbb2ff45162720597497b4fd5aace2d",
+      "bytes": 311532
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/raster-browser/mounted/layout-1440.png",
+      "sha256": "baee7aff8fcbafc0823e452ed1e6ea2f6253b372671aa502c2069924dd3de7cf",
+      "bytes": 366388
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/raster-browser/mounted/layout-390.png",
+      "sha256": "9642e5e09cfddbfe5be8c854f956e6fa298ca201ecf5adc61d838928c66575bd",
+      "bytes": 329157
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/final/raster-browser/mounted/results.json",
+      "sha256": "070530d4b91b408852f4493af533488193ccbc5e7114ef00e8bf861137289642",
+      "bytes": 2050
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/focused-final.log",
+      "sha256": "6e7c777a7938f80ec29e638f1422b55b1df63b7b056146cb605db2e855b763c1",
+      "bytes": 4596
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/source-frozen-final.log",
+      "sha256": "3fdeedfbb558918ab13044ac60180c316d4e58db29b48e8fa248862152f18b73",
+      "bytes": 8397
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-initial-fixture-syntax.log",
+      "sha256": "e09ae020fb11bd1ac7272e0f69b6cbb52c2e272b11917ea4a94b201ad60a8442",
+      "bytes": 5070
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-guard-syntax.log",
+      "sha256": "fd78e5d6c69ff181a52ba367c62bcba340477d6f81cc6afd6f876094feb3dda8",
+      "bytes": 50135
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-viewer-denial.log",
+      "sha256": "dde991da2e6bae09e99d3347a972feb90a162543306e632500a95a7d6b8fa0e1",
+      "bytes": 6886
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-rollback-role-fixture.log",
+      "sha256": "1c1911a66f1e99f40f440cffb85c0c1ba67453f365b7f2cb88ae6636b9baefb8",
+      "bytes": 54459
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-catalog-count-fixture.log",
+      "sha256": "57a7d83da15f7979c376aeaf285db85aa66151345e3cdb5a61a4e4b65618eac0",
+      "bytes": 54498
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-mounted-copy-identity-failure.log",
+      "sha256": "6b1ef0bf60cbfdf64a74c57840256f3af7320fe766f92c729a8d287cc7e4b1a1",
+      "bytes": 5312
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-private-helper-import-fixture.log",
+      "sha256": "709e1174c1ebf3d6fb695ba67d8012d6da211ce4ea2a96364dc00e52b034c169",
+      "bytes": 33336
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/pg-expected-refusal-unhandled-fixture.log",
+      "sha256": "005e4ed420b2e5aa0c8a4b7fc75fb645f36ee56aa562f0f44257fd1611fde130",
+      "bytes": 9990
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/build.py",
+      "sha256": "1717df658ddf6f8acdf4cb90e3adcc1d9fdc54f63e4d166b0b8ef6003e368b13",
+      "bytes": 14605
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/actual-catalog/root-private-source-contracts.json",
+      "sha256": "4a3e607ab08367b0e77972b28df06b2ecd927b52381a55c7e1515d9499680536",
+      "bytes": 4794
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/actual-catalog/root-private-source-additional-contracts.json",
+      "sha256": "d6557287855236c6f60d5e65508cfa7e87d46d4809fde9ed41371d7fab04bf07",
+      "bytes": 8753
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/copy-recheck-failure/failure.html",
+      "sha256": "302c99ba9359666b7222550578cf2c35d423336698e5f84df361b1cdf5274984",
+      "bytes": 31666
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/history/copy-recheck-failure/failure.png",
+      "sha256": "09e1d0d77cf031cc37f5370fd4f012cf27ea00f73b5d9e31aeb14a1c4fbef382",
+      "bytes": 310037
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/README.md",
+      "sha256": "1b53530b64c11c88ef7681dc27cad304edd79a305c1ae1b9951e141a530dc8f6",
+      "bytes": 1519
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/approved-existing-paths.patch",
+      "sha256": "1063b9b784d43798257f0c10c4d2375e8fa8aec6a8234ee369db7171d68abd42",
+      "bytes": 59400
+    },
+    {
+      "path": "docs/audits/evidence/business-creative-private-source-owner-2026-10-15/accepted-basis/business-destination-review.browser.mjs",
+      "sha256": "dede5e1aaf30a884e4dac2d4482a5f3de24900a17677c7aa42b4bf178953fdd0",
+      "bytes": 14069
+    }
+  ],
+  "commands": {
+    "focused": "node --test tests/unit/business-creative-private-source.test.mjs tests/unit/business-creative.test.mjs tests/unit/business-destination-review.test.mjs tests/unit/studio-raster-workflow.test.mjs",
+    "full_local": "ZOI_PRIVATE_SOURCE_BROWSER=1 ZOI_STUDIO_RASTER_EVIDENCE=/ABS/UNIQUE PGPORT=15956 node tests/database/business-creative-private-source.integration.mjs"
+  }
+}

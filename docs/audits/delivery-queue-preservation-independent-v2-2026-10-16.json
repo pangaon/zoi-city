@@ -1,0 +1,62 @@
+{
+  "schema": 1,
+  "reviewer": "/root/qa_next",
+  "date_utc": "2026-10-16",
+  "status": "ACCEPTED_SOURCE_QUEUE_V2_NO_ACTUAL_BOARD_WRITE",
+  "supersedes_finding_in": {
+    "path": "/workspaces/zoi-city-release/docs/audits/delivery-queue-preservation-independent-2026-10-16.json",
+    "sha256": "564f88b49d62268bb2db106c84f7c1a2f2319e2c883b7c222c1f17b917305716",
+    "bytes": 3615
+  },
+  "source_root": "/workspaces/zoi-map-studio-ops-release",
+  "sources": [
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/scripts/delivery/queue.mjs",
+      "sha256": "e2c8826c2fb33c86f48cc55c8f5f44bca7bd399e1d7a9cd2505c0603a5b386d3",
+      "bytes": 11044
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/unit/delivery-queue.test.mjs",
+      "sha256": "e5a7fffc438889e7e6e4df7fb69fb1c70601cce56e2f3379059d69a073cff037",
+      "bytes": 10214
+    }
+  ],
+  "owner_audit": {
+    "path": "/workspaces/zoi-map-studio-ops-release/docs/audits/delivery-queue-preservation-owner-v2-2026-10-16.json",
+    "sha256": "4928321bd60a13dfd687a7f9ee44afebc67462a293e65b0c3d74743c10a2340b",
+    "bytes": 4589
+  },
+  "delta": "One runtime condition now initializes scope_change only when absent. Two test hunks seed retained reviewer/evidence and assert exact scope_change on addition plus current derived count. No other runtime difference from held V1.",
+  "verification": {
+    "focused_tests": {
+      "pass": 7,
+      "fail": 0
+    },
+    "previous_failing_additive_probe": "PASS: all existing scope_change reason/evidence/reviewer/custom fields retained exactly, including explicit null/empty/object/array values. Appended requirement still increments derived scope_statement_count.",
+    "actual987": "All987 actual existing rows/order/value and every nonderived existing top-level field preserved; three actual input hashes unchanged. Pure in-memory call only.",
+    "identity_and_file_refusal": "Removal/duplicate/malformed/reused text/source IDs refuse. Temp CLI preserves prior exact bytes on refusal, file mode and no temporary leftovers.",
+    "syntax": "node --check passed"
+  },
+  "evidence": [
+    {
+      "path": "/workspaces/zoi-city-release/docs/audits/evidence/delivery-queue-preservation-independent-v2-2026-10-16/focused.log",
+      "sha256": "81ef348516effa2a8589addabf605d9fecf2e1510cac5574275132ed62d91a2d",
+      "bytes": 956
+    },
+    {
+      "path": "/workspaces/zoi-city-release/docs/audits/evidence/delivery-queue-preservation-independent-v2-2026-10-16/probe.mjs",
+      "sha256": "06daddfee28b19f593ec43c37b1bfe19183b5a6abc36f8bdf60ef9215e429399",
+      "bytes": 2924
+    },
+    {
+      "path": "/workspaces/zoi-city-release/docs/audits/evidence/delivery-queue-preservation-independent-v2-2026-10-16/result.json",
+      "sha256": "dc7e274f253d2851a1e1c1c096227d2df98fc8caa7bcc37b58dddad746da6754",
+      "bytes": 1132
+    }
+  ],
+  "limits": [
+    "No actual board generator invocation/write, source edits, DB/Auth/provider/deployment/device actions.",
+    "Observed concurrency check is not an external-editor filesystem CAS; one coordinated writer remains required.",
+    "Source acceptance only, no new customer feature/requirement declared complete."
+  ]
+}

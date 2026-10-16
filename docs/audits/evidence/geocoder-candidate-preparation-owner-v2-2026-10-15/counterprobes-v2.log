@@ -1,0 +1,149 @@
+[
+  {
+    "probe": "distinct lexical address collision",
+    "input": [
+      "102 Avenue Ⅳ",
+      "102 Avenue IV"
+    ],
+    "queries": 2,
+    "proposals": 1,
+    "output_addresses": [
+      null,
+      "102 Avenue IV"
+    ],
+    "authority": "none"
+  },
+  {
+    "probe": "distinct lexical address collision",
+    "input": [
+      "102 Straße Road",
+      "102 STRASSE Road"
+    ],
+    "queries": 2,
+    "proposals": 1,
+    "output_addresses": [
+      null,
+      "102 STRASSE Road"
+    ],
+    "authority": "none"
+  },
+  {
+    "probe": "distinct lexical address collision",
+    "input": [
+      "102 A.B Road",
+      "102 AB Road"
+    ],
+    "queries": 2,
+    "proposals": 1,
+    "output_addresses": [
+      null,
+      "102 AB Road"
+    ],
+    "authority": "none"
+  },
+  {
+    "probe": "source hold classification",
+    "input": {
+      "source_context": {
+        "last_error": "source_scope_mismatch"
+      }
+    },
+    "eligible": 0,
+    "excluded": [
+      {
+        "job_id": "40000000-0000-4000-8000-000000000001",
+        "listing_id": "30000000-0000-4000-8000-000000000001",
+        "reason": "source_identity_or_scope_hold"
+      }
+    ]
+  },
+  {
+    "probe": "source hold classification",
+    "input": {
+      "profile": {
+        "_enrich": {
+          "last_error": "source_identity_mismatch"
+        }
+      }
+    },
+    "eligible": 0,
+    "excluded": [
+      {
+        "job_id": "40000000-0000-4000-8000-000000000001",
+        "listing_id": "30000000-0000-4000-8000-000000000001",
+        "reason": "source_identity_or_scope_hold"
+      }
+    ]
+  },
+  {
+    "probe": "source hold classification",
+    "input": {
+      "source_context": {
+        "source_identity": {
+          "verification": "rejected_mismatch"
+        }
+      }
+    },
+    "eligible": 0,
+    "excluded": [
+      {
+        "job_id": "40000000-0000-4000-8000-000000000001",
+        "listing_id": "30000000-0000-4000-8000-000000000001",
+        "reason": "source_identity_or_scope_hold"
+      }
+    ]
+  },
+  {
+    "probe": "source hold classification",
+    "input": {
+      "source_context": {
+        "identity_scope": "foreign_branch"
+      }
+    },
+    "eligible": 0,
+    "excluded": [
+      {
+        "job_id": "40000000-0000-4000-8000-000000000001",
+        "listing_id": "30000000-0000-4000-8000-000000000001",
+        "reason": "source_identity_or_scope_hold"
+      }
+    ]
+  },
+  {
+    "probe": "source hold classification",
+    "input": {
+      "source_context": {
+        "crawl_status": "review_required"
+      }
+    },
+    "eligible": 0,
+    "excluded": [
+      {
+        "job_id": "40000000-0000-4000-8000-000000000001",
+        "listing_id": "30000000-0000-4000-8000-000000000001",
+        "reason": "source_identity_or_scope_hold"
+      }
+    ]
+  },
+  {
+    "probe": "redirect response origin",
+    "input": {
+      "status": 302,
+      "url": "https://untrusted.example/redirect"
+    },
+    "state": "provider_response_held",
+    "proposals": 0,
+    "production_authority": false
+  },
+  {
+    "probe": "redirect response origin",
+    "input": {
+      "status": 200,
+      "url": "https://untrusted.example/redirect",
+      "redirected": true
+    },
+    "state": "unknown_provider_outcome",
+    "proposals": 0,
+    "production_authority": false
+  }
+]

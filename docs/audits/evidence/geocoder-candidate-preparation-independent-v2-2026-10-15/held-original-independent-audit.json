@@ -1,0 +1,304 @@
+{
+  "schema_version": 1,
+  "at": "2026-10-15T22:23:32.070958+00:00",
+  "outcome": "HELD \u2014 original frozen source packet is NOT independently accepted. Four narrow defects/proof problems reproduced; default network remains disabled and no actualpoint/provider accepted.",
+  "reviewer": "owner_next",
+  "worktree": "/workspaces/zoi-geocoder-candidate-independent",
+  "review_base": "7d5e0a9b4f4c3fddbc9380d22fd19f3fbb9e606a",
+  "owner_source_base": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+  "owner_audit_sha256": "f1360b3d1c4644f543286330c0ce5771a9fe9b219de5cd2e5703dc829c93299f",
+  "owner_manifest_sha256": "54a4adebcfbf3659c44a0c8f834bd23b18e1cbe460ac90b16d9f9a5ebf6c2a09",
+  "source_pins": [
+    {
+      "path": "scripts/geography/census-address-candidate.mjs",
+      "sha256": "2cf9f492b478d9fd70341b32449d2772466437e9f9c1d83bb75a6dacf137df49",
+      "bytes": 15968
+    },
+    {
+      "path": "scripts/geography/geocoder-candidate-adapter.mjs",
+      "sha256": "8bc300193dc59430996221b9335f4518bfa7f854a84ada7253c8798cc302b1a1",
+      "bytes": 3905
+    },
+    {
+      "path": "tests/unit/geography-geocoder-candidate.test.mjs",
+      "sha256": "3ac8ee08c2801000e1999397c5f29301a69fa286a3c75fdacbb2045b72bb20f0",
+      "bytes": 18473
+    },
+    {
+      "path": "scripts/delivery/sync.mjs",
+      "sha256": "c3cbbdb51c6772ea7380c1f422fea3b676940500407e8e4c003b314b1e45f0a2",
+      "bytes": 13970
+    }
+  ],
+  "readonly_dependency_pins": [
+    {
+      "path": "assets/enrichment/association-cards.mjs",
+      "sha256": "70e9ba6789062261a62c6c88c86920eb6831b308c087fc27f52912d0327dfce6",
+      "bytes": 3175
+    },
+    {
+      "path": "assets/enrichment/member-source.mjs",
+      "sha256": "5eadd023639ff732baa32273df3d44db374a64b378624264b5479ab2c0fb3c2d",
+      "bytes": 10422
+    },
+    {
+      "path": "docs/recovery-release-evidence.json",
+      "sha256": "adda668627506e496688ba8001b4e77e9fa4afea4fddfc0afc539eb09b03aa45",
+      "bytes": 36600
+    },
+    {
+      "path": "scripts/geography/map-reference-evidence.mjs",
+      "sha256": "995ca57d8783149ff934cca27242bd09109ea8df81a447977eba47d1b81d3646",
+      "bytes": 5447
+    },
+    {
+      "path": "scripts/geography/place-destination-evidence.mjs",
+      "sha256": "5bb3c39c6482057274253c8d2de750188ff832c4415b154ed5ce89f3fb55b749",
+      "bytes": 6834
+    },
+    {
+      "path": "scripts/geography/reviewed-coordinate-request.mjs",
+      "sha256": "44b98defead37040af8749bc2733228a28a6ecc5e21f43cdbfd34a9ecd2ba7aa",
+      "bytes": 5102
+    },
+    {
+      "path": "scripts/geography/reviewed-place-evidence.mjs",
+      "sha256": "6ad21b5e72e43922492550ab06eab797a3df6ccc741e0c4bd7616acba6284d87",
+      "bytes": 18435
+    },
+    {
+      "path": "scripts/geography/reviewed-wix-coordinate-request.mjs",
+      "sha256": "d4ff0edc2b650731349ea8a5e520652aa01f55e6d148f0c692f6ee3a93e73e18",
+      "bytes": 20979
+    },
+    {
+      "path": "scripts/geography/source-coordinates.mjs",
+      "sha256": "63f9d019257dd214f5da51e6563555266246fafeb9bfc3babd89e7f89019cb04",
+      "bytes": 21251
+    },
+    {
+      "path": "scripts/geography/wix-business-location-evidence.mjs",
+      "sha256": "84901f9966d27b3d9206fd935901d913bc9c57f3ab31ec0a052d86923173d053",
+      "bytes": 18152
+    },
+    {
+      "path": "scripts/quality/evidence.mjs",
+      "sha256": "29217d7a2aa3304f5572b1e64fd4f87db41da0388496111e369ccbb946c55ee9",
+      "bytes": 5510
+    },
+    {
+      "path": "scripts/release-backend.mjs",
+      "sha256": "bf846d801c3c7a77440165d2a5e6b83dfc128ab1ee012b74202dad0a97c8da0a",
+      "bytes": 11089
+    },
+    {
+      "path": "supabase/functions/zoi-enrich/_document-quality.js",
+      "sha256": "28d4bec4ac6fed885299744149518dfb6c61eb776ab6796b9c43aab43190aa06",
+      "bytes": 2437
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "79a57067e70cfef73dc1dc5a3cdaffefe2ccbf2c4f12efcd6de47a0a92594108",
+      "bytes": 9576
+    }
+  ],
+  "verification": {
+    "focused": {
+      "tests": 51,
+      "pass": 51,
+      "fail": 0,
+      "skipped": 0,
+      "command": "node --test tests/unit/delivery-inventory.test.mjs tests/unit/delivery-sync-bounded.test.mjs tests/unit/geography-geocoder-candidate.test.mjs tests/unit/reviewed-coordinate-request.test.mjs"
+    },
+    "source_hashes": {
+      "owned": 4,
+      "readonly": 14,
+      "owner_evidence": 24,
+      "all_exact_before_after": true
+    },
+    "owner_action_only_complete_source_reversal": true,
+    "tested_boundaries": [
+      "UTF8/CSV quoting and malformed/truncated/duplicate/missing/unknownID/ordering inputs",
+      "UScoordinate numericbounds includingNaN/swapped/zero/malformed",
+      "NoMatch/Tie and wrongstreet/city/stateZIP\u2192no point",
+      "fingerprint/sourcegeneration/jobaddress/freshness/owner/public holds",
+      "unknownHTTP/lostresponse/timeouts/streamcaps preserve allowance/noautomaticretry",
+      "all10testedfamilies complete+sparse; websiteNULLeligible",
+      "default0dispatch/nobuiltinfetch/env/DB/writer and Mapbox/OpenCageunadmitted",
+      "candidateprecisionstreet_interpolated/writerfalse/venuefalse neverpublicapply"
+    ]
+  },
+  "findings": [
+    {
+      "id": "GCP-C1",
+      "severity": "blocking candidate integrity",
+      "path": "scripts/geography/census-address-candidate.mjs",
+      "line": 16,
+      "problem": "NFKC, Unicode uppercase expansions and global period removal merge distinct lexical addresses before query and treat the resulting match as exact comparison.",
+      "reproduced_pairs": [
+        [
+          "102 Avenue \u2163",
+          "102 Avenue IV"
+        ],
+        [
+          "102 Stra\u00dfe Road",
+          "102 STRASSE Road"
+        ],
+        [
+          "102 A.B Road",
+          "102 AB Road"
+        ]
+      ],
+      "actual": "Eachpair givesonequery andtwo proposals; both proposed.address values copytheFIRST inputaddress. This exceeds the stated terminal-road-suffix comparison and explicit no-broadcasefold boundary.",
+      "required": "Narrow explicit comparison rules; do not merge lexicalUnicode/punctuation variants or choose an alias automatically. Preserve each listing exact canonicalinput identity. Retain benign ASCIIcase/spacing/specific terminalsuffix handling onlyif explicitlydefined; changed names/directions hold."
+    },
+    {
+      "id": "GCP-C2",
+      "severity": "blocking provenance contract",
+      "path": "scripts/geography/geocoder-candidate-adapter.mjs",
+      "line": 24,
+      "problem": "An explicitly redirected status200 response with foreign finalURL is accepted as Census evidence.",
+      "actual": {
+        "status": 200,
+        "redirected": true,
+        "url": "https://untrusted.example/redirect",
+        "state": "candidate_review_required",
+        "proposals": 1,
+        "source_endpoint": "https://geocoding.geo.census.gov/geocoder/locations/addressbatch"
+      },
+      "control": "302 is held/no candidates. Default disabled path still0calls; this is injected mockcontract, not an actualnetworkredirect vulnerability/deployment.",
+      "required": "ExplicitresponsefinalURL andredirectmembership validation before assigningprovider provenance; exact fixedorigin/path identity, no silentfollowuptransport. Futureactualtransport stillrequiresseparateadmission."
+    },
+    {
+      "id": "GCP-C3",
+      "severity": "blocking held-context classification",
+      "path": "scripts/geography/census-address-candidate.mjs",
+      "line": 23,
+      "problem": "Existing typed source/identity hold forms are not covered by the new local classifier.",
+      "actual": "Each profile._enrich form last_error:source_scope_mismatch, last_error:scope_review_required, identity_match:false, identity_conflict:true, status:blocked, crawl_status:review_required remainseligible1/excluded0.",
+      "established_contracts": {
+        "assets/homes/templates/hospitality/model.mjs": "catalogValue refuses exact last_error scope_review_required/source_scope_mismatch.",
+        "assets/enrichment/reviewed-official-source.mjs": "mixedIdentityHold refuses identity_conflict true, identity_match false, statusblocked and typedreview/identity/scope states."
+      },
+      "limits": "Additional synthetic rejected_mismatch/foreign_branch values in generaldiagnostic probe are observations only, not individually asserted canonicalstoredclassifications. No productionrecord inspected.",
+      "required": "Retain established hold semantics across explicit source_context/profile_enrich; malformed/unknowntypedidentity states need deliberate failclosed rule. Do not loosen websiteNULLeligibility or forcewebsitecapture."
+    },
+    {
+      "id": "GCP-C4",
+      "severity": "blocking source-proof accuracy",
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-owner-2026-10-15/primary-docs/census-api.pdf",
+      "problem": "Retained247B file is HTML RequestRejected, not the claimed retainedAPI PDF specification.",
+      "sha256": "bb0ad5dcf879b782e80dec7c7c840c273458002974ece34a06fe7b6b5f5b1721",
+      "actual": "<html><head><title>Request Rejected</title>...",
+      "affected_claims": [
+        "runtime comment says benchmark4/Public_AR_Current documented by retainedAPI specification",
+        "qualification-notes says officialAPI/FAQPDF read"
+      ],
+      "required": "Keep rejectedresponse honestly classified; replace/supplement with actually read primaryAPI proof or qualify benchmark/contract documentation provenance. No claim that a247BchallengeHTML proves API contract."
+    }
+  ],
+  "licensing_and_cost_scope": [
+    "Owneraction correctly labels Census output street-range estimates ratherthanvenueverification, keeps adapterdisabled/finiteadmissionrequired and avoids card/token/flag-alone licenseacceptance.",
+    "OpenCage/Mapbox remainunadmitted; providercost/storage/MapLibre/publicAPI/distribution/sourceattribution checks remain prerequisites. No account-specific rights, planprice or licensing clearance independently granted.",
+    "RetainedMapboxterms were explicitly unread byauthor; no interpretation of unreadPDF or currentlegalguarantee is made here.",
+    "No actualprovider/canary, archiveupload/readback/durablebudget/ticket/CAS/currentserveradapter or honestpublicprecisionwriter is supplied by thispacket."
+  ],
+  "production_actions": {
+    "provider_requests": 0,
+    "origin_HTTP": 0,
+    "DBreads": 0,
+    "DBwrites": 0,
+    "policy_or_lease_or_pointwrites": 0,
+    "ADB": 0,
+    "builds": 0,
+    "source_edits_author_tree": 0
+  },
+  "remaining": "Root may authorize narrow separately frozen authorV2; originalfailurebytes/probes immutable. Reviewer did not trigger a newauthor turn, requestadmission or mutate runtime. A candidate-only acceptedfutureversion stillcannot be called globalmaprepair or verifiedstreet/venuepoints.",
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/census-api-response.html",
+      "sha256": "bb0ad5dcf879b782e80dec7c7c840c273458002974ece34a06fe7b6b5f5b1721",
+      "bytes": 247
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/counterprobes-result.json",
+      "sha256": "1b25e2650ff2c3cad07e0a626cbec1dd847b022358c0a360416f744e7ccac5f4",
+      "bytes": 2426
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/counterprobes.mjs",
+      "sha256": "bd78287bb9c854c7894c28490582181f806245d9d10a9cc1a2e2d8e826875e25",
+      "bytes": 3613
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/established-hold-contract/assets/enrichment/reviewed-official-source.mjs",
+      "sha256": "9f0cf4bb7edeaf3ac58bfa3a3acd78b0673d32426f3585aff55fbe57de7ee020",
+      "bytes": 8699
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/established-hold-contract/assets/homes/templates/hospitality/model.mjs",
+      "sha256": "7edd19f37c9c7cd88bf0fe7c398872440d1469e0b4bfdd4d4236bba6653d2f12",
+      "bytes": 6411
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/established-hold-probes.mjs",
+      "sha256": "f5fdc448cee96f951f4e4568b54dc4dda67928627a0b6b8e4987f46f64419bb5",
+      "bytes": 1523
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/established-hold-result.json",
+      "sha256": "f9eb025424cb310963ecd777afd957fa597e0ee17e2d38d14f2070f31c989905",
+      "bytes": 639
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/focused-final.log",
+      "sha256": "9810219dde9c22899fefe62aa02b2d34aae318b99d4c3629178092e364d2cd78",
+      "bytes": 4773
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/frozen-source/scripts/delivery/sync.mjs",
+      "sha256": "c3cbbdb51c6772ea7380c1f422fea3b676940500407e8e4c003b314b1e45f0a2",
+      "bytes": 13970
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/frozen-source/scripts/geography/census-address-candidate.mjs",
+      "sha256": "2cf9f492b478d9fd70341b32449d2772466437e9f9c1d83bb75a6dacf137df49",
+      "bytes": 15968
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/frozen-source/scripts/geography/geocoder-candidate-adapter.mjs",
+      "sha256": "8bc300193dc59430996221b9335f4518bfa7f854a84ada7253c8798cc302b1a1",
+      "bytes": 3905
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/frozen-source/tests/unit/geography-geocoder-candidate.test.mjs",
+      "sha256": "3ac8ee08c2801000e1999397c5f29301a69fa286a3c75fdacbb2045b72bb20f0",
+      "bytes": 18473
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/owner-audit-copy.json",
+      "sha256": "f1360b3d1c4644f543286330c0ce5771a9fe9b219de5cd2e5703dc829c93299f",
+      "bytes": 5023
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/owner-hash-verification.json",
+      "sha256": "362259c0024478a89c82c9d8c3888e33ce487ba9ec89515a66dc7613542993ad",
+      "bytes": 10026
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/owner-manifest-copy.json",
+      "sha256": "54a4adebcfbf3659c44a0c8f834bd23b18e1cbe460ac90b16d9f9a5ebf6c2a09",
+      "bytes": 8906
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/owner-primary-doc-manifest-copy.json",
+      "sha256": "96fab8ea10a6a7b2cc3f373a6b99edaf87b5ee86271da81683644291bdadec6c",
+      "bytes": 6719
+    },
+    {
+      "path": "docs/audits/evidence/geocoder-candidate-preparation-independent-2026-10-15/source-boundaries.json",
+      "sha256": "8dc0855da30430c42d3dcd2607163cdadaa4e7c2d5ce221f37a770092f7f2727",
+      "bytes": 586
+    }
+  ]
+}

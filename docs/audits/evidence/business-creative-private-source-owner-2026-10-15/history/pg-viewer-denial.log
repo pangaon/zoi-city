@@ -1,0 +1,90 @@
+PASS exact retained10 definitions installed; writer security drift refuses before any ledger; canonical bodies and ACLs unchanged
+PASS actual first-Studio7 and asset7 definitions/schema/policies pinned; new sidecar/functions/restrictive policies installed locally
+PASS private sidecar/trigger cannot be read or called directly; public methods have exact current-user versus service ACLs and empty search paths
+PASS both new restrictive policies preserve unrelated legacy upload/delete behavior and deny malformed ungranted reserved paths
+PASS root-only catalog/ACL/Storage restrictive-policy/no-session rollback fixture passes locally without grants/assets/posts
+PASS old canonical recover cannot cancel another actor upload grant even when authorized for the same workspace/listing
+PASS current-session grants derive separate original/output paths even with identical bytes; authenticated upload policy and service-only proof record exact object identity
+PASS ordinary actor cannot forge proof or DELETE/reupload unresolved proof-bearing image
+PASS server-proof consume atomically registers canonical original/output assets and one existing campaign draft; exact replay returns same ids without duplicate assets/posts
+PASS existing canonical draft reader reopens editable recipe and correct asset relationship; altered retry refuses
+PASS cleanup cannot remove already registered draft assets
+PASS serialized cancellation tombstone blocks delayed save and exact-path recreation after completed cleanup
+PASS old source writer cannot hijack a granted render nonce with another payload; unrelated first-Studio receipts keep their ordinary behavior
+PASS real two-backend old cancel before new grant serializes on canonical lock order and refuses conflicting actor; no orphan grant
+PASS real two-backend grant before old cancel serializes and guard refuses cross-actor cancellation without deadlock
+PASS real two-backend cleanup before save closes nonce; delayed canonical save returns cancellation, no assets or post
+PASS real two-backend save before cleanup retains registered canonical assets and objects; no reverse workspace/object lock wait
+PASS Storage RLS fails closed immediately on busy nonce rather than holding object locks while waiting on canonical writers
+PASS real two-backend Storage object-first delete versus nonce-first final consume fails closed without deadlock and preserves the verified object
+PASS same path with changed object identity/version cannot consume old durable proof
+PASS caption-only canonical edit re-verifies registered original/output objects and preserves both asset ids without duplication
+PASS published public response/projection and immutable legacy receipt remain byte-identical; existing composed draft remains current
+PASS actual hidden draft remains anonymous NULL; authenticated exact owner getter emits explicit private identity and JS/SQL projection parity; public branch rejects private envelope
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /permission|not_authorized/. Input:
+
+`Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role authenticated;set request.jwt.claims='{"sub":"11111111-1111-4111-8111-000000000003","session_id":"11111111-1111-4111-8111-000000000020"}';select public.business_creative_source_get('11111111-1111-4111-8111-000000000010','11111111-1111-4111-8111-000000000800')\n` +
+  'ERROR:  suite_session_unavailable\n' +
+  'CONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\n' +
+  'SQL statement "SELECT zoi.suite_lock_session()"\n' +
+  'PL/pgSQL function zoi.workspace_locked_role(uuid) line 13 at PERFORM\n' +
+  'PL/pgSQL function zoi.assert_workspace_write(uuid,text[]) line 3 at assignment\n' +
+  'SQL statement "SELECT zoi.assert_workspace_write(p_workspace)"\n' +
+  'PL/pgSQL function public.business_creative_source_get(uuid,uuid) line 4 at PERFORM\n'
+
+    at reject (file:///tmp/zoi-private-source-runner-dswcId/case.mjs:8:128)
+    at file:///tmp/zoi-private-source-runner-dswcId/case.mjs:74:160 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role authenticated;set request.jwt.claims='{"sub":"11111111-1111-4111-8111-000000000003","session_id":"11111111-1111-4111-8111-000000000020"}';select public.business_creative_source_get('11111111-1111-4111-8111-000000000010','11111111-1111-4111-8111-000000000800')
+  ERROR:  suite_session_unavailable
+  CONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE
+  SQL statement "SELECT zoi.suite_lock_session()"
+  PL/pgSQL function zoi.workspace_locked_role(uuid) line 13 at PERFORM
+  PL/pgSQL function zoi.assert_workspace_write(uuid,text[]) line 3 at assignment
+  SQL statement "SELECT zoi.assert_workspace_write(p_workspace)"
+  PL/pgSQL function public.business_creative_source_get(uuid,uuid) line 4 at PERFORM
+  
+      at genericNodeError (node:internal/errors:985:15)
+      at wrappedFn (node:internal/errors:539:14)
+      at checkExecSyncError (node:child_process:925:11)
+      at execFileSync (node:child_process:961:15)
+      at q (file:///tmp/zoi-private-source-runner-dswcId/case.mjs:5:12)
+      at file:///tmp/zoi-private-source-runner-dswcId/case.mjs:8:139
+      at getActual (node:assert:611:5)
+      at strict.throws (node:assert:759:24)
+      at reject (file:///tmp/zoi-private-source-runner-dswcId/case.mjs:8:128)
+      at file:///tmp/zoi-private-source-runner-dswcId/case.mjs:74:160 {
+    status: 1,
+    signal: null,
+    output: [
+      null,
+      '',
+      'ERROR:  suite_session_unavailable\n' +
+        'CONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\n' +
+        'SQL statement "SELECT zoi.suite_lock_session()"\n' +
+        'PL/pgSQL function zoi.workspace_locked_role(uuid) line 13 at PERFORM\n' +
+        'PL/pgSQL function zoi.assert_workspace_write(uuid,text[]) line 3 at assignment\n' +
+        'SQL statement "SELECT zoi.assert_workspace_write(p_workspace)"\n' +
+        'PL/pgSQL function public.business_creative_source_get(uuid,uuid) line 4 at PERFORM\n'
+    ],
+    pid: 483787,
+    stdout: '',
+    stderr: 'ERROR:  suite_session_unavailable\n' +
+      'CONTEXT:  PL/pgSQL function zoi.suite_lock_session() line 8 at RAISE\n' +
+      'SQL statement "SELECT zoi.suite_lock_session()"\n' +
+      'PL/pgSQL function zoi.workspace_locked_role(uuid) line 13 at PERFORM\n' +
+      'PL/pgSQL function zoi.assert_workspace_write(uuid,text[]) line 3 at assignment\n' +
+      'SQL statement "SELECT zoi.assert_workspace_write(p_workspace)"\n' +
+      'PL/pgSQL function public.business_creative_source_get(uuid,uuid) line 4 at PERFORM\n'
+  },
+  expected: /permission|not_authorized/,
+  operator: 'throws',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

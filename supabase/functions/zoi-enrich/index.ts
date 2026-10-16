@@ -135,6 +135,7 @@ import { extractSocialLinks } from "./_social.js";
 import { extractPublicMedia } from "./_media.js";
 import { memberLeaseGuard } from "./_member.js";
 import { prepareClientBrief, sourceClientIdentity } from "./_brief.js";
+import { imageDocumentElements } from "./_image-document.js";
 import { sourceCopyPlaceholder, reviewedFoodDeferralProfile } from "../../../assets/enrichment/client-brief.mjs";
 import { assessMachineSourceIdentity } from "./_source-identity.js";
 import { extractStructuredMenu } from "./_menus.js";
@@ -232,6 +233,7 @@ async function getCapped(url: URL, accept: string, deadline = Infinity) {
 /** Follow up to MAX_HOPS redirects, re-vetting each destination. */
 async function fetchDoc(start: URL, deadline = Infinity) {
   let url = start;
+  const redirects: {from:string;to:string;status:number;location:string}[] = [];
   for (let hop = 0; hop <= MAX_HOPS; hop++) {
     const r = await perHost(url.hostname, () =>
       getCapped(url, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.1", deadline), deadline);
@@ -246,6 +248,7 @@ async function fetchDoc(start: URL, deadline = Infinity) {
       // A redirect is a fresh, untrusted URL. Vet it exactly like the first.
       const v = await boundedIO(deadline, TIMEOUT_MS, () => vet(next.toString(), Math.min(deadline, Date.now() + TIMEOUT_MS)));
       if (!v.url) return { error: `redirect-refused:${v.why}` };
+      redirects.push({from:url.toString(),to:v.url.toString(),status:r.status,location:r.redirect});
       url = v.url;
       continue;
     }
@@ -253,7 +256,7 @@ async function fetchDoc(start: URL, deadline = Infinity) {
       return { error: `http${(r as { status?: number }).status ?? 0}` };
     }
     if (!/html|xml/.test(r.ct || "")) return { error: "not-html" };
-    return { doc: r.body, finalUrl: url.toString() };
+    return { doc: r.body, finalUrl: url.toString(), redirectReceipt:{start_url:start.toString(),final_url:url.toString(),hops:redirects} };
   }
   return { error: "too-many-redirects" };
 }
@@ -337,12 +340,11 @@ function metaTag(doc: string, key: string, attr = "property"): string | null {
 
 function ldNodes(doc: string): Record<string, unknown>[] {
   const out: Record<string, unknown>[] = [];
-  const re = /<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(doc))) {
+  const scripts = imageDocumentElements(doc).filter(e => e.tag === "script" && !e.excluded && e.attrs.type === "application/ld+json" && typeof e.body === "string");
+  for (const script of scripts) {
     let v: unknown;
     try {
-      v = JSON.parse(m[1].replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, "").trim());
+      v = JSON.parse(script.body!.replace(/^\s*<!\[CDATA\[|\]\]>\s*$/g, "").trim());
     } catch { continue; }
     const stack = [v];
     let guard = 0;
@@ -637,7 +639,7 @@ Deno.serve(async (req) => {
           provenance: {} });
         continue;
       }
-      const sourceEvidence = [{url: got.finalUrl!, purpose: "registered_source", state: "fetched"}];
+      const sourceEvidence: {url:string;purpose:string;state:string;redirect_receipt?:unknown}[] = [{url: got.finalUrl!, purpose: "registered_source", state: "fetched", ...(got.redirectReceipt ? {redirect_receipt:got.redirectReceipt} : {})}];
       const member = memberLeaseGuard(row, got.doc!, got.finalUrl!);
       if (member.handled) {
         bump(member.profile?.last_error === "source_scope_mismatch" ? "source-scope-mismatch" : member.profile && "member" in member.profile ? "member-identity-matched" : "member-review-required");
@@ -714,6 +716,7 @@ Deno.serve(async (req) => {
             if (key === "email" && (profile.email_conflict || next.profile.email_conflict)) {
               profile.email = null; profile.email_conflict = profile.email_conflict || next.profile.email_conflict; provenance.email = "conflicting-source-emails"; provenance.email_conflict = provenance.email_conflict || next.provenance.email_conflict; continue;
             }
+            if (page.purpose === "contact" && ["logo_url","photo_url","hero_url"].includes(key)) continue;
             if (!profile[key] && next.profile[key]) { profile[key] = next.profile[key]; provenance[key] = next.provenance[key] + ":" + extra.finalUrl; }
           }
           // Coverage belongs to the exact menu adopted above, including false.
@@ -724,7 +727,7 @@ Deno.serve(async (req) => {
           }
           profile.social = { ...(next.profile.social || {}) as object, ...(profile.social || {}) as object };
           if (next.profile.social) provenance.social = "same-origin-pages";
-          const photos = [...(Array.isArray(profile.photo_urls) ? profile.photo_urls : []), ...(Array.isArray(next.profile.photo_urls) ? next.profile.photo_urls : [])];
+          const photos = [...(Array.isArray(profile.photo_urls) ? profile.photo_urls : []), ...(page.purpose !== "contact" && Array.isArray(next.profile.photo_urls) ? next.profile.photo_urls : [])];
           const keys = new Set(); profile.photo_urls = photos.filter(u => { const key = imageIdentity(u); if (keys.has(key)) return false; keys.add(key); return true; }).slice(0, 12);
           if ((profile.photo_urls as string[]).length) provenance.photo_urls = "same-origin-pages";
           bump("supplement:" + page.purpose);

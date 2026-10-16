@@ -1,0 +1,79 @@
+{
+  "at": "2026-10-15T22:18:20.173949+00:00",
+  "status": "FROZEN_DISABLED_CANDIDATE_PREPARATION_SOURCE__INDEPENDENT_ACCEPTANCE_AND_ROOT_CANARY_PENDING",
+  "author": "atomic_review",
+  "tree": "/workspaces/zoi-geocoder-candidate-prep-work",
+  "baseline": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
+  "manifest": {
+    "path": "docs/audits/evidence/geocoder-candidate-preparation-owner-2026-10-15/source-manifest.json",
+    "sha256": "54a4adebcfbf3659c44a0c8f834bd23b18e1cbe460ac90b16d9f9a5ebf6c2a09",
+    "bytes": 8906
+  },
+  "owned_files": [
+    {
+      "path": "scripts/geography/census-address-candidate.mjs",
+      "sha256": "2cf9f492b478d9fd70341b32449d2772466437e9f9c1d83bb75a6dacf137df49",
+      "bytes": 15968
+    },
+    {
+      "path": "scripts/geography/geocoder-candidate-adapter.mjs",
+      "sha256": "8bc300193dc59430996221b9335f4518bfa7f854a84ada7253c8798cc302b1a1",
+      "bytes": 3905
+    },
+    {
+      "path": "tests/unit/geography-geocoder-candidate.test.mjs",
+      "sha256": "3ac8ee08c2801000e1999397c5f29301a69fa286a3c75fdacbb2045b72bb20f0",
+      "bytes": 18473
+    },
+    {
+      "path": "scripts/delivery/sync.mjs",
+      "sha256": "c3cbbdb51c6772ea7380c1f422fea3b676940500407e8e4c003b314b1e45f0a2",
+      "bytes": 13970
+    }
+  ],
+  "implementation": {
+    "candidate_source": "Census street range candidates only; no requirement for website. Existing jobIDs,input/database fingerprints,source-generation and explicit current public/owner snapshots retained.",
+    "precision": "Every proposed number is street_interpolated, venue_verified:false, official_source_confirmed:false, writer_eligible:false. No_Match/Tie or mismatches have proposed:null/precisionunknown.",
+    "coverage": "Any supplied eligible US state/DC full public address can qualify across listing families, no showcase/listingID allowlist. Per-batch input,eligible,excluded,uniqueaddress,dedup denominators retained.",
+    "transport": "Default refuses before0calls. Named isolated injected mock transport only;4job/1MiB/30s caps, byte- and ID-bound CSV, explicit simulated HTTP vs query attempts, unknown allowance preserved, no automatic retry, bounded successful or malformed response bytes retained.",
+    "authority": "No policy or provider activation; no new content store/queue, no canonical worker/ticket/writer changes, no coordinate apply.",
+    "owner_action": "Only the existing geocoding action row corrected for Census estimate limits, compatible provider licensing, Mapbox MapLibre/public API gate and explicit cost/admission. No card/token-alone green state."
+  },
+  "verification": {
+    "focused_total": 51,
+    "new_candidate_tests": 40,
+    "retained_delivery_and_request_tests": 11,
+    "failed": 0,
+    "syntax_checks": 3,
+    "whitespace_check_passed": true
+  },
+  "evidence_layers": {
+    "source": "Exact source pins and primary documentation; raw synthetic request/response/result retained.",
+    "rendered": "Generated owner-action payload tested. No public map change or browser acceptance claimed.",
+    "journey": "Mock request-to-candidate/defaultrefusal/failure recovery exercised. No production provider/owner/map journey."
+  },
+  "production": {
+    "provider_queries": 0,
+    "actual_database_reads": 0,
+    "database_writes": 0,
+    "leases": 0,
+    "coordinate_changes": 0,
+    "budget_or_policy_activation": 0,
+    "credentials_access": 0,
+    "signup_spend": 0,
+    "artifact_publication": 0,
+    "ADB": 0
+  },
+  "remaining_limits": [
+    "Initial preparation batch cap4 jobs/addresses, ordinary US states/DC only; PR/territory addressing and alternate benchmarks deliberately held.",
+    "Only documented benchmark4/Public_AR_Current admitted; Current is not immutable, response hash and capture time distinguish evidence.",
+    "Strict exact street/city/state/ZIP comparison can hold legitimate aliases/units; source or independent address review must reconcile them. No silent rewrite of stored address.",
+    "Current snapshot requires explicit owner/public/address/source-generation/fingerprint fields absent from some existing job.original payloads. No production snapshot exporter/admission adapter is supplied.",
+    "The input checksum detects changed bytes; it is not server authority or authentication. All outputs remain authority:none and writer_eligible:false.",
+    "The mocked adapter may reserve/count query slots in memory for test evidence only; no durable budget reservation, ticket consumption, archive upload/readback or actual provider idempotence is implemented.",
+    "All network default disabled. Only a named isolated test contract accepts injected transport; no built-in fetch, secrets or real provider path. OpenCage/Mapbox remain unadmitted.",
+    "A live candidate path needs separately reviewed finite tickets, private rawCSV archive/readback and current generation validation. Any public apply needs distinct honest precision writer/read/UI work and actual map journeys."
+  ],
+  "independent_reviewer_required": true,
+  "root_canary_authority": false
+}
