@@ -4,7 +4,7 @@ type ProfileLike={
  website?:string;phoneHref?:string|null;address?:string;location?:string;gallery?:string[];description?:string;socials?:unknown[];
  publishedDesign?:{template?:string;section_order?:string[];hidden_sections?:string[];copy?:Record<string,string>}|null;
 };
-export type ClientHomeFamily='restaurant'|'bakery'|'grooming'|'hospitality'|'parish'|'arts'|'professional'|'organization'|'directory';
+export type ClientHomeFamily='restaurant'|'bakery'|'grooming'|'hospitality'|'parish'|'arts'|'professional'|'home_services'|'organization'|'directory';
 const object=(value:unknown):Record<string,any>=>value&&typeof value==='object'&&!Array.isArray(value)?value as Record<string,any>:{};
 function color(value:unknown){
  if(typeof value!=='string'||!/^#(?:[\da-f]{3}|[\da-f]{6})$/i.test(value))return'';
@@ -26,6 +26,7 @@ export function clientHomeFamily(profile:ProfileLike):ClientHomeFamily{
  if(/church|parish|orthodox|monastery|diocese/.test(category+' '+type))return'parish';
  if(/artist|music|performer|photograph|film|arts|gallery|creative/.test(category+' '+type))return'arts';
  if(/architect|engineer|law|legal|doctor|health|account|consult|professional/.test(category+' '+type)||type==='professional')return'professional';
+ if(/home.?service|plumb|hvac|electrician|roofer|cleaning|cleaner|landscap|repair|contractor|handyman|moving/.test(identity))return'home_services';
  if(/organization|association|community|consulate|school|nonprofit/.test(category+' '+type))return'organization';
  if(profile.serviceOfferings?.items?.length)return'professional';
  return'directory';
@@ -42,13 +43,14 @@ export function clientHomeDesign(profile:ProfileLike,dark=false){
   hospitality:['#EFF5F1','#19343A','#49665E','#FFFFFF','#D1E0DB'],
   parish:['#F6F4EA','#2D3328','#737A50','#FFFFFF','#DEDCCB'],
   arts:['#F8F3ED','#252B3C','#914B35','#FFFFFF','#E5D8CF'],
+  home_services:['#F1F5F5','#203337','#39746C','#FFFFFF','#D9E4E1'],
   professional:['#F1F4F8','#18273B','#315C87','#FFFFFF','#D7DFE8'],
   organization:['#F4F5F2','#24352F','#477A68','#FFFFFF','#DAE2DD'],
   directory:['#F4F6F9','#1D2C40','#1F64CD','#FFFFFF','#DCE3EB'],
  } as const;
  const templatePalettes={table:['#FAF5EC','#28251F','#8A5736','#FFFFFF','#E7DCCB'],parea:['#F5F3E9','#2B3224','#687448','#FFFFFF','#E2DFCD']} as const;
  const row=template==='table'?templatePalettes.table:template==='parea'?templatePalettes.parea:palettes[family],background=darkSurface?(family==='grooming'?'#101416':template==='concierge'?'#091725':'#0D1A28'):row[0],ink=darkSurface?'#F5F5F1':row[1],surface=darkSurface?(family==='grooming'?'#1B2022':template==='concierge'?'#10263A':'#14263A'):row[3],line=darkSurface?'#33465A':row[4];
- const darkAccent=({restaurant:'#A9BC93',bakery:'#DDB28A',grooming:'#DEA87E',hospitality:'#98C3B6',parish:'#C7CA8E',arts:'#E6A48B',professional:'#92BDE8',organization:'#92C2AE',directory:'#8AB9FF'} as const)[family],darkPrimary=({restaurant:'#3A6349',bakery:'#805431',grooming:'#94603A',hospitality:'#3C6259',parish:'#606238',arts:'#965C45',professional:'#3675A7',organization:'#3B725F',directory:'#2767BC'} as const)[family],accent=darkSurface?(contrastRatio(custom||darkAccent,background)>=4.5?(custom||darkAccent):darkAccent):(custom||row[2]),candidate=custom||row[2],safePrimary=darkSurface?darkPrimary:row[2],primaryColor=contrastRatio('#FFFFFF',candidate)>=4.5?candidate:safePrimary;
+ const darkAccent=({restaurant:'#A9BC93',bakery:'#DDB28A',grooming:'#DEA87E',hospitality:'#98C3B6',parish:'#C7CA8E',arts:'#E6A48B',professional:'#92BDE8',home_services:'#9AC7BE',organization:'#92C2AE',directory:'#8AB9FF'} as const)[family],darkPrimary=({restaurant:'#3A6349',bakery:'#805431',grooming:'#94603A',hospitality:'#3C6259',parish:'#606238',arts:'#965C45',professional:'#3675A7',home_services:'#286C63',organization:'#3B725F',directory:'#2767BC'} as const)[family],accent=darkSurface?(contrastRatio(custom||darkAccent,background)>=4.5?(custom||darkAccent):darkAccent):(custom||row[2]),candidate=custom||row[2],safePrimary=darkSurface?darkPrimary:row[2],primaryColor=contrastRatio('#FFFFFF',candidate)>=4.5?candidate:safePrimary;
  const available:{key:string;label:string;ownerSection:string}[]=[];
  if(profile.food)available.push({key:'offerings',label:'Menu',ownerSection:'offerings'});
  else if(profile.serviceOfferings?.items?.length)available.push({key:'offerings',label:family==='grooming'?'Services':'Work',ownerSection:'offerings'});
@@ -65,6 +67,6 @@ export function clientHomeDesign(profile:ProfileLike,dark=false){
  }):available;
  const tabs=display.map(({key,label,ownerSection})=>({key,label:ownerSection==='offerings'?(owner?.copy?.offerings_title?.trim()||label):ownerSection==='gallery'?(owner?.copy?.gallery_title?.trim()||label):ownerSection==='calendar'?(owner?.copy?.calendar_title?.trim()||'Times'):ownerSection==='socials'?(owner?.copy?.contact_title?.trim()||label):label,ownerSection}));
  const hasPublishedMenu=!!profile.food&&profile.food.menuSections?.some(section=>!!section.items?.length);
- const primary=profile.bookingListing?'Check availability':hasPublishedMenu?'View menu':profile.inquiryListing?(family==='grooming'?'Enquire about a service':'Send an enquiry'):profile.website?'Visit website':profile.phoneHref?'Call':profile.address||profile.location?'Get directions':'';
+ const primary=profile.bookingListing?'Check availability':hasPublishedMenu?'View menu':profile.inquiryListing?(family==='grooming'?'Enquire about a service':family==='home_services'?'Request an estimate':'Send an enquiry'):profile.website?'Visit website':profile.phoneHref?'Call':profile.address||profile.location?'Get directions':'';
  return{family,background,ink,muted:darkSurface?'#B8C5D2':'#5D6874',accent,primaryColor,surface,line,tabs:tabs.slice(0,4),contentOrder:display.map(x=>x.key),copy:owner?.copy||{},template,primary};
 }

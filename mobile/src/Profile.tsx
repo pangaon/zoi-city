@@ -12,6 +12,8 @@ import {GroomingHome} from './GroomingHome';
 import {HospitalityHome} from './HospitalityHome';
 import {ParishHome} from './ParishHome';
 import {ProfessionalHome} from './ProfessionalHome';
+import {HomeServicesHome} from './HomeServicesHome';
+import {OrganizationHome} from './OrganizationHome';
 import {FoodBusinessHome} from './FoodBusinessHome';
 import {uuid} from './artistMusic';
 import {FoodMenu} from './FoodMenu';
@@ -42,6 +44,8 @@ export function BusinessProfile({slug,back,signIn,volunteer,enquiry,calendar,gro
  if(profile&&design?.family==='grooming'&&!profile.publishedDesign&&!loading&&!error)return <GroomingHome key={profile.id} profile={profile} design={design} back={back} signIn={signIn} enquiry={enquiry}/>;
  if(profile&&design?.family==='hospitality'&&!profile.publishedDesign&&!loading&&!error&&!hospitalityBooking)return <HospitalityHome key={profile.id} hotel={{id:profile.id,name:profile.name,city:profile.location,address:profile.address,description:design.copy.intro?.trim()||profile.description,hero:profile.photo,photos:visibleGallery,rooms:profile.rooms,dining:profile.dining,venues:profile.venues,amenities:profile.amenities,phone:profile.phone,website:profile.website,booking:profile.bookingListing?'/book/?listing='+profile.bookingListing:'',inquiry:profile.inquiryListing?'/inquiries/?listing='+profile.inquiryListing:''}} design={design} back={back} onBooking={id=>{if(id===profile.id)setHospitalityBooking(true);}} onInquiry={enquiry}/>;
  if(profile&&design?.family==='parish'&&!profile.publishedDesign&&!loading&&!error)return <ParishHome key={profile.id} profile={profile} onBack={back} publishedColors={{accent:design.accent,background:design.background,surface:design.surface,foreground:design.ink,muted:design.muted,border:design.line}} actions={{calendar:profile.calendarListing?{listingId:profile.id,run:calendar}:undefined,groups:profile.groupListing?{listingId:profile.id,run:group}:undefined,volunteer:profile.volunteerWorkspace===profile.id?{listingId:profile.id,run:volunteer}:undefined}}/>;
+ if(profile&&design?.family==='home_services'&&!profile.publishedDesign&&!loading&&!error)return <HomeServicesHome key={profile.id} profile={profile} appearance={design} back={back} enquiry={enquiry}/>;
+ if(profile&&design?.family==='organization'&&!profile.publishedDesign&&!loading&&!error)return <OrganizationHome key={profile.id} profile={{...profile,type:profile.type,category:profile.category,verified:profile.verified,calendarListing:profile.calendarListing,groupListing:profile.groupListing,volunteerWorkspace:profile.volunteerWorkspace}} appearance={design} actions={{back,calendar,group,volunteer,enquiry}}/>;
  if(profile&&design?.family==='professional'&&!profile.publishedDesign&&!loading&&!error)return <ProfessionalHome key={profile.id} profile={profile} appearance={design} back={back} enquiry={enquiry}/>;
  if(profile&&design?.family==='hospitality'&&hospitalityBooking&&profile.bookingListing)return <View style={[styles.screen,{backgroundColor:design.background,padding:16,gap:12}]}><Pressable accessibilityRole="button" accessibilityLabel="Back to hotel" onPress={()=>setHospitalityBooking(false)} style={styles.utility}><Text style={styles.utilityText}>‹ Back to hotel</Text></Pressable><BookingPanel listingId={profile.bookingListing} signIn={signIn}/></View>;
  // Keep the photographic header editorial and compact. A profile without
