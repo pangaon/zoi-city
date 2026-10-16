@@ -55,7 +55,9 @@ export function normalizeProfile(input: unknown) {
   const phone=placeholderPhone(rawPhone)?'':rawPhone;
   const seen = new Set<string>();
   const socials = Object.entries(names).flatMap(([key, label]) => { const url = publicURL(social[key]); if (!url || seen.has(url)) return []; seen.add(url); return [{ label, url }]; });
-  const photo=publicURL(profileMedia(e,profile).hero)||'';
+  const media=profileMedia(e,profile);
+  const photo=publicURL(media.hero)||'';
+  const logo=publicURL(media.logo)||'';
   const fieldsFromWebsite = Object.keys(enrichment).filter(key => !banned.test(key) && !(key in raw));
   const serviceOwner = [owner, ownerProfile, raw, e].find(layer => Object.hasOwn(layer, 'services'));
   const serviceValue = serviceOwner ? serviceOwner.services : scopedSourceServices(e);
@@ -65,7 +67,7 @@ export function normalizeProfile(input: unknown) {
   const addressLookup=publishedAddressLookup({s:plain(e.canonical_slug||e.slug),n:plain(e.name),addr:plain(e.address),city:plain(e.city),country:plain(e.country)});
   return { food:foodForProfile(e), addressLookup, showsArtist:profileAction(e.shows_url,'shows')===String(e.id||'').toLowerCase()?profileAction(e.shows_url,'shows'):'',festivalListing:profileAction(e.offer_url,'festival')===String(e.id||'').toLowerCase()?profileAction(e.offer_url,'festival'):'', calendarListing:profileAction(e.calendar_url,'calendar')===String(e.id||'').toLowerCase()?profileAction(e.calendar_url,'calendar'):'',
     groupListing:profileAction(e.group_url,'group')===String(e.id||'').toLowerCase()?profileAction(e.group_url,'group'):'',
-    inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), description: plain(publishedField(e,'description',e.description || profile.about || profile.description)), location: [e.city, e.country].map(plain).filter(Boolean).join(' · '), address: plain(e.address), website: publicURL(selectedOfficialWebsite(e)), phone, phoneHref:phoneHref(phone), email: publishedEmail(e,e.email || profile.email), photo, socials, services, serviceOfferings:serviceOfferingsForProfile(e), verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };
+    inquiryListing: inquiry === plain(e.id).toLowerCase() ? inquiry : '', bookingListing: booking === plain(e.id).toLowerCase() ? booking : '', volunteerWorkspace: profileAction(e.volunteer_url, 'volunteer'), geoPrecision: plain(e.geo_precision), id: plain(e.id), name: plain(e.name), slug: plain(e.canonical_slug || e.slug), type: plain(e.entity_type).replaceAll('_', ' '), category: plain(e.category_slug || e.category).toLowerCase(), description: plain(publishedField(e,'description',e.description || profile.about || profile.description)), location: [e.city, e.country].map(plain).filter(Boolean).join(' · '), address: plain(e.address), website: publicURL(selectedOfficialWebsite(e)), phone, phoneHref:phoneHref(phone), email: publishedEmail(e,e.email || profile.email), photo, logo, gallery: media.gallery.map(publicURL).filter(Boolean), socials, services, serviceOfferings:serviceOfferingsForProfile(e), verified: e.verification_status === 'verified', enrichmentNote: fieldsFromWebsite.length ? 'Some details were read from the business website and have not been confirmed by the owner.' : '', profile };
 }
 
 export function profileImageMode(width:number,height:number): 'center'|'cover' {return Number.isFinite(width)&&Number.isFinite(height)&&width>=480&&height>=240&&width/height>=0.85&&width/height<=1.8?'cover':'center';}
