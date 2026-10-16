@@ -1,0 +1,38 @@
+import {useEffect,useRef,useState} from 'react';
+import {ActivityIndicator,BackHandler,Linking,Modal,Pressable,ScrollView,StyleSheet,View} from 'react-native';
+import {WebView} from 'react-native-webview';
+import {ScaleText as Text} from './ScaleText';
+import {SHOPIFY_ORIGIN,shopifyInitialURL,shopifyNavigation,type ShopifyStoreProps} from './ShopifyNavigation';
+
+function initial(product:string,variant:string){try{return{url:shopifyInitialURL(product,variant),error:''};}catch(e){return{url:SHOPIFY_ORIGIN+'/',error:(e as Error).message};}}
+export function ShopifyStoreScreen({initialProduct='',initialVariant='',back}:ShopifyStoreProps){
+ const entry=initial(initialProduct,initialVariant),[source,setSource]=useState(()=>({uri:entry.url})),[error,setError]=useState(entry.error),[loading,setLoading]=useState(true),[slow,setSlow]=useState(false),[canBack,setCanBack]=useState(false),[pending,setPending]=useState(''),[opening,setOpening]=useState(false);
+ const [viewEpoch,setViewEpoch]=useState(0);
+ const web=useRef<WebView>(null),current=useRef(entry.url),alive=useRef(true),backState=useRef(false),crashed=useRef(false),timer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ const clearTimer=()=>{if(timer.current)clearTimeout(timer.current);timer.current=null;};
+ const start=()=>{clearTimer();setLoading(true);setSlow(false);timer.current=setTimeout(()=>{if(alive.current)setSlow(true);},20000);};
+ const fail=()=>{clearTimer();setLoading(false);setSlow(false);setError('The store could not load. Retry, or open BuyGreek in your browser.');};
+ useEffect(()=>{alive.current=true;return()=>{alive.current=false;clearTimer();};},[]);
+ useEffect(()=>{const next=initial(initialProduct,initialVariant);current.current=next.url;setSource({uri:next.url});setPending('');setError(next.error);setCanBack(false);backState.current=false;},[initialProduct,initialVariant]);
+ useEffect(()=>{const sub=BackHandler.addEventListener('hardwareBackPress',()=>{if(pending){setPending('');return true;}if(backState.current){web.current?.goBack();return true;}back();return true;});return()=>sub.remove();},[back,pending]);
+ const propose=(value:string)=>{const target=shopifyNavigation(value);if(target.kind==='browser')setPending(target.url);else if(target.kind==='blocked')setError('This link cannot open in the store. Use a secure website link.');return target;};
+ const open=async(value:string)=>{const target=shopifyNavigation(value);if(target.kind==='blocked'||opening)return;setOpening(true);try{await Linking.openURL(target.url);if(alive.current)setPending('');}catch{if(alive.current)setError('The browser could not open. Your store is still here; please try again.');}finally{if(alive.current)setOpening(false);}};
+ const action=(label:string,onPress:()=>void,disabled=false)=><Pressable accessibilityRole="button" accessibilityState={{disabled}} disabled={disabled} onPress={onPress} style={[s.action,disabled&&s.disabled]}><Text style={s.link}>{label}</Text></Pressable>;
+ const retry=()=>{setError('');setPending('');start();if(crashed.current){crashed.current=false;backState.current=false;setCanBack(false);setSource({uri:current.current});setViewEpoch(v=>v+1);}else web.current?.reload();};
+ return <View style={s.screen}>
+  <ScrollView style={s.chrome} contentContainerStyle={s.chromeContent} keyboardShouldPersistTaps="handled">
+  <View style={s.header}><View style={s.identity}><Text style={s.title}>BuyGreek</Text><Text style={s.host}>buygreek.shop · Official store</Text></View>{action('Close store',back)}</View>
+  <View style={s.toolbar}>{action('Store back',()=>web.current?.goBack(),!canBack)}{action('Reload',retry)}{action(opening?'Opening…':'Open browser',()=>{void open(current.current);},opening)}</View>
+  {loading?<View style={s.status}><ActivityIndicator accessibilityLabel="Loading BuyGreek store"/><Text style={s.note}>{slow?'Taking longer than usual. You can retry or open the browser.':'Opening BuyGreek…'}</Text>{slow?action('Retry',retry):null}</View>:null}
+  {error?<View style={s.status}><Text accessibilityRole="alert" style={s.error}>{error}</Text>{action('Retry store',retry)}</View>:null}
+  </ScrollView>
+  {pending?<Modal visible={true} transparent animationType="fade" accessibilityLabel="Continue outside BuyGreek" onRequestClose={()=>setPending('')}><View style={s.backdrop}><View accessibilityViewIsModal accessibilityLabel="Continue outside BuyGreek" style={s.handoff}><ScrollView contentContainerStyle={s.handoffContent} keyboardShouldPersistTaps="handled"><Text accessibilityRole="header" style={s.label}>Continue at {shopifyNavigation(pending).kind!=='blocked'?new URL(pending).hostname:''}?</Text><Text style={s.note}>This step opens in your browser, which has its own sign-in and cart session. Your in-app store stays here.</Text><View style={s.toolbar}>{action('Continue in browser',()=>{void open(pending);},opening)}{action('Stay in store',()=>setPending(''))}</View></ScrollView></View></View></Modal>:null}
+  <WebView key={viewEpoch} ref={web} source={source} style={s.web} originWhitelist={['*']} javaScriptEnabled domStorageEnabled cacheEnabled incognito={false} sharedCookiesEnabled thirdPartyCookiesEnabled={false} setSupportMultipleWindows javaScriptCanOpenWindowsAutomatically={false} geolocationEnabled={false} mixedContentMode="never" allowFileAccess={false} allowFileAccessFromFileURLs={false} allowUniversalAccessFromFileURLs={false}
+   onShouldStartLoadWithRequest={request=>{const target=shopifyNavigation(request.url);if(target.kind==='store'){if(request.isTopFrame!==false)setPending('');return true;}if(request.isTopFrame!==false)propose(request.url);return false;}}
+   onOpenWindow={event=>{const target=propose(event.nativeEvent.targetUrl);if(target.kind==='store'){setPending('');setSource({uri:target.url});}}}
+   onNavigationStateChange={state=>{const target=shopifyNavigation(state.url);if(target.kind!=='store'){web.current?.stopLoading();propose(state.url);return;}current.current=target.url;backState.current=state.canGoBack;setCanBack(state.canGoBack);}}
+   onLoadStart={start} onLoad={()=>{clearTimer();setLoading(false);setSlow(false);setError(entry.error);}} onError={fail} onHttpError={event=>{if(shopifyNavigation(event.nativeEvent.url).kind==='store')fail();}} onContentProcessDidTerminate={()=>{crashed.current=true;fail();}} onRenderProcessGone={()=>{crashed.current=true;fail();}}/>
+  <Text style={s.footer}>Cart and checkout by BuyGreek.</Text>
+ </View>;
+}
+const s=StyleSheet.create({screen:{flex:1,minHeight:0,backgroundColor:'#fff'},chrome:{flexGrow:0,flexShrink:1,maxHeight:'45%'},chromeContent:{paddingBottom:4},header:{paddingHorizontal:16,paddingTop:12,paddingBottom:8,flexDirection:'row',alignItems:'center',gap:10},identity:{flex:1,minWidth:0},title:{fontSize:23,fontWeight:'800',color:'#132F46'},host:{fontSize:11,color:'#526775'},toolbar:{paddingHorizontal:12,paddingBottom:8,flexDirection:'row',flexWrap:'wrap',gap:8},action:{minHeight:44,minWidth:44,paddingHorizontal:12,paddingVertical:10,borderRadius:12,backgroundColor:'#EAF4FB',justifyContent:'center',flexShrink:1},link:{fontSize:13,fontWeight:'700',color:'#116CBA'},disabled:{opacity:.4},web:{flex:1,minHeight:80},status:{paddingHorizontal:16,paddingVertical:8,flexDirection:'row',gap:8,alignItems:'center',flexWrap:'wrap'},note:{fontSize:12,lineHeight:18,color:'#526775',flexShrink:1},error:{fontSize:13,color:'#963624',flexShrink:1},backdrop:{flex:1,justifyContent:'center',padding:20,backgroundColor:'#09213999'},handoff:{maxHeight:'85%',borderRadius:24,overflow:'hidden',backgroundColor:'#f8fcff'},handoffContent:{padding:20,gap:16},label:{fontSize:14,fontWeight:'700',color:'#132F46'},footer:{paddingHorizontal:16,paddingVertical:6,fontSize:10,lineHeight:15,color:'#526775'}});

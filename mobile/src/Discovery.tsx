@@ -1,3 +1,4 @@
+import { Icon } from './Icon';
 import { DiscoveryLocation } from "./DiscoveryLocation";
 import { TRAVEL_MODES } from "../../assets/map-data/directions.mjs";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -13,11 +14,12 @@ import {
   Share,
   StyleSheet,
   TextInput,
+  useColorScheme,
   View,
 } from "react-native";
 import { useAuth } from "./Auth";
 import { CommunitySettings } from "./CommunityProfile";
-import { LIGHT, DARK } from "./brand";
+import { LIGHT as LIGHT_PALETTE, DARK } from "./brand";
 import { discoveryMedia } from "./discoveryMedia";
 import { usePresentationPreferences, GlassHero } from "./Presentation";
 import { DiscoveryMap } from "./DiscoveryMap";
@@ -42,6 +44,7 @@ import { discoveryRead } from "./discoveryRead";
 import { placeDestination } from "./placeNavigation";
 import { loadMapPages, retryMapRead, createAdaptiveMapRead } from "../../assets/map-data/loader.mjs";
 import { suggestionController } from "../../assets/discovery/autocomplete.mjs";
+function useDiscoveryPalette(){return useColorScheme()==='dark'?DARK:LIGHT_PALETTE;}
 function Action({
   label,
   onPress,
@@ -55,6 +58,7 @@ function Action({
   disabled?: boolean;
   text?: string;
 }) {
+  const LIGHT=useDiscoveryPalette(),s=useDiscoveryStyles();
   return (
     <Pressable
       accessibilityRole="button"
@@ -71,6 +75,7 @@ function Action({
   );
 }
 function Photo({ row, detail = false }: { row: any; detail?: boolean }) {
+  const LIGHT=useDiscoveryPalette(),s=useDiscoveryStyles();
   const media = discoveryMedia(row);
   const [failedUri, setFailedUri] = useState<string | null>(null);
   if (!media.uri || failedUri === media.uri)
@@ -124,6 +129,7 @@ export function Discover({
   expanded?: boolean;
   onExpandedChange?: (expanded: boolean) => void;
 }) {
+  const LIGHT=useDiscoveryPalette(),s=useDiscoveryStyles();
   const { client, session, booting } = useAuth(),
     actor = session?.user.id || "",
     preferences = usePresentationPreferences(),
@@ -549,7 +555,7 @@ export function Discover({
             accessibilityLabel={expanded ? "Close expanded map" : "Expand map"}
             accessibilityState={{ expanded }}
             style={s.action} onPress={() => expanded ? closeExpanded() : onExpandedChange?.(true)}>
-            <Text style={s.link}>{expanded ? "Close" : "Expand"}</Text>
+            <View style={s.iconAction}><Icon name={expanded?"close":"expand"} size={17} color={LIGHT.accent}/><Text style={s.link}>{expanded ? "Close" : "Expand"}</Text></View>
           </Pressable>
         </View>
       </View> : null}
@@ -558,14 +564,11 @@ export function Discover({
       contentContainerStyle={[s.content, mapMode && s.mapContent]}
     >
       {!mapMode || mapFilters ? <>
-      {!mapMode ? <GlassHero>
+      {!mapMode ? <View style={s.intro}>
         <Text style={s.eyebrow}>YOUR GREEK WORLD</Text>
-        <Text style={s.title}>Close to home.{"\n"}Open to everywhere.</Text>
-        <Text style={s.body}>
-          Find your people, places and next plans. Keep your home, explore
-          somewhere new.
-        </Text>
-      </GlassHero> : null}
+        <View style={s.introRow}><Text accessibilityRole="header" style={[s.title,{flex:1}]}>Discover your{ "\n" }next connection.</Text><Pressable accessibilityRole="button" accessibilityLabel="Explore the map" onPress={()=>setState({...state,mode:"map"})} style={s.mapEntry}><Icon name="map" size={22} color={LIGHT.accent}/><Text style={s.link}>Map</Text></Pressable></View>
+        <Text style={s.body}>People, places and plans. Near you and around the world.</Text>
+      </View> : null}
       <View style={s.panel}>
         <View style={s.row}>
           <Text style={s.heading}>Exploring {area.label}</Text>
@@ -1004,12 +1007,13 @@ export function Discover({
     </View>
   );
 }
-const s = StyleSheet.create({
-  discoveryFrame: { flex: 1 },
+function useDiscoveryStyles(){const LIGHT=useDiscoveryPalette();return useMemo(()=>StyleSheet.create({
+  discoveryFrame: { flex: 1, backgroundColor: LIGHT.background },
+  intro:{gap:12,paddingHorizontal:2,paddingVertical:8},introRow:{flexDirection:"row",alignItems:"center",gap:12},mapEntry:{minWidth:62,minHeight:62,alignItems:"center",justifyContent:"center",gap:5,borderRadius:21,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:"#d7e7f2"},iconAction:{flexDirection:"row",alignItems:"center",gap:7},
   mapColumns: {flexDirection:"row",alignItems:"flex-start",gap:12},
   mapColumn: {flex:1,minWidth:0},
   mapContent: { padding: 12, gap: 12, paddingBottom: 20 },
-  mapToolbar: { flexDirection:"row", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap: 8, padding: 12, paddingBottom: 0 },
+  mapToolbar: { flexDirection:"row", flexWrap:"wrap", alignItems:"center", justifyContent:"space-between", gap: 8, paddingHorizontal:10,paddingVertical:4, marginHorizontal:12,marginTop:4,marginBottom:0,borderRadius:22,backgroundColor:LIGHT.surface,borderWidth:1,borderColor:"#d7e7f2",boxShadow:"0 5px 16px rgba(17,62,89,0.04)" },
   content: { padding: 20, gap: 20, paddingBottom: 36 },
   title: {
     fontSize: 35,
@@ -1048,10 +1052,10 @@ const s = StyleSheet.create({
     paddingHorizontal: 15,
     paddingVertical: 12,
     backgroundColor: LIGHT.surfaceRaised,
-    borderRadius: 22,
+    borderRadius: 16,
     justifyContent: "center",
   },
-  active: { backgroundColor: LIGHT.ink },
+  active: { backgroundColor: LIGHT.button },
   link: { fontWeight: "700", fontSize: 13, color: LIGHT.accent },
   input: {
     minHeight: 50,
@@ -1083,4 +1087,4 @@ const s = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}),[LIGHT]);}
