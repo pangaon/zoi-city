@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Image, Linking, Pressable, ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
+import { Image, Linking, Platform, Pressable, ScrollView, StyleSheet, useColorScheme, useWindowDimensions, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScaleText as Text } from './ScaleText';
+import { estimatePhotoHeroHeight } from './profileHeroLayout';
 
 /** Values passed here have already been resolved from the public listing contract. */
 export type ParishHomeProfile = {
@@ -21,6 +22,8 @@ export type ParishHomeProfile = {
 /** A listing action is enabled only when its canonical listing id matches the profile. */
 export type ParishListingAction = {
   listingId: string;
+  /** Destination UUID for linked tools such as a volunteer workspace. */
+  targetId?: string;
   run: (listingId: string) => void;
 };
 
@@ -67,11 +70,11 @@ function colorsFor(dark: boolean, published?: ParishHomeProps['publishedColors']
   return Object.fromEntries(Object.keys(defaults).map(key => [key, color((published as any)?.[key], (defaults as any)[key])])) as typeof defaults;
 }
 const actionFor = (action: ParishListingAction | undefined, listingId: string) =>
-  action && UUID.test(listingId) && action.listingId?.toLowerCase() === listingId.toLowerCase() && typeof action.run === 'function' ? action : null;
+  action && UUID.test(listingId) && action.listingId?.toLowerCase() === listingId.toLowerCase() && (!action.targetId || UUID.test(action.targetId)) && typeof action.run === 'function' ? action : null;
 
 export function ParishHome({ profile, actions, publishedColors, onBack }: ParishHomeProps) {
   const dark = useColorScheme() === 'dark';
-  const { width } = useWindowDimensions();
+  const { width, fontScale } = useWindowDimensions();
   const palette = useMemo(() => colorsFor(dark, publishedColors), [dark, publishedColors]);
   const styles = useMemo(() => makeStyles(palette, width), [palette, width]);
   const [photoFailed, setPhotoFailed] = useState(false);
@@ -92,6 +95,8 @@ export function ParishHome({ profile, actions, publishedColors, onBack }: Parish
   const ctaBackground = contrast(palette.accent, '#FFFFFF') >= 4.5 ? palette.accent
     : contrast(palette.foreground, '#FFFFFF') >= 4.5 ? palette.foreground : '#17251E';
   const ctaText = contrast(ctaBackground, '#FFFFFF') >= 4.5 ? '#FFFFFF' : '#17251E';
+  const basePhotoHeroHeight = Math.min(360, Math.max(218, width * .72));
+  const photoHeroHeight = estimatePhotoHeroHeight({ width, baseHeight: basePhotoHeroHeight, fontScale, title: name, titleFontSize: width < 360 ? 24 : 26, titleLineHeight: (width < 360 ? 24 : 26) * 1.12, supportingText: location ? [{ text: location, fontSize: 14, lineHeight: 21 }] : [], horizontalPadding: 22, verticalPadding: 44 });
 
   useEffect(() => { setPhotoFailed(false); }, [photo]);
   useEffect(() => { setLogoFailed(false); }, [logo]);
@@ -103,7 +108,7 @@ export function ParishHome({ profile, actions, publishedColors, onBack }: Parish
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityHint={hint}
-      onPress={() => action.run(profile.id)}
+      onPress={() => action.run(action.targetId || profile.id)}
       style={({ pressed }: any) => [styles.actionRow, pressed && styles.pressed]}
     >
       <View style={styles.actionCopy}><Text style={styles.actionTitle}>{label}</Text></View>
@@ -121,16 +126,16 @@ export function ParishHome({ profile, actions, publishedColors, onBack }: Parish
         <View style={styles.backSpacer} />
       </View>
 
-      <View style={styles.hero}>
-        {photo && !photoFailed ? <Image source={{ uri: photo }} resizeMode="cover" accessible={false} onError={() => setPhotoFailed(true)} style={styles.heroImage} /> : <View accessible={false} style={styles.heroFallback} />}
-        {photo && !photoFailed ? <LinearGradient colors={['rgba(11,20,15,0.02)', 'rgba(11,20,15,0.18)', 'rgba(11,20,15,0.88)']} locations={[0, .42, 1]} style={StyleSheet.absoluteFill} /> : null}
+      <View style={[styles.hero, (photo && !photoFailed) ? { height: photoHeroHeight } : styles.noPhoto]}>
+        {photo && !photoFailed ? <Image source={{ uri: photo }} resizeMode="cover" accessible={false} onError={() => setPhotoFailed(true)} style={styles.heroImage} /> : null}
+        {photo && !photoFailed ? <LinearGradient colors={photoHeroHeight > basePhotoHeroHeight ? ['rgba(11,20,15,0.60)', 'rgba(11,20,15,0.74)', 'rgba(11,20,15,0.90)'] : ['rgba(11,20,15,0.02)', 'rgba(11,20,15,0.58)', 'rgba(11,20,15,0.90)']} locations={photoHeroHeight > basePhotoHeroHeight ? [0, .50, 1] : [0, .52, 1]} style={StyleSheet.absoluteFill} /> : null}
         <View style={[styles.heroCopy, !(photo && !photoFailed) && styles.heroCopyFallback]}>
           {location ? <Text style={[styles.location, photo && !photoFailed && styles.locationOnImage]}>{location}</Text> : null}
-          <Text accessibilityRole="header" style={[styles.name, photo && !photoFailed && styles.nameOnImage]}>{name}</Text>
+          <Text accessibilityRole="header" style={[styles.name, photo && !photoFailed ? styles.nameOnImage : styles.nameFallback]}>{name}</Text>
         </View>
       </View>
 
-      {description ? <View style={styles.descriptionBlock}><Text style={styles.description}>{description}</Text></View> : null}
+      {description ? <View style={styles.descriptionBlock}><Text numberOfLines={3} style={styles.description}>{description}</Text></View> : null}
 
       {website || phoneHref || email || address ? <View style={styles.contactCard}>
         {address ? <Text selectable style={styles.address}>{address}</Text> : null}
@@ -152,7 +157,7 @@ export function ParishHome({ profile, actions, publishedColors, onBack }: Parish
 }
 
 function makeStyles(palette: ReturnType<typeof colorsFor>, width: number) {
-  const titleSize = width < 360 ? 26 : 28;
+  const titleSize = width < 360 ? 24 : 26;
   return StyleSheet.create({
     screen: { flex: 1, backgroundColor: palette.background },
     content: { width: '100%', maxWidth: 760, alignSelf: 'center', paddingHorizontal: 18, paddingTop: 8, paddingBottom: 32, gap: 16 },
@@ -164,14 +169,15 @@ function makeStyles(palette: ReturnType<typeof colorsFor>, width: number) {
     logo: { width: 42, height: 42 },
     logoFallback: { width: 34, height: 34, borderRadius: 17, backgroundColor: palette.surface, borderWidth: 1, borderColor: palette.border, alignItems: 'center', justifyContent: 'center' },
     logoLetter: { color: palette.accent, fontFamily: 'Georgia', fontSize: 19 },
-    hero: { minHeight: 250, height: Math.min(360, Math.max(250, width * .72)), overflow: 'hidden', borderRadius: 24, backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, justifyContent: 'flex-end' },
+    hero: { minHeight: 0, overflow: 'hidden', borderRadius: 24, backgroundColor: palette.surface, borderColor: palette.border, borderWidth: 1, justifyContent: 'flex-end' },
+    noPhoto: { minHeight: 70, justifyContent: 'center' },
     heroImage: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, width: '100%', height: '100%' },
-    heroFallback: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, backgroundColor: palette.surface },
     heroCopy: { paddingHorizontal: 22, paddingBottom: 22, gap: 7 },
-    heroCopyFallback: { flex: 1, justifyContent: 'flex-end' },
+    heroCopyFallback: { flex: 0, minHeight: 70, justifyContent: 'center', paddingHorizontal: 16, paddingVertical: 12 },
     location: { color: palette.muted, fontSize: 14, lineHeight: 21, letterSpacing: .3 },
     locationOnImage: { color: '#F5F2E8' },
     name: { color: palette.foreground, fontFamily: 'Georgia', fontSize: titleSize, lineHeight: titleSize * 1.12, fontWeight: '500', flexShrink: 1 },
+    nameFallback: { fontFamily: Platform.select({ ios: 'System', android: 'sans-serif', default: 'system-ui' }), fontSize: 21, lineHeight: 26, fontWeight: '600' },
     nameOnImage: { color: '#FFFFFF' },
     descriptionBlock: { paddingHorizontal: 3, paddingVertical: 2 },
     description: { color: palette.muted, fontSize: 14, lineHeight: 21 },

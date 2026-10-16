@@ -1,13 +1,14 @@
 import {useMemo,useState} from 'react';
 import {ScaleText as Text} from './ScaleText';
-import {Image,Linking,Modal,Pressable,ScrollView,Share,StyleSheet,useColorScheme,useWindowDimensions,View} from 'react-native';
+import {Image,Linking,Modal,Platform,Pressable,ScrollView,Share,StyleSheet,useColorScheme,useWindowDimensions,View} from 'react-native';
 import {LinearGradient} from 'expo-linear-gradient';
 import {ServiceOfferings} from './ServiceOfferings';
+import {estimatePhotoHeroHeight} from './profileHeroLayout';
 import type {NativeServiceOfferings} from './serviceOfferings';
 
 type Appearance={background:string;ink:string;muted:string;accent:string;primaryColor:string;surface:string;line:string;copy?:Record<string,string>};
 type ProfessionalProfile={
- id:string;name:string;slug?:string;location?:string;photo?:string;gallery:string[];description?:string;
+ id:string;name:string;slug?:string;location?:string;photo?:string;logo?:string;gallery:string[];description?:string;
  website?:string;phoneHref?:string|null;email?:string;inquiryListing?:string;
  serviceOfferings:NativeServiceOfferings;
  publishedDesign?:{copy?:Record<string,string>}|null;
@@ -16,13 +17,13 @@ type ProfessionalProfile={
 /** Compact source-backed professional portfolio. Enquiries are listing-scoped and are never represented as bookings. */
 export function ProfessionalHome({profile,appearance,back,enquiry}:{profile:ProfessionalProfile;appearance:Appearance;back:()=>void;enquiry:(listing:string)=>void}){
  const dark=useColorScheme()==='dark', {width,fontScale}=useWindowDimensions();
- const [heroFailed,setHeroFailed]=useState(false),[failed,setFailed]=useState<Record<string,boolean>>({}),[selected,setSelected]=useState<number|null>(null),[error,setError]=useState('');
+ const [heroFailed,setHeroFailed]=useState(false),[logoFailed,setLogoFailed]=useState(false),[failed,setFailed]=useState<Record<string,boolean>>({}),[selected,setSelected]=useState<number|null>(null),[error,setError]=useState('');
  const copy=profile.publishedDesign?.copy||appearance.copy||{};
+ const headline=copy.headline?.trim();
  const gallery=profile.gallery.filter(url=>!failed[url]);
  const styles=useMemo(()=>makeStyles(appearance,dark),[appearance,dark]);
  const hero=!!profile.photo&&!heroFailed;
- const heroHeight=Math.max(200,Math.min(270,width*.64))+Math.max(0,(fontScale-1)*96);
- const headline=copy.headline?.trim();
+ const baseHeroHeight=Math.max(200,Math.min(270,width*.64)),heroHeight=estimatePhotoHeroHeight({width,baseHeight:baseHeroHeight,fontScale,title:profile.name,titleFontSize:25,titleLineHeight:30,supportingText:[...(profile.location?[{text:profile.location,fontSize:12,lineHeight:16,maxLines:1}]:[]),...(headline&&headline.toLowerCase()!==profile.name.toLowerCase()?[{text:headline,fontSize:15,lineHeight:21,maxLines:2}]:[])]}),expandedHero=hero&&heroHeight>baseHeroHeight;
  const intro=copy.intro?.trim()||profile.description?.trim();
  const contacts:[string,string][]=[];
  if(profile.phoneHref)contacts.push(['Call',profile.phoneHref]);
@@ -32,13 +33,13 @@ export function ProfessionalHome({profile,appearance,back,enquiry}:{profile:Prof
  const share=async()=>{setError('');try{await Share.share({title:profile.name,message:[profile.name,profile.location,'https://www.zoi.city/p/'+encodeURIComponent(profile.slug||'')].filter(Boolean).join(' · ')})}catch{setError('Sharing is unavailable.')}};
  const inquiry=()=>{if(profile.inquiryListing)enquiry(profile.inquiryListing);else if(contacts[0])void open(contacts[0][1]);};
  return <ScrollView keyboardShouldPersistTaps="handled" style={styles.screen} contentContainerStyle={styles.content}>
-  <View style={styles.top}><Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} style={styles.iconButton}><Text style={styles.iconText}>‹</Text></Pressable><View style={styles.topFill}/><Pressable accessibilityRole="button" accessibilityLabel="Share profile" onPress={()=>void share()} style={styles.iconButton}><Text style={styles.iconText}>↗</Text></Pressable></View>
+  <View style={styles.top}><Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} style={styles.iconButton}><Text style={styles.iconText}>‹</Text></Pressable>{profile.logo&&!logoFailed?<Image source={{uri:profile.logo}} resizeMode="contain" accessibilityLabel={profile.name+' logo'} onError={()=>setLogoFailed(true)} style={styles.clientLogo}/>:null}<View style={styles.topFill}/><Pressable accessibilityRole="button" accessibilityLabel="Share profile" onPress={()=>void share()} style={styles.iconButton}><Text style={styles.iconText}>↗</Text></Pressable></View>
   <View style={[styles.hero,{minHeight:heroHeight}]}>
    {hero?<Image source={{uri:profile.photo||''}} accessibilityLabel={profile.name+' portrait or profile image'} resizeMode="cover" onError={()=>setHeroFailed(true)} style={StyleSheet.absoluteFill}/>:<View style={StyleSheet.absoluteFill}/>}
-   {hero?<LinearGradient pointerEvents="none" colors={['rgba(6,12,20,0.02)','rgba(6,12,20,0.12)','rgba(6,12,20,0.88)']} locations={[0,.48,1]} style={StyleSheet.absoluteFill}/>:null}
+   {hero?<LinearGradient pointerEvents="none" colors={expandedHero?['rgba(6,12,20,.62)','rgba(6,12,20,.74)','rgba(6,12,20,.90)']:['rgba(6,12,20,0)','rgba(6,12,20,.58)','rgba(6,12,20,.90)']} locations={expandedHero?[0,.48,1]:[0,.52,1]} style={StyleSheet.absoluteFill}/>:null}
    <View style={[styles.identity,!hero&&styles.identityFallback]}>
     {profile.location?<Text numberOfLines={1} style={[styles.location,!hero&&styles.inkText]}>{profile.location}</Text>:null}
-    <Text accessibilityRole="header" style={[styles.name,!hero&&styles.inkText]}>{profile.name}</Text>
+    <Text accessibilityRole="header" style={[styles.name,!hero&&styles.nameFallback]}>{profile.name}</Text>
     {headline&&headline.toLowerCase()!==profile.name.toLowerCase()?<Text numberOfLines={2} style={[styles.headline,!hero&&styles.mutedText]}>{headline}</Text>:null}
    </View>
   </View>
@@ -64,5 +65,5 @@ export function ProfessionalHome({profile,appearance,back,enquiry}:{profile:Prof
 
 function makeStyles(a:Appearance,dark:boolean){
  const bg=dark?'#0D1722':a.background,surface=dark?'#142535':a.surface,ink=dark?'#F3F6FA':a.ink,muted=dark?'#B7C4D1':a.muted,line=dark?'#33495E':a.line,accent=dark?'#8AB8FF':a.accent,primary=dark&&a.primaryColor==='#FFFFFF'?'#245EAB':a.primaryColor;
- return StyleSheet.create({screen:{flex:1,backgroundColor:bg},content:{width:'100%',maxWidth:720,alignSelf:'center',paddingHorizontal:14,paddingTop:2,paddingBottom:24,gap:11},top:{height:46,flexDirection:'row',alignItems:'center',gap:10},topFill:{flex:1},iconButton:{width:44,height:44,borderRadius:22,alignItems:'center',justifyContent:'center',backgroundColor:dark?'#243749':'rgba(255,255,255,.86)',borderWidth:1,borderColor:line},iconText:{fontSize:23,lineHeight:28,color:ink},hero:{width:'100%',borderRadius:24,overflow:'hidden',justifyContent:'flex-end',backgroundColor:surface},identity:{paddingHorizontal:18,paddingVertical:17,gap:5},identityFallback:{minHeight:150,justifyContent:'flex-end'},location:{color:'rgba(255,255,255,.82)',fontSize:12,lineHeight:16},name:{fontFamily:'Georgia',color:'#FFFFFF',fontSize:25,lineHeight:30,fontWeight:'400',letterSpacing:-.35},headline:{color:'rgba(255,255,255,.92)',fontSize:15,lineHeight:21,fontWeight:'500'},inkText:{color:ink},mutedText:{color:muted,fontSize:14,lineHeight:21},intro:{paddingHorizontal:2},introText:{color:muted,fontSize:14,lineHeight:21},section:{gap:9},sectionTitle:{color:ink,fontSize:17,lineHeight:22,fontWeight:'600',letterSpacing:-.2},gallery:{flexDirection:'row',flexWrap:'wrap',gap:10},imageFrame:{borderRadius:16,overflow:'hidden',backgroundColor:surface,borderWidth:1,borderColor:line},primary:{minHeight:50,paddingHorizontal:17,borderRadius:16,backgroundColor:primary,flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:12},primaryText:{color:'#FFFFFF',fontSize:15,lineHeight:20,fontWeight:'700',flexShrink:1},arrow:{color:'#FFFFFF',fontSize:21,lineHeight:26},contacts:{flexDirection:'row',flexWrap:'wrap',gap:8},contact:{minHeight:46,minWidth:48,paddingHorizontal:15,borderRadius:23,alignItems:'center',justifyContent:'center',backgroundColor:surface,borderWidth:1,borderColor:line},contactText:{fontSize:13,lineHeight:18,color:ink,fontWeight:'600'},note:{color:muted,fontSize:12,lineHeight:17},error:{color:dark?'#FF9EA7':'#B42332',fontSize:13,lineHeight:19},modal:{flex:1,backgroundColor:'rgba(5,9,14,.96)',justifyContent:'center',alignItems:'center',gap:18,padding:16},close:{position:'absolute',right:16,top:48,zIndex:1,width:44,height:44,borderRadius:22,alignItems:'center',justifyContent:'center',backgroundColor:'#26313D'},modalControls:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:30}});
+ return StyleSheet.create({screen:{flex:1,backgroundColor:bg},content:{width:'100%',maxWidth:720,alignSelf:'center',paddingHorizontal:14,paddingTop:2,paddingBottom:24,gap:11},top:{height:46,flexDirection:'row',alignItems:'center',gap:10},topFill:{flex:1},iconButton:{width:44,height:44,borderRadius:22,alignItems:'center',justifyContent:'center',backgroundColor:dark?'#243749':'rgba(255,255,255,.86)',borderWidth:1,borderColor:line},iconText:{fontSize:23,lineHeight:28,color:ink},clientLogo:{width:42,height:36,borderRadius:10,backgroundColor:surface,borderWidth:1,borderColor:line},hero:{width:'100%',borderRadius:24,overflow:'hidden',justifyContent:'flex-end',backgroundColor:surface},identity:{paddingHorizontal:18,paddingVertical:17,gap:5},identityFallback:{minHeight:0,justifyContent:'center',paddingVertical:12},location:{color:'rgba(255,255,255,.82)',fontSize:12,lineHeight:16},name:{fontFamily:'Georgia',color:'#FFFFFF',fontSize:25,lineHeight:30,fontWeight:'400',letterSpacing:-.35},nameFallback:{fontFamily:Platform.select({ios:'System',android:'sans-serif',default:'system-ui'}),fontSize:21,lineHeight:26,fontWeight:'600',letterSpacing:-.3,color:ink},headline:{color:'rgba(255,255,255,.92)',fontSize:15,lineHeight:21,fontWeight:'500'},inkText:{color:ink},mutedText:{color:muted,fontSize:14,lineHeight:21},intro:{paddingHorizontal:2},introText:{color:muted,fontSize:13,lineHeight:19},section:{gap:9},sectionTitle:{color:ink,fontSize:16,lineHeight:21,fontWeight:'600',letterSpacing:-.2},gallery:{flexDirection:'row',flexWrap:'wrap',gap:10},imageFrame:{borderRadius:16,overflow:'hidden',backgroundColor:surface,borderWidth:1,borderColor:line},primary:{minHeight:50,paddingHorizontal:17,borderRadius:16,backgroundColor:primary,flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:12},primaryText:{color:'#FFFFFF',fontSize:14,lineHeight:19,fontWeight:'700',flexShrink:1},arrow:{color:'#FFFFFF',fontSize:21,lineHeight:26},contacts:{flexDirection:'row',flexWrap:'wrap',gap:8},contact:{minHeight:46,minWidth:48,paddingHorizontal:15,borderRadius:23,alignItems:'center',justifyContent:'center',backgroundColor:surface,borderWidth:1,borderColor:line},contactText:{fontSize:13,lineHeight:18,color:ink,fontWeight:'600'},note:{color:muted,fontSize:12,lineHeight:17},error:{color:dark?'#FF9EA7':'#B42332',fontSize:13,lineHeight:19},modal:{flex:1,backgroundColor:'rgba(5,9,14,.96)',justifyContent:'center',alignItems:'center',gap:18,padding:16},close:{position:'absolute',right:16,top:48,zIndex:1,width:44,height:44,borderRadius:22,alignItems:'center',justifyContent:'center',backgroundColor:'#26313D'},modalControls:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:30}});
 }
