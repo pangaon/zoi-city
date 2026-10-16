@@ -6,6 +6,7 @@ import {namedPlaceReviewMatches} from './source-coordinates.mjs';
 import {canonical} from '../quality/evidence.mjs';
 import {REVIEWED_WIX_KIND} from './wix-business-location-evidence.mjs';
 import {reviewedWixRequestMatches} from './reviewed-wix-coordinate-request.mjs';
+import {GEOCODED_ADDRESS_KIND,reviewedAddressGeocodeMatches} from './nominatim-address-candidate.mjs';
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const hash=text=>createHash('sha256').update(text,'utf8').digest('hex');
 // Prepare transport only. Server authorization, current-row CAS and independent
@@ -15,16 +16,18 @@ export function prepareCoordinateRequest({requestId,reportText,review,snapshot,n
  const report=JSON.parse(reportText);
  if(!snapshot||!uuid.test(snapshot.id||'')||report.listing_id!==snapshot.id||!snapshot.database_snapshot||review?.database_snapshot!==snapshot.database_snapshot||report.source_fingerprint!==snapshot.source_fingerprint)throw Error('coordinate_snapshot_mismatch');
  if(review.report_sha256!==hash(reportText))throw Error('exact_report_hash_mismatch');
- if(report.schema!==1||report.kind!=='official_coordinate_dry_run'||report.status!=='review_required'||report.reason!=='coordinate_plausibility_review_required'||report.http_status!==200||!report.candidate)throw Error('coordinate_candidate_missing');
+ if(report.schema!==1||!['official_coordinate_dry_run','official_address_geocode_review'].includes(report.kind)||report.status!=='review_required'||report.reason!=='coordinate_plausibility_review_required'||report.http_status!==200||!report.candidate)throw Error('coordinate_candidate_missing');
  const time=Date.parse(review.reviewed_at);if(!Number.isFinite(time)||time<now-7*86400000||time>now+300000)throw Error('coordinate_review_expired');
  if(typeof review.reviewer!=='string'||typeof review.specialist!=='string'||!review.reviewer.trim()||!review.specialist.trim()||review.reviewer.trim().toLowerCase()===review.specialist.trim().toLowerCase())throw Error('independent_review_required');
  if(report.collector&&report.collector.trim().toLowerCase()!==review.specialist.trim().toLowerCase())throw Error('collector_identity_mismatch');
  for(const field of ['official_source_confirmed','exact_address_confirmed','not_area_centroid'])if(review[field]!==true)throw Error('coordinate_review_incomplete');
  for(const field of ['address','city','country'])if(review['stored_'+field]!==snapshot[field])throw Error('coordinate_address_mismatch');
  const c=report.candidate,b=review.locality_extent;
+ if(c.evidence_kind===GEOCODED_ADDRESS_KIND)reviewedAddressGeocodeMatches(report,review,snapshot,{now});
+ else if(report.kind==='official_address_geocode_review'||Object.hasOwn(c,'geocode_evidence_text'))throw Error('coordinate_geocode_kind_mismatch');
  if(Object.hasOwn(c,'wix_evidence_text')&&c.evidence_kind!==REVIEWED_WIX_KIND)throw Error('coordinate_wix_kind_mismatch');
  if(Object.hasOwn(c,'place_evidence_text')&&c.evidence_kind!==REVIEWED_PLACE_KIND)throw Error('coordinate_place_kind_mismatch');
- if(!['jsonld','official_destination','reviewed_named_place_shortlink',REVIEWED_PLACE_KIND,REVIEWED_WIX_KIND].includes(c.evidence_kind)||!c.address||Array.isArray(c.address)||typeof c.address!=='object'||!['street','city','country'].every(k=>typeof c.address[k]==='string'&&c.address[k].trim())||!review.candidate_address||canonical(review.candidate_address)!==canonical(c.address))throw Error('coordinate_candidate_identity_review_required');
+ if(!['jsonld','official_destination','reviewed_named_place_shortlink',REVIEWED_PLACE_KIND,REVIEWED_WIX_KIND,GEOCODED_ADDRESS_KIND].includes(c.evidence_kind)||!c.address||Array.isArray(c.address)||typeof c.address!=='object'||!['street','city','country'].every(k=>typeof c.address[k]==='string'&&c.address[k].trim())||!review.candidate_address||canonical(review.candidate_address)!==canonical(c.address))throw Error('coordinate_candidate_identity_review_required');
  if(c.evidence_kind===REVIEWED_WIX_KIND)reviewedWixRequestMatches(report,review,snapshot,{now});
  if(c.evidence_kind===REVIEWED_PLACE_KIND)reviewedPlaceRequestMatches(report,review,snapshot,{now});
  if(c.evidence_kind==='reviewed_named_place_shortlink'&&!namedPlaceReviewMatches(report,review,snapshot.website))throw Error('named_place_review_required');

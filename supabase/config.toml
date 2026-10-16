@@ -2,3 +2,8 @@
 # The handler validates the user token, then every user RPC validates the actual
 # current Auth session, workspace and owned listing. Cleanup is service-only.
 verify_jwt = false
+
+[functions.account-delete]
+# User actions are authorized by current-session RPCs; status is a minimal
+# read-only recovery capability and worker admission is service-only RPC.
+verify_jwt = false

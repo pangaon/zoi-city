@@ -1,0 +1,92 @@
+{
+  "status": "frozen_for_independent_V2_recheck_source_only_not_deployed",
+  "owner": "owner_next",
+  "date": "2026-10-16",
+  "tree": "/workspaces/zoi-native-service-offerings-work",
+  "baseline": "6c2f013d3ffa3a1d39dda6922c433de39d3550d4",
+  "predecessor": {
+    "path": "docs/audits/account-deletion-core-owner-2026-10-16.json",
+    "sha256": "924da084abb4a39a8eb11947f89cd4747e3244acd1952f6a6cd4f0a02981765d",
+    "status": "held_by_independent_post_wait_SID_expiry_counterexample",
+    "immutable_copy": "/home/codespace/.cache/zoi/account-deletion-core-held-v1-20261016"
+  },
+  "manifest": {
+    "path": "docs/audits/evidence/account-deletion-core-owner-v2-2026-10-16/source-manifest.json",
+    "sha256": "0c63c3a8c3c6ca9053d0912e15f651559731fb62836f7e231550541668776793",
+    "owned": 13,
+    "readonly": 6
+  },
+  "changed": [
+    {
+      "path": "supabase/migrations/20261016040420_self_service_account_deletion.sql",
+      "held_v1_sha256": "8402f9b2f53a700bf092c54b28b420ef75bee326f12a03fff96bc8371407a123",
+      "v2_sha256": "4698f2d6823274375897f9f530b4e99441c6db0b7a30bbdb2e90d13231ec7845"
+    },
+    {
+      "path": "tests/database/account-deletion.integration.mjs",
+      "held_v1_sha256": "3bb8605e11699f84c19e28f85ce44a624fcd309b6afbfc8e45f2a3285ae40dcf",
+      "v2_sha256": "574b3f819518e9e84c653203698dcc7d57c8a250f10fe2897d4fd9eba76c8b93"
+    }
+  ],
+  "fix": {
+    "confirm": "Capture immutable original auth.sessions.created_at/not_after before intentional revocation; after actor/profile/request locks, compare captured not_after with clock_timestamp before acceptance. Expiry raises suite_session_unavailable and the entire statement rolls back prior session deletion.",
+    "prepare": "Repeat canonical suite_lock_session and five-minute created_at requirement after profile/request locks and before insert/replay result. Request existence is checked through r.request_id to preserve branching after authority recheck.",
+    "cancel": "Repeat canonical suite_lock_session after request lock before cancellation.",
+    "service": "process/finish are service-only continuation of already accepted requests; original SID is intentionally revoked and is not required for asynchronous erasure. Their worker/request/profile and residual checks are unchanged.",
+    "preservation": "Exactly eleven other owned source hashes, all six read-only dependencies, all existing helper definitions and ensure_profile entry correction unchanged. No post-revocation suite_lock_session call."
+  },
+  "verification": {
+    "postgres_mounted": {
+      "groups": 32,
+      "mounted_journeys": 7,
+      "output": "/home/codespace/.cache/zoi/account-delete-authority-v2",
+      "command": "ZOI_ACCOUNT_DELETE_EVIDENCE=<unique private dir> PGPORT=15951 ZOI_ACCOUNT_DELETE_BROWSER=1 ZOI_PLAYWRIGHT_MODULE=<pinned module> CHROMIUM_EXECUTABLE_PATH=<chromium> node tests/database/account-deletion.integration.mjs"
+    },
+    "new_cases": [
+      "actual two-backend prepare waits past not_after; no request created",
+      "actual two-backend confirm waits past not_after; prepared request + session revocation rollback",
+      "actual two-backend cancel waits past not_after; request remains prepared",
+      "actual two-backend prepare waits beyond recent-reauth age; no request created"
+    ],
+    "unchanged_independent_counterexample": {
+      "cases": 3,
+      "all_passed": true,
+      "command": "ZOI_ACCOUNT_DELETE_EVIDENCE=<new private dir> PGPORT=15953 node /home/codespace/.cache/zoi/account-deletion-independent-20261016/independent-pg-probe.mjs"
+    },
+    "unchanged_checks": "Prior 46 focused checks / TS / Edge Deno remained source-relevant and unchanged; no JS/TS runtime edits in V2. Repeated full PG/mounted because migration behavior changed.",
+    "diff_check": "PASS"
+  },
+  "limitations": "All phase1 predecessor release/unsupported-history/Storage/scheduler/Apple-readiness limits remain. No hosted mutations, Auth/provider actions or real-account deletion. Community erasure proposal is separate, not implemented.",
+  "proofs": [
+    {
+      "path": "docs/audits/evidence/account-deletion-core-owner-v2-2026-10-16/source-manifest.json",
+      "sha256": "0c63c3a8c3c6ca9053d0912e15f651559731fb62836f7e231550541668776793",
+      "bytes": 3712
+    },
+    {
+      "path": "docs/audits/evidence/account-deletion-core-owner-v2-2026-10-16/original-counterexample-rerun.json",
+      "sha256": "771b8529138850de3a1ee330e4ec43b7e4071d39f953d7dca827d6eb4b393f32",
+      "bytes": 795
+    },
+    {
+      "path": "docs/audits/evidence/account-deletion-core-owner-v2-2026-10-16/postgres-result.json",
+      "sha256": "5dbc9e7e69e1758144dc7eb603ed47cbfaa9daa05b3d84255951e25c7d05b4bf",
+      "bytes": 4260
+    },
+    {
+      "path": "docs/audits/evidence/account-deletion-core-owner-v2-2026-10-16/mounted-result.json",
+      "sha256": "dff8de220cc28369c20db0296e02dbbd190304c7ba699c07ccbdad361d3e9259",
+      "bytes": 1971
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/account-delete-authority-v2-run.log",
+      "sha256": "e4ea2788bebdd4e236894a355b290a936b771da424e0831a415c88c7dbc6db44",
+      "bytes": 3104
+    },
+    {
+      "path": "/home/codespace/.cache/zoi/account-delete-authority-v2-original-probe.log",
+      "sha256": "bec66fa316cefa01ca1baec149bacc7a3d6955d7b402c891b059862197c9fc70",
+      "bytes": 258
+    }
+  ]
+}

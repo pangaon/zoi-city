@@ -1,0 +1,114 @@
+{
+  "schema": 1,
+  "status": "INDEPENDENT_SOURCE_AND_LOCAL_BROWSER_ACCEPTANCE__NOT_INSTALLED_NATIVE_OR_RELEASE_ACCEPTANCE",
+  "reviewer": "/root/map_scale_followthrough",
+  "source_owner": "/root",
+  "worktree": "/workspaces/zoi-map-studio-ops-release",
+  "files": [
+    {
+      "path": "mobile/src/WelcomeLanding.tsx",
+      "sha256": "f04c60579a239329cc6f4483e1578f12626de1f20d6f6a62816d5f5a99aeb334",
+      "bytes": 7818
+    },
+    {
+      "path": "mobile/src/Welcome.tsx",
+      "sha256": "03be9846d0031ff468de7d154cbf7e9bc7d28872006efabf88069795082f5561",
+      "bytes": 2804
+    },
+    {
+      "path": "mobile/src/AegeanArt.tsx",
+      "sha256": "a4fb38a5fd9917aadff17ba65742f554e9dcbaab6bfe5944c4dd1fd34fee27f8",
+      "bytes": 3393
+    },
+    {
+      "path": "mobile/src/Presentation.tsx",
+      "sha256": "0edcba072e697797b655ae19c65be6c582e293987a0cf0f8fb02224102b219ba",
+      "bytes": 4704
+    },
+    {
+      "path": "mobile/src/ScaleText.tsx",
+      "sha256": "5eff546341d8b756bebbb6acacb2fac1406e0e767c10a62984b54a922480b6e1",
+      "bytes": 761
+    },
+    {
+      "path": "mobile/src/Icon.tsx",
+      "sha256": "133dbf4a6edc1282cf5b1c44f7bf0a8fc310096d13e9bc76706f81347b33cc92",
+      "bytes": 1962
+    },
+    {
+      "path": "mobile/assets/aegean-world-opening-v3.png",
+      "sha256": "e5fb3b51e0808d5286ff123fe7485dcff52e3b96ad68f334b8017cc31a808ef3",
+      "bytes": 2484089
+    },
+    {
+      "path": "mobile/assets/zoi-logo.png",
+      "sha256": "08db50bee5caf18a878cb8468ced301d74c92bffd7b308678fb95e4f75514ff1",
+      "bytes": 112594
+    },
+    {
+      "path": "mobile/assets/aegean-world-opening-v3.provenance.json",
+      "sha256": "dd8714d6b99c984e38c292cc22da08eb31495da4af98a08b71ccc8c2df4fb758",
+      "bytes": 2303
+    }
+  ],
+  "source_changes_by_reviewer": 0,
+  "accepted_behaviour": "One bright, immediate welcome with Explore/home, Community, Discover, Create/Grow and Sign-in/Grow; exact genuine logo and original founder-concept composite brand artwork; no factual client/location claim. Existing device-completion/deep-link authority and presentation preferences preserved.",
+  "held_defects_repaired_and_rechecked": [
+    {
+      "defect": "Overscanned art created337px document at320px viewport before Explore.",
+      "root_fix": "WelcomeLanding.frame overflow:hidden; inner ScrollView retained.",
+      "recheck": "All12 short/font1/font2/glass/opaque combinations plus actual Expo3 short screens have no horizontal overflow."
+    },
+    {
+      "defect": "Stopped Animated.loop never resumed after background\u2192foreground.",
+      "root_fix": "Local running guard; reset before start; duplicate active event does not restart.",
+      "recheck": "Actual Expo background stop/foreground motion/live reduce-motion reset/unmount passes; controlled actual Android source effect resets/resumes and cleans listeners."
+    }
+  ],
+  "checks": {
+    "controlled_browser_cases": 14,
+    "controlled_scope": "Actual unchanged WelcomeGate/Landing/AegeanArt/ScaleText and installed Expo web gradient/blur; controlled native point font/context, presentation preferences, AsyncStorage and Linking.320\u00d7568/390\u00d7390/780\u00d7844 \u00d7 font1/font2 \u00d7 glass/opaque; all6 action targets44/reachable and unclipped; privacy error/retry; warm client link during checking/choosing beats late bootstrap/save; subscription removed on unmount.",
+    "actual_expo_browser_cases": 9,
+    "actual_expo_scope": "Actual local Expo App:3 short-screen privacy-error/retry, Explore, completion/relaunch and no overflow;4 real destination selections; ambient motion/background/foreground/live reduce-motion/unmount; saveData low-power proxy suppresses animation and blur.",
+    "native_source_contracts": "Actual AegeanArt/Presentation compiled unchanged with controlled Android Animated/AppState/Battery/Accessibility hosts. Initial effects conservative; duplicate active guarded; background/foreground resets; preferences/unmount stop/reset/remove; actual native low-power/reduce-motion/reduce-transparency hook events and3 subscription cleanup pass.",
+    "typecheck": "Full mobile tsc --noEmit passed",
+    "image_provenance": "Source SHA/bytes/PNG dimensions match retained exact provenance. Composite atmosphere is explicitly not an identified client or combined real location."
+  },
+  "visual_review": {
+    "inspected": [
+      "owner390",
+      "owner780",
+      "independent320font2glass",
+      "actualshortscreens"
+    ],
+    "assessment": "Bright sky/sea and white-stone composition, genuine logo, navy serif display and separated blue action panel are legible. At320font2, nearly opaque light readingHero and stacked routes provide text backing and complete wrapping; all controls remain reachable by the actual ScrollView.",
+    "source_render_journey_distinguished": true
+  },
+  "capture_flow_change": {
+    "supersedes": "Old3step Continue/Previous/Skip/Let\u2019s-go flow is removed.",
+    "current_selectors": [
+      "button:Explore Zoi",
+      "button:Open Community",
+      "button:Open Discover",
+      "button:Open Create",
+      "button:Sign in to Zoi",
+      "link:Zoi privacy policy",
+      "button:Retry privacy"
+    ],
+    "before_capture": "Fresh device state; wait Explore Zoi aria-disabled != true, then capture welcome. Root owns updating release capture selectors and Text inventory pins; old Skip/Continue tests must not be reported as current acceptance."
+  },
+  "commands": {
+    "component": "node /home/codespace/.cache/zoi/native-welcome-v3-independent-20261016/build.cjs && node /home/codespace/.cache/zoi/native-welcome-v3-independent-20261016/verify.mjs",
+    "actual_expo": "node /home/codespace/.cache/zoi/native-welcome-v3-independent-20261016/verify-expo.mjs && node /home/codespace/.cache/zoi/native-welcome-v3-independent-20261016/verify-destinations-expo.mjs (requires existing local Expo port8086)",
+    "lifecycle": "node /home/codespace/.cache/zoi/native-welcome-v3-independent-20261016/native-lifecycle.mjs",
+    "typecheck": "cd mobile && ./node_modules/.bin/tsc --noEmit --pretty false"
+  },
+  "limits": [
+    "No installed iOS/Android artifact or actual native OS URL/background/low-power delivery accepted. The native contract hosts and web saveData are controlled inputs.",
+    "No production build/deploy/provider or user-data writes performed by reviewer. Only local device-completion storage was exercised.",
+    "Privacy promise rejection/retry tested through controlled browser failure; successful policy page content/checkout/account transaction not claimed.",
+    "Full global987/client home scope remains open; this acceptance covers only Welcome V3 and its named dependencies.",
+    "Root must update obsolete3step/Skip capture selectors and reviewed Text inventory/source pins before release acceptance."
+  ],
+  "actual_expo_app_context_sha256": "1bafe9b29d7f2402802adda8e8dcf9d1f6c6731e8f88a789f42993847f1e4c89"
+}

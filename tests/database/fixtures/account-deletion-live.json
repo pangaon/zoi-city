@@ -1,0 +1,1470 @@
+{
+  "purpose": "Selected actual schema metadata and exact current-session functions, not a full production schema or hosted Auth proof",
+  "helpers": [
+    {
+      "signature": "zoi.suite_current_session()",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "proacl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "body_md5": "8ceef7877aeb972d09d8694f6c85dff7",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.suite_current_session()\n RETURNS void\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n"
+    },
+    {
+      "signature": "zoi.suite_lock_session()",
+      "prosecdef": true,
+      "proconfig": [
+        "search_path=\"\""
+      ],
+      "proacl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "body_md5": "04328c4d98e5f5671777a88435870c58",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.suite_lock_session()\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp()) for share;\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp()) for share;\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n"
+    }
+  ],
+  "profile_reference_fields": [
+    {
+      "table_name": "zoi.ai_generations",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.appearance_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.artist_appearances",
+      "column_name": "artist_confirmed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.artist_appearances",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.artist_appearances",
+      "column_name": "event_confirmed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.artist_city_demand",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.artist_city_demand_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.booking_audit",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.booking_availability_plans",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.booking_owner_save_receipts",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.booking_reschedules",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.bookings",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_comment_requests",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_member_drafts",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_mutes",
+      "column_name": "muted",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_mutes",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_notifications",
+      "column_name": "actor",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_notifications",
+      "column_name": "recipient",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_publish_requests",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "reporter",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "reviewed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.community_saved",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.company_private_records",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.company_private_records",
+      "column_name": "updated_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.company_private_requests",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.company_private_versions",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.connections",
+      "column_name": "friend_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.connections",
+      "column_name": "user_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.creator_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_briefs",
+      "column_name": "decided_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_briefs",
+      "column_name": "shared_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_campaigns",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_campaigns",
+      "column_name": "customer_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_mutation_receipts",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_submissions",
+      "column_name": "decided_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.creator_submissions",
+      "column_name": "submitted_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.culinary_recipe_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.culinary_recipes",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.culinary_recipes",
+      "column_name": "updated_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.document_audit",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.document_upload_authority_grants",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.document_versions",
+      "column_name": "cleanup_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.document_versions",
+      "column_name": "uploaded_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_guest_payment_preferences",
+      "column_name": "actor",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_host_allocations",
+      "column_name": "host_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_host_guests",
+      "column_name": "claimed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_host_requests",
+      "column_name": "actor",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_plan_requests",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_plans",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_table_config_requests",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_table_holds",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.event_table_identity_requests",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_applications",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_applications",
+      "column_name": "reviewed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_packages",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_placement_audit",
+      "column_name": "actor",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_placement_requests",
+      "column_name": "actor",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_placements",
+      "column_name": "approved_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.festival_placements",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.football_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.football_fixtures",
+      "column_name": "confirmed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.football_fixtures",
+      "column_name": "proposed_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.football_seasons",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.football_teams",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.group_attendance",
+      "column_name": "marked_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.group_memberships",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.home_content_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.home_design_history",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.home_design_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.home_media_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.inquiry_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.inquiry_cancelled_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.inquiry_messages",
+      "column_name": "author_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.inquiry_threads",
+      "column_name": "assignee_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.inquiry_threads",
+      "column_name": "customer_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.intelligence_receipts",
+      "column_name": "claimed_profile",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.intelligence_reports",
+      "column_name": "saved_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.ops_mutation_receipts",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.org_calendar_batches",
+      "column_name": "actor_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.org_registrations",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.personal_calendar_preferences",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.personal_calendar_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.private_trips",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.property_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.property_offers",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.property_requests",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.saved_guest_group_requests",
+      "column_name": "profile_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.saved_guest_groups",
+      "column_name": "profile_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.seat_holds",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.social_connection_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.time_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.time_entries",
+      "column_name": "approved_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.time_entries",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.time_timers",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.trip_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.user_places",
+      "column_name": "profile_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.workspace_documents",
+      "column_name": "created_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.workspace_invitations",
+      "column_name": "accepted_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.workspace_invitations",
+      "column_name": "issuer_profile_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.workspace_members",
+      "column_name": "profile_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.workspaces",
+      "column_name": "owner_profile_id",
+      "on_delete": "c"
+    },
+    {
+      "table_name": "zoi.youth_attendance",
+      "column_name": "marked_by",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.youth_audit",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.youth_children",
+      "column_name": "guardian_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.youth_consents",
+      "column_name": "guardian_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.youth_registrations",
+      "column_name": "guardian_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.youth_requests",
+      "column_name": "actor_id",
+      "on_delete": "a"
+    },
+    {
+      "table_name": "zoi.youth_staff",
+      "column_name": "profile_id",
+      "on_delete": "a"
+    }
+  ],
+  "identity_columns": [
+    {
+      "table_schema": "public",
+      "table_name": "audit_log",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "event_orders",
+      "identity_columns": "member_id:uuid"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "tab_payments",
+      "identity_columns": "member_id:uuid"
+    },
+    {
+      "table_schema": "public",
+      "table_name": "table_members",
+      "identity_columns": "user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260821b",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260823d",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260823e",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260823f",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260823g",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260824",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260902",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260902b",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260902c",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260903",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260903b",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260903d",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260903e",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260906",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_enrich_before_20260906_ge",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_listings_before_merge_20260913",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_listings_before_merge_20260914",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_listings_before_merge_20260915",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "_listings_before_merge_20260916",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "ai_generations",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "appearance_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "artist_city_demand",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "artist_city_demand_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "assets",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "bookings",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_comment_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_media_assets",
+      "identity_columns": "id:uuid,profile_id:uuid,metadata:jsonb"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_media_upload_grants",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_member_draft_versions",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_member_drafts",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_member_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_mutes",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_preferences",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_profiles",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_publish_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "community_saved",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "connections",
+      "identity_columns": "user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "creator_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "creator_mutation_receipts",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "culinary_recipe_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "delivery_action_checks",
+      "identity_columns": "user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "delivery_founders",
+      "identity_columns": "user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "delivery_reports",
+      "identity_columns": "user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "email_draft_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "event_plan_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "event_plans",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "event_service_admissions",
+      "identity_columns": "member_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "event_table_config_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "event_table_holds",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "event_table_identity_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "feed_comments",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "feed_likes",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "feed_posts",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "feed_reports",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "festival_applications",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "festival_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "football_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "group_memberships",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "home_content_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "home_design_history",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "home_design_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "home_media_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "inquiry_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "inquiry_cancelled_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "inquiry_messages",
+      "identity_columns": "author_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "intake_draft_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "listings",
+      "identity_columns": "owner_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "notifications",
+      "identity_columns": "profile_id:uuid,actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "ops_mutation_receipts",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "org_registrations",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "personal_calendar_preferences",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "personal_calendar_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "private_trips",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "property_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "property_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "saved_guest_group_requests",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "saved_guest_groups",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "saved_listing",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "saved_places",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "seat_holds",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "social_connection_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "social_oauth_states",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "time_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "time_entries",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "time_timers",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "trip_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "user_places",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "user_profiles",
+      "identity_columns": "auth_user_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "workspace_members",
+      "identity_columns": "profile_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "workspaces",
+      "identity_columns": "created_by_auth:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "youth_audit",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "youth_requests",
+      "identity_columns": "actor_id:uuid"
+    },
+    {
+      "table_schema": "zoi",
+      "table_name": "youth_staff",
+      "identity_columns": "profile_id:uuid"
+    }
+  ],
+  "core_columns": [
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "profile_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "body",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "listing_id",
+      "type": "uuid",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "listing_name",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "listing_slug",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "nameday_ref",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "likes",
+      "type": "integer",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "comments",
+      "type": "integer",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "media",
+      "type": "jsonb",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_posts",
+      "column_name": "status",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "column_name": "id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "column_name": "post_id",
+      "type": "uuid",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "column_name": "profile_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "column_name": "body",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.feed_comments",
+      "column_name": "status",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "profile_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "handle",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "display_name",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "bio",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "city",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "country",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "interests",
+      "type": "text[]",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "avatar_media_id",
+      "type": "uuid",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "avatar_url",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "version",
+      "type": "integer",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "initial_data",
+      "type": "jsonb",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_profiles",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "profile_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "topics",
+      "type": "text[]",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "city",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "country",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "locality_enabled",
+      "type": "boolean",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "version",
+      "type": "integer",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "initial_data",
+      "type": "jsonb",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_preferences",
+      "column_name": "updated_at",
+      "type": "timestamp with time zone",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "reporter",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "post_id",
+      "type": "uuid",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "request_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "reason",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "details",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "content_snapshot",
+      "type": "jsonb",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "status",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "reviewed_by",
+      "type": "uuid",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "review_note",
+      "type": "text",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_reports",
+      "column_name": "reviewed_at",
+      "type": "timestamp with time zone",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "profile_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "request_id",
+      "type": "uuid",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "purpose",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "mime_type",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "size_bytes",
+      "type": "integer",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "sha256",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "metadata",
+      "type": "jsonb",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "state",
+      "type": "text",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "created_at",
+      "type": "timestamp with time zone",
+      "attnotnull": true
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "storage_deleted_at",
+      "type": "timestamp with time zone",
+      "attnotnull": false
+    },
+    {
+      "table_name": "zoi.community_media_assets",
+      "column_name": "finalized_at",
+      "type": "timestamp with time zone",
+      "attnotnull": false
+    }
+  ],
+  "limitations": [
+    "Local Auth user removal simulates the Auth Admin service boundary; actual dedicated synthetic Auth/Storage acceptance remains root-only",
+    "Unknown history fixtures are synthetic minimal tables from actual column/FK metadata; no business writer body is reconstructed"
+  ],
+  "ensure_profile": {
+    "signature": "zoi.ensure_profile()",
+    "definition": "CREATE OR REPLACE FUNCTION zoi.ensure_profile()\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nDECLARE me uuid;\nBEGIN\n  IF auth.uid() IS NULL THEN RETURN NULL; END IF;\n  SELECT id INTO me FROM zoi.user_profiles WHERE auth_user_id=auth.uid();\n  IF me IS NULL THEN\n    INSERT INTO zoi.user_profiles(id, auth_user_id) VALUES (gen_random_uuid(), auth.uid()) RETURNING id INTO me;\n  END IF;\n  RETURN me;\nEND;$function$\n",
+    "definition_md5": "a6d10d22f2cda05e1d4260997273afc0",
+    "security_definer": true,
+    "proconfig": [
+      "search_path=zoi, public"
+    ],
+    "acl": null
+  }
+}

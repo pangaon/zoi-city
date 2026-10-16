@@ -18,3 +18,9 @@ Never call a listing or feature complete because it returns HTTP 200, renders a
 hero, or passes unit tests alone. Record source, rendered, and exercised-journey
 evidence separately. Explain actual production capability and remaining gaps in
 plain English. Do not promise zero defects or provider capabilities that are not connected.
+
+Provider SDK models and nested attributes can carry authentication context.
+Never serialize entire SDK objects, contexts or raw provider errors into receipts,
+logs or tool output. Construct receipts from explicitly selected primitive fields.
+Keep local credentials outside Git and deployment uploads; verify replacements
+and dependent references before retiring an old credential.

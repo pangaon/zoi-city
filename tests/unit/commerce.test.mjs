@@ -6,3 +6,17 @@ test('review binds prices, exact contents and checkout path; mixed-currency tota
 test('local storage is bounded; unavailable variants cannot enter basket; API descriptions remain plain text',()=>{assert.deepEqual(basket([{...item,quantity:-1}]),[]);assert.throws(()=>addLine([],{available:true},{...item,available:false}));const p=product({id:'p',handle:'card',title:'Card',description:'<script>source text</script>',availableForSale:true,featuredImage:{url:'https://evil.test/image'},variants:{nodes:[raw],pageInfo:{hasNextPage:true}}});assert.equal(p.image,null);assert.equal(p.more_variants,true);assert.equal(p.description,'<script>source text</script>');});
 
 test('explicit missing shared variant requires a deliberate replacement; absent choice picks available option',()=>{const variants=[{id:'123456789',available:false},{id:'234567890',available:true}];assert.deepEqual(initialVariant(variants,'999999999'),{id:'',needsChoice:true});assert.deepEqual(initialVariant(variants,'bad'),{id:'',needsChoice:true});assert.deepEqual(initialVariant(variants,'123456789'),{id:'123456789',needsChoice:false});assert.deepEqual(initialVariant(variants),{id:'234567890',needsChoice:false});assert.deepEqual(initialVariant([], '123456789'),{id:'',needsChoice:true});});
+
+test('real collection and selected option projection preserves identity without inventing price or image',async()=>{
+ const{collection}=await import('../../api/_commerce.js');assert.deepEqual(collection({handle:'greek-sweets',title:'Greek Sweets',image:{url:'https://cdn.shopify.com/sweet.jpg'}}),{handle:'greek-sweets',title:'Greek Sweets',image:'https://cdn.shopify.com/sweet.jpg',image_alt:'Greek Sweets'});assert.throws(()=>collection({handle:'../cart',title:'bad'}));
+ const p=product({id:'p',handle:'jigsaw-puzzle',title:'Jigsaw puzzle',description:'',variants:{nodes:[{...raw,selectedOptions:[{name:'Size',value:'252 pieces'}]}]}});assert.deepEqual(p.variants[0].options,[{name:'Size',value:'252 pieces'}]);
+});
+test('existing API uses bounded collections, exact scoped catalogue, and refuses mixed collection/search arguments',async()=>{
+ const{default:handler}=await import('../../api/commerce.js');const original=globalThis.fetch;let captured;
+ const invoke=async(query,data)=>{globalThis.fetch=async(url,options)=>{captured={url,request:JSON.parse(options.body)};return new Response(JSON.stringify({data}));};let code,body;const res={setHeader(){},status(v){code=v;return this;},json(v){body=v;return this;}};await handler({method:'GET',query},res);return{code,body};};
+ try{let r=await invoke({collections:'1'},{collections:{nodes:[{handle:'all',title:'Actual store label'}],pageInfo:{hasNextPage:false,endCursor:null}}});assert.equal(r.code,200);assert.match(captured.request.query,/collections\(first:24/);assert.equal(r.body.collections[0].title,'Actual store label');
+ r=await invoke({collection:'all'},{collection:{handle:'all',title:'Actual store label',products:{nodes:[],pageInfo:{hasNextPage:false,endCursor:null}}}});assert.equal(r.code,200);assert.deepEqual(captured.request.variables,{handle:'all',after:null});assert.match(captured.request.query,/products\(first:12/);assert.equal(r.body.collection.handle,'all');
+ for(const query of [{collection:'all',search:'jigsaw'},{collection:'../cart'},{collections:'1',cursor:'unexpected'}])assert.equal((await invoke(query,{})).code,400);
+ assert.equal((await invoke({collection:'all'},{collection:null})).code,404);
+ }finally{globalThis.fetch=original;}
+});

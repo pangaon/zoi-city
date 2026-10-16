@@ -9,16 +9,21 @@ on:
       expected_commit:
         type: string
         required: true
-        description: Exact protected Git commit passed to workflow run --ref
+        description: Sender-asserted protected Git commit verified by local preflight before upload
+      expected_source_manifest_sha:
+        type: string
+        required: true
+        description: Exact source manifest SHA256 verified locally and again on each worker
 jobs:
   source_gate:
     if: ${{ inputs.confirm_capture == true }}
     runs_on: linux-medium
     env:
       EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+      EXPECTED_SOURCE_MANIFEST_SHA: ${{ inputs.expected_source_manifest_sha }}
     steps:
       - uses: eas/checkout
-      - run: node .maestro/source-check.mjs
+      - run: node .maestro/source-check.mjs --worker-hash
       - uses: eas/upload_artifact
         with:
           type: other
@@ -29,13 +34,14 @@ jobs:
     type: build
     env:
       EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+      EXPECTED_SOURCE_MANIFEST_SHA: ${{ inputs.expected_source_manifest_sha }}
     params:
       platform: ios
       profile: preview
       message: Source-pinned restoration screenshots; no Apple submission
     hooks:
       before_install_node_modules:
-        - run: node .maestro/source-check.mjs
+        - run: node .maestro/source-check.mjs --worker-hash
   iphone:
     needs: [simulator]
     type: maestro
@@ -43,6 +49,7 @@ jobs:
     image: macos-tahoe-26.5-xcode-26.6
     env:
       EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+      EXPECTED_SOURCE_MANIFEST_SHA: ${{ inputs.expected_source_manifest_sha }}
       CAPTURE_BUILD_ID: ${{ needs.simulator.outputs.build_id }}
       CAPTURE_DEVICE: iphone
     params:
@@ -55,7 +62,7 @@ jobs:
       record_screen: false
     hooks:
       before_maestro_tests:
-        - run: node .maestro/source-check.mjs
+        - run: node .maestro/source-check.mjs --worker-hash
       after_maestro_tests:
         - run: node .maestro/artifact-check.mjs "$MAESTRO_TESTS_DIR"
         - uses: eas/upload_artifact
@@ -71,6 +78,7 @@ jobs:
     image: macos-tahoe-26.5-xcode-26.6
     env:
       EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+      EXPECTED_SOURCE_MANIFEST_SHA: ${{ inputs.expected_source_manifest_sha }}
       CAPTURE_BUILD_ID: ${{ needs.simulator.outputs.build_id }}
       CAPTURE_DEVICE: ipad
     params:
@@ -83,7 +91,7 @@ jobs:
       record_screen: false
     hooks:
       before_maestro_tests:
-        - run: node .maestro/source-check.mjs
+        - run: node .maestro/source-check.mjs --worker-hash
       after_maestro_tests:
         - run: node .maestro/artifact-check.mjs "$MAESTRO_TESTS_DIR"
         - uses: eas/upload_artifact

@@ -1,0 +1,29 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {addressFixture} from './fixtures/geography-address-geocode.mjs';
+import {observeOfficialAddresses,validateQualifiedAddress,qualifyOfficialAddress} from '../../scripts/geography/official-address-evidence.mjs';
+import {prepareNominatimBatch} from '../../scripts/geography/nominatim-address-candidate.mjs';
+import {validateQualifiedAddress as validateEdgeAddress} from '../../supabase/functions/geography-repair-source-consumer/_official-address.js';
+import {extractSourceCoordinates} from '../../scripts/geography/source-coordinates.mjs';
+test('official postal identity without geo is retained across every entity family; no pin authority',()=>{const f=addressFixture();const html='<script type="application/ld+json">'+JSON.stringify({'@type':'WebPage',mainEntity:{'@type':'Church',name:f.snapshot.name,address:{'@type':'PostalAddress',streetAddress:f.address.street,addressLocality:f.address.city,postalCode:f.address.postal_code,addressCountry:f.address.country}}})+'</script>';for(const entity_type of['church','restaurant','bakery','professional','artist','creator','hotel']){const row={...f.snapshot,entity_type,owner_hash:'a'.repeat(32)};const observation=observeOfficialAddresses(html,row);assert.equal(observation.observations.length,1);assert.equal(observation.authority,'none');const report=extractSourceCoordinates(html,row);assert.equal(report.reason,'matching_structured_coordinates_missing');assert.equal(report.supporting_official_address.writer_eligible,false);assert.equal(report.candidate,undefined);}});
+test('qualified UTF8 branch retains exact raw hashes, byte offsets and independent address authority',()=>{const f=addressFixture({name:'Ελληνική Εκκλησία',street:'12 Οδός Αθηνάς',house:'12',road:'Οδός Αθηνάς',city:'Αθήνα',postal:'10554',country:'Greece',code:'gr'});assert.equal(validateQualifiedAddress(f.addressProof,f.snapshot),f.addressProof);assert.equal(f.addressProof.coordinate_authority,false);assert.equal(Buffer.from(f.card).length,f.addressProof.card.end_byte-f.addressProof.card.start_byte);});
+test('plain address-bearing pages preserve a research locator without asserting visible branch or provider admission',()=>{const f=addressFixture(),html='<main><h1>'+f.snapshot.name+'</h1><p>'+f.snapshot.address+'</p></main>',o=observeOfficialAddresses(html,f.snapshot);assert.equal(o.observations[0].role,'stored_address_text_occurrence_requires_visible_branch_review');assert.equal(o.observations[0].visibility_verified,false);assert.equal(o.observations[0].branch_verified,false);assert.equal(o.provider_admission,false);});
+test('sparse address, wrong country, changed branch, quote mutation and hidden blocks are held',()=>{const f=addressFixture();for(const mutate of[p=>p.address.postal_code='',p=>p.address.country='Canada',p=>p.canonical_context.address='Other branch',p=>p.card.sha256='0'.repeat(64),p=>p.identity.quotes.street.start_byte++,p=>delete p.identity.full_document_branch_reviewed,p=>p.card.html='<div hidden>'+p.card.html+'</div>']){const p=structuredClone(f.addressProof);mutate(p);assert.throws(()=>validateQualifiedAddress(p,f.snapshot));}assert.equal(observeOfficialAddresses('<p>No address</p>',f.snapshot),null);assert.throws(()=>qualifyOfficialAddress({sourceBytes:f.source,snapshot:f.snapshot,capture:{...f.capture,source_sha256:'0'.repeat(64)}}),/address_source_hash/);});
+test('owners, explicit clears and source identity holds refuse before provider qualification',()=>{const f=addressFixture();for(const delta of[{owner_user_id:'owner'},{owner_workspace_id:'workspace'},{owner_managed:true},{claim_status:'pending'},{profile:{address:null}},{source_context:{source_scope_mismatch:'true'}},{profile:{_enrich:{blocked_reason:'unknown_review'}}},{enrichment:{source_kind:'association_member'}}]){assert.throws(()=>validateQualifiedAddress(f.addressProof,{...f.snapshot,...delta}),/address_current_context/);assert.equal(observeOfficialAddresses('<p>x</p>',{...f.snapshot,...delta}),null);}});
+
+test('canonical street must be a complete delimited component before provider admission in Node and Edge',()=>{
+ for(const [street,house,canonicalAddress]of [
+  ['721 Rahway Avenue','721','1721 Rahway Avenue, Union 07083'],
+  ['21 Rahway Avenue','21','721 Rahway Avenue, Union 07083'],
+  ['721 Rahway Avenue','721','x721 Rahway Avenue, Union 07083'],
+  ['721 Rahway Avenue','721','α721 Rahway Avenue, Union 07083'],
+  ['721 Rahway Avenue','721','７721 Rahway Avenue, Union 07083'],
+  ['721 Rahway Avenue','721','1721-721 Rahway Avenue, Union 07083'],
+  ['721 Rahway Avenue','721','721 Rahway Avenue2, Union 07083'],
+  ['721 Rahway Avenue','721','721 Rahway Avenueα, Union 07083'],
+  ['721 Rahway Avenue','721','721 Rahway Avenue West, Union 07083'],
+  ['721 Rahway Avenue','721','721 Rahway Avenue-West, Union 07083'],
+  ['721 Rahway Avenue','721','721 Rahway Avenue.Extended, Union 07083'],
+  ['721 Rahway Avenue','721','721 Rahway Avenue Union 07083'],
+ ]){const f=addressFixture({street,house}),snapshot={...f.snapshot,address:canonicalAddress},proof=structuredClone(f.addressProof);proof.canonical_context.address=canonicalAddress;for(const validate of [validateQualifiedAddress,validateEdgeAddress])assert.throws(()=>validate(proof,snapshot,{now:f.now}),/address_complete_parts_required/,canonicalAddress);assert.throws(()=>prepareNominatimBatch([{snapshot,addressProof:proof}],{now:f.now}),/address_complete_parts_required/);}
+ for(const address of ['721 Rahway Avenue','721 Rahway Avenue, Union 07083','Unit 2; (721 Rahway Avenue); Union 07083','[721 Rahway Avenue], Union 07083','721 RAHWAY  AVENUE\nUnion 07083']){const f=addressFixture(),snapshot={...f.snapshot,address},proof=structuredClone(f.addressProof);proof.canonical_context.address=address;for(const validate of [validateQualifiedAddress,validateEdgeAddress])assert.equal(validate(proof,snapshot,{now:f.now}),proof);}
+});

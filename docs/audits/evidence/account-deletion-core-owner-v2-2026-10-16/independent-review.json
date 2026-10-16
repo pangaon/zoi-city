@@ -1,0 +1,207 @@
+{
+  "at": "2026-10-16T04:56:37.682880+00:00",
+  "reviewer": "qa_next",
+  "outcome": "ACCEPT narrow V2 post-wait session deadline authority repair; original R1 hold closed",
+  "scope": "Only two changed paths and original independent expiry counterexample; other account-core review and broader operational gaps retained",
+  "owner_manifest_sha256": "0c63c3a8c3c6ca9053d0912e15f651559731fb62836f7e231550541668776793",
+  "all_source_and_readonly_pins_verified": 19,
+  "exact_changed_paths": [
+    "supabase/migrations/20261016040420_self_service_account_deletion.sql",
+    "tests/database/account-deletion.integration.mjs"
+  ],
+  "source_pins": [
+    {
+      "path": "mobile/src/AccountDeletion.tsx",
+      "sha256": "ae1384d9ebe50da8e8521e1a3239756dfd5f803b4403c56fc095ee8a48775300"
+    },
+    {
+      "path": "mobile/src/accountDeletion.ts",
+      "sha256": "6751bbf64cc564e1ced232b644f5558a36c751faef263e67db71e26ae7db82f6"
+    },
+    {
+      "path": "mobile/src/Account.tsx",
+      "sha256": "4aedf667fa4bce12df18de5f0dc1cee593ffc4ac603a29d7e629f9b3d9a54f22"
+    },
+    {
+      "path": "mobile/src/Auth.tsx",
+      "sha256": "7fb471c22a2277a8c72e87917ad60c31201a1f233723332ddc2bb4c2b153fddf"
+    },
+    {
+      "path": "mobile/src/session.ts",
+      "sha256": "e0cf0e8bf0f1facaed43f619edd6853b37617cc8a99585179de9e3c08ad559ac"
+    },
+    {
+      "path": "mobile/tests/account-deletion.test.mjs",
+      "sha256": "5fcfbc0776d79b92a961687566c4f983892e7e776caf47a12d8973002998d184"
+    },
+    {
+      "path": "mobile/tests/browser/account-deletion-browser.cjs",
+      "sha256": "84beeb1f57312df226d977ae2c2717e784e5d6aa3f8c085262bb95ae9268c70e"
+    },
+    {
+      "path": "supabase/functions/account-delete/index.ts",
+      "sha256": "ad0d22f86e343adfbf924b43c5e7166c012d917b3d01ea99bb69a3d09a4efb64"
+    },
+    {
+      "path": "supabase/config.toml",
+      "sha256": "df2ed53a823dfc90a2f6fc6a8783a910528b4dfdb6cd6662d37f25b7cf4ab115"
+    },
+    {
+      "path": "supabase/migrations/20261016040420_self_service_account_deletion.sql",
+      "sha256": "4698f2d6823274375897f9f530b4e99441c6db0b7a30bbdb2e90d13231ec7845"
+    },
+    {
+      "path": "tests/database/account-deletion.integration.mjs",
+      "sha256": "574b3f819518e9e84c653203698dcc7d57c8a250f10fe2897d4fd9eba76c8b93"
+    },
+    {
+      "path": "tests/database/fixtures/account-deletion-live.json",
+      "sha256": "f4b54947b437a77fab7f9d536570dbaec8d749002e9678d08bbc79c958993a72"
+    },
+    {
+      "path": "tests/unit/account-deletion-edge.test.mjs",
+      "sha256": "04a7551d3c3d8d639aa24ebf7f03401348ae05cb95796432af9501faea9ec72e"
+    }
+  ],
+  "readonly_pins": [
+    {
+      "path": "mobile/src/ScaleText.tsx",
+      "sha256": "5eff546341d8b756bebbb6acacb2fac1406e0e767c10a62984b54a922480b6e1"
+    },
+    {
+      "path": "mobile/src/drafts.ts",
+      "sha256": "4138f00596635e39a0cdd1731a51b4088744eb5f6b3f4f3a9e07c5c5a1c1b03c"
+    },
+    {
+      "path": "mobile/src/privateRequests.ts",
+      "sha256": "f591cdb838b086a7a086e7ecdc9c573245e380c98a2dddd9d92325f8f616a05e"
+    },
+    {
+      "path": "mobile/src/accountWorkspaceLinks.ts",
+      "sha256": "281f01741e828f130486fc5e5ff87d718743f94ef0f6636b05581a73f1ef936f"
+    },
+    {
+      "path": "mobile/package.json",
+      "sha256": "dac7a5bac914ecff7847c676a3aa24bb220955647cbbee0b339f326c8569ba53"
+    },
+    {
+      "path": "mobile/tests/navigation-layout-browser/rn-web-scale-shim.jsx",
+      "source": "git HEAD (sparse file)",
+      "sha256": "7f1ca7d8b79a19daffeee5641b8c516d628f17aab7bd223ac11297e32ba97cce"
+    }
+  ],
+  "static_review": [
+    "confirm captures not_after alongside created_at while suite_lock_session authority is retained, before intentional session deletion; final wall-clock deadline check occurs after actor/profile/request waits and before acceptance",
+    "prepare reruns original suite_lock_session + wall-clock reauthentication age checks after row waits; retained request presence is tested via request_id rather than FOUND overwritten by helper call",
+    "cancel reruns original suite_lock_session after receipt wait; no authority/helper/ACL changes",
+    "original locks, READ COMMITTED admission, worker/history/unknown-schema behavior and provider boundary unchanged"
+  ],
+  "independent_actual_isolated_pg": {
+    "sourceOnlyIsolated": true,
+    "cases": [
+      {
+        "name": "confirmed session not_after expires during actual profile-row lock wait",
+        "deadline": "2026-10-16 04:56:09.082207+00",
+        "finishedAt": "2026-10-16 04:56:10.130054+00",
+        "elapsedMs": 2005,
+        "state": "prepared",
+        "error": "ERROR:  suite_session_unavailable\nCONTEXT:  PL/pgSQL function public.account_delete_confirm(uuid) line 21 at RAISE\n",
+        "expected": "refusal with request prepared and original session revocation rolled back",
+        "sessionRevocationRolledBack": true,
+        "sessionBefore": "3d6f62c2c9284a21059e30e8b736fe2b",
+        "sessionAfter": "3d6f62c2c9284a21059e30e8b736fe2b",
+        "passed": true
+      },
+      {
+        "name": "expired recovery capability refused",
+        "passed": true
+      },
+      {
+        "name": "new actor-linked unmapped history before process holds with bytes preserved",
+        "passed": true
+      }
+    ],
+    "allPassed": true
+  },
+  "local_pg_port": 15978,
+  "own_cluster_stopped_removed": true,
+  "execution_qualification": "Copied original independent executable into NEW private evidence directory and added entire session-row hash equality; original probe/history untouched. Did not repeat full28/32 owner PG groups or mounted7 because this gate is narrow. Existing owner proof not relabeled independent.",
+  "broader_scope_open": [
+    "No hosted schema/Edge/session or actual Auth deletion performed.",
+    "Previously held unsupported history/shared ownership/transactions/UGC completion and operator timing remain existing product limitations.",
+    "Apple restoration/TestFlight readiness not established by this local authority repair."
+  ],
+  "actions": {
+    "source_edits": false,
+    "hosted_SQL_API_Auth_or_provider_actions": false,
+    "credentials_reads": false,
+    "build_or_upload": false
+  },
+  "evidence": [
+    {
+      "path": "20261016040420_self_service_account_deletion.sql.diff",
+      "sha256": "3b421f9ba34fcd36e1319c53944ba6d3bf30fc875e84fceb39b5c545173aeef2",
+      "bytes": 4395
+    },
+    {
+      "path": "20261016040420_self_service_account_deletion.sql.patch",
+      "sha256": "41ba68b94b7699f2278a0be9e5512b9ac6caad650559553db1cb5af1f2ab9378",
+      "bytes": 4385
+    },
+    {
+      "path": "account-deletion.integration.mjs.diff",
+      "sha256": "efb4ed2adb9c4f00d78ca2ffdf31357d00c6ac750dceb39e47d93b9c60499f69",
+      "bytes": 3223
+    },
+    {
+      "path": "account-deletion.integration.mjs.patch",
+      "sha256": "ed122e11e39007e25a3ac66c941f9f36c87e8f1be617e78033a7812c47884052",
+      "bytes": 3213
+    },
+    {
+      "path": "independent-pg-probe.mjs",
+      "sha256": "db328d7a7a6f32a689329608611bbcd3e5efd028b509b46fea4193edf84949aa",
+      "bytes": 10149
+    },
+    {
+      "path": "independent-pg-result.json",
+      "sha256": "1a7969e130c5a727b71b8c19367284e6e09047335cb2dea98df9e275b4a7b0ee",
+      "bytes": 955
+    },
+    {
+      "path": "original-counterprobe.log",
+      "sha256": "bec66fa316cefa01ca1baec149bacc7a3d6955d7b402c891b059862197c9fc70",
+      "bytes": 258
+    },
+    {
+      "path": "owner-audit.json",
+      "sha256": "bccc3fb5e3a174cc7478df4f832a03b42d71bbe16a69cf75bda3cf1e98532ecd",
+      "bytes": 5345
+    },
+    {
+      "path": "owner-source-manifest.json",
+      "sha256": "0c63c3a8c3c6ca9053d0912e15f651559731fb62836f7e231550541668776793",
+      "bytes": 3712
+    },
+    {
+      "path": "pg.log",
+      "sha256": "bec66fa316cefa01ca1baec149bacc7a3d6955d7b402c891b059862197c9fc70",
+      "bytes": 258
+    },
+    {
+      "path": "pins.json",
+      "sha256": "91a338a7e258428fb7e497a19405f4fa9b9ce25f70fda1581b86f378d8fb06cd",
+      "bytes": 3191
+    },
+    {
+      "path": "rollback-probe.mjs",
+      "sha256": "5e8ef49be44f5286853080147f972b16ce13b88bc2c7ef47c97eba1a065050fe",
+      "bytes": 9997
+    },
+    {
+      "path": "rollback.log",
+      "sha256": "4f86fdd1d3deacf4c9bde00394a4388532b10e568f87f3b99c6014471c8942e5",
+      "bytes": 1592
+    }
+  ]
+}

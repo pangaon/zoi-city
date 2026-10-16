@@ -1,4 +1,4 @@
-# Real standalone iOS simulator UI only. No GPS, login, cart, order or send.
+# Real standalone iOS simulator UI only. No GPS, login, cart changes, payment, order or send.
 appId: com.usgreekscan.zoi
 name: Zoi restoration screenshots and first launch
 ---
@@ -7,11 +7,15 @@ name: Zoi restoration screenshots and first launch
     permissions:
       all: deny
 - extendedWaitUntil:
-    visible: 'Skip welcome and explore Zoi'
+    visible: 'Explore Zoi'
     timeout: 15000
-- assertVisible: 'No location access is needed to explore.'
+- extendedWaitUntil:
+    notVisible: 'Opening Zoi…'
+    timeout: 15000
+- assertVisible: 'LIFE, TOGETHER.'
+- assertNotVisible: 'Skip welcome and explore Zoi'
 - takeScreenshot: 01-welcome
-- tapOn: 'Skip welcome and explore Zoi'
+- tapOn: 'Explore Zoi'
 - extendedWaitUntil:
     visible: 'Find your Greek connection'
     timeout: 15000
@@ -36,14 +40,28 @@ name: Zoi restoration screenshots and first launch
     direction: DOWN
     timeout: 10000
 - tapOn: 'Shop BuyGreek marketplace'
-- assertVisible: 'buygreek.shop · Official store'
+- assertVisible: 'Search all BuyGreek products'
+- extendedWaitUntil:
+    notVisible: 'Loading BuyGreek products'
+    timeout: 30000
+- assertNotVisible: 'BuyGreek could not load.*'
+- assertNotVisible: 'The store took too long.*'
+- assertNotVisible: 'No products found.*'
+- assertVisible: 'View .+'
+- takeScreenshot: 05-buygreek
+# Opening the existing cart page is read-only; no product/options/cart mutations.
+- tapOn: 'Store & cart'
+- assertVisible: 'Official store'
 - extendedWaitUntil:
     notVisible: 'Opening BuyGreek…'
     timeout: 30000
 - assertNotVisible: 'The store could not load.*'
 - assertNotVisible: 'Taking longer than usual.*'
 - assertVisible: 'Cart and checkout by BuyGreek.'
-- takeScreenshot: 05-buygreek
+# Require actual store content, beyond the native wrapper and loading indicator.
+- extendedWaitUntil:
+    visible: 'Your cart.*|Shopping cart.*'
+    timeout: 30000
 - tapOn: 'Close store'
 - assertVisible: 'Find your Greek connection'
 - stopApp
@@ -54,4 +72,4 @@ name: Zoi restoration screenshots and first launch
 - extendedWaitUntil:
     visible: 'Find your Greek connection'
     timeout: 15000
-- assertNotVisible: 'Skip welcome and explore Zoi'
+- assertNotVisible: 'Explore Zoi'

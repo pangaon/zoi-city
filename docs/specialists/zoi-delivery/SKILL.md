@@ -13,6 +13,11 @@ Read the applicable [specialist role](references/roles.md). Preserve the full
 requested scope in `docs/recovery-scope.json`; an incoming example steers existing
 work rather than replacing it. Keep unsupported and untested capabilities open.
 
+For native and connected client/owner design, also apply the founder's
+[October 16 visual direction](references/native-visual-direction.md). Its
+reference screens establish the design standard, with actual client content and
+working journeys replacing their illustrative people, offerings and metrics.
+
 ## Product and design decisions
 
 - Use the client's visually checked identity, real photographs and appropriate
