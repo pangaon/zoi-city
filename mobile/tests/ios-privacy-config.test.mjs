@@ -6,6 +6,21 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 
+test('the replacement marketing version advances beyond the verified released Apple version', () => {
+  const source = JSON.parse(readFileSync(new URL('../app.json', import.meta.url)));
+  const released = JSON.parse(readFileSync(new URL('./fixtures/apple-live-version-20261016.json', import.meta.url)));
+  assert.equal(released.app_id, '1464901778');
+  assert.equal(released.bundle_id, source.expo.ios.bundleIdentifier);
+  assert.equal(released.state, 'READY_FOR_DISTRIBUTION');
+  function parts(version) {
+    assert.match(version, /^\d+\.\d+(?:\.\d+)?$/);
+    return [...version.split('.').map(Number), 0].slice(0, 3);
+  }
+  const next = parts(source.expo.version), previous = parts(released.version);
+  const difference = next.map((n, i) => n - previous[i]).find(n => n !== 0) || 0;
+  assert.ok(difference > 0, `The native release must advance beyond verified live version ${released.version}.`);
+});
+
 test('generated iPhone privacy settings satisfy Apple 90683 without enabling background or motion access', () => {
   const project = fileURLToPath(new URL('../', import.meta.url));
   const resolve = createRequire(new URL('../package.json', import.meta.url));
