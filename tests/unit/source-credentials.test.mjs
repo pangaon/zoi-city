@@ -155,3 +155,20 @@ test('failed Git output never exposes staged credential bytes in errors or CLI o
   try { execFileSync(process.execPath, [new URL('../../scripts/check-source-credentials.mjs', import.meta.url).pathname, root, '--staged'], { encoding: 'utf8', stdio: 'pipe' }); assert.fail('CLI must refuse'); }
   catch (error) { assert(error.status); assert(!String(error.stdout).includes(key)); assert(!String(error.stderr).includes(key)); assert.match(String(error.stderr), /credential_git_read_failed/); }
 });
+
+
+test('working-tree and staged scans accept a real Git path list larger than oneMiB and inspect its tail', t => {
+  const root = repository(t);
+  const oid = execFileSync('git', ['hash-object', '-w', '--stdin'], { cwd: root, input: 'clean', encoding: 'utf8' }).trim();
+  // Missing working files represent a sparse checkout; Git still tracks every path.
+  const prefix = 'a'.repeat(90) + '/' + 'b'.repeat(90) + '/';
+  const names = Array.from({ length: 6000 }, (_, i) => prefix + String(i).padStart(5, '0') + '.txt');
+  const index = names.map(name => `100644 ${oid}\t${name}\n`).join('');
+  execFileSync('git', ['update-index', '--index-info'], { cwd: root, input: index, maxBuffer: 32 * 1024 * 1024 });
+  stage(root, 'zz-tail-secret', 'AI' + 'za' + 'x'.repeat(35));
+  const listed = execFileSync('git', ['ls-files', '-z'], { cwd: root, maxBuffer: 32 * 1024 * 1024 });
+  assert.ok(listed.length > 1024 * 1024);
+  const expected = { files: 6001, findings: [{ path: 'zz-tail-secret', type: 'Google API key', line: 1 }] };
+  assert.deepEqual(scanTrackedFiles(root), expected);
+  assert.deepEqual(scanTrackedFiles(root, { staged: true }), expected);
+});

@@ -1,0 +1,146 @@
+{
+  "verdict": "ACCEPTED_SOURCE_AND_LOCAL_RENDER_ONLY",
+  "reviewer": "atomic_review independent of root page author",
+  "at_utc": "2026-10-16T03:53:00.164648+00:00",
+  "owned_source_sha256": {
+    "support/index.html": "7e706fb88f0c664f9d93c84fe336d62f40b27e6170e255f963423f12b81169db",
+    "privacy/index.html": "dccf03e57eb60ba015b2314d5ce8af2ae18d1f7a983802ba39b4973d906c8539",
+    "assets/help-center.css": "f068a57af8cb7c63210282c1ff6b15af0f9466d9ace3bcc2800f66d46ae4f343"
+  },
+  "concrete_blockers": [],
+  "source_evidence": {
+    "policy_proposal_sha256": "89fd81cd05eb03876781af0d83ebe2b7d5033a059e7d0cb066e0a336013bc7b2",
+    "all_17_proposal_source_pins_match_current": [
+      {
+        "path": "mobile/App.tsx",
+        "sha256": "692a8619073bf7957cfd644721199bcfc642c3d495936f751c42fd78b2436ae7"
+      },
+      {
+        "path": "mobile/app.json",
+        "sha256": "29dc07c0c52706df614d55d32fd983b13129305ad012aaad98918ffe9f6150ec"
+      },
+      {
+        "path": "mobile/package.json",
+        "sha256": "dac7a5bac914ecff7847c676a3aa24bb220955647cbbee0b339f326c8569ba53"
+      },
+      {
+        "path": "mobile/src/Account.tsx",
+        "sha256": "cf928b24614555b2960274ffd137cd335d64566b50fe53bddbbc35573a19ce6d"
+      },
+      {
+        "path": "mobile/src/Auth.tsx",
+        "sha256": "269ae16a7ebf3d1419f7ee36851471d360236839ce2a57979d2a79c86fb06331"
+      },
+      {
+        "path": "mobile/src/session.ts",
+        "sha256": "0ac04fdd653fae165b51d099983f15164b045ddaf149af8d71f3c2cae689031f"
+      },
+      {
+        "path": "mobile/src/Community.tsx",
+        "sha256": "80e44b14be6b7cc9a93c9baf4c522e98c89ece46a75c886fbad6428d31678fa7"
+      },
+      {
+        "path": "mobile/src/CommunityProfile.tsx",
+        "sha256": "501026200211b7ea7816e586a5af6db60986503a63ff1855800567c092788051"
+      },
+      {
+        "path": "mobile/src/CommunityDiscussion.tsx",
+        "sha256": "b9485de170060233669fd7277a5ef56fd8707804374a3de513278692ec8b552a"
+      },
+      {
+        "path": "mobile/src/CommunityPublish.tsx",
+        "sha256": "3b3728e50cbc45259f07cb3ee6f98e978ceeaf6f6cdc5c29522c1986ca871e38"
+      },
+      {
+        "path": "mobile/src/CommunityMediaPicker.tsx",
+        "sha256": "98560c00a1492007f156422f9cf9420d31be40b09c38942c1d491c9588a34613"
+      },
+      {
+        "path": "mobile/src/ShopifyStore.native.tsx",
+        "sha256": "9989947d35121621056ed7be60bc02ac2ab72bd57bd4d0fa63735039e881776b"
+      },
+      {
+        "path": "mobile/src/ShopifyNavigation.ts",
+        "sha256": "8e5e7e37bae4e620ab968f87d6066ff314aeec4ae64487871d5179da5637f29d"
+      },
+      {
+        "path": "mobile/src/DiscoveryMap.native.tsx",
+        "sha256": "068b2a7e4afb8b1032876f032f83d24120b0f1ea7ee8c6ef7add3a1f6c5a330b"
+      },
+      {
+        "path": "mobile/src/useMapLocation.ts",
+        "sha256": "28d086a7f860ee2dcde8ea70688ae294117063ff19c0f8b6681e66b9da905006"
+      },
+      {
+        "path": "mobile/src/Youth.tsx",
+        "sha256": "ddbc205694f1c1bce2b2baccf73a76b78ec85bfb1f2dc9fddad0583b62045511"
+      },
+      {
+        "path": "assets/suite/settings.js",
+        "sha256": "ca2b16e0377eea4c8ad8834afeb3d0afe9ec6f7345635a0a01a3a5094a26a302"
+      }
+    ],
+    "served_byte_checks": [
+      {
+        "check": "local served bytes equal reviewed file",
+        "path": "support/index.html",
+        "passed": true,
+        "sha256": "7e706fb88f0c664f9d93c84fe336d62f40b27e6170e255f963423f12b81169db"
+      },
+      {
+        "check": "local served bytes equal reviewed file",
+        "path": "privacy/index.html",
+        "passed": true,
+        "sha256": "dccf03e57eb60ba015b2314d5ce8af2ae18d1f7a983802ba39b4973d906c8539"
+      },
+      {
+        "check": "local served bytes equal reviewed file",
+        "path": "assets/help-center.css",
+        "passed": true,
+        "sha256": "f068a57af8cb7c63210282c1ff6b15af0f9466d9ace3bcc2800f66d46ae4f343"
+      }
+    ],
+    "truthfulness": "Read current Account/session, map location, Shopify WebView and community sources against safe proposal. Email/password and email-code path, local credentials/drafts, explicit map location, provider/store requests and role-scoped records are reflected. No guaranteed absence of collection/tracking, arbitrary rights entitlement, payment success, retention deadline or absolute security claim. Account deletion described as email request only. Public contact pangaon@gmail.com expressly authorized by parent/user.",
+    "limitations": "Disclosure-source consistency review; no exhaustive provider telemetry/legal compliance certification and no operational email response/deletion verification."
+  },
+  "render_evidence": {
+    "independent_local_chromium_cases": 16,
+    "matrix": "support/privacy \u00d7390/1440 \u00d7light/dark \u00d7font1/2",
+    "passed": true,
+    "checks": [
+      "no horizontal overflow",
+      "header anchor rectangles do not overlap",
+      "actual logo decode",
+      "zero scripts/forms",
+      "no external browser requests",
+      "skip link keyboard activation",
+      "contact focus visible 3px outline and exact authorized mailto",
+      "privacy retention in-page link navigation"
+    ],
+    "visual_inspection": [
+      "root actual desktop support light and privacy dark full-page screenshots",
+      "independent actual mobile390 font2 top crops all four page/theme combinations"
+    ],
+    "source_palette_contrast": {
+      "light_body_surface": 6.591838822149062,
+      "light_body_page": 6.123582827489116,
+      "light_link_surface": 6.872046477908245,
+      "light_button": 6.872046477908245,
+      "dark_body_surface": 9.116654750566727,
+      "dark_body_page": 10.974551746215553,
+      "dark_link_surface": 8.384866153984232,
+      "dark_button": 9.196995560549615
+    },
+    "root_cases_retained": 16
+  },
+  "journey_evidence": {
+    "completed": "Local public static page navigation, skip/focus and privacy anchor; contact href inspected without activation.",
+    "not_completed": [
+      "No email sent or received; support response and deletion fulfillment unexercised.",
+      "No production deployment or public canonical URL verification by reviewer.",
+      "No in-app deletion, actual provider/store settings audit, iOS capture, App Review submission or restoration."
+    ]
+  },
+  "release_boundary": "Source pages suitable for parent protected integration; actual deployed endpoints must be checked after release. In-app deletion remains separately pending. Do not claim App Store ready or TestFlight availability.",
+  "no_source_edits_api_writes_sdk_credentials_build_or_spend": true
+}
