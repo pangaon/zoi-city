@@ -1,0 +1,41 @@
+{
+  "run": "38858368884",
+  "scope": "Only prefiltered diagnostic-script resource/health records retained. No raw provider logs, labels, queries, SDK models or private params.",
+  "records": [
+    {
+      "path": "/health?services=db%2Cauth%2Crest&timeout_ms=5000",
+      "status": 400,
+      "milliseconds": 201
+    },
+    {
+      "service_health": null,
+      "health_complete": false
+    },
+    {
+      "path": "/analytics/endpoints/metrics",
+      "status": 500,
+      "milliseconds": 10197
+    },
+    {
+      "path": "/config/disk/util",
+      "status": 500,
+      "milliseconds": 250
+    },
+    {
+      "disk_utilization": null
+    },
+    {
+      "path": "/config/disk",
+      "status": 200,
+      "milliseconds": 101
+    },
+    {
+      "disk_configuration": {
+        "type": "gp3",
+        "iops": 3000,
+        "size_gb": 8,
+        "throughput_mibps": 125
+      }
+    }
+  ]
+}

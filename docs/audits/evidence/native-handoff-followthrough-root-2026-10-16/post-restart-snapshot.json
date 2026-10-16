@@ -1,0 +1,97 @@
+{
+  "snapshot": {
+    "active": [
+      {
+        "pid": 867,
+        "state": null,
+        "blockers": [],
+        "wait_event": "Extension",
+        "query_seconds": 0,
+        "operation_class": "other",
+        "wait_event_type": "Extension",
+        "application_class": "other",
+        "transaction_seconds": 0
+      }
+    ],
+    "states": [
+      {
+        "state": "idle",
+        "wait_event": "Extension",
+        "connections": 1,
+        "wait_event_type": "Extension",
+        "application_class": "other",
+        "max_query_age_seconds": 0,
+        "max_transaction_age_seconds": 0
+      },
+      {
+        "state": "idle",
+        "wait_event": "ClientRead",
+        "connections": 3,
+        "wait_event_type": "Client",
+        "application_class": "postgrest",
+        "max_query_age_seconds": 249,
+        "max_transaction_age_seconds": 0
+      },
+      {
+        "state": null,
+        "wait_event": "Extension",
+        "connections": 1,
+        "wait_event_type": "Extension",
+        "application_class": "other",
+        "max_query_age_seconds": 0,
+        "max_transaction_age_seconds": 0
+      },
+      {
+        "state": "idle",
+        "wait_event": "ClientRead",
+        "connections": 1,
+        "wait_event_type": "Client",
+        "application_class": "exporter",
+        "max_query_age_seconds": 3,
+        "max_transaction_age_seconds": 0
+      }
+    ],
+    "settings": {
+      "work_mem": "2184kB",
+      "shared_buffers": "224MB",
+      "max_connections": "60",
+      "statement_timeout": "2min"
+    },
+    "checked_at": "2026-10-16T06:11:23.631742+00:00",
+    "connections": 6,
+    "uptime_seconds": 282,
+    "database_counters": {
+      "blks_hit": 3101540231,
+      "blks_read": 30899199,
+      "deadlocks": 0,
+      "temp_bytes": 76962173640,
+      "temp_files": 29814,
+      "numbackends": 7,
+      "stats_reset": null,
+      "xact_commit": 1481781,
+      "xact_rollback": 30127,
+      "blk_read_time_ms": 0,
+      "blk_write_time_ms": 0
+    },
+    "listing_estimates": {
+      "updates": 214909,
+      "hot_updates": 9587,
+      "last_autovacuum": "2026-10-15T16:48:55.62384+00:00",
+      "last_autoanalyze": "2026-10-16T02:48:01.830252+00:00",
+      "estimated_dead_rows": 5820,
+      "estimated_live_rows": 41655
+    },
+    "blocked_connections": 0,
+    "postmaster_started_at": "2026-10-16T06:06:41.411141+00:00"
+  },
+  "elapsed_ms": 1386,
+  "attempts": 1,
+  "interpretation": {
+    "current": "No blocked connections or active user-query load observed; one snapshot does not establish sustained stability",
+    "connections": "6 other connections vs configured60; 7 numbackends includes diagnostic",
+    "historical": "temp_bytes/temp_files are cumulative and stats_reset null; no incident duration/rate inferred",
+    "listing_estimates": "pg_stat_user_tables estimates; not public catalogue denominator",
+    "resource_limitations": "No current CPU/RAM/disk utilization samples from this query; disk I/O timing counters zero do not prove no I/O"
+  },
+  "followup": "Retain evidence; no new automated polling or mutation. If root authorizes after stable service, compare one later counter delta and inspect bounded top total-temp-write statement classes without query params to target query optimization."
+}
