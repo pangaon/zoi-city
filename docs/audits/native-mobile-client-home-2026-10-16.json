@@ -1,0 +1,34 @@
+{
+  "date": "2026-10-16",
+  "commit": "0dc421804249df61d6ee68bc34809b7307cbab05",
+  "pull_request": "https://github.com/pangaon/zoi-city/pull/107",
+  "scope": "Targeted native client-home polish; not full application completion.",
+  "source_evidence": {
+    "food_home": "mobile/src/FoodBusinessHome.tsx renders the verified public menu and listing-bound contact paths. It does not show a menu call-to-action when there are no published menu rows. The uploaded logo is used when present; the business name is not duplicated as a second logo.",
+    "hotel_home": "mobile/src/hospitalityCatalog.ts projects bounded room, dining, venue and amenity details only from the listing's same-official-site links; no inventory or availability is asserted.",
+    "profile_routing": "mobile/src/Profile.tsx routes restaurant/bakery and musician profiles to their dedicated homes.",
+    "design": "Compact mobile hierarchy and reduced repeated copy, based on the user-provided design references; OS text scaling remains supported."
+  },
+  "render_evidence": {
+    "harness": "mobile/tests/browser/client-home-polish.mjs",
+    "result": "15 actual-component browser cases pass at compact phone, large accessibility text, landscape and desktop dimensions in light/dark states.",
+    "captures": "Generated screenshots were visually inspected from /tmp/zoi-food-home-20261016-r6 and /tmp/zoi-mobile-sector-20261016-r3. They validate sparse/no-verified-photo states and a controlled hotel catalogue fixture. These are not live-data or image-rich evidence."
+  },
+  "journey_evidence": {
+    "tests": "mobile/tests/client-home-polish.test.mjs; npm test --prefix mobile passes 587/587.",
+    "exercised": [
+      "food menu display/search and empty-menu recovery",
+      "contact/inquiry path and keyboard recovery",
+      "failed content reader recovery",
+      "hotel source link validation and listing-bound booking callback",
+      "hotel identity layout with and without a verified hero image"
+    ],
+    "not_proven": [
+      "physical iOS or Android install/device acceptance",
+      "live hotel inventory or connected booking provider",
+      "source-rich verified business image rendering",
+      "every profile family and the full 153-screen/987-requirement scope"
+    ]
+  },
+  "completion": "Partial. Food business and hotel receive dedicated improvements, but organization and directory profiles still use shared generic homes, home-services needs its own service journey, owner-published layouts share a renderer, and other native family journeys still require source-backed and device acceptance."
+}
