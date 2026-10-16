@@ -1,3 +1,4 @@
+import {imageDocumentElements} from '../../supabase/functions/zoi-enrich/_image-document.js';
 import {sourceCopyPlaceholder} from '../../assets/enrichment/client-brief.mjs';
 import {usablePhone} from '../../supabase/functions/zoi-enrich/_phone.js';
 import {extractHospitality} from '../../supabase/functions/zoi-enrich/_hospitality.js';
@@ -17,7 +18,7 @@ if(start<0||end<start)throw Error('extractor_contract_changed');
 const body=source.slice(start,end+marker.length);
 // A capture must identify the helper code that actually shaped its result, too.
 // Keep this explicit manifest in sync with the injected pure helpers and their imports.
-const helpers=['_phone.js','_menus.js','_images.js','_image-context.js','_social.js','_media.js','_hospitality.js'];
+const helpers=['_phone.js','_menus.js','_images.js','_image-context.js','_image-document.js','_social.js','_media.js','_hospitality.js'];
 const implementation={body,source_copy_helper:readFileSync(new URL('../../assets/enrichment/client-brief.mjs',import.meta.url),'utf8'),helpers:Object.fromEntries(helpers.map(name=>[name,readFileSync(new URL('../../supabase/functions/zoi-enrich/'+name,import.meta.url),'utf8')]))};
 export const extractorHash=createHash('sha256').update(JSON.stringify(implementation)).digest('hex');
-export const extractRenderedSource=new Function('sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(body)+';return extract;')(sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);
+export const extractRenderedSource=new Function('imageDocumentElements','sourceCopyPlaceholder','usablePhone','extractStructuredMenu','extractSiteImages','extractSocialLinks','extractPublicMedia','extractHospitality',stripTypeScriptTypes(body)+';return extract;')(imageDocumentElements,sourceCopyPlaceholder,usablePhone,extractStructuredMenu,extractSiteImages,extractSocialLinks,extractPublicMedia,extractHospitality);

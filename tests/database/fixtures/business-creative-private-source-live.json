@@ -1,0 +1,278 @@
+{
+  "scope": "Exact captured owner functions plus exact accepted current seven creative/Raster/destination source callers. No live queries by author. Published public source contract unchanged.",
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "name": "bizpage_get",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "schema": "public",
+      "body_md5": "762e9d53fd0808287f467b1beb43b577",
+      "identity": "p_workspace uuid, p_listing uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.bizpage_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF NOT zoi.bizpage_can_edit(p_workspace,p_listing) THEN RAISE EXCEPTION 'no_access_to_listing'; END IF;\n  RETURN (SELECT jsonb_build_object('id',l.id,'name',l.name,'slug',l.slug,'path',COALESCE(l.canonical_path,'/p/'||l.slug),\n    'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n    'hours',l.hours,'price_range',l.price_range,'photo_url',l.photo_url,'social_links',COALESCE(l.social_links,'{}'::jsonb))\n    FROM zoi.listings l WHERE l.id=p_listing);\nEND;$function$\n",
+      "security_definer": true,
+      "signature": "public.bizpage_get(uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "name": "home_content_get",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "45e1ecd88333050e701874d52be24fd9",
+      "identity": "p_workspace uuid, p_listing uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_content_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN RETURN zoi.home_content_get_before_revision(p_workspace,p_listing)||jsonb_build_object('home_revision_schema',1,'home_revision_staged',EXISTS(SELECT 1 FROM zoi.home_designs WHERE workspace_id=p_workspace AND listing_id=p_listing AND staged));END $function$\n",
+      "security_definer": true,
+      "signature": "public.home_content_get(uuid,uuid)"
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "name": "home_revision_baseline",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "51700e905fd87e5c95967bd0a044baec",
+      "identity": "l zoi.listings",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_revision_baseline(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(zoi.home_content_version(l),to_jsonb(l)->'name',to_jsonb(l)->'entity_type',to_jsonb(l)->'primary_category_id',to_jsonb(l)->'slug',to_jsonb(l)->'canonical_path',to_jsonb(l)->'address',to_jsonb(l)->'city',to_jsonb(l)->'region',to_jsonb(l)->'country',to_jsonb(l)->'place_id',to_jsonb(l)->'latitude',to_jsonb(l)->'longitude',to_jsonb(l)->'publish_status',to_jsonb(l)->'moderation_status',to_jsonb(l)->'marketplace_status')::text);\n$function$\n",
+      "security_definer": false,
+      "signature": "zoi.home_revision_baseline(zoi.listings)"
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "48962afd66063e925d2cee6f357985f5",
+      "signature": "public.home_revision_get(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_revision_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;d zoi.home_designs;s jsonb;BEGIN\n actor:=zoi.home_content_authorize(p_workspace,p_listing);s:=public.home_content_get(p_workspace,p_listing);\n SELECT * INTO d FROM zoi.home_designs WHERE workspace_id=p_workspace AND listing_id=p_listing;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'schema_version',1,'staged',coalesce(d.staged,false),'revision',coalesce(d.version,0),'baseline',d.content_baseline,'snapshot',s,'design',coalesce(d.draft,zoi.home_design_default()),'content',coalesce(d.draft_content,'{\"base\":{},\"profile\":{}}'),'items',zoi.home_design_items(p_workspace,p_listing),'can_publish',EXISTS(SELECT 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor AND role IN('owner','admin')),'history',(SELECT coalesce(jsonb_agg(h ORDER BY h.version DESC),'[]') FROM (SELECT version,published_at FROM zoi.home_design_history WHERE workspace_id=p_workspace AND listing_id=p_listing AND content IS NOT NULL ORDER BY version DESC LIMIT 30)h));\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "e16191f11c4e834de43b364ca1256c64",
+      "signature": "public.home_revision_preview_data(uuid,uuid,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_revision_preview_data(p_workspace uuid, p_listing uuid, p_revision integer)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;d zoi.home_designs;s jsonb;e jsonb;identity jsonb;token uuid:=gen_random_uuid();BEGIN\n actor:=zoi.home_content_authorize(p_workspace,p_listing);\n SELECT * INTO d FROM zoi.home_designs WHERE listing_id=p_listing AND workspace_id=p_workspace FOR UPDATE;\n IF NOT FOUND OR NOT d.staged OR d.version IS DISTINCT FROM p_revision THEN RAISE EXCEPTION 'home_revision_conflict';END IF;\n s:=public.home_content_get(p_workspace,p_listing);\n IF d.content_baseline IS DISTINCT FROM (SELECT zoi.home_revision_baseline(l)FROM zoi.listings l WHERE l.id=p_listing) THEN RAISE EXCEPTION 'home_revision_source_conflict';END IF;\n SELECT jsonb_build_object('name',l.name,'slug',l.slug,'canonical_slug',l.slug,'address',l.address,'city',l.city,'country',l.country)INTO identity FROM zoi.listings l WHERE l.id=p_listing;\n e:=(s->'base')||identity||(d.draft_content->'base')||jsonb_build_object('id',p_listing,'publish_status','published','marketplace_status','','profile',((s->'profile')-ARRAY(SELECT jsonb_array_elements_text(coalesce(d.draft_content->'profile_remove','[]'))))||(d.draft_content->'profile'),'entity_type',s->>'entity_type','category_slug',s->>'category_slug','owner_content',coalesce(s->'owner_content','{}')||(d.draft_content->'base')||jsonb_build_object('profile',(coalesce(s#>'{owner_content,profile}','{}')-ARRAY(SELECT jsonb_array_elements_text(coalesce(d.draft_content->'profile_remove','[]'))))||(d.draft_content->'profile')));\n IF d.draft_content->>'media_remove'='true' THEN e:=jsonb_set(e,'{profile}',(e->'profile')-'owner_media');END IF;\n IF d.draft_content?'media' THEN e:=jsonb_set(e,'{profile,owner_media}',jsonb_build_object('version',coalesce((s#>>'{profile,owner_media,version}')::integer,0)+1,'items',d.draft_content->'media'));END IF;\n UPDATE zoi.home_designs SET preview_receipt=jsonb_build_object('id',token,'actor',actor,'revision',p_revision,'baseline',d.content_baseline,'expires_at',clock_timestamp()+interval '30 minutes','renderer','home-revision-v1','ready',false)WHERE workspace_id=p_workspace AND listing_id=p_listing;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'revision',p_revision,'preview_id',token,'entity',e,'design',d.draft);\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "cdd352da7228d4c2f09be3db3938f6ac",
+      "signature": "zoi.assert_ws(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_ws(p_ws uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin perform zoi.workspace_current_role(p_ws);end $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "41755c2fefb23b87bba8a6d6ab05209d",
+      "signature": "zoi.bizpage_can_edit(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.bizpage_can_edit(p_workspace uuid, p_listing uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT EXISTS(\n    SELECT 1 FROM zoi.listings l WHERE l.id=p_listing AND l.owner_workspace_id=p_workspace\n    UNION ALL\n    SELECT 1 FROM zoi.listing_claims c WHERE c.listing_id=p_listing AND c.workspace_id=p_workspace AND c.claim_status IN ('approved','verified')\n  );\n$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "2b9a5b832ee37571131cfadc1a9b8975",
+      "signature": "zoi.home_content_get_before_revision(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_get_before_revision(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;p jsonb;\nBEGIN PERFORM zoi.home_content_authorize(p_workspace,p_listing);SELECT * INTO l FROM zoi.listings WHERE id=p_listing;\n p:=coalesce(l.profile,'{}')-'_coverage';IF p?'_enrich' THEN p:=jsonb_set(p,'{_enrich}',(p->'_enrich')-'lease');END IF;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'version',zoi.home_content_version(l),'base',public.bizpage_get(p_workspace,p_listing),'profile',p,'owner_content',coalesce(zoi.public_owner_content(l.id),'{}'::jsonb),'entity_type',l.entity_type,'category_slug',(SELECT slug FROM zoi.categories WHERE id=l.primary_category_id));\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "a886a454670dd1b27164734df60b5c1a",
+      "signature": "zoi.home_content_version(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_version(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(l.description,l.phone,l.email,l.website,l.hours,l.price_range,l.photo_url,l.social_links,l.owner_workspace_id,(coalesce(l.profile,'{}')-'_coverage'-'_geo'-'_meta'-'_enrich'),coalesce(l.profile->'_enrich','{}')-'lease')::text)\n$function$\n",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "3e0c2c40cb341e3c72aed3dadf30cfd1",
+      "signature": "zoi.public_owner_content(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.public_owner_content(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN l.updated_by='suite-bizpage' THEN jsonb_build_object(\n 'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n 'photo_url',l.photo_url,'social_links',coalesce(l.social_links,'{}'::jsonb))\n ELSE '{}'::jsonb END\n || CASE WHEN l.profile#>>'{_meta,updated_by}'='owner' THEN jsonb_build_object('profile',\n coalesce((SELECT jsonb_object_agg(k,v) FROM jsonb_each(l.profile) x(k,v)\n WHERE k IN ('photos','bio','spotify_url','apple_music_url','youtube_url','bandcamp_url','soundcloud_url','booking_name','booking_email','press','press_kit_url','merch','embeds','releases','tour','event_publicity','rooms','dining','venues','amenities')),'{}'::jsonb))\n ELSE '{}'::jsonb END FROM zoi.listings l WHERE l.id=p_listing;\n$function$\n",
+      "security_definer": true
+    },
+    {
+      "signature": "public.home_entity(text)",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_entity(p_slug text)\n RETURNS jsonb\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare entity jsonb; published jsonb;\nbegin\n entity:=public.seo_entity(p_slug);\n if entity is null or entity->>'id' is null then return entity;end if;\n if not exists(select 1 from zoi.listings where id=(entity->>'id')::uuid and publish_status='published' and moderation_status in ('clean','cleared') and coalesce(marketplace_status,'')<>'hidden') then return null;end if;\n published:=public.home_design_public((entity->>'id')::uuid);\n return entity||jsonb_build_object('published_design',published);\nend $function$\n",
+      "body_md5": "663211d51b2cf63c8c457e2a52e48781",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.assert_workspace_write(uuid,text[])",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_workspace_write(p_workspace uuid, p_roles text[] DEFAULT ARRAY['owner'::text, 'admin'::text, 'editor'::text])\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare r text;\nbegin r:=zoi.workspace_locked_role(p_workspace);\n if not coalesce(r=any(p_roles),false) then raise exception 'insufficient_permission' using errcode='42501';end if;\nend $function$\n",
+      "body_md5": "0a1b64d6adee0e63726bab3c08b0be53",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.home_content_authorize(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_authorize(p_workspace uuid, p_listing uuid)\n RETURNS uuid\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid:=zoi.org_actor();owner_ws uuid;\nBEGIN\n IF actor IS NULL THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n -- Verify the current account/session before any caller can return an old receipt.\n PERFORM zoi.workspace_invitation_email(false);\n PERFORM 1 FROM zoi.user_profiles WHERE id=actor FOR UPDATE;\n IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM zoi.user_profiles WHERE id=actor AND auth_user_id=auth.uid()) THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n -- The guard is VOLATILE and uses fresh statements after every existing lock wait.\n PERFORM zoi.workspace_invitation_email(false);\n PERFORM 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor AND role IN('owner','admin','editor')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'not_authorized' USING errcode='42501';END IF;\n PERFORM zoi.workspace_invitation_email(false);\n SELECT owner_workspace_id INTO owner_ws FROM zoi.listings WHERE id=p_listing FOR UPDATE;\n IF NOT FOUND OR (owner_ws IS NOT NULL AND owner_ws<>p_workspace) OR NOT zoi.bizpage_can_edit(p_workspace,p_listing)THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;\n PERFORM zoi.workspace_invitation_email(false);\n IF owner_ws IS NULL THEN PERFORM 1 FROM zoi.listing_claims WHERE listing_id=p_listing AND workspace_id=p_workspace AND claim_status IN('approved','verified')FOR SHARE;IF NOT FOUND THEN RAISE EXCEPTION 'no_access_to_listing' USING errcode='42501';END IF;\n PERFORM zoi.workspace_invitation_email(false);END IF;\n RETURN actor;\nEND $function$\n",
+      "body_md5": "d5e39d01982e0a8103e71d2e296d28cd",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "signature": "zoi.suite_current_session()",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.suite_current_session()\n RETURNS void\n LANGUAGE plpgsql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\ndeclare sid text:=auth.jwt()->>'session_id';\nbegin\n if auth.uid() is null or coalesce(sid,'') !~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$' then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.users where id=auth.uid() and deleted_at is null and coalesce(is_anonymous,false)=false and (banned_until is null or banned_until<=clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\n perform 1 from auth.sessions where id=sid::uuid and user_id=auth.uid() and (not_after is null or not_after>clock_timestamp());\n if not found then raise exception 'suite_session_unavailable' using errcode='42501';end if;\nend $function$\n",
+      "body_md5": "70cb927f126f251f229c450bf9f792e8",
+      "owner": "postgres",
+      "acl": "{postgres=X/postgres}",
+      "security_definer": true,
+      "config": [
+        "search_path=\"\""
+      ]
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "555c138eb4f29e2ee0a533ba5e573004",
+      "signature": "zoi.business_creative_source(jsonb)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.business_creative_source(p_entity jsonb)\n RETURNS jsonb\n LANGUAGE sql\n IMMUTABLE\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN jsonb_typeof(p_entity)='object'THEN jsonb_build_object('schema',1)||zoi.business_creative_project_layer(p_entity,'top')ELSE NULL END\n$function$\n",
+      "volatility": "i",
+      "definition_md5": "87b5bbc85920aff11b317c7752b7d3f3",
+      "security_definer": false
+    },
+    {
+      "signature": "zoi.business_creative_receipt(uuid,uuid,uuid)",
+      "body_md5": "80e289240781b9512829cfac8d1ac85f",
+      "source": "supabase/migrations/20261015160834_business_creative_draft_receipts.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "public.business_creative_draft_save(uuid,uuid,uuid,jsonb)",
+      "body_md5": "a5f3876eab8bef31c7e6b13fad9d2549",
+      "source": "supabase/migrations/20261015160834_business_creative_draft_receipts.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "public.business_creative_draft_get(uuid,uuid)",
+      "body_md5": "cbf00cb8b9000e19bcde4383eea8d023",
+      "source": "supabase/migrations/20261015160834_business_creative_draft_receipts.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "zoi.studio_render_context(uuid,uuid,uuid,jsonb)",
+      "body_md5": "517d11a3fa2523edf835b5cc6ad78219",
+      "source": "supabase/migrations/20261015180036_studio_media_image_composition_verified.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "zoi.studio_media_insert_allowed(text,text)",
+      "body_md5": "09540d69ab8530824f8113bae4dd13dc",
+      "source": "supabase/migrations/20261015180036_studio_media_image_composition_verified.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "zoi.business_creative_destination_context(uuid,uuid,uuid)",
+      "body_md5": "1c9a23964e488e9718d672b4086eb302",
+      "source": "supabase/migrations/20261015214254_business_creative_destination_review.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres}"
+    },
+    {
+      "signature": "public.business_creative_destinations_recover(uuid,uuid,uuid,boolean)",
+      "body_md5": "26f32016826bd7673a1287e3bca11646",
+      "source": "supabase/migrations/20261015214254_business_creative_destination_review.sql",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "public.business_creative_render_save(uuid,uuid,uuid,jsonb)",
+      "body_md5": "b2c10be8b6f55c6cf7238e1e0cc47c06",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": true,
+      "acl": "{postgres=X/postgres,authenticated=X/postgres}"
+    },
+    {
+      "signature": "zoi.business_creative_project_layer(jsonb,text)",
+      "body_md5": "c438476d91320c02a2fc32e0f4dbedc1",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "security_definer": false,
+      "acl": "{postgres=X/postgres}"
+    }
+  ]
+}

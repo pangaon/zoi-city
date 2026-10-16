@@ -1,0 +1,271 @@
+{
+  "schema": 1,
+  "at": "2026-10-16T00:41:45.124893+00:00",
+  "reviewer": "owner_next",
+  "status": "ACCEPTED_ROOT_V3_SOURCE_AND_ISOLATED_DESTINATION_JOURNEYS__PRODUCTION_AUTH_RELEASE_SEPARATE",
+  "manifest": {
+    "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/source-manifest.json",
+    "sha256": "fcd1c90e783573eb09e1495cb296c7c6165ed871600612cc48b7522adb8c3e62"
+  },
+  "source_pins": [
+    {
+      "path": "assets/suite/calendar.js",
+      "sha256": "c329d2f69afd9eba37d5de6969f6e3c57b89e6115adf5ea6bdbe5982f9ca966a",
+      "bytes": 106907,
+      "held_v2_sha256": "be5acca9fdd223b8d36a5dfc37342e294cf20ceb4577933fa9b53db53f6f23a7"
+    },
+    {
+      "path": "assets/studio/business-destination-review.mjs",
+      "sha256": "2df26644d204348930c085032fcbbc3840cfd85ea0dc630d2105a7cbaab8572c",
+      "bytes": 11400,
+      "held_v2_sha256": "2df26644d204348930c085032fcbbc3840cfd85ea0dc630d2105a7cbaab8572c"
+    },
+    {
+      "path": "tests/database/business-destination-review.browser.mjs",
+      "sha256": "abf4e4e090bba39c14620eea5a5bb69c0ed8c396bf9c8f3adb86bc8630524d9e",
+      "bytes": 14622,
+      "held_v2_sha256": "8f86ab6f82e91f4e0c561a99289b40e586afce76e2282233276c50d167292dd4"
+    }
+  ],
+  "blockers": [],
+  "findings": [
+    {
+      "id": "F1",
+      "state": "resolved",
+      "evidence": "Exactprepare\u2192Escape\u2192cachedrow\u2192Reviewdestinations\u2192Edit originalcaption passes390/1440; committed preparation/edit loss and reload recover at390."
+    },
+    {
+      "id": "F2",
+      "state": "resolved",
+      "evidence": "Server canonical prepare after Calendar cached read\u2192pure current context read (0prepareRPC/no save-success toast)\u2192Escape\u2192same old DOM row\u2192DIRECT Edit originalcaption passes."
+    },
+    {
+      "id": "missing_current",
+      "state": "pass",
+      "evidence": "After disposablefixture removal+actualreaderreload, retained detached old DOM listener opens0dialogs and makes0RPC; precise refresh message shown; no recreation."
+    }
+  ],
+  "validation": {
+    "real_PG_groups": 41,
+    "mounted_destination_cases": 8,
+    "scope": "Only retained destination fixture/boundary regressions repeated. Unrelated previously successful private-source/Raster/general suites not rerun.",
+    "all_original_destination_cases": 4,
+    "additional_cases": 4,
+    "hidden_unsupported_controls": {
+      "widths": [
+        390,
+        1440
+      ],
+      "roles": [
+        "edit",
+        "dup",
+        "rp7",
+        "rp30"
+      ],
+      "Edit_also_forces_Save_time": true,
+      "generic_writes": 0,
+      "full_row_unchanged": true
+    },
+    "negative_source_image": "unsupported site image refuses with text/layoutchoice; cancel-if-unsaved preserves original draft",
+    "negative_source_currentness": "committedreceipt+changedsource stays historical and cannot authorizeediting;0genericwrite",
+    "session": "Existing mounted actor switch clears editor/DOM in bothwidths; no actualAuthsessions used.",
+    "focus": "Real unchangedZoiCore dynamictrap, Enter/Tab/Escape and review/reopen controls exercised",
+    "font_fallback": "Computed Hanken Grotesk,system-ui,sans-serif while externalfonts aborted",
+    "horizontal_overflow": "390/1440 reopenedComposer and Calendar checks pass",
+    "source_mechanical_reversal": "Three exact heldV2 baselineSHAs restored privately. Runtime delta onlyscopecheck/currentfindPost/missingrowrefusal in sharedopenDetail.",
+    "syntax_three_sources": true,
+    "git_diff_check": true,
+    "PG15963_cleaned": true
+  },
+  "screenshots_inspected": [
+    "390-prepared.png",
+    "1440-reopened.png",
+    "390-server-prepared-before-read.png",
+    "390-missing-current-row.png"
+  ],
+  "review_conclusions": [
+    "Shared central lookup resolves current sameID for all existing chip/list/agenda clickclosures; captured staleobject is discarded. Missingcurrent row never fallsback to captured data.",
+    "Existing liveaccount/workspace/SID scope check runs before lookup/modal. Canonical destination writer/source/currentrevision/session checks unchanged.",
+    "Pure current read updates matchingdialog/cache only for validated current source context; it does not claim a save or hide prepared-row recoveryentrypoint.",
+    "Receipt-only onPrepared retains originalsamepost/cacheadoption andsuccess toast; drafts stay Community-only,unscheduled,unpublished.",
+    "Root3 changes no provider/send/Storage/writer/ACL/SQL source.",
+    "No production/canonicalcustomer data,auth,provider,device orbuildactions performed by reviewer."
+  ],
+  "preserved_history": [
+    {
+      "audit": "/workspaces/zoi-business-presentation-independent/docs/audits/business-destination-presentation-independent-2026-10-15.json",
+      "sha256": "4baecfffcb7afbdc6b3140d19abe7a97597cfaf15ee397f72f46957c63791a26"
+    },
+    {
+      "audit": "/workspaces/zoi-business-presentation-v2-independent/docs/audits/business-destination-current-post-independent-v2-2026-10-15.json",
+      "sha256": "9d4fcf27b9a0d5ec963511a48b19b5c1683145c167466d12f928b03ed08ee026"
+    }
+  ],
+  "limits": [
+    "Controlled browser+localPG acceptance is not actual signed-in production owner acceptance or providerpublication.",
+    "The cachemissingcase uses direct removal of disposablelocalfixture solelyto make absentstate observable; it doesnot validate canonicaldelete.",
+    "Newprivate-source source/prerequisite acceptedseparately; this bounded rerun uses published destinationfixture and cannot claim anotherfullprivate/Raster acceptance.",
+    "Existing unrelatedComposer content/controls and broaderdesignscope remainoutside thisnarrowrepair."
+  ],
+  "remaining": [
+    "Rootprotectedmerge/schema/webrelease and actualauthenticatedownerQA as separately authorized",
+    "Prepared businessdraft publishing/scheduling and native destination parity remain open"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/README.md",
+      "sha256": "b1c91fc1d69364a8d19f8a2691b37100eb2480b384c6254400262183f8da2375",
+      "bytes": 1482
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/create-probes.py",
+      "sha256": "64e15a7ef6e37926711bf1cb16c44c3cb29a65b08006365374324b3ec746b9ac",
+      "bytes": 2887
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/freeze-acceptance.py",
+      "sha256": "eb4e1e5131b1c59f4c2679201f474f748ce9f5e8a95d1e7db8a5dcfb32977e77",
+      "bytes": 8252
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mechanical-reversal/assets/studio/business-destination-review.mjs",
+      "sha256": "2df26644d204348930c085032fcbbc3840cfd85ea0dc630d2105a7cbaab8572c",
+      "bytes": 11400
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mechanical-reversal/assets/suite/calendar.js",
+      "sha256": "be5acca9fdd223b8d36a5dfc37342e294cf20ceb4577933fa9b53db53f6f23a7",
+      "bytes": 106733
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mechanical-reversal/tests/database/business-destination-review.browser.mjs",
+      "sha256": "8f86ab6f82e91f4e0c561a99289b40e586afce76e2282233276c50d167292dd4",
+      "bytes": 14519
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mechanical-reversal.json",
+      "sha256": "4d1883cfbf66837945b90322ec178823e4a7aab38d1f324a792984814e7c93ef",
+      "bytes": 990
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mechanical-reversal.log",
+      "sha256": "bf3adb3f23fc9971f32d2fdf95fd110d449c7113ea400a9604fa32a56b9f95b3",
+      "bytes": 108
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/1440-prepared.png",
+      "sha256": "5ba9d3c28b3b3b7354ce324c35d90615eb9ca7f08ff610c615d6425687ca2fc8",
+      "bytes": 110204
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/1440-private-controls.png",
+      "sha256": "006ebbacdae59b84882725c408e9f61a93e3f2113a21527db2f6e88dc0b0618d",
+      "bytes": 99109
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/1440-reopened.png",
+      "sha256": "781ffe0c16379962cf414b4a545e29d985366f48359b11b517e46c554d76a4bf",
+      "bytes": 364635
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-media-refusal.png",
+      "sha256": "7756344b50c1afff273f6288d5d91da13ff8131a305753e4948db2860d4759a9",
+      "bytes": 61913
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-missing-current-row.png",
+      "sha256": "0d1c947a9c4b8f53f0e8c328386b83108a3129eba340fccd255055c31329562b",
+      "bytes": 64383
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-prepared.png",
+      "sha256": "3b4a9c71a45f3375359de02b4c5617c63e70033cf3573b6996fe651e2e0bba81",
+      "bytes": 47817
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-private-controls.png",
+      "sha256": "9725653895afe3ff0a9199f984471f2fe777211262ba5f077b3bc8acae16ef95",
+      "bytes": 54390
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-reopened.png",
+      "sha256": "46b57c4ea4e235125fd4689efd9e2d22874e248208ca1e1c9b2e3808e4354649",
+      "bytes": 332842
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-server-prepared-before-read.png",
+      "sha256": "089684ff20569f5e3ea97ac7605caa5c7cf66d04f26984f08bae5eb3fcaf404b",
+      "bytes": 334875
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/390-source-changed-recovery.png",
+      "sha256": "c7b60dc95cdee298eb1464e0fc315d6dd4c7330dfb39121714e928f4ef98e33d",
+      "bytes": 53297
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-browser/results.json",
+      "sha256": "0e24e655ff5e80d8a03047dc71c08200a347cac2f5c2223b69d88b9bbec57979",
+      "bytes": 24050
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/destination-function-contracts.json",
+      "sha256": "321851df58fce102a2a5273cad4e50e3ba7f5b243fb39b0dfcac53fb085b5ba6",
+      "bytes": 1932
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted/results.json",
+      "sha256": "ea05a71c5efb012e23a5ac75c6b456a03905e4df2d62b6bbcc01fdd65dca3a98",
+      "bytes": 6836
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/mounted.log",
+      "sha256": "5e66dabd501fa98545ad4be1ac7f3a700fd8754d69384e577dd97493d212b8ea",
+      "bytes": 4716
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/presentation-browser-probe.mjs",
+      "sha256": "3221681fcca14223624acb61b21b8e1f21d44d301ad401345fe8f3301b81c5ce",
+      "bytes": 20494
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/presentation-runner.mjs",
+      "sha256": "7a4345c465e7b26e76a92e1768a27155b07eb19456329f132a271f13de38c32a",
+      "bytes": 22611
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/root-source-manifest.json",
+      "sha256": "53f7b03fe8dcf675504d283950728333be0fdaf30f75b5739d7c763be8274947",
+      "bytes": 775
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/root-v3.patch",
+      "sha256": "396a2c45c9638442762a7988218a7483e6aa4e5431862dc425cec01b5d0be8e4",
+      "bytes": 1724
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/review/verification.json",
+      "sha256": "00595d5e99239457da479cb6feda1ac0240cbb7b92a0a3eb07d565a1cbfe084f",
+      "bytes": 183
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/source/assets/studio/business-destination-review.mjs",
+      "sha256": "2df26644d204348930c085032fcbbc3840cfd85ea0dc630d2105a7cbaab8572c",
+      "bytes": 11400
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/source/assets/suite/calendar.js",
+      "sha256": "c329d2f69afd9eba37d5de6969f6e3c57b89e6115adf5ea6bdbe5982f9ca966a",
+      "bytes": 106907
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/source/tests/database/business-destination-review.browser.mjs",
+      "sha256": "abf4e4e090bba39c14620eea5a5bb69c0ed8c396bf9c8f3adb86bc8630524d9e",
+      "bytes": 14622
+    },
+    {
+      "path": "docs/audits/evidence/business-destination-current-post-independent-v3-2026-10-16/source-manifest.json",
+      "sha256": "fcd1c90e783573eb09e1495cb296c7c6165ed871600612cc48b7522adb8c3e62",
+      "bytes": 4154
+    }
+  ]
+}

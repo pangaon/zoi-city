@@ -1,0 +1,58 @@
+PASS exact retained10 definitions installed; writer security drift refuses before any ledger; canonical bodies and ACLs unchanged
+PASS SQL/JS schema1 projection exactly matches and excludes menus/crawl timestamps
+PASS manual source copy/media saves one canonical campaign post; identical lost-response replay returns original snapshot/current post
+PASS immutable request refuses changed payload/campaign and cross actor/workspace replay
+PASS version/unknown source fields/large copy/rights/media mismatch cannot create a post
+PASS unrelated menu/timestamp refresh neither stales receipt nor invalidates selected copy/image
+PASS published explicit owner description clear refuses stale initial selection while existing saved copy remains recoverable for review
+PASS selected owner image/source hold/identity/site/branch changes invalidate new saves and mark retained original references stale
+PASS server receipt validity, canonical ownership/context and source challenge-only changes invalidate bounded source references
+PASS same canonical draft edit/get preserves original reference, exact CAS refuses stale edit, and edit lost-response replay does not duplicate
+PASS legitimate current authorized teammate can edit/reopen same source-specific draft while request recovery stays actor-bound
+PASS actual concurrent duplicate nonce creates one canonical draft/receipt
+PASS changed context or scheduled post refuses receipt/get without rewriting or recreating canonical content
+PASS actual workspace row wait followed by membership revocation refuses initial save/receipt
+PASS actual listing row wait followed by selected source change refuses stale save
+PASS actual same-post row wait rechecks exact canonical revision; concurrent owner content survives
+PASS actual concurrent listing-held team edit and reopen complete in common listing-before-post lock order without deadlock
+PASS new guarded destination functions install with exact original writer/context/private receipts and active immutable/Studio journal guards
+PASS explicit preparation retains same post/body/media/author/campaign/source and original private receipt; Community draft only, never schedule or feed write
+PASS committed/lost-response same intent replays one immutable operation; changed expected version or actor cannot reuse nonce
+PASS original private receipt/get contract is unchanged and refuses a row that now has a destination
+PASS old preparation recovery reports later owner edit separately; never overwrites it or mislabels current row as the original snapshot
+PASS present null/malformed/browser-forged destination marker never becomes reviewed authority or falls back to private
+PASS prepared edits use exact current-version/source/owner wrapper and immutable intent, retain same post/marker, and stay Community draft-only
+PASS prepared save refuses arbitrary media/forged identity or marker/schedule/destinations and malformed copy without partial changes
+PASS actual listing-lock wait rechecks fresh source before prepared edit; unchanged original source is never mistaken for current evidence
+PASS actual competing post lock refuses stale reviewed edit rather than overwriting current owner content
+PASS reviewed edit response-loss recovery distinguishes original immutable save from later current copy
+PASS guarded cancellation closes only an uncommitted original nonce; delayed preparation refuses and committed reviewed edit is never undone
+PASS source changed before review blocks new transition; historical receipt remains honest with source_current false
+PASS stale canonical post version refuses preparation and preserves concurrent owner copy
+PASS external source-site photo requires explicit supported layout or text-only choice; no partial destination update
+PASS two real backend requests prepare once under listing/nonce/post authority and return the same immutable receipt
+PASS current listing transfer and expired actual session refuse fresh preparation and historical receipt access
+PASS anonymous/service callers and direct journal mutation denied; only current authenticated owner/team flow can review
+PASS deleted reviewed post remains removed on recovery and exact retry; no replacement post is created
+PASS all five original canonical writer/context/private receipt function bodies AND ACLs byte-identical after full review lifecycle
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
++ actual - expected
+
++ 'Reviewed owner copy 11111111-1111-4111-8111-000000001740'
+- 'Reviewed owner edit · Ελληνικά 1440'
+
+    at destinationBrowser (file:///workspaces/zoi-connected-operations-audit/tests/database/business-destination-review.browser.mjs:47:96)
+    at async file:///tmp/zoi-destination-runner-dYuIQU/case.mjs:88:194 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'Reviewed owner copy 11111111-1111-4111-8111-000000001740',
+  expected: 'Reviewed owner edit · Ελληνικά 1440',
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.14.0

@@ -1,0 +1,97 @@
+diff --git a/supabase/functions/geography-repair-source-consumer/_client-brief.js b/supabase/functions/geography-repair-source-consumer/_client-brief.js
+index 85900f84..864909ed 100644
+--- a/supabase/functions/geography-repair-source-consumer/_client-brief.js
++++ b/supabase/functions/geography-repair-source-consumer/_client-brief.js
+@@ -9,8 +9,18 @@ const list=v=>Array.isArray(v)?v:[];
+ const heldSource=p=>p?.blocked_reason==='source_scope_mismatch'||p?.scope_review_required===true||p?.scope_review_required==='true'||p?.organization_identity_quarantine===true||p?.organization_identity_quarantine==='true';
+ export const briefBlocked=profile=>profile?.blocked===true||profile?.blocked==='true'||profile?.status==='blocked'||profile?.crawl_status==='blocked';
+ export function briefURL(value){if(typeof value!=='string'||value.length>2048)return null;try{const u=new URL(value);return /^https?:$/.test(u.protocol)&&!u.username&&!u.password&&!u.port?u.href:null;}catch{return null;}}
+-function sameSource(a,b){try{const x=new URL(a),y=new URL(b);return x.protocol===y.protocol&&x.hostname.replace(/^www\./,'')===y.hostname.replace(/^www\./,'')&&x.pathname.replace(/\/$/,'')===y.pathname.replace(/\/$/,'')&&x.search===y.search;}catch{return false;}}
+-function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
++/** Identity scopes never infer aliases or normalize one page into another. */
++export function sameSource(a,b){try{for(const value of [a,b])if(typeof value!=='string'||value.length>2048||/[\\\x00-\x20]/.test(value)||/^https?:\/\/[^/?#]*:/i.test(value))return false;const x=new URL(a),y=new URL(b);return ['http:','https:'].includes(x.protocol)&&!x.username&&!x.password&&!y.username&&!y.password&&!x.port&&!y.port&&!x.hash&&!y.hash&&x.protocol===y.protocol&&x.hostname===y.hostname&&x.pathname===y.pathname&&x.search===y.search;}catch{return false;}}
++/** A recorded secure transport upgrade binds only a research draft. It never
++ * establishes entity identity or changes the canonical registered website. */
++export function secureDraftRedirect(registered,final,receipt){
++ try{
++  if(typeof registered!=='string'||typeof final!=='string'||/^https?:\/\/[^/?#]*:/i.test(registered)||/^https?:\/\/[^/?#]*:/i.test(final)||!receipt||!Array.isArray(receipt.hops)||receipt.hops.length!==1)return false;
++  const a=new URL(registered),b=new URL(final),hop=receipt.hops[0];
++  return typeof hop.location==='string'&&hop.location.length<=2048&&hop.location===b.href&&a.protocol==='http:'&&b.protocol==='https:'&&!a.username&&!a.password&&!b.username&&!b.password&&!a.port&&!b.port&&a.hostname===b.hostname&&a.pathname===b.pathname&&a.search===b.search&&!a.hash&&!b.hash&&receipt.start_url===a.href&&receipt.final_url===b.href&&hop.from===a.href&&hop.to===b.href&&[301,302,303,307,308].includes(hop.status);
++ }catch{return false;}
++}
++function hasIdentity(identity,listing,url,proof){return identity.verification==='exact_name_typed_jsonld'&&identity.name===listing.name&&sameSource(identity.source_url,url)&&proof.source_identity==='exact_name_typed_jsonld'&&['Person','Physician','Dentist','Attorney','ProfessionalService','MusicGroup','LocalBusiness','Restaurant','Bakery','CafeOrCoffeeShop','Store','Hotel','LodgingBusiness','Church','Organization','School','Event','Festival','MusicEvent','EducationEvent','BusinessEvent','SocialEvent','SportsEvent','TheaterEvent','DanceEvent','NGO','SportsTeam'].includes(String(identity.schema_type).replace(/^https?:\/\/schema.org\//,''));}
+ 
+ export const reviewedFoodReviewNeeded='reviewed_visible_food_requires_review';
+ export function reviewedFoodDeferralProfile(prior={}){return{crawl_status:'error',last_error:prior.crawl_status==='error'&&prior.last_error!==reviewedFoodReviewNeeded?(typeof prior.last_error==='string'&&prior.last_error?prior.last_error:'reviewed_visible_food_existing_source_error'):reviewedFoodReviewNeeded};}
+@@ -58,11 +68,13 @@ export function retainedSourceCopy(row,current,url){
+ export function buildClientBrief({listing,profile={},provenance={},sourceURL,checkedAt=new Date().toISOString(),sources=[]}){
+  const p=object(profile),proof=object(provenance),url=briefURL(sourceURL),registered=briefURL(listing?.website);
+  if(!url||!registered||!text(listing?.name)||!text(listing?.entity_type)||p.crawl_status==='error'&&!(reviewedFoodErrorDeferred(p)&&reviewedFoodReceiptCurrent({...listing,profile:{_enrich:p}}))||briefBlocked(p))return null;
+- const member=object(p.member),matchedMember=member.provenance?.identity_match===true&&identityMatches(listing.name,member.name)&&sameSource(member.source_url,url);
+- const matchedReviewedFood=hasReviewedFoodIdentity(p,listing,url,proof),matchedSource=hasIdentity(object(p.source_identity),listing,url,proof)||matchedReviewedFood;
++ const redirect=list(sources).find(s=>s.state==='fetched'&&s.purpose==='registered_source'&&s.url===url)?.redirect_receipt;
++ const upgraded=secureDraftRedirect(listing?.website,sourceURL,redirect);
++ const member=object(p.member),matchedMember=!upgraded&&member.provenance?.identity_match===true&&identityMatches(listing.name,member.name)&&sameSource(member.source_url,url);
++ const matchedReviewedFood=hasReviewedFoodIdentity(p,listing,url,proof),matchedSource=!upgraded&&(hasIdentity(object(p.source_identity),listing,url,proof)||matchedReviewedFood);
+  const familyConflict=p.source_identity?.verification==='entity_family_review_required'&&p.source_identity?.name===listing.name&&sameSource(p.source_identity.source_url,url);
+  // Redirects to another property or organization cannot compose this client.
+- if(!sameSource(url,registered))return null;
++ if(!sameSource(url,registered)&&!upgraded)return null;
+  const evidence=(field)=>({field,source_url:list(sources).filter(s=>s.state==='fetched'&&briefURL(s.url)&&text(proof[field],2000).includes(s.url)).at(-1)?.url||url,retrieved_at:checkedAt,method:text(proof[field],240)||'identity_scoped_member',verification:'source_extracted_requires_review'});
+  const has=field=>Object.hasOwn(p,field)&&!!text(proof[field],2000)&&proof[field]!=='aggregator-branding-excluded';
+  const offerings=[];
+@@ -105,7 +117,7 @@ export function buildClientBrief({listing,profile={},provenance={},sourceURL,che
+  if(actions.some(a=>a.kind==='booking'))needs.push({tool:'booking_provider',state:'external_link_only'});
+  if(offerings.some(o=>o.kind==='rooms'))needs.push({tool:'accommodation_inventory',state:'not_connected_by_source_extraction'});
+  const brief={schema_version:1,status:'draft_requires_review',listing:{id:text(listing.listing_id||listing.id,80)||null,slug:text(listing.slug,200),name:text(listing.name),entity_type:text(listing.entity_type,80)},
+-  source:{registered_url:registered,url,retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedReviewedFood?'reviewed_official_visible_branch':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
++  source:{registered_url:registered,url,...(upgraded?{redirect_receipt:redirect}:{}),retrieved_at:checkedAt,identity_match:matchedMember||matchedSource,scope:matchedMember?'individual_member':matchedReviewedFood?'reviewed_official_visible_branch':matchedSource?'exact_name_typed_source':'registered_source_requires_identity_review'},
+   offering:offerings,audience:[],differentiators:[],description:has('description')&&!sourceCopyPlaceholder(p.description)?{text:text(p.description,1200),evidence:evidence('description')}:null,
+   primary_actions:actions,visual_assets:visuals,tools_needed:needs,unknowns,
+   composition:{section_order:sectionOrder,evidenced_sections:available,copy_generated:false,hidden_sections:[]},
+diff --git a/tests/unit/composer-ai.test.mjs b/tests/unit/composer-ai.test.mjs
+index b73a6dbe..d92c01b2 100644
+--- a/tests/unit/composer-ai.test.mjs
++++ b/tests/unit/composer-ai.test.mjs
+@@ -76,7 +76,7 @@ test('community publishing sends only the saved post id, never mutable editor co
+   const ta = { value: 'Original draft' };
+   let feedArgs, feedName, savedBody;
+   const save = vm.runInNewContext('(' + source.slice(start, end).trim() + ')', {
+-    ta, businessCreativeReady:Promise.resolve(),businessCreative:null,businessCreativeUnavailable:false,linkedContextReady:Promise.resolve(),scopeActive:()=>true,workspaceAtMount:'ws',state: { editId: null }, ctx: { ws: 'ws' }, currentChannelIds: () => ['zoi'],
++    ta, businessCreativeReady:Promise.resolve(),businessCreative:null,businessCreativeUnavailable:false,destinationWorkflow:null,linkedContextReady:Promise.resolve(),scopeActive:()=>true,workspaceAtMount:'ws',state: { editId: null }, ctx: { ws: 'ws' }, currentChannelIds: () => ['zoi'],
+     mediaJson: () => [], buildMeta: () => ({}),
+     C: { api: { rpc: async (name, args) => {
+       if (name === 'social_save_post') {
+@@ -96,5 +96,5 @@ test('community publishing sends only the saved post id, never mutable editor co
+   assert.equal(result.community, 'posted');
+ });
+ 
+-test('canonical source context must finish before actual Composer dispatches a save',async()=>{const start=source.indexOf('    async function savePost('),end=source.indexOf('    /* ---------- honest publish gating',start);let resolve,calls=0;const pending=new Promise(r=>resolve=r);const save=vm.runInNewContext('('+source.slice(start,end).trim()+')',{businessCreativeReady:Promise.resolve(),businessCreative:null,businessCreativeUnavailable:false,linkedContextReady:pending,scopeActive:()=>true,workspaceAtMount:'ws',ta:{value:'Owner edit'},state:{editId:'existing'},ctx:{ws:'ws'},currentChannelIds:()=>[],mediaJson:()=>[],buildMeta:()=>({}),C:{api:{rpc:async()=>{calls++;return{id:'existing',workspace_id:'ws'};}}}});const saved=save('draft',null);await Promise.resolve();assert.equal(calls,0);resolve();await saved;assert.equal(calls,1);});
+-test('unconfirmed canonical save response never becomes a successful Composer save',async()=>{const start=source.indexOf('    async function savePost('),end=source.indexOf('    /* ---------- honest publish gating',start);const save=vm.runInNewContext('('+source.slice(start,end).trim()+')',{businessCreativeReady:Promise.resolve(),businessCreative:null,businessCreativeUnavailable:false,linkedContextReady:Promise.resolve(),scopeActive:()=>true,workspaceAtMount:'ws',ta:{value:'Owner edit'},state:{editId:'existing'},ctx:{ws:'ws'},currentChannelIds:()=>[],mediaJson:()=>[],buildMeta:()=>({}),C:{api:{rpc:async()=>null}}});await assert.rejects(save('draft',null),/saved post could not be confirmed/);});
++test('canonical source context must finish before actual Composer dispatches a save',async()=>{const start=source.indexOf('    async function savePost('),end=source.indexOf('    /* ---------- honest publish gating',start);let resolve,calls=0;const pending=new Promise(r=>resolve=r);const save=vm.runInNewContext('('+source.slice(start,end).trim()+')',{businessCreativeReady:Promise.resolve(),businessCreative:null,businessCreativeUnavailable:false,destinationWorkflow:null,linkedContextReady:pending,scopeActive:()=>true,workspaceAtMount:'ws',ta:{value:'Owner edit'},state:{editId:'existing'},ctx:{ws:'ws'},currentChannelIds:()=>[],mediaJson:()=>[],buildMeta:()=>({}),C:{api:{rpc:async()=>{calls++;return{id:'existing',workspace_id:'ws'};}}}});const saved=save('draft',null);await Promise.resolve();assert.equal(calls,0);resolve();await saved;assert.equal(calls,1);});
++test('unconfirmed canonical save response never becomes a successful Composer save',async()=>{const start=source.indexOf('    async function savePost('),end=source.indexOf('    /* ---------- honest publish gating',start);const save=vm.runInNewContext('('+source.slice(start,end).trim()+')',{businessCreativeReady:Promise.resolve(),businessCreative:null,businessCreativeUnavailable:false,destinationWorkflow:null,linkedContextReady:Promise.resolve(),scopeActive:()=>true,workspaceAtMount:'ws',ta:{value:'Owner edit'},state:{editId:'existing'},ctx:{ws:'ws'},currentChannelIds:()=>[],mediaJson:()=>[],buildMeta:()=>({}),C:{api:{rpc:async()=>null}}});await assert.rejects(save('draft',null),/saved post could not be confirmed/);});
+diff --git a/tests/unit/composer-import-context.test.mjs b/tests/unit/composer-import-context.test.mjs
+index 6f26de82..ce363462 100644
+--- a/tests/unit/composer-import-context.test.mjs
++++ b/tests/unit/composer-import-context.test.mjs
+@@ -1,6 +1,6 @@
+ import test from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import vm from'node:vm';
+ const source=readFileSync(new URL('../../assets/suite/composer.js',import.meta.url),'utf8');function block(a,b){return source.slice(source.indexOf(a),source.indexOf(b,source.indexOf(a)));}
+-function fixture({originalContext={},rpc}={}){const notes=[],calls=[];const fields={firstcomment:{value:''},lu_campaign:{value:'',readOnly:false,parentNode:{appendChild:note=>notes.push(note)}}},state={selected:{facebook:true,zoi:true},channels:[{id:'facebook',platform:'facebook',connected:true},{id:'zoi',platform:'zoi',connected:true}],importedChannels:null,originMeta:{},media:[],alts:{},overrides:{},threadMode:false},context={C:{api:{rpc:rpc||(async(fn,p,opts)=>{calls.push({fn,p,opts});return{ok:true,workspace:'ws',post_id:p.p_post,kind:'ai',context:originalContext};})}},workspaceAtMount:'ws',scopeActive:()=>true,toast:()=>{},doc:{createElement:()=>({})},state,q:k=>fields[k],ta:{value:''},netFor:v=>v,normPlat:v=>v,renderChips(){},renderMedia(){},onBodyChange(){},renderLit(){},renderThread(){},renderEditBanner(){},VERSION:'test',currentCampaign:()=>fields.lu_campaign.value,selectedChannels:()=>state.channels.filter(c=>state.selected[c.id]),litForScheduled:()=>null};return{state,fields,context,notes,calls};}
++function fixture({originalContext={},rpc}={}){const notes=[],calls=[];const fields={firstcomment:{value:''},lu_campaign:{value:'',readOnly:false,parentNode:{appendChild:note=>notes.push(note)}}},state={selected:{facebook:true,zoi:true},channels:[{id:'facebook',platform:'facebook',connected:true},{id:'zoi',platform:'zoi',connected:true}],importedChannels:null,originMeta:{},media:[],alts:{},overrides:{},threadMode:false},context={destinationReview:null,destinationWorkflow:null,C:{api:{rpc:rpc||(async(fn,p,opts)=>{calls.push({fn,p,opts});return{ok:true,workspace:'ws',post_id:p.p_post,kind:'ai',context:originalContext};})}},workspaceAtMount:'ws',scopeActive:()=>true,toast:()=>{},doc:{createElement:()=>({})},state,q:k=>fields[k],ta:{value:''},netFor:v=>v,normPlat:v=>v,renderChips(){},renderMedia(){},onBodyChange(){},renderLit(){},renderThread(){},renderEditBanner(){},VERSION:'test',currentCampaign:()=>fields.lu_campaign.value,selectedChannels:()=>state.channels.filter(c=>state.selected[c.id]),litForScheduled:()=>null};return{state,fields,context,notes,calls};}
+ test('actual Composer import and channel refresh preserve explicit empty targets, no default external/community destination',async()=>{const f=fixture();vm.runInNewContext(block('    function applyImportedTargets','    function renderRestoreBanner')+'\napplyIncomingPost({id:"draft",body:"Canonical",media:[],channels:[],meta:{}});applyImportedTargets();',f.context);assert.deepEqual(Object.keys(f.state.selected),[]);f.state.channels.push({id:'instagram',platform:'instagram',connected:true});vm.runInNewContext('applyImportedTargets()',f.context);assert.deepEqual(Object.keys(f.state.selected),[]);});
+ test('actual Composer retains only available approved targets and never substitutes when a saved destination disappeared',()=>{const f=fixture();vm.runInNewContext(block('    function applyImportedTargets','    function renderRestoreBanner')+'\napplyIncomingPost({id:"draft",body:"Canonical",media:[],channels:["missing","facebook"],meta:{}});',f.context);assert.deepEqual(Object.keys(f.state.selected),['facebook']);});
+ test('actual Composer metadata writer retains source/client/audience context and allows campaign edits when originally unbound',async()=>{const f=fixture(),meta={ai_generation_id:'generation',client_listing_id:'listing',audience_consent:{version:3,approved:true},campaign:'Original',custom_asset_provenance:{source:'owner'}};vm.runInNewContext(block('    function applyImportedTargets','    function renderRestoreBanner')+'\napplyIncomingPost('+JSON.stringify({id:'draft',body:'Canonical',media:[{url:'https://example.com/owner.jpg',alt:'Actual asset'}],channels:[],meta})+');',f.context);await f.context.linkedContextReady;assert.equal(f.fields.lu_campaign.readOnly,false);f.fields.lu_campaign.value='Updated';vm.runInNewContext(block('    function buildMeta()','    function mediaJson()')+'\nresult=buildMeta();',f.context);const result=JSON.parse(JSON.stringify(f.context.result));assert.equal(result.ai_generation_id,'generation');assert.equal(result.client_listing_id,'listing');assert.deepEqual(result.audience_consent,meta.audience_consent);assert.deepEqual(result.custom_asset_provenance,meta.custom_asset_provenance);assert.equal(result.campaign,'Updated');assert.equal(result.alt_text['https://example.com/owner.jpg'],'Actual asset');});
+diff --git a/tests/unit/extractor-fingerprint.test.mjs b/tests/unit/extractor-fingerprint.test.mjs
+index cd9b68e4..66b9232a 100644
+--- a/tests/unit/extractor-fingerprint.test.mjs
++++ b/tests/unit/extractor-fingerprint.test.mjs
+@@ -8,7 +8,7 @@ import {pathToFileURL} from 'node:url';
+ test('capture fingerprint changes when an injected image helper changes, even with the same worker body',async()=>{
+  const root=await mkdtemp(path.join(tmpdir(),'zoi-extractor-hash-'));
+  try{
+-  const paths=['scripts/enrichment/extractor.mjs','assets/enrichment/client-brief.mjs','assets/enrichment/member-source.mjs',...['index.ts','_phone.js','_menus.js','_images.js','_image-context.js','_social.js','_media.js','_hospitality.js'].map(x=>'supabase/functions/zoi-enrich/'+x)];
++  const paths=['scripts/enrichment/extractor.mjs','assets/enrichment/client-brief.mjs','assets/enrichment/member-source.mjs',...['index.ts','_phone.js','_menus.js','_images.js','_image-context.js','_image-document.js','_social.js','_media.js','_hospitality.js'].map(x=>'supabase/functions/zoi-enrich/'+x)];
+   for(const file of paths){await mkdir(path.dirname(path.join(root,file)),{recursive:true});await writeFile(path.join(root,file),await readFile(new URL('../../'+file,import.meta.url)));}
+   await writeFile(path.join(root,'package.json'),' {"type":"module"}');
+   const entry=pathToFileURL(path.join(root,paths[0])).href;

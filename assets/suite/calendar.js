@@ -199,12 +199,12 @@
       '.zk-ic{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);cursor:pointer;transition:.15s}',
       '.zk-ic:hover{border-color:var(--acc);color:var(--acc)}',
       '.zk-ic svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}',
-      '.zk-today{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk";cursor:pointer;transition:.15s}',
+      '.zk-today{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk",system-ui,sans-serif;cursor:pointer;transition:.15s}',
       '.zk-today:hover{border-color:var(--acc);color:var(--acc)}',
       '.zk-range{font-weight:800;font-size:16px;letter-spacing:.01em;min-width:150px}',
       '.zk-sel{background:var(--bg3);border:1px solid var(--line);border-radius:10px;color:var(--tx);font:600 12.5px "Hanken Grotesk";padding:8px 11px;cursor:pointer;max-width:200px}',
       '.zk-sel:focus{outline:none;border-color:var(--acc)}',
-      '.zk-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk";cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}',
+      '.zk-btn{padding:8px 14px;border-radius:10px;border:1px solid var(--line);background:var(--bg3);color:var(--tx);font:700 12.5px "Hanken Grotesk",system-ui,sans-serif;cursor:pointer;transition:.15s;display:inline-flex;align-items:center;gap:7px}',
       '.zk-btn:hover{border-color:var(--acc);color:var(--acc)}',
       '.zk-btn.pri{background:var(--acc);border-color:var(--acc);color:#06101f}',
       '.zk-btn.pri:hover{color:#06101f;filter:brightness(1.05)}',
@@ -472,6 +472,7 @@
     C=Object.assign({},C,{auth:Object.assign({},originalAuth,{token:function(){if(!scopeActive())throw Error('Account or workspace changed.');return originalAuth.token.call(originalAuth);}})});
     C=Object.assign({},C,{api:Object.assign({},C.api,{rpc:async function(name,args,options){
       if(!scopeActive())throw Error('Account or workspace changed.');
+      if(name==='social_save_post')requireOrdinaryDraft({meta:args&&args.p_meta});
       try{var value=await originalRpc(name,args,Object.assign({},options,{beforeDispatch:function(){return scopeActive()&&(!options||typeof options.beforeDispatch!=='function'||options.beforeDispatch()!==false);}}));if(!scopeActive())throw Error('Account or workspace changed.');return value;}
       catch(e){if(scopeActive()&&([401,403].includes(Number(e&&e.status||e&&e.statusCode))||/42501|not_authorized|not_signed_in|no_access_to_workspace|insufficient_permission|suite_session_unavailable/.test(String(e&&e.code||'')+' '+String(e&&e.message||e))))dispose('Your workspace access changed. Reopen this tool to continue.');throw e;}
     }})});
@@ -1000,6 +1001,7 @@
       acts.style.gap = '8px';
       var undo = el('button', 'zk-btn pri');
       undo.textContent = 'Undo';
+      if(protectedBusinessDraft(p)){undo.disabled=true;undo.title='A saved business draft cannot be recreated through Undo. Its history is retained.';bar.querySelector('span').textContent+=' Business drafts cannot be recreated through Undo.';}
       undo.addEventListener('click', async function () {
         undo.disabled = true;
         try {
@@ -1256,7 +1258,10 @@
 
     /* ---------- mutations ---------- */
     // RESCHEDULE / edit-time: re-send the post's own fields + new scheduled_at + own id.
+    function protectedBusinessDraft(post){return !!post.meta&&['business_creative','destination_review'].some(function(key){return Object.prototype.hasOwnProperty.call(post.meta,key);});}
+    function requireOrdinaryDraft(post){if(protectedBusinessDraft(post))throw Error('This business draft stays private. Use Review destinations or edit it in Composer. Publishing and scheduling are not available yet.');}
     async function reschedule(post, newDate, statusOverride) {
+      requireOrdinaryDraft(post);
       await C.api.rpc('social_save_post', {
         p_workspace: ctx.ws,
         p_body: post.body || '',
@@ -1272,6 +1277,7 @@
       await reloadAndRender();
     }
     async function duplicatePost(post) {
+      requireOrdinaryDraft(post);
       var d = postDate(post);
       await C.api.rpc('social_save_post', {
         p_workspace: ctx.ws,
@@ -1299,6 +1305,7 @@
     /* Repost: the same post again, later. Buffer calls this "re-queue"; the
      * offset is in days so "+1 week" and "+1 month" are the same code path. */
     async function repost(post, days) {
+      requireOrdinaryDraft(post);
       var base = postDate(post) || new Date();
       var target = addDays(base, days);
       if (!confirmFastDay(post, target)) return;
@@ -1347,10 +1354,14 @@
 
     /* ---------- DETAIL modal ---------- */
     function openDetail(post) {
+      if(!scopeActive())return;
+      post=findPost(post&&post.id);
+      if(!post){toast('This post is no longer in Calendar. Refresh the list before opening it.');return;}
       var m = openModal('Post details',
         '<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>', false);
       var d = postDate(post);
       var nets = channelList(post).map(function (c) {
+        if(c==='zoi'||c==='community')return '<span class="zk-net">Zoi Community</span>';
         var n = netFor(c);
         if (n) return '<span class="zk-net" style="color:' + n.color + '"><svg viewBox="0 0 24 24">' + n.icon + '</svg><span style="color:var(--tx)">' + esc(n.name) + '</span></span>';
         return '<span class="zk-net">' + esc(String(c)) + '</span>';
@@ -1405,10 +1416,30 @@
         '<button class="zk-btn" data-role="rp30" title="Schedule this post again a month later">Repost +1m</button>' +
         '<button class="zk-btn danger" data-role="del"><svg viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Delete</button>';
 
+      if(protectedBusinessDraft(post)){
+        ['edit','dup','rp7','rp30'].forEach(function(role){var button=m.foot.querySelector('[data-role="'+role+'"]');button.disabled=true;button.hidden=true;button.style.display='none';button.title='Business drafts stay private. Review destinations or edit in Composer.';});
+        m.body.querySelector('[data-role="savetime"]').disabled=true;
+      }
+
       m.foot.querySelector('[data-role="deliveryreview"]').addEventListener('click',async function(){
         if(!scopeActive())return;var priorReview=m.body.querySelector('[data-delivery-review]');if(priorReview){priorReview.scrollIntoView({block:'nearest'});return;}var reviewHost=doc.createElement('div');reviewHost.setAttribute('data-delivery-review','');m.body.appendChild(reviewHost);
         try{var reviewModule=await import('/assets/suite/delivery-review.mjs?v=20261014-durable-attempts');if(scopeActive()&&reviewHost.isConnected)reviewModule.mountDeliveryReview(reviewHost,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive});}catch(error){if(scopeActive()&&reviewHost.isConnected)reviewHost.textContent='Delivery review is not available in this release.';}
       });
+      if(post.meta&&post.meta.business_creative){
+        var adoptCurrentPost=function(current){
+          if(!scopeActive()||!current||current.id!==post.id||current.workspace_id!==workspaceAtMount)return;
+          post=current;
+          state.posts=state.posts.map(function(row){return row.id===current.id?current:row;});
+        };
+        var destinationButton=doc.createElement('button');destinationButton.type='button';destinationButton.className='zk-btn';destinationButton.textContent='Review destinations';
+        m.foot.prepend(destinationButton);
+        destinationButton.addEventListener('click',async function(){
+          if(!scopeActive()||m.body.querySelector('[data-destination-review]'))return;
+          var host=doc.createElement('section');host.setAttribute('data-destination-review','');m.body.appendChild(host);
+          try{var destinations=await import('/assets/studio/business-destination-review.mjs?v=20261015');if(scopeActive()&&host.isConnected)destinations.mountDestinationReview(host,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive,onCurrentPost:adoptCurrentPost,onPrepared:function(current){if(scopeActive()&&current&&current.id===post.id){adoptCurrentPost(current);destinationButton.hidden=true;destinationButton.style.display='none';toast('Saved as a Zoi Community draft. Nothing was sent.');}}});}
+          catch(error){if(scopeActive()&&host.isConnected)host.textContent='Destination review could not load. Your saved draft is unchanged. Reopen this post to try again.';}
+        });
+      }
       var editRow = m.body.querySelector('[data-role="editrow"]');
       var dt = m.body.querySelector('[data-role="dt"]');
       dt.value = toLocalInput(d || new Date());
@@ -1688,9 +1719,12 @@
      * result is reported exactly — including how many failed. */
     async function fillQueue() {
       if (!state.S) { toast('The scheduling library did not load, so the queue cannot be filled.'); return; }
+      var privateCount=state.posts.filter(function(p){return String(p.status||'').toLowerCase()==='draft'&&protectedBusinessDraft(p);}).length;
+      var ordinaryDrafts=state.posts.filter(function(p){return String(p.status||'').toLowerCase()==='draft'&&!protectedBusinessDraft(p);});
+      if(privateCount&&!ordinaryDrafts.length){toast('Business drafts stay private. Use Review destinations or edit in Composer. Nothing was scheduled.');return;}
       var act = state.S.activeSlots(state.slots);
       if (!act.length) { toast('Add posting-time slots first (Posting queue).'); return; }
-      var drafts = state.posts.filter(function (p) { return String(p.status || '').toLowerCase() === 'draft'; })
+      var drafts = ordinaryDrafts
         .sort(function (a, b) {
           var da = new Date(a.created_at || 0).getTime(), db = new Date(b.created_at || 0).getTime();
           return da - db;
@@ -1723,7 +1757,7 @@
           if (!firstErr) firstErr = (e && e.message) ? e.message : 'save failed';
         }
       }
-      toast(ok + ' scheduled' + (fail ? ', ' + fail + ' failed (' + firstErr + ')' : '') + '.');
+      toast(ok + ' scheduled' + (fail ? ', ' + fail + ' failed (' + firstErr + ')' : '') + '.'+(privateCount?' '+privateCount+' business draft(s) stayed private; review them separately.':''));
       await reloadAndRender();
     }
 

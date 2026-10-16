@@ -1,0 +1,558 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-15T22:57:01.725032+00:00",
+  "owner": "owner_next",
+  "status": "frozen_for_independent_source_review_installed_font_defect_open",
+  "base_commit": "7d5e0a9b4f4c3fddbc9380d22fd19f3fbb9e606a",
+  "manifest": {
+    "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source-manifest.json",
+    "sha256": "86e1ddc01b2b465264303d2396d505dcb4c9e8c7cfcd2333a77e01632056757b"
+  },
+  "owned_sources": 16,
+  "runtime_paths": 4,
+  "readonly_paths": 67,
+  "changes": [
+    "Exact RN0.86.3 TextNativeComponent.js guard oldSHA3e783f0b9fcf2e2905d4be23449c77970d29de39755b966cdd259b2f671d5740\u2192patchedSHAfa6ba86a1c1387c94367be09147a35a5e33ba9aebe89db79f36dc2eed3062094; only2 fontSizeMultiplier:true attributes.",
+    "npm postinstall + lockroot hasInstallScript. Unsupported version, source drift, partial patch and shared dependencies refuse; atomic write preserves mode and idempotence.",
+    "ScaleText passes existing native field ONLY on Android with actual useWindowDimensions fontScale; original props/ref/native-host key and iOS/web behavior retained. All54 callers/1211 JSX remain unchanged.",
+    "New native/source/install regressions and exact upstream MIT fixtures; existing ScaleText test changes only assertions for added Android field and absence on web/iOS."
+  ],
+  "evidence_layers": {
+    "actual_installed_failure": {
+      "build_id": "4ef20e5f-bbde-44c6-a05a-1897f595aed8",
+      "source_commit": "7d5e0a9b4f4c3fddbc9380d22fd19f3fbb9e606a",
+      "apk_bytes": 85572723,
+      "apk_sha256": "14b0557538e7754eeba1e2bcfce8abe6074adb3e5609fea9e8103048a4f0e14b",
+      "outcome": "normal Settings font2 glyphs clip to retained1x bounds after Map Close/re-expand and in Grow form; Home newly used strings render correctly. Root retained evidence copied unchanged; prior host-remount-only hypothesis disproven.",
+      "dex_flags": {
+        "enableFontScaleChangesUpdatingLayout": true,
+        "disableTextLayoutManagerCacheAndroid": false,
+        "enablePreparedTextLayout": false
+      }
+    },
+    "native_key": {
+      "outcome": "Real complete RN C++ cache/hash/equality/LRU headers compile and execute: new host tag hits old cache; explicit2 field misses, same2 hits,1.3 misses, return1 hits; nested fragment scale separates; constraints/text still separate.",
+      "limits": "Geometry/attributed-string/paragraph support declarations are test substitutes. This executes the actual cache functions, not full RN renderer/JNI or an installed JS change."
+    },
+    "actual_android_painting": {
+      "pairs": 80,
+      "all_identical": true,
+      "system_scales": [
+        0.85,
+        1,
+        1.3,
+        2
+      ],
+      "SP_sizes": [
+        10,
+        14,
+        18,
+        32,
+        48
+      ],
+      "allowFontScaling": [
+        true,
+        false
+      ],
+      "maxFontSizeMultiplier": [
+        null,
+        1.5
+      ],
+      "method": "Separate app_process reflection uses actual installed APK Java TextAttributeProps/PixelUtil and real Android configuration contexts. Existing nonlinear SP, DIP when allowfalse and cap behavior identical with field1/current.",
+      "limits": "Not application Settings lifecycle/cache proof. No new app source installed."
+    },
+    "rendered_and_state": {
+      "cases": 9,
+      "actual": "React19/RN-web host/ref/parent state with controlled OS/font scale; retained input, map div/camera/selection, route/More/Close and forwarded refs.",
+      "limits": "Controlled native boundary is not Android measurement or real native map."
+    }
+  },
+  "checks": {
+    "focused": {
+      "passed": 11
+    },
+    "all_mobile": {
+      "passed": 513,
+      "preexisting_tests": 506,
+      "new_groups": 7
+    },
+    "typescript": "pass",
+    "Expo57_web_export": "pass561modules",
+    "controlled_browser": "pass9",
+    "native_CPP_cache": "pass",
+    "offline_real_npm_ci_postinstall": "pass",
+    "shared_dependency_source_hashes": "all13 exact original; no mutation",
+    "git_diff_check": "pass"
+  },
+  "commands": {
+    "focused": "cd mobile && node --test tests/native-text-font-cache.test.mjs tests/scale-text.test.mjs",
+    "mobile": "cd mobile && node --test tests/*.test.mjs",
+    "types": "cd mobile && ./node_modules/.bin/tsc --noEmit",
+    "web_export": "cd mobile && CI=1 ./node_modules/.bin/expo export --platform web --output-dir <unique-private-output>",
+    "browser_bundle": "BUNDLE_PATH=<unique-private-bundle> node mobile/tests/scale-text-browser/build.cjs",
+    "browser": "BUNDLE_PATH=<same> OUTPUT_DIR=<unique-private-output> node mobile/tests/scale-text-browser/verify.mjs",
+    "cpp": "Focused unit compiles complete original TextMeasureCache/hash/float/LRU headers with g++20; compile-command.json retained for the separate explicit replay. Structural attributed-string/geometry declarations are test-only substitutes, listed in fixture support-types.h; no Android renderer or JNI C++ build is claimed."
+  },
+  "failure_history": {
+    "original_native8": "OPEN and retained, no correction claim",
+    "sparse_checkout_setup": "Initial full-suite/export attempts lacked existing readonly source/4fixture files; unchanged HEAD files materialized. Initial TS saw exact upstream Flow .js fixture; fixture renamed .js.txt without changing bytes. Those preliminary logs remain in owner private cache.",
+    "patch_mode_test": "First private fixture found umask changed output mode; installer now explicitly restores original permission mode; regression passes."
+  },
+  "preserved": [
+    "54 runtime import callers and all JSX bodies",
+    "TextInput and parent/screen state",
+    "allowFontScaling/maxFontSizeMultiplier/style/accessibility/ref semantics",
+    "session/Auth/readers/writers/provider boundaries",
+    "original scale-text packet and installed8 failure history"
+  ],
+  "limits": [
+    "Proposed cache-key repair is supported by native cache/painting proofs but requires distinct source review and a later actual coherent installed artifact.",
+    "No build9, deployment, DB/API/provider/send, or paid call. Root exclusively owns ADB after explicit handback.",
+    "Full layout context fault upstream is not instrumented/proven: the demonstrated boundary is host identity excluded from measurement key and explicit font field included.",
+    "Patch intentionally pins RN0.86.3 and exact JS bytes; future RN version/source changes fail installation until reviewed.",
+    "postinstall must run; current CI mobile npm ci does, source-render root npm ci --ignore-scripts is unrelated; EAS has no custom lifecycle bypass in tracked config."
+  ],
+  "device_restoration": {
+    "settings": {
+      "font_scale": "1.0",
+      "accelerometer_rotation": "1",
+      "user_rotation": "0",
+      "location_mode": "3"
+    },
+    "permissions": "\n        android.permission.ACCESS_FINE_LOCATION: granted=true, flags=[ USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n        android.permission.ACCESS_COARSE_LOCATION: granted=true, flags=[ USER_SET|USER_SENSITIVE_WHEN_GRANTED|USER_SENSITIVE_WHEN_DENIED]\n      enabledComponents:\n        androidx.work.impl.background.systemjob.SystemJobService\n\nQueries:\n  system apps queryable: false\n  queries via forceQueryable:\n  queries via package name:\n    com.usgreekscan.zoi:\n      com.google.android.apps.maps\n  queries via component:\n    com.google.android.apps.messaging:\n      com.usgreekscan.zoi\n    com.google.android.as:\n      com.usgreekscan.zoi\n    com.google.android.settings.intelligence:\n      com.usgreekscan.zoi\n    com.usgreekscan.zoi:\n      [com.android.bluetooth,com.google.android.bluetooth]\n      com.google.android.documentsui\n      com.google.android.apps.messaging\n      com.google.android.googlequicksearchbox\n      com.android.chrome\n      com.google.android.apps.maps\n      com.android.camera2\n      com.google.android.apps.docs\n      com.google.android.gm\n      com.google.android.youtube\n      com.google.android.apps.photos\n  queryable via interaction:\n    User 0:\n      [com.android.dynsystem,com.android.settings,android,com.android.DeviceAsWebcam,com.android.emulator.multidisplay,com.android.keychain,com.android.providers.settings,com.android.localtransport,com.android.location.fused,com.android.server.telecom,com.android.inputdevices]:\n        com.usgreekscan.zoi\n      [com.google.android.gsf,com.google.android.gms]:\n        com.usgreekscan.zoi\n      com.google.android.webview:\n        com.usgreekscan.zoi\n      com.google.android.inputmethod.latin:\n        com.usgreekscan.zoi\n      com.usgreekscan.zoi:\n        com.google.android.webview\n  querya",
+    "dummy_email_present": true,
+    "remote_probe_removed": true
+  },
+  "remaining_acceptance": [
+    "Independent source/installer/native-proof review",
+    "Root coherent artifact only after acceptance",
+    "Actual normal Settings round trip with map Close/re-expand, Home/More/form and no clipping; retain selected point/camera/input/session, restorefont1; predecessor failure remains open until this passes"
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/README.md",
+      "sha256": "653bcb1b941d28ceb69f23f0a10b248005bc870c166d4d5573d800f80f010047",
+      "bytes": 2184
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/cpp/compile-command.json",
+      "sha256": "4605f5b88cc2f4ba3157f1cb7ac5e469dbc65dcf95736855abc4f1707b83f701",
+      "bytes": 464
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/cpp/compiler.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/cpp/result.json",
+      "sha256": "8c2a809176b817211b0f0f0385b74ef4765d481ec94c7092a50937a2c0494303",
+      "bytes": 180
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/DeviceInfoModule.smali",
+      "sha256": "0428fac65e5ca09391a88a5453a3161d185b44742c17468408b50b58fb9af1ed",
+      "bytes": 19530
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/InspectApk.java",
+      "sha256": "6420a91fb53b7432fbdd2f079dd8b1ab30951911001bb6fe5a91c298ba1c41c8",
+      "bytes": 1247
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/MainActivity.smali",
+      "sha256": "8fac75c9e1f7d7fbe2f8d3da534f11a5d303bef3d58e065d084f9fb00a918def",
+      "bytes": 3779
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/MainApplication.smali",
+      "sha256": "7042cb0fb1e6585ee8308ea44a7d987173f09d9e4160319a9119c18a1263cfcc",
+      "bytes": 6968
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/NativeSpProbe.class",
+      "sha256": "53c5ff80e84a01bb666ea66696bfaed2736e56510ee2c8ad452271788ecbd70e",
+      "bytes": 5169
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/NativeSpProbe.dex",
+      "sha256": "b84f6adf8766d2bed59e67c71709e73531026c8c4387194ef482c7cab34f2f31",
+      "bytes": 4992
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/NativeSpProbe.java",
+      "sha256": "5af9440fbcde57968581149c3f30148fbd30fcd0a231f3f629c3c65a92a05436",
+      "bytes": 3057
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/ReactHostImpl.smali",
+      "sha256": "3b54707962317a6e0289879cab2a20a98fa708f1dce8139ea99f4905d342a992",
+      "bytes": 305025
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/ReactNativeFeatureFlagsDefaults.smali",
+      "sha256": "1b13be2dade1e4ddf3496f3c8a7527bbb40cf4b76e6006064e2e4ff85195fd55",
+      "bytes": 19559
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/ReactSurfaceImpl.smali",
+      "sha256": "af0d3b48f90693a8f0012691f83959576bf77c0da93c0662c3a36bb9026987a6",
+      "bytes": 30758
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/actual-android-sp-probe.log",
+      "sha256": "f79ae6225d083a7ad5c1126cf12f20d36fc54d65cfbb3e4ff11780e6b1b8e4db",
+      "bytes": 8939
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/apk-class-bindings.txt",
+      "sha256": "fb4723b1d9a3d40689e7f284f80e2fb1932bb41c08d1044ec2fad121c63dc208",
+      "bytes": 372
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/apk-native-ABI.json",
+      "sha256": "6cf3662ecd48aa541b274e6395417afc7e76141b2ead7bea2d9d6e505ccc5eb6",
+      "bytes": 884
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/device-restoration.json",
+      "sha256": "61bccb2fa1b16794f46873ffd3a06e2c2f4971906d81b531dded9936c6f6dce1",
+      "bytes": 2061
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/restored-final-font1.png",
+      "sha256": "61c5ac8695cb3469bd00cc8112abc681c7648c6e2660c7a22fb6983b2267baea",
+      "bytes": 214557
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/restored-final-font1.xml",
+      "sha256": "413aad4ee845a9353894474add4f16da3a81e971be8c24065974bff98f5f944b",
+      "bytes": 21047
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/device/rotation-initial-state.json",
+      "sha256": "e4e89b8c67c6066408365c54434a26ed428316ab852bd654d88368cfa001e105",
+      "bytes": 82
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-1440-900-font2.png",
+      "sha256": "c8672dd9316907528069d2b1d0cf5836ebc57542b18f1d66cad1b4f91ed13cbd",
+      "bytes": 56914
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-1440-900-more-font2.png",
+      "sha256": "9b3cb5b62698564b88b499707ef0ce131590cc1e6afe1623f485f52049623ec2",
+      "bytes": 56917
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-1440-900-restored.png",
+      "sha256": "80a1564b09f45b227cc35a31d6ce69c7e5ad291447b45f2df306778178f9279c",
+      "bytes": 49272
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-390-390-font2.png",
+      "sha256": "4543d83b3e42bf66bf7d9a434b49994ab3778559378cc79ad6f2bb2398fa1b22",
+      "bytes": 46268
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-390-390-more-font2.png",
+      "sha256": "f34c39d39cc837b4c33f7d0a6a01b54138d94335be8c78647f35b5aac93b39be",
+      "bytes": 60476
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-390-390-restored.png",
+      "sha256": "f91b03fed2ad2142307ab074480f7909cfb54d36d458aaf1185ba4cc435ba48c",
+      "bytes": 38442
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-390-844-font2.png",
+      "sha256": "9a0a5c23b24af81c2466f1ddd815c7955b69efa6df0d7b098ef929da05028a14",
+      "bytes": 47557
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-390-844-more-font2.png",
+      "sha256": "edfcf6c935f6052dc8ea52727e5ce9ae3b93d60ef1ab326a62a430900f783b9b",
+      "bytes": 68003
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/android-390-844-restored.png",
+      "sha256": "15da064249180c5ec95fd42451b14f6241851a8c555ffc80ea634d47d3820eee",
+      "bytes": 43469
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-1440-900-font2.png",
+      "sha256": "9fbb11873b816ac56a528c6bc712f34e85d5a851767c75a2f0d9fc2f4d6d88c1",
+      "bytes": 56914
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-1440-900-more-font2.png",
+      "sha256": "f2bbe73d8e45d2ca6e35cd12f7677dfc416036fc2f98068e4ccddafc264c1e5f",
+      "bytes": 56917
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-1440-900-restored.png",
+      "sha256": "82199d25903e29d13c2ce97c681ac17ea2d6061eb780a4cf71ec069be5d5f8c9",
+      "bytes": 49395
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-390-390-font2.png",
+      "sha256": "93a77f51d2fae7aa126a114a949a5a4833fd040ce25eaf850348ee94ba3d82c4",
+      "bytes": 46186
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-390-390-more-font2.png",
+      "sha256": "55813c957d802f8f11b83c29dbe69ec7e13d36735231a87a680715f0e2a6f71c",
+      "bytes": 60744
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-390-390-restored.png",
+      "sha256": "ddc769430bc76b77c5e87b1c961eb9f1113b4b37a9dc8abacdf668af98a3cec6",
+      "bytes": 38293
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-390-844-font2.png",
+      "sha256": "da9e46bf9483073a61c0b0986315e0dd63d7de00c8727768c1d4cfda4a014a2b",
+      "bytes": 47557
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-390-844-more-font2.png",
+      "sha256": "da9e46bf9483073a61c0b0986315e0dd63d7de00c8727768c1d4cfda4a014a2b",
+      "bytes": 47557
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/ios-390-844-restored.png",
+      "sha256": "8817b63dd38425c3c92b785f0d94c77e84022235ef6c63b8676ada39abd05cb1",
+      "bytes": 43451
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/report.json",
+      "sha256": "7205d9672927f789c960b2a8f30bb695b49c90c858eea5d90f4237ba8278cbac",
+      "bytes": 2515
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-1440-900-font2.png",
+      "sha256": "9fbb11873b816ac56a528c6bc712f34e85d5a851767c75a2f0d9fc2f4d6d88c1",
+      "bytes": 56914
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-1440-900-more-font2.png",
+      "sha256": "f2bbe73d8e45d2ca6e35cd12f7677dfc416036fc2f98068e4ccddafc264c1e5f",
+      "bytes": 56917
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-1440-900-restored.png",
+      "sha256": "82199d25903e29d13c2ce97c681ac17ea2d6061eb780a4cf71ec069be5d5f8c9",
+      "bytes": 49395
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-390-390-font2.png",
+      "sha256": "93a77f51d2fae7aa126a114a949a5a4833fd040ce25eaf850348ee94ba3d82c4",
+      "bytes": 46186
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-390-390-more-font2.png",
+      "sha256": "55813c957d802f8f11b83c29dbe69ec7e13d36735231a87a680715f0e2a6f71c",
+      "bytes": 60744
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-390-390-restored.png",
+      "sha256": "f2df62a00c4567c5d87a7daba18d80dc9065126bbdbbd949025b6c80b7b6579b",
+      "bytes": 38047
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-390-844-font2.png",
+      "sha256": "da9e46bf9483073a61c0b0986315e0dd63d7de00c8727768c1d4cfda4a014a2b",
+      "bytes": 47557
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-390-844-more-font2.png",
+      "sha256": "da9e46bf9483073a61c0b0986315e0dd63d7de00c8727768c1d4cfda4a014a2b",
+      "bytes": 47557
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser/web-390-844-restored.png",
+      "sha256": "8817b63dd38425c3c92b785f0d94c77e84022235ef6c63b8676ada39abd05cb1",
+      "bytes": 43451
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser-build.log",
+      "sha256": "84fe62996c9fd54efc48c9ffa42bd5b7050f28128fc17201cec83e810ada2e9d",
+      "bytes": 127
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/browser.log",
+      "sha256": "ada86364bdb5ccfc71e97af27aff6a92ff51ae7ca10af11d08e3a4bbe262c294",
+      "bytes": 48
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/expo-web-complete.log",
+      "sha256": "a1e7bcd0632a9223c6391cf2f79eb0587b43ff92e146337655f5ad3648f7503d",
+      "bytes": 558
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/focused-frozen.log",
+      "sha256": "f8f846e8a4fd1ee0684fd28c4f92891a8fb330eb1fb364d29ec4ffc4d52a0330",
+      "bytes": 1414
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/mobile-tests-pass.log",
+      "sha256": "c1ad24376a293050b38be46c2e54cf58c33d53ab9ddcd5eaea7de93072ef0ee6",
+      "bytes": 74356
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/shared-dependencies-unchanged.json",
+      "sha256": "4052d70e511fbb3f54dcedbcc07f0e40b4266e68b0efee8b7fb4cad5e2263474",
+      "bytes": 1936
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/source.patch",
+      "sha256": "21225df1e604962f7c62d3e709b5d403e911d284be21dd1eac2fa3c2999cad33",
+      "bytes": 47171
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/local/typescript-pass.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/device-journey-result.json",
+      "sha256": "8975f814634a2d514dc9d3b87509f3e1b26b68ab527d706ee9fa0e1c2611652c",
+      "bytes": 408
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/expanded-again-font2.png",
+      "sha256": "bafa626210255c701b9295344a576b9de4a9a704c2da896f5be95aa47774c598",
+      "bytes": 580383
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/expanded-again-font2.xml",
+      "sha256": "7e37a31690d422133899d0101bf48cdd5ff40876262243350f65a7745866e8eb",
+      "bytes": 21626
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/form-preserved-font2.png",
+      "sha256": "08c6525cd1f541664af3cc07232f033b89cb0e430ac039cac231a443071e5e96",
+      "bytes": 188320
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/form-preserved-font2.xml",
+      "sha256": "1aa302f44ff09f5d35fdd1d8fb7aeca31d872ee000b1a2bfbda91ab29e0066fe",
+      "bytes": 20049
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/home-font2.png",
+      "sha256": "0c5da12c05ded9e80319a4000257564da57e4274b9c4c24e4695ec716e9883e6",
+      "bytes": 1139393
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/home-font2.xml",
+      "sha256": "8ade84fedadfb21eeea50a73b432783968385cf7449cac49d8d1e68595f4a7f6",
+      "bytes": 18253
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/installed-artifact-binding.json",
+      "sha256": "eebe0616e776a7b5fd054f226d50bd245806d74bde7880d13ad933da3a1cff17",
+      "bytes": 779
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/normal-font2-after-close.png",
+      "sha256": "cef61c020d371e28c07ea21deab8d08fe112f6c14e221367b4da00e170cd797c",
+      "bytes": 385420
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/normal-font2-after-close.xml",
+      "sha256": "ee69214fe9a5a4e9829164a5c61de1a30b6cf738db6b82a2f945d58f10655603",
+      "bytes": 31285
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/predecessor-failure/text-bound-comparison.json",
+      "sha256": "71e8282d5fbc45920e7d5561dba5b2a1fbefbb7d841e656b98463b448ac70677",
+      "bytes": 2866
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/package-lock.json",
+      "sha256": "87550104073528e918476b6985eabb22aab8afe63d696cfef866979047a28e35",
+      "bytes": 249376
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/package.json",
+      "sha256": "dac7a5bac914ecff7847c676a3aa24bb220955647cbbee0b339f326c8569ba53",
+      "bytes": 1303
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/scripts/patch-native-text-font-cache.cjs",
+      "sha256": "7c615bb287b27f570097380b96eaf61fb0d842c0a71e4f6de375d0ffa859982e",
+      "bytes": 2615
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/src/ScaleText.tsx",
+      "sha256": "5eff546341d8b756bebbb6acacb2fac1406e0e767c10a62984b54a922480b6e1",
+      "bytes": 761
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/LICENSE",
+      "sha256": "da6d3703ed11cbe42bd212c725957c98da23cbff1998c05fa4b3d976d1a58e93",
+      "bytes": 1088
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/Libraries/Text/TextNativeComponent.js.txt",
+      "sha256": "3e783f0b9fcf2e2905d4be23449c77970d29de39755b966cdd259b2f671d5740",
+      "bytes": 3287
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/renderer/textlayoutmanager/TextMeasureCache.h",
+      "sha256": "14b83cc352edc47b40c9973ff29966f52aab6fa9916d1696ea6a97fb34390a66",
+      "bytes": 9698
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/FloatComparison.h",
+      "sha256": "9c8b2ced023519e1e5770db30e0185e1d9aad48c5c5f4b5d2e2d535ba8cf2aa0",
+      "bytes": 544
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/SimpleThreadSafeCache.h",
+      "sha256": "595739d422e4a770a5e336fcd3f9a487e17bb1d386a15df446da91c7774ca21a",
+      "bytes": 3222
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/hash_combine.h",
+      "sha256": "2a8e71c591a0f7ee0e451510c5c95d24e1bcd98da6d9afcf97dc706a594dfef5",
+      "bytes": 879
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/cache-key.cpp",
+      "sha256": "dc8d89ddc65f2b4ef4f159096f4c8cb5688dbbf65f2e0b24d46711bf9dc907cd",
+      "bytes": 1982
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/manifest.json",
+      "sha256": "321291e658223a5bbfdc9e095f81c542382e07da42cf8768d367a547176a9d76",
+      "bytes": 901
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/native-contracts.json",
+      "sha256": "caee85e81c543e719772f0993088aabf665228d80d38639e09ca00b336eb5410",
+      "bytes": 1193
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/fixtures/react-native-0.86.3-font-cache/support-types.h",
+      "sha256": "81ed3cddd7d35832a2e9a51220cb62ac4f5f8f1dc128fd82c0486889d1a94fe6",
+      "bytes": 2274
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/native-text-font-cache.test.mjs",
+      "sha256": "25cb84b913ea578d3019ae5bcfe0b4b9db335b0ea284f727e143134c7bd39e9f",
+      "bytes": 11320
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source/mobile/tests/scale-text.test.mjs",
+      "sha256": "36cd2775ea456ce61f298277c10fb2429c50064a07c80fd9b988307696cb2203",
+      "bytes": 4979
+    },
+    {
+      "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source-manifest.json",
+      "sha256": "86e1ddc01b2b465264303d2396d505dcb4c9e8c7cfcd2333a77e01632056757b",
+      "bytes": 14824
+    }
+  ]
+}

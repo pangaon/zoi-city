@@ -1,0 +1,64 @@
+PASS exact retained10 definitions installed; writer security drift refuses before any ledger; canonical bodies and ACLs unchanged
+PASS actual first-Studio7 and asset7 definitions/schema/policies pinned; new sidecar/functions/restrictive policies installed locally
+PASS private sidecar/trigger cannot be read or called directly; public methods have exact current-user versus service ACLs and empty search paths
+PASS both new restrictive policies preserve unrelated legacy upload/delete behavior and deny malformed ungranted reserved paths
+PASS root-only catalog/ACL/Storage restrictive-policy/no-session rollback fixture passes locally without grants/assets/posts
+PASS old canonical recover cannot cancel another actor upload grant even when authorized for the same workspace/listing
+PASS current-session grants derive separate original/output paths even with identical bytes; authenticated upload policy and service-only proof record exact object identity
+PASS ordinary actor cannot forge proof or DELETE/reupload unresolved proof-bearing image
+PASS server-proof consume atomically registers canonical original/output assets and one existing campaign draft; exact replay returns same ids without duplicate assets/posts
+PASS existing canonical draft reader reopens editable recipe and correct asset relationship; altered retry refuses
+PASS cleanup cannot remove already registered draft assets
+PASS serialized cancellation tombstone blocks delayed save and exact-path recreation after completed cleanup
+PASS old source writer cannot hijack a granted render nonce with another payload; unrelated first-Studio receipts keep their ordinary behavior
+PASS real two-backend old cancel before new grant serializes on canonical lock order and refuses conflicting actor; no orphan grant
+PASS real two-backend grant before old cancel serializes and guard refuses cross-actor cancellation without deadlock
+PASS real two-backend cleanup before save closes nonce; delayed canonical save returns cancellation, no assets or post
+PASS real two-backend save before cleanup retains registered canonical assets and objects; no reverse workspace/object lock wait
+PASS Storage RLS fails closed immediately on busy nonce rather than holding object locks while waiting on canonical writers
+PASS real two-backend Storage object-first delete versus nonce-first final consume fails closed without deadlock and preserves the verified object
+PASS same path with changed object identity/version cannot consume old durable proof
+PASS caption-only canonical edit re-verifies registered original/output objects and preserves both asset ids without duplication
+PASS exact existing getter metadata drift refuses; full migration rollback restores helper absence before local installation
+PASS published public response/projection and immutable legacy receipt remain byte-identical; existing composed draft remains current
+PASS actual hidden draft remains anonymous NULL; authenticated exact owner getter emits explicit private identity and JS/SQL projection parity; public branch rejects private envelope
+PASS private source denies anonymous/service/viewer/foreign workspace and stale snapshot isolation without public bypass
+PASS browser-supplied private type/generation/facts grant no source authority; canonical exact current source equality refuses all forged variants
+PASS real canonical private creative save/get/receipt/replay succeeds with genuinely hidden source and one existing post, no public fixture
+PASS all destination context/prepare/edit/recover paths use same private source and same Community-only draft with no send/schedule
+PASS actual canonical owner base NULL/empty/replacement changes invalidate private source; explicit clears never revive imported/public prior copy
+PASS held private imports remain withheld; canonical explicit owner copy retains precedence under source holds
+PASS private staged base/profile null/removal composition equals captured canonical preview while source getter itself writes no preview receipt or public status
+PASS current staged revision increments invalidate source generation; stale baseline refuses rather than silently using old staged content
+PASS four actual two-backend listing waits refuse owner-edit/publication/owner-transfer/visibility changes before any new private receipt
+PASS current actual SID expiry and role revocation refuse private source and canonical write
+PASS real two-backend membership row wait observes committed revocation before private creative write
+PASS real two-backend listing-first staged source generation change refuses old private context
+PASS hiding a published reference never silently converts it into a private source; legacy receipt remains historical then exact current value returns
+PASS actual private Raster context/Storage INSERT/proof/final consume succeeds with original byte/object authority unchanged, no fake public source
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role authenticated;set request.jwt.claims='{"sub":"11111111-1111-4111-8111-000000000002","session_id":"11111111-1111-4111-8111-000000000020"}';select public.business_creative_render_save('11111111-1111-4111-8111-000000000010','11111111-1111-4111-8111-000000000800','11111111-1111-4111-8111-000000000822','{"source":{"id":"11111111-1111-4111-8111-000000000800","city":"QA city","name":"QA owner private","slug":"qa-owner-private","schema":1,"address":"1 QA Street","country":"QA country","profile":{},"website":null,"photo_url":null,"description":"Private owner factual copy","entity_type":"business","claim_status":null,"category_slug":"bakeries","owner_content":{"website":null,"photo_url":null,"description":"Private owner factual copy"},"owner_user_id":null,"publish_status":"draft","_creative_source":{"type":"owner_private_draft","schema":1,"staged":false,"listing":"11111111-1111-4111-8111-000000000800","baseline":"df810e8a915f7bc8fed41301a79784fd","revision":0,"workspace":"11111111-1111-4111-8111-000000000010","content_version":"aff13a644e30e0646b7c7ea301b6fd6d","revision_baseline":null},"moderation_status":"clean","marketplace_status":"hidden","owner_workspace_id":"11111111-1111-4111-8111-000000000010","primary_category_id":1},"body":"Private owner rendered image","meta":{"campaign":"PRIVATE IMAGE QA"},"rights_confirmed":true,"id":null,"expected_updated_at":null,"render":{"schema":1,"recipe":{"schema":1,"width":512,"height":512,"layout":"split","fit":"cover","crop":{"x":0.5,"y":0.5,"zoom":1},"brand":"","title":"","body":"","background":"#102b42","foreground":"#ffffff","accent":"#57c9ff","textScale":1},"original":{"asset_id":null,"mime_type":"image/png","sha256":"1e5ded00b9a04d269058d6237b2e5853051498e85a9962c005d7a447ce284242","size_bytes":79849,"width":512,"height":512},"output":{"asset_id":null,"mime_type":"image/png","sha256":"1e5ded00b9a04d269058d6237b2e5853051498e85a9962c005d7a447ce284242","size_bytes":79849,"width":512,"height":512},"alt":"QA original image composition"}}'::jsonb)
+ERROR:  studio_media_current_byte_proof_required
+CONTEXT:  PL/pgSQL function public.business_creative_render_save(uuid,uuid,uuid,jsonb) line 18 at RAISE
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at ChildProcess.exithandler (node:child_process:417:12)
+    at ChildProcess.emit (node:events:508:28)
+    at maybeClose (node:internal/child_process:1100:16)
+    at Socket.<anonymous> (node:internal/child_process:457:11)
+    at Socket.emit (node:events:508:28)
+    at Pipe.<anonymous> (node:net:346:12) {
+  code: 1,
+  killed: false,
+  signal: null,
+  cmd: `/usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role authenticated;set request.jwt.claims='{"sub":"11111111-1111-4111-8111-000000000002","session_id":"11111111-1111-4111-8111-000000000020"}';select public.business_creative_render_save('11111111-1111-4111-8111-000000000010','11111111-1111-4111-8111-000000000800','11111111-1111-4111-8111-000000000822','{"source":{"id":"11111111-1111-4111-8111-000000000800","city":"QA city","name":"QA owner private","slug":"qa-owner-private","schema":1,"address":"1 QA Street","country":"QA country","profile":{},"website":null,"photo_url":null,"description":"Private owner factual copy","entity_type":"business","claim_status":null,"category_slug":"bakeries","owner_content":{"website":null,"photo_url":null,"description":"Private owner factual copy"},"owner_user_id":null,"publish_status":"draft","_creative_source":{"type":"owner_private_draft","schema":1,"staged":false,"listing":"11111111-1111-4111-8111-000000000800","baseline":"df810e8a915f7bc8fed41301a79784fd","revision":0,"workspace":"11111111-1111-4111-8111-000000000010","content_version":"aff13a644e30e0646b7c7ea301b6fd6d","revision_baseline":null},"moderation_status":"clean","marketplace_status":"hidden","owner_workspace_id":"11111111-1111-4111-8111-000000000010","primary_category_id":1},"body":"Private owner rendered image","meta":{"campaign":"PRIVATE IMAGE QA"},"rights_confirmed":true,"id":null,"expected_updated_at":null,"render":{"schema":1,"recipe":{"schema":1,"width":512,"height":512,"layout":"split","fit":"cover","crop":{"x":0.5,"y":0.5,"zoom":1},"brand":"","title":"","body":"","background":"#102b42","foreground":"#ffffff","accent":"#57c9ff","textScale":1},"original":{"asset_id":null,"mime_type":"image/png","sha256":"1e5ded00b9a04d269058d6237b2e5853051498e85a9962c005d7a447ce284242","size_bytes":79849,"width":512,"height":512},"output":{"asset_id":null,"mime_type":"image/png","sha256":"1e5ded00b9a04d269058d6237b2e5853051498e85a9962c005d7a447ce284242","size_bytes":79849,"width":512,"height":512},"alt":"QA original image composition"}}'::jsonb)`,
+  stdout: '',
+  stderr: 'ERROR:  studio_media_current_byte_proof_required\n' +
+    'CONTEXT:  PL/pgSQL function public.business_creative_render_save(uuid,uuid,uuid,jsonb) line 18 at RAISE\n'
+}
+
+Node.js v24.14.0

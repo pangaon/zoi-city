@@ -1,0 +1,192 @@
+--- held-v1/scripts/geography/census-address-candidate.mjs
++++ v2/scripts/geography/census-address-candidate.mjs
+@@ -1,4 +1,5 @@
+ import {createHash} from 'node:crypto';
++import {officialSourceQuarantined,sourceIdentityContentHeld,selectedOfficialWebsite} from '../../assets/enrichment/official-source-policy.mjs';
+ 
+ // Offline preparation only. These values do not grant a ticket, approve a source,
+ // or satisfy geography_review_apply's reviewed official-source contract.
+@@ -7,13 +8,15 @@
+ export const candidateHash=value=>createHash('sha256').update(value).digest('hex');
+ const uuid=/^[a-f0-9]{8}-[a-f0-9]{4}-[1-5][a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i;
+ const fingerprint=/^[a-f0-9]{32}$/;
+-// This pair is documented by the retained Census API specification. Additional
+-// benchmark IDs/names require a separately retained official metadata binding.
++// Offline mock contract only: the retained V1 API-PDF download was rejected HTML.
++// A successful primary document/benchmark binding remains a live-admission gate.
+ const benchmarkAllowed=b=>object(b)&&b.id==='4'&&b.name==='Public_AR_Current'&&Object.keys(b).length===2;
+ const states=new Set('AL AK AZ AR CA CO CT DE DC FL GA HI ID IL IN IA KS KY LA ME MD MA MI MN MS MO MT NE NV NH NJ NM NY NC ND OH OK OR PA RI SC SD TN TX UT VT VA WA WV WI WY'.split(' '));
+ const object=v=>!!v&&typeof v==='object'&&!Array.isArray(v);
+ const clean=v=>typeof v==='string'&&v.length<=CENSUS_LIMITS.field&&!/[\x00-\x1f\x7f]/.test(v)&&v.trim()===v;
+-const norm=v=>v.normalize('NFKC').toUpperCase().replace(/[.]/g,'').replace(/\s+/g,' ').trim();
++// ASCII case/space comparison only; no Unicode normalization, case expansions,
++// accent stripping or punctuation removal. Query deduplication uses exact bytes.
++const norm=v=>v.replace(/[a-z]/g,c=>c.toUpperCase()).replace(/ +/g,' ').trim();
+ // Only a terminal road suffix is compared as an abbreviation. Do not rewrite
+ // street names or directions ("North Street" is not automatically "N Street").
+ const street=v=>norm(v).replace(/\b(STREET|ROAD|AVENUE|BOULEVARD|DRIVE|LANE|COURT|PLACE|PARKWAY|HIGHWAY)$/g,v=>({STREET:'ST',ROAD:'RD',AVENUE:'AVE',BOULEVARD:'BLVD',DRIVE:'DR',LANE:'LN',COURT:'CT',PLACE:'PL',PARKWAY:'PKWY',HIGHWAY:'HWY'}[v]));
+@@ -24,12 +27,28 @@
+  if(row.profile!==undefined&&!object(row.profile))return true;
+  for(const value of [row.source_context,row.profile?._enrich]){
+   if(value===undefined)continue;if(!object(value))return true;
+-  for(const key of ['blocked','scope_review_required','source_scope_mismatch','organization_identity_quarantine','source_challenge','challenge'])if(Object.hasOwn(value,key)&&![true,false,'true','false',null].includes(value[key])||value[key]===true||value[key]==='true')return true;
+-  if(Object.hasOwn(value,'blocked_reason')&&(typeof value.blocked_reason!=='string'||value.blocked_reason.trim()))return true;
+-  if(Object.hasOwn(value,'source_identity')&&(!object(value.source_identity)||Object.hasOwn(value.source_identity,'verification')&&typeof value.source_identity.verification!=='string'))return true;
+-  for(const key of ['identity_scope','source_kind','crawl_status','last_error'])if(Object.hasOwn(value,key)&&value[key]!==null&&typeof value[key]!=='string')return true;
+-  if(/review_required|quarantin|blocked|scope_mismatch|unverified|pending|challenge/i.test(value.source_identity?.verification||''))return true;
+-  if(['member','association_member','source_affiliation'].some(k=>Object.hasOwn(value,k))||['association_directory','association_member','supporting_publisher_profile'].includes(value.source_kind)||value.identity_scope==='organization'&&['artist','creator','professional'].includes(row.entity_type)||value.crawl_status==='error')return true;
++  const entity={...row,profile:{...row.profile,_enrich:value}};
++  if(officialSourceQuarantined(entity)||sourceIdentityContentHeld(entity))return true;
++  // Conservative superset of the private mixedIdentityHold contract in
++  // assets/enrichment/reviewed-official-source.mjs and hospitality catalogValue.
++  // Missing website is allowed; typed identity or review failures are not cleared.
++  const typedHold=q=>{
++   for(const key of ['blocked','scope_review_required','source_scope_mismatch','organization_identity_quarantine','source_challenge','challenge','identity_conflict','branch_conflict','source_challenged','captcha','challenge_detected','identity_review_required','entity_family_review_required'])if(Object.hasOwn(q,key)&&(![true,false,'true','false'].includes(q[key])||q[key]===true||q[key]==='true'))return true;
++   if(Object.hasOwn(q,'identity_match')&&q.identity_match!==true&&q.identity_match!=='true')return true;
++   for(const key of ['blocked_reason','last_error'])if(Object.hasOwn(q,key)&&q[key]!==null&&(typeof q[key]!=='string'||q[key]!==''))return true;
++   for(const key of ['status','crawl_status'])if(Object.hasOwn(q,key)&&q[key]!==null&&(typeof q[key]!=='string'||q[key]&&!['ok','success','complete','completed','fetched','verified'].includes(q[key])))return true;
++   return false;
++  };
++  if(typedHold(value))return true;
++  if(Object.hasOwn(value,'source_identity')){
++   const identity=value.source_identity;if(!object(identity)||typedHold(identity))return true;
++   if(Object.hasOwn(identity,'verification')&&identity.verification!=='exact_name_typed_jsonld')return true;
++   if(Object.hasOwn(identity,'name')&&(typeof identity.name!=='string'||norm(identity.name)!==norm(row.name||'')))return true;
++   if(Object.hasOwn(identity,'expected_entity_type')&&identity.expected_entity_type!==row.entity_type)return true;
++   if(Object.hasOwn(identity,'source_url')&&(typeof identity.source_url!=='string'||!selectedOfficialWebsite(entity)||identity.source_url!==selectedOfficialWebsite(entity)))return true;
++  }
++  for(const key of ['identity_scope','source_kind'])if(Object.hasOwn(value,key)&&value[key]!==null&&typeof value[key]!=='string')return true;
++  if(value.identity_scope||['member','association_member','source_affiliation','member_source','publisher_source_evidence'].some(k=>Object.hasOwn(value,k))||typeof value.source_kind==='string'&&/(?:association|member|publisher|directory|supporting)/i.test(value.source_kind))return true;
+  }return false;
+ }
+ function eligibility(job,row,observedAt){
+@@ -57,10 +76,9 @@
+  for(const job of jobs){const row=snapshots.find(r=>r.id===job.listing_id),reason=eligibility(job,row,stamp);
+   if(reason){excluded.push({job_id:job.id,listing_id:job.listing_id,reason});continue;}
+   const address={street:row.address,city:row.city,state:row.region_code,zip:row.postal_code||''};
+-  const normalized={street:norm(address.street),city:norm(address.city),state:address.state,zip:address.zip};
+-  const queryId=seal({provider:'census',benchmark,address:normalized});
+-  if(!queries.some(q=>q.id===queryId))queries.push({id:queryId,address,normalized});
+-  bindings.push({job_id:job.id,listing_id:job.listing_id,input_fingerprint:job.input_fingerprint,database_snapshot:job.database_snapshot,source_generation:job.source_generation,snapshot_sha256:seal({id:row.id,input_fingerprint:row.input_fingerprint,database_snapshot:row.database_snapshot,source_generation:row.source_generation,captured_at:row.captured_at,address}),query_id:queryId,address_authority:'canonical_unverified'});
++  const queryId=seal({provider:'census',benchmark,address});
++  if(!queries.some(q=>q.id===queryId))queries.push({id:queryId,address});
++  bindings.push({job_id:job.id,listing_id:job.listing_id,input_fingerprint:job.input_fingerprint,database_snapshot:job.database_snapshot,source_generation:job.source_generation,snapshot_sha256:seal({id:row.id,input_fingerprint:row.input_fingerprint,database_snapshot:row.database_snapshot,source_generation:row.source_generation,captured_at:row.captured_at,address}),query_id:queryId,address:{...address},address_authority:'canonical_unverified'});
+  }
+  const requestCsv=queries.map(q=>[q.id,q.address.street,q.address.city,q.address.state,q.address.zip].map(csvField).join(',')).join('\r\n')+(queries.length?'\r\n':'');
+  requireThat(Buffer.byteLength(requestCsv)<=CENSUS_LIMITS.requestBytes,'census_request_byte_cap');
+@@ -73,9 +91,9 @@
+  requireThat(batch_sha256===seal(body)&&batch.schema==='zoi.geography.census-candidate-batch.v1'&&batch.provider==='census'&&batch.endpoint===CENSUS_ENDPOINT&&batch.authority==='none'&&batch.writer_eligible===false&&batch.coordinate_writes===0&&batch.provider_calls===0,'census_batch_changed');
+  requireThat(Array.isArray(batch.queries)&&batch.queries.length<=CENSUS_LIMITS.jobs&&Array.isArray(batch.bindings)&&batch.bindings.length<=CENSUS_LIMITS.jobs&&batch.request_sha256===candidateHash(batch.request_csv)&&Buffer.byteLength(batch.request_csv)<=CENSUS_LIMITS.requestBytes,'invalid_census_batch');
+  requireThat(benchmarkAllowed(batch.benchmark)&&Number.isFinite(Date.parse(batch.observed_at))&&Array.isArray(batch.excluded)&&batch.bindings.length+batch.excluded.length>=1&&batch.bindings.length+batch.excluded.length<=CENSUS_LIMITS.jobs,'invalid_census_batch');
+- requireThat(new Set(batch.queries.map(q=>q?.id)).size===batch.queries.length&&batch.queries.every(q=>object(q)&&object(q.address)&&['street','city','state','zip'].every(k=>clean(q.address[k]))&&/^\d+[A-Za-z]?(?:-\d+[A-Za-z]?)?\s+\S/.test(q.address.street)&&q.address.city&&(!q.address.zip||/^\d{5}(?:-\d{4})?$/.test(q.address.zip))&&states.has(q.address.state)&&candidateCanonical(q.normalized)===candidateCanonical({street:norm(q.address.street),city:norm(q.address.city),state:q.address.state,zip:q.address.zip})&&q.id===seal({provider:'census',benchmark:batch.benchmark,address:q.normalized})),'invalid_census_queries');
++ requireThat(new Set(batch.queries.map(q=>q?.id)).size===batch.queries.length&&batch.queries.every(q=>object(q)&&object(q.address)&&['street','city','state','zip'].every(k=>clean(q.address[k]))&&/^\d+[A-Za-z]?(?:-\d+[A-Za-z]?)?\s+\S/.test(q.address.street)&&q.address.city&&(!q.address.zip||/^\d{5}(?:-\d{4})?$/.test(q.address.zip))&&states.has(q.address.state)&&q.id===seal({provider:'census',benchmark:batch.benchmark,address:q.address})),'invalid_census_queries');
+  const all=[...batch.bindings,...batch.excluded];
+- requireThat(all.every(x=>object(x)&&uuid.test(x.job_id||'')&&uuid.test(x.listing_id||''))&&new Set(all.map(x=>x.job_id)).size===all.length&&new Set(all.map(x=>x.listing_id)).size===all.length&&batch.bindings.every(x=>fingerprint.test(x.input_fingerprint||'')&&fingerprint.test(x.database_snapshot||'')&&Number.isSafeInteger(x.source_generation)&&x.source_generation>=0&&/^[a-f0-9]{64}$/.test(x.snapshot_sha256||'')&&x.address_authority==='canonical_unverified'&&batch.queries.some(q=>q.id===x.query_id))&&batch.queries.every(q=>batch.bindings.some(x=>x.query_id===q.id)),'invalid_census_bindings');
++ requireThat(all.every(x=>object(x)&&uuid.test(x.job_id||'')&&uuid.test(x.listing_id||''))&&new Set(all.map(x=>x.job_id)).size===all.length&&new Set(all.map(x=>x.listing_id)).size===all.length&&batch.bindings.every(x=>fingerprint.test(x.input_fingerprint||'')&&fingerprint.test(x.database_snapshot||'')&&Number.isSafeInteger(x.source_generation)&&x.source_generation>=0&&/^[a-f0-9]{64}$/.test(x.snapshot_sha256||'')&&x.address_authority==='canonical_unverified'&&batch.queries.some(q=>q.id===x.query_id&&candidateCanonical(q.address)===candidateCanonical(x.address)))&&batch.queries.every(q=>batch.bindings.some(x=>x.query_id===q.id)),'invalid_census_bindings');
+  const csv=batch.queries.map(q=>[q.id,q.address.street,q.address.city,q.address.state,q.address.zip].map(csvField).join(',')).join('\r\n')+(batch.queries.length?'\r\n':'');
+  requireThat(csv===batch.request_csv&&candidateCanonical(batch.counts)===candidateCanonical({input_jobs:all.length,eligible_listings:batch.bindings.length,excluded_listings:batch.excluded.length,unique_address_queries:batch.queries.length,deduplicated_queries:batch.bindings.length-batch.queries.length}),'census_request_changed');
+  return batch;
+@@ -94,7 +112,7 @@
+ }
+ function matchAddress(raw,q){
+  const parts=raw.split(',').map(x=>x.trim());
+- return parts.length===4&&street(parts[0])===street(q.address.street)&&norm(parts[1])===q.normalized.city&&parts[2]===q.address.state&&/^\d{5}(?:-\d{4})?$/.test(parts[3])&&(!q.address.zip||parts[3]===q.address.zip);
++ return parts.length===4&&street(parts[0])===street(q.address.street)&&norm(parts[1])===norm(q.address.city)&&parts[2]===q.address.state&&/^\d{5}(?:-\d{4})?$/.test(parts[3])&&(!q.address.zip||parts[3]===q.address.zip);
+ }
+ export function parseCensusCandidates(batch,bytes,{observedAt=new Date().toISOString()}={}){
+  validateCensusBatch(batch);requireThat(bytes instanceof Uint8Array&&bytes.byteLength>0&&bytes.byteLength<=CENSUS_LIMITS.responseBytes&&Number.isFinite(Date.parse(observedAt)),'census_response_byte_cap');
+@@ -113,5 +131,5 @@
+   requireThat(Number.isFinite(latitude)&&Number.isFinite(longitude)&&latitude>=17&&latitude<=72&&(longitude>=-180&&longitude<=-60||longitude>=170&&longitude<=180),'census_coordinates_invalid');
+   matches.set(q.id,{status:'needs_coordinate_review',reason:'census_street_range_estimate_requires_independent_venue_review',proposed:{evidence_kind:'census_address_range_candidate',latitude,longitude,precision:'street_interpolated',venue_verified:false,official_source_confirmed:false,writer_eligible:false,address_authority:'canonical_unverified',address:q.address,matched_address:row[4],tiger_line_id:row[6],tiger_line_side:row[7]}});
+  }
+- return {schema:'zoi.geography.census-candidate-result.v1',batch_sha256:batch.batch_sha256,request_sha256:batch.request_sha256,response_sha256:responseHash,observed_at:observedAt,benchmark:batch.benchmark,results:batch.bindings.map(binding=>({...binding,...matches.get(binding.query_id),precision:matches.get(binding.query_id).proposed?'street_interpolated':'unknown',authority:'none',writer_eligible:false,independent_review_required:true,source:{provider:'census',endpoint:CENSUS_ENDPOINT,benchmark:batch.benchmark,query_id:binding.query_id,request_sha256:batch.request_sha256,response_sha256:responseHash,raw_response_bytes:bytes.byteLength}})),excluded:batch.excluded,counts:batch.counts,authority:'none',writer_eligible:false,coordinate_writes:0,provider_calls:0,complete:false};
++ return {schema:'zoi.geography.census-candidate-result.v1',batch_sha256:batch.batch_sha256,request_sha256:batch.request_sha256,response_sha256:responseHash,observed_at:observedAt,benchmark:batch.benchmark,results:batch.bindings.map(binding=>{const match=matches.get(binding.query_id);return {...binding,...match,proposed:match.proposed?{...match.proposed,address:{...binding.address}}:null,precision:match.proposed?'street_interpolated':'unknown',authority:'none',writer_eligible:false,independent_review_required:true,source:{provider:'census',endpoint:CENSUS_ENDPOINT,benchmark:batch.benchmark,query_id:binding.query_id,request_sha256:batch.request_sha256,response_sha256:responseHash,raw_response_bytes:bytes.byteLength}};}),excluded:batch.excluded,counts:batch.counts,authority:'none',writer_eligible:false,coordinate_writes:0,provider_calls:0,complete:false};
+ }
+--- held-v1/scripts/geography/geocoder-candidate-adapter.mjs
++++ v2/scripts/geography/geocoder-candidate-adapter.mjs
+@@ -16,8 +16,9 @@
+  const race=operation=>Promise.race([operation,deadline]);
+  try{
+   base.simulated_http_calls=1;base.simulated_query_attempts=simulatedQueries;
+-  const response=await race(Promise.resolve().then(()=>transport({url:CENSUS_ENDPOINT,method:'POST',fields:{benchmark:batch.benchmark.id,addressFile:{filename:'addresses.csv',content_type:'text/csv; charset=utf-8',bytes:Buffer.from(batch.request_csv,'utf8')}},signal:controller.signal,max_response_bytes:CENSUS_LIMITS.responseBytes})));
++  const response=await race(Promise.resolve().then(()=>transport({url:CENSUS_ENDPOINT,method:'POST',redirect:'error',request_sha256:batch.request_sha256,fields:{benchmark:batch.benchmark.id,addressFile:{filename:'addresses.csv',content_type:'text/csv; charset=utf-8',bytes:Buffer.from(batch.request_csv,'utf8')}},signal:controller.signal,max_response_bytes:CENSUS_LIMITS.responseBytes})));
+   if(response?.status!==200)return {...base,state:'provider_response_held',reason:'provider_http_status_unconfirmed',unknown_query_slots:simulatedQueries,candidates:null};
++  if(response.url!==CENSUS_ENDPOINT||response.redirected!==false||response.redirect_count!==0||response.request_sha256!==batch.request_sha256)throw Error('mock_provider_provenance_unconfirmed');
+   if(!['text/csv','text/plain','application/octet-stream'].includes(response.content_type?.split(';')[0]?.trim().toLowerCase()))throw Error('mock_provider_content_type');
+   const chunks=[];let length=0;
+   const append=chunk=>{if(!(chunk instanceof Uint8Array)||!chunk.byteLength)throw Error('mock_provider_body_invalid');length+=chunk.byteLength;if(length>CENSUS_LIMITS.responseBytes)throw Error('mock_provider_byte_cap');chunks.push(Buffer.from(chunk));};
+--- held-v1/tests/unit/geography-geocoder-candidate.test.mjs
++++ v2/tests/unit/geography-geocoder-candidate.test.mjs
+@@ -18,7 +18,8 @@
+ function resultRow(q,{indicator='Match',match='Exact',address=[q.address.street.toUpperCase().replace('STREET','ST'),q.address.city.toUpperCase(),q.address.state,q.address.zip||'01609'].join(', '),coordinates='-71.811,42.267',id=q.id,input=[q.address.street,q.address.city,q.address.state,q.address.zip].join(','),tiger='123456',side='L'}={}){return csv([id,input,indicator,...(indicator==='Match'?[match,address,coordinates,tiger,side]:[])]);}
+ const response=(batch,options={})=>Buffer.from(batch.queries.map(q=>resultRow(q,options)).join('\r\n')+'\r\n');
+ const isolated=(batch,transport,options={})=>runGeocoderCandidateBatch(batch,{contractMode:'isolated-geocoder-candidate-test',transport,now:()=>clock,...options});
+-const mock=(batch,body=response(batch))=>async()=>({status:200,content_type:'text/csv; charset=utf-8',body});
++const provenance=batch=>({url:CENSUS_ENDPOINT,redirected:false,redirect_count:0,request_sha256:batch.request_sha256});
++const mock=(batch,body=response(batch))=>async()=>({status:200,...provenance(batch),content_type:'text/csv; charset=utf-8',body});
+ 
+ test('complete public US address without website prepares candidate-only input with no IO or source approval',()=>{
+  const input=fixture(),before=structuredClone(input),b=prepare([input]);assert.deepEqual(input,before);assert.equal(b.counts.eligible_listings,1);assert.equal(b.counts.unique_address_queries,1);assert.equal(b.authority,'none');assert.equal(b.writer_eligible,false);assert.equal(b.provider_calls,0);assert.equal(b.coordinate_writes,0);assert.equal(b.bindings[0].address_authority,'canonical_unverified');assert.equal(b.bindings[0].source_generation,2);assert.equal(b.queries[0].address.zip,'01609');assert.equal(b.request_sha256,candidateHash(b.request_csv));assert.equal(validateCensusBatch(b),b);
+@@ -87,20 +88,47 @@
+  for(const provider of ['mapbox','opencage']){let calls=0;await assert.rejects(isolated({provider},async()=>calls++),/provider_not_admitted/);assert.equal(calls,0);}
+ });
+ test('isolated mock dispatch counts query attempts separately from HTTP calls and retains exact evidence bytes',async()=>{
+- const b=prepare([fixture(1),fixture(2,{address:'104 Russell Street'})]);let calls=0;const bytes=response(b);const r=await isolated(b,async request=>{calls++;assert.equal(request.url,CENSUS_ENDPOINT);assert.equal(request.method,'POST');assert.equal(request.fields.benchmark,'4');assert.equal(request.fields.addressFile.bytes.toString(),b.request_csv);assert.equal(request.max_response_bytes,CENSUS_LIMITS.responseBytes);return {status:200,content_type:'text/csv',body:bytes};});assert.equal(calls,1);assert.equal(r.simulated_http_calls,1);assert.equal(r.simulated_query_attempts,2);assert.equal(r.reserved_query_slots,2);assert.equal(r.unknown_query_slots,0);assert.equal(r.provider_calls,0);assert.equal(r.production_authority,false);assert.equal(r.retained_response.sha256,candidateHash(bytes));assert.deepEqual(r.retained_response.bytes,bytes);assert.equal(r.candidates.results.length,2);
++ const b=prepare([fixture(1),fixture(2,{address:'104 Russell Street'})]);let calls=0;const bytes=response(b);const r=await isolated(b,async request=>{calls++;assert.equal(request.url,CENSUS_ENDPOINT);assert.equal(request.method,'POST');assert.equal(request.fields.benchmark,'4');assert.equal(request.fields.addressFile.bytes.toString(),b.request_csv);assert.equal(request.max_response_bytes,CENSUS_LIMITS.responseBytes);return {status:200,...provenance(b),content_type:'text/csv',body:bytes};});assert.equal(calls,1);assert.equal(r.simulated_http_calls,1);assert.equal(r.simulated_query_attempts,2);assert.equal(r.reserved_query_slots,2);assert.equal(r.unknown_query_slots,0);assert.equal(r.provider_calls,0);assert.equal(r.production_authority,false);assert.equal(r.retained_response.sha256,candidateHash(bytes));assert.deepEqual(r.retained_response.bytes,bytes);assert.equal(r.candidates.results.length,2);
+ });
+ test('fully excluded batch performs zero simulated HTTP calls',async()=>{const b=prepare([fixture(1,{country:'Canada'})]);let calls=0;const r=await isolated(b,async()=>calls++);assert.equal(calls,0);assert.equal(r.state,'no_eligible_candidates');assert.equal(r.reserved_query_slots,0);});
+ test('stale preparation and invalid timeout refuse before transport',async()=>{const b=prepare();let calls=0;for(const options of [{now:()=>clock+300001},{timeoutMs:0},{timeoutMs:30001}])await assert.rejects(isolated(b,async()=>calls++,options),/stale|bounded/);assert.equal(calls,0);});
+ test('status failures,malformed200 and lost response preserve allowance and never retry or echo error secrets',async()=>{
+- const b=prepare();for(const transport of [async()=>{throw Error('private-provider-token');},async()=>({status:429}),async()=>({status:200,content_type:'text/csv',body:Buffer.from('invalid')})]){let calls=0;const r=await isolated(b,request=>{calls++;return transport(request);});assert.equal(calls,1);assert.equal(r.unknown_query_slots,1);assert.equal(r.candidates,null);assert.equal(r.automatic_retry,false);assert.ok(!JSON.stringify(r).includes('private-provider-token'));if(r.retained_response)assert.equal(r.retained_response.sha256,candidateHash(Buffer.from('invalid')));}
++ const b=prepare();for(const transport of [async()=>{throw Error('private-provider-token');},async()=>({status:429}),async()=>({status:200,...provenance(b),content_type:'text/csv',body:Buffer.from('invalid')})]){let calls=0;const r=await isolated(b,request=>{calls++;return transport(request);});assert.equal(calls,1);assert.equal(r.unknown_query_slots,1);assert.equal(r.candidates,null);assert.equal(r.automatic_retry,false);assert.ok(!JSON.stringify(r).includes('private-provider-token'));if(r.retained_response)assert.equal(r.retained_response.sha256,candidateHash(Buffer.from('invalid')));}
+ });
+ test('stream byte cap aborts transport and a single deadline bounds both response and streamed body waits',async()=>{
+- const b=prepare();let signal;const oversized=await isolated(b,async request=>{signal=request.signal;return {status:200,content_type:'text/csv',body:(async function*(){yield Buffer.alloc(CENSUS_LIMITS.responseBytes);yield Buffer.alloc(1);})()};});assert.equal(oversized.state,'unknown_provider_outcome');assert.equal(signal.aborted,true);for(const stream of [false,true]){let signal;const r=await isolated(b,async request=>{signal=request.signal;if(!stream)return new Promise(()=>{});return {status:200,content_type:'text/csv',body:{async *[Symbol.asyncIterator](){await new Promise(()=>{});}}};},{timeoutMs:20});assert.equal(r.state,'unknown_provider_outcome');assert.equal(r.unknown_query_slots,1);assert.equal(signal.aborted,true);}
++ const b=prepare();let signal;const oversized=await isolated(b,async request=>{signal=request.signal;return {status:200,...provenance(b),content_type:'text/csv',body:(async function*(){yield Buffer.alloc(CENSUS_LIMITS.responseBytes);yield Buffer.alloc(1);})()};});assert.equal(oversized.state,'unknown_provider_outcome');assert.equal(signal.aborted,true);for(const stream of [false,true]){let signal;const r=await isolated(b,async request=>{signal=request.signal;if(!stream)return new Promise(()=>{});return {status:200,...provenance(b),content_type:'text/csv',body:{async *[Symbol.asyncIterator](){await new Promise(()=>{});}}};},{timeoutMs:20});assert.equal(r.state,'unknown_provider_outcome');assert.equal(r.unknown_query_slots,1);assert.equal(signal.aborted,true);}
+ });
+-test('chunked UTF8 response yields the same candidate with bounded retained bytes',async()=>{const b=prepare(),bytes=response(b);const r=await isolated(b,async()=>({status:200,content_type:'text/plain',body:(async function*(){for(let i=0;i<bytes.length;i+=7)yield bytes.subarray(i,i+7);})()}));assert.equal(r.state,'candidate_review_required');assert.equal(r.retained_response.sha256,candidateHash(bytes));});
++test('chunked UTF8 response yields the same candidate with bounded retained bytes',async()=>{const b=prepare(),bytes=response(b);const r=await isolated(b,async()=>({status:200,...provenance(b),content_type:'text/plain',body:(async function*(){for(let i=0;i<bytes.length;i+=7)yield bytes.subarray(i,i+7);})()}));assert.equal(r.state,'candidate_review_required');assert.equal(r.retained_response.sha256,candidateHash(bytes));});
+ test('owner action explains actual provider/storage/map rights,cost gates and candidate precision',()=>{
+  const sql=snapshotSQL({scope_version:1,execution_queue:[],groups:[]}),match=sql.match(/'owner_actions_sync', '((?:[^']|'')*)'::jsonb/);assert.ok(match);const a=JSON.parse(match[1].replaceAll("''","'")).actions.find(a=>a.id==='geocoding');assert.match(a.action,/street-range estimates/);assert.match(a.action,/MapLibre and public API distribution/);assert.match(a.action,/card, token and permanent flag alone/);assert.match(a.action,/disabled/);assert.match(a.fee_review,/No signup, spend or geocoding batch is authorized/);assert.doesNotMatch(a.blocks,/exact address/);
+ });
+ test('new adapter has no credential lookup,built-in fetch,database writer or hidden environment activation',async()=>{
+  const source=await readFile(new URL('../../scripts/geography/geocoder-candidate-adapter.mjs',import.meta.url),'utf8');assert.doesNotMatch(source,/\bfetch\s*\(|process\.env|Deno\.env|geography_review_apply\s*\(|geography_repair_lease\s*\(/);
+ });
++for(const [left,right,matched]of [['102 Avenue Ⅳ','102 Avenue IV','102 Avenue IV'],['102 Straße Road','102 STRASSE Road','102 STRASSE RD'],['102 A.B Road','102 AB Road','102 AB RD']])test('independent lexical counterexample stays distinct: '+left,()=>{
++ const b=prepare([fixture(1,{address:left}),fixture(2,{address:right})]);assert.equal(b.queries.length,2);assert.notEqual(b.bindings[0].query_id,b.bindings[1].query_id);assert.equal(b.bindings[0].address.street,left);assert.equal(b.bindings[1].address.street,right);
++ const r=parseCensusCandidates(b,response(b,{address:matched+', WORCESTER, MA, 01609'}));assert.equal(r.results[0].proposed,null);assert.equal(r.results[1].proposed.address.street,right);assert.equal(r.results[0].address.street,left);
++});
++test('query dedup is exact-byte only while each listing retains its own ASCII case/space spelling',()=>{
++ const addresses=['102 Test Road','102 TEST ROAD','102  Test Road','102 Test Road'];const b=prepare(addresses.map((address,i)=>fixture(i+1,{address})));assert.equal(b.queries.length,3);const r=parseCensusCandidates(b,response(b,{address:'102 TEST RD, WORCESTER, MA, 01609'}));assert.deepEqual(r.results.map(x=>x.proposed.address.street),addresses);
++ for(const [left,right]of [['102 Café Road','102 Cafe Road'],['102 Ａ Road','102 A Road'],['102 A-B Road','102 AB Road']]){const b=prepare([fixture(1,{address:left}),fixture(2,{address:right})]);assert.equal(b.queries.length,2);}
++});
++test('response provenance rejects foreign,redirected,missing or changed endpoint metadata before reading body',async()=>{
++ const b=prepare();const variations=[{url:'https://untrusted.example/redirect',redirected:true},{url:'https://untrusted.example/redirect'},{url:CENSUS_ENDPOINT+'/'},{url:CENSUS_ENDPOINT+'?other=true'},{url:'http://geocoding.geo.census.gov/geocoder/locations/addressbatch'},{url:undefined},{redirected:undefined},{redirected:'false'},{redirect_count:1},{redirect_count:undefined},{request_sha256:'0'.repeat(64)}];
++ for(const variation of variations){let calls=0,reads=0;const r=await isolated(b,async request=>{calls++;assert.equal(request.redirect,'error');assert.equal(request.request_sha256,b.request_sha256);return {status:200,...provenance(b),...variation,content_type:'text/csv',body:{async *[Symbol.asyncIterator](){reads++;yield response(b);}}};});assert.equal(calls,1);assert.equal(reads,0);assert.equal(r.state,'unknown_provider_outcome');assert.equal(r.candidates,null);assert.equal(r.unknown_query_slots,1);}
++ const accepted=await isolated(b,mock(b));assert.equal(accepted.state,'candidate_review_required');
++});
++test('established identity,scope,last_error and review holds refuse both context locations and nested identity state',()=>{
++ const established=[{last_error:'source_scope_mismatch'},{last_error:'scope_review_required'},{last_error:'source_identity_mismatch'},{identity_match:false},{identity_match:'false'},{identity_conflict:true},{identity_conflict:'true'},{status:'blocked'},{crawl_status:'review_required'},{crawl_status:'identity_review_required'},{branch_conflict:true},{source_challenged:true},{identity_scope:'foreign_branch'},{source_identity:{verification:'rejected_mismatch'}},{source_identity:{verification:'unknown'}},{source_identity:{identity_match:false}},{source_identity:{identity_conflict:true}},{source_identity:{status:'blocked'}}];
++ for(const value of established)for(const container of ['source_context','profile']){const changes=container==='profile'?{profile:{_enrich:value}}:{source_context:value},b=prepare([fixture(1,changes)]);assert.equal(b.bindings.length,0,JSON.stringify(changes));assert.equal(b.excluded[0].reason,'source_identity_or_scope_hold');}
++});
++test('malformed typed identity values and unknown review states cannot become source-clear',()=>{
++ for(const value of [{identity_match:null},{identity_match:1},{identity_conflict:[]},{identity_conflict:null},{last_error:' '},{blocked_reason:' '},{status:{}},{crawl_status:'new_unknown_state'},{source_identity:{verification:null}},{source_identity:{identity_match:[]}},{source_identity:{name:4}},{source_kind:[]}])assert.equal(prepare([fixture(1,{source_context:value})]).bindings.length,0,JSON.stringify(value));
++ const valid=fixture(1,{website:'https://official.example/',profile:{_enrich:{source_identity:{verification:'exact_name_typed_jsonld',name:'Public practice 1',expected_entity_type:'professional',source_url:'https://official.example/'},identity_match:true,status:'verified'}}});assert.equal(prepare([valid]).bindings.length,1);assert.equal(prepare([fixture()]).bindings.length,1);
++});
++test('retained rejected Census download is HTML failure evidence and does not prove the API/benchmark contract',async()=>{
++ const dir=new URL('../../docs/audits/evidence/geocoder-candidate-preparation-owner-v2-2026-10-15/',import.meta.url),facts=JSON.parse(await readFile(new URL('documentation-provenance.json',dir),'utf8')),bytes=await readFile(new URL('held-v1-census-api-rejected-response.html',dir));assert.equal(bytes.byteLength,247);assert.equal(candidateHash(bytes),facts.rejected_api_download.sha256);assert.equal(bytes.subarray(0,5).toString()==='%PDF-',false);assert.match(bytes.toString(),/Request Rejected/);assert.equal(facts.rejected_api_download.is_api_specification_proof,false);assert.equal(facts.mock_contract.live_api_contract_verified,false);assert.equal(facts.mock_contract.live_benchmark_id_name_binding_verified,false);const source=await readFile(new URL('../../scripts/geography/census-address-candidate.mjs',import.meta.url),'utf8');assert.doesNotMatch(source,/documented by the retained Census API specification/);
++});
++test('owner action and root metadata proof explicitly keep real Census access blocked',async()=>{
++ const dir=new URL('../../docs/audits/evidence/geocoder-candidate-preparation-owner-v2-2026-10-15/',import.meta.url),proof=JSON.parse(await readFile(new URL('root-census-benchmark-metadata-result.json',dir),'utf8')),body=await readFile(new URL('root-census-benchmarks-rejected.body',dir)),sql=snapshotSQL({scope_version:1,execution_queue:[],groups:[]});assert.equal(body.byteLength,247);assert.equal(candidateHash(body),'9129c7ea629b86868a8439d4e009d6874290c45c1a1d89c7329d92bb61806698');assert.match(body.toString(),/Request Rejected/);assert.ok(proof);assert.match(sql,/Current Census API and benchmark access remains blocked/);
++});
+--- held-v1/scripts/delivery/sync.mjs
++++ v2/scripts/delivery/sync.mjs
+@@ -15,7 +15,7 @@
+  ['email','Verify the sending domain and approve a test recipient','Consent-based marketing email','Set RESEND_API_KEY and EMAIL_FROM after domain DNS verification. Keep EMAIL_DELIVERY_ENABLED off until the approved test. Delivery webhook engineering remains open.','https://resend.com/domains','Existing provider plan and domain DNS access.','Consent-backed test → Resend ID → actual inbox and unsubscribe suppression.'],
+  ['ai','Approve a bounded AI budget and grant console access','Caption, reply and weekly text generation','Set ANTHROPIC_API_KEY securely and approve a small budget; operator checks model and enables bounded ai_runtime.','https://console.anthropic.com/','Usage is paid; a specific budget needs approval.','One request → persisted editable draft and usage; same request must not generate twice.'],
+  ['stripe','Grant Stripe test-mode access','Ticket checkout and delivery payments','Set STRIPE_SECRET_KEY from test mode first; Connect onboarding and signed webhook reconciliation remain required before live payments.','https://dashboard.stripe.com/','Provider fees and account eligibility; no live charge is authorized.','Approved test-only checkout → verified payment reconciliation and browser-close recovery.'],
+- ['geocoding','Choose compatible geocoding rights and approve a bounded trial','Catalogue address candidates and reviewed map repair','Census can prepare US street-range estimates; these do not verify a venue. OpenCage permits permanent storage and MapLibre display, subject to source licences and attribution. Mapbox requires confirmation that the account terms cover MapLibre and public API distribution; a card, token and permanent flag alone do not resolve that gate. Candidate adapter remains disabled pending independent acceptance and finite admission.','https://opencagedata.com/pricing','Census provider charge is zero; OpenCage production use requires an approved paid plan. Approve provider, query allowance, period and total cost before activation. No signup, spend or geocoding batch is authorized.','Candidate evidence → independent identity, address and precision review → current owner CAS and guarded receipt → accurate public labels and exercised map journeys.'],
++ ['geocoding','Choose compatible geocoding rights and approve a bounded trial','Catalogue address candidates and reviewed map repair','Offline Census candidates are US street-range estimates; they do not verify a venue. Current Census API and benchmark access remains blocked. OpenCage permits permanent storage and MapLibre display, subject to source licences and attribution. Mapbox requires confirmation that the account terms cover MapLibre and public API distribution; a card, token and permanent flag alone do not resolve that gate. Candidate adapter remains disabled pending independent acceptance and finite admission.','https://opencagedata.com/pricing','Census provider charge is zero; OpenCage production use requires an approved paid plan. Approve provider, query allowance, period and total cost before activation. No signup, spend or geocoding batch is authorized.','Candidate evidence → independent identity, address and precision review → current owner CAS and guarded receipt → accurate public labels and exercised map journeys.'],
+  ['native','Install the final release and confirm store access','Physical-device and store delivery','Use existing Expo/Apple/Play access; verify actual Zoi store identity and signing. The replacement Android preview includes the MapLibre fix; the iOS simulator is a separate earlier commit.','https://expo.dev/accounts/pollcity/projects/zoi','Existing included build credits; store accounts may require fees.','Install exact final commit on iPhone and Android; exercise map, account changes and customer flows.']
+ ].map(([id,title,blocks,action,setup_url,fee_review,verification])=>({id,title,blocks,action:action+' Server secrets belong in Supabase Edge Function settings. Social OAuth callback: https://csebihpaychdkanjjsmz.supabase.co/functions/v1/social-oauth-callback.',setup_url,fee_review,verification,status:'needs your action',last_checked_at:null}));
+ export function mobileSnapshot(e=JSON.parse(readFileSync('docs/recovery-release-evidence.json','utf8')).mobile){

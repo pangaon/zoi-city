@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "created_at": "2026-10-15T23:04:35.620552+00:00",
+  "reviewer": "qa_next",
+  "status": "accepted_source_and_isolated_install_native_artifact_pending",
+  "base_commit": "7d5e0a9b4f4c3fddbc9380d22fd19f3fbb9e606a",
+  "owner_audit": {
+    "path": "docs/audits/native-text-cache-owner-2026-10-15.json",
+    "sha256": "0bfe7a3ae232f3bf41fe065ac8931c682c2d167cb547bb4d0166ac634f51d7a1"
+  },
+  "owner_manifest": {
+    "path": "docs/audits/evidence/native-text-cache-owner-2026-10-15/source-manifest.json",
+    "sha256": "86e1ddc01b2b465264303d2396d505dcb4c9e8c7cfcd2333a77e01632056757b"
+  },
+  "pins": {
+    "owned": 16,
+    "runtime": 4,
+    "readonly": 67,
+    "owner_evidence": 85,
+    "unchanged_callers": 54,
+    "unchanged_JSX": 1211
+  },
+  "decision": "No source blocker found. The narrowly pinned Android cache-key repair is suitable for root integration and a later installed acceptance gate. Existing installed8 font clipping remains OPEN.",
+  "mechanism": {
+    "actual_source": "Exact installed RN0.86.3 TextMeasureCache compares/hashes fontSizeMultiplier; host tag is excluded for ordinary text fragments. BaseTextProps parses the field; ParagraphShadowNode applies explicit text attributes after layoutContext, including nested fragment attributes. Android TextAttributeProps ignores serialized multiplier key5 while SP conversion still uses current Android configuration and maxFontSizeMultiplier.",
+    "host_exposure": "Two exact JS validAttributes additions cover RCTText/RCTVirtualText; selectable derives the root config. Complete guarded config before/after executed in private fixture, other attributes/events equal.",
+    "wrapper": "Actual Android useWindowDimensions fontScale overrides any caller runtime field and is forwarded through actual Text.js restProps/processedProps. Original native-host key, forwarded refs, other props, defaults and parent state remain. iOS/web receive no new field for normal callers; their existing behavior is preserved.",
+    "qualification": "This establishes a plausible concrete cache boundary and prevents stale font-scale entries sharing that key. No installed cache-hit trace or new installed correction was produced by this review; do not label the entire native root cause or Settings lifecycle proven fixed."
+  },
+  "checks": {
+    "mobile": {
+      "passed": 513,
+      "failed": 0,
+      "includes": "Actual unmodified cache/hash/LRU headers compile and run with disclosed test-only structural attributed-string/geometry declarations; real isolated offline npm ci/postinstall; seven native-cache groups and existing506 tests."
+    },
+    "typescript": "pass",
+    "Expo57_web_export": "pass550modules; independent export module count is observed output, not a renderer/native parity claim",
+    "owner_controlled_browser": "9actualReact19/RN-web host/ref/retained-parent-input-map-camera cases independently rerun",
+    "independent_controlled_browser": "12baseline/wrapper \u00d7android/ios/web \u00d7strict/ordinary;84scale transitions .85\u21921\u21921.3\u21922\u21922\u21923\u21921; nested/root/fixed-allowfalse text exact Android field and iOS/web omission checked; callback-ref swap, event identity, ordinary parent update, input/map/camera retained",
+    "independent_real_React_element": "30prop/ref/key cases including forged fontSizeMultiplier999, immutable props, children/style/events/default uncapped behavior",
+    "independent_installer": "7private boundaries: linked RN package, linked Libraries ancestor, linked native file, directory, unsupported package version refuse; project alias resolves safely; atomic rename avoids modifying external hardlink target",
+    "source_composition": "All54caller bytes match current origin/main53b3554b735ff012958ac51e27d0e6c3120aa490; package/lock JSON reversal leaves only postinstall/root hasInstallScript changes",
+    "shared_dependencies": "all9 inspected native source files exact before/after; NO shared node_modules mutation",
+    "diff_check": "pass"
+  },
+  "retained_actual_evidence": {
+    "build_id": "4ef20e5f-bbde-44c6-a05a-1897f595aed8",
+    "source_commit": "7d5e0a9b4f4c3fddbc9380d22fd19f3fbb9e606a",
+    "APK_sha256": "14b0557538e7754eeba1e2bcfce8abe6074adb3e5609fea9e8103048a4f0e14b",
+    "APK_bytes": 85572723,
+    "independent_check": "Local APK bytes/hash match root installed binding;80unique actual Android painting samples re-parsed, every before_px equals after_px across4scales\u00d75sizes\u00d72allow\u00d72caps. Probe source and retained results inspected.",
+    "limits": "Retained owner actual app_process probe uses actual installed Java classes/Android contexts; reviewer did not execute device or independently replay that sensor/Settings lifecycle. Retained probe is not an installed patched source test."
+  },
+  "failure_history": {
+    "setup": "Preliminary sparse checkout attempts lacked read-only zoi-enrich dependencies and four existing JSON fixture files. Original failure logs preserved. Unchanged baseline files materialized; final513 pass. No runtime edits or assertions relaxed.",
+    "device": "Installed8 Settings font2 clipping after MapClose/re-expand/Grow remains unclosed; native host remount alone had failed."
+  },
+  "remaining_acceptance": [
+    "Root complete coherent release source and pinned postinstall must actually execute in isolated EAS dependency install; unsupported RN version/drift intentionally fail installation.",
+    "One later installed APK: normal Android Settings font1\u21922\u21921; MapClose/re-expand plus Home/More/form text bounds; retained map camera/selection/input/session; no clipped text or overlap; restore device state.",
+    "No category-wide/client-home/native platform completion or provider behavior follows from this source packet."
+  ],
+  "boundaries": [
+    "No ADB/EAS/build/provider/API/DB actions. Only supported Expo documentation read, source reads and local isolated fixture/browser/export execution.",
+    "No owner source changes, no shared dependency patch, no Auth/writer/schema/policy/lease changes, no new library/font cap or route reset.",
+    "Private source product packet remains frozen; QA harness held until separate acceptance."
+  ],
+  "docs_read": [
+    {
+      "url": "https://docs.expo.dev/versions/v57.0.0/",
+      "purpose": "mobile AGENTS.md exact versioned prerequisite; no dependency changes"
+    }
+  ],
+  "independent_manifest": {
+    "path": "docs/audits/evidence/native-text-cache-independent-2026-10-15/independent-manifest.json",
+    "sha256": "aeb7bd65789386d59c1358660bca9ff8f554ed59b8e63c4cdf2f0318830e1c4c",
+    "proofs": 80
+  }
+}

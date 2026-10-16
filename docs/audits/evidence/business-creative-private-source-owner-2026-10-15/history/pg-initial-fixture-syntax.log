@@ -1,0 +1,54 @@
+PASS exact retained10 definitions installed; writer security drift refuses before any ledger; canonical bodies and ACLs unchanged
+PASS actual first-Studio7 and asset7 definitions/schema/policies pinned; new sidecar/functions/restrictive policies installed locally
+PASS private sidecar/trigger cannot be read or called directly; public methods have exact current-user versus service ACLs and empty search paths
+PASS both new restrictive policies preserve unrelated legacy upload/delete behavior and deny malformed ungranted reserved paths
+PASS root-only catalog/ACL/Storage restrictive-policy/no-session rollback fixture passes locally without grants/assets/posts
+PASS old canonical recover cannot cancel another actor upload grant even when authorized for the same workspace/listing
+PASS current-session grants derive separate original/output paths even with identical bytes; authenticated upload policy and service-only proof record exact object identity
+PASS ordinary actor cannot forge proof or DELETE/reupload unresolved proof-bearing image
+PASS server-proof consume atomically registers canonical original/output assets and one existing campaign draft; exact replay returns same ids without duplicate assets/posts
+PASS existing canonical draft reader reopens editable recipe and correct asset relationship; altered retry refuses
+PASS cleanup cannot remove already registered draft assets
+PASS serialized cancellation tombstone blocks delayed save and exact-path recreation after completed cleanup
+PASS old source writer cannot hijack a granted render nonce with another payload; unrelated first-Studio receipts keep their ordinary behavior
+PASS real two-backend old cancel before new grant serializes on canonical lock order and refuses conflicting actor; no orphan grant
+PASS real two-backend grant before old cancel serializes and guard refuses cross-actor cancellation without deadlock
+PASS real two-backend cleanup before save closes nonce; delayed canonical save returns cancellation, no assets or post
+PASS real two-backend save before cleanup retains registered canonical assets and objects; no reverse workspace/object lock wait
+PASS Storage RLS fails closed immediately on busy nonce rather than holding object locks while waiting on canonical writers
+PASS real two-backend Storage object-first delete versus nonce-first final consume fails closed without deadlock and preserves the verified object
+PASS same path with changed object identity/version cannot consume old durable proof
+PASS caption-only canonical edit re-verifies registered original/output objects and preserves both asset ids without duplication
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c alter table zoi.listings add column description text,add column phone text,add column email text,add column website text,add column hours text,add column price_range text,add column photo_url text,add column social_links jsonb,add column profile jsonb,add column entity_type text,add column primary_category_id bigint,add column address text,add column country text,add column updated_by text;create table zoi.categories(id bigint primary key,slug text);insert into zoi.categories values(1,'bakeries');create table zoi.home_designs(listing_id uuid not null references zoi.listings(id),workspace_id uuid not null references zoi.workspaces(id),version integer not null default0,draft jsonb not null,published jsonb,published_version integer,updated_at timestamptz not null default clock_timestamp(),staged boolean not null default false,draft_content jsonb not null default'{"base":{},"profile":{}}',published_content jsonb,content_baseline text,preview_receipt jsonb,primary key(listing_id,workspace_id));alter table zoi.home_designs enable row level security;revoke all on zoi.home_designs from PUBLIC,anon,authenticated,service_role;
+ERROR:  syntax error at or near "default0"
+LINE 1: ...ences zoi.workspaces(id),version integer not null default0,d...
+                                                             ^
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at q (file:///tmp/zoi-private-source-runner-DmpaqJ/case.mjs:5:12)
+    at file:///tmp/zoi-private-source-runner-DmpaqJ/case.mjs:64:2
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '',
+    'ERROR:  syntax error at or near "default0"\n' +
+      'LINE 1: ...ences zoi.workspaces(id),version integer not null default0,d...\n' +
+      '                                                             ^\n'
+  ],
+  pid: 479708,
+  stdout: '',
+  stderr: 'ERROR:  syntax error at or near "default0"\n' +
+    'LINE 1: ...ences zoi.workspaces(id),version integer not null default0,d...\n' +
+    '                                                             ^\n'
+}
+
+Node.js v24.14.0

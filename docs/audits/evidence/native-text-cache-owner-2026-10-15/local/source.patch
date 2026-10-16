@@ -1,0 +1,1041 @@
+diff --git a/mobile/package-lock.json b/mobile/package-lock.json
+index a6e7727f..8b25a742 100644
+--- a/mobile/package-lock.json
++++ b/mobile/package-lock.json
+@@ -7,6 +7,7 @@
+     "": {
+       "name": "mobile",
+       "version": "1.0.0",
++      "hasInstallScript": true,
+       "dependencies": {
+         "@react-native-async-storage/async-storage": "2.2.0",
+         "expo": "~57.0.26",
+diff --git a/mobile/package.json b/mobile/package.json
+index 30e47fee..e28d6835 100644
+--- a/mobile/package.json
++++ b/mobile/package.json
+@@ -34,7 +34,8 @@
+     "android": "expo start --android",
+     "ios": "expo start --ios",
+     "web": "expo start --web",
+-    "test": "node --test tests/*.test.mjs"
++    "test": "node --test tests/*.test.mjs",
++    "postinstall": "node scripts/patch-native-text-font-cache.cjs"
+   },
+   "private": true,
+   "overrides": {
+diff --git a/mobile/scripts/patch-native-text-font-cache.cjs b/mobile/scripts/patch-native-text-font-cache.cjs
+new file mode 100644
+index 00000000..ab45e63e
+--- /dev/null
++++ b/mobile/scripts/patch-native-text-font-cache.cjs
+@@ -0,0 +1,55 @@
++#!/usr/bin/env node
++'use strict';
++
++// RN 0.86.3 already keys native text measurements by fontSizeMultiplier and
++// parses that prop. Expose it through the JS host configs so Android can bind
++// the key to the current system scale. Android still paints using system SP.
++const {createHash} = require('node:crypto');
++const fs = require('node:fs');
++const path = require('node:path');
++
++const VERSION = '0.86.3';
++const FILE = 'Libraries/Text/TextNativeComponent.js';
++const BEFORE = '3e783f0b9fcf2e2905d4be23449c77970d29de39755b966cdd259b2f671d5740';
++const AFTER = 'fa6ba86a1c1387c94367be09147a35a5e33ba9aebe89db79f36dc2eed3062094';
++const sha = value => createHash('sha256').update(value).digest('hex');
++
++function patchNativeTextFontCache(mobileRoot = path.resolve(__dirname, '..')) {
++  const project = fs.realpathSync(mobileRoot);
++  const expectedRoot = path.join(project, 'node_modules', 'react-native');
++  const rnRoot = fs.realpathSync(expectedRoot);
++  // A checkout may share dependencies with other worktrees. Never patch those.
++  if (rnRoot !== expectedRoot) throw new Error('native_text_patch_shared_dependencies');
++  const version = JSON.parse(fs.readFileSync(path.join(rnRoot, 'package.json'), 'utf8')).version;
++  if (version !== VERSION) throw new Error('native_text_patch_unsupported_version');
++  const filename = path.join(rnRoot, FILE);
++  const stat = fs.lstatSync(filename);
++  if (!stat.isFile() || fs.realpathSync(filename) !== filename) throw new Error('native_text_patch_invalid_file');
++  const original = fs.readFileSync(filename);
++  const hash = sha(original);
++  if (hash === AFTER) return 'already-patched';
++  if (hash !== BEFORE) throw new Error('native_text_patch_source_drift');
++  const source = original.toString('utf8');
++  const patched = source.replaceAll('    maxFontSizeMultiplier: true,',
++    '    maxFontSizeMultiplier: true,\n    fontSizeMultiplier: true,');
++  if (sha(patched) !== AFTER) throw new Error('native_text_patch_output_drift');
++  const temporary = filename + '.zoi-' + process.pid + '-' + require('node:crypto').randomUUID();
++  try {
++    fs.writeFileSync(temporary, patched, {flag: 'wx', mode: stat.mode & 0o777});
++    fs.chmodSync(temporary, stat.mode & 0o777);
++    fs.renameSync(temporary, filename);
++  } finally {
++    if (fs.existsSync(temporary)) fs.unlinkSync(temporary);
++  }
++  return 'patched';
++}
++
++module.exports = {patchNativeTextFontCache, VERSION, FILE, BEFORE, AFTER};
++if (require.main === module) {
++  try {
++    console.log('Native text font cache: ' + patchNativeTextFontCache());
++  } catch (error) {
++    console.error(error.message);
++    process.exitCode = 1;
++  }
++}
+diff --git a/mobile/src/ScaleText.tsx b/mobile/src/ScaleText.tsx
+index a9dd5e3d..d1cc39ce 100644
+--- a/mobile/src/ScaleText.tsx
++++ b/mobile/src/ScaleText.tsx
+@@ -1,11 +1,13 @@
+ import {forwardRef, type ComponentRef} from 'react';
+ import {Platform, Text as NativeText, type TextProps, useWindowDimensions} from 'react-native';
+ 
+-// Refresh the native paragraph after a system font change without replacing
+-// its owning screen, inputs, map or application state. Scaling stays with RN.
++// Android's global measurement cache ignores host identity. Bind its existing
++// native font field to system scale as well as refreshing the text host. The
++// pinned postinstall patch exposes that field; Android still paints using SP.
+ export const ScaleText = forwardRef<ComponentRef<typeof NativeText>, TextProps>(
+   function ScaleText(props, ref) {
+     const {fontScale} = useWindowDimensions();
+-    return <NativeText {...props} ref={ref} key={Platform.OS === 'web' ? 'web' : fontScale}/>;
++    const nativeProps = Platform.OS === 'android' ? {...props, fontSizeMultiplier: fontScale} : props;
++    return <NativeText {...nativeProps} ref={ref} key={Platform.OS === 'web' ? 'web' : fontScale}/>;
+   },
+ );
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/LICENSE b/mobile/tests/fixtures/react-native-0.86.3-font-cache/LICENSE
+new file mode 100644
+index 00000000..b93be905
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/LICENSE
+@@ -0,0 +1,21 @@
++MIT License
++
++Copyright (c) Meta Platforms, Inc. and affiliates.
++
++Permission is hereby granted, free of charge, to any person obtaining a copy
++of this software and associated documentation files (the "Software"), to deal
++in the Software without restriction, including without limitation the rights
++to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
++copies of the Software, and to permit persons to whom the Software is
++furnished to do so, subject to the following conditions:
++
++The above copyright notice and this permission notice shall be included in all
++copies or substantial portions of the Software.
++
++THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
++OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
++SOFTWARE.
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/Libraries/Text/TextNativeComponent.js.txt b/mobile/tests/fixtures/react-native-0.86.3-font-cache/Libraries/Text/TextNativeComponent.js.txt
+new file mode 100644
+index 00000000..11c86911
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/Libraries/Text/TextNativeComponent.js.txt
+@@ -0,0 +1,99 @@
++/**
++ * Copyright (c) Meta Platforms, Inc. and affiliates.
++ *
++ * This source code is licensed under the MIT license found in the
++ * LICENSE file in the root directory of this source tree.
++ *
++ * @flow
++ * @format
++ */
++
++import type {HostComponent} from '../../src/private/types/HostComponent';
++import type {ProcessedColorValue} from '../StyleSheet/processColor';
++import type {GestureResponderEvent} from '../Types/CoreEventTypes';
++import type {TextProps} from './TextProps';
++
++import {enablePreparedTextLayout} from '../../src/private/featureflags/ReactNativeFeatureFlags';
++import {createViewConfig} from '../NativeComponent/ViewConfig';
++import UIManager from '../ReactNative/UIManager';
++import createReactNativeComponentClass from '../Renderer/shims/createReactNativeComponentClass';
++
++export type NativeTextProps = Readonly<{
++  ...TextProps,
++  isHighlighted?: ?boolean,
++  selectionColor?: ?ProcessedColorValue,
++  onClick?: ?(event: GestureResponderEvent) => unknown,
++  // This is only needed for platforms that optimize text hit testing, e.g.,
++  // react-native-windows. It can be used to only hit test virtual text spans
++  // that have pressable events attached to them.
++  isPressable?: ?boolean,
++}>;
++
++const textViewConfig = {
++  validAttributes: {
++    isHighlighted: true,
++    isPressable: true,
++    numberOfLines: true,
++    ellipsizeMode: true,
++    allowFontScaling: true,
++    dynamicTypeRamp: true,
++    maxFontSizeMultiplier: true,
++    disabled: true,
++    selectable: true,
++    selectionColor: true,
++    adjustsFontSizeToFit: true,
++    minimumFontScale: true,
++    textBreakStrategy: true,
++    onTextLayout: true,
++    dataDetectorType: true,
++    android_hyphenationFrequency: true,
++    lineBreakStrategyIOS: true,
++  },
++  directEventTypes: {
++    topTextLayout: {
++      registrationName: 'onTextLayout',
++    },
++  },
++  uiViewClassName: 'RCTText',
++} as const;
++
++const virtualTextViewConfig = {
++  validAttributes: {
++    isHighlighted: true,
++    isPressable: true,
++    maxFontSizeMultiplier: true,
++  },
++  uiViewClassName: 'RCTVirtualText',
++} as const;
++
++/**
++ * `NativeText` is an internal React Native host component, and is exported to
++ * provide lower-level access for libraries.
++ *
++ * @warning `<unstable_NativeText>` provides no semver guarantees and is not
++ *   intended to be used in app code. Please use
++ *   [`<Text>`](https://reactnative.dev/docs/text) instead.
++ */
++// Additional note: Our long term plan is to reduce the overhead of the <Text>
++// and <View> wrappers so that we no longer have any reason to export these APIs.
++export const NativeText: HostComponent<NativeTextProps> =
++  createReactNativeComponentClass('RCTText', () =>
++    createViewConfig(textViewConfig),
++  ) as any;
++
++export const NativeVirtualText: HostComponent<NativeTextProps> =
++  !global.RN$Bridgeless && !UIManager.hasViewManagerConfig('RCTVirtualText')
++    ? NativeText
++    : (createReactNativeComponentClass('RCTVirtualText', () =>
++        createViewConfig(virtualTextViewConfig),
++      ) as any);
++
++export const NativeSelectableText: HostComponent<NativeTextProps> =
++  enablePreparedTextLayout()
++    ? (createReactNativeComponentClass('RCTSelectableText', () =>
++        createViewConfig({
++          ...textViewConfig,
++          uiViewClassName: 'RCTSelectableText',
++        }),
++      ) as any)
++    : NativeText;
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/renderer/textlayoutmanager/TextMeasureCache.h b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/renderer/textlayoutmanager/TextMeasureCache.h
+new file mode 100644
+index 00000000..b4becb8f
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/renderer/textlayoutmanager/TextMeasureCache.h
+@@ -0,0 +1,299 @@
++/*
++ * Copyright (c) Meta Platforms, Inc. and affiliates.
++ *
++ * This source code is licensed under the MIT license found in the
++ * LICENSE file in the root directory of this source tree.
++ */
++
++#pragma once
++
++#include <react/renderer/attributedstring/AttributedString.h>
++#include <react/renderer/attributedstring/ParagraphAttributes.h>
++#include <react/renderer/core/LayoutConstraints.h>
++#include <react/utils/FloatComparison.h>
++#include <react/utils/SimpleThreadSafeCache.h>
++#include <react/utils/hash_combine.h>
++
++namespace facebook::react {
++
++struct LineMeasurement {
++  std::string text;
++  Rect frame;
++  Float descender;
++  Float capHeight;
++  Float ascender;
++  Float xHeight;
++
++  LineMeasurement(std::string text, Rect frame, Float descender, Float capHeight, Float ascender, Float xHeight);
++
++  LineMeasurement(const folly::dynamic &data);
++
++  bool operator==(const LineMeasurement &rhs) const;
++
++  static inline Float baseline(const std::vector<LineMeasurement> &lines)
++  {
++    if (!lines.empty()) {
++      return lines[0].ascender;
++    }
++    return 0;
++  }
++};
++
++using LinesMeasurements = std::vector<LineMeasurement>;
++
++/*
++ * Describes a result of text measuring.
++ */
++class TextMeasurement final {
++ public:
++  class Attachment final {
++   public:
++    Rect frame;
++    bool isClipped;
++  };
++
++  using Attachments = std::vector<Attachment>;
++
++  Size size;
++  Attachments attachments;
++};
++
++// The Key type that is used for Text Measure Cache.
++// The equivalence and hashing operations of this are defined to respect the
++// nature of text measuring.
++class TextMeasureCacheKey final {
++ public:
++  AttributedString attributedString{};
++  ParagraphAttributes paragraphAttributes{};
++  LayoutConstraints layoutConstraints{};
++};
++
++// The Key type that is used for Line Measure Cache.
++// The equivalence and hashing operations of this are defined to respect the
++// nature of text measuring.
++class LineMeasureCacheKey final {
++ public:
++  AttributedString attributedString{};
++  ParagraphAttributes paragraphAttributes{};
++  Size size{};
++};
++
++/**
++ * Cache key, mapping an AttributedString under given constraints, to a prepared
++ * (laid out and drawable) representation of the text.
++ */
++class PreparedTextCacheKey final {
++ public:
++  AttributedString attributedString{};
++  ParagraphAttributes paragraphAttributes{};
++  LayoutConstraints layoutConstraints{};
++};
++
++/*
++ * Maximum size of the Cache.
++ * The number was empirically chosen based on approximation of an average amount
++ * of meaningful measures per surface.
++ */
++constexpr auto kSimpleThreadSafeCacheSizeCap = size_t{1024};
++
++/*
++ * Thread-safe, evicting hash table designed to store text measurement
++ * information.
++ */
++using TextMeasureCache = SimpleThreadSafeCache<TextMeasureCacheKey, TextMeasurement, kSimpleThreadSafeCacheSizeCap>;
++
++/*
++ * Thread-safe, evicting hash table designed to store line measurement
++ * information.
++ */
++using LineMeasureCache = SimpleThreadSafeCache<LineMeasureCacheKey, LinesMeasurements, kSimpleThreadSafeCacheSizeCap>;
++
++inline bool areTextAttributesEquivalentLayoutWise(const TextAttributes &lhs, const TextAttributes &rhs)
++{
++  // Here we check all attributes that affect layout metrics and don't check any
++  // attributes that affect only a decorative aspect of displayed text (like
++  // colors).
++  return std::tie(
++             lhs.fontFamily,
++             lhs.fontWeight,
++             lhs.fontStyle,
++             lhs.fontVariant,
++             lhs.allowFontScaling,
++             lhs.dynamicTypeRamp,
++             lhs.alignment) ==
++      std::tie(
++             rhs.fontFamily,
++             rhs.fontWeight,
++             rhs.fontStyle,
++             rhs.fontVariant,
++             rhs.allowFontScaling,
++             rhs.dynamicTypeRamp,
++             rhs.alignment) &&
++      floatEquality(lhs.fontSize, rhs.fontSize) && floatEquality(lhs.fontSizeMultiplier, rhs.fontSizeMultiplier) &&
++      floatEquality(lhs.letterSpacing, rhs.letterSpacing) && floatEquality(lhs.lineHeight, rhs.lineHeight);
++}
++
++inline size_t textAttributesHashLayoutWise(const TextAttributes &textAttributes)
++{
++  // Taking into account the same props as
++  // `areTextAttributesEquivalentLayoutWise` mentions.
++  return facebook::react::hash_combine(
++      textAttributes.fontFamily,
++      textAttributes.fontSize,
++      textAttributes.fontSizeMultiplier,
++      textAttributes.fontWeight,
++      textAttributes.fontStyle,
++      textAttributes.fontVariant,
++      textAttributes.allowFontScaling,
++      textAttributes.dynamicTypeRamp,
++      textAttributes.letterSpacing,
++      textAttributes.lineHeight,
++      textAttributes.alignment);
++}
++
++inline bool areAttributedStringFragmentsEquivalentLayoutWise(
++    const AttributedString::Fragment &lhs,
++    const AttributedString::Fragment &rhs)
++{
++  return lhs.string == rhs.string && areTextAttributesEquivalentLayoutWise(lhs.textAttributes, rhs.textAttributes) &&
++      // LayoutMetrics of an attachment fragment affects the size of a measured
++      // attributed string.
++      (!lhs.isAttachment() || (lhs.parentShadowView.layoutMetrics == rhs.parentShadowView.layoutMetrics));
++}
++
++inline bool areAttributedStringFragmentsEquivalentDisplayWise(
++    const AttributedString::Fragment &lhs,
++    const AttributedString::Fragment &rhs)
++{
++  return lhs.isContentEqual(rhs) &&
++      // LayoutMetrics of an attachment fragment affects the size of a measured
++      // attributed string.
++      (!lhs.isAttachment() || (lhs.parentShadowView.layoutMetrics == rhs.parentShadowView.layoutMetrics));
++}
++
++inline size_t attributedStringFragmentHashLayoutWise(const AttributedString::Fragment &fragment)
++{
++  // Here we are not taking `isAttachment` and `layoutMetrics` into account
++  // because they are logically interdependent and this can break an invariant
++  // between hash and equivalence functions (and cause cache misses).
++  return facebook::react::hash_combine(fragment.string, textAttributesHashLayoutWise(fragment.textAttributes));
++}
++
++inline size_t attributedStringFragmentHashDisplayWise(const AttributedString::Fragment &fragment)
++{
++  // Here we are not taking `isAttachment` and `layoutMetrics` into account
++  // because they are logically interdependent and this can break an invariant
++  // between hash and equivalence functions (and cause cache misses).
++  return facebook::react::hash_combine(fragment.string, fragment.textAttributes);
++}
++
++inline bool areAttributedStringsEquivalentLayoutWise(const AttributedString &lhs, const AttributedString &rhs)
++{
++  auto &lhsFragment = lhs.getFragments();
++  auto &rhsFragment = rhs.getFragments();
++
++  if (lhsFragment.size() != rhsFragment.size()) {
++    return false;
++  }
++
++  auto size = lhsFragment.size();
++  for (auto i = size_t{0}; i < size; i++) {
++    if (!areAttributedStringFragmentsEquivalentLayoutWise(lhsFragment.at(i), rhsFragment.at(i))) {
++      return false;
++    }
++  }
++
++  return true;
++}
++
++inline bool areAttributedStringsEquivalentDisplayWise(const AttributedString &lhs, const AttributedString &rhs)
++{
++  auto &lhsFragment = lhs.getFragments();
++  auto &rhsFragment = rhs.getFragments();
++
++  if (lhsFragment.size() != rhsFragment.size()) {
++    return false;
++  }
++
++  auto size = lhsFragment.size();
++  for (size_t i = 0; i < size; i++) {
++    if (!areAttributedStringFragmentsEquivalentDisplayWise(lhsFragment.at(i), rhsFragment.at(i))) {
++      return false;
++    }
++  }
++
++  return true;
++}
++
++inline size_t attributedStringHashLayoutWise(const AttributedString &attributedString)
++{
++  auto seed = size_t{0};
++
++  for (const auto &fragment : attributedString.getFragments()) {
++    facebook::react::hash_combine(seed, attributedStringFragmentHashLayoutWise(fragment));
++  }
++
++  return seed;
++}
++
++inline size_t attributedStringHashDisplayWise(const AttributedString &attributedString)
++{
++  size_t seed = 0;
++
++  for (const auto &fragment : attributedString.getFragments()) {
++    facebook::react::hash_combine(seed, attributedStringFragmentHashDisplayWise(fragment));
++  }
++
++  return seed;
++}
++
++inline bool operator==(const TextMeasureCacheKey &lhs, const TextMeasureCacheKey &rhs)
++{
++  return areAttributedStringsEquivalentLayoutWise(lhs.attributedString, rhs.attributedString) &&
++      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints;
++}
++
++inline bool operator==(const LineMeasureCacheKey &lhs, const LineMeasureCacheKey &rhs)
++{
++  return areAttributedStringsEquivalentLayoutWise(lhs.attributedString, rhs.attributedString) &&
++      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.size == rhs.size;
++}
++
++inline bool operator==(const PreparedTextCacheKey &lhs, const PreparedTextCacheKey &rhs)
++{
++  return areAttributedStringsEquivalentDisplayWise(lhs.attributedString, rhs.attributedString) &&
++      lhs.paragraphAttributes == rhs.paragraphAttributes && lhs.layoutConstraints == rhs.layoutConstraints;
++}
++
++} // namespace facebook::react
++
++namespace std {
++
++template <>
++struct hash<facebook::react::TextMeasureCacheKey> {
++  size_t operator()(const facebook::react::TextMeasureCacheKey &key) const
++  {
++    return facebook::react::hash_combine(
++        attributedStringHashLayoutWise(key.attributedString), key.paragraphAttributes, key.layoutConstraints);
++  }
++};
++
++template <>
++struct hash<facebook::react::LineMeasureCacheKey> {
++  size_t operator()(const facebook::react::LineMeasureCacheKey &key) const
++  {
++    return facebook::react::hash_combine(
++        attributedStringHashLayoutWise(key.attributedString), key.paragraphAttributes, key.size);
++  }
++};
++
++template <>
++struct hash<facebook::react::PreparedTextCacheKey> {
++  size_t operator()(const facebook::react::PreparedTextCacheKey &key) const
++  {
++    return facebook::react::hash_combine(
++        attributedStringHashDisplayWise(key.attributedString), key.paragraphAttributes, key.layoutConstraints);
++  }
++};
++
++} // namespace std
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/FloatComparison.h b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/FloatComparison.h
+new file mode 100644
+index 00000000..f53ada84
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/FloatComparison.h
+@@ -0,0 +1,22 @@
++/*
++ * Copyright (c) Meta Platforms, Inc. and affiliates.
++ *
++ * This source code is licensed under the MIT license found in the
++ * LICENSE file in the root directory of this source tree.
++ */
++
++#pragma once
++
++#include <cmath>
++
++namespace facebook::react {
++
++constexpr float kDefaultEpsilon = 0.005f;
++
++template <typename T>
++inline bool floatEquality(T a, T b, T epsilon = static_cast<T>(kDefaultEpsilon))
++{
++  return (std::isnan(a) && std::isnan(b)) || (!std::isnan(a) && !std::isnan(b) && std::abs(a - b) < epsilon);
++}
++
++} // namespace facebook::react
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/SimpleThreadSafeCache.h b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/SimpleThreadSafeCache.h
+new file mode 100644
+index 00000000..e5c8994b
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/SimpleThreadSafeCache.h
+@@ -0,0 +1,106 @@
++/*
++ * Copyright (c) Meta Platforms, Inc. and affiliates.
++ *
++ * This source code is licensed under the MIT license found in the
++ * LICENSE file in the root directory of this source tree.
++ */
++
++#pragma once
++
++#include <concepts>
++#include <list>
++#include <mutex>
++#include <unordered_map>
++
++namespace facebook::react {
++
++template <typename GeneratorT, typename ValueT>
++concept CacheGeneratorFunction = std::invocable<GeneratorT> && std::same_as<std::invoke_result_t<GeneratorT>, ValueT>;
++
++/*
++ * Simple thread-safe LRU cache.
++ *
++ * TODO T228961279: The maxSize template parameter should be removed, since it
++ * may be overriden by the constructor.
++ */
++template <typename KeyT, typename ValueT, int maxSize>
++class SimpleThreadSafeCache {
++ public:
++  SimpleThreadSafeCache() : maxSize_(maxSize) {}
++  SimpleThreadSafeCache(unsigned long size) : maxSize_{size} {}
++
++  /*
++   * Returns a value from the map with a given key.
++   * If the value wasn't found in the cache, constructs the value using given
++   * generator function, stores it inside a cache and returns it.
++   * Can be called from any thread.
++   */
++  ValueT get(const KeyT &key, CacheGeneratorFunction<ValueT> auto generator) const
++  {
++    return getMapIterator(key, std::move(generator))->second->second;
++  }
++
++  /*
++   * Returns pointers to both the key and value from the map with a given key.
++   * If the value wasn't found in the cache, constructs the value using given
++   * generator function, stores it inside a cache and returns it.
++   * Can be called from any thread.
++   */
++  std::pair<const KeyT *, const ValueT *> getWithKey(const KeyT &key, CacheGeneratorFunction<ValueT> auto generator)
++      const
++  {
++    auto it = getMapIterator(key, std::move(generator));
++    return std::make_pair(&it->first, &it->second->second);
++  }
++
++  /*
++   * Returns a value from the map with a given key.
++   * If the value wasn't found in the cache, returns empty optional.
++   * Can be called from any thread.
++   */
++  std::optional<ValueT> get(const KeyT &key) const
++  {
++    std::lock_guard<std::mutex> lock(mutex_);
++
++    if (auto it = map_.find(key); it != map_.end()) {
++      // Move accessed item to front of list
++      list_.splice(list_.begin(), list_, it->second);
++      return it->second->second;
++    }
++
++    return ValueT{};
++  }
++
++ private:
++  using EntryT = std::pair<KeyT, ValueT>;
++  using iterator = typename std::list<EntryT>::iterator;
++
++  auto getMapIterator(const KeyT &key, CacheGeneratorFunction<ValueT> auto generator) const
++  {
++    std::lock_guard<std::mutex> lock(mutex_);
++
++    if (auto it = map_.find(key); it != map_.end()) {
++      // Move accessed item to front of list
++      list_.splice(list_.begin(), list_, it->second);
++      return it;
++    }
++
++    auto value = generator();
++    // Add new value to front of list and map
++    list_.emplace_front(key, value);
++    auto [it, _] = map_.insert_or_assign(key, list_.begin());
++    if (list_.size() > maxSize_) {
++      // Evict least recently used item (back of list)
++      map_.erase(list_.back().first);
++      list_.pop_back();
++    }
++    return it;
++  }
++
++  size_t maxSize_;
++  mutable std::mutex mutex_;
++  mutable std::list<EntryT> list_;
++  mutable std::unordered_map<KeyT, iterator> map_;
++};
++
++} // namespace facebook::react
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/hash_combine.h b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/hash_combine.h
+new file mode 100644
+index 00000000..e6ffd298
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/ReactCommon/react/utils/hash_combine.h
+@@ -0,0 +1,35 @@
++/*
++ * Copyright (c) Meta Platforms, Inc. and affiliates.
++ *
++ * This source code is licensed under the MIT license found in the
++ * LICENSE file in the root directory of this source tree.
++ */
++
++#pragma once
++
++#include <functional>
++#include <type_traits>
++
++namespace facebook::react {
++
++template <typename T>
++concept Hashable = !std::is_same_v<T, const char *> && (requires(T a) {
++  { std::hash<T>{}(a) } -> std::convertible_to<std::size_t>;
++});
++
++template <Hashable T, Hashable... Rest>
++void hash_combine(std::size_t &seed, const T &v, const Rest &...rest)
++{
++  seed ^= std::hash<T>{}(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
++  (hash_combine(seed, rest), ...);
++}
++
++template <Hashable T, Hashable... Args>
++std::size_t hash_combine(const T &v, const Args &...args)
++{
++  std::size_t seed = 0;
++  hash_combine<T, Args...>(seed, v, args...);
++  return seed;
++}
++
++} // namespace facebook::react
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/cache-key.cpp b/mobile/tests/fixtures/react-native-0.86.3-font-cache/cache-key.cpp
+new file mode 100644
+index 00000000..5067ed2c
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/cache-key.cpp
+@@ -0,0 +1,33 @@
++#include "support-types.h"
++#include <react/renderer/textlayoutmanager/TextMeasureCache.h>
++#include <cassert>
++#include <iostream>
++using namespace facebook::react;
++TextMeasureCacheKey key(int tag,float scale,std::string text="Hellenic Community of Ottawa"){
++ TextMeasureCacheKey k;
++ AttributedString::Fragment f;f.string=text;f.parentShadowView.tag=tag;f.textAttributes.fontSizeMultiplier=scale;
++ k.attributedString.fragments.push_back(f);return k;
++}
++int main(){
++ TextMeasureCache cache;int measured=0;
++ auto measure=[&](){++measured;TextMeasurement m;m.size={100,float(20*measured)};return m;};
++ auto one=key(100,1),remounted=key(200,1),two=key(300,2);
++ assert(one==remounted);
++ assert(std::hash<TextMeasureCacheKey>{}(one)==std::hash<TextMeasureCacheKey>{}(remounted));
++ assert(!(one==two));
++ assert(std::hash<TextMeasureCacheKey>{}(one)!=std::hash<TextMeasureCacheKey>{}(two));
++ cache.get(one,measure);cache.get(remounted,measure);assert(measured==1);
++ cache.get(two,measure);assert(measured==2);
++ cache.get(key(400,2),measure);assert(measured==2);
++ cache.get(key(500,1.3f),measure);assert(measured==3);
++ cache.get(key(600,1),measure);assert(measured==3);
++ // Nested text fragments have the same scale-sensitive identity.
++ auto nested=two;nested.attributedString.fragments.push_back(key(700,2,"nested").attributedString.fragments[0]);
++ auto nestedOld=nested;nestedOld.attributedString.fragments[1].textAttributes.fontSizeMultiplier=1;
++ assert(!(nested==nestedOld));
++ assert(std::hash<TextMeasureCacheKey>{}(nested)!=std::hash<TextMeasureCacheKey>{}(nestedOld));
++ // Constraint and real text changes retain their existing cache separation.
++ auto width=two;width.layoutConstraints.width=300;assert(!(width==two));
++ assert(!(key(800,2,"different") == two));
++ std::cout<<"{\"actual_RN_headers\":true,\"host_remount_cache_hit\":true,\"font_field_cache_miss\":true,\"same_scale_hit\":true,\"scale_return_hit\":true,\"nested_field_split\":true,\"measurement_calls\":"<<measured<<"}\n";
++}
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/manifest.json b/mobile/tests/fixtures/react-native-0.86.3-font-cache/manifest.json
+new file mode 100644
+index 00000000..5fb05f2b
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/manifest.json
+@@ -0,0 +1,12 @@
++{
++  "react_native_version": "0.86.3",
++  "files": {
++    "Libraries/Text/TextNativeComponent.js": "3e783f0b9fcf2e2905d4be23449c77970d29de39755b966cdd259b2f671d5740",
++    "ReactCommon/react/renderer/textlayoutmanager/TextMeasureCache.h": "14b83cc352edc47b40c9973ff29966f52aab6fa9916d1696ea6a97fb34390a66",
++    "ReactCommon/react/utils/hash_combine.h": "2a8e71c591a0f7ee0e451510c5c95d24e1bcd98da6d9afcf97dc706a594dfef5",
++    "ReactCommon/react/utils/FloatComparison.h": "9c8b2ced023519e1e5770db30e0185e1d9aad48c5c5f4b5d2e2d535ba8cf2aa0",
++    "ReactCommon/react/utils/SimpleThreadSafeCache.h": "595739d422e4a770a5e336fcd3f9a487e17bb1d386a15df446da91c7774ca21a"
++  },
++  "license": "MIT; original Meta copyright headers retained",
++  "purpose": "Exact unmodified upstream headers and JS used for native cache regression and private patch installation; support types are explicitly bounded test substitutes."
++}
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/native-contracts.json b/mobile/tests/fixtures/react-native-0.86.3-font-cache/native-contracts.json
+new file mode 100644
+index 00000000..7a6150f8
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/native-contracts.json
+@@ -0,0 +1,13 @@
++{
++  "react_native_version": "0.86.3",
++  "files": {
++    "Libraries/Text/Text.js": "7bd239228e8a92282e976ec7d838416a872c26387f1bdc1ae568597440c2b949",
++    "ReactCommon/react/renderer/components/text/BaseTextProps.cpp": "55b0f317732f7d1ca37881f72a52f91d01cfed76e0a738138ecd184945b4b6d3",
++    "ReactCommon/react/renderer/attributedstring/TextAttributes.cpp": "8a462eac4a9800d9ee3f769e82d883ef4f9d8541161f19ddbed28195b6bd82ff",
++    "ReactCommon/react/renderer/attributedstring/conversions.h": "96265168deb10c4564024b58356a96dbfdeef79c1fad859f98c9042ea967c91e",
++    "ReactAndroid/src/main/java/com/facebook/react/views/text/TextAttributeProps.kt": "51e5b258e92271fac136d246ec6916a8718833a219021b1a07087a46a7bedb2a",
++    "ReactAndroid/src/main/java/com/facebook/react/uimanager/PixelUtil.kt": "e1df4d3d4ae6775aba49215dbc68aed318086b0be3874de7277a713c8b71faf9",
++    "ReactCommon/react/renderer/textlayoutmanager/platform/android/react/renderer/textlayoutmanager/TextLayoutManager.cpp": "3a78f86cdcbce8d7662a3858aab35ce54cb06505f3083c3df5d792d45bb3fa82",
++    "ReactCommon/react/renderer/components/text/ParagraphShadowNode.cpp": "22053df9c418b4580c546d3c9db7fe09ff7db39fb6def658ee8806fce5dbf849"
++  }
++}
+diff --git a/mobile/tests/fixtures/react-native-0.86.3-font-cache/support-types.h b/mobile/tests/fixtures/react-native-0.86.3-font-cache/support-types.h
+new file mode 100644
+index 00000000..197d7000
+--- /dev/null
++++ b/mobile/tests/fixtures/react-native-0.86.3-font-cache/support-types.h
+@@ -0,0 +1,42 @@
++// Test-only structural substitutes for RN's attributed strings/geometry.
++// The cache, hash, equality and float-comparison functions under test are the
++// complete unmodified RN headers. This is not a renderer or measurement mock.
++#pragma once
++#include <concepts>
++#include <functional>
++#include <optional>
++#include <string>
++#include <tuple>
++#include <vector>
++namespace folly {class dynamic;}
++namespace facebook::react {
++using Float=float;
++struct Size {float width=0,height=0;bool operator==(const Size&) const=default;};
++struct Rect {Size size;bool operator==(const Rect&) const=default;};
++struct TextAttributes {
++ std::string fontFamily="system";
++ float fontSize=14,fontSizeMultiplier=1,letterSpacing=0,lineHeight=20;
++ std::optional<int> fontWeight,fontStyle,fontVariant,dynamicTypeRamp,alignment;
++ std::optional<bool> allowFontScaling=true;
++ bool operator==(const TextAttributes&)const=default;
++};
++struct AttributedString {
++ struct Fragment {
++  std::string string;TextAttributes textAttributes;
++  struct ShadowView{int tag=0;int layoutMetrics=0;} parentShadowView;
++  bool attachment=false;
++  bool isAttachment()const{return attachment;}
++  bool isContentEqual(const Fragment& b)const{return string==b.string&&textAttributes==b.textAttributes;}
++ };
++ std::vector<Fragment> fragments;
++ const std::vector<Fragment>&getFragments()const{return fragments;}
++};
++struct ParagraphAttributes {int numberOfLines=0;bool operator==(const ParagraphAttributes&)const=default;};
++struct LayoutConstraints {float width=390,height=1000;bool operator==(const LayoutConstraints&)const=default;};
++}
++namespace std {
++template<>struct hash<facebook::react::TextAttributes>{size_t operator()(const facebook::react::TextAttributes& x)const{return hash<float>{}(x.fontSizeMultiplier);}};
++template<>struct hash<facebook::react::ParagraphAttributes>{size_t operator()(const facebook::react::ParagraphAttributes& x)const{return hash<int>{}(x.numberOfLines);}};
++template<>struct hash<facebook::react::LayoutConstraints>{size_t operator()(const facebook::react::LayoutConstraints& x)const{return hash<float>{}(x.width)^hash<float>{}(x.height);}};
++template<>struct hash<facebook::react::Size>{size_t operator()(const facebook::react::Size& x)const{return hash<float>{}(x.width)^hash<float>{}(x.height);}};
++}
+diff --git a/mobile/tests/native-text-font-cache.test.mjs b/mobile/tests/native-text-font-cache.test.mjs
+new file mode 100644
+index 00000000..65bfe63a
+--- /dev/null
++++ b/mobile/tests/native-text-font-cache.test.mjs
+@@ -0,0 +1,163 @@
++import test from 'node:test';
++import assert from 'node:assert/strict';
++import {createHash} from 'node:crypto';
++import {createRequire} from 'node:module';
++import {mkdtempSync, readFileSync, writeFileSync, mkdirSync, cpSync, rmSync, symlinkSync, statSync, renameSync} from 'node:fs';
++import {tmpdir} from 'node:os';
++import {join, resolve} from 'node:path';
++import {execFileSync} from 'node:child_process';
++import vm from 'node:vm';
++import {fileURLToPath} from 'node:url';
++
++const root = fileURLToPath(new URL('../', import.meta.url));
++const fixtures = join(root, 'tests/fixtures/react-native-0.86.3-font-cache');
++const require = createRequire(import.meta.url);
++const patch = require('../scripts/patch-native-text-font-cache.cjs');
++const sha = value => createHash('sha256').update(value).digest('hex');
++function privateInstall(run) {
++  const directory = mkdtempSync(join(tmpdir(), 'zoi-native-font-cache-'));
++  const rn = join(directory, 'node_modules/react-native');
++  mkdirSync(rn, {recursive: true});
++  cpSync(join(fixtures, 'Libraries'), join(rn, 'Libraries'), {recursive: true});
++  renameSync(join(rn, patch.FILE + '.txt'), join(rn, patch.FILE));
++  writeFileSync(join(rn, 'package.json'), JSON.stringify({name: 'react-native', version: '0.86.3'}));
++  try {return run(directory, rn);} finally {rmSync(directory, {recursive: true, force: true});}
++}
++
++test('exact private RN install is patched once; both host configs accept scale and all other bytes reverse', () => privateInstall((directory, rn) => {
++  const filename = join(rn, patch.FILE), original = readFileSync(filename);
++  const mode = statSync(filename).mode;
++  assert.equal(sha(original), patch.BEFORE);
++  assert.equal(patch.patchNativeTextFontCache(directory), 'patched');
++  const current = readFileSync(filename, 'utf8');
++  assert.equal(sha(current), patch.AFTER);
++  assert.equal(current.match(/    fontSizeMultiplier: true,/g)?.length, 2);
++  assert.equal(current.replaceAll('    fontSizeMultiplier: true,\n', ''), original.toString());
++  assert.equal(statSync(filename).mode, mode);
++  assert.equal(patch.patchNativeTextFontCache(directory), 'already-patched');
++  assert.equal(readFileSync(filename, 'utf8'), current);
++}));
++
++test('unsupported version, unknown source and partially applied patch fail closed without edits', () => {
++  for (const kind of ['version', 'source', 'partial']) privateInstall((directory, rn) => {
++    const filename = join(rn, patch.FILE);
++    if (kind === 'version') writeFileSync(join(rn, 'package.json'), '{"version":"0.86.4"}');
++    if (kind === 'source') writeFileSync(filename, readFileSync(filename, 'utf8') + '\n');
++    if (kind === 'partial') writeFileSync(filename, readFileSync(filename, 'utf8').replace('    maxFontSizeMultiplier: true,', '    maxFontSizeMultiplier: true,\n    fontSizeMultiplier: true,'));
++    const before = readFileSync(filename);
++    assert.throws(() => patch.patchNativeTextFontCache(directory), /native_text_patch_(unsupported_version|source_drift)/);
++    assert.deepEqual(readFileSync(filename), before);
++  });
++});
++
++test('shared symlinked dependencies and redirected native file are refused without modifying their targets', () => privateInstall((directory, rn) => {
++  const outer = mkdtempSync(join(tmpdir(), 'zoi-shared-native-font-'));
++  try {
++    symlinkSync(join(directory, 'node_modules'), join(outer, 'node_modules'));
++    const before = readFileSync(join(rn, patch.FILE));
++    assert.throws(() => patch.patchNativeTextFontCache(outer), /shared_dependencies/);
++    assert.deepEqual(readFileSync(join(rn, patch.FILE)), before);
++    const filename = join(rn, patch.FILE), target = join(directory, 'original.js');
++    writeFileSync(target, before);rmSync(filename);symlinkSync(target, filename);
++    assert.throws(() => patch.patchNativeTextFontCache(directory), /invalid_file/);
++    assert.deepEqual(readFileSync(target), before);
++  } finally {rmSync(outer, {recursive: true, force: true});}
++}));
++
++test('real offline npm ci executes the shipped postinstall in its own dependency install', () => privateInstall((directory, rn) => {
++  // A tarball dependency makes npm create its own actual files, never a shared
++  // local file: directory symlink. No registry/network/package download occurs.
++  const tarball = 'react-native-0.86.3.tgz';
++  execFileSync('npm', ['pack', '--offline', '--ignore-scripts', '--pack-destination', directory], {cwd: rn, stdio: 'pipe'});
++  rmSync(join(directory, 'node_modules'), {recursive: true, force: true});
++  mkdirSync(join(directory, 'scripts'));
++  cpSync(join(root, 'scripts/patch-native-text-font-cache.cjs'), join(directory, 'scripts/patch-native-text-font-cache.cjs'));
++  const app = JSON.parse(readFileSync(join(root, 'package.json')));
++  writeFileSync(join(directory, 'package.json'), JSON.stringify({name: 'zoi-private-install-proof', version: '1.0.0', private: true, scripts: {postinstall: app.scripts.postinstall}, dependencies: {'react-native': 'file:./' + tarball}}));
++  execFileSync('npm', ['install', '--package-lock-only', '--ignore-scripts', '--offline', '--no-audit', '--no-fund'], {cwd: directory, stdio: 'pipe'});
++  const output = execFileSync('npm', ['ci', '--offline', '--no-audit', '--no-fund'], {cwd: directory, encoding: 'utf8'});
++  assert.match(output, /Native text font cache: patched/);
++  assert.equal(sha(readFileSync(join(directory, 'node_modules/react-native', patch.FILE))), patch.AFTER);
++  assert.equal(JSON.parse(readFileSync(join(directory, 'package-lock.json'))).packages[''].hasInstallScript, true);
++  const lock = JSON.parse(readFileSync(join(root, 'package-lock.json')));
++  assert.equal(lock.packages[''].hasInstallScript, true);
++  assert.equal(app.scripts.postinstall, 'node scripts/patch-native-text-font-cache.cjs');
++}));
++
++test('actual RN host configuration registers scale for root, nested and selectable text after the guarded patch', () => privateInstall((directory, rn) => {
++  const babel = require('@babel/core');
++  function registered() {
++    const source = readFileSync(join(rn, patch.FILE), 'utf8');
++    const code = babel.transformSync(source, {filename: 'TextNativeComponent.js', babelrc: false, configFile: false,
++      presets: [require.resolve('babel-preset-expo')], caller: {name: 'metro', platform: 'android'}}).code;
++    const components = new Map();
++    const module = {exports: {}};
++    const deps = {
++      '../../src/private/featureflags/ReactNativeFeatureFlags': {enablePreparedTextLayout: () => true},
++      '../NativeComponent/ViewConfig': {createViewConfig: value => value},
++      '../ReactNative/UIManager': {},
++      '../Renderer/shims/createReactNativeComponentClass': (name, config) => {const result = config();components.set(name, result);return result;},
++    };
++    vm.runInNewContext(code, {module, exports: module.exports, global: {RN$Bridgeless: true}, require: name => {
++      if (name.startsWith('@babel/runtime/')) return require(name);
++      assert.ok(name in deps, name);return deps[name];
++    }});
++    return components;
++  }
++  const before = registered();
++  for (const name of ['RCTText', 'RCTVirtualText', 'RCTSelectableText']) assert.equal('fontSizeMultiplier' in before.get(name).validAttributes, false);
++  patch.patchNativeTextFontCache(directory);
++  const after = registered();
++  for (const name of before.keys()) {
++    assert.equal(after.get(name).validAttributes.fontSizeMultiplier, true);
++    const stripped = JSON.parse(JSON.stringify(after.get(name)));
++    delete stripped.validAttributes.fontSizeMultiplier;
++    // Realm-independent full config equality, including direct events.
++    assert.equal(JSON.stringify(stripped), JSON.stringify(before.get(name)));
++  }
++}));
++
++test('unmodified RN C++ cache actually reuses a new host tag, but splits current scale and nested scale', () => {
++  const directory = mkdtempSync(join(tmpdir(), 'zoi-native-cpp-cache-'));
++  try {
++    const manifest = JSON.parse(readFileSync(join(fixtures, 'manifest.json')));
++    const installed = resolve(require.resolve('react-native/package.json'), '..');
++    for (const [filename, hash] of Object.entries(manifest.files)) {
++      assert.equal(sha(readFileSync(join(fixtures, filename + (filename.endsWith('.js') ? '.txt' : '')))), hash, filename);
++      const current = sha(readFileSync(join(installed, filename)));
++      if (filename === patch.FILE) assert.ok([patch.BEFORE, patch.AFTER].includes(current), 'installed guarded JS config');
++      else assert.equal(current, hash, 'installed ' + filename);
++    }
++    const includes = join(directory, 'include');
++    cpSync(join(fixtures, 'ReactCommon'), includes, {recursive: true});
++    for (const filename of ['react/renderer/attributedstring/AttributedString.h', 'react/renderer/attributedstring/ParagraphAttributes.h', 'react/renderer/core/LayoutConstraints.h']) {
++      const target = join(includes, filename);mkdirSync(resolve(target, '..'), {recursive: true});
++      writeFileSync(target, '#include "support-types.h"\n');
++    }
++    const binary = join(directory, 'cache-key');
++    execFileSync('g++', ['-std=c++20', '-Wall', '-Wextra', '-Werror', '-I', includes, '-I', fixtures, join(fixtures, 'cache-key.cpp'), '-o', binary], {stdio: 'pipe'});
++    const result = JSON.parse(execFileSync(binary, [], {encoding: 'utf8'}));
++    assert.deepEqual(result, {actual_RN_headers: true, host_remount_cache_hit: true, font_field_cache_miss: true, same_scale_hit: true, scale_return_hit: true, nested_field_split: true, measurement_calls: 3});
++  } finally {rmSync(directory, {recursive: true, force: true});}
++});
++
++test('pinned actual native parser forwards scale into cache while Android SP remains the existing painting path', () => {
++  const rn = resolve(require.resolve('react-native/package.json'), '..');
++  assert.equal(JSON.parse(readFileSync(join(rn, 'package.json'))).version, '0.86.3');
++  const contract = JSON.parse(readFileSync(join(fixtures, 'native-contracts.json')));
++  const sources = {};
++  for (const [filename, hash] of Object.entries(contract.files)) {
++    const bytes = readFileSync(join(rn, filename));assert.equal(sha(bytes), hash, filename);sources[filename] = bytes.toString();
++  }
++  const source = suffix => sources[Object.keys(sources).find(name => name.endsWith(suffix))];
++  assert.match(source('Text.js'), /\.\.\.restProps/);
++  assert.match(source('Text.js'), /<NativeVirtualText \{\.\.\.processedProps\}/);
++  assert.match(source('BaseTextProps.cpp'), /textAttributes\.fontSizeMultiplier = convertRawProp\([\s\S]*?"fontSizeMultiplier"/);
++  assert.match(source('ParagraphShadowNode.cpp'), /textAttributes\.fontSizeMultiplier = layoutContext\.fontSizeMultiplier;\s*textAttributes\.apply\(getConcreteProps\(\)\.textAttributes\)/);
++  assert.match(source('TextAttributes.cpp'), /fontSizeMultiplier = !std::isnan\(textAttributes\.fontSizeMultiplier\)\s*\? textAttributes\.fontSizeMultiplier\s*: fontSizeMultiplier/);
++  assert.match(source('conversions.h'), /TA_KEY_FONT_SIZE_MULTIPLIER, textAttributes\.fontSizeMultiplier/);
++  assert.match(source('TextAttributeProps.kt'), /TA_KEY_FONT_SIZE_MULTIPLIER -> \{\}/);
++  assert.match(source('TextAttributeProps.kt'), /if \(allowFontScaling\)[\s\S]*?toPixelFromSP\(fontSize, maxFontSizeMultiplier\)/);
++  assert.match(source('TextAttributeProps.kt'), /else ceil\(toPixelFromDIP\(fontSize\)/);
++  assert.match(source('PixelUtil.kt'), /TypedValue\.applyDimension\(TypedValue\.COMPLEX_UNIT_SP/);
++});
+diff --git a/mobile/tests/scale-text.test.mjs b/mobile/tests/scale-text.test.mjs
+index 47b07564..3d886667 100644
+--- a/mobile/tests/scale-text.test.mjs
++++ b/mobile/tests/scale-text.test.mjs
+@@ -68,7 +68,9 @@ test('native host follows actual scale; all caller props, children and callback
+     assert.equal(element.type, native); assert.equal(element.key, scale);
+     assert.equal(element.props.ref, ref);
+     for (const key of Object.keys(props)) assert.equal(element.props[key], props[key], key);
+-    assert.equal(Object.keys(element.props).length, Object.keys(props).length + 1);
++    assert.equal(Object.keys(element.props).length, Object.keys(props).length + (platform === 'android' ? 2 : 1));
++    if (platform === 'android') assert.equal(element.props.fontSizeMultiplier, scale);
++    else assert.equal('fontSizeMultiplier' in element.props, false);
+   }
+ });
+ 
+@@ -79,5 +81,6 @@ test('web host key stays stable across font and viewport changes; default scalin
+     assert.equal(element.key, 'web'); assert.equal(element.props.ref, ref);
+     assert.equal('allowFontScaling' in element.props, false);
+     assert.equal('style' in element.props, false);
++    assert.equal('fontSizeMultiplier' in element.props, false);
+   }
+ });

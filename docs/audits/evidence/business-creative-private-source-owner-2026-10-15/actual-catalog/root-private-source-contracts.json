@@ -1,0 +1,128 @@
+{
+  "at": "2026-10-15T22:30:24.35306+00:00",
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "name": "bizpage_get",
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "schema": "public",
+      "body_md5": "762e9d53fd0808287f467b1beb43b577",
+      "identity": "p_workspace uuid, p_listing uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.bizpage_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\nBEGIN\n  PERFORM zoi.assert_ws(p_workspace);\n  IF NOT zoi.bizpage_can_edit(p_workspace,p_listing) THEN RAISE EXCEPTION 'no_access_to_listing'; END IF;\n  RETURN (SELECT jsonb_build_object('id',l.id,'name',l.name,'slug',l.slug,'path',COALESCE(l.canonical_path,'/p/'||l.slug),\n    'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n    'hours',l.hours,'price_range',l.price_range,'photo_url',l.photo_url,'social_links',COALESCE(l.social_links,'{}'::jsonb))\n    FROM zoi.listings l WHERE l.id=p_listing);\nEND;$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "name": "home_content_get",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "public",
+      "body_md5": "45e1ecd88333050e701874d52be24fd9",
+      "identity": "p_workspace uuid, p_listing uuid",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_content_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nBEGIN RETURN zoi.home_content_get_before_revision(p_workspace,p_listing)||jsonb_build_object('home_revision_schema',1,'home_revision_staged',EXISTS(SELECT 1 FROM zoi.home_designs WHERE workspace_id=p_workspace AND listing_id=p_listing AND staged));END $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "name": "home_revision_baseline",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "schema": "zoi",
+      "body_md5": "51700e905fd87e5c95967bd0a044baec",
+      "identity": "l zoi.listings",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_revision_baseline(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(zoi.home_content_version(l),to_jsonb(l)->'name',to_jsonb(l)->'entity_type',to_jsonb(l)->'primary_category_id',to_jsonb(l)->'slug',to_jsonb(l)->'canonical_path',to_jsonb(l)->'address',to_jsonb(l)->'city',to_jsonb(l)->'region',to_jsonb(l)->'country',to_jsonb(l)->'place_id',to_jsonb(l)->'latitude',to_jsonb(l)->'longitude',to_jsonb(l)->'publish_status',to_jsonb(l)->'moderation_status',to_jsonb(l)->'marketplace_status')::text);\n$function$\n",
+      "security_definer": false
+    }
+  ],
+  "home_designs_catalog": {
+    "acl": "{postgres=arwdDxtm/postgres}",
+    "rls": true,
+    "owner": "postgres"
+  },
+  "home_designs_columns": [
+    {
+      "name": "listing_id",
+      "type": "uuid",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "workspace_id",
+      "type": "uuid",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "version",
+      "type": "integer",
+      "default": "0",
+      "not_null": true
+    },
+    {
+      "name": "draft",
+      "type": "jsonb",
+      "default": null,
+      "not_null": true
+    },
+    {
+      "name": "published",
+      "type": "jsonb",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "published_version",
+      "type": "integer",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "updated_at",
+      "type": "timestamp with time zone",
+      "default": "clock_timestamp()",
+      "not_null": true
+    },
+    {
+      "name": "staged",
+      "type": "boolean",
+      "default": "false",
+      "not_null": true
+    },
+    {
+      "name": "draft_content",
+      "type": "jsonb",
+      "default": "'{\"base\": {}, \"profile\": {}}'::jsonb",
+      "not_null": true
+    },
+    {
+      "name": "published_content",
+      "type": "jsonb",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "content_baseline",
+      "type": "text",
+      "default": null,
+      "not_null": false
+    },
+    {
+      "name": "preview_receipt",
+      "type": "jsonb",
+      "default": null,
+      "not_null": false
+    }
+  ],
+  "home_designs_constraints": [
+    "FOREIGN KEY (listing_id) REFERENCES zoi.listings(id)",
+    "PRIMARY KEY (listing_id, workspace_id)",
+    "FOREIGN KEY (workspace_id) REFERENCES zoi.workspaces(id)"
+  ]
+}

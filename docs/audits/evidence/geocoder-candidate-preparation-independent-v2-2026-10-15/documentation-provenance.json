@@ -1,0 +1,45 @@
+{
+  "rejected_api_download": {
+    "requested_url": "https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.pdf",
+    "file": "held-v1-census-api-rejected-response.html",
+    "bytes": 247,
+    "sha256": "bb0ad5dcf879b782e80dec7c7c840c273458002974ece34a06fe7b6b5f5b1721",
+    "pdf_magic": false,
+    "detected_type": "html_request_rejected",
+    "is_api_specification_proof": false,
+    "original_incorrect_pdf_filename": "census-api.pdf",
+    "original_failure_preserved": true
+  },
+  "current_reads": [
+    {
+      "url": "https://www.census.gov/programs-surveys/geography/technical-documentation/complete-technical-documentation/census-geocoder.html",
+      "evidence": "primary-official-web-reader.txt",
+      "read_via": "web tool official extracted document",
+      "scope": "Service supports batches up to10000; TIGER range interpolation can include numbers without structures."
+    },
+    {
+      "url": "https://www2.census.gov/geo/pdfs/maps-data/data/Census_Geocoder_FAQ.pdf",
+      "evidence": "primary-official-web-reader.txt",
+      "read_via": "web tool official PDF extracted document",
+      "scope": "Approximate address ranges, benchmark concepts, known repeated-batch match-count caveat."
+    }
+  ],
+  "api_pdf_current_read": "Official PDF read timed out. No challenge bypass, mirror or alternate retrieval bypass attempted.",
+  "mock_contract": {
+    "endpoint": "https://geocoding.geo.census.gov/geocoder/locations/addressbatch",
+    "benchmark_id": "4",
+    "benchmark_name": "Public_AR_Current",
+    "live_api_contract_verified": false,
+    "live_benchmark_id_name_binding_verified": false,
+    "basis": "Prior offline seed retained for the isolated mock contract only; it is not proved by the247B rejected download. Successful current primary API/metadata proof and provider response provenance remain live-admission gates."
+  },
+  "correction": "V1 incorrectly called HTML a retained API PDF. Original audit/source/evidence unchanged; V2 does not repeat that proof claim.",
+  "external_root_metadata_proof": {
+    "read_by": "root",
+    "timestamp": "2026-10-15T22:29:58Z",
+    "result": "root-census-benchmark-metadata-result.json",
+    "body": "root-census-benchmarks-rejected.body",
+    "sha256": "9129c7ea629b86868a8439d4e009d6874290c45c1a1d89c7329d92bb61806698",
+    "status": "RequestRejected HTML, not benchmark JSON. No address query. Current provider admission externally held; no retry/proxy/challenge bypass."
+  }
+}

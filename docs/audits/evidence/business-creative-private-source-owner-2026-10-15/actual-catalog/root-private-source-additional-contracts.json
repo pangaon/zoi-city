@@ -1,0 +1,81 @@
+{
+  "functions": [
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "48962afd66063e925d2cee6f357985f5",
+      "signature": "home_revision_get(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_revision_get(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;d zoi.home_designs;s jsonb;BEGIN\n actor:=zoi.home_content_authorize(p_workspace,p_listing);s:=public.home_content_get(p_workspace,p_listing);\n SELECT * INTO d FROM zoi.home_designs WHERE workspace_id=p_workspace AND listing_id=p_listing;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'schema_version',1,'staged',coalesce(d.staged,false),'revision',coalesce(d.version,0),'baseline',d.content_baseline,'snapshot',s,'design',coalesce(d.draft,zoi.home_design_default()),'content',coalesce(d.draft_content,'{\"base\":{},\"profile\":{}}'),'items',zoi.home_design_items(p_workspace,p_listing),'can_publish',EXISTS(SELECT 1 FROM zoi.workspace_members WHERE workspace_id=p_workspace AND profile_id=actor AND role IN('owner','admin')),'history',(SELECT coalesce(jsonb_agg(h ORDER BY h.version DESC),'[]') FROM (SELECT version,published_at FROM zoi.home_design_history WHERE workspace_id=p_workspace AND listing_id=p_listing AND content IS NOT NULL ORDER BY version DESC LIMIT 30)h));\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "e16191f11c4e834de43b364ca1256c64",
+      "signature": "home_revision_preview_data(uuid,uuid,integer)",
+      "definition": "CREATE OR REPLACE FUNCTION public.home_revision_preview_data(p_workspace uuid, p_listing uuid, p_revision integer)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE actor uuid;d zoi.home_designs;s jsonb;e jsonb;identity jsonb;token uuid:=gen_random_uuid();BEGIN\n actor:=zoi.home_content_authorize(p_workspace,p_listing);\n SELECT * INTO d FROM zoi.home_designs WHERE listing_id=p_listing AND workspace_id=p_workspace FOR UPDATE;\n IF NOT FOUND OR NOT d.staged OR d.version IS DISTINCT FROM p_revision THEN RAISE EXCEPTION 'home_revision_conflict';END IF;\n s:=public.home_content_get(p_workspace,p_listing);\n IF d.content_baseline IS DISTINCT FROM (SELECT zoi.home_revision_baseline(l)FROM zoi.listings l WHERE l.id=p_listing) THEN RAISE EXCEPTION 'home_revision_source_conflict';END IF;\n SELECT jsonb_build_object('name',l.name,'slug',l.slug,'canonical_slug',l.slug,'address',l.address,'city',l.city,'country',l.country)INTO identity FROM zoi.listings l WHERE l.id=p_listing;\n e:=(s->'base')||identity||(d.draft_content->'base')||jsonb_build_object('id',p_listing,'publish_status','published','marketplace_status','','profile',((s->'profile')-ARRAY(SELECT jsonb_array_elements_text(coalesce(d.draft_content->'profile_remove','[]'))))||(d.draft_content->'profile'),'entity_type',s->>'entity_type','category_slug',s->>'category_slug','owner_content',coalesce(s->'owner_content','{}')||(d.draft_content->'base')||jsonb_build_object('profile',(coalesce(s#>'{owner_content,profile}','{}')-ARRAY(SELECT jsonb_array_elements_text(coalesce(d.draft_content->'profile_remove','[]'))))||(d.draft_content->'profile')));\n IF d.draft_content->>'media_remove'='true' THEN e:=jsonb_set(e,'{profile}',(e->'profile')-'owner_media');END IF;\n IF d.draft_content?'media' THEN e:=jsonb_set(e,'{profile,owner_media}',jsonb_build_object('version',coalesce((s#>>'{profile,owner_media,version}')::integer,0)+1,'items',d.draft_content->'media'));END IF;\n UPDATE zoi.home_designs SET preview_receipt=jsonb_build_object('id',token,'actor',actor,'revision',p_revision,'baseline',d.content_baseline,'expires_at',clock_timestamp()+interval '30 minutes','renderer','home-revision-v1','ready',false)WHERE workspace_id=p_workspace AND listing_id=p_listing;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'revision',p_revision,'preview_id',token,'entity',e,'design',d.draft);\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "cdd352da7228d4c2f09be3db3938f6ac",
+      "signature": "zoi.assert_ws(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.assert_ws(p_ws uuid)\n RETURNS void\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nbegin perform zoi.workspace_current_role(p_ws);end $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": null,
+      "owner": "postgres",
+      "config": [
+        "search_path=zoi, public"
+      ],
+      "body_md5": "41755c2fefb23b87bba8a6d6ab05209d",
+      "signature": "zoi.bizpage_can_edit(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.bizpage_can_edit(p_workspace uuid, p_listing uuid)\n RETURNS boolean\n LANGUAGE sql\n SECURITY DEFINER\n SET search_path TO 'zoi', 'public'\nAS $function$\n  SELECT EXISTS(\n    SELECT 1 FROM zoi.listings l WHERE l.id=p_listing AND l.owner_workspace_id=p_workspace\n    UNION ALL\n    SELECT 1 FROM zoi.listing_claims c WHERE c.listing_id=p_listing AND c.workspace_id=p_workspace AND c.claim_status IN ('approved','verified')\n  );\n$function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "2b9a5b832ee37571131cfadc1a9b8975",
+      "signature": "zoi.home_content_get_before_revision(uuid,uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_get_before_revision(p_workspace uuid, p_listing uuid)\n RETURNS jsonb\n LANGUAGE plpgsql\n SECURITY DEFINER\n SET search_path TO ''\nAS $function$\nDECLARE l zoi.listings;p jsonb;\nBEGIN PERFORM zoi.home_content_authorize(p_workspace,p_listing);SELECT * INTO l FROM zoi.listings WHERE id=p_listing;\n p:=coalesce(l.profile,'{}')-'_coverage';IF p?'_enrich' THEN p:=jsonb_set(p,'{_enrich}',(p->'_enrich')-'lease');END IF;\n RETURN jsonb_build_object('ok',true,'workspace_id',p_workspace,'listing_id',p_listing,'version',zoi.home_content_version(l),'base',public.bizpage_get(p_workspace,p_listing),'profile',p,'owner_content',coalesce(zoi.public_owner_content(l.id),'{}'::jsonb),'entity_type',l.entity_type,'category_slug',(SELECT slug FROM zoi.categories WHERE id=l.primary_category_id));\nEND $function$\n",
+      "security_definer": true
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "a886a454670dd1b27164734df60b5c1a",
+      "signature": "zoi.home_content_version(zoi.listings)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.home_content_version(l zoi.listings)\n RETURNS text\n LANGUAGE sql\n STABLE\n SET search_path TO ''\nAS $function$\n SELECT md5(jsonb_build_array(l.description,l.phone,l.email,l.website,l.hours,l.price_range,l.photo_url,l.social_links,l.owner_workspace_id,(coalesce(l.profile,'{}')-'_coverage'-'_geo'-'_meta'-'_enrich'),coalesce(l.profile->'_enrich','{}')-'lease')::text)\n$function$\n",
+      "security_definer": false
+    },
+    {
+      "acl": "{postgres=X/postgres}",
+      "owner": "postgres",
+      "config": [
+        "search_path=\"\""
+      ],
+      "body_md5": "3e0c2c40cb341e3c72aed3dadf30cfd1",
+      "signature": "zoi.public_owner_content(uuid)",
+      "definition": "CREATE OR REPLACE FUNCTION zoi.public_owner_content(p_listing uuid)\n RETURNS jsonb\n LANGUAGE sql\n STABLE SECURITY DEFINER\n SET search_path TO ''\nAS $function$\n SELECT CASE WHEN l.updated_by='suite-bizpage' THEN jsonb_build_object(\n 'description',l.description,'phone',l.phone,'email',l.email,'website',l.website,\n 'photo_url',l.photo_url,'social_links',coalesce(l.social_links,'{}'::jsonb))\n ELSE '{}'::jsonb END\n || CASE WHEN l.profile#>>'{_meta,updated_by}'='owner' THEN jsonb_build_object('profile',\n coalesce((SELECT jsonb_object_agg(k,v) FROM jsonb_each(l.profile) x(k,v)\n WHERE k IN ('photos','bio','spotify_url','apple_music_url','youtube_url','bandcamp_url','soundcloud_url','booking_name','booking_email','press','press_kit_url','merch','embeds','releases','tour','event_publicity','rooms','dining','venues','amenities')),'{}'::jsonb))\n ELSE '{}'::jsonb END FROM zoi.listings l WHERE l.id=p_listing;\n$function$\n",
+      "security_definer": true
+    }
+  ]
+}

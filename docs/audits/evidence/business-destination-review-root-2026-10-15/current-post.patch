@@ -1,0 +1,82 @@
+--- frozen-before/assets/suite/calendar.js
++++ root-current/assets/suite/calendar.js
+@@ -1423,12 +1423,17 @@
+         try{var reviewModule=await import('/assets/suite/delivery-review.mjs?v=20261014-durable-attempts');if(scopeActive()&&reviewHost.isConnected)reviewModule.mountDeliveryReview(reviewHost,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive});}catch(error){if(scopeActive()&&reviewHost.isConnected)reviewHost.textContent='Delivery review is not available in this release.';}
+       });
+       if(post.meta&&post.meta.business_creative){
++        var adoptCurrentPost=function(current){
++          if(!scopeActive()||!current||current.id!==post.id||current.workspace_id!==workspaceAtMount)return;
++          post=current;
++          state.posts=state.posts.map(function(row){return row.id===current.id?current:row;});
++        };
+         var destinationButton=doc.createElement('button');destinationButton.type='button';destinationButton.className='zk-btn';destinationButton.textContent='Review destinations';
+         m.foot.prepend(destinationButton);
+         destinationButton.addEventListener('click',async function(){
+           if(!scopeActive()||m.body.querySelector('[data-destination-review]'))return;
+           var host=doc.createElement('section');host.setAttribute('data-destination-review','');m.body.appendChild(host);
+-          try{var destinations=await import('/assets/studio/business-destination-review.mjs?v=20261015');if(scopeActive()&&host.isConnected)destinations.mountDestinationReview(host,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive,onPrepared:function(current){if(scopeActive()&&current&&current.id===post.id){post=current;destinationButton.hidden=true;destinationButton.style.display='none';toast('Saved as a Zoi Community draft. Nothing was sent.');}}});}
++          try{var destinations=await import('/assets/studio/business-destination-review.mjs?v=20261015');if(scopeActive()&&host.isConnected)destinations.mountDestinationReview(host,{C:C,workspace:workspaceAtMount,postId:post.id,active:scopeActive,onCurrentPost:adoptCurrentPost,onPrepared:function(current){if(scopeActive()&&current&&current.id===post.id){adoptCurrentPost(current);destinationButton.hidden=true;destinationButton.style.display='none';toast('Saved as a Zoi Community draft. Nothing was sent.');}}});}
+           catch(error){if(scopeActive()&&host.isConnected)host.textContent='Destination review could not load. Your saved draft is unchanged. Reopen this post to try again.';}
+         });
+       }
+--- frozen-before/assets/studio/business-destination-review.mjs
++++ root-current/assets/studio/business-destination-review.mjs
+@@ -8,7 +8,7 @@
+  if(localMessages.includes(text))return text;
+  for(const [code,message] of Object.entries({
+   business_destination_media_review_required:'Use text only by removing the image, or create a supported image in Image layout before reviewing destinations.',
+-  business_destination_source_changed:'Published business details changed. Reopen the private draft and review the current business details first.',
++  business_destination_source_changed:'Business details changed. Reopen the private draft and review the current business details first.',
+   business_destination_version_conflict:'This post changed elsewhere. Reopen it and review the current draft before continuing.',
+   business_destination_not_private:'This post already has a destination or schedule. Open its current version in Calendar.',
+   business_destination_context_invalid:'This business draft could not be confirmed. Reopen it from Calendar.',
+@@ -55,7 +55,7 @@
+   clearPrivate:()=>{savePayload=null;try{storage.removeItem(key);}catch{}}
+  };
+ }
+-export function mountDestinationReview(host,{C,workspace,postId,active=()=>true,onPrepared=()=>{},storage=globalThis.localStorage,locks=globalThis.navigator?.locks,workflow:providedWorkflow}={}){
++export function mountDestinationReview(host,{C,workspace,postId,active=()=>true,onPrepared=()=>{},onCurrentPost=()=>{},storage=globalThis.localStorage,locks=globalThis.navigator?.locks,workflow:providedWorkflow}={}){
+  const doc=host.ownerDocument,scope=creativeScope(C);let ended=false,busy=false,context=null;
+  host.style.cssText='display:grid;gap:10px;padding:16px;border:1px solid var(--bdr,var(--line));border-radius:14px;min-width:0';
+  const live=()=>!ended&&host.isConnected&&active()&&creativeScope(C)===scope;
+@@ -66,6 +66,7 @@
+  // successor view's same-post recovery marker. The marker contains no copy.
+  function destroy(){if(ended)return;ended=true;clearInterval(timer);workflow.releaseCopy();host.replaceChildren();context=null;}
+  const timer=setInterval(()=>{if(!live())destroy();},250);
++ function acceptContext(value){context=value;if(live()&&context?.source_current)onCurrentPost(copy(context.post));}
+  function render(message=''){
+   if(!live())return;host.replaceChildren();host.append(el('h3',context?.stage==='reviewed'?'Zoi Community draft':'Review destinations'),el('p',context?.stage==='reviewed'?'Saved privately. Not scheduled or published.':'Choose where to prepare this draft. Nothing is scheduled or sent.'));
+   if(message){const p=el('p',message);p.setAttribute('role','status');host.append(p);}
+@@ -73,11 +74,11 @@
+   const button=(label,fn)=>{const b=el('button',label);b.type='button';b.className='zk-btn zc-btn';b.disabled=busy;b.onclick=()=>act(fn);host.append(b);};
+   if(pending){host.append(el('p','The previous review is unconfirmed. Checking or retrying keeps its original saved post and review reference.'));button('Check saved result',()=>workflow.recover());button(pending.kind==='save'?'Retry original draft save':'Retry original review',()=>workflow.retry());button('Cancel if not saved',()=>workflow.recover(true));return;}
+   if(context?.stage==='private'){
+-   if(!context.source_current){host.append(el('p','Published business details changed. Reopen the private draft and review the current details.'));return;}
++   if(!context.source_current){host.append(el('p','Business details changed. Reopen the private draft and review the current details.'));return;}
+    button('Prepare Zoi Community draft',()=>workflow.prepare(context));
+   }else if(context?.stage==='reviewed')host.append(el('p','Edit this draft in Composer. Publishing and scheduling are not available yet.'));
+  }
+- async function act(fn){if(busy||!live())return;busy=true;render('Checking the saved draft…');try{const result=await fn();if(!live())return;if(result.state==='saved'){context=await workflow.context();if(!live())return;if(context.stage!=='reviewed'||!context.source_current){render('The saved result is recorded, but current business details need review. Reopen the draft from Calendar before editing.');return;}await onPrepared(context.post,result);if(!live())return;render(result.current_matches_snapshot?'Destination saved.':'The original review was saved; this post has since changed. Its current version is shown.');}else if(result.state==='cancelled'){context=await workflow.context();render('The unsaved review was cancelled. Your saved post is unchanged. You can edit its image or text before reviewing destinations again.');}else{if(result.state==='removed')context=null;render(result.state==='removed'?'This saved post was removed. It was not recreated.':'No saved result is confirmed yet. Retry the original review.');}}catch(e){if(live()){if([401,403].includes(Number(e.status))||/not_authorized|insufficient_permission|suite_session_unavailable|no_access_to/.test(String(e.message))){destroy();return;}render(destinationError(e));}}finally{busy=false;if(live())for(const b of host.querySelectorAll('button'))b.disabled=false;}}
+- render('Reading the saved draft…');workflow.context().then(value=>{if(live()){context=value;render();}}).catch(e=>{if(live())render(destinationError(e));});
++ async function act(fn){if(busy||!live())return;busy=true;render('Checking the saved draft…');try{const result=await fn();if(!live())return;if(result.state==='saved'){acceptContext(await workflow.context());if(!live())return;if(context.stage!=='reviewed'||!context.source_current){render('The saved result is recorded, but current business details need review. Reopen the draft from Calendar before editing.');return;}await onPrepared(context.post,result);if(!live())return;render(result.current_matches_snapshot?'Destination saved.':'The original review was saved; this post has since changed. Its current version is shown.');}else if(result.state==='cancelled'){acceptContext(await workflow.context());render('The unsaved review was cancelled. Your saved post is unchanged. You can edit its image or text before reviewing destinations again.');}else{if(result.state==='removed')context=null;render(result.state==='removed'?'This saved post was removed. It was not recreated.':'No saved result is confirmed yet. Retry the original review.');}}catch(e){if(live()){if([401,403].includes(Number(e.status))||/not_authorized|insufficient_permission|suite_session_unavailable|no_access_to/.test(String(e.message))){destroy();return;}render(destinationError(e));}}finally{busy=false;if(live())for(const b of host.querySelectorAll('button'))b.disabled=false;}}
++ render('Reading the saved draft…');workflow.context().then(value=>{if(live()){acceptContext(value);render();}}).catch(e=>{if(live())render(destinationError(e));});
+  return {destroy,workflow,refresh:()=>render()};
+ }
+--- frozen-before/tests/database/business-destination-review.browser.mjs
++++ root-current/tests/database/business-destination-review.browser.mjs
+@@ -41,7 +41,14 @@
+   if(width===390){await page.getByRole('button',{name:'Check saved result',exact:true}).waitFor();await page.reload();await page.waitForFunction(()=>window.ready);await page.locator('[data-view=list]').click();await page.getByText(draft.post.body,{exact:true}).click();await page.getByRole('button',{name:'Review destinations',exact:true}).click();await page.getByRole('button',{name:'Check saved result',exact:true}).click();}
+   await page.getByText('Saved as a Zoi Community draft. Nothing was sent.',{exact:true}).first().waitFor();await page.screenshot({path:join(dest,width+'-prepared.png'),fullPage:true});
+   let saved=json(`select public.business_creative_destinations_context('${ws}','${post}')`);assert.equal(saved.post.id,post);assert.deepEqual(saved.post.channels,['zoi']);assert.equal(saved.post.scheduled_at,null);
+-  for(const role of ['edit','dup','rp7','rp30'])assert.equal(await page.locator('[data-role='+role+']').isDisabled(),true);await page.getByRole('button',{name:'Edit in Composer',exact:true}).click();await page.locator('.zc-ta').waitFor();await page.waitForFunction(()=>document.querySelector('.zc-ta').value.startsWith('Reviewed owner copy'));
++  for(const role of ['edit','dup','rp7','rp30'])assert.equal(await page.locator('[data-role='+role+']').isDisabled(),true);
++  if(width===1440){
++   await page.keyboard.press('Escape');
++   await page.getByText(draft.post.body,{exact:true}).click();
++   await page.getByRole('button',{name:'Review destinations',exact:true}).click();
++   await page.getByText('Saved privately. Not scheduled or published.',{exact:true}).waitFor();
++  }
++  await page.getByRole('button',{name:'Edit in Composer',exact:true}).click();await page.locator('.zc-ta').waitFor();await page.waitForFunction(()=>document.querySelector('.zc-ta').value.startsWith('Reviewed owner copy'));
+   assert.equal(await page.locator('[data-role=publish]').isDisabled(),true);assert.equal(await page.locator('[data-role=schedule]').isDisabled(),true);assert.equal(await page.locator('.zc-chip.on').count(),1);await page.locator('.zc-ta').fill('Reviewed owner edit · Ελληνικά '+width);await page.locator('[data-role=draft]').click();
+   if(width===390){await page.getByRole('button',{name:'Retry original draft save',exact:true}).waitFor();await page.locator('.zc-ta').fill('Later unconfirmed changed form');await page.getByRole('button',{name:'Retry original draft save',exact:true}).click();}
+   if(width===1440)await page.getByText('Draft saved.',{exact:true}).waitFor();await page.waitForFunction(({text})=>document.querySelector('.zc-ta').value===text,{text:'Reviewed owner edit · Ελληνικά '+width});
