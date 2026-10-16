@@ -1,0 +1,102 @@
+{
+  "schema": 1,
+  "at": "2026-10-16T03:23:48.276399+00:00",
+  "reviewer": "atomic_review",
+  "verdict": "ACCEPTED_THIN_SOURCE_INTEGRATION",
+  "root_tree": "/workspaces/zoi-map-studio-ops-release",
+  "accepted_V2_review": {
+    "path": "/home/codespace/.cache/zoi/native-service-offerings-v2-independent-20261016/review.json",
+    "sha256": "7fdb9ecf27fbca97be521310adab8f38537d1156ca9ee5fff17dc5543ce5f047"
+  },
+  "source_pins": [
+    {
+      "path": "mobile/src/profile.ts",
+      "sha256": "d73c0ed68c422711887b55c762cd4866279fe67deb806fa86b081d2ca5541906",
+      "accepted_v2_sha256": "d73c0ed68c422711887b55c762cd4866279fe67deb806fa86b081d2ca5541906",
+      "exact_v2": true
+    },
+    {
+      "path": "mobile/src/serviceOfferings.ts",
+      "sha256": "28802273f5125da6b79ffb57fba6d805e650c4d0ab55f163c03a41bd39986470",
+      "accepted_v2_sha256": "28802273f5125da6b79ffb57fba6d805e650c4d0ab55f163c03a41bd39986470",
+      "exact_v2": true
+    },
+    {
+      "path": "mobile/src/ServiceOfferings.tsx",
+      "sha256": "77eed7aa61916a077c35494580c7d69444156795f8204020cec245d18ed482bb",
+      "accepted_v2_sha256": "77eed7aa61916a077c35494580c7d69444156795f8204020cec245d18ed482bb",
+      "exact_v2": true
+    },
+    {
+      "path": "mobile/tests/service-offerings.test.mjs",
+      "sha256": "d16b266e3fbe00006096da2f8bc235fe78083e2f8372f8cb7718e8ca8e331fee",
+      "accepted_v2_sha256": "d16b266e3fbe00006096da2f8bc235fe78083e2f8372f8cb7718e8ca8e331fee",
+      "exact_v2": true
+    },
+    {
+      "path": "mobile/tests/browser/service-offerings.mjs",
+      "sha256": "4570fab535f24f2bd046a26f70cae56c0e2b366b57f9c36629c25188d8366870",
+      "accepted_v2_sha256": "0380294880f153f81167341b4153d9af9e898898bbf91e5697727278397d26bf",
+      "exact_v2": false
+    },
+    {
+      "path": "mobile/src/Profile.tsx",
+      "sha256": "7212fc14bcc4b8c97be76841f8cc61d2b8c1da06f88e44629b5e63a3b940fba9"
+    },
+    {
+      "path": "mobile/tests/fixtures/native-text-import-sites.json",
+      "sha256": "5858ec6dabf900b138875704b29e50d1e1eed7171312509d570e09a8a46191ee"
+    }
+  ],
+  "wiring": "Actual Profile adds ServiceOfferings import and replaces only old flattened services panel. Reversing these two edits restores reviewed preintegration Profile byte-for-byte. Booking/actions and all other route/UI source unchanged by this diff.",
+  "browser_binding": {
+    "actual_integrated_Profile_mounted": true,
+    "in_memory_source_rewrite_removed": true,
+    "customer_layout_assertions_unchanged": 17,
+    "only_removed_assertion": "obsolete prerequisite requiring legacy source to exist",
+    "route_Auth_boundary": "Existing controlled unrelated panels remain; home_entity is synthetic."
+  },
+  "Text_fixture": {
+    "runtime_sites": 54,
+    "unrelated_sites_unchanged": 53,
+    "Profile_nodes": "31\u219229",
+    "total_nodes": "1194\u21921192",
+    "prior_hash_and_review_history_preserved": true,
+    "new_component_global_import_guard_passes": true
+  },
+  "validation": {
+    "independent_scale_guard_tests": 4,
+    "failed": 0,
+    "root_controlled_actual_Profile_cases": 11,
+    "root_result_path": "/home/codespace/.cache/zoi/native-offerings-root-integrated-20261016/result.json",
+    "root_result_sha256": "dc82765bd7072e7d5cca59fd9bd3eeda9506ceee8d57385b2f50a1db5a475457",
+    "minimum_leaf_text_contrast": 5.895510814963796,
+    "root_focused26": "Root-reported pass; unchanged product22 tests not redundantly repeated.",
+    "root_TypeScript_and_all_mobile_gate": "Root owns remaining integration checks; latest status in progress, not asserted passed by reviewer."
+  },
+  "release_limits": [
+    "Source integration acceptance only. No iOS/Android artifact or installed founder-device/customer-journey acceptance.",
+    "Existing2.0.0(2) binary lacks these offerings. Root now reports Apple app-removal restriction prevents current TestFlight availability; this source review makes no distribution availability claim.",
+    "Only TestFlight delivery remains in root scope; no private fallback.",
+    "No source edits, credential/API/provider writes, builds, dependency installs or worktrees by reviewer. No new browser matrix rerun; root completed11case proof inspected locally."
+  ],
+  "next": "Root protected release and separately authorized native artifact/TestFlight/device gates.",
+  "provenance_label_correction": {
+    "resolved": true,
+    "helper_sha256": "4570fab535f24f2bd046a26f70cae56c0e2b366b57f9c36629c25188d8366870",
+    "original_result": {
+      "path": "/home/codespace/.cache/zoi/native-offerings-root-integrated-20261016/result-original-label.json",
+      "sha256": "75c2018ffa056d75e5021f9b79afba724224ae77a7857580d32a14f38e18157b"
+    },
+    "corrected_result": {
+      "path": "/home/codespace/.cache/zoi/native-offerings-root-integrated-20261016/result.json",
+      "sha256": "dc82765bd7072e7d5cca59fd9bd3eeda9506ceee8d57385b2f50a1db5a475457"
+    },
+    "metadataCorrection": {
+      "reason": "Correct the stale label; this run already mounted the actual integrated Profile without source rewriting. Assertions and executed runtime are unchanged.",
+      "originalSha256": "75c2018ffa056d75e5021f9b79afba724224ae77a7857580d32a14f38e18157b"
+    },
+    "assertion_or_runtime_change": false,
+    "results_array_deep_equal": true
+  }
+}

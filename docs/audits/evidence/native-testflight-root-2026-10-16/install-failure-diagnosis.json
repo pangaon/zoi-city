@@ -1,0 +1,158 @@
+{
+  "at": "2026-10-16T03:00:46.082992+00:00",
+  "outcome": "APPLE_API_ELIGIBLE_BUT_ACTUAL_IPHONE_INSTALL_FAILED",
+  "actualUserError": "Could not install Zoi. The requested app is not available or doesn\u2019t exist.",
+  "userRetry": "Force-close/reopen TestFlight and exact2.0.0(2) retry produced same error per parent.",
+  "deviceModel": null,
+  "deviceIosVersion": null,
+  "ipaSha256": "27a3f4ef03dd820baf641bbd071091de2bff9973f99dca706c8e44cd4a071115",
+  "bundle": "com.usgreekscan.zoi",
+  "marketingVersion": "2.0.0",
+  "buildNumber": "2",
+  "artifactCompatibility": {
+    "architectures": [
+      "arm64"
+    ],
+    "machoBinaries": 11,
+    "allMachOPlatformsIOS": true,
+    "mainLoadCommandMinimumOS": "16.4.0",
+    "infoPlistMinimumOS": "16.4",
+    "deviceFamily": [
+      1,
+      2
+    ],
+    "requiredCapabilities": [
+      "arm64"
+    ],
+    "supportedPlatforms": [
+      "iPhoneOS"
+    ],
+    "allCodeDirectoryPageHashesVerified": true,
+    "mainExecutableCmsSignatureVerifiedWithoutTrustChainOrRevocationValidation": true,
+    "signedEntitlements": {
+      "application-identifier": "37PQQA48VG.com.usgreekscan.zoi",
+      "beta-reports-active": true,
+      "com.apple.developer.team-identifier": "37PQQA48VG",
+      "get-task-allow": false
+    },
+    "profileExpires": "2027-04-25T15:23:07",
+    "distributionCertificateExpires": "2027-04-25T15:23:07Z"
+  },
+  "postFailureAppleState": {
+    "app": "1464901778",
+    "version": "2.0.0",
+    "build": "2",
+    "acceptedBuildId": "cc743714-121b-4261-a2bb-9d167f19f9fb",
+    "processingState": "VALID",
+    "expired": false,
+    "betaDetails": [
+      {
+        "autoNotifyEnabled": true,
+        "internalBuildState": "IN_BETA_TESTING",
+        "externalBuildState": "READY_FOR_BETA_SUBMISSION",
+        "readyForInternalTesting": false
+      }
+    ],
+    "internalGroup": {
+      "id": "916c4b58-01a9-4173-a4b1-28390eea7a54",
+      "name": "App\u00a0Store Connect Users",
+      "hasAccessToAllBuilds": true,
+      "publicLinkEnabled": false,
+      "testerCount": 3,
+      "testerStates": [
+        "INSTALLED",
+        "INVITED"
+      ],
+      "exactBuildAssigned": true
+    },
+    "testable": true,
+    "noNewGroupsOrTesters": true
+  },
+  "distributionObservation": {
+    "app": "1464901778",
+    "availabilityHttp": 200,
+    "availabilityAttributes": {
+      "availableInNewTerritories": true
+    },
+    "territoryHttp": 200,
+    "territoryCount": 175,
+    "hasMore": false,
+    "territoryAttributeCounts": {
+      "available=true": 175,
+      "releaseDate=\"2019-06-12\"": 175,
+      "preOrderEnabled=false": 175,
+      "preOrderPublishDate=null": 175,
+      "contentStatuses=[\"CANNOT_SELL\"]": 148,
+      "contentStatuses=[\"TRADER_STATUS_NOT_PROVIDED\",\"CANNOT_SELL\"]": 27
+    },
+    "selectedTerritories": [
+      {
+        "territory": "USA",
+        "attributes": {
+          "available": true,
+          "releaseDate": "2019-06-12",
+          "preOrderEnabled": false,
+          "preOrderPublishDate": null,
+          "contentStatuses": [
+            "CANNOT_SELL"
+          ]
+        },
+        "territoryFromServerEncodedResourceIdentifier": true
+      },
+      {
+        "territory": "GRC",
+        "attributes": {
+          "available": true,
+          "releaseDate": "2019-06-12",
+          "preOrderEnabled": false,
+          "preOrderPublishDate": null,
+          "contentStatuses": [
+            "TRADER_STATUS_NOT_PROVIDED",
+            "CANNOT_SELL"
+          ]
+        },
+        "territoryFromServerEncodedResourceIdentifier": true
+      },
+      {
+        "territory": "CAN",
+        "attributes": {
+          "available": true,
+          "releaseDate": "2019-06-12",
+          "preOrderEnabled": false,
+          "preOrderPublishDate": null,
+          "contentStatuses": [
+            "CANNOT_SELL"
+          ]
+        },
+        "territoryFromServerEncodedResourceIdentifier": true
+      }
+    ],
+    "agreementsApi": "Installed official SDK requires Apple web-session/provider; existing managed JWT does not expose that web-session authority. No login or agreement mutation attempted."
+  },
+  "interpretation": {
+    "confirmed": "Build remainsVALID/nonexpired/IN_BETA_TESTING with exactexistinginternalgroupassignment. Configuredterritoryavailabilitytrue175; underlyingcontentStatusesCANNOT_SELL175 and additionallyTRADER_STATUS_NOT_PROVIDED27. TerritoryreleaseDate2019-06-12. APIexposesno more specificCANNOT_SELLreason inthese resources.",
+    "notEstablished": [
+      "CANNOT_SELL/traderflags are not proved cause of TestFlightfailure; unreleasedapps may also have CANNOT_SELL.",
+      "No appbinary compatibility/signingdefect has been established fromthis artifact. Phone/iOS stillunknown.",
+      "SDKcomputedtestable:true means APIeligibility only; actualinstallationfailed and overridesreadinessclaim.",
+      "No Apple TestFlightinstallendpoint/device-download diagnostic is exposed through existingAppStoreConnectJWT reads used here.",
+      "DeveloperProgrammembership/agreementstatus not verified: installedSDKgetAgreementsAsync requiresseparateApplewebsession/provider; no newloginattempted.",
+      "The EASIPA is the uploadartifact; Apple\u2019s re-signed device-specificTestFlightdownloadbytes were not available for inspection."
+    ]
+  },
+  "providerActions": "Read-only boundedAppStoreConnectGETs; no rebuild/resubmit/config/group/invitation/agreement changes.",
+  "evidence": {
+    "install-compatibility-probe.py": "54a70adc517934ac7eb9c81998598d93b2e5a922f5a39166607f8cacd56cbb2a",
+    "install-compatibility-artifact.json": "91ceef0f53c8ba702502bfdcbccf3f814edcf22b738db2552b8cd10461f47f52",
+    "install-info-plist.json": "8126d897b28659e81fae55ece41fc09df851a20166507847b71bd1a0c3a562be",
+    "executable-signature-verification.log": "25b50603c259a4e3172ed0f6315497daa374b9935c92d78abcd3d2e2dce2b97e",
+    "post-install-failure-apple-availability.json": "e6e160814f74627f8bfab596766906047d4655b7b3fb3e0a239660f1d518f4e0",
+    "install-distribution-private.json": "06004ece01b73fbcb5bdd66111b9fcb6d83d388802fc8edbe61135d3bd7b80e9",
+    "install-distribution-summary.json": "3a1bac51ba0385b89195ba22d9e062efa5db2c89f6950b75685cd9bb1947cdaf"
+  },
+  "relevantOfficialSupportLinks": [
+    "https://developer.apple.com/forums/thread/849154",
+    "https://developer.apple.com/forums/thread/814565",
+    "https://developer.apple.com/help/app-store-connect/manage-agreements/view-agreements-status"
+  ]
+}

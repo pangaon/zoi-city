@@ -1,0 +1,22 @@
+{
+  "verdict": "ACCEPTED_SOURCE_ONLY",
+  "reviewer": "atomic_review independent of root author",
+  "at_utc": "2026-10-16T03:55:12.398652+00:00",
+  "source_sha256": {
+    "scripts/check-source-credentials.mjs": "b633f6515cf30d6536f150f199e334cebf4dd391df6754237cb7f48a6081a2c1",
+    "tests/unit/source-credentials.test.mjs": "52db646f62c88ecc7539fabf9b7a3992b665a6fb22e9e306ae7b740134e0102f"
+  },
+  "baseline_sha256": {
+    "scripts/check-source-credentials.mjs": "d4623df3f294486ef8b3bdb86feb885b5663361a75f6e7144f47410a24c36128",
+    "tests/unit/source-credentials.test.mjs": "4d2b6d542a3c1db222688732b8e3c6e8583b10abe09278abe50a309c81af2e10"
+  },
+  "findings": [],
+  "evidence": {
+    "diff": "exact one production line uses existing bounded32MiB Git helper; error sanitized through existing credential_git_read_failed catch. No scanner pattern or file-selection changes.",
+    "test_integrity": "Entire preexisting test file remains byte-exact prefix; only new long-path regression appended.",
+    "focused_run": "node --test --test-name-pattern=path list larger tests/unit/source-credentials.test.mjs; exit0,1pass,0fail,150.237ms test/218.933ms total",
+    "independent_probe": "Actual temporary Git index with6000long paths and materialized synthetic tail; original default-buffer call reproduces ENOBUFS. New scanner checks6001entries and tail metadata in both modes. Temp fixture cleaned, no synthetic values emitted.",
+    "unchanged_tests": "Large64MiB cases not repeated; parent/hosted gate owns full suite."
+  },
+  "limits": "32MiB remains finite fail-closed bound, not unlimited index support. Source review only; no real credential reads, API/provider writes or product edits."
+}

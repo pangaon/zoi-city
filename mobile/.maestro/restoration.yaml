@@ -1,0 +1,57 @@
+# Real standalone iOS simulator UI only. No GPS, login, cart, order or send.
+appId: com.usgreekscan.zoi
+name: Zoi restoration screenshots and first launch
+---
+- launchApp:
+    clearState: true
+    permissions:
+      all: deny
+- extendedWaitUntil:
+    visible: 'Skip welcome and explore Zoi'
+    timeout: 15000
+- assertVisible: 'No location access is needed to explore.'
+- takeScreenshot: 01-welcome
+- tapOn: 'Skip welcome and explore Zoi'
+- extendedWaitUntil:
+    visible: 'Find your Greek connection'
+    timeout: 15000
+- takeScreenshot: 02-home
+- tapOn: 'Explore the map'
+- extendedWaitUntil:
+    visible: 'Expand map'
+    timeout: 20000
+- assertVisible: 'Zoi street-level places map'
+- takeScreenshot: 03-map
+- tapOn: 'Expand map'
+- assertVisible: 'Close expanded map'
+- assertNotVisible: 'All sections'
+- takeScreenshot: 04-map-expanded
+- tapOn: 'Close expanded map'
+- assertVisible: 'Expand map'
+- assertVisible: 'All sections'
+- tapOn: 'Zoi home'
+- scrollUntilVisible:
+    element:
+      text: 'Shop BuyGreek marketplace'
+    direction: DOWN
+    timeout: 10000
+- tapOn: 'Shop BuyGreek marketplace'
+- assertVisible: 'buygreek.shop · Official store'
+- extendedWaitUntil:
+    notVisible: 'Opening BuyGreek…'
+    timeout: 30000
+- assertNotVisible: 'The store could not load.*'
+- assertNotVisible: 'Taking longer than usual.*'
+- assertVisible: 'Cart and checkout by BuyGreek.'
+- takeScreenshot: 05-buygreek
+- tapOn: 'Close store'
+- assertVisible: 'Find your Greek connection'
+- stopApp
+- launchApp:
+    clearState: false
+    permissions:
+      all: deny
+- extendedWaitUntil:
+    visible: 'Find your Greek connection'
+    timeout: 15000
+- assertNotVisible: 'Skip welcome and explore Zoi'

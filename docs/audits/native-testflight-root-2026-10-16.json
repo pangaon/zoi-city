@@ -1,0 +1,167 @@
+{
+  "at": "2026-10-16T03:43:57.088330+00:00",
+  "status": "TESTFLIGHT_BLOCKED_BY_CONFIRMED_APPLE_REMOVAL_MANUAL_RESTORATION_DRAFT_ANDROID_BOUNDED_ACCEPTANCE",
+  "source_commit": "6c2f013d3ffa3a1d39dda6922c433de39d3550d4",
+  "ios": {
+    "version": "2.0.0",
+    "build": "2",
+    "eas_build": "d81a0a15-e973-4f81-a8c0-1d6f10c4728c",
+    "apple_build": "cc743714-121b-4261-a2bb-9d167f19f9fb",
+    "processing": "VALID",
+    "internal_state": "IN_BETA_TESTING",
+    "existing_group_assigned": true,
+    "installation": "FOUNDER_REPORTED_FAILED_AFTER_RETRY",
+    "error": "The requested app is not available or doesn't exist.",
+    "current_diagnosis": "docs/audits/testflight-install-failure-2026-10-16.md",
+    "captured_eligibility_receipt": "docs/audits/evidence/native-testflight-root-2026-10-16/testflight-delivery.json",
+    "independent_receipt_review": "docs/audits/evidence/native-testflight-root-2026-10-16/independent-testflight-receipt.json",
+    "installation_diagnosis": "docs/audits/evidence/native-testflight-root-2026-10-16/install-failure-diagnosis.json",
+    "membership_mail_confirmation": "Apple confirmed renewal on April 25, 2026, expiring April 25, 2027.",
+    "license_mail_confirmation": "Apple confirmed the agreement was signed on October 16, 2026 at 00:23:43 UTC.",
+    "old_app_removal": "Apple removed Zoi on March 16, 2023 for lack of an approved update; the current founder screenshot confirms Removed from App Store.",
+    "root_cause": "CONFIRMED_APP_STORE_IMPROVEMENTS_REMOVAL: the founder-provided December 15, 2022 Apple notice explicitly states TestFlight versions become unavailable for both internal and external testing; the March 16, 2023 message confirms removal.",
+    "restoration": {
+      "version_id": "774d678e-096f-4177-b18c-2651401e500f",
+      "version": "2.0.0",
+      "state": "PREPARE_FOR_SUBMISSION",
+      "release_type": "MANUAL",
+      "attached_build": "cc743714-121b-4261-a2bb-9d167f19f9fb",
+      "submitted": false,
+      "released": false,
+      "remaining": [
+        "Real current iPhone and iPad screenshots; inherited 2019 captures cannot represent the new app.",
+        "Current metadata, working support/privacy links and privacy/age/content-rights disclosures.",
+        "Authorized working reviewer access and actual review journeys.",
+        "Apple review and restoration decision. Approval of a manual-release draft is not a promise of immediate TestFlight access."
+      ]
+    },
+    "credential_rotation": {
+      "status": "REPLACED_APPLE_REVOKED_EXPO_BINDINGS_VERIFIED",
+      "new_key_id": "FJKAQL22WZ",
+      "revoked_key_id": "2M5J4ZSHSU",
+      "evidence": "Founder Team Keys screenshot confirms Active(1) new key and Revoked(1) old key. New key exact-app GET200 and all three Expo submission references verified.",
+      "signing_certificates_changed": false,
+      "secret_in_repository": false
+    }
+  },
+  "android": {
+    "build_id": "5df50533-4819-4548-9584-282cac41cae4",
+    "version": "2.0.0",
+    "version_code": "1",
+    "artifact_sha256": "9bf0e9facce9d311d7998bb15e322125ad7e4d697cfb90f86c9d66896d391d3d",
+    "bytes": 85579683,
+    "installed_apk_pull_exact": true,
+    "device": "Android API 35 emulator; physical Android is unverified.",
+    "journeys": [
+      "Fresh synthetic device: all three welcome screens; choosing Grow opens Grow.",
+      "Home and navigation icons; direct Home to Map.",
+      "Actual MapLibre basemap loads. Expand hides app chrome; Close restores it.",
+      "More opens all sections, and choosing Home opens Home.",
+      "Home opens the official BuyGreek storefront; the actual empty Shopify cart opens without a cart mutation.",
+      "Disabling emulator network and reloading shows a recovery error. Restoring the original network and pressing Retry reopens the cart.",
+      "Normal Android Settings changes font scale from 1 to 2. App chrome and navigation grow while the Shopify cart document remains open.",
+      "At font scale 2, the running app accepts its map deep link, expands and closes the map, and opens More with Grow reachable by scrolling.",
+      "An unsent dummy email remains in the same form when normal Settings changes font scale from 2 to 1. The app is stopped afterward, destroying the unsent form state.",
+      "After a cold relaunch, completion persists and Home opens without repeating the welcome. Fresh location permissions remain ungranted."
+    ],
+    "remaining": [
+      "Installed product/variant/account handoff and wider client journeys. No payment or order was performed.",
+      "Physical Android/iPhone, customer GPS, global coordinates and full client journeys."
+    ],
+    "form_font_result": {
+      "font2_to_font1_through_normal_settings": true,
+      "unsent_dummy_retained": true,
+      "font2_bounds": "[102,1762][978,1941]",
+      "font1_bounds": "[102,1255][978,1392]",
+      "restored_font_scale": "1.0",
+      "submitted": false
+    }
+  },
+  "fallback_prepared": {
+    "status": "DECLINED_BY_LATEST_USER_STEERING_TESTFLIGHT_REQUIRED",
+    "history": "A private device profile was prepared and independently checked, then removed from the release when the founder requested TestFlight specifically. One unused Expo registration link was created; no device, signing profile or build was created. Private historical receipts are retained outside the repository.",
+    "next": "Restore TestFlight for the existing app record. No private device build is being pursued."
+  },
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/welcome-step1.png",
+      "sha256": "80c5bc515f484e22f28f547c607ed9fad300703e0c7e777b7f8971534c1ec62e",
+      "bytes": 559990
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/welcome-step3.png",
+      "sha256": "0ab2a19deb076fb533db326b754b2d2a4a00df08753e84491dd6e125ede21b9f",
+      "bytes": 686669
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/welcome-grow-selected.png",
+      "sha256": "5654591355825dc4561ed6e0e16d06549055e5c4b7aba1a1f3bbf0a47e9c2afe",
+      "bytes": 198978
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/home.png",
+      "sha256": "b4096fa8850cbb14f21f18c27b3672c5209e5bacac48d7cbec56530752900c41",
+      "bytes": 611215
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/map-loaded.png",
+      "sha256": "583a5d3a3d1b71aae1c7089fc122f00c96719fc4904afa3cbc3591059a754ea2",
+      "bytes": 244082
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/map-expanded.png",
+      "sha256": "9923e30a0a3b6a9d3b8638649da744b87b7f3b77a7ed385884312fd0abad7893",
+      "bytes": 190485
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/buygreek-cart.png",
+      "sha256": "404b2c2592f0f270dd956dbd79e24582609d20f0000306d54b69f28c385af63d",
+      "bytes": 206513
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/buygreek-font2.png",
+      "sha256": "0232549688f44d8353e0bc55c2f96e8216ed5a0e6beb813d5de5c697bcc63cd8",
+      "bytes": 237720
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/store-recovery-result.json",
+      "sha256": "cada87c127ff81f85a067b8d8567e35546bd656a591b06ddde41a7dfab034142",
+      "bytes": 155
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/map-font2.png",
+      "sha256": "5eb7165c81f5c44c709aaa769c021c478f8cccf7bd11c9edbc4488adf74582f9",
+      "bytes": 312730
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/map-expanded-font2.png",
+      "sha256": "f5d014451dcd48ed36dd3cf57f1546307b9b230b80d2532c87720634b355cf51",
+      "bytes": 378155
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/sections-font2-scrolled.png",
+      "sha256": "212b3d4c3e3c2e6177577771abebb520beb61d62ac4fd5e64b4156f8a363b4fc",
+      "bytes": 310073
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/form-font-result.json",
+      "sha256": "d69f5b71f5220f974f46bc45b329b50578f80a3a38cb524406bf4e80497f56eb",
+      "bytes": 223
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/relaunch-home-ready.png",
+      "sha256": "852cdcd09fbcca76c18a6f1a155a34dfa2bbafa15893acd393a723af55453ebd",
+      "bytes": 611216
+    },
+    {
+      "path": "docs/audits/evidence/native-testflight-root-2026-10-16/installed-package-readback.json",
+      "sha256": "718cdf56265ce385b6b4bdb1e9698873f34cfa8ab73a0a9b09231f43e568a4e8",
+      "bytes": 319
+    }
+  ],
+  "scope_limits": [
+    "This release does not complete every client home, global enrichment, global coordinates, the social network or the full 987 requirements.",
+    "The existing Shopify website runs inside the native WebView. Admin connector and store owner operations are unverified.",
+    "Apple build eligibility and successful customer installation are separate outcomes."
+  ]
+}

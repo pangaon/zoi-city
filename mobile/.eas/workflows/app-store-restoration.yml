@@ -1,0 +1,94 @@
+name: Zoi iOS restoration screenshots — manual only
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_capture:
+        type: boolean
+        default: false
+        description: Start one simulator build and two capture jobs using approved credits
+      expected_commit:
+        type: string
+        required: true
+        description: Exact protected Git commit passed to workflow run --ref
+jobs:
+  source_gate:
+    if: ${{ inputs.confirm_capture == true }}
+    runs_on: linux-medium
+    env:
+      EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+    steps:
+      - uses: eas/checkout
+      - run: node .maestro/source-check.mjs
+      - uses: eas/upload_artifact
+        with:
+          type: other
+          name: restoration-source-preflight
+          path: restoration-evidence/*
+  simulator:
+    needs: [source_gate]
+    type: build
+    env:
+      EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+    params:
+      platform: ios
+      profile: preview
+      message: Source-pinned restoration screenshots; no Apple submission
+    hooks:
+      before_install_node_modules:
+        - run: node .maestro/source-check.mjs
+  iphone:
+    needs: [simulator]
+    type: maestro
+    runs_on: macos-medium
+    image: macos-tahoe-26.5-xcode-26.6
+    env:
+      EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+      CAPTURE_BUILD_ID: ${{ needs.simulator.outputs.build_id }}
+      CAPTURE_DEVICE: iphone
+    params:
+      build_id: ${{ needs.simulator.outputs.build_id }}
+      flow_path: .maestro/restoration.yaml
+      device_identifier: iPhone 16 Pro Max
+      maestro_version: 2.6.1
+      retries: 0
+      shards: 1
+      record_screen: false
+    hooks:
+      before_maestro_tests:
+        - run: node .maestro/source-check.mjs
+      after_maestro_tests:
+        - run: node .maestro/artifact-check.mjs "$MAESTRO_TESTS_DIR"
+        - uses: eas/upload_artifact
+          if: ${{ always() }}
+          with:
+            type: other
+            name: restoration-iphone-source-and-sha
+            path: restoration-evidence/*
+  ipad:
+    needs: [simulator]
+    type: maestro
+    runs_on: macos-medium
+    image: macos-tahoe-26.5-xcode-26.6
+    env:
+      EXPECTED_CAPTURE_COMMIT: ${{ inputs.expected_commit }}
+      CAPTURE_BUILD_ID: ${{ needs.simulator.outputs.build_id }}
+      CAPTURE_DEVICE: ipad
+    params:
+      build_id: ${{ needs.simulator.outputs.build_id }}
+      flow_path: .maestro/restoration.yaml
+      device_identifier: iPad Pro 13-inch (M4)
+      maestro_version: 2.6.1
+      retries: 0
+      shards: 1
+      record_screen: false
+    hooks:
+      before_maestro_tests:
+        - run: node .maestro/source-check.mjs
+      after_maestro_tests:
+        - run: node .maestro/artifact-check.mjs "$MAESTRO_TESTS_DIR"
+        - uses: eas/upload_artifact
+          if: ${{ always() }}
+          with:
+            type: other
+            name: restoration-ipad-source-and-sha
+            path: restoration-evidence/*

@@ -85,7 +85,7 @@ function scanStagedFiles(root) {
 
 export function scanTrackedFiles(root, { staged = false } = {}) {
   if (staged) return scanStagedFiles(root);
-  const names = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(Boolean);
+  const names = gitBytes(root, ['ls-files', '-z'], undefined, INDEX_LIMIT).toString('utf8').split('\0').filter(Boolean);
   const findings = [];
   for (const name of names) {
     let bytes;

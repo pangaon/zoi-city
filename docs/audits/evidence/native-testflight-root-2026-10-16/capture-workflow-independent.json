@@ -1,0 +1,50 @@
+{
+  "verdict": "ACCEPTED_SOURCE_ONLY_PENDING_ROOT_PREREQUISITES",
+  "reviewer": "atomic_review distinct from qa_next author",
+  "time_utc": "2026-10-16T03:50:22.306644+00:00",
+  "review_scope": "Frozen V2 six-file restoration workflow, narrow repairs to original PNG completeness and eager source pin blockers",
+  "owner_audit_sha256": "669992c10708002ea7485f676dab2f192292898e61225e6f9078151fe729f03f",
+  "owner_manifest_sha256": "d1d36d432350ee5d45309af3ce085cd2291a958b26b74b2f8f82e6da94b86127",
+  "owned_source_sha256": {
+    "mobile/.eas/workflows/app-store-restoration.yml": "d2c8e2f7f263f3e3f0d68c5268b540220e9a00faee5db2711b7ebf2973de7bce",
+    "mobile/.maestro/restoration.yaml": "4bd63ee53ebb5e741a610aefc7eb63f3d7d8eebdf645b5aa938b772e4cffc2e3",
+    "mobile/.maestro/restoration-source.json": "bc169a1ab84197723ee367da9c52ffbb7d7c9ee24dec0bf7453a94625766e040",
+    "mobile/.maestro/source-check.mjs": "63ed4f2e600c5c495bb961c3708b627ff04fcd262a94a5e483d49b1252e7320a",
+    "mobile/.maestro/artifact-check.mjs": "ee9e25aefae90cd8382febe8d274082fc3f4f142deea242b836a45b74c722538",
+    "mobile/.maestro/README.md": "31e8542fd867fd5470d9f36af7a882df8b01bcd8ac86700e15a028007aa754e7"
+  },
+  "concrete_blockers": [],
+  "evidence": {
+    "independent_cases": 17,
+    "independent_cases_all_passed": true,
+    "pin_and_dependency_checks": 756,
+    "captured_baseline_files": 171,
+    "transitive_baseline_files": 74,
+    "accepted_eager_overlay_files": 4,
+    "resolved_local_import_edges": 502,
+    "missing_or_unresolved_literal_local_imports": 0,
+    "independent_decoder": "Pillow fully decoded synthetic 3x5 RGB nonempty-IDAT input; protocol evidence only",
+    "original_counterexample": "Original 33-byte V1 input retained unchanged and rejected",
+    "negative_parser_cases": [
+      "CRC corruption",
+      "truncation",
+      "invalid zlib with valid chunk CRC",
+      "decompression beyond exact decoded bound",
+      "trailing compressed bytes",
+      "empty decoded stream",
+      "filter byte 5"
+    ],
+    "source_change_refusals": "All four accepted eager modules plus Auth.tsx/account-change representative and shared published-fields dependency refused through controlled read interception without source edits",
+    "retained_owner_checks": "33 owner checks evidence hashes verified; independently exercised targeted cases instead of replaying owner suite",
+    "unchanged_V1_workflow_and_flow": "Owned SHA pins match V1 reviewed workflow and flow exactly"
+  },
+  "source_equivalence": "171+74 baseline files are individually same-path SHA-matched to Git 6c2f013d3ffa3a1d39dda6922c433de39d3550d4 and current integration. Four eager modules exactly match separately accepted current integration SHA. No signed Apple build2 or whole binary equivalence claim. Literal local imports closure verified; package dependencies bound by package lock, not an independently executed Metro bundle.",
+  "execution_boundary": [
+    "No actual simulator/iOS screenshots, EAS API validation, build, capture, submission, credential access, provider write or spend by reviewer.",
+    "Manual defaultfalse gate and one shared build/two jobs/retries0 retained. Root must perform authenticated server schema validation, exact protected commit and credit/access checks before any separately authorized execution.",
+    "Pending account/support/privacy repairs require explicit newly reviewed source overlay. Current pinned files must fail if changed; never auto-refresh pins.",
+    "Actual named simulator availability, accessibility selectors, public data operation, current pixels, simulator archive/source association and Apple upload slot acceptance remain unexercised. PNG structural validity is not visual/app-identity proof.",
+    "No App Store restoration or TestFlight availability claimed. Existing removed-app restriction remains separately owned by root."
+  ],
+  "historical_V1_review_preserved": "/home/codespace/.cache/zoi/ios-restoration-independent-20261016/review.json SHA539dfb64a2431754391d975f5b80cf633af808fbf5e540b17fed506ed02ba9ab"
+}
