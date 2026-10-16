@@ -16,3 +16,11 @@ test('single default display metadata survives native basket mapping without cha
  const rows=basketAdd([],p,v,2);assert.equal(rows[0].title,'Default Title');assert.equal(rows[0].product_title,'Olive oil');assert.equal(rows[0].single_default_variant,true);assert.equal(variantLabel(rows[0].title,rows[0].single_default_variant),'');assert.equal(singleDefaultVariant({...p,variants:[v,{...v,id:'987654321',title:'Large'}]}),false);
  assert.equal(basketRead([{...rows[0],single_default_variant:'true'}])[0].single_default_variant,false);
 });
+
+test('native catalogue preserves real structured options/currency and rejects unsafe saved links and prices',async()=>{
+ const{commerceVariant,commerceProduct,commerceCollection,savedProductHandles,displayCommercePrice}=await import('../src/commerce.ts');
+ const v=commerceVariant({id:'42632731295929',title:'252 pieces',available:true,price:'39.99',currency:'CAD',options:[{name:'Size',value:'252 pieces'}]});assert.deepEqual(v.options,[{name:'Size',value:'252 pieces'}]);assert.equal(displayCommercePrice(v.price,v.currency),'CAD 39.99');
+ assert.deepEqual(savedProductHandles(['jigsaw-puzzle']),['jigsaw-puzzle']);for(const bad of[['../cart'],['jigsaw-puzzle','jigsaw-puzzle'],Array(61).fill('jigsaw-puzzle')])assert.throws(()=>savedProductHandles(bad));
+ assert.equal(commerceCollection({handle:'greek-sweets',title:'Greek Sweets',image:'https://evil.test/asset'}).image,null);assert.throws(()=>commerceCollection({handle:'../cart',title:'Invalid'}));
+ assert.throws(()=>commerceProduct({handle:'jigsaw-puzzle',title:'Jigsaw',description:'',available:true,more_variants:false,url:'https://buygreek.shop/products/jigsaw-puzzle',variants:[v],images:[],price_min:{price:'NaN',currency:'CAD'}}));
+});

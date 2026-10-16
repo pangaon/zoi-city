@@ -16,7 +16,7 @@ export async function runGeographyResearchJobs(jobs,{directory,sourceFetch=null,
  async function work(job){
  let retained=null;try{const r=JSON.parse(await readFile(path.join(directory,job.id+'.job-result.json'),'utf8'));if(r.input_fingerprint===job.input_fingerprint&&r.protocol_version==='official_multipage_v1'&&Date.parse(r.captured_at)>Date.now()-7*86400000)retained=r;}catch{}
  if(retained){const record={...retained,lease_id:job.lease_id,reused_retained_capture:true};if(finishJob)record.database_result=await finishJob(job.id,job.lease_id,record.result);results.push(record);return;}
- const o=job.original,row={...o,id:job.listing_id,public_eligible:true,source_kind:'official_website',source_fingerprint:job.input_fingerprint,owner_hash:job.input_fingerprint},sources=[];let result;
+ const o=job.original,row={...o,id:job.listing_id,public_eligible:true,owner_managed:false,source_kind:'official_website',source_fingerprint:job.input_fingerprint,owner_hash:job.input_fingerprint},sources=[];let result;
  try{const page=await fetchPage(o.website),pages=[page];const first=extractSourceCoordinates(page.text,row,{sourceUrl:page.url,httpStatus:page.status});
  if(!first.candidate&&first.reason==='matching_structured_coordinates_missing'&&page.status===200){for(const url of researchPages(page.text,o.website))pages.push(await fetchPage(url));}
  const reports=[];for(const p of pages){const hash=sha256(p.text);await sourceOperation('source_document_write',()=>writeFile(path.join(directory,hash+'.source.html'),p.text,{mode:0o600}));sources.push({url:p.url,sha256:hash,http_status:p.status});reports.push(extractSourceCoordinates(p.text,row,{sourceUrl:p.url,httpStatus:p.status}));}

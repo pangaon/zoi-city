@@ -13,3 +13,5 @@ export function shopifyInitialURL(product='',variant=''){
  if(variant&&!product)throw Error('Choose a product before opening its option.');
  return SHOPIFY_ORIGIN+(product?'/products/'+encodeURIComponent(product)+(variant?'?variant='+variant:''):'/');
 }
+
+export function shopifyCartURL(){return SHOPIFY_ORIGIN+'/cart';}

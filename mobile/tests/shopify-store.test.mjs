@@ -19,9 +19,9 @@ test('only exact secure store origin embeds; every other secure destination requ
 function mounted(platform='native',props={}){
  const states=[],refs=[],effects=[],timers=new Map(),calls={open:[],back:0,reload:0,stop:0,exit:0};let slot=0,tree,hardware,throwOpen=false;
  const react={useState(initial){const n=slot++;if(!(n in states))states[n]=typeof initial==='function'?initial():initial;return[states[n],v=>{states[n]=typeof v==='function'?v(states[n]):v;}];},useRef(initial){const n=slot++;return refs[n]??=( {current:initial});},useEffect(run,deps){const n=slot++,old=effects[n];if(!old||deps.some((x,i)=>x!==old.deps[i])){old?.cleanup?.();effects[n]={deps,run};}}};
- const rn={View:'View',Pressable:'Pressable',ActivityIndicator:'ActivityIndicator',StyleSheet:{create:v=>v},Linking:{openURL:async url=>{calls.open.push(url);if(throwOpen)throw Error('Controlled browser failure');}},BackHandler:{addEventListener:(_name,fn)=>{hardware=fn;return{remove(){if(hardware===fn)hardware=null;}};}}};
+ const rn={useWindowDimensions:()=>({width:390,fontScale:1}),View:'View',Pressable:'Pressable',ActivityIndicator:'ActivityIndicator',StyleSheet:{create:v=>v},Linking:{openURL:async url=>{calls.open.push(url);if(throwOpen)throw Error('Controlled browser failure');}},BackHandler:{addEventListener:(_name,fn)=>{hardware=fn;return{remove(){if(hardware===fn)hardware=null;}};}}};
  const jsx=(type,props,key)=>({type,props,key});
- const module=compile('../src/ShopifyStore.'+platform+'.tsx',{'react':react,'react/jsx-runtime':{jsx,jsxs:jsx},'react-native':rn,'react-native-webview':{WebView:'WebView'},'./ScaleText':{ScaleText:'Text'},'./ShopifyNavigation':navigation},{setTimeout:fn=>{const id=timers.size+1;timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id)});
+ const module=compile('../src/ShopifyStore.'+platform+'.tsx',{'react':react,'react/jsx-runtime':{jsx,jsxs:jsx},'react-native':rn,'react-native-webview':{WebView:'WebView'},'./ScaleText':{ScaleText:'Text'},'./Shop':{ShopScreen:'NativeCatalogue'},'./ShopifyNavigation':navigation},{setTimeout:fn=>{const id=timers.size+1;timers.set(id,fn);return id;},clearTimeout:id=>timers.delete(id)});
  let current={back:()=>calls.exit++,...props};
  const render=next=>{current={...current,...next};slot=0;tree=module.ShopifyStoreScreen(current);for(const e of effects)if(e?.run){const fn=e.run;e.run=null;e.cleanup=fn();}return tree;};
  render();render();
@@ -29,7 +29,8 @@ function mounted(platform='native',props={}){
  const text=n=>typeof n==='string'?n:Array.isArray(n)?n.map(text).join(''):n&&typeof n==='object'?text(n.props?.children):'';
  const web=()=>{const n=nodes().find(n=>n.type==='WebView');if(n)n.props.ref.current={goBack:()=>calls.back++,reload:()=>calls.reload++,stopLoading:()=>calls.stop++};return n;};
  const click=async label=>{const button=nodes().find(n=>n.type==='Pressable'&&text(n)===label);assert(button,'Missing '+label);assert(!button.props.disabled,'Disabled '+label);await button.props.onPress();await Promise.resolve();await Promise.resolve();render();};
- return{render,web,nodes,calls,click,text:()=>text(tree),hardware:()=>hardware?.(),slow:()=>{for(const fn of [...timers.values()])fn();render();},failBrowser:()=>throwOpen=true,dispose:()=>effects.forEach(e=>e?.cleanup?.())};
+ const enter=(product='',variant='',cart=false)=>{nodes().find(n=>n.type==='NativeCatalogue')?.props.onStore(product,variant,cart);render();};if(platform==='native'&&!props.initialProduct){enter();render();}
+ return{render,web,nodes,calls,click,enter,text:()=>text(tree),hardware:()=>hardware?.(),slow:()=>{for(const fn of [...timers.values()])fn();render();},failBrowser:()=>throwOpen=true,dispose:()=>effects.forEach(e=>e?.cleanup?.())};
 }
 test('native store keeps persistent Shopify storage and never injects app state or payment handling',()=>{
  const h=mounted('native',{initialProduct:'greeting-card',initialVariant:'40234567890123'}),w=h.web().props;
@@ -48,20 +49,33 @@ test('external checkout/account popup stops before navigation and opens only aft
 });
 test('same-store popup and incoming product changes retain the WebView host while ordinary reload/back preserve browser history',async()=>{
  const h=mounted(),original=h.web();original.props.onOpenWindow({nativeEvent:{targetUrl:'https://buygreek.shop/products/olive-oil?variant=40234567890123'}});h.render();assert.equal(h.web().key,original.key);assert.match(h.web().props.source.uri,/olive-oil\?variant=/);
- h.web().props.onNavigationStateChange({url:'https://buygreek.shop/cart',canGoBack:true});h.render();h.web();assert.equal(h.hardware(),true);assert.equal(h.calls.back,1);await h.click('Store back');assert.equal(h.calls.back,2);await h.click('Reload');assert.equal(h.calls.reload,1);assert.equal(h.web().key,original.key);
- h.render({initialProduct:'greeting-card',initialVariant:'40234567890123'});h.render();assert.equal(h.web().key,original.key);assert.match(h.web().props.source.uri,/greeting-card\?variant=/);assert.equal(h.hardware(),true);assert.equal(h.calls.exit,1);h.dispose();
+ h.web().props.onNavigationStateChange({url:'https://buygreek.shop/cart',canGoBack:true});h.render();h.web();assert.equal(h.hardware(),true);assert.equal(h.calls.back,1);await h.click('Options');await h.click('Store back');assert.equal(h.calls.back,2);await h.click('Reload');assert.equal(h.calls.reload,1);assert.equal(h.web().key,original.key);
+ h.render({initialProduct:'greeting-card',initialVariant:'40234567890123'});h.render();assert.equal(h.web().key,original.key);assert.match(h.web().props.source.uri,/greeting-card\?variant=/);assert.equal(h.hardware(),true);assert.equal(h.calls.exit,0);h.render();assert.equal(h.hardware(),true);assert.equal(h.calls.exit,1);h.dispose();
 });
 test('slow/error/renderer failures retain browser escape and recover explicitly; failed external open keeps the store',async()=>{
  const h=mounted();h.web().props.onLoadStart();h.slow();assert.match(h.text(),/Taking longer/);await h.click('Retry');assert.equal(h.calls.reload,1);
  h.web().props.onError();h.render();assert.match(h.text(),/could not load/);await h.click('Retry store');assert.equal(h.calls.reload,2);
  const key=h.web().key;h.web().props.onRenderProcessGone();h.render();await h.click('Retry store');assert.notEqual(h.web().key,key);assert.equal(h.web().props.source.uri,'https://buygreek.shop/');
- h.failBrowser();await h.click('Open browser');assert.match(h.text(),/browser could not open/);assert.equal(h.web().props.source.uri,'https://buygreek.shop/');h.dispose();
+ h.failBrowser();await h.click('Options');await h.click('Open browser');assert.match(h.text(),/browser could not open/);assert.equal(h.web().props.source.uri,'https://buygreek.shop/');h.dispose();
+});
+test('store options keep the same cart host; completed navigation and load-end clear stalled loading without hiding errors',async()=>{
+ const h=mounted(),key=h.web().key;
+ assert.doesNotMatch(h.text(),/Store back|Open browser/);
+ await h.click('Options');assert.match(h.text(),/Store back/);await h.click('Done');assert.doesNotMatch(h.text(),/Store back/);assert.equal(h.web().key,key);
+ h.web().props.onLoadStart();h.slow();assert.match(h.text(),/Taking longer/);
+ h.web().props.onNavigationStateChange({url:'https://buygreek.shop/products/jigsaw-puzzle?variant=40234567890123',canGoBack:true,loading:false});h.render();assert.doesNotMatch(h.text(),/Taking longer|Opening BuyGreek/);
+ h.web().props.onLoadStart();h.slow();h.web().props.onLoadEnd();h.render();assert.doesNotMatch(h.text(),/Taking longer/);
+ h.web().props.onError();h.web().props.onLoadEnd();h.render();assert.match(h.text(),/could not load/);h.dispose();
 });
 test('unsafe committed navigation stops, subframes cannot launch the browser, and toolbar targets remain at least44',()=>{
  const h=mounted(),w=h.web().props;w.onNavigationStateChange({url:'https://foreign.example/checkout',canGoBack:true});h.render();assert.equal(h.calls.stop,1);assert.deepEqual(h.calls.open,[]);
  assert.equal(w.onShouldStartLoadWithRequest({url:'https://foreign.example/frame',isTopFrame:false}),false);h.render();assert.deepEqual(h.calls.open,[]);
- for(const n of h.nodes().filter(n=>n.type==='Pressable')){const styles=n.props.style.flat().filter(Boolean);assert(styles.some(s=>s.minHeight>=44&&s.minWidth>=44));}h.dispose();
+ for(const n of h.nodes().filter(n=>n.type==='Pressable')){const styles=[n.props.style].flat().filter(Boolean);assert(styles.some(s=>s.minHeight>=44&&s.minWidth>=44));}h.dispose();
 });
 test('web fallback is an honest product/option handoff with no iframe/cart or automatic navigation',async()=>{
  const h=mounted('web',{initialProduct:'greeting-card',initialVariant:'40234567890123'});assert.equal(h.web(),undefined);assert.deepEqual(h.calls.open,[]);assert.match(h.text(),/official store/);await h.click('Open BuyGreek store ↗');assert.equal(h.calls.open[0],navigation.shopifyInitialURL('greeting-card','40234567890123'));await h.click('Back to Zoi');assert.equal(h.calls.exit,1);h.dispose();
+});
+
+test('catalogue handoff uses the same mounted Shopify host for exact product and actual cart with no automatic add',async()=>{
+ const h=mounted(),key=h.web().key;await h.click('Browse products');h.enter('jigsaw-puzzle','42632731328697');assert.equal(h.web().key,key);assert.equal(h.web().props.source.uri,'https://buygreek.shop/products/jigsaw-puzzle?variant=42632731328697');await h.click('Browse products');h.enter('','',true);assert.equal(h.web().key,key);assert.equal(h.web().props.source.uri,'https://buygreek.shop/cart');for(const prop of ['injectedJavaScript','onMessage'])assert.equal(prop in h.web().props,false);assert.deepEqual(h.calls.open,[]);h.dispose();
 });

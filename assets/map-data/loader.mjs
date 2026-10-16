@@ -70,7 +70,7 @@ export function mapPositionFields(row){const pair=positionPair(row),metadata=row
 // Only address/street evidence may place an individual listing on the map.
 export function hasStreetPosition(point){return !!point&&!point.position_conflict&&diagnosePosition(point).drawable&&validCoordinates(point);}
 
-export function positionStatus(point){if(!point)return 'Map position not available';const d=diagnosePosition(point);if(point.position_conflict||d.state==='conflicting_position_evidence')return 'Map position under review · use published address';if(!hasStreetPosition(point))return d.effective_precision==='unknown'?'Map position not verified · no precise pin':'Approximate area · no precise pin';return d.reviewed?'Reviewed map position':'Stored map position · not independently verified';}
+export function positionStatus(point){if(!point)return 'Map position not available';const d=diagnosePosition(point);if(point.position_conflict||d.state==='conflicting_position_evidence')return 'Map position under review · use published address';if(!hasStreetPosition(point))return d.effective_precision==='unknown'?'Map position not verified · no precise pin':'Approximate area · no precise pin';if(d.reviewed&&point.geo_metadata?.method==='reviewed_geocoded_official_address')return 'Reviewed address position · building or venue centre';return d.reviewed?'Reviewed map position':'Stored map position · not independently verified';}
 export function positionCoverage(points){let reviewed=0,unverified=0;for(const p of points||[]){if(!hasStreetPosition(p))continue;if(diagnosePosition(p).reviewed)reviewed++;else unverified++;}return{reviewed,unverified,total:reviewed+unverified};}
 
 

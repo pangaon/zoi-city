@@ -1,0 +1,121 @@
+{
+  "at": "2026-10-16T04:54:30.991285+00:00",
+  "reviewer": "qa_next",
+  "outcome": "ACCEPT source/config-only identity separation",
+  "source_pins": [
+    {
+      "path": "mobile/app.config.js",
+      "sha256": "989bee8154abd3e98c9ad192db7979d5b0006b7fb05397f93354b2be2d2e076e",
+      "bytes": 1105
+    },
+    {
+      "path": "mobile/tests/release-identity.test.mjs",
+      "sha256": "3ad56e62bf58c60fefda489abd2ba745783d397d9640bdfb76b4aabd1a3386d9",
+      "bytes": 1875
+    },
+    {
+      "path": "mobile/eas.json",
+      "sha256": "51c81bb53b041aab7d045f5f5c3744720ca7130404ef849e9406ea5d33aa64c6",
+      "bytes": 760
+    }
+  ],
+  "verification": {
+    "unit_groups": 3,
+    "actual_expo_public_config_cases": [
+      {
+        "case": "default",
+        "exit": 0,
+        "expected": true
+      },
+      {
+        "case": "production",
+        "exit": 0,
+        "expected": true
+      },
+      {
+        "case": "founder",
+        "exit": 0,
+        "expected": true
+      },
+      {
+        "case": "wrong-platform",
+        "exit": 1,
+        "expected": false
+      },
+      {
+        "case": "missing-flag",
+        "exit": 1,
+        "expected": false
+      },
+      {
+        "case": "malformed",
+        "exit": 1,
+        "expected": false
+      }
+    ],
+    "default_production_equality": true,
+    "only_founder_public_difference": "ios.bundleIdentifier=com.usgreekscan.zoi -> city.zoi.app; private Expo _internal object excluded from equality",
+    "app_name": "Zoi unchanged",
+    "android_package": "com.usgreekscan.zoi unchanged",
+    "eas_project_id": "59352b1c-50c5-4717-a22d-53188fa500c7 unchanged",
+    "capability_plugin_lists": "identical in actual resolved public configurations; no feature or permission toggles removed",
+    "build_profile": "founder-testflight inherits existing store testflight and autoIncrement; separate founder-testflight update channel and explicit opt-in env only",
+    "submit_profile": "No founder-testflight submit profile exists. Existing old app ID1464901778 appears only unchanged testflight/production submit profiles. No submit/build triggered.",
+    "auto_submit": "Installed EAS25 commands/build/index.js autoSubmit derives solely explicit --auto-submit or --auto-submit-with-profile flags. New profile does not itself turn it on.",
+    "local_inspection": "flag1 with no EAS profile/platform is permitted intentionally for local config resolution; any supplied mismatched profile or non-ios platform refuses. Hosted identity guard applies once EAS supplies those fields."
+  },
+  "authority_limits": [
+    "Apple record rename and bundle registration were parent-provided state, not independently queried.",
+    "Distinct app bundle requires matching city.zoi.app provisioning/app registration. Signing/distribution certificate may legitimately be shared at team level; this source review does not claim fresh credential issuance or provider validation.",
+    "No new app submit target admitted until root pins actual new App Store record. Do not use old testflight/production submit profile for founder variant.",
+    "Actual signing, embedded application identifier, build archive and TestFlight eligibility remain unexercised."
+  ],
+  "actions": {
+    "source_edits": false,
+    "credential_reads": false,
+    "provider_calls": false,
+    "build_or_submit": false
+  },
+  "evidence": [
+    {
+      "path": "default-public-config.json",
+      "sha256": "73f7a6fe15629f9188828e0feaeaf07194262360072294426c502a0fbfadc89d",
+      "bytes": 2174
+    },
+    {
+      "path": "founder-public-config.json",
+      "sha256": "f7e8048d53650efde930779437218b8235b5e7b082237b12d58c08a7d7db1f67",
+      "bytes": 2167
+    },
+    {
+      "path": "malformed-refusal.txt",
+      "sha256": "42132d31694567f34e53f35f0dec986a60dd1db7b7a77895d7f4862126eb2140",
+      "bytes": 1240
+    },
+    {
+      "path": "missing-flag-refusal.txt",
+      "sha256": "4784b5bfd2592b0c948bc844a19d0972a9ff7ebadaabc2b5eac0adf013bb0e18",
+      "bytes": 1295
+    },
+    {
+      "path": "production-public-config.json",
+      "sha256": "73f7a6fe15629f9188828e0feaeaf07194262360072294426c502a0fbfadc89d",
+      "bytes": 2174
+    },
+    {
+      "path": "result.json",
+      "sha256": "7fa179a6914c949ce809de35326a0569c95daeb8ad1089ab3cb3617d1e330513",
+      "bytes": 1144
+    },
+    {
+      "path": "verify.py",
+      "sha256": "09e073f7583648d4e326062ca2cfcce7e7307ffeaff657565c3befcd3bc39cd3",
+      "bytes": 2128
+    },
+    {
+      "path": "wrong-platform-refusal.txt",
+      "sha256": "b025896addb9bf6f0e2ea7191a7c235094cbb272923238cd3729fe34769be933",
+      "bytes": 1291
+    }
+  ]
+}

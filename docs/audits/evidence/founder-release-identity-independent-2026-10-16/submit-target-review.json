@@ -1,0 +1,23 @@
+{
+  "at": "2026-10-16T05:28:23.954076+00:00",
+  "verdict": "ACCEPT narrow founder submission target delta",
+  "reviewer": "qa_next",
+  "eas_sha256": "b91d24949a8479d69e613f1027988ce3e5fc6754284c9175e048d398d1fc9b78",
+  "test_sha256": "ecdb317c39e46f86d5ec01eae7241bab41333b31facbdce9d7f4bee50b5c8b86",
+  "app_config_sha256": "989bee8154abd3e98c9ad192db7979d5b0006b7fb05397f93354b2be2d2e076e",
+  "prior_independent_audit_sha256": "514a475516c0564d85bb2feb2c42e873748f25edb3139563eea63c6c02289deb",
+  "only_config_delta": "submit.founder-testflight.ios.ascAppId=6823485650; deleting that node reproduces byte-exact accepted eas.json hash after canonical JSON serialization",
+  "only_test_delta": "First1875bytes reproduce original accepted test hash; fourth test adds new appID assertion and retains both old target checks",
+  "four_units_passed": true,
+  "old_targets_unchanged": "testflight and production ->1464901778",
+  "retained_parent_Apple_readback": {
+    "path": "/workspaces/zoi-map-studio-ops-release/docs/audits/evidence/founder-release-identity-independent-2026-10-16/new-app-readback.json",
+    "sha256": "a2d134ae5c9dc49bd66719992b7444ff8b2f00b3531daac190bcc0d1c8626dd1",
+    "id": "6823485650",
+    "name": "Zoi: Mazi",
+    "bundleId": "city.zoi.app",
+    "sku": "zoi-ios-2026",
+    "provider_read_performed_by": "root; reviewer inspected retained receipt only"
+  },
+  "limits": "No new independent Apple API read, credentials, build/submission or automatic-submit action. Bundle/signing/build/TestFlight availability remain actual release gates. Existing six resolved Expo config cases retained; unchanged app.config not rerun unnecessarily."
+}

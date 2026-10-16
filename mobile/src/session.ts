@@ -7,10 +7,13 @@ export class SessionClient {
   session: Session | null = null;
   private refreshing: Promise<Session> | null = null;
   private generation = 0;
+  private deletionClear: Promise<void> | null = null;
+  private vaultTail: Promise<unknown> = Promise.resolve();
   private vault: Vault;
   private transport: typeof fetch;
   onChange: (session: Session | null) => void = () => {};
   constructor(vault: Vault, transport: typeof fetch = fetch) { this.vault = vault; this.transport = transport.bind(globalThis); }
+  private serializeVault<T>(operation:()=>Promise<T>):Promise<T>{const next=this.vaultTail.catch(()=>{}).then(operation);this.vaultTail=next;return next;}
   async request(path: string, body?: unknown, token?: string, method = 'POST') {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
@@ -19,6 +22,7 @@ export class SessionClient {
       const data = await response.json().catch(() => null);
       if (!response.ok) {
         const known = String(data?.message || data?.error_description || '');
+        if(path==='/functions/v1/account-delete'&&data?.error==='reauthenticate')throw new ApiError('Verification expired. Keep your account for now, then start deletion again to verify a fresh code.',403,'account_delete_reauthenticate');
         // These exact authority receipts require private state to be purged.
         // Preserve only stable allowlisted codes, never database details or provider messages.
         const ownerAuthority = ['/rest/v1/rpc/home_content_get','/rest/v1/rpc/home_content_save','/rest/v1/rpc/bizpage_status'].includes(path);
@@ -51,18 +55,23 @@ export class SessionClient {
   }
   private async accept(data: any, generation: number) {
     if (!data?.access_token || !data?.refresh_token || !data?.user?.id) throw new ApiError('Sign-in did not return a valid session.', 401);
+    if(this.deletionClear)await this.deletionClear;
     if (generation !== this.generation) throw new ApiError('Sign-in was cancelled.', 401);
     const session: Session = { access_token: data.access_token, refresh_token: data.refresh_token, expires_at: data.expires_at || Math.floor(Date.now() / 1000) + (data.expires_in || 3600), user: { id: data.user.id, email: data.user.email } };
     // Store only the refresh credential. Access tokens remain in memory.
-    await this.vault.write(JSON.stringify({ refresh_token: session.refresh_token }));
-    if (generation !== this.generation) { await this.vault.clear(); throw new ApiError('Sign-in was cancelled.', 401); }
+    await this.serializeVault(async()=>{
+      if(generation!==this.generation)throw new ApiError('Sign-in was cancelled.',401);
+      await this.vault.write(JSON.stringify({refresh_token:session.refresh_token}));
+      if(generation!==this.generation){await this.vault.clear();throw new ApiError('Sign-in was cancelled.',401);}
+    });
+    if(generation!==this.generation)throw new ApiError('Sign-in was cancelled.',401);
     this.session = session; this.onChange(session); return session;
   }
   async restore() {
     const stored = await this.vault.read();
     if (!stored) return null;
     let token: string;
-    try { token = JSON.parse(stored).refresh_token; if (!token) throw new Error(); } catch { await this.vault.clear(); return null; }
+    try { token = JSON.parse(stored).refresh_token; if (!token) throw new Error(); } catch { await this.serializeVault(()=>this.vault.clear()); return null; }
     return this.refresh(token);
   }
   async refresh(token = this.session?.refresh_token) {
@@ -71,7 +80,7 @@ export class SessionClient {
     const generation = this.generation;
     this.refreshing = (async () => {
       try { return await this.accept(await this.request('/auth/v1/token?grant_type=refresh_token', { refresh_token: token }), generation); }
-      catch (error) { if (generation === this.generation && error instanceof ApiError && (error.status === 400 || error.status === 401 || error.status === 403)) { this.session = null; await this.vault.clear(); this.onChange(null); } throw error; }
+      catch (error) { if (generation === this.generation && error instanceof ApiError && (error.status === 400 || error.status === 401 || error.status === 403)) { this.session = null; await this.serializeVault(()=>this.vault.clear()); this.onChange(null); } throw error; }
       finally { this.refreshing = null; }
     })();
     return this.refreshing;
@@ -82,6 +91,24 @@ export class SessionClient {
     return this.session!.access_token;
   }
   async sendCode(email: string) { return this.request('/auth/v1/otp', { email, create_user: true }); }
+  async sendDeletionCode() {
+    const actor=this.session?.user.id,email=this.session?.user.email;
+    if(!actor||!email)throw new ApiError('Sign in again before deleting your account.',401);
+    const result=await this.request('/auth/v1/otp',{email,create_user:false});
+    if(this.session?.user.id!==actor)throw new ApiError('Your account changed.',401);return result;
+  }
+  async reauthenticateDeletionCode(code:string) {
+    const actor=this.session?.user.id,email=this.session?.user.email,generation=this.generation;
+    if(!actor||!email)throw new ApiError('Sign in again before deleting your account.',401);
+    const data=await this.request('/auth/v1/verify',{type:'email',email,token:code});
+    if(this.session?.user.id!==actor||data?.user?.id!==actor||this.generation!==generation)throw new ApiError('The verification did not match your current account.',401);
+    return this.accept(data,generation);
+  }
+  async clearDeletedSession() {
+    this.generation++;this.session=null;this.onChange(null);
+    const clearing=this.serializeVault(()=>this.vault.clear());this.deletionClear=clearing;
+    try{await clearing;}finally{if(this.deletionClear===clearing)this.deletionClear=null;}
+  }
   async verifyCode(email: string, code: string) { const generation = this.generation; return this.accept(await this.request('/auth/v1/verify', { type: 'email', email, token: code }), generation); }
   async password(email: string, password: string) { const generation = this.generation; return this.accept(await this.request('/auth/v1/token?grant_type=password', { email, password }), generation); }
   async rpc(name: string, body: unknown) {
@@ -89,7 +116,7 @@ export class SessionClient {
     try { return await this.request('/rest/v1/rpc/' + name, body, token); }
     catch (error) {
       if (error instanceof ApiError && error.status === 401 && this.session?.access_token === token) {
-        this.generation++; this.session = null; this.onChange(null); await this.vault.clear();
+          this.generation++; this.session = null; this.onChange(null); await this.serializeVault(()=>this.vault.clear());
         throw new ApiError('Your session ended. Please sign in again.', 401);
       }
       throw error;
@@ -99,7 +126,7 @@ export class SessionClient {
     const token = this.session?.access_token;
     this.generation++;
     this.session = null; this.onChange(null);
-    await this.vault.clear();
+    await this.serializeVault(()=>this.vault.clear());
     if (token) await this.request('/auth/v1/logout?scope=local', undefined, token);
   }
 }

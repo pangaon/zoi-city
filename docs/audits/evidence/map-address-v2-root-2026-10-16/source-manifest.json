@@ -1,0 +1,236 @@
+{
+  "schema": 1,
+  "state": "FROZEN_V2_SOURCE_CANDIDATE__INDEPENDENT_ROOT_REVIEW_REQUIRED__PROVIDER_DISABLED",
+  "baseline": "a944a5f34d38b353bedae618411079272d9b5bc8",
+  "worktree": "/workspaces/zoi-map-studio-ops-release",
+  "owner": "/root/map_scale_followthrough",
+  "summary": "One shared official-address qualification and finite Nominatim candidate lane connected to existing source consumer, existing singleton/private archive and existing canonical reviewed writer. No competing queue, table, scheduler or coordinate writer.",
+  "source_scope": [
+    "assets/map-data/loader.mjs",
+    "scripts/geography/build-edge-source-consumer.mjs",
+    "scripts/geography/geocoder-candidate-adapter.mjs",
+    "scripts/geography/nominatim-address-candidate.mjs",
+    "scripts/geography/official-address-evidence.mjs",
+    "scripts/geography/repair-job-runner.mjs",
+    "scripts/geography/reviewed-coordinate-request.mjs",
+    "scripts/geography/source-coordinates.mjs",
+    "supabase/functions/geography-repair-source-consumer/index.ts",
+    "supabase/functions/geography-repair-source-consumer/_coordinates.js",
+    "supabase/functions/geography-repair-source-consumer/_runner.js",
+    "supabase/functions/geography-repair-source-consumer/_geocoder-adapter.js",
+    "supabase/functions/geography-repair-source-consumer/_nominatim-address.js",
+    "supabase/functions/geography-repair-source-consumer/_official-address.js",
+    "supabase/migrations/20261016041355_reviewed_official_address_geocode.sql",
+    "tests/database/fixtures/geography-reviewed-address-geocode-contract.json",
+    "tests/database/geography-reviewed-address-geocode.integration.mjs",
+    "tests/unit/fixtures/geography-address-geocode.mjs",
+    "tests/unit/geography-official-address-evidence.test.mjs",
+    "tests/unit/geography-nominatim-address-candidate.test.mjs",
+    "tests/unit/geography-source-consumer.test.mjs"
+  ],
+  "checks": {
+    "units": {
+      "tests": 294,
+      "pass": 293,
+      "fail": 0,
+      "skipped": 1,
+      "skip_reason": "Existing private-source factual test requires separately supplied raw acceptance bytes; actual separate70job/120doc replay completed."
+    },
+    "real_postgres": {
+      "groups": 66,
+      "actual_function_pins": 48,
+      "actual_listing_triggers": 12,
+      "locale": "C.utf8",
+      "production_locale": "Small actual metadata read timed out; no claim production locale verified."
+    },
+    "deno": "cached-only exact Edge entrypoint passed",
+    "whitespace": "git diff --check passed",
+    "retained_replay": {
+      "jobs": 70,
+      "documents": 120,
+      "hashes_verified": true,
+      "existing_result_fields_unchanged": true,
+      "edge_parity": true,
+      "address_research_listings": 9,
+      "address_research_documents": 14,
+      "qualified_official_addresses": 0
+    }
+  },
+  "actual_actions": {
+    "live_database_mutations": 0,
+    "live_geocoder_queries": 0,
+    "paid_api_calls": 0,
+    "deployments": 0,
+    "config_or_bucket_changes": 0,
+    "coordinates_changed": 0,
+    "rendered_or_native_journeys": 0
+  },
+  "authority": {
+    "address": "Explicit source name, street/house, city, postcode and literal country quotes in a unique retained visible contact block; complete source branch/identity review remains independently named, exact captured canonical source job/current generation/private archive checked server-side before provider dispatch and again by canonical writer. Canonical street must equal a complete comma/semicolon/parenthesis/bracket/newline-delimited component under ASCII case/whitespace comparison; never substring or merely word-boundary matching. Undelimited street+city prose and unsupported punctuation boundaries remain held.",
+    "coordinates": "Distinct official_address_geocode_review report and reviewed_geocoded_official_address kind; mapped building/venue centroid, not source GPS, entrance or rooftop. Unknown/unmatched/range/interpolation/area/parking/ambiguity held. Provider response reparsed by SQL with exact request/hash/address/result/primitive provenance binding.",
+    "owner": "Owner/claim/visibility/source holds/profile clears/current source generation/full-row CAS preserved. Source-job lock precedes listing lock. Existing read epoch/replay/revert/application functions stay byte-identical.",
+    "provider": "Finite token-only geocode_manifest action, scheduled tickets refused. Default-off environment flag plus exact expiring3query manifest allowance on existing source singleton.15second spacing after completion, durable reserve before HTTP, no quota refund/automatic retry on unknown. Existing cron, lease, source caps unchanged.",
+    "cache": "Exclusive query reservation and private raw provider JSON/readback/receipt objects in same existing evidence bucket. No public archive, redirect following, provider fallback, SDK model/raw error serialization or client geocoder."
+  },
+  "commands": {
+    "units": "node --test tests/unit/geography-official-address-evidence.test.mjs tests/unit/geography-nominatim-address-candidate.test.mjs tests/unit/geography-source-consumer.test.mjs tests/unit/geography-geocoder-candidate.test.mjs tests/unit/geography-repair-job-runner.test.mjs tests/unit/geography-publisher-source-consumer.test.mjs tests/unit/geography-map-reference-evidence.test.mjs tests/unit/geography-place-destination-evidence.test.mjs tests/unit/geography-wix-business-location-evidence.test.mjs tests/unit/source-coordinates.test.mjs tests/unit/source-shortlink-coordinates.test.mjs tests/unit/reviewed-coordinate-request.test.mjs tests/unit/coordinate-audit-retention.test.mjs tests/unit/explore-geography-ui.test.mjs",
+    "database": "node tests/database/geography-reviewed-address-geocode.integration.mjs",
+    "deno": "npx --yes deno@2.9.6 check --cached-only --no-lock --node-modules-dir=auto supabase/functions/geography-repair-source-consumer/index.ts",
+    "replay": "node /home/codespace/.cache/zoi/map-scale-readonly-20261016/replay-address.mjs",
+    "generator": "node scripts/geography/build-edge-source-consumer.mjs"
+  },
+  "production_gates": [
+    "Root independently accepts exact21file manifest and realPG proof; no production authority inferred from this packet.",
+    "Root refreshes actual48function/12trigger metadata against guarded migration; applies only after isolated/actual rollback checks and required advisors; source producer has no production mutation authority.",
+    "Root updates its existing source-consumer release manifest/bootstrap dependency list for actual21runtime modules, deploys coherent exact graph with provider flag OFF and verifies actual unsigned/default-source behavior.",
+    "Any later canary requires explicit root approval of up to3 current public qualified addresses, prepared current5min manifest, application/json added explicitly to the SAME private bucket MIME allowlist, default-off GEOGRAPHY_ADDRESS_GEOCODING_ENABLED flag, and exact expiring manifest fields on existing singleton. No blanket provider activation, source cron renewal or budget lift.",
+    "All candidate results still require independent actual source/provider/locality acceptance, manual canonical writer apply, public read/render/directions and real web/iOS/Android evidence."
+  ],
+  "remaining_limits": [
+    "Full987recovery and global catalogue accuracy remain open;2174is a loaded map street-position cohort, not full catalogue/pending-work denominator. Last retained global census37764eligible is not refreshed by this task.",
+    "Initial country mapping explicitly AU/CA/CY/DE/FR/GB/GR/KE/NZ/US/ZA/SE/IT/NL. Other countries held. Literal country/postcode, leading exact house number, unsplit range/unit and exact physical road/city spellings required; source/name/region aliases need explicit qualified review and street aliases remain held.",
+    "Full archived source visibility/uniqueness/branch review is an explicit independent service-review trust boundary; SQL validates bounded raw card/quotes + exact source/job/archive, not an HTML browser or a government parcel oracle.",
+    "Building/venue-centre address accuracy is preserved; no rooftop/entrance or named-business certification from an unnamed building.",
+    "Provider availability, ODbL data-layer obligations, production JSON archive, actual source identity/locality and provider call outcomes have not been accepted through a real canary.",
+    "Existing sparse record whose real SEO trigger changes unrelated fields is refused atomically rather than bypassing a canonical trigger.",
+    "Canonical address qualification now conservatively requires an exact explicit street component; undelimited street+city prose is held. No automatic street alias or punctuation deletion."
+  ],
+  "evidence_layers": {
+    "source": "Actual metadata pins; historical raw hashes/replay; controlled source/provider proofs.",
+    "rendered": "New address-centre label tested through shared loader; no actual browser render of a new provider-backed point.",
+    "journey": "Actual existing handler connected to real isolated SQL singleton/snapshot/finite reservation and controlled provider/private archive; no production/provider/customer/native journey."
+  },
+  "references": [
+    "https://operations.osmfoundation.org/policies/nominatim/",
+    "https://nominatim.org/release-docs/latest/api/Search/",
+    "https://nominatim.org/release-docs/latest/api/Output/",
+    "https://www.openstreetmap.org/copyright"
+  ],
+  "evidence_files": [
+    "final-units-v3.log",
+    "final-pg-v3.json",
+    "final-pg-v3.log",
+    "final-deno-v3.log",
+    "retained-address-replay.json",
+    "final-retained-replay.log",
+    "retained-address-signals.json",
+    "actual-cron-metadata.json",
+    "current-writer.sql"
+  ],
+  "at": "2026-10-16T04:46:19.966427+00:00",
+  "files": [
+    {
+      "path": "assets/map-data/loader.mjs",
+      "bytes": 16035,
+      "sha256": "e6d0c85c96f2dc9cc1f09cf820364b6558c92b3f9c484970b86acb907e20b61e"
+    },
+    {
+      "path": "scripts/geography/build-edge-source-consumer.mjs",
+      "bytes": 9919,
+      "sha256": "9dd315a8c4b3380a30d2258f590e8452b2575a0459d1887f62733dbdfbe324bb"
+    },
+    {
+      "path": "scripts/geography/geocoder-candidate-adapter.mjs",
+      "bytes": 14823,
+      "sha256": "beb471a38317fdb9c60687f81b69af8e626b20d399531c0cc46f8afe1716bde0"
+    },
+    {
+      "path": "scripts/geography/nominatim-address-candidate.mjs",
+      "bytes": 9762,
+      "sha256": "ba0ad2f9e7a9b350b492dda54d178b8c8bf5d17d0f5c949d36bfbae2ade6422d"
+    },
+    {
+      "path": "scripts/geography/official-address-evidence.mjs",
+      "bytes": 13226,
+      "sha256": "8faa5f35f1315e9a92605d0166834f4a4ccf114ec26d7ac8cf3fcd17ecb69772"
+    },
+    {
+      "path": "scripts/geography/repair-job-runner.mjs",
+      "bytes": 4704,
+      "sha256": "929a747bd397e775f59fafb282f5da080f8032c18d689b3d058119f5f2024094"
+    },
+    {
+      "path": "scripts/geography/reviewed-coordinate-request.mjs",
+      "bytes": 5525,
+      "sha256": "4073c6b2129407275a0f5d51ec4aa821605ab09332545db711c4b1e079c3a0fb"
+    },
+    {
+      "path": "scripts/geography/source-coordinates.mjs",
+      "bytes": 21496,
+      "sha256": "e36c035a07bd64d76a7608519f789cba41953997491f98c9b6033676bab5a0b6"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/index.ts",
+      "bytes": 19560,
+      "sha256": "0241762cd5ebefa4a6de7ef5533deda1e0a4979858ede3b1afa7f591bb249363"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_coordinates.js",
+      "bytes": 21489,
+      "sha256": "c6f2fed3a01d5defaa9bee7651d8b4075e65c64d402b010c3f6e35d4e8fb0fe4"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_runner.js",
+      "bytes": 5380,
+      "sha256": "186c4c7ee96be58754b5ba90e4b4035285101cce3febe1d0c430107e8008ff12"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_geocoder-adapter.js",
+      "bytes": 10779,
+      "sha256": "6f85ad87ab31d1ecdd767ec3e0830eb3c00d6401f77c5fe6833f54130d2d62db"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_nominatim-address.js",
+      "bytes": 9810,
+      "sha256": "afb1f64dbe527bd86d5b2b0afc1bae32238a6241951edc6bd3c144733a0edb6d"
+    },
+    {
+      "path": "supabase/functions/geography-repair-source-consumer/_official-address.js",
+      "bytes": 13221,
+      "sha256": "87c868804af066157ced0d776bf074ebc949ac42d3d748daac398b5a737f6d82"
+    },
+    {
+      "path": "supabase/migrations/20261016041355_reviewed_official_address_geocode.sql",
+      "bytes": 64068,
+      "sha256": "e8e6bbace68c26d42bb9bf099bc26db72acfb14e505858c22ee6fc7f108f4570"
+    },
+    {
+      "path": "tests/database/fixtures/geography-reviewed-address-geocode-contract.json",
+      "bytes": 135223,
+      "sha256": "951c46372aa58e645b1c2694bde6a9eee2e3c8837013e6684823de4789ba0e6e"
+    },
+    {
+      "path": "tests/database/geography-reviewed-address-geocode.integration.mjs",
+      "bytes": 32829,
+      "sha256": "6c3662daadbc1162664a159b7a8ac19f73b854882a0304bd37280d79b59f9e32"
+    },
+    {
+      "path": "tests/unit/fixtures/geography-address-geocode.mjs",
+      "bytes": 4599,
+      "sha256": "0808433721ae2214d187b19d2ef5e58d3b5634e6b87896c761e6b5239aeb4dad"
+    },
+    {
+      "path": "tests/unit/geography-official-address-evidence.test.mjs",
+      "bytes": 5968,
+      "sha256": "7a46ca363d9306af8ec173652c4decefae0cee2bd58ae39e0962843f767a6e07"
+    },
+    {
+      "path": "tests/unit/geography-nominatim-address-candidate.test.mjs",
+      "bytes": 10724,
+      "sha256": "c8559c45899eb067f7f433b8e96fb87ba6309c9d6ad6d21414c9a72bb225b25d"
+    },
+    {
+      "path": "tests/unit/geography-source-consumer.test.mjs",
+      "bytes": 20700,
+      "sha256": "3e2778d99872bd32b4e9560e23b5e231ece6f7c7195f64a85d4aceb7b700a152"
+    }
+  ],
+  "supersedes_held_manifest_sha256": "d9809bd93cd947095f50ec3e55aaa3b1265a5335480dc1e8bccfd1da46df2638",
+  "changed_from_held_v1": [
+    "scripts/geography/official-address-evidence.mjs",
+    "supabase/functions/geography-repair-source-consumer/_official-address.js",
+    "supabase/migrations/20261016041355_reviewed_official_address_geocode.sql",
+    "tests/database/geography-reviewed-address-geocode.integration.mjs",
+    "tests/unit/geography-official-address-evidence.test.mjs"
+  ]
+}

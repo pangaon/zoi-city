@@ -3,6 +3,7 @@ import {inspectSourceDocument} from '../../supabase/functions/zoi-enrich/_docume
 import {placeDestinationSupport} from './place-destination-evidence.mjs';
 import {wixBusinessLocationSupport} from './wix-business-location-evidence.mjs';
 import {mapReferenceSupport} from './map-reference-evidence.mjs';
+import {observeOfficialAddresses} from './official-address-evidence.mjs';
 const norm=v=>typeof v==='string'?v.normalize('NFKC').toLowerCase().replace(/[\p{P}\p{S}\s]+/gu,' ').trim():'';
 const host=u=>{try{const v=new URL(u);return v.protocol==='https:'&&!v.username&&!v.password?v.hostname.replace(/^www\./,''):null}catch{return null}};
 const sourceWithin=(url,website)=>{try{const a=new URL(url),b=new URL(website),base=b.pathname.replace(/\/$/,'');return host(url)===host(website)&&(!base||a.pathname===base||a.pathname.startsWith(base+'/'));}catch{return false}};
@@ -135,6 +136,8 @@ export function extractSourceCoordinates(html,row,{sourceUrl=row.website,httpSta
  // never its other hotels' structured data or unreviewed links.
  if(!sourceWithin(sourceUrl,row.website))return namedPlace?{...result,reason:'coordinate_plausibility_review_required',candidate:namedPlace}:refuse('source_identity_mismatch');
  const candidates=[],unmatched=[];let addressMismatch=false;
+ const addressObservation=observeOfficialAddresses(String(html),row,{sourceUrl,httpStatus});
+ if(addressObservation)result.supporting_official_address=addressObservation;
  if(namedPlace)candidates.push(namedPlace);
  const structuredDoc=String(html).replace(/<!--[\s\S]*?-->/g,'').replace(/<(template|noscript|style)\b[^>]*>[\s\S]*?<\/\1\s*>/gi,'');
  for(const m of structuredDoc.matchAll(/<script\b[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script\s*>/gi)){
