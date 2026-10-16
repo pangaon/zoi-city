@@ -1,0 +1,80 @@
+{
+  "schema": 1,
+  "date_utc": "2026-10-16",
+  "reviewer": "/root/qa_next",
+  "status": "ACCEPTED_PORTABILITY_V2_ONE_PUBLIC_SOURCE_CREDENTIAL_REDACTION",
+  "predecessor_unchanged": {
+    "path": "/workspaces/zoi-city-release/docs/audits/enrichment-source-fixture-portability-independent-2026-10-16.json",
+    "sha256": "e85dbf759a5e72a6501eafe35e86ab2deb068dcdcab0b1621db1707ee6cac112",
+    "bytes": 4015
+  },
+  "sources": [
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/unit/enrichment-source-context.test.mjs",
+      "sha256": "eb0341dbcd2112373baa6eed16873003ece3914632bb295b373cd4698e5cfcda",
+      "bytes": 29490
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/fixtures/enrichment-source-context/manifest.json",
+      "sha256": "032db43c3c47f1c706c9d14803f895834a03b158576625a78f19db573b4c5f9d",
+      "bytes": 1578
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/fixtures/enrichment-source-context/renzios.html.txt",
+      "sha256": "22b1d27c42d46a8d2fa68c096429418543d35b23d3b25d3ead30c4a2895135a5",
+      "bytes": 360223
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/fixtures/enrichment-source-context/oslo-1.html.txt",
+      "sha256": "59f86336e060303702845f0ad18ccb18b2908878e3fe11b563a0ade182c6be73",
+      "bytes": 139697
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/fixtures/enrichment-source-context/st-catherine.html.txt",
+      "sha256": "ac2bba1bd63c7fccd8a8362d268becb7f341229b9fff2fe0d022165492c32002",
+      "bytes": 288359
+    }
+  ],
+  "evidence_manifest": {
+    "path": "/workspaces/zoi-city-release/docs/audits/evidence/enrichment-source-fixture-portability-independent-v2-2026-10-16/manifest.json",
+    "sha256": "3ba34adbc840ce90a91b5830992deecb110dd81618f49dbd9d211f45f21324eb",
+    "bytes": 9620
+  },
+  "byte_comparison": {
+    "original_sha256": "5f1f277f8e6796f82de48938d8e48ec4abd479fc1ad6670ea7898d62d49594cf",
+    "redacted_sha256": "59f86336e060303702845f0ad18ccb18b2908878e3fe11b563a0ade182c6be73",
+    "original_signature_occurrences": 1,
+    "removed_signature_bytes": 39,
+    "replacement": "REDACTED_PUBLIC_SOURCE_GOOGLE_API_KEY_00",
+    "all_other_fixture_bytes_identical": true,
+    "remaining_signature_count": 0,
+    "other_two_fixtures_unchanged": true,
+    "test_delta": "Exactly the Oslo expected digest changed from predecessor test; all106 assertions and37 declarations remain.",
+    "manifest": "Original source hash retained as provenance; current SHA/size and one redaction explicitly recorded."
+  },
+  "verification": {
+    "isolated_focused": {
+      "pass": 131,
+      "fail": 0,
+      "private_capture_cache_access": "Denied by the same predecessor fs guard. No raw private HTML directory copied."
+    },
+    "canonical_render": {
+      "all12_renders_pass": true,
+      "affected_oslo_widths": [
+        390,
+        1440
+      ],
+      "active_DOM_cases": 38,
+      "extended_browser_cases": 12,
+      "external_image_downloads": 0,
+      "hosted_writes": 0,
+      "controlled": "Existing canonical renderer source unchanged. Real worker/extractor + controlled public-reader transport. Local Playwright/Chromium explicit prerequisite; no new fetch/provider/identity approval."
+    },
+    "credential_handling": "Key never printed or copied into Git-facing proof. Current new proof scanned for signature; zero matches. Raw predecessor HTML stays private cache only."
+  },
+  "limits": [
+    "Test fixture correction and controlled regression only; no full repository CI, hosted actions, source identity approval or category/whole-site completion.",
+    "Existing predecessor audit/evidence retained unchanged; new audit accepts the redacted V2 fixture.",
+    "Reviewer edited only new audit/proofs/private isolated test copies; root runtime and frozen source unchanged."
+  ]
+}

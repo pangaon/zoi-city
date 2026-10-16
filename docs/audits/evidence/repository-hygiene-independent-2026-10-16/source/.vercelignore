@@ -1,0 +1,37 @@
+# Public pages/assets and api/ remain deployable. Review and operator material
+# is not a public asset. The audit-evidence denial endpoint stays deployed.
+/docs/
+/tests/
+/ops/
+/research/
+/.github/
+/mobile/
+/artifacts/
+/coverage/
+/test-results/
+/playwright-report/
+/dist/
+/web-build/
+**/.recovery/
+**/.cache/
+**/.expo/
+**/__pycache__/
+/*.whl
+/*.apk
+/*.aab
+/*.ipa
+/*.tgz
+/*.tar.gz
+
+# Retain the ignore-command entrypoint. Other scripts are CI/operator tools.
+/scripts/*
+!/scripts/vercel-ignore.mjs
+
+# Several web modules import shared helpers from supabase/functions, so do not
+# exclude that tree. Database/Edge entrypoints are not web entrypoints.
+/supabase/migrations/
+/supabase/config.toml
+/supabase/seed.sql
+/supabase/.temp/
+/supabase/.branches/
+/supabase/functions/**/index.ts

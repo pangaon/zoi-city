@@ -1,0 +1,68 @@
+{
+  "schema": 1,
+  "reviewer": "/root/qa_next",
+  "status": "HOLD_ADDITIVE_SCOPE_CHANGE_LOSS",
+  "date_utc": "2026-10-16",
+  "source_root": "/workspaces/zoi-map-studio-ops-release",
+  "sources": [
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/scripts/delivery/queue.mjs",
+      "sha256": "66a37af7c1b73fc6c9cc9882842cc7db3a7f25af7fc57e5220ae6e1f483a0920",
+      "bytes": 11058
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/tests/unit/delivery-queue.test.mjs",
+      "sha256": "0617820f9d6d374d575101ce1e8562970d6efa4fd923248654baf874151f5be0",
+      "bytes": 10137
+    },
+    {
+      "path": "/workspaces/zoi-map-studio-ops-release/scripts/delivery/ledger.mjs",
+      "sha256": "5f27359549477a65189e9a3df11c4f9e1883150361cc10e6cff33736c64399c6",
+      "bytes": 8664
+    }
+  ],
+  "owner_audit": {
+    "path": "/workspaces/zoi-map-studio-ops-release/docs/audits/delivery-queue-preservation-owner-2026-10-16.json",
+    "sha256": "b7be87b8b3424dc44da0460fb163f609efa037b9c301ccd2e2e6c895c886deeb",
+    "bytes": 4328
+  },
+  "verification": {
+    "supplied_focused_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "actual987_noop": "Every actual row/order/value and all nonderived existing top-level fields preserved exactly; original inputs unmodified. No board write.",
+    "added_id": "Existing priority/row explicit empty/null/status/acceptance fields retained; newly reported item appends with open defaults. Prior scope_change reason/evidence/reviewer/custom metadata lost.",
+    "identity_refusal": "Supplied temp CLI/pure tests refuse removal, duplicate ID, changed text/source and malformed report, preserving original bytes on refusal.",
+    "file_semantics": "Same-directory exclusive temporary write/rename; observed board/scope modifications checked. Explicit one coordinated writer requirement remains; not a filesystem CAS guarantee."
+  },
+  "finding": {
+    "severity": "must fix before additive synchronization acceptance",
+    "location": "scripts/delivery/queue.mjs: scope_change assignment guarded by added.length",
+    "reproduction": "Append one new ID to a board whose scope_change contains reason, evidence, reviewed_by and custom fields. All prior fields disappear when the assignment replaces the object.",
+    "expected": "Preserve maintained scope_change, including explicit null/empty and evidence, while reporting new derived counts separately or retaining original record with explicit history.",
+    "actual_probe": "result.json addition.old_scope_change_evidence_retained=false"
+  },
+  "evidence": [
+    {
+      "path": "/workspaces/zoi-city-release/docs/audits/evidence/delivery-queue-preservation-independent-2026-10-16/focused.log",
+      "sha256": "5943f826ca5e9968c5bb836fe5617bcec61882dd05afc20860c45ebd5c0db12a",
+      "bytes": 954
+    },
+    {
+      "path": "/workspaces/zoi-city-release/docs/audits/evidence/delivery-queue-preservation-independent-2026-10-16/probe.mjs",
+      "sha256": "59aa3aa731ff946909972f2d96aa9d678707acf0a09be8ce8dfc1b18ce9333a6",
+      "bytes": 2596
+    },
+    {
+      "path": "/workspaces/zoi-city-release/docs/audits/evidence/delivery-queue-preservation-independent-2026-10-16/result.json",
+      "sha256": "eb1a203986f6b77d293007abf093e093eb265e52cc4a5432b088a9300ce8830d",
+      "bytes": 1130
+    }
+  ],
+  "limits": [
+    "No source edits, actual board generator invocation/write, database, provider, Auth, device, deployment or capacity verification.",
+    "Current987 no-op acceptance does not establish additive scope-change preservation.",
+    "Two-source frozen owner packet remains untouched."
+  ]
+}

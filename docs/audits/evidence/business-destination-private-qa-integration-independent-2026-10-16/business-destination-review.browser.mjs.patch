@@ -1,0 +1,20 @@
+--- owner/tests/database/business-destination-review.browser.mjs
++++ integrated/tests/database/business-destination-review.browser.mjs
+@@ -41,7 +41,16 @@
+   if(width===390){await page.getByRole('button',{name:'Check saved result',exact:true}).waitFor();await page.reload();await page.waitForFunction(()=>window.ready);await page.locator('[data-view=list]').click();await page.getByText(draft.post.body,{exact:true}).click();await page.getByRole('button',{name:'Review destinations',exact:true}).click();await page.getByRole('button',{name:'Check saved result',exact:true}).click();}
+   await page.getByText('Saved as a Zoi Community draft. Nothing was sent.',{exact:true}).first().waitFor();await page.screenshot({path:join(dest,width+'-prepared.png'),fullPage:true});
+   let saved=json(`select public.business_creative_destinations_context('${ws}','${post}')`);assert.equal(saved.post.id,post);assert.deepEqual(saved.post.channels,['zoi']);assert.equal(saved.post.scheduled_at,null);
+-  for(const role of ['edit','dup','rp7','rp30'])assert.equal(await page.locator('[data-role='+role+']').isDisabled(),true);await page.getByRole('button',{name:'Edit in Composer',exact:true}).click();await page.locator('.zc-ta').waitFor();await page.waitForFunction(()=>document.querySelector('.zc-ta').value.startsWith('Reviewed owner copy'));
++  for(const role of ['edit','dup','rp7','rp30'])assert.equal(await page.locator('[data-role='+role+']').isDisabled(),true);
++  if(width===1440){
++   await page.keyboard.press('Escape');
++   await page.getByText(draft.post.body,{exact:true}).click();
++   await page.getByRole('button',{name:'Review destinations',exact:true}).click();
++   await page.getByText('Saved privately. Not scheduled or published.',{exact:true}).waitFor();
++   await page.keyboard.press('Escape');
++   await page.getByText(draft.post.body,{exact:true}).click();
++  }
++  await page.getByRole('button',{name:'Edit in Composer',exact:true}).click();await page.locator('.zc-ta').waitFor();await page.waitForFunction(()=>document.querySelector('.zc-ta').value.startsWith('Reviewed owner copy'));
+   assert.equal(await page.locator('[data-role=publish]').isDisabled(),true);assert.equal(await page.locator('[data-role=schedule]').isDisabled(),true);assert.equal(await page.locator('.zc-chip.on').count(),1);await page.locator('.zc-ta').fill('Reviewed owner edit · Ελληνικά '+width);await page.locator('[data-role=draft]').click();
+   if(width===390){await page.getByRole('button',{name:'Retry original draft save',exact:true}).waitFor();await page.locator('.zc-ta').fill('Later unconfirmed changed form');await page.getByRole('button',{name:'Retry original draft save',exact:true}).click();}
+   if(width===1440)await page.getByText('Draft saved.',{exact:true}).waitFor();await page.waitForFunction(({text})=>document.querySelector('.zc-ta').value===text,{text:'Reviewed owner edit · Ελληνικά '+width});

@@ -1,0 +1,93 @@
+{
+  "version": 2,
+  "at": "2026-10-16T01:12:39.384333+00:00",
+  "status": "source frozen; independent gate required before integration/release",
+  "author": "/root/owner_next",
+  "baseline": "be474208951688119e3f514b129ff46ab415addf",
+  "runtime_scope": [
+    "scripts/delivery/queue.mjs"
+  ],
+  "test_scope": [
+    "tests/unit/delivery-queue.test.mjs"
+  ],
+  "changes": [
+    "Remove historical owner/release/reconciliation resets and retain maintained current instruction and unknown top-level state.",
+    "Preserve existing requirement rows exactly, including order, evidence/status/acceptance, explicit clears and absent fields; never merge stale report fields into them.",
+    "Append newly discovered requirement IDs with open defaults; refuse removed/reused/duplicate identities instead of dropping recorded work.",
+    "Preserve maintained scope_change for all synchronization cases and recompute group counts without resetting maintained group owners/status/acceptance.",
+    "Import has no board IO. CLI writes through a same-directory temporary file and refuses already-observed board/scope edits."
+  ],
+  "verification": {
+    "focused": {
+      "command": "node --test tests/unit/delivery-queue.test.mjs",
+      "groups": 7,
+      "pass": 7
+    },
+    "syntax_and_scoped_diff_check": "pass",
+    "actual_board": {
+      "status": "pass",
+      "method": "pure in-memory synchronization; no board write",
+      "prior": 987,
+      "current": 987,
+      "full_existing_rows_preserved": true,
+      "maintained_fields_preserved": true,
+      "input_unmutated": true,
+      "actual_inputs_unchanged": {
+        "docs/recovery-delivery-board.json": "c4f45efa7f2bbecdf47f50ab8ca874ddca4a6c218e922ebcb13cdd59e6c54ba3",
+        "docs/recovery-scope.json": "187be1f1aa8dd57fb27ad2fff4ac4b2277423a033ffc94ac61b7ef1620b3f7f0",
+        "docs/delivery-evidence.json": "8a6ef431c0097b0a9ed7d551845c95d039c95d7c55295563e0b820e102fa9f0f"
+      },
+      "qualification": "Inherited V1 pure in-memory proof; V2 changes only additive scope_change branch plus fixture metadata. Actual board remains untouched."
+    }
+  },
+  "limits": [
+    "No actual generator invocation or write against maintained board/scope/ledger. CLI exercised only with disposable temporary fixtures.",
+    "Observed-change refusal is not a filesystem CAS/lock protocol; maintain one coordinated board writer.",
+    "No deployment, database, provider, browser, device or capacity verification performed.",
+    "Core five hygiene sources remain independently frozen and unchanged by this packet."
+  ],
+  "source_manifest": {
+    "path": "docs/audits/evidence/delivery-queue-preservation-owner-v2-2026-10-16/source-manifest.json",
+    "sha256": "b34c03244cebfcd4698e5ce2e205739feb9b8081f1ea6a6857aba95da9088753"
+  },
+  "sources": [
+    {
+      "path": "scripts/delivery/queue.mjs",
+      "sha256": "e2c8826c2fb33c86f48cc55c8f5f44bca7bd399e1d7a9cd2505c0603a5b386d3",
+      "bytes": 11044
+    },
+    {
+      "path": "tests/unit/delivery-queue.test.mjs",
+      "sha256": "e5a7fffc438889e7e6e4df7fb69fb1c70601cce56e2f3379059d69a073cff037",
+      "bytes": 10214
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-v2-2026-10-16/focused.log",
+      "sha256": "e5b6f4cf6b919bbc0dffacd80c3c9f86233897c0bcc14f30f211cc02ca6a2a8d",
+      "bytes": 954
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-v2-2026-10-16/source/scripts/delivery/queue.mjs",
+      "sha256": "e2c8826c2fb33c86f48cc55c8f5f44bca7bd399e1d7a9cd2505c0603a5b386d3",
+      "bytes": 11044
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-v2-2026-10-16/source/tests/unit/delivery-queue.test.mjs",
+      "sha256": "e5a7fffc438889e7e6e4df7fb69fb1c70601cce56e2f3379059d69a073cff037",
+      "bytes": 10214
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-v2-2026-10-16/source-manifest.json",
+      "sha256": "b34c03244cebfcd4698e5ce2e205739feb9b8081f1ea6a6857aba95da9088753",
+      "bytes": 412
+    }
+  ],
+  "prior_held_audit": {
+    "path": "docs/audits/delivery-queue-preservation-owner-2026-10-16.json",
+    "sha256": "b7be87b8b3424dc44da0460fb163f609efa037b9c301ccd2e2e6c895c886deeb",
+    "finding": "Additive requirements replaced maintained scope_change; original source/evidence remains immutable."
+  },
+  "repair": "Existing scope_change is preserved exactly for additive and no-op sync. Initialize only when absent; existing scope_statement_count reports current derived total. No additional metadata store."
+}

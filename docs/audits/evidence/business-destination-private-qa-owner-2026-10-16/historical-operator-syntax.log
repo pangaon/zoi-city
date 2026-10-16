@@ -1,0 +1,163 @@
+PASS exact retained10 definitions installed; writer security drift refuses before any ledger; canonical bodies and ACLs unchanged
+PASS actual first-Studio7 and asset7 definitions/schema/policies pinned; new sidecar/functions/restrictive policies installed locally
+PASS private sidecar/trigger cannot be read or called directly; public methods have exact current-user versus service ACLs and empty search paths
+PASS both new restrictive policies preserve unrelated legacy upload/delete behavior and deny malformed ungranted reserved paths
+PASS root-only catalog/ACL/Storage restrictive-policy/no-session rollback fixture passes locally without grants/assets/posts
+PASS old canonical recover cannot cancel another actor upload grant even when authorized for the same workspace/listing
+PASS current-session grants derive separate original/output paths even with identical bytes; authenticated upload policy and service-only proof record exact object identity
+PASS ordinary actor cannot forge proof or DELETE/reupload unresolved proof-bearing image
+PASS server-proof consume atomically registers canonical original/output assets and one existing campaign draft; exact replay returns same ids without duplicate assets/posts
+PASS existing canonical draft reader reopens editable recipe and correct asset relationship; altered retry refuses
+PASS cleanup cannot remove already registered draft assets
+PASS serialized cancellation tombstone blocks delayed save and exact-path recreation after completed cleanup
+PASS old source writer cannot hijack a granted render nonce with another payload; unrelated first-Studio receipts keep their ordinary behavior
+PASS real two-backend old cancel before new grant serializes on canonical lock order and refuses conflicting actor; no orphan grant
+PASS real two-backend grant before old cancel serializes and guard refuses cross-actor cancellation without deadlock
+PASS real two-backend cleanup before save closes nonce; delayed canonical save returns cancellation, no assets or post
+PASS real two-backend save before cleanup retains registered canonical assets and objects; no reverse workspace/object lock wait
+PASS Storage RLS fails closed immediately on busy nonce rather than holding object locks while waiting on canonical writers
+PASS real two-backend Storage object-first delete versus nonce-first final consume fails closed without deadlock and preserves the verified object
+PASS same path with changed object identity/version cannot consume old durable proof
+PASS caption-only canonical edit re-verifies registered original/output objects and preserves both asset ids without duplication
+PASS exact existing getter metadata drift refuses; full migration rollback restores helper absence before local installation
+PASS published public response/projection and immutable legacy receipt remain byte-identical; existing composed draft remains current
+PASS actual hidden draft remains anonymous NULL; authenticated exact owner getter emits explicit private identity and JS/SQL projection parity; public branch rejects private envelope
+PASS private source denies anonymous/service/viewer/foreign workspace and stale snapshot isolation without public bypass
+PASS browser-supplied private type/generation/facts grant no source authority; canonical exact current source equality refuses all forged variants
+PASS real canonical private creative save/get/receipt/replay succeeds with genuinely hidden source and one existing post, no public fixture
+PASS all destination context/prepare/edit/recover paths use same private source and same Community-only draft with no send/schedule
+PASS actual canonical owner base NULL/empty/replacement changes invalidate private source; explicit clears never revive imported/public prior copy
+PASS held private imports remain withheld; canonical explicit owner copy retains precedence under source holds
+PASS private staged base/profile null/removal composition equals captured canonical preview while source getter itself writes no preview receipt or public status
+PASS current staged revision increments invalidate source generation; stale baseline refuses rather than silently using old staged content
+PASS four actual two-backend listing waits refuse owner-edit/publication/owner-transfer/visibility changes before any new private receipt
+PASS current actual SID expiry and role revocation refuse private source and canonical write
+PASS real two-backend membership row wait observes committed revocation before private creative write
+PASS real two-backend listing-first staged source generation change refuses old private context
+PASS hiding a published reference never silently converts it into a private source; legacy receipt remains historical then exact current value returns
+PASS actual private Raster context/Storage INSERT/proof/final consume succeeds with original byte/object authority unchanged, no fake public source
+PASS real two-backend private output object-version race refuses stale proof on final consume without receipt/registered asset creation
+PASS private Storage INSERT completes under held listing with150ms bound: source assembly acquires no listing lock after nonce
+PASS later canonical private final consume rechecks source under listing lock even when earlier Storage permission succeeded
+PASS all local private journeys preserve exact listing row/public reader body and public invisibility; no owner/source fact mutation by source or creative writers
+PASS 37 exact function body/ACL/config/owner/volatility pins match the real isolated accepted composition
+node:internal/errors:985
+  const err = new Error(message);
+              ^
+
+Error: Command failed: /usr/lib/postgresql/16/bin/psql -X -qAt -v ON_ERROR_STOP=1 -c set role postgres;-- ROOT-ONLY reviewed operator SQL. Never called by the QA workflow.
+-- Root supplies SET LOCAL zoi.qa_request / zoi.qa_issued / zoi.qa_expires
+-- immediately after BEGIN. Restore additionally requires zoi.qa_sid from the
+-- actual currently live dedicated QA auth.sessions row. No tokens are needed.
+BEGIN;select set_config('zoi.qa_request','33333333-3333-4333-8333-333333333333',true),set_config('zoi.qa_issued','2026-10-16T00:53:08.875Z',true),set_config('zoi.qa_expires','2026-10-16T01:03:13.875Z',true),set_config('zoi.qa_sid','55555555-5555-4555-8555-555555555555',true);
+SET LOCAL statement_timeout='5s';
+SET LOCAL lock_timeout='1s';
+DO $qa$
+DECLARE
+ fixture constant uuid:='48c711ee-e83b-4ce2-a7cc-4126d713048a';
+ workspace constant uuid:='053a5656-b19b-48a4-8721-65c4674f647c';
+ profile constant uuid:='21a04e78-e3b1-448e-8517-47aad25dd5da';
+ actor constant uuid:='2ba5b8e3-4fe9-4ec7-a3bf-7f616fcf07fd';
+ request uuid:=nullif(current_setting('zoi.qa_request',true),'')::uuid;
+ issued timestamptz:=nullif(current_setting('zoi.qa_issued',true),'')::timestamptz;
+ expires timestamptz:=nullif(current_setting('zoi.qa_expires',true),'')::timestamptz;
+ ids uuid[]:='{}';
+ kind text; b bytea; n uuid;
+ l zoi.listings; before_row jsonb; after_row jsonb;
+ before_receipts text; before_owner_receipts text;
+
+BEGIN
+ IF current_user IS DISTINCT FROM 'postgres'OR current_setting('transaction_isolation')IS DISTINCT FROM 'read committed'OR request IS NULL OR issued IS NULL OR expires IS NULL OR issued>clock_timestamp()OR expires<=issued OR expires-issued>interval'30minutes'OR clock_timestamp()>=expires+interval'0seconds' THEN RAISE EXCEPTION 'private_qa_operator_scope';END IF;
+ FOREACH kind IN ARRAY ARRAY['create','prepare','edit','stale']LOOP
+  b:=decode(substr(encode(sha256(convert_to(request::text||':private-destination:'||kind,'UTF8')),'hex'),1,32),'hex');
+  b:=set_byte(b,6,(get_byte(b,6)&15)|64);b:=set_byte(b,8,(get_byte(b,8)&63)|128);ids:=array_append(ids,encode(b,'hex')::uuid);
+ END LOOP;
+ PERFORM pg_advisory_xact_lock(hashtextextended('private-owner-qa:'||fixture::text,0));
+ PERFORM 1 FROM zoi.workspaces WHERE id=workspace AND owner_profile_id=profile FOR SHARE;
+ IF NOT FOUND OR NOT EXISTS(SELECT 1 FROM zoi.workspace_members m JOIN zoi.user_profiles p ON p.id=m.profile_id JOIN auth.users u ON u.id=p.auth_user_id WHERE m.workspace_id=workspace AND m.profile_id=profile AND m.role='owner'AND p.auth_user_id=actor AND u.deleted_at IS NULL AND NOT coalesce(u.is_anonymous,false)AND(u.banned_until IS NULL OR u.banned_until<clock_timestamp()))THEN RAISE EXCEPTION 'private_qa_owner_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.bizpage_get(uuid,uuid)')AND md5(p.prosrc)='762e9d53fd0808287f467b1beb43b577'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_destinations_context(uuid,uuid)')AND md5(p.prosrc)='d9a0ccd7a47870eb99ce1afb96b59b60'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_destinations_prepare(uuid,uuid,uuid,timestamptz)')AND md5(p.prosrc)='7a8bc6bdd8f0857c708818e55579a28e'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_destinations_recover(uuid,uuid,uuid,boolean)')AND md5(p.prosrc)='4b19e6524eeeaeaf08c90820b00ecef5'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_destinations_save(uuid,uuid,uuid,jsonb)')AND md5(p.prosrc)='df1bb3cd194eeb52379d599473884e70'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_draft_get(uuid,uuid)')AND md5(p.prosrc)='aaa8afaee244331f54fbb89739ac473e'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_draft_recover(uuid,uuid,uuid,boolean)')AND md5(p.prosrc)='7f7ff39cf9bda34c23104ae31da9d6d8'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_draft_save(uuid,uuid,uuid,jsonb)')AND md5(p.prosrc)='6108c251e0e4400c5c685a5184409473'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_render_save(uuid,uuid,uuid,jsonb)')AND md5(p.prosrc)='503dd6c3c0fef485ea83b60adaf7395f'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.business_creative_source_get(uuid,uuid)')AND md5(p.prosrc)='5d55671f80cea03d9c15a495b79fffbb'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.canonical_draft_context(uuid,uuid)')AND md5(p.prosrc)='bef2d5f9c0ca14096273b408dd5677a3'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.home_content_get(uuid,uuid)')AND md5(p.prosrc)='45e1ecd88333050e701874d52be24fd9'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.home_entity(text)')AND md5(p.prosrc)='663211d51b2cf63c8c457e2a52e48781'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,service_role=X/postgres,anon=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='s')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.home_revision_get(uuid,uuid)')AND md5(p.prosrc)='48962afd66063e925d2cee6f357985f5'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.home_revision_preview_data(uuid,uuid,integer)')AND md5(p.prosrc)='e16191f11c4e834de43b364ca1256c64'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.social_delete_post(uuid,uuid)')AND md5(p.prosrc)='d39e66918582c45e64f9dffef73663a0'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('public.social_save_post(uuid,text,text[],timestamp with time zone,text,jsonb,text,jsonb,uuid)')AND md5(p.prosrc)='62569b74f0831a60bf2d2688f0e48ac5'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres,service_role=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.assert_workspace_write(uuid,text[])')AND md5(p.prosrc)='0a1b64d6adee0e63726bab3c08b0be53'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.assert_ws(uuid)')AND md5(p.prosrc)='cdd352da7228d4c2f09be3db3938f6ac'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM 'None'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.bizpage_can_edit(uuid,uuid)')AND md5(p.prosrc)='41755c2fefb23b87bba8a6d6ab05209d'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM 'None'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_current_entity(uuid,uuid)')AND md5(p.prosrc)='b7f3778583d734a4fb265a0060d7c52c'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_current_source(uuid,uuid)')AND md5(p.prosrc)='dbe2a7f01b37938faf4ccabf1818e981'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_destination_context(uuid,uuid,uuid)')AND md5(p.prosrc)='71590d7bb12a28d9af0cb06f1ce5f1b7'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_destination_media(uuid,zoi.social_posts,uuid)')AND md5(p.prosrc)='99348d129e796cb7c627f47851145d73'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_project_layer(jsonb,text)')AND md5(p.prosrc)='badc443c9f3b1b1b189b93aa59680a18'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=falseAND p.provolatile='i')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_receipt(uuid,uuid,uuid)')AND md5(p.prosrc)='c054fe05d759765274b3b0329a536cb9'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_receipt_immutable()')AND md5(p.prosrc)='dcf7fdfa14eb4b258697d9e852a442c8'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=falseAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.business_creative_source(jsonb)')AND md5(p.prosrc)='555c138eb4f29e2ee0a533ba5e573004'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=falseAND p.provolatile='i')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.home_content_authorize(uuid,uuid)')AND md5(p.prosrc)='d5e39d01982e0a8103e71d2e296d28cd'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.home_content_get_before_revision(uuid,uuid)')AND md5(p.prosrc)='2b9a5b832ee37571131cfadc1a9b8975'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.home_content_version(zoi.listings)')AND md5(p.prosrc)='a886a454670dd1b27164734df60b5c1a'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=falseAND p.provolatile='s')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.home_revision_baseline(zoi.listings)')AND md5(p.prosrc)='51700e905fd87e5c95967bd0a044baec'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=falseAND p.provolatile='s')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.public_owner_content(uuid)')AND md5(p.prosrc)='3e0c2c40cb341e3c72aed3dadf30cfd1'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='s')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.studio_media_insert_allowed(text,text)')AND md5(p.prosrc)='bdda95cd101fd7f275dbf8c9d4349b26'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres,authenticated=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.studio_media_receipt_guard()')AND md5(p.prosrc)='693d1e44c0c2337d9398bc1f55e599cc'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.studio_render_context(uuid,uuid,uuid,jsonb)')AND md5(p.prosrc)='72ca01a58c245ed55a5cefd6e1573fe0'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='v')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF NOT EXISTS(SELECT 1 FROM pg_proc p WHERE p.oid=to_regprocedure('zoi.suite_current_session()')AND md5(p.prosrc)='70cb927f126f251f229c450bf9f792e8'AND pg_get_userbyid(p.proowner)='postgres'AND p.proacl::text IS NOT DISTINCT FROM '{postgres=X/postgres}'AND p.proconfig IS NOT DISTINCT FROM ARRAY['search_path=""']::text[]AND p.prosecdef=trueAND p.provolatile='s')THEN RAISE EXCEPTION 'private_qa_contract_changed';END IF;
+IF (SELECT jsonb_agg(jsonb_build_object('name',t.tgname,'definition',pg_get_triggerdef(t.oid),'function',t.tgfoid::regprocedure::text,'function_md5',md5(p.prosrc))ORDER BY t.tgname)FROM pg_trigger t JOIN pg_proc p ON p.oid=t.tgfoid WHERE t.tgrelid='zoi.listings'::regclass AND NOT t.tgisinternal)IS DISTINCT FROM NULL::jsonb THEN RAISE EXCEPTION 'private_qa_trigger_changed';END IF;
+ SELECT *INTO STRICT l FROM zoi.listings WHERE id=fixture FOR UPDATE;
+ before_row:=to_jsonb(l);
+ IF l.owner_workspace_id IS DISTINCT FROM workspace OR l.marketplace_status IS DISTINCT FROM 'hidden'OR l.moderation_status IS DISTINCT FROM 'clean'OR l.name IS DISTINCT FROM 'ZOI INTERNAL QA — NOT PUBLIC'OR l.slug IS DISTINCT FROM 'zoi-internal-private-owner-qa-48c711ee'OR zoi.home_content_version(l)IS DISTINCT FROM '471cff437fe073ce0c977dbf790844cc'
+ OR (SELECT jsonb_object_agg(key,md5(value::text))FROM jsonb_each(before_row-ARRAY['publish_status','updated_at']))IS DISTINCT FROM '{"id": "e30397dab1e41d431c0010f0a8be4874", "city": "927519e64d85fb7aedec147acc52b34c", "name": "d6bbfe3ae12eac86bae75fa0968293c4", "slug": "51cc9bf035cb8f016edd279dff4de141", "email": "37a6259cc0c1dae299a7866489dff0bd", "hours": "37a6259cc0c1dae299a7866489dff0bd", "phone": "37a6259cc0c1dae299a7866489dff0bd", "address": "abc87b30afd5da9f10c859bad3620bed", "country": "dd4516ff7b4eae93a33f4edc96b416fe", "profile": "99914b932bd37a50b983c5e7c90ae93b", "website": "37a6259cc0c1dae299a7866489dff0bd", "photo_url": "37a6259cc0c1dae299a7866489dff0bd", "updated_by": "9d9864412644bd656e19d1ae5455e151", "description": "37a6259cc0c1dae299a7866489dff0bd", "entity_type": "b62ef84bb43dd13198e19b38a1961c5b", "price_range": "37a6259cc0c1dae299a7866489dff0bd", "social_links": "99914b932bd37a50b983c5e7c90ae93b", "public_entity": "37a6259cc0c1dae299a7866489dff0bd", "canonical_path": "f5c05f8a350f50f77e882c5d3bf408a2", "moderation_status": "5f3576fb888253f039b9d7632f6ea462", "marketplace_status": "11ebc7c8568e25665c36349f4339df23", "owner_workspace_id": "c36031d4d746df729fad079a3280de6b", "primary_category_id": "c4ca4238a0b923820dcc509a6f75849b"}'::jsonb
+ OR EXISTS(SELECT 1 FROM zoi.home_designs WHERE listing_id=fixture)OR public.home_entity(l.slug)IS NOT NULL OR public.home_design_public(fixture)IS NOT NULL THEN RAISE EXCEPTION 'private_qa_fixture_changed';END IF;
+ SELECT md5(coalesce(jsonb_agg(to_jsonb(r)ORDER BY request_id)::text,'[]'))INTO before_receipts FROM zoi.business_creative_requests r WHERE workspace_id=workspace;
+ SELECT md5(coalesce(jsonb_agg(to_jsonb(r)ORDER BY request_id)::text,'[]'))INTO before_owner_receipts FROM zoi.home_content_requests r WHERE listing_id=fixture;
+ IF l.publish_status IS DISTINCT FROM 'archived'OR md5(before_row::text)IS DISTINCT FROM '63295a8e863dfc23919d8d0791a516f3'OR EXISTS(SELECT 1 FROM zoi.social_posts WHERE workspace_id=workspace)OR EXISTS(SELECT 1 FROM zoi.business_creative_requests WHERE workspace_id=workspace OR request_id=ANY(ids))THEN RAISE EXCEPTION 'private_qa_initial_state_changed';END IF;
+ UPDATE zoi.listings SET publish_status='draft'WHERE id=fixture;
+
+ SELECT *INTO STRICT l FROM zoi.listings WHERE id=fixture;
+ after_row:=to_jsonb(l);
+ IF (before_row-ARRAY['publish_status','updated_at'])IS DISTINCT FROM(after_row-ARRAY['publish_status','updated_at'])OR l.marketplace_status IS DISTINCT FROM 'hidden'OR l.owner_workspace_id IS DISTINCT FROM workspace OR public.home_entity(l.slug)IS NOT NULL OR public.home_design_public(fixture)IS NOT NULL THEN RAISE EXCEPTION 'private_qa_unexpected_trigger_delta';END IF;
+ IF (SELECT md5(coalesce(jsonb_agg(to_jsonb(r)ORDER BY request_id)::text,'[]'))FROM zoi.business_creative_requests r WHERE workspace_id=workspace)IS DISTINCT FROM before_receipts OR(SELECT md5(coalesce(jsonb_agg(to_jsonb(r)ORDER BY request_id)::text,'[]'))FROM zoi.home_content_requests r WHERE listing_id=fixture)IS DISTINCT FROM before_owner_receipts THEN RAISE EXCEPTION 'private_qa_history_changed';END IF;
+ IF l.publish_status IS DISTINCT FROM 'draft' THEN RAISE EXCEPTION 'private_qa_state_unconfirmed';END IF;
+ RAISE NOTICE 'Exact QA state transition confirmed; material source/profile/owner fields and immutable receipts preserved';
+END $qa$;
+SELECT jsonb_build_object('ok',true,'fixture',id,'private_hidden',marketplace_status='hidden','state',publish_status,'content_version',zoi.home_content_version(l),'baseline',zoi.home_revision_baseline(l),'public_unavailable',public.home_entity(slug)IS NULL,'canonical_posts_absent',NOT EXISTS(SELECT 1 FROM zoi.social_posts p WHERE p.workspace_id=l.owner_workspace_id))AS private_qa_operator_receipt FROM zoi.listings l WHERE id='48c711ee-e83b-4ce2-a7cc-4126d713048a';
+COMMIT;
+
+ERROR:  syntax error at or near "p"
+LINE 31: ...path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolat...
+                                                              ^
+
+    at genericNodeError (node:internal/errors:985:15)
+    at wrappedFn (node:internal/errors:539:14)
+    at checkExecSyncError (node:child_process:925:11)
+    at execFileSync (node:child_process:961:15)
+    at q (file:///tmp/zoi-private-source-runner-qWn7cZ/case.mjs:5:12)
+    at file:///tmp/zoi-private-source-runner-qWn7cZ/case.mjs:140:61
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5) {
+  status: 1,
+  signal: null,
+  output: [
+    null,
+    '33333333-3333-4333-8333-333333333333|2026-10-16T00:53:08.875Z|2026-10-16T01:03:13.875Z|55555555-5555-4555-8555-555555555555\n',
+    'ERROR:  syntax error at or near "p"\n' +
+      "LINE 31: ...path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolat...\n" +
+      '                                                              ^\n'
+  ],
+  pid: 701174,
+  stdout: '33333333-3333-4333-8333-333333333333|2026-10-16T00:53:08.875Z|2026-10-16T01:03:13.875Z|55555555-5555-4555-8555-555555555555\n',
+  stderr: 'ERROR:  syntax error at or near "p"\n' +
+    "LINE 31: ...path=zoi, public']::text[]AND p.prosecdef=trueAND p.provolat...\n" +
+    '                                                              ^\n'
+}
+
+Node.js v24.14.0

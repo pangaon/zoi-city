@@ -1,0 +1,96 @@
+{
+  "version": 1,
+  "at": "2026-10-16T01:10:56.561284+00:00",
+  "status": "source frozen; independent gate required before integration/release",
+  "author": "/root/owner_next",
+  "baseline": "be474208951688119e3f514b129ff46ab415addf",
+  "runtime_scope": [
+    "scripts/delivery/queue.mjs"
+  ],
+  "test_scope": [
+    "tests/unit/delivery-queue.test.mjs"
+  ],
+  "changes": [
+    "Remove historical owner/release/reconciliation resets and retain maintained current instruction and unknown top-level state.",
+    "Preserve existing requirement rows exactly, including order, evidence/status/acceptance, explicit clears and absent fields; never merge stale report fields into them.",
+    "Append newly discovered requirement IDs with open defaults; refuse removed/reused/duplicate identities instead of dropping recorded work.",
+    "Preserve meaningful scope_change on no-op; recompute group counts without resetting maintained group owners/status/acceptance.",
+    "Import has no board IO. CLI writes through a same-directory temporary file and refuses already-observed board/scope edits."
+  ],
+  "verification": {
+    "focused": {
+      "command": "node --test tests/unit/delivery-queue.test.mjs",
+      "groups": 7,
+      "pass": 7
+    },
+    "syntax_and_scoped_diff_check": "pass",
+    "actual_board": {
+      "status": "pass",
+      "method": "pure in-memory synchronization; no board write",
+      "prior": 987,
+      "current": 987,
+      "full_existing_rows_preserved": true,
+      "maintained_fields_preserved": true,
+      "input_unmutated": true,
+      "actual_inputs_unchanged": {
+        "docs/recovery-delivery-board.json": "c4f45efa7f2bbecdf47f50ab8ca874ddca4a6c218e922ebcb13cdd59e6c54ba3",
+        "docs/recovery-scope.json": "187be1f1aa8dd57fb27ad2fff4ac4b2277423a033ffc94ac61b7ef1620b3f7f0",
+        "docs/delivery-evidence.json": "8a6ef431c0097b0a9ed7d551845c95d039c95d7c55295563e0b820e102fa9f0f"
+      }
+    }
+  },
+  "limits": [
+    "No actual generator invocation or write against maintained board/scope/ledger. CLI exercised only with disposable temporary fixtures.",
+    "Observed-change refusal is not a filesystem CAS/lock protocol; maintain one coordinated board writer.",
+    "No deployment, database, provider, browser, device or capacity verification performed.",
+    "Core five hygiene sources remain independently frozen and unchanged by this packet."
+  ],
+  "source_manifest": {
+    "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/source-manifest.json",
+    "sha256": "37095d0684ee3747786540226e99ac59089789a43948237ad51dd0b221b7ac70"
+  },
+  "sources": [
+    {
+      "path": "scripts/delivery/queue.mjs",
+      "sha256": "66a37af7c1b73fc6c9cc9882842cc7db3a7f25af7fc57e5220ae6e1f483a0920",
+      "bytes": 11058
+    },
+    {
+      "path": "tests/unit/delivery-queue.test.mjs",
+      "sha256": "0617820f9d6d374d575101ce1e8562970d6efa4fd923248654baf874151f5be0",
+      "bytes": 10137
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/actual-board-memory-check.json",
+      "sha256": "e299452500a8e6c5f64517b5e3aba19a6e6cf2966295c095ef185cf130d2f6db",
+      "bytes": 572
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/focused.log",
+      "sha256": "f7ed0c10ab385572dbb80beb49d4f436a3993644bd176648904aa36ce4d0c879",
+      "bytes": 955
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/source/scripts/delivery/queue.mjs",
+      "sha256": "66a37af7c1b73fc6c9cc9882842cc7db3a7f25af7fc57e5220ae6e1f483a0920",
+      "bytes": 11058
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/source/tests/unit/delivery-queue.test.mjs",
+      "sha256": "0617820f9d6d374d575101ce1e8562970d6efa4fd923248654baf874151f5be0",
+      "bytes": 10137
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/source-manifest.json",
+      "sha256": "37095d0684ee3747786540226e99ac59089789a43948237ad51dd0b221b7ac70",
+      "bytes": 534
+    },
+    {
+      "path": "docs/audits/evidence/delivery-queue-preservation-owner-2026-10-16/tracked-source.patch",
+      "sha256": "6d0cb2e4a8b9fefd17f9b4fda467df87cd3eb97de2decc7529c87fda62d5fd77",
+      "bytes": 17751
+    }
+  ]
+}

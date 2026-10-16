@@ -1,0 +1,96 @@
+{
+  "schema": 1,
+  "reviewer": "atomic_review",
+  "author": "owner_next",
+  "at": "2026-10-16T01:09:20.944927+00:00",
+  "verdict": "ACCEPTED_SOURCE_ONLY_CORE_FIVE_PATHS",
+  "blockers": [],
+  "tree": "/workspaces/zoi-map-studio-ops-release",
+  "base_commit": "53b3554b735ff012958ac51e27d0e6c3120aa490",
+  "owned": [
+    {
+      "path": ".gitignore",
+      "sha256": "33943530f5361d449fdab16d385f0c4ee76121f0cc0077318c00dbe94b461c89",
+      "bytes": 598
+    },
+    {
+      "path": ".vercelignore",
+      "sha256": "4faddabb3ca8580d32ed2c8b95dc8d780fc167ea21e7cc552485774033f5746e",
+      "bytes": 781
+    },
+    {
+      "path": "scripts/vercel-ignore.mjs",
+      "sha256": "978c9412ce19bddc2f08caba4d3f73837093a8cbb15e7066753fa40dc5aa9463",
+      "bytes": 3615
+    },
+    {
+      "path": "tests/unit/vercel-ignore.test.mjs",
+      "sha256": "f118030f6619e0d09ac53b0eac830913c5321fdef48399a933a80ba9655b52d4",
+      "bytes": 7608
+    },
+    {
+      "path": "docs/operations/repository-workflow.md",
+      "sha256": "d29e1997d162035943fcc6abb58bb5e801dd2146f58dbe4838688086820c5652",
+      "bytes": 4968
+    }
+  ],
+  "readonly": [
+    {
+      "path": "api/audit-evidence.js",
+      "sha256": "2cff7484dc5e401ab4aeef626f2d97cc8ccd1b08b22f49982d7f28d63deab57f"
+    },
+    {
+      "path": "vercel.json",
+      "sha256": "79a57067e70cfef73dc1dc5a3cdaffefe2ccbf2c4f12efcd6de47a0a92594108"
+    },
+    {
+      "path": "package.json",
+      "sha256": "7d982f30ed4594d7eb913d61eb6b9fdd235f3d78f08fc2e3e67ce5c9088891f5"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "cd1b27336ae30bcc04cb24ef8f99d8a9d3105be17fcd116de72676e1426317ee"
+    }
+  ],
+  "owner_audit": {
+    "path": "docs/audits/repository-hygiene-owner-2026-10-16.json",
+    "sha256": "c4f6ee6d24fdd50ae97ab76340d572d21b5061b33e75da6509852e8edc77f709"
+  },
+  "owner_manifest": {
+    "path": "docs/audits/evidence/repository-hygiene-owner-2026-10-16/source-manifest.json",
+    "sha256": "b07fda4017e2a34337e59af8cdd21554100d022fc44dad054b7bc34c65ee6a30"
+  },
+  "validation": {
+    "focused_tests": {
+      "command": "node --test tests/unit/vercel-ignore.test.mjs",
+      "passed": 12,
+      "failed": 0
+    },
+    "node_syntax": true,
+    "exact_owner_source_dependency_evidence_pins": 23,
+    "owner_graph_existing_reference_exclusions": {
+      "references": 527,
+      "excluded": 0
+    },
+    "independent_all_public_runtime_closure": {
+      "roots": 604,
+      "visited_source_files": 611,
+      "existing_dependencies": 593,
+      "excluded": 0,
+      "includes": "all literal referenced existing targets, including excluded scripts and non-Supabase categories"
+    },
+    "privacy": "Existing audit endpoint404/no-store/noindex and rewrite retained; focused test exercises denial."
+  },
+  "reasoning": [
+    "Actual current web/API dependency closure retains every existing referenced runtime file; no excluded script dependency was found.",
+    "Build gate preserves NUL paths, conservatively builds for uncertain history/dependency source, recognizes direct/transitive/versioned/extensionless and deleted/renamed shared helpers.",
+    "Future local ignores retain source, evidence and requests; operational archive strategy creates no new public evidence reader."
+  ],
+  "limits": [
+    "Static literal dependency scan and local test evidence; actual deployment artifact and hosted runtime verification remain root release gates.",
+    "No archive/history deletion is authorized by this review. Separate nine wheel removals are outside this exact five-path acceptance.",
+    "No actual DB/provider/device/deploy/build/load action performed; no runtime capacity claim.",
+    "Root reported final413-file plus2 standalone suite pass; not independently repeated here."
+  ],
+  "evidence_directory": "/home/codespace/.cache/zoi/repository-hygiene-independent-20261016"
+}
