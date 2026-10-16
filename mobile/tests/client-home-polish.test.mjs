@@ -27,6 +27,18 @@ test('sparse profile stays compact and brand buttons keep readable contrast',()=
  const sparse=clientHomeDesign(normalizeProfile({id:'10000000-0000-4000-8000-000000000083',name:'New member',entity_type:'business',profile:{brand:{primary:'#F5C542'}}}));
  assert.equal(sparse.family,'directory');assert.deepEqual(sparse.tabs,[]);assert.equal(sparse.primary,'');assert.equal(sparse.accent,'#1F64CD');
 });
+test('published owner home design is identity-bound and controls this client’s section order and approved copy',()=>{
+ const id='10000000-0000-4000-8000-000000000084';
+ const design={schema_version:1,template:'atelier',section_order:['gallery','intro','socials','offerings','contact'],hidden_sections:['calendar'],copy:{headline:'Objects with a story',intro:'Hand finished in the studio.',offerings_title:'The collection',gallery_title:'Recent work',contact_title:'Find us'},item_order:{offerings:[]}};
+ const raw={id,name:'Aegean Studio',entity_type:'business',category_slug:'ceramics',description:'Owner profile description',address:'1 Main Street',owner_content:{services:[{name:'Hand-thrown vase'}],photo_urls:['https://aegean.example/work.jpg']},profile:{social:{instagram:'https://instagram.com/aegean'}},published_design:{ok:true,listing:id,version:3,design}};
+ const p=normalizeProfile(raw),home=clientHomeDesign(p);
+ assert.deepEqual(p.publishedDesign,design);
+ assert.deepEqual(home.contentOrder,['gallery','about','contact','offerings','visit']);
+ assert.deepEqual(home.tabs.map(tab=>tab.label),['Recent work','About','Find us','The collection']);
+ assert.equal(home.copy.intro,'Hand finished in the studio.');assert.equal(home.template,'atelier');
+ const wrong=normalizeProfile({...raw,published_design:{...raw.published_design,listing:'20000000-0000-4000-8000-000000000084'}});
+ assert.equal(wrong.publishedDesign,null);assert.notDeepEqual(clientHomeDesign(wrong).contentOrder,home.contentOrder);
+});
 test('sector editions keep compact client-specific hierarchy and accessible light/dark actions',()=>{
  const sectors=[['restaurant',{food:{family:'restaurant'}}],['bakery',{food:{family:'bakery'}}],['grooming',{category:'barbers',serviceOfferings:{items:[{}]},inquiryListing:'fixture'}],['hospitality',{category:'hotels',address:'1 Main Street'}],['parish',{category:'orthodox-churches',location:'Toronto'}],['arts',{category:'photographers',gallery:['https://images.example/work.jpg']}],['professional',{category:'architects',serviceOfferings:{items:[{}]},inquiryListing:'fixture'}],['organization',{category:'consulates',location:'Toronto'}]];
  const lum=h=>{const rgb=h.slice(1).match(/.{2}/g).map(v=>parseInt(v,16)/255).map(v=>v<=.04045?v/12.92:((v+.055)/1.055)**2.4);return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]},ratio=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05)};
