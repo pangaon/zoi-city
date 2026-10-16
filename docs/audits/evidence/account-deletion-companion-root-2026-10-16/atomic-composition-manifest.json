@@ -1,0 +1,35 @@
+{
+  "kind": "root-only first-empty atomic ROLLBACK composition, not executed",
+  "inputs": [
+    {
+      "path": "supabase/migrations/20261016040420_self_service_account_deletion.sql",
+      "sha256": "4698f2d6823274375897f9f530b4e99441c6db0b7a30bbdb2e90d13231ec7845",
+      "body_without_only_outer_transaction_sha256": "99e6b6825841e42b6673a71c24da5f02ff462f0245cb34fc66778bb075d1dce7",
+      "removed_begin_offset": 158,
+      "removed_commit_offset": 21399
+    },
+    {
+      "path": "supabase/migrations/20261016044936_account_deletion_community_erasure.sql",
+      "sha256": "7ecf3dae5be0fe5a21c1fe555416ed20a546c179a6304d2d8166c8c87b24161d",
+      "body_without_only_outer_transaction_sha256": "fe0b99a460e25bedcec71dd028e513f6e11ca29c9f47a723becd513fed23e16d",
+      "removed_begin_offset": 75,
+      "removed_commit_offset": 37358
+    },
+    {
+      "path": "supabase/migrations/20261016044937_account_deletion_worker_schedule.sql",
+      "sha256": "7fa250e486fa3497b5bca17e2182d6c23d348b69bd81823173902eb237e28d4c",
+      "body_without_only_outer_transaction_sha256": "19df3a48a1c0d9e096e3421cd41bc799666da7f7b35dca98cc977acbf4fa648d",
+      "removed_begin_offset": 160,
+      "removed_commit_offset": 4306
+    }
+  ],
+  "composition_sha256": "390b0ab92258d85b78bc9d8edcc0856171e953f6f56224f2f6ed513b58f49912",
+  "source_statement_reversal_verified": true,
+  "outer_transaction_count": 1,
+  "final_operation": "ROLLBACK",
+  "source_timeouts_preserved": "Core/companion retain original5s lock/30s statement; scheduler original2s lock/5s statement. Wrapper starts1s/5s. No timeout raise added.",
+  "live_graph_sha256": "1ea6ead3093dbf6adbcaaff55f8f4a6fea7ade8ea32d08280af2a59529053382",
+  "comparison_sha256": "8888c71c8455b6519bf1f578cbfdbb000e6ac0d46f4844d396e801b542230176",
+  "author_actual_sql_mutations": 0,
+  "before_root_execute": "Review exact SQL/pins; source statements and first-empty constraints retained. On any actual SQL error root immediately ROLLBACK, no retry loop."
+}
