@@ -1,13 +1,13 @@
 {
   "base_commit": "d08376bcf17059e4fedec7a366f2d558b8c05cfc",
   "runtime_import_sites": 54,
-  "jsx_nodes": 1211,
+  "jsx_nodes": 1194,
   "sites": [
     {
       "path": "mobile/App.tsx",
-      "sha256": "d346c2016929a8762ed01ca485f0f01f4ea537c056b4f395dfbdc392f3ef0abd",
-      "original_import": "import { ActivityIndicator, Image, Linking, Platform, Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar as NativeStatusBar, StyleSheet, Text, TextInput, View } from 'react-native';",
-      "jsx_nodes": 48
+      "sha256": "41ca1ff7201964feeda59881f9d1cf5647936347352811bbb78ad125a1e06df1",
+      "original_import": "import {Text, ActivityIndicator, Image, Linking, Platform, Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar as NativeStatusBar, StyleSheet, TextInput, useColorScheme, View } from 'react-native';",
+      "jsx_nodes": 34
     },
     {
       "path": "mobile/src/Account.tsx",
@@ -17,9 +17,9 @@
     },
     {
       "path": "mobile/src/AppChrome.tsx",
-      "sha256": "a32625e64be1e140fc9de6f0bdddd51730143f61a4b0c751e444501ef94d1f38",
-      "original_import": "import{Image,Modal,Platform,Pressable,ScrollView,StyleSheet,Text,useWindowDimensions,View}from'react-native';",
-      "jsx_nodes": 14
+      "sha256": "3a96780b9034e2c0e4a9caa9dba39f9b44187e1ceb13846fa20aeae52817c940",
+      "original_import": "import{Text,Image,Modal,Platform,Pressable,ScrollView,StyleSheet,useColorScheme,useWindowDimensions,View}from'react-native';",
+      "jsx_nodes": 10
     },
     {
       "path": "mobile/src/ArtistHome.tsx",
@@ -143,9 +143,9 @@
     },
     {
       "path": "mobile/src/Discovery.tsx",
-      "sha256": "2c3208afdde5ca3a673774ab0e23c4ae5a5e5c7bc743efb45e057022ad636782",
-      "original_import": "import {\n  ActivityIndicator,\n  BackHandler,\n  AppState,\n  Image,\n  Linking,\n  Pressable,\n  ScrollView,\n  Share,\n  StyleSheet,\n  Text,\n  TextInput,\n  View,\n} from \"react-native\";",
-      "jsx_nodes": 42
+      "sha256": "47caf1d49e93cd84a4a7b2a02159bf467e96b77f1cbe158da37636525cc45f7f",
+      "original_import": "import {Text,\n  ActivityIndicator,\n  BackHandler,\n  AppState,\n  Image,\n  Linking,\n  Pressable,\n  ScrollView,\n  Share,\n  StyleSheet,\n  TextInput,\n  useColorScheme,\n  View,\n} from \"react-native\";",
+      "jsx_nodes": 43
     },
     {
       "path": "mobile/src/DiscoveryLocation.tsx",
@@ -326,6 +326,44 @@
       "sha256": "12fc348cf1585314d778e05afaf2220f1210ecebc27ec3f86d810ec1f9677cb8",
       "original_import": "import {ActivityIndicator,Alert,Pressable,StyleSheet,Text,TextInput,View} from 'react-native';",
       "jsx_nodes": 57
+    }
+  ],
+  "reviewed_updates": [
+    {
+      "at": "2026-10-16",
+      "reason": "Deliberate home, navigation icon and Discovery design changes after the mechanical text migration. Historical baselines retained here; ScaleText and the native font cache patch are unchanged. New native binary acceptance remains required.",
+      "sites": [
+        {
+          "path": "mobile/App.tsx",
+          "previous": {
+            "sha256": "d346c2016929a8762ed01ca485f0f01f4ea537c056b4f395dfbdc392f3ef0abd",
+            "original_import": "import { ActivityIndicator, Image, Linking, Platform, Pressable, RefreshControl, SafeAreaView, ScrollView, StatusBar as NativeStatusBar, StyleSheet, Text, TextInput, View } from 'react-native';",
+            "jsx_nodes": 48
+          },
+          "new_sha256": "41ca1ff7201964feeda59881f9d1cf5647936347352811bbb78ad125a1e06df1",
+          "new_jsx_nodes": 34
+        },
+        {
+          "path": "mobile/src/AppChrome.tsx",
+          "previous": {
+            "sha256": "a32625e64be1e140fc9de6f0bdddd51730143f61a4b0c751e444501ef94d1f38",
+            "original_import": "import{Image,Modal,Platform,Pressable,ScrollView,StyleSheet,Text,useWindowDimensions,View}from'react-native';",
+            "jsx_nodes": 14
+          },
+          "new_sha256": "3a96780b9034e2c0e4a9caa9dba39f9b44187e1ceb13846fa20aeae52817c940",
+          "new_jsx_nodes": 10
+        },
+        {
+          "path": "mobile/src/Discovery.tsx",
+          "previous": {
+            "sha256": "2c3208afdde5ca3a673774ab0e23c4ae5a5e5c7bc743efb45e057022ad636782",
+            "original_import": "import {\n  ActivityIndicator,\n  BackHandler,\n  AppState,\n  Image,\n  Linking,\n  Pressable,\n  ScrollView,\n  Share,\n  StyleSheet,\n  Text,\n  TextInput,\n  View,\n} from \"react-native\";",
+            "jsx_nodes": 42
+          },
+          "new_sha256": "47caf1d49e93cd84a4a7b2a02159bf467e96b77f1cbe158da37636525cc45f7f",
+          "new_jsx_nodes": 43
+        }
+      ]
     }
   ]
 }
