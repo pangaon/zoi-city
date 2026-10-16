@@ -36,7 +36,9 @@ export function BusinessProfile({slug,back,signIn,volunteer,enquiry,calendar,gro
  // hero; long names wrap inside the panel and system text scaling remains on.
  const hasHeroPhoto=!!profile?.photo&&!imageFailed;
  const scale=fontScale||1,titleLines=Math.min(8,Math.max(1,Math.ceil((profile?.name.length||1)/Math.max(7,(width-64)/(17*scale)))));
- const identityHeight=79+scale*(16+34*titleLines);
+ const headline=design?.copy?.headline?.trim()||'';
+ const headlineLines=headline&&headline.toLowerCase()!==profile?.name.toLowerCase()?Math.min(2,Math.max(1,Math.ceil(headline.length/Math.max(12,(width-64)/(9*scale))))):0;
+ const identityHeight=79+scale*(16+34*titleLines+21*headlineLines+(headlineLines?6:0));
  const heroHeight=hasHeroPhoto?Math.max(228,width*.62,identityHeight):Math.max(132,identityHeight);
  const primary=()=>{
   if(!profile||!design)return;
@@ -83,7 +85,7 @@ export function BusinessProfile({slug,back,signIn,volunteer,enquiry,calendar,gro
    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.tabs} accessibilityRole="tablist" accessibilityLabel="Profile sections">
     {design.tabs.map(tab=><Pressable key={tab.key} accessibilityRole="tab" accessibilityState={{selected:(activeTab||design.tabs[0]?.key)===tab.key}} accessibilityLabel={tab.label} onPress={()=>move(tab.key as Section)} style={[styles.tab,(activeTab||design.tabs[0]?.key)===tab.key?styles.tabSelected:null]}><Text style={styles.tabText}>{tab.label}</Text></Pressable>)}
    </ScrollView>
-   {orderedSections.map(section=>sectionNodes[section]?<View key={section}>{sectionNodes[section]}</View>:null)}
+   {orderedSections.map(section=>sectionNodes[section]?<View key={section} testID={'profile-section-'+section}>{sectionNodes[section]}</View>:null)}
    {music?<View style={styles.section}><Text accessibilityRole="header" style={styles.sectionTitle}>Music</Text>{music.press?<Text style={styles.body}>{music.press}</Text>:null}<View style={styles.utilityRow}>{[['spotify','Listen'],['youtube','Watch'],['instagram_url','Instagram'],['facebook_url','Facebook'],['merch','Merch']].map(([key,label])=>publicURL(music[key])?action(label,publicURL(music[key]),'button'):null)}</View></View>:null}
    {profile.showsArtist?<Pressable accessibilityRole="button" style={styles.feature} onPress={()=>shows(profile.showsArtist)}><Text style={styles.featureTitle}>Shows</Text><Text style={styles.featureArrow}>→</Text></Pressable>:null}
    {profile.festivalListing?<Pressable accessibilityRole="button" style={styles.feature} onPress={()=>festival(profile.festivalListing)}><Text style={styles.featureTitle}>Festival</Text><Text style={styles.featureArrow}>→</Text></Pressable>:null}
