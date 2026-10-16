@@ -35,5 +35,44 @@
       "every profile family and the full 153-screen/987-requirement scope"
     ]
   },
-  "completion": "Partial. Restaurants/bakeries, musicians, grooming, hospitality, parish, professional, home services and organizations now have family-specific native entry views (some have earlier implementations; this change does not accept every journey). Directory/retail categories and all owner-published layout variations still require design conversion. All families still need source-rich visual/device acceptance against the supplied handoff."
+  "completion": "Partial. Restaurants/bakeries, musicians, grooming, hospitality, parish, professional, home services and organizations now have family-specific native entry views (some have earlier implementations; this change does not accept every journey). Directory/retail categories and all owner-published layout variations still require design conversion. All families still need source-rich visual/device acceptance against the supplied handoff.",
+  "current_profile_refinement": {
+    "source_commit": "8372cc30ceb21e0af14a81b78f22ffeda37ae87e",
+    "files": [
+      "mobile/src/FoodBusinessHome.tsx",
+      "mobile/src/HomeServicesHome.tsx",
+      "mobile/src/OrganizationHome.tsx",
+      "mobile/src/ParishHome.tsx",
+      "mobile/src/ProfessionalHome.tsx",
+      "mobile/src/Profile.tsx",
+      "mobile/src/ServiceOfferings.tsx",
+      "mobile/src/profileHeroLayout.ts"
+    ],
+    "implemented": [
+      "Reduce repeated promotional copy and redundant actions; keep service and booking actions explicitly scoped to the profile.",
+      "Use concise mobile type hierarchy and four-at-a-time service disclosure; retain the client palette and logo when source data provides them.",
+      "Expand photo hero only as needed for long localized identity text under larger OS text settings, with a stronger image scrim when required for contrast.",
+      "Keep Food About, address and reservation details together; Reserve scrolls to the booking section after layout settles.",
+      "Preserve Parish volunteer workspace identity rather than binding sign-up to the public listing ID."
+    ],
+    "render_evidence": {
+      "harness": "mobile/tests/browser/client-home-polish.mjs",
+      "result": "20 actual-component controlled browser scenarios pass across 390, 844, 1440 and landscape viewports; 1x/2x type and light/dark themes. No overflow, clipped labels, or undersized controls in the tested common states.",
+      "long_identity": "Long Greek Home Services and Organization names plus location remain inside photo hero at 390x700 and 2x type.",
+      "screenshots": "Generated for review under /tmp/zoi-mobile-sector-20261016-final; image fixtures are controlled or synthetic, not production media."
+    },
+    "journey_evidence": {
+      "tests": "mobile npm test: 592/592; TypeScript check passes.",
+      "independent_reservation_review": "/tmp/zoi-pr107-reserve-exact-final-20261016/review.json; exact FoodBusinessHome SHA e81f29694be27d521a1116de30771ef1b057130a01bbb341bbfa4d7b801ee194. Both Menu-to-Reserve and Details-to-Reserve settle with Reservations visible at y563-605 on a 700px bounded viewport at 2x type.",
+      "independent_contrast_layout_review": "/tmp/zoi-pr107-rereview-20261016/review.json; contrast, long Greek identity, Food details preservation and Parish workspace were independently rechecked. The source file pins in that report predate only removal of an unused layout ref; all behavior-affecting changes were rechecked in the exact Food review."
+    },
+    "not_proven": [
+      "Physical iOS or Android device acceptance for these edits.",
+      "Image-rich production rendering for every client profile; screenshots used controlled/synthetic fixtures.",
+      "Completion of every one of the 153 handoff screens or 987 tracked requirements.",
+      "Connected booking inventory; BookingPanel remained a test boundary in browser acceptance.",
+      "Production deployment or TestFlight update."
+    ],
+    "status": "Focused visual and journey refinement only; not complete ecosystem coverage or a release."
+  }
 }
