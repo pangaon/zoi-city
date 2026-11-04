@@ -258,14 +258,27 @@ END $$;
 
 CREATE FUNCTION public.festival_vendor_businesses(p_application uuid) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
-DECLARE actor uuid;rows jsonb;a zoi.festival_applications;
+DECLARE actor uuid;rows jsonb:='[]';a zoi.festival_applications;candidate record;current_role text;
 BEGIN
  actor:=zoi.mesa_vendor_actor(p_application);SELECT * INTO a FROM zoi.festival_applications WHERE id=p_application;
- SELECT coalesce(jsonb_agg(to_jsonb(q) ORDER BY q.name,q.listing_id),'[]') INTO rows FROM(
- SELECT l.id listing_id,l.owner_workspace_id workspace_id,l.name,l.slug FROM zoi.listings l JOIN zoi.workspace_members m ON m.workspace_id=l.owner_workspace_id AND m.profile_id=actor
- WHERE m.role IN('owner','admin','editor') AND l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden'
- AND l.entity_type NOT IN('event','travel_place') AND zoi.workspace_current_role(l.owner_workspace_id) IN('owner','admin','editor')
- AND a.status='approved' ORDER BY l.name,l.id LIMIT 200)q;
+ -- Do not put the raising authority function in a WHERE predicate. PostgreSQL
+ -- may evaluate it on unrelated listings before the membership filter.
+ FOR candidate IN
+  SELECT l.id listing_id,l.owner_workspace_id workspace_id,l.name,l.slug FROM zoi.listings l
+  JOIN zoi.workspace_members m ON m.workspace_id=l.owner_workspace_id AND m.profile_id=actor
+  WHERE m.role IN('owner','admin','editor') AND l.publish_status='published' AND l.moderation_status IN('clean','cleared') AND coalesce(l.marketplace_status,'')<>'hidden'
+  AND l.entity_type NOT IN('event','travel_place') AND a.status='approved' ORDER BY l.name,l.id LIMIT 200
+ LOOP
+  BEGIN
+   current_role:=zoi.workspace_current_role(candidate.workspace_id);
+  EXCEPTION WHEN insufficient_privilege THEN
+   -- A removed candidate membership is skipped, while invalid current sessions
+   -- still fail the entire read through the canonical session guard.
+   PERFORM zoi.suite_current_session();
+   CONTINUE;
+  END;
+  IF current_role IN('owner','admin','editor') THEN rows:=rows||jsonb_build_array(to_jsonb(candidate));END IF;
+ END LOOP;
  RETURN jsonb_build_object('ok',true,'application_id',p_application,'version',coalesce((SELECT version FROM zoi.festival_vendor_bindings WHERE application_id=p_application),0),'binding',zoi.mesa_binding(p_application),'choices',rows);
 END $$;
 CREATE FUNCTION public.festival_vendor_bind(p_application uuid,p_vendor_workspace uuid,p_listing uuid,p_expected_version integer,p_request uuid) RETURNS jsonb
