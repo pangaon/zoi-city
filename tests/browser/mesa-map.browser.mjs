@@ -126,6 +126,12 @@ try{
     await page.evaluate(()=>window.mesaQA.refreshPublic());
     await page.locator('#visitor .mesa-stand-list').getByRole('button',{name:/L01.*Synthetic Long Name/}).click();
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1),false,'fixture has horizontal page overflow');
+    const contrast=await page.locator('#visitor .mesa-primary').evaluate(element=>{
+      const color=value=>value.match(/[0-9.]+/g).slice(0,3).map(Number).map(v=>v/255<=.04045?v/255/12.92:((v/255+.055)/1.055)**2.4);
+      const lum=value=>{const c=color(value);return c[0]*.2126+c[1]*.7152+c[2]*.0722;};
+      const styles=getComputedStyle(element),a=lum(styles.color),b=lum(styles.backgroundColor);return (Math.max(a,b)+.05)/(Math.min(a,b)+.05);
+    });
+    assert.ok(contrast>=4.5,'primary business action contrast must remain readable under festival styles');
     for(const section of ['operator','vendor','visitor']){
       const filename=`${mobile?'390px':'desktop'}-${theme}-${section}.png`;
       await page.locator('#'+section).screenshot({path:resolve(output,filename)});screenshots.push(filename);

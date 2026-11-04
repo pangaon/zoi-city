@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {
   blankLayout, validateLayout, extent, collisions, moveBooth, addBooth,
   boothTemplates, layoutHistory, commitLayout, undoLayout, redoLayout,
-  safeBusiness, mapURL, mapError,
+  safeBusiness, mapURL, mapError, accessLost,
 } from '../assets/festival/map-model.mjs';
 import {planSVG} from '../assets/festival/map-view.mjs';
 const id=n=>'00000000-0000-4000-8000-'+String(n).padStart(12,'0');
@@ -104,4 +104,19 @@ test('shareable maps require actual event identities and known conflicts give re
  assert.match(mapError(Error('mesa_version_conflict')),/unsaved layout is still here/);
  assert.match(mapError(Error('mesa_request_conflict')),/different details/);
  assert.match(mapError(Error('network unavailable')),/same request reference/);
+});
+
+
+test('new templates can use clear space while unrelated draft stands overlap',()=>{
+ const original=validateLayout(site([booth(1,{x_m:10,y_m:10}),booth(2,{x_m:10,y_m:10})]));
+ assert.equal(collisions(original).length,1);
+ const next=addBooth(original,boothTemplates[0],()=>id(3));
+ assert.equal(next.booths.length,3);assert.equal(original.booths.length,2);
+ assert.deepEqual(collisions(next),[[id(1),id(2)]]);
+ assert.equal(collisions(next).some(pair=>pair.includes(id(3))),false);
+});
+
+test('authorization failures are distinguished from recoverable geometry, version and network failures',()=>{
+ for(const error of [{status:401,message:'Unavailable'},{status:403,message:'Forbidden'},{status:'403',message:'Forbidden'},Error('no_access_to_workspace'),Error('suite_session_unavailable'),Error('mesa_application_not_owned'),Error('JWT expired')])assert.equal(accessLost(error),true,String(error.message));
+ for(const error of [Error('mesa_version_conflict'),Error('mesa_booth_collision'),Error('network unavailable'),{status:500,message:'Server unavailable'}])assert.equal(accessLost(error),false,String(error.message));
 });
