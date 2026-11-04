@@ -26,8 +26,17 @@ const sql = (query, actor, role = 'authenticated', session = actor) => actor
   ? `set role ${role};select set_config('request.jwt.claim.sub',${literal(actor)},false);select set_config('request.jwt.claims',${json({ sub: actor, session_id: session })}::text,false);${query}`
   : role === 'anon' ? `set role anon;${query}` : query;
 async function query(q, actor, role, session) {
-  const r = await run(join(bin, 'psql'), ['-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-c', sql(q, actor, role, session)], { env, timeout: 20000, maxBuffer: 4 * 1024 * 1024 });
-  return r.stdout.trim().split('\n').filter(Boolean).at(-1);
+  try {
+    const r = await run(join(bin, 'psql'), ['-X', '-qAt', '-v', 'ON_ERROR_STOP=1', '-c', sql(q, actor, role, session)], { env, timeout: 20000, maxBuffer: 4 * 1024 * 1024 });
+    return r.stdout.trim().split('\n').filter(Boolean).at(-1);
+  } catch (error) {
+    // execFile errors include the entire -c SQL command. Keep the PostgreSQL
+    // diagnostic, without repeating the complete fixture/migration in CI logs.
+    const diagnostic = String(error.stderr || error.code || 'PostgreSQL invocation failed').slice(0, 8000);
+    const failure = new Error('Isolated PostgreSQL: ' + diagnostic);
+    failure.stderr = diagnostic;
+    throw failure;
+  }
 }
 async function call(name, args, actor = owner) { return JSON.parse(await query(`select public.${name}(${args});`, actor)); }
 async function rejects(q, actor, pattern, role, session) {

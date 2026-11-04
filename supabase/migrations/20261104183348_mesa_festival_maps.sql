@@ -258,7 +258,7 @@ END $$;
 
 CREATE FUNCTION public.festival_vendor_businesses(p_application uuid) RETURNS jsonb
 LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
-DECLARE actor uuid;rows jsonb:='[]';a zoi.festival_applications;candidate record;current_role text;
+DECLARE actor uuid;rows jsonb:='[]';a zoi.festival_applications;candidate record;candidate_role text;
 BEGIN
  actor:=zoi.mesa_vendor_actor(p_application);SELECT * INTO a FROM zoi.festival_applications WHERE id=p_application;
  -- Do not put the raising authority function in a WHERE predicate. PostgreSQL
@@ -270,14 +270,14 @@ BEGIN
   AND l.entity_type NOT IN('event','travel_place') AND a.status='approved' ORDER BY l.name,l.id LIMIT 200
  LOOP
   BEGIN
-   current_role:=zoi.workspace_current_role(candidate.workspace_id);
+   candidate_role:=zoi.workspace_current_role(candidate.workspace_id);
   EXCEPTION WHEN insufficient_privilege THEN
    -- A removed candidate membership is skipped, while invalid current sessions
    -- still fail the entire read through the canonical session guard.
    PERFORM zoi.suite_current_session();
    CONTINUE;
   END;
-  IF current_role IN('owner','admin','editor') THEN rows:=rows||jsonb_build_array(to_jsonb(candidate));END IF;
+  IF candidate_role IN('owner','admin','editor') THEN rows:=rows||jsonb_build_array(to_jsonb(candidate));END IF;
  END LOOP;
  RETURN jsonb_build_object('ok',true,'application_id',p_application,'version',coalesce((SELECT version FROM zoi.festival_vendor_bindings WHERE application_id=p_application),0),'binding',zoi.mesa_binding(p_application),'choices',rows);
 END $$;
