@@ -7,8 +7,8 @@ import ts from 'typescript';
 const inventory = JSON.parse(readFileSync(new URL('./fixtures/native-text-import-sites.json', import.meta.url)));
 const root = new URL('../../', import.meta.url);
 
-test('all 54 registered Text sites match their reviewed import baselines and JSX inventory', () => {
-  assert.equal(inventory.sites.length, 54);
+test('all 55 registered Text sites match their reviewed import baselines and JSX inventory', () => {
+  assert.equal(inventory.sites.length, 55);
   let count = 0;
   for (const item of inventory.sites) {
     const source = readFileSync(new URL(item.path, root), 'utf8');
